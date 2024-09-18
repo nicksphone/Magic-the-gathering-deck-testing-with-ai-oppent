@@ -74,6 +74,20 @@ class GameGUI:
                 return creature
         return None
 
+    def prompt_dual_option(self, card):
+        """
+        Prompts the player to choose how to play a DualOptionCard.
+        
+        Args:
+            card (DualOptionCard): The dual-option card to play.
+
+        Returns:
+            str: The chosen option (e.g., "Creature", "Land", etc.).
+        """
+        options = [option[0] for option in card.card_options]  # Get the available card types
+        choice = simpledialog.askstring("Dual-Option Card", f"Play {card.name} as:\n" + "\n".join(options))
+        return choice
+
     def display_hand(self):
         """
         Displays the player's hand in the GUI with options to play cards.
