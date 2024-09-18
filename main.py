@@ -1,4 +1,4 @@
-# main.py (updated with GUI deck selection)
+# main.py
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
@@ -53,6 +53,26 @@ class GameGUI:
         """
         choice = simpledialog.askstring("Deck Selection", f"{player.name}, choose an option:\n" + "\n".join(options))
         return choice
+
+    def prompt_target_selection(self, opponent):
+        """
+        Prompts the player to select a target during combat or spell casting.
+        
+        Args:
+            opponent (Player): The opposing player whose creatures or self are the target options.
+
+        Returns:
+            Target: The selected target (either a player or creature).
+        """
+        options = [opponent.name] + [creature.name for creature in opponent.battlefield]
+        choice = simpledialog.askstring("Combat", f"Choose a target:\n" + "\n".join(options))
+        
+        if choice == opponent.name:
+            return opponent
+        for creature in opponent.battlefield:
+            if creature.name == choice:
+                return creature
+        return None
 
     def display_hand(self):
         """
