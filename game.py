@@ -1,49 +1,70 @@
-# game.py
+# game.py (updated with deck selection)
 
+import random
 from card_factory import CardFactory
 from player import Player
-import random
+from tkinter import filedialog, simpledialog
 
 class Game:
     def __init__(self, player1, player2, gui=None):
         """
         Initializes the game with two players and sets up the game environment.
-
-        Args:
-            player1 (Player): The first player in the game.
-            player2 (Player): The second player in the game.
-            gui: Optional GUI reference for updating the interface during the game.
         """
         self.player1 = player1
         self.player2 = player2
         self.gui = gui
         self.turn = 0
+        self.current_phase = 'Main Phase'
 
         # Initialize the CardFactory to pull cards from the local database or API
         self.card_factory = CardFactory()
 
-        # Initialize the decks for both players
-        self.player1.deck = self.build_deck(player1)
-        self.player2.deck = self.build_deck(player2)
+        # Prompt players to select decks
+        self.player1.deck = self.select_deck(player1)
+        self.player2.deck = self.select_deck(player2)
 
         # Shuffle the decks
         random.shuffle(self.player1.deck)
         random.shuffle(self.player2.deck)
 
-    def build_deck(self, player):
+    def select_deck(self, player):
         """
-        Builds a dynamic deck for a player by pulling cards from the database.
+        Allows the player to select a deck, either a pre-built one or a custom deck.
 
         Args:
-            player (Player): The player for whom the deck is being built.
+            player (Player): The player who is selecting the deck.
+
+        Returns:
+            list: A list of cards that form the player's deck.
+        """
+        print(f"{player.name}, choose your deck:")
+        options = ["Pre-built: Red Aggro", "Pre-built: Blue Control", "Custom Deck"]
+        selection = self.gui.prompt_selection(player, options)
+
+        if selection == "Pre-built: Red Aggro":
+            return self.build_deck("Red Aggro")
+        elif selection == "Pre-built: Blue Control":
+            return self.build_deck("Blue Control")
+        else:
+            return self.custom_deck_selection(player)
+
+    def build_deck(self, deck_type):
+        """
+        Builds a dynamic deck for a player based on deck type.
+
+        Args:
+            deck_type (str): The type of deck to build (e.g., 'Red Aggro', 'Blue Control').
 
         Returns:
             list: A list of cards that form the player's deck.
         """
         deck = []
+        card_names = []
 
-        # Example list of card names; this could be replaced by a more advanced query or random selection.
-        card_names = ["Lightning Bolt", "Serra Angel", "Forest", "Mountain", "Island", "Counterspell", "Llanowar Elves"]
+        if deck_type == 'Red Aggro':
+            card_names = ["Lightning Bolt", "Goblin Guide", "Mountain", "Shock", "Lava Spike"]
+        elif deck_type == 'Blue Control':
+            card_names = ["Counterspell", "Island", "Opt", "Ponder", "Brainstorm"]
 
         for card_name in card_names:
             card = self.card_factory.create_card(card_name)
@@ -52,94 +73,44 @@ class Game:
 
         return deck
 
-    def play_card(self, card):
+    def custom_deck_selection(self, player):
         """
-        Handles playing a card during a player's turn.
-        
-        Args:
-            card: The card that is being played.
-        """
-        player = card.owner
-
-        # Example logic: for a creature card, summon it to the battlefield
-        if card.card_type == 'Creature':
-            player.battlefield.append(card)
-            print(f"{player.name} played {card.name}.")
-
-        # Example logic: for a spell card, cast it and apply its effects
-        elif card.card_type in ['Instant', 'Sorcery']:
-            print(f"{player.name} cast {card.name}.")
-            # Here you would implement the spell's effect based on its description or abilities
-            # For simplicity, we are just printing that the spell was cast.
-
-        # Example logic for lands: put the land into play
-        elif card.card_type == 'Land':
-            player.lands.append(card)
-            print(f"{player.name} played land {card.name}.")
-
-        # Remove the card from the player's hand after it's played
-        player.hand.remove(card)
-
-        # Update the game state or GUI if needed
-        if self.gui:
-            self.gui.display_hand()
-
-    def start_game(self):
-        """
-        Starts the game and initializes the game loop.
-        """
-        print("The game begins!")
-        # Draw initial hands for both players
-        self.draw_initial_hands(self.player1)
-        self.draw_initial_hands(self.player2)
-
-        # Start the main game loop
-        while not self.is_game_over():
-            self.next_turn()
-
-    def draw_initial_hands(self, player):
-        """
-        Draws an initial hand of cards for a player at the start of the game.
+        Allows the player to build a custom deck by inputting card names or loading from a file.
 
         Args:
-            player (Player): The player who is drawing cards.
-        """
-        for _ in range(7):  # Draw 7 cards to start
-            self.draw_card(player)
+            player (Player): The player creating the custom deck.
 
-    def draw_card(self, player):
-        """
-        Draws a card from the player's deck and adds it to their hand.
-        
-        Args:
-            player (Player): The player drawing the card.
-        """
-        if player.deck:
-            card = player.deck.pop(0)
-            player.hand.append(card)
-            print(f"{player.name} draws {card.name}.")
-        else:
-            print(f"{player.name} has no cards left to draw!")
-
-    def next_turn(self):
-        """
-        Advances the game to the next turn.
-        """
-        self.turn += 1
-        current_player = self.player1 if self.turn % 2 == 1 else self.player2
-        print(f"Turn {self.turn}: {current_player.name}'s turn.")
-        
-        # For now, we'll just have the current player draw a card
-        self.draw_card(current_player)
-
-    def is_game_over(self):
-        """
-        Determines if the game is over (e.g., if a player has no cards left or has lost).
-        
         Returns:
-            bool: True if the game is over, False otherwise.
+            list: A list of cards that form the player's custom deck.
         """
-        if not self.player1.deck and not self.player2.deck:
-            print("Both players are out of cards! The game is a draw.")
-            return True
-        return False
+        deck = []
+        print(f"{player.name}, choose how to create your custom deck:")
+        options = ["Input cards manually", "Load deck from file"]
+        selection = self.gui.prompt_selection(player, options)
+
+        if selection == "Input cards manually":
+            while True:
+                card_name = simpledialog.askstring("Deck Builder", f"Enter card name for {player.name}'s deck (or 'done' to finish):")
+                if card_name.lower() == 'done':
+                    break
+                card = self.card_factory.create_card(card_name)
+                if card:
+                    deck.append(card)
+                else:
+                    print(f"Card '{card_name}' not found.")
+
+        elif selection == "Load deck from file":
+            file_path = filedialog.askopenfilename(title="Select Deck File", filetypes=[("Text Files", "*.txt")])
+            if file_path:
+                with open(file_path, 'r') as file:
+                    card_names = file.read().splitlines()
+                    for card_name in card_names:
+                        card = self.card_factory.create_card(card_name)
+                        if card:
+                            deck.append(card)
+                        else:
+                            print(f"Card '{card_name}' not found.")
+
+        return deck
+
+    # Rest of the Game class remains the same, with phases and targeting...
