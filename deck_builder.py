@@ -1,6 +1,5 @@
 import wx
 import json
-import os
 from card_retrieval import fetch_and_store_card  # Assuming this handles card retrieval logic
 
 class DeckBuilderApp(wx.Frame):
@@ -8,6 +7,7 @@ class DeckBuilderApp(wx.Frame):
         super(DeckBuilderApp, self).__init__(parent, title=title, size=(400, 300))
         
         self.deck = []
+        self.parent = parent  # We store parent (MagicApp) to transition between windows
         self.InitUI()
         self.Centre()
         self.Show(True)
@@ -46,7 +46,7 @@ class DeckBuilderApp(wx.Frame):
         load_btn.Bind(wx.EVT_BUTTON, self.load_deck)
         vbox.Add(load_btn, flag=wx.EXPAND|wx.ALL, border=5)
         
-        # Start game button (placeholder for launching game)
+        # Start game button (this button will trigger the transition to the game)
         start_btn = wx.Button(panel, label="Start Game")
         start_btn.Bind(wx.EVT_BUTTON, self.start_game)
         vbox.Add(start_btn, flag=wx.EXPAND|wx.ALL, border=5)
@@ -113,10 +113,11 @@ class DeckBuilderApp(wx.Frame):
                         self.deck_listbox.Append(card_name)
 
     def start_game(self, event):
-        wx.MessageBox("Game play screen is under development.", "Start Game", wx.OK | wx.ICON_INFORMATION)
-
-# Entry point for wxPython application
-if __name__ == "__main__":
-    app = wx.App(False)
-    frame = DeckBuilderApp(None, "Magic: The Gathering Deck Tester")
-    app.MainLoop()
+        """
+        Trigger the transition to the game play screen.
+        """
+        if not self.deck:
+            wx.MessageBox("Please add cards to your deck before starting the game.", "Empty Deck", wx.OK | wx.ICON_WARNING)
+        else:
+            # Call the parent app to transition to the game
+            self.parent.transition_to_game(self.deck)
