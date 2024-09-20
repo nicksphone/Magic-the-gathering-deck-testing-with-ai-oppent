@@ -1,48 +1,30 @@
-import tkinter as tk
+import wx
 
-class GamePlayApp:
-    def __init__(self, root, player_deck):
-        self.root = root
-        self.root.title("Magic: The Gathering - Game Play")
-        self.player = Player("Human Player")
-        self.ai_player = AIPlayer("AI Opponent")
-        self.player.deck = player_deck
-        self.create_widgets()
-        self.initialize_game()
+class GamePlayApp(wx.Frame):
+    def __init__(self, parent, title, player_deck):
+        super(GamePlayApp, self).__init__(parent, title=title, size=(600, 400))
         
-    def create_widgets(self):
-        # Create frames for different sections
-        self.hand_frame = tk.Frame(self.root)
-        self.hand_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.player_deck = player_deck
+        self.InitUI()
+        self.Centre()
+        self.Show(True)
         
-        self.battlefield_frame = tk.Frame(self.root)
-        self.battlefield_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    def InitUI(self):
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
         
-        # Display player's hand (placeholder)
-        self.hand_label = tk.Label(self.hand_frame, text="Your Hand:")
-        self.hand_label.pack(side=tk.LEFT)
+        # Hand display
+        hand_label = wx.StaticText(panel, label=f"Your Hand: {len(self.player_deck)} cards")
+        vbox.Add(hand_label, flag=wx.EXPAND | wx.ALL, border=10)
         
-        # Display battlefield (placeholder)
-        self.battlefield_label = tk.Label(self.battlefield_frame, text="Battlefield:")
-        self.battlefield_label.pack()
-    
-    def initialize_game(self):
-        self.game = Game(self.player, self.ai_player)
-        self.game.next_turn()
-        self.update_gui()
-    
-    def update_gui(self):
-        # Update GUI to reflect the current game state
-        self.hand_label.config(text=f"Your Hand: {len(self.player.hand)} cards")
-        self.battlefield_label.config(text=f"Battlefield: {len(self.player.battlefield)} cards")
+        # Battlefield display (placeholder)
+        battlefield_label = wx.StaticText(panel, label="Battlefield: [To be implemented]")
+        vbox.Add(battlefield_label, flag=wx.EXPAND | wx.ALL, border=10)
+        
+        panel.SetSizer(vbox)
 
-        # Handle game phases and transitions
-        if self.game.phase == "beginning":
-            self.start_phase()
-    
-    def start_phase(self):
-        # Placeholder to handle the start phase
-        self.player.draw_card()
-        self.ai_player.draw_card()
-        self.game.phase = "main"
-        self.update_gui()
+# Entry point for wxPython game application
+if __name__ == "__main__":
+    app = wx.App(False)
+    frame = GamePlayApp(None, "Magic: The Gathering - Game Play", player_deck=[])  # Placeholder deck
+    app.MainLoop()
