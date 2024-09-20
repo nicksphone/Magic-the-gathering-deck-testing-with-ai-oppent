@@ -1,4 +1,14 @@
-# main.py
+# main.py (or whichever file you are using to start the application)
+from db_utils import initialize_database
+
+if __name__ == "__main__":
+    # Initialize the database on startup
+    initialize_database()
+
+    # Proceed with launching the deck builder or game interface
+    root = tk.Tk()
+    app = DeckBuilderApp(root)
+    root.mainloop()
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
