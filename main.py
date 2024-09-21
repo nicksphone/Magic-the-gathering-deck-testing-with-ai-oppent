@@ -1,34 +1,26 @@
-import wx
+import sys
+from PyQt5.QtWidgets import QApplication
 from deck_builder import DeckBuilderApp
 from game_play import GamePlayApp
-from db_utils import initialize_database
 
+class MagicApp(QApplication):
+    def __init__(self, sys_argv):
+        super().__init__(sys_argv)
+        self.main_window = None
 
-class MagicApp(wx.App):
-    def OnInit(self):
-        """
-        This method is called when the wxPython application starts.
-        We start by initializing the database and then opening the deck builder.
-        """
-        # Step 1: Initialize the database
-        initialize_database()
-
-        # Step 2: Launch the DeckBuilder GUI
-        self.frame = DeckBuilderApp(None, "Magic: The Gathering Deck Tester")
-        self.frame.Show()
-
-        return True
+    def start_deck_builder(self):
+        self.main_window = DeckBuilderApp()
+        self.main_window.show()
 
     def transition_to_game(self, player_deck):
-        """
-        Transition from deck building to the game play screen.
-        This method is called when the user is ready to start the game.
-        """
-        self.frame.Destroy()  # Close the DeckBuilder frame
-        self.frame = GamePlayApp(None, "Magic: The Gathering - Game Play", player_deck)
-        self.frame.Show()
+        # Close the deck builder window
+        self.main_window.close()
 
+        # Open the game play window
+        self.main_window = GamePlayApp(player_deck=player_deck)
+        self.main_window.show()
 
-if __name__ == "__main__":
-    app = MagicApp(False)
-    app.MainLoop()
+if __name__ == '__main__':
+    app = MagicApp(sys.argv)
+    app.start_deck_builder()
+    sys.exit(app.exec_())
