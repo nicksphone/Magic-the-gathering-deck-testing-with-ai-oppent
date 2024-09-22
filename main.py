@@ -23,8 +23,18 @@ class MagicApp(QApplication):
         self.main_window.close()
 
         # Open the game play window
-        self.main_window = GamePlayApp(player_deck=player_deck)
+        self.main_window = GamePlayApp(player_deck=player_deck, ai_deck=self.generate_ai_deck())
         self.main_window.show()
+
+    def generate_ai_deck(self):
+        """
+        Generates a deck for the AI to play with.
+        """
+        return [
+            Card('AI Warrior', 'creature', mana_cost=2, power=2, toughness=2),
+            Card('AI Spell', 'spell', mana_cost=3, ability='deal_damage'),
+            Card('AI Fire Elemental', 'creature', mana_cost=5, power=5, toughness=4, abilities=['flying'])
+        ]
 
 if __name__ == '__main__':
     app = MagicApp(sys.argv)
