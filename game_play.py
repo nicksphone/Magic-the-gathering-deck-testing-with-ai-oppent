@@ -21,6 +21,9 @@ class ManaSource:
         if not self.untap_modifier:
             self.tapped = False
 
+    def __str__(self):
+        return self.name
+
 class Card:
     """
     A structure for cards, including creatures and spells with specific abilities.
