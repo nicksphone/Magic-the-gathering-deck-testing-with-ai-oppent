@@ -9,10 +9,16 @@ class MagicApp(QApplication):
         self.main_window = None
 
     def start_deck_builder(self):
-        self.main_window = DeckBuilderApp()
+        """
+        Starts the deck-building phase by launching the DeckBuilderApp.
+        """
+        self.main_window = DeckBuilderApp(parent=self)
         self.main_window.show()
 
     def transition_to_game(self, player_deck):
+        """
+        Transitions from the deck-building phase to the game-play phase.
+        """
         # Close the deck builder window
         self.main_window.close()
 
