@@ -1,44 +1,48 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QListWidget, QMessageBox
-from random import choice, randint
+from random import randint
 
 class ManaSource:
     """
-    Represents a mana source (land) that can be tapped or untapped.
+    Represents a mana source (land) that can be tapped or reset.
     """
-    def __init__(self, name, tapped=False, untap_modifier=False):
+    def __init__(self, name, is_tapped=False):
         self.name = name
-        self.tapped = tapped  # Whether the mana source is tapped
-        self.untap_modifier = untap_modifier  # Prevents it from untapping if True
+        self.is_tapped = is_tapped  # Whether the mana source is tapped
 
     def tap(self):
-        if not self.tapped:
-            self.tapped = True
+        """
+        Tap the mana source if it's not already tapped.
+        """
+        if not self.is_tapped:
+            self.is_tapped = True
             return True  # Successfully tapped
         return False  # Already tapped
 
-    def untap(self):
-        if not self.untap_modifier:
-            self.tapped = False
+    def reset_tap(self):
+        """
+        Reset the tap state of the mana source.
+        """
+        self.is_tapped = False
 
     def __str__(self):
-        return self.name
+        return f"{self.name} (Tapped: {self.is_tapped})"
 
 class Card:
     """
-    A structure for cards, including creatures and spells with specific abilities.
+    Represents a card, including creatures and spells with abilities.
     """
     def __init__(self, name, card_type, mana_cost, ability=None, power=0, toughness=0, abilities=None):
         self.name = name
         self.card_type = card_type  # e.g., 'creature', 'spell'
-        self.mana_cost = mana_cost  # How much mana it costs to play
+        self.mana_cost = mana_cost  # The mana cost to play the card
         self.ability = ability  # e.g., 'deal_damage', 'heal', 'boost'
-        self.power = power  # Used for creatures
-        self.toughness = toughness  # Used for creatures
-        self.abilities = abilities or []  # e.g., ['flying', 'trample']
+        self.power = power  # Power for creatures
+        self.toughness = toughness  # Toughness for creatures
+        self.abilities = abilities or []  # Special abilities like 'flying', 'trample'
 
     def __str__(self):
-        return self.name
+        return f"{self.name} (Cost: {self.mana_cost})"
 
 class GamePlayApp(QWidget):
     def __init__(self, parent=None, player_deck=None, ai_deck=None):
@@ -49,14 +53,14 @@ class GamePlayApp(QWidget):
         self.player_battlefield = []  # Cards currently on the battlefield
         self.ai_hand = []  # AI's hand
         self.ai_battlefield = []  # AI's battlefield
-        self.life_total = 20  # Player's starting life total
-        self.ai_life_total = 20  # AI's starting life total
-        self.mana_sources = [ManaSource(f"Land {i + 1}") for i in range(5)]  # Player starts with 5 lands
-        self.player_mana_pool = 0  # Amount of untapped mana available
+        self.life_total = 20  # Player's life total
+        self.ai_life_total = 20  # AI's life total
+        self.mana_sources = [ManaSource(f"Land {i + 1}") for i in range(5)]  # Player starts with 5 mana sources
+        self.player_mana_pool = 0  # Player's available mana
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Magic: The Gathering - Mana and Untap Enhanced Game')
+        self.setWindowTitle('Magic: The Gathering - Simplified Mana and Tapping')
         self.setGeometry(300, 300, 600, 400)
 
         vbox = QVBoxLayout()
@@ -88,7 +92,7 @@ class GamePlayApp(QWidget):
         play_btn.clicked.connect(self.play_card)
         vbox.addWidget(play_btn)
 
-        # Tap Mana Button
+        # Tap Mana button
         tap_mana_btn = QPushButton('Tap Mana', self)
         tap_mana_btn.clicked.connect(self.tap_mana)
         vbox.addWidget(tap_mana_btn)
@@ -116,7 +120,7 @@ class GamePlayApp(QWidget):
             if self.player_deck:
                 card = self.player_deck.pop(0)  # Draw card from the deck
                 self.player_hand.append(card)
-                self.hand_list.addItem(card.name)
+                self.hand_list.addItem(str(card))
 
         self.hand_label.setText(f"Your Hand: {len(self.player_hand)} cards")
 
@@ -124,13 +128,13 @@ class GamePlayApp(QWidget):
         """
         Taps a mana source if it's untapped, adding mana to the player's pool.
         """
-        untapped_sources = [source for source in self.mana_sources if not source.tapped]
+        untapped_sources = [source for source in self.mana_sources if not source.is_tapped]
         if untapped_sources:
-            mana_source = untapped_sources[0]  # Tap the first available untapped mana source
+            mana_source = untapped_sources[0]  # Tap the first untapped mana source
             mana_source.tap()
             self.player_mana_pool += 1
             self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool} available")
-            QMessageBox.information(self, "Mana Tapped", f"{mana_source.name} is tapped.")
+            QMessageBox.information(self, "Mana Tapped", f"{mana_source.name} is now tapped.")
         else:
             QMessageBox.warning(self, "No Untapped Mana", "All mana sources are already tapped.")
 
@@ -141,18 +145,20 @@ class GamePlayApp(QWidget):
         selected_card = self.hand_list.currentItem()
         if selected_card:
             card_name = selected_card.text()
-            card = next(card for card in self.player_hand if card.name == card_name)
+            card = next(card for card in self.player_hand if str(card) == card_name)
 
-            if self.player_mana_pool >= card.mana_cost:  # Check if the player has enough mana
+            if self.player_mana_pool >= card.mana_cost:
+                # Play creature or spell based on the card type
                 if card.card_type == 'creature':
                     self.player_battlefield.append(card)
-                    self.battlefield_list.addItem(card.name)
+                    self.battlefield_list.addItem(str(card))
                 elif card.card_type == 'spell':
                     self.cast_spell(card)
 
-                self.player_mana_pool -= card.mana_cost  # Subtract the mana cost
+                self.player_mana_pool -= card.mana_cost  # Deduct mana cost
                 self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool} available")
 
+                # Remove the played card from the player's hand
                 self.player_hand.remove(card)
                 self.hand_list.takeItem(self.hand_list.row(selected_card))
                 self.hand_label.setText(f"Your Hand: {len(self.player_hand)} cards")
@@ -199,16 +205,17 @@ class GamePlayApp(QWidget):
         """
         self.apply_unused_mana_penalty()
 
-        # Untap all mana sources unless they are prevented from untapping
-        self.untap_all_mana()
+        # Reset all mana sources (reset tap state)
+        self.reset_all_mana_sources()
 
+        # AI takes its turn
         self.ai_take_turn()
 
-        # Draw a new card for the player for the next turn
+        # Player draws a new card for the next turn
         if self.player_deck:
             card = self.player_deck.pop(0)
             self.player_hand.append(card)
-            self.hand_list.addItem(card.name)
+            self.hand_list.addItem(str(card))
 
         self.hand_label.setText(f"Your Hand: {len(self.player_hand)} cards")
 
@@ -221,16 +228,16 @@ class GamePlayApp(QWidget):
             self.life_total -= unused_mana
             self.life_label.setText(f"Your Life Total: {self.life_total}")
             QMessageBox.warning(self, "Unused Mana Penalty", f"You take {unused_mana} damage from unused mana!")
-        self.player_mana_pool = 0  # Reset mana pool
+        self.player_mana_pool = 0  # Reset the mana pool
 
-    def untap_all_mana(self):
+    def reset_all_mana_sources(self):
         """
-        Untaps all mana sources unless a specific modifier prevents them from untapping.
+        Resets the tap state for all mana sources (reset tap state).
         """
         for source in self.mana_sources:
-            source.untap()
+            source.reset_tap()
 
-        QMessageBox.information(self, "Mana Untapped", "All untapped mana sources have been untapped.")
+        QMessageBox.information(self, "Mana Reset", "All available mana sources have been reset.")
 
     def ai_take_turn(self):
         """
@@ -287,7 +294,7 @@ class GamePlayApp(QWidget):
                 self.ai_hand.append(card)
 
 if __name__ == '__main__':
-    # Sample deck with creature and spell cards, including specific abilities and mana costs
+    # Sample deck with creature and spell cards
     player_deck = [
         Card('Fire Elemental', 'creature', mana_cost=3, power=3, toughness=3, abilities=['flying']),
         Card('Healing Light', 'spell', mana_cost=2, ability='heal'),
