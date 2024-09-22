@@ -1,74 +1,52 @@
-# main.py
-
 from api import fetch_card_data
-from db import create_database, insert_card_data
-from image_downloader import download_image
-from game_play import GamePlayApp, Card  # Importing the gameplay logic
+from db_utilities import create_database, insert_card_data, get_card_by_name, load_deck_from_db
+from game_play import GamePlayApp
 from PyQt5.QtWidgets import QApplication
 import sys
 
-# Fetch card data and insert into the database, with image download
-def process_card(card_name):
+def fetch_and_store_missing_cards(deck):
     """
-    Process a card: Fetch data from the API, store in the database, and download image.
+    Check the database for missing cards in the deck and fetch them from the Scryfall API if needed.
     """
-    card_data = fetch_card_data(card_name)
+    missing_cards = []
     
-    if card_data:
-        # Insert the card data into the database
-        insert_card_data(card_data)
-        
-        # Download the card image
-        if 'image_uris' in card_data:
-            download_image(card_data['image_uris']['normal'], card_data['name'])
-
-def process_bulk_cards(card_names):
-    """
-    Process multiple cards by name.
-    """
-    for card_name in card_names:
-        process_card(card_name)
-
-# Create a deck from the API data
-def create_deck_from_api(card_names):
-    """
-    Creates a deck by fetching data from the API and building a list of Card objects.
-    """
-    deck = []
-    for card_name in card_names:
+    # Check each card in the deck to see if it's in the database
+    for card_name in deck:
+        card = get_card_by_name(card_name)
+        if card is None:
+            # Card not found, mark it as missing
+            missing_cards.append(card_name)
+    
+    # Fetch missing cards from the API and insert into the database
+    for card_name in missing_cards:
         card_data = fetch_card_data(card_name)
         if card_data:
-            card = Card(
-                name=card_data['name'],
-                card_type=card_data['type_line'],
-                mana_cost=card_data.get('mana_cost', 'N/A'),
-                power=card_data.get('power', 'N/A'),
-                toughness=card_data.get('toughness', 'N/A'),
-                abilities=card_data.get('keywords', [])
-            )
-            deck.append(card)
-    
-    return deck
+            insert_card_data(card_data)
+            print(f"Fetched and inserted missing card: {card_name}")
+        else:
+            print(f"Failed to fetch card: {card_name}")
 
-# Game initialization
-if __name__ == '__main__':
-    # Create the database for storing cards
+def initialize_game():
+    # Initialize the database
     create_database()
     
-    # Example card names for player and AI decks
-    player_card_names = ['Black Lotus', 'Lightning Bolt', 'Serra Angel']
-    ai_card_names = ['AI Flying Warrior', 'AI Trample Beast', 'AI First Strike Knight']
+    # Example player and AI decks
+    player_deck_names = ['Black Lotus', 'Serra Angel', 'Lightning Bolt']
+    ai_deck_names = ['AI Flying Warrior', 'AI Trample Beast', 'AI First Strike Knight']
+    
+    # Fetch and store missing cards for both player and AI decks
+    fetch_and_store_missing_cards(player_deck_names)
+    fetch_and_store_missing_cards(ai_deck_names)
 
-    # Process and store card data
-    process_bulk_cards(player_card_names)
-    process_bulk_cards(ai_card_names)
-
-    # Create decks from the API data
-    player_deck = create_deck_from_api(player_card_names)
-    ai_deck = create_deck_from_api(ai_card_names)
+    # Load the decks from the database after fetching missing cards
+    player_deck = load_deck_from_db(player_deck_names)
+    ai_deck = load_deck_from_db(ai_deck_names)
 
     # Launch the game using PyQt5
     app = QApplication(sys.argv)
     game_play = GamePlayApp(player_deck=player_deck, ai_deck=ai_deck)
     game_play.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    initialize_game()
