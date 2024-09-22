@@ -1,42 +1,35 @@
-import sys
+# Import the necessary modules from the game_play.py file
+from game_play import GamePlayApp, Card
 from PyQt5.QtWidgets import QApplication
-from deck_builder import DeckBuilderApp
-from game_play import GamePlayApp
+import sys
 
-class MagicApp(QApplication):
-    def __init__(self, sys_argv):
-        super().__init__(sys_argv)
-        self.main_window = None
-
-    def start_deck_builder(self):
-        """
-        Starts the deck-building phase by launching the DeckBuilderApp.
-        """
-        self.main_window = DeckBuilderApp(parent=self)
-        self.main_window.show()
-
-    def transition_to_game(self, player_deck):
-        """
-        Transitions from the deck-building phase to the game-play phase.
-        """
-        # Close the deck builder window
-        self.main_window.close()
-
-        # Open the game play window
-        self.main_window = GamePlayApp(player_deck=player_deck, ai_deck=self.generate_ai_deck())
-        self.main_window.show()
-
-    def generate_ai_deck(self):
-        """
-        Generates a deck for the AI to play with.
-        """
-        return [
-            Card('AI Warrior', 'creature', mana_cost=2, power=2, toughness=2),
-            Card('AI Spell', 'spell', mana_cost=3, ability='deal_damage'),
-            Card('AI Fire Elemental', 'creature', mana_cost=5, power=5, toughness=4, abilities=['flying'])
-        ]
-
-if __name__ == '__main__':
-    app = MagicApp(sys.argv)
-    app.start_deck_builder()
+# Define the main function
+def main():
+    # Sample player deck with creature and spell cards
+    player_deck = [
+        Card('Fire Elemental', 'creature', mana_cost=3, power=3, toughness=3, abilities=['flying']),
+        Card('Healing Light', 'spell', mana_cost=2, ability='heal'),
+        Card('Lightning Bolt', 'spell', mana_cost=1, ability='deal_damage'),
+        Card('Trample Warrior', 'creature', mana_cost=4, power=4, toughness=4, abilities=['trample']),
+        Card('Boost Spell', 'spell', mana_cost=2, ability='boost')
+    ]
+    
+    # Sample AI deck
+    ai_deck = [
+        Card('AI Warrior', 'creature', mana_cost=2, power=2, toughness=2, abilities=['first strike']),
+        Card('AI Spell', 'spell', mana_cost=3, ability='deal_damage')
+    ]
+    
+    # Initialize the application
+    app = QApplication(sys.argv)
+    
+    # Launch the game with the player and AI decks
+    game_play = GamePlayApp(player_deck=player_deck, ai_deck=ai_deck)
+    game_play.show()
+    
+    # Run the application
     sys.exit(app.exec_())
+
+# Call the main function to start the game
+if __name__ == '__main__':
+    main()
