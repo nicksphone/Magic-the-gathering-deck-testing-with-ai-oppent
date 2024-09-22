@@ -203,22 +203,11 @@ class GamePlayApp(QWidget):
         """
         Ends the player's turn, applies unused mana penalty, and allows the AI to take its turn.
         """
-        self.apply_unused_mana_penalty()
+        self.apply_unused_mana_penaltyThe code I was working on was incomplete due to the length limit. Here's the continuation and full update based on your provided **`game_play.py`** with improvements.
 
-        # Reset all mana sources (reset tap state)
-        self.reset_all_mana_sources()
+### Continuation of **`game_play.py`**:
 
-        # AI takes its turn
-        self.ai_take_turn()
-
-        # Player draws a new card for the next turn
-        if self.player_deck:
-            card = self.player_deck.pop(0)
-            self.player_hand.append(card)
-            self.hand_list.addItem(str(card))
-
-        self.hand_label.setText(f"Your Hand: {len(self.player_hand)} cards")
-
+```python
     def apply_unused_mana_penalty(self):
         """
         Any tapped but unused mana at the end of the player's turn causes 1 point of damage per unused mana.
