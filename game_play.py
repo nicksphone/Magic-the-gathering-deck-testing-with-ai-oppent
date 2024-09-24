@@ -7,13 +7,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QSize
-from random import randint
 import os
 import re
 
 class ManaSource:
-    def __init__(self, name, is_tapped=False):
+    def __init__(self, name, mana_type='C', is_tapped=False):
         self.name = name
+        self.mana_type = mana_type  # 'C', 'W', 'U', 'B', 'R', 'G'
         self.is_tapped = is_tapped
 
     def tap(self):
@@ -26,7 +26,7 @@ class ManaSource:
         self.is_tapped = False
 
     def __str__(self):
-        return f"{self.name} (Tapped: {self.is_tapped})"
+        return f"{self.name} (Tapped: {self.is_tapped}, Type: {self.mana_type})"
 
 class Card:
     def __init__(self, card_data):
@@ -62,8 +62,19 @@ class GamePlayApp(QWidget):
         self.ai_battlefield = []
         self.life_total = 20
         self.ai_life_total = 20
-        self.mana_sources = [ManaSource(f"Land {i + 1}") for i in range(5)]
-        self.player_mana_pool = 0
+
+        # Initialize mana sources with different types
+        self.mana_sources = [
+            ManaSource("Plains", 'W'),
+            ManaSource("Island", 'U'),
+            ManaSource("Swamp", 'B'),
+            ManaSource("Mountain", 'R'),
+            ManaSource("Forest", 'G')
+        ]
+
+        # Initialize the player's mana pool as a dictionary of mana types
+        self.player_mana_pool = {'W': 0, 'U': 0, 'B': 0, 'R': 0, 'G': 0, 'C': 0}
+
         self.selected_card = None  # Initialize selected card
         self.initUI()
 
@@ -81,11 +92,22 @@ class GamePlayApp(QWidget):
         life_layout.addWidget(self.ai_life_label)
         self.main_layout.addLayout(life_layout)
 
-        # Mana pool
-        self.mana_label = QLabel(f"Your Mana Pool: {self.player_mana_pool} available", self)
-        self.main_layout.addWidget(self.mana_label)
+        # AI Battlefield display
+        ai_battlefield_layout = QVBoxLayout()
+        self.ai_battlefield_label = QLabel("AI's Battlefield:", self)
+        ai_battlefield_layout.addWidget(self.ai_battlefield_label)
 
-        # Battlefield display
+        self.ai_battlefield_area = QScrollArea()
+        self.ai_battlefield_widget = QWidget()
+        self.ai_battlefield_layout = QHBoxLayout()
+        self.ai_battlefield_widget.setLayout(self.ai_battlefield_layout)
+        self.ai_battlefield_area.setWidget(self.ai_battlefield_widget)
+        self.ai_battlefield_area.setWidgetResizable(True)
+        ai_battlefield_layout.addWidget(self.ai_battlefield_area)
+
+        self.main_layout.addLayout(ai_battlefield_layout)
+
+        # Player Battlefield display
         battlefield_layout = QVBoxLayout()
         self.battlefield_label = QLabel("Your Battlefield:", self)
         battlefield_layout.addWidget(self.battlefield_label)
@@ -99,6 +121,22 @@ class GamePlayApp(QWidget):
         battlefield_layout.addWidget(self.battlefield_area)
 
         self.main_layout.addLayout(battlefield_layout)
+
+        # Mana pool label
+        self.mana_label = QLabel(f"Your Mana Pool: {self.player_mana_pool}", self)
+        self.main_layout.addWidget(self.mana_label)
+
+        # Mana sources
+        self.mana_sources_layout = QHBoxLayout()
+        self.mana_sources_buttons = []
+
+        for source in self.mana_sources:
+            btn = QPushButton(source.name)
+            btn.clicked.connect(lambda checked, s=source: self.tap_mana_source(s))
+            self.mana_sources_buttons.append(btn)
+            self.mana_sources_layout.addWidget(btn)
+
+        self.main_layout.addLayout(self.mana_sources_layout)
 
         # Hand display
         hand_layout = QVBoxLayout()
@@ -121,10 +159,6 @@ class GamePlayApp(QWidget):
         play_btn.clicked.connect(self.play_card)
         button_layout.addWidget(play_btn)
 
-        tap_mana_btn = QPushButton('Tap Mana', self)
-        tap_mana_btn.clicked.connect(self.tap_mana)
-        button_layout.addWidget(tap_mana_btn)
-
         attack_btn = QPushButton('Attack', self)
         attack_btn.clicked.connect(self.attack)
         button_layout.addWidget(attack_btn)
@@ -138,6 +172,7 @@ class GamePlayApp(QWidget):
         self.setLayout(self.main_layout)
 
         self.draw_initial_hand()
+        self.ai_draw_initial_hand()
 
     def resizeEvent(self, event):
         """
@@ -146,6 +181,7 @@ class GamePlayApp(QWidget):
         super().resizeEvent(event)
         self.update_hand_display()
         self.update_battlefield_display()
+        self.update_ai_battlefield_display()
 
     def calculate_card_size(self, area_widget, num_cards):
         """
@@ -177,6 +213,12 @@ class GamePlayApp(QWidget):
                 self.player_hand.append(card)
         self.update_hand_display()
 
+    def ai_draw_initial_hand(self):
+        for _ in range(7):
+            if self.ai_deck:
+                card = self.ai_deck.pop(0)
+                self.ai_hand.append(card)
+
     def update_hand_display(self):
         # Clear current hand display
         for i in reversed(range(self.hand_layout.count())):
@@ -199,12 +241,6 @@ class GamePlayApp(QWidget):
         # Update the layout
         self.hand_layout.addStretch()
 
-    def create_hand_card_click_event(self, card):
-        def hand_card_click_event(event):
-            self.selected_card = card
-            QMessageBox.information(self, "Card Selected", f"You selected {card.name}.")
-        return hand_card_click_event
-
     def update_battlefield_display(self):
         # Clear current battlefield display
         for i in reversed(range(self.battlefield_layout.count())):
@@ -225,48 +261,138 @@ class GamePlayApp(QWidget):
         # Update the layout
         self.battlefield_layout.addStretch()
 
-    def tap_mana(self):
-        untapped_sources = [source for source in self.mana_sources if not source.is_tapped]
-        if untapped_sources:
-            mana_source = untapped_sources[0]
-            mana_source.tap()
-            self.player_mana_pool += 1
-            self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool} available")
-            QMessageBox.information(self, "Mana Tapped", f"{mana_source.name} is now tapped.")
+    def update_ai_battlefield_display(self):
+        # Clear current AI battlefield display
+        for i in reversed(range(self.ai_battlefield_layout.count())):
+            widget = self.ai_battlefield_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.setParent(None)
+
+        num_cards = len(self.ai_battlefield)
+        card_size = self.calculate_card_size(self.ai_battlefield_area.viewport(), num_cards)
+
+        # Display cards on AI's battlefield
+        for card in self.ai_battlefield:
+            card_label = QLabel()
+            pixmap = card.get_pixmap().scaled(card_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            card_label.setPixmap(pixmap)
+            self.ai_battlefield_layout.addWidget(card_label)
+
+        # Update the layout
+        self.ai_battlefield_layout.addStretch()
+
+    def create_hand_card_click_event(self, card):
+        def hand_card_click_event(event):
+            self.selected_card = card
+            QMessageBox.information(self, "Card Selected", f"You selected {card.name}.")
+        return hand_card_click_event
+
+    def tap_mana_source(self, source):
+        if not source.is_tapped:
+            source.tap()
+            self.player_mana_pool[source.mana_type] += 1
+            self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool}")
+            # Disable the button since it's tapped
+            for btn in self.mana_sources_buttons:
+                if btn.text() == source.name:
+                    btn.setEnabled(False)
+                    break
+            QMessageBox.information(self, "Mana Tapped", f"{source.name} is now tapped and added {source.mana_type} mana.")
         else:
-            QMessageBox.warning(self, "No Untapped Mana", "All mana sources are already tapped.")
+            QMessageBox.warning(self, "Already Tapped", f"{source.name} is already tapped.")
+
+    def reset_all_mana_sources(self):
+        for source in self.mana_sources:
+            source.reset_tap()
+        # Enable all mana source buttons
+        for btn in self.mana_sources_buttons:
+            btn.setEnabled(True)
+        QMessageBox.information(self, "Mana Reset", "All available mana sources have been reset.")
+
+    def apply_unused_mana_penalty(self):
+        # Calculate total unused mana
+        unused_mana = sum(self.player_mana_pool.values())
+        if unused_mana > 0:
+            self.life_total -= unused_mana
+            self.life_label.setText(f"Your Life Total: {self.life_total}")
+            QMessageBox.warning(self, "Unused Mana Burn", f"You take {unused_mana} damage from unused mana!")
+        # Reset mana pool
+        self.player_mana_pool = {'W': 0, 'U': 0, 'B': 0, 'R': 0, 'G': 0, 'C': 0}
+        self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool}")
+
+    def parse_mana_cost(self, mana_cost_str):
+        """
+        Parses mana cost string and returns a dictionary of required mana types.
+        """
+        mana_cost = {'W': 0, 'U': 0, 'B': 0, 'R': 0, 'G': 0, 'C': 0}
+        # Find numbers (colorless mana)
+        numbers = re.findall(r'\d+', mana_cost_str)
+        if numbers:
+            mana_cost['C'] = int(numbers[0])
+
+        # Find colored mana symbols
+        colored_mana = re.findall(r'\{([WUBRG])\}', mana_cost_str)
+        for symbol in colored_mana:
+            mana_cost[symbol] += 1
+
+        return mana_cost
+
+    def has_enough_mana(self, mana_cost):
+        """
+        Checks if the player has enough mana in their pool to pay the mana cost.
+        """
+        temp_pool = self.player_mana_pool.copy()
+        # First, pay colored mana
+        for color in ['W', 'U', 'B', 'R', 'G']:
+            if mana_cost[color] > temp_pool[color]:
+                return False  # Not enough colored mana
+            else:
+                temp_pool[color] -= mana_cost[color]
+
+        # Then, pay colorless mana
+        total_available = sum(temp_pool.values())
+        if mana_cost['C'] > total_available:
+            return False  # Not enough mana
+        else:
+            # Subtract colorless mana cost from available mana
+            mana_needed = mana_cost['C']
+            for mana_type in ['C', 'W', 'U', 'B', 'R', 'G']:
+                if temp_pool[mana_type] >= mana_needed:
+                    temp_pool[mana_type] -= mana_needed
+                    mana_needed = 0
+                    break
+                else:
+                    mana_needed -= temp_pool[mana_type]
+                    temp_pool[mana_type] = 0
+            if mana_needed > 0:
+                return False  # Not enough mana
+
+        return True
 
     def play_card(self):
         if self.selected_card and self.selected_card in self.player_hand:
             card = self.selected_card
             mana_cost = self.parse_mana_cost(card.mana_cost)
-            if self.player_mana_pool >= mana_cost:
+            if self.has_enough_mana(mana_cost):
+                # Subtract the mana cost from the player's mana pool
+                for mana_type, amount in mana_cost.items():
+                    self.player_mana_pool[mana_type] -= amount
+                self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool}")
                 # Handle card types and play accordingly
                 if 'Creature' in card.type_line:
                     self.player_battlefield.append(card)
                     self.update_battlefield_display()
                 elif 'Instant' in card.type_line or 'Sorcery' in card.type_line:
                     self.cast_spell(card)
-                # Deduct mana and update UI
-                self.player_mana_pool -= mana_cost
-                self.mana_label.setText(f"Your Mana Pool: {self.player_mana_pool} available")
+                # Remove card from hand
                 self.player_hand.remove(card)
                 self.update_hand_display()
                 self.hand_label.setText(f"Your Hand:")
                 self.selected_card = None  # Reset selected card
             else:
-                QMessageBox.warning(self, "Not Enough Mana", f"You need {mana_cost} mana to play {card.name}.")
+                QMessageBox.warning(self, "Not Enough Mana", f"You don't have enough mana to play {card.name}.")
         else:
             QMessageBox.warning(self, "No Card Selected", "Please select a card to play.")
-
-    def parse_mana_cost(self, mana_cost_str):
-        # Simplified parsing; you can expand this to handle colored mana
-        numbers = re.findall(r'\d+', mana_cost_str)
-        total_cost = sum(int(num) for num in numbers)
-        # Count colored mana symbols as 1 each
-        colored_mana = re.findall(r'\{[A-Z]\}', mana_cost_str)
-        total_cost += len(colored_mana)
-        return total_cost
 
     def cast_spell(self, card):
         QMessageBox.information(self, "Spell Cast", f"You cast {card.name}.")
@@ -297,31 +423,23 @@ class GamePlayApp(QWidget):
             self.update_hand_display()
         self.hand_label.setText(f"Your Hand:")
 
-    def apply_unused_mana_penalty(self):
-        unused_mana = self.player_mana_pool
-        if unused_mana > 0:
-            self.life_total -= unused_mana
-            self.life_label.setText(f"Your Life Total: {self.life_total}")
-            QMessageBox.warning(self, "Unused Mana Penalty", f"You take {unused_mana} damage from unused mana!")
-        self.player_mana_pool = 0
-
-    def reset_all_mana_sources(self):
-        for source in self.mana_sources:
-            source.reset_tap()
-        QMessageBox.information(self, "Mana Reset", "All available mana sources have been reset.")
-
     def ai_take_turn(self):
         # Implement AI actions here
         QMessageBox.information(self, "AI Turn", "The AI takes its turn.")
-        # For simplicity, the AI could draw a card and attack if possible
+        # AI draws a card
         if self.ai_deck:
             card = self.ai_deck.pop(0)
             self.ai_hand.append(card)
+
+        # For simplicity, AI plays the first creature in its hand if it can
+        creature_played = False
+        for card in self.ai_hand:
             if 'Creature' in card.type_line:
+                self.ai_hand.remove(card)
                 self.ai_battlefield.append(card)
-            elif 'Instant' in card.type_line or 'Sorcery' in card.type_line:
-                # Implement AI casting spells
-                pass
+                self.update_ai_battlefield_display()
+                creature_played = True
+                break
 
         # AI attacks if it has creatures
         if self.ai_battlefield:
