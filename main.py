@@ -9,14 +9,41 @@ import sys
 import os
 import random
 
+def parse_deck_file(file_path):
+    """
+    Parses a deck file and returns a list of card names, expanding quantities.
+    """
+    deck_names = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if not line:
+                continue  # Skip empty lines
+            # Split the line into quantity and card name
+            parts = line.split(' ', 1)
+            if len(parts) == 2 and parts[0].isdigit():
+                quantity = int(parts[0])
+                card_name = parts[1].strip()
+            else:
+                quantity = 1
+                card_name = line
+            deck_names.extend([card_name] * quantity)
+    return deck_names
+
 def fetch_and_store_missing_cards(deck_names):
     """
     Check the database for missing cards in the deck and fetch them from the Scryfall API if needed.
     """
     missing_cards = []
     
-    # Check each card in the deck to see if it's in the database
-    for card_name in deck_names:
+    # Create a set to avoid fetching the same card multiple times
+    unique_card_names = set(deck_names)
+
+    # Check each unique card in the deck to see if it's in the database
+    for card_name in unique_card_names:
+        card_name = card_name.strip()
+        if not card_name:
+            continue  # Skip empty lines
         card = get_card_by_name(card_name)
         if card is None:
             # Card not found, mark it as missing
@@ -24,6 +51,7 @@ def fetch_and_store_missing_cards(deck_names):
     
     # Fetch missing cards from the API and insert into the database
     for card_name in missing_cards:
+        print(f"Fetching card: {card_name}")
         card_data = fetch_card_data(card_name)
         if card_data:
             insert_card_data(card_data)
@@ -48,9 +76,7 @@ def load_ai_deck():
     selected_deck_file = random.choice(deck_files)
     print(f"AI selected deck: {selected_deck_file}")
     
-    with open(os.path.join(ai_decks_folder, selected_deck_file), 'r') as file:
-        ai_deck_names = file.read().splitlines()
-    
+    ai_deck_names = parse_deck_file(os.path.join(ai_decks_folder, selected_deck_file))
     return ai_deck_names
 
 def initialize_game():
@@ -72,8 +98,7 @@ def initialize_game():
         if not file_path:
             QMessageBox.warning(None, "No File Selected", "No deck file selected. Exiting.")
             sys.exit()
-        with open(file_path, 'r') as file:
-            player_deck_names = file.read().splitlines()
+        player_deck_names = parse_deck_file(file_path)
     else:
         # Launch the deck builder for the player
         deck_builder = DeckBuilderApp()
@@ -82,6 +107,10 @@ def initialize_game():
 
         # After the player has built their deck and closed the deck builder
         player_deck_names = deck_builder.get_deck_card_names()
+
+    if not player_deck_names:
+        QMessageBox.warning(None, "Empty Deck", "Your deck is empty. Exiting.")
+        sys.exit()
 
     # Fetch and store missing cards for the player's deck
     fetch_and_store_missing_cards(player_deck_names)
