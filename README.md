@@ -1,1 +1,1 @@
-ok it attacks and take and deals damage so basic funtions are work now need it to pull all the cards are read the bd for card info
+Taking a break from this for a few weeks it sort of works but need debuging and tweaking please run it and give me any errors or ideas thanks
