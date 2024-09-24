@@ -3,6 +3,28 @@
 import sqlite3
 from image_downloader import download_image
 
+def create_database():
+    """
+    Create the SQLite database for storing card details.
+    """
+    conn = sqlite3.connect('mtg_cards.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS cards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE,
+        mana_cost TEXT,
+        type_line TEXT,
+        power TEXT,
+        toughness TEXT,
+        abilities TEXT,
+        image_url TEXT
+    )''')
+    
+    conn.commit()
+    conn.close()
+
 def insert_card_data(card_data):
     """
     Insert card data into the database, handling potential missing values.
@@ -25,7 +47,7 @@ def insert_card_data(card_data):
 
     try:
         cursor.execute('''
-        INSERT INTO cards (name, mana_cost, type_line, power, toughness, abilities, image_url)
+        INSERT OR IGNORE INTO cards (name, mana_cost, type_line, power, toughness, abilities, image_url)
         VALUES (?, ?, ?, ?, ?, ?, ?)''', 
         (name, mana_cost, type_line, power, toughness, abilities, image_path))
         conn.commit()
@@ -33,3 +55,27 @@ def insert_card_data(card_data):
         print(f"Card '{name}' already exists in the database.")
     
     conn.close()
+
+def get_card_by_name(card_name):
+    """
+    Retrieve a card from the database by its name.
+    """
+    conn = sqlite3.connect('mtg_cards.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM cards WHERE name = ?', (card_name,))
+    card = cursor.fetchone()
+    conn.close()
+    return card
+
+def load_deck_from_db(deck_names):
+    """
+    Load a deck from the database using a list of card names.
+    """
+    deck = []
+    for card_name in deck_names:
+        card = get_card_by_name(card_name)
+        if card:
+            deck.append(card)
+        else:
+            print(f"Card '{card_name}' not found in the database.")
+    return deck
