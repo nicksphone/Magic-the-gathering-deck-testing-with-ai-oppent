@@ -1,10 +1,14 @@
+# deck_builder.py
+
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget, QLabel, QLineEdit, QMessageBox
+from api import fetch_card_data
+from db_utilities import insert_card_data, get_card_by_name
 
 class DeckBuilderApp(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.deck = []  # The player's deck
+        self.deck = []  # The player's deck (list of card names)
         self.initUI()
 
     def initUI(self):
@@ -42,12 +46,22 @@ class DeckBuilderApp(QWidget):
         """
         Adds a card to the deck based on the input in the search box.
         """
-        card_name = self.search_entry.text()
+        card_name = self.search_entry.text().strip()
         if card_name:
-            # Create a basic card based on the input (this can be expanded with a proper card database)
-            new_card = Card(card_name, 'creature', mana_cost=randint(1, 5), power=randint(1, 4), toughness=randint(1, 4))
-            self.deck.append(new_card)
-            self.deck_list.addItem(new_card.name)
+            # Check if the card exists in the database
+            card = get_card_by_name(card_name)
+            if not card:
+                # Fetch from API and insert into the database
+                card_data = fetch_card_data(card_name)
+                if card_data:
+                    insert_card_data(card_data)
+                    print(f"Card '{card_name}' added to database.")
+                else:
+                    QMessageBox.warning(self, "Card Not Found", f"Card '{card_name}' not found.")
+                    return
+
+            self.deck.append(card_name)
+            self.deck_list.addItem(card_name)
             self.search_entry.clear()
         else:
             QMessageBox.warning(self, "Input Required", "Please enter a card name.")
@@ -59,23 +73,24 @@ class DeckBuilderApp(QWidget):
         selected_card = self.deck_list.currentItem()
         if selected_card:
             card_name = selected_card.text()
-            card = next(card for card in self.deck if card.name == card_name)
-            self.deck.remove(card)
+            self.deck.remove(card_name)
             self.deck_list.takeItem(self.deck_list.row(selected_card))
         else:
             QMessageBox.warning(self, "No Card Selected", "Please select a card to remove.")
 
     def finish_deck(self):
         """
-        Finalizes the deck and starts the game.
+        Finalizes the deck and closes the deck builder.
         """
         if len(self.deck) < 7:
             QMessageBox.warning(self, "Deck Too Small", "You need at least 7 cards to start the game.")
         else:
-            self.parent().transition_to_game(self.deck)
+            self.close()  # Close the deck builder window
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    deck_builder = DeckBuilderApp()
-    deck_builder.show()
-    sys.exit(app.exec_())
+    def get_deck_card_names(self):
+        """
+        Returns the list of card names in the player's deck.
+        """
+        return self.deck
+
+# The main block is no longer needed since we launch the deck builder from main.py
