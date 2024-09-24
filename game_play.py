@@ -1,7 +1,10 @@
 # game_play.py
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QMessageBox, QHBoxLayout, QScrollArea
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QLabel, QPushButton,
+    QMessageBox, QHBoxLayout, QScrollArea
+)
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from random import randint
@@ -295,3 +298,12 @@ class GamePlayApp(QWidget):
         elif self.life_total <= 0:
             QMessageBox.critical(self, "Defeat", "You have been defeated by the AI.")
             self.close()
+
+if __name__ == '__main__':
+    # Example usage (you can remove or modify this part as needed)
+    app = QApplication(sys.argv)
+    player_deck = []  # Load your player deck here
+    ai_deck = []      # Load your AI deck here
+    game_play = GamePlayApp(player_deck=player_deck, ai_deck=ai_deck)
+    game_play.show()
+    sys.exit(app.exec_())
