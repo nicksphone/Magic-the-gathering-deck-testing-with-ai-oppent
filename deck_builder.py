@@ -1,7 +1,10 @@
 # deck_builder.py
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget, QLabel, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget,
+    QLabel, QLineEdit, QMessageBox, QFileDialog
+)
 from api import fetch_card_data
 from db_utilities import insert_card_data, get_card_by_name
 
@@ -13,7 +16,7 @@ class DeckBuilderApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Magic: The Gathering Deck Builder')
-        self.setGeometry(300, 300, 400, 300)
+        self.setGeometry(300, 300, 400, 400)
 
         vbox = QVBoxLayout()
 
@@ -29,6 +32,11 @@ class DeckBuilderApp(QWidget):
         add_card_btn = QPushButton('Add Card', self)
         add_card_btn.clicked.connect(self.add_card)
         vbox.addWidget(add_card_btn)
+
+        # Load deck from file button
+        load_deck_btn = QPushButton('Load Deck from File', self)
+        load_deck_btn.clicked.connect(self.load_deck_from_file)
+        vbox.addWidget(load_deck_btn)
 
         # Remove card button
         remove_card_btn = QPushButton('Remove Selected Card', self)
@@ -78,6 +86,21 @@ class DeckBuilderApp(QWidget):
         else:
             QMessageBox.warning(self, "No Card Selected", "Please select a card to remove.")
 
+    def load_deck_from_file(self):
+        """
+        Loads a deck from a text file.
+        """
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(self, "Select Deck File", "", "Text Files (*.txt)")
+        if not file_path:
+            return
+        with open(file_path, 'r') as file:
+            deck_names = file.read().splitlines()
+        for card_name in deck_names:
+            if card_name.strip():
+                self.search_entry.setText(card_name)
+                self.add_card()
+
     def finish_deck(self):
         """
         Finalizes the deck and closes the deck builder.
@@ -93,4 +116,4 @@ class DeckBuilderApp(QWidget):
         """
         return self.deck
 
-# The main block is no longer needed since we launch the deck builder from main.py
+# No main block needed since we launch the deck builder from main.py
