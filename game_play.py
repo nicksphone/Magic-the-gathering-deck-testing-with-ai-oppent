@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QMessageBox, QHBoxLayout, QScrollArea
 )
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from random import randint
 import os
 import re
@@ -71,7 +71,7 @@ class GamePlayApp(QWidget):
         self.setWindowTitle('Magic: The Gathering')
         self.setGeometry(300, 300, 800, 600)
 
-        main_layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
 
         # Life totals
         life_layout = QHBoxLayout()
@@ -79,11 +79,11 @@ class GamePlayApp(QWidget):
         self.ai_life_label = QLabel(f"AI Life Total: {self.ai_life_total}", self)
         life_layout.addWidget(self.life_label)
         life_layout.addWidget(self.ai_life_label)
-        main_layout.addLayout(life_layout)
+        self.main_layout.addLayout(life_layout)
 
         # Mana pool
         self.mana_label = QLabel(f"Your Mana Pool: {self.player_mana_pool} available", self)
-        main_layout.addWidget(self.mana_label)
+        self.main_layout.addWidget(self.mana_label)
 
         # Battlefield display
         battlefield_layout = QVBoxLayout()
@@ -98,7 +98,7 @@ class GamePlayApp(QWidget):
         self.battlefield_area.setWidgetResizable(True)
         battlefield_layout.addWidget(self.battlefield_area)
 
-        main_layout.addLayout(battlefield_layout)
+        self.main_layout.addLayout(battlefield_layout)
 
         # Hand display
         hand_layout = QVBoxLayout()
@@ -113,7 +113,7 @@ class GamePlayApp(QWidget):
         self.hand_area.setWidgetResizable(True)
         hand_layout.addWidget(self.hand_area)
 
-        main_layout.addLayout(hand_layout)
+        self.main_layout.addLayout(hand_layout)
 
         # Buttons
         button_layout = QHBoxLayout()
@@ -133,11 +133,42 @@ class GamePlayApp(QWidget):
         end_turn_btn.clicked.connect(self.end_turn)
         button_layout.addWidget(end_turn_btn)
 
-        main_layout.addLayout(button_layout)
+        self.main_layout.addLayout(button_layout)
 
-        self.setLayout(main_layout)
+        self.setLayout(self.main_layout)
 
         self.draw_initial_hand()
+
+    def resizeEvent(self, event):
+        """
+        Overrides the resize event to adjust the card image sizes when the window is resized.
+        """
+        super().resizeEvent(event)
+        self.update_hand_display()
+        self.update_battlefield_display()
+
+    def calculate_card_size(self, area_widget, num_cards):
+        """
+        Calculates the appropriate card size based on the area widget size and number of cards.
+        """
+        if num_cards == 0:
+            return QSize(0, 0)
+
+        # Get the available width in the scroll area
+        available_width = area_widget.width() - (area_widget.verticalScrollBar().sizeHint().width())
+        available_height = area_widget.height()
+
+        # Calculate max card width
+        max_card_width = available_width / num_cards
+        # Maintain aspect ratio (approximately 2:3 for Magic cards)
+        card_width = max_card_width * 0.9  # Slightly reduce to add spacing
+        card_height = card_width * 1.4
+
+        # Limit card size to reasonable bounds
+        card_width = min(card_width, 200)
+        card_height = min(card_height, 280)
+
+        return QSize(int(card_width), int(card_height))
 
     def draw_initial_hand(self):
         for _ in range(7):
@@ -153,14 +184,20 @@ class GamePlayApp(QWidget):
             if widget is not None:
                 widget.setParent(None)
 
+        num_cards = len(self.player_hand)
+        card_size = self.calculate_card_size(self.hand_area.viewport(), num_cards)
+
         # Display cards in hand
         for card in self.player_hand:
             card_label = QLabel()
-            pixmap = card.get_pixmap().scaled(100, 150, Qt.KeepAspectRatio)
+            pixmap = card.get_pixmap().scaled(card_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             card_label.setPixmap(pixmap)
             card_label.setObjectName(card.name)
             card_label.mousePressEvent = self.create_hand_card_click_event(card)
             self.hand_layout.addWidget(card_label)
+
+        # Update the layout
+        self.hand_layout.addStretch()
 
     def create_hand_card_click_event(self, card):
         def hand_card_click_event(event):
@@ -175,12 +212,18 @@ class GamePlayApp(QWidget):
             if widget is not None:
                 widget.setParent(None)
 
+        num_cards = len(self.player_battlefield)
+        card_size = self.calculate_card_size(self.battlefield_area.viewport(), num_cards)
+
         # Display cards on battlefield
         for card in self.player_battlefield:
             card_label = QLabel()
-            pixmap = card.get_pixmap().scaled(100, 150, Qt.KeepAspectRatio)
+            pixmap = card.get_pixmap().scaled(card_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             card_label.setPixmap(pixmap)
             self.battlefield_layout.addWidget(card_label)
+
+        # Update the layout
+        self.battlefield_layout.addStretch()
 
     def tap_mana(self):
         untapped_sources = [source for source in self.mana_sources if not source.is_tapped]
@@ -298,12 +341,3 @@ class GamePlayApp(QWidget):
         elif self.life_total <= 0:
             QMessageBox.critical(self, "Defeat", "You have been defeated by the AI.")
             self.close()
-
-if __name__ == '__main__':
-    # Example usage (you can remove or modify this part as needed)
-    app = QApplication(sys.argv)
-    player_deck = []  # Load your player deck here
-    ai_deck = []      # Load your AI deck here
-    game_play = GamePlayApp(player_deck=player_deck, ai_deck=ai_deck)
-    game_play.show()
-    sys.exit(app.exec_())
