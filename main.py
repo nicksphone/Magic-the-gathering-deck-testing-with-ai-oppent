@@ -7,7 +7,7 @@ from deck_builder import DeckBuilderApp
 from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog, QInputDialog
 import sys
 import os
-import random  # Ensure random is imported
+import random
 
 def parse_deck_file(file_path):
     """
@@ -35,7 +35,7 @@ def fetch_and_store_missing_cards(deck_names):
     Check the database for missing cards in the deck and fetch them from the Scryfall API if needed.
     """
     missing_cards = []
-    
+
     # Create a set to avoid fetching the same card multiple times
     unique_card_names = set(deck_names)
 
@@ -48,7 +48,7 @@ def fetch_and_store_missing_cards(deck_names):
         if card is None:
             # Card not found, mark it as missing
             missing_cards.append(card_name)
-    
+
     # Fetch missing cards from the API and insert into the database
     for card_name in missing_cards:
         print(f"Fetching card: {card_name}")
@@ -67,21 +67,21 @@ def load_ai_deck():
     if not os.path.exists(ai_decks_folder):
         print(f"No AI decks folder found at '{ai_decks_folder}'.")
         return []
-    
+
     deck_files = [f for f in os.listdir(ai_decks_folder) if f.endswith('.txt')]
     if not deck_files:
         print(f"No AI decks found in '{ai_decks_folder}'.")
         return []
-    
+
     selected_deck_file = random.choice(deck_files)
     print(f"AI selected deck: {selected_deck_file}")
-    
+
     ai_deck_names = parse_deck_file(os.path.join(ai_decks_folder, selected_deck_file))
     return ai_deck_names
 
 def initialize_game():
     # Initialize the database
-    create_database()
+    create_database()  # Ensure the database and table are created
 
     app = QApplication(sys.argv)
 
