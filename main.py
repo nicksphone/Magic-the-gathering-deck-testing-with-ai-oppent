@@ -7,7 +7,7 @@ from deck_builder import DeckBuilderApp
 from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog, QInputDialog
 import sys
 import os
-import random
+import random  # Ensure random is imported
 
 def parse_deck_file(file_path):
     """
@@ -118,6 +118,9 @@ def initialize_game():
     # Load the player's deck from the database
     player_deck = load_deck_from_db(player_deck_names)
 
+    # Shuffle the player's deck
+    random.shuffle(player_deck)
+
     # Load the AI's deck
     ai_deck_names = load_ai_deck()
     if not ai_deck_names:
@@ -129,6 +132,9 @@ def initialize_game():
 
     # Load the AI's deck from the database
     ai_deck = load_deck_from_db(ai_deck_names)
+
+    # Shuffle the AI's deck
+    random.shuffle(ai_deck)
 
     # Start the game
     game_play = GamePlayApp(player_deck=player_deck, ai_deck=ai_deck)
