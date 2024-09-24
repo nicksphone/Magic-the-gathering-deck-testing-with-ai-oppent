@@ -4,7 +4,7 @@ from api import fetch_card_data
 from db_utilities import create_database, insert_card_data, get_card_by_name, load_deck_from_db
 from game_play import GamePlayApp
 from deck_builder import DeckBuilderApp
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog, QInputDialog
 import sys
 import os
 import random
@@ -39,18 +39,18 @@ def load_ai_deck():
     if not os.path.exists(ai_decks_folder):
         print(f"No AI decks folder found at '{ai_decks_folder}'.")
         return []
-
+    
     deck_files = [f for f in os.listdir(ai_decks_folder) if f.endswith('.txt')]
     if not deck_files:
         print(f"No AI decks found in '{ai_decks_folder}'.")
         return []
-
+    
     selected_deck_file = random.choice(deck_files)
     print(f"AI selected deck: {selected_deck_file}")
-
+    
     with open(os.path.join(ai_decks_folder, selected_deck_file), 'r') as file:
         ai_deck_names = file.read().splitlines()
-
+    
     return ai_deck_names
 
 def initialize_game():
@@ -59,13 +59,29 @@ def initialize_game():
 
     app = QApplication(sys.argv)
 
-    # Launch the deck builder for the player
-    deck_builder = DeckBuilderApp()
-    deck_builder.show()
-    app.exec_()
+    # Prompt the user to choose how to provide their deck
+    choice, ok = QInputDialog.getItem(None, "Deck Selection", "Choose how to select your deck:", ["Upload from file", "Build using Deck Builder"], 0, False)
+    if not ok:
+        print("No choice made. Exiting.")
+        sys.exit()
 
-    # After the player has built their deck
-    player_deck_names = deck_builder.get_deck_card_names()
+    if choice == "Upload from file":
+        # Let the user select a deck file
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(None, "Select Deck File", "", "Text Files (*.txt)")
+        if not file_path:
+            QMessageBox.warning(None, "No File Selected", "No deck file selected. Exiting.")
+            sys.exit()
+        with open(file_path, 'r') as file:
+            player_deck_names = file.read().splitlines()
+    else:
+        # Launch the deck builder for the player
+        deck_builder = DeckBuilderApp()
+        deck_builder.show()
+        app.exec_()
+
+        # After the player has built their deck and closed the deck builder
+        player_deck_names = deck_builder.get_deck_card_names()
 
     # Fetch and store missing cards for the player's deck
     fetch_and_store_missing_cards(player_deck_names)
