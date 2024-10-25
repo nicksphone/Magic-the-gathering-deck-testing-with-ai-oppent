@@ -1,5 +1,4 @@
 # deck_builder.py
-
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget,
@@ -18,9 +17,8 @@ class DeckBuilderApp(QWidget):
     def initUI(self):
         self.setWindowTitle('Magic: The Gathering Deck Builder')
         self.setGeometry(300, 300, 400, 400)
-
         vbox = QVBoxLayout()
-
+        
         # Deck list
         self.deck_list = QListWidget(self)
         vbox.addWidget(self.deck_list)
@@ -50,7 +48,7 @@ class DeckBuilderApp(QWidget):
         vbox.addWidget(finish_btn)
 
         self.setLayout(vbox)
-
+        
     def add_card(self):
         """
         Adds a card to the deck based on the input in the search box.
@@ -64,7 +62,7 @@ class DeckBuilderApp(QWidget):
                 card_name = parts[1].strip()
             else:
                 quantity = 1
-
+            
             # Check if the card exists in the database
             card = get_card_by_name(card_name)
             if not card:
@@ -76,11 +74,11 @@ class DeckBuilderApp(QWidget):
                 else:
                     QMessageBox.warning(self, "Card Not Found", f"Card '{card_name}' not found.")
                     return
-
+            
             for _ in range(quantity):
                 self.deck.append(card_name)
                 self.deck_list.addItem(card_name)
-
+            
             self.search_entry.clear()
         else:
             QMessageBox.warning(self, "Input Required", "Please enter a card name.")
@@ -90,6 +88,7 @@ class DeckBuilderApp(QWidget):
         Removes the selected card from the deck.
         """
         selected_card = self.deck_list.currentItem()
+        
         if selected_card:
             card_name = selected_card.text()
             self.deck.remove(card_name)
@@ -103,10 +102,12 @@ class DeckBuilderApp(QWidget):
         """
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(self, "Select Deck File", "", "Text Files (*.txt)")
+        
         if not file_path:
             return
-
+        
         deck_names = parse_deck_file(file_path)
+        
         for card_name in deck_names:
             self.search_entry.setText(card_name)
             self.add_card()
@@ -118,7 +119,8 @@ class DeckBuilderApp(QWidget):
         if len(self.deck) < 7:
             QMessageBox.warning(self, "Deck Too Small", "You need at least 7 cards to start the game.")
         else:
-            self.close()  # Close the deck builder window
+            # Close the deck builder window
+            self.close()
 
     def get_deck_card_names(self):
         """
@@ -126,4 +128,20 @@ class DeckBuilderApp(QWidget):
         """
         return self.deck
 
-# No main block needed since we launch the deck builder from main.py
+# New method to save the deck
+def save_deck(self):
+    file_dialog = QFileDialog()
+    file_path, _ = file_dialog.getSaveFileName(self, "Save Deck File", "", "Text Files (*.txt)")
+    
+    if file_path:
+        with open(file_path, 'w') as f:
+            for card_name in self.deck:
+                f.write(card_name + '\n')
+                
+        QMessageBox.information(self, "Deck Saved", "Your deck has been saved.")
+
+# Connect the save_deck method to a button
+save_deck_btn = QPushButton('Save Deck', self)
+save_deck_btn.clicked.connect(self.save_deck)
+vbox.addWidget(save_deck_btn)
+self.setLayout(vbox)
