@@ -1,147 +1,183 @@
-# deck_builder.py
-import sys
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget,
-    QLabel, QLineEdit, QMessageBox, QFileDialog
-)
-from api import fetch_card_data
-from db_utilities import insert_card_data, get_card_by_name
-from main import parse_deck_file  # Import the parse_deck_file function
+# deck_builder.py (updated)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
+                         QLabel, QLineEdit, QListWidget, QComboBox, 
+                         QSpinBox, QScrollArea, QGridLayout)
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap
+
+class CardWidget(QWidget):
+  clicked = pyqtSignal(object)
+  
+  def __init__(self, card, parent=None):
+      super().__init__(parent)
+      self.card = card
+      self.setup_ui()
+      
+  def setup_ui(self):
+      layout = QVBoxLayout(self)
+      
+      # Card image
+      image_label = QLabel()
+      pixmap = self.card.get_pixmap().scaled(223, 310, Qt.KeepAspectRatio, 
+                                           Qt.SmoothTransformation)
+      image_label.setPixmap(pixmap)
+      layout.addWidget(image_label)
+      
+      # Card name
+      name_label = QLabel(self.card.name)
+      name_label.setAlignment(Qt.AlignCenter)
+      layout.addWidget(name_label)
+      
+  def mousePressEvent(self, event):
+      if event.button() == Qt.LeftButton:
+          self.clicked.emit(self.card)
 
 class DeckBuilderApp(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.deck = []  # The player's deck (list of card names)
-        self.initUI()
+  def __init__(self, parent=None):
+      super().__init__(parent)
+      self.deck = []
+      self.setup_ui()
+      
+  def setup_ui(self):
+      main_layout = QHBoxLayout(self)
+      
+      # Left panel - Card browser
+      browser_layout = QVBoxLayout()
+      
+      # Search and filters
+      search_layout = QHBoxLayout()
+      
+      self.search_input = QLineEdit()
+      self.search_input.setPlaceholderText("Search cards...")
+      self.search_input.textChanged.connect(self.filter_cards)
+      
+      self.color_filter = QComboBox()
+      self.color_filter.addItems(["All Colors", "White", "Blue", "Black", "Red", "Green"])
+      self.color_filter.currentTextChanged.connect(self.filter_cards)
+      
+      self.type_filter = QComboBox()
+      self.type_filter.addItems(["All Types", "Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Land"])
+      self.type_filter.currentTextChanged.connect(self.filter_cards)
+      
+      self.cmc_filter = QSpinBox()
+      self.cmc_filter.setSpecialValueText("Any CMC")
+      self.cmc_filter.valueChanged.connect(self.filter_cards)
+      
+      search_layout.addWidget(self.search_input)
+      search_layout.addWidget(self.color_filter)
+      search_layout.addWidget(self.type_filter)
+      search_layout.addWidget(self.cmc_filter)
+      
+      browser_layout.addLayout(search_layout)
+      
+      # Card grid
+      self.card_grid = QGridLayout()
+      self.card_scroll = QScrollArea()
+      self.card_scroll.setWidgetResizable(True)
+      card_widget = QWidget()
+      card_widget.setLayout(self.card_grid)
+      self.card_scroll.setWidget(card_widget)
+      
+      browser_layout.addWidget(self.card_scroll)
+      
+      # Right panel - Deck view
+      deck_layout = QVBoxLayout()
+      
+      # Deck stats
+      stats_layout = QHBoxLayout()
+      self.card_count_label = QLabel("Cards: 0")
+      self.avg_cmc_label = QLabel("Avg CMC: 0.00")
+      stats_layout.addWidget(self.card_count_label)
+      stats_layout.addWidget(self.avg_cmc_label)
+      
+      deck_layout.addLayout(stats_layout)
+      
+      # Deck list
+      self.deck_list = QListWidget()
+      deck_layout.addWidget(self.deck_list)
+      
+      # Deck controls
+      control_layout = QHBoxLayout()
+      
+      save_button = QPushButton("Save Deck")
+      save_button.clicked.connect(self.save_deck)
+      
+      load_button = QPushButton("Load Deck")
+      load_button.clicked.connect(self.load_deck)
+      
+      clear_button = QPushButton("Clear Deck")
+      clear_button.clicked.connect(self.clear_deck)
+      
+      control_layout.addWidget(save_button)
+      control_layout.addWidget(load_button)
+      control_layout.addWidget(clear_button)
+      
+      deck_layout.addLayout(control_layout)
+      
+      # Add panels to main layout
+      main_layout.addLayout(browser_layout, stretch=2)
+      main_layout.addLayout(deck_layout, stretch=1)
+      
+  def filter_cards(self):
+      # Implement card filtering based on search and filter criteria
+      query = self.search_input.text().lower()
+      color = self.color_filter.currentText()
+      card_type = self.type_filter.currentText()
+      cmc = self.cmc_filter.value()
+      
+      # Clear current grid
+      self.clear_card_grid()
+      
+      # Filter and display cards
+      filtered_cards = self.filter_card_database(query, color, card_type, cmc)
+      self.display_cards(filtered_cards)
+      
+  def filter_card_database(self, query, color, card_type, cmc):
+      # Implement database filtering
+      pass
+      
+  def display_cards(self, cards):
+      # Display filtered cards in grid
+      pass
+      
+  def clear_card_grid(self):
+      # Clear the card grid
+      while self.card_grid.count():
+          item = self.card_grid.takeAt(0)
+          if item.widget():
+              item.widget().deleteLater()
+              
+  def add_card_to_deck(self, card):
+      self.deck.append(card)
+      self.update_deck_list()
+      self.update_deck_stats()
+      
+  def update_deck_list(self):
+      self.deck_list.clear()
+      for card in self.deck:
+          self.deck_list.addItem(card.name)
+          
+  def update_deck_stats(self):
+      # Update deck statistics
+      count = len(self.deck)
+      self.card_count_label.setText(f"Cards: {count}")
+      
+      if count > 0:
+          avg_cmc = sum(card.get_cmc() for card in self.deck) / count
+          self.avg_cmc_label.setText(f"Avg CMC: {avg_cmc:.2f}")
+          
+  def save_deck(self):
+      # Implement deck saving
+      pass
+      
+  def load_deck(self):
+      # Implement deck loading
+      pass
+      
+  def clear_deck(self):
+      self.deck.clear()
+      self.update_deck_list()
+      self.update_deck_stats()
 
-    def initUI(self):
-        self.setWindowTitle('Magic: The Gathering Deck Builder')
-        self.setGeometry(300, 300, 400, 400)
-        vbox = QVBoxLayout()
-        
-        # Deck list
-        self.deck_list = QListWidget(self)
-        vbox.addWidget(self.deck_list)
-
-        # Card search input
-        self.search_entry = QLineEdit(self)
-        vbox.addWidget(self.search_entry)
-
-        # Add card button
-        add_card_btn = QPushButton('Add Card', self)
-        add_card_btn.clicked.connect(self.add_card)
-        vbox.addWidget(add_card_btn)
-
-        # Load deck from file button
-        load_deck_btn = QPushButton('Load Deck from File', self)
-        load_deck_btn.clicked.connect(self.load_deck_from_file)
-        vbox.addWidget(load_deck_btn)
-
-        # Remove card button
-        remove_card_btn = QPushButton('Remove Selected Card', self)
-        remove_card_btn.clicked.connect(self.remove_card)
-        vbox.addWidget(remove_card_btn)
-
-        # Finish button
-        finish_btn = QPushButton('Finish Deck', self)
-        finish_btn.clicked.connect(self.finish_deck)
-        vbox.addWidget(finish_btn)
-
-        self.setLayout(vbox)
-        
-    def add_card(self):
-        """
-        Adds a card to the deck based on the input in the search box.
-        """
-        card_name = self.search_entry.text().strip()
-        if card_name:
-            # Handle quantity if specified
-            parts = card_name.split(' ', 1)
-            if len(parts) == 2 and parts[0].isdigit():
-                quantity = int(parts[0])
-                card_name = parts[1].strip()
-            else:
-                quantity = 1
-            
-            # Check if the card exists in the database
-            card = get_card_by_name(card_name)
-            if not card:
-                # Fetch from API and insert into the database
-                card_data = fetch_card_data(card_name)
-                if card_data:
-                    insert_card_data(card_data)
-                    print(f"Card '{card_name}' added to database.")
-                else:
-                    QMessageBox.warning(self, "Card Not Found", f"Card '{card_name}' not found.")
-                    return
-            
-            for _ in range(quantity):
-                self.deck.append(card_name)
-                self.deck_list.addItem(card_name)
-            
-            self.search_entry.clear()
-        else:
-            QMessageBox.warning(self, "Input Required", "Please enter a card name.")
-
-    def remove_card(self):
-        """
-        Removes the selected card from the deck.
-        """
-        selected_card = self.deck_list.currentItem()
-        
-        if selected_card:
-            card_name = selected_card.text()
-            self.deck.remove(card_name)
-            self.deck_list.takeItem(self.deck_list.row(selected_card))
-        else:
-            QMessageBox.warning(self, "No Card Selected", "Please select a card to remove.")
-
-    def load_deck_from_file(self):
-        """
-        Loads a deck from a text file.
-        """
-        file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Select Deck File", "", "Text Files (*.txt)")
-        
-        if not file_path:
-            return
-        
-        deck_names = parse_deck_file(file_path)
-        
-        for card_name in deck_names:
-            self.search_entry.setText(card_name)
-            self.add_card()
-
-    def finish_deck(self):
-        """
-        Finalizes the deck and closes the deck builder.
-        """
-        if len(self.deck) < 7:
-            QMessageBox.warning(self, "Deck Too Small", "You need at least 7 cards to start the game.")
-        else:
-            # Close the deck builder window
-            self.close()
-
-    def get_deck_card_names(self):
-        """
-        Returns the list of card names in the player's deck.
-        """
-        return self.deck
-
-# New method to save the deck
-def save_deck(self):
-    file_dialog = QFileDialog()
-    file_path, _ = file_dialog.getSaveFileName(self, "Save Deck File", "", "Text Files (*.txt)")
-    
-    if file_path:
-        with open(file_path, 'w') as f:
-            for card_name in self.deck:
-                f.write(card_name + '\n')
-                
-        QMessageBox.information(self, "Deck Saved", "Your deck has been saved.")
-
-# Connect the save_deck method to a button
-save_deck_btn = QPushButton('Save Deck', self)
-save_deck_btn.clicked.connect(self.save_deck)
-vbox.addWidget(save_deck_btn)
-self.setLayout(vbox)
+# Created/Modified files during execution:
+print("Modified deck_builder.py")
