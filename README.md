@@ -1,4 +1,6 @@
 need some help i can seem to fix these errors
+
+
 [{
 	"resource": "/Magic-the-gathering-deck-testing-with-ai-oppent-main/game_rules_engine.py",
 	"owner": "python",
