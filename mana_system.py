@@ -130,6 +130,39 @@ class ManaManager:
       """Attempt to automatically pay a mana cost"""
       # Get all available mana sources
       available_sources = self._get_available_mana_sources(player)
+        def auto_pay_mana(self, player: str, cost: ManaCost) -> bool:
+        """Attempt to automatically pay a mana cost"""
+        # Get all available mana sources
+        available_sources = self._get_available_mana_sources(player)
+        
+        # Try to find a valid payment combination
+        mana_pool = self.game_state.mana_pools[player]
+        
+        # Check if the mana pool can pay the cost directly
+        if mana_pool.can_pay(cost.cost):
+            for mana_type, amount in cost.cost.items():
+                mana_pool.remove_mana(mana_type, amount)
+            return True
+        
+        # If direct payment isn't possible, try to activate mana abilities
+        for source in available_sources:
+            ability = self.mana_abilities.get(source)
+            if ability and ability.can_activate(source):
+                ability.activate(source)
+                # Check if we can now pay the cost
+                if mana_pool.can_pay(cost.cost):
+                    for mana_type, amount in cost.cost.items():
+                        mana_pool.remove_mana(mana_type, amount)
+                    return True
+        
+        return False
+
+    def _get_available_mana_sources(self, player: str) -> List['Card']:
+        """Get all cards that can produce mana for the specified player"""
+        return [card for card in self.game_state.zones[f'{player}_battlefield'] if card.has_mana_ability()]
+
+# Created/Modified files during execution:
+print("Created mana_system.py")
       
       # Try to find a valid payment combination
       
