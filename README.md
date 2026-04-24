@@ -117,6 +117,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - Priority is tracked per player; stack resolution occurs after both pass.
 - Spells/abilities are pushed as stack items and resolved via effect handlers.
 - Spell effect selection is oracle-text-driven first, with fallback heuristics for uncached/unknown text.
+- Oracle effect inference now parses multi-clause text into executable effect sequences (damage/draw/life/tap/counters/discard/token/mana patterns).
 - Configurable best-of flow (odd values, default 3) supports between-game sideboarding and explicit `next-game` transitions.
 - London mulligan flow is implemented as pregame `mulligan`/`keep_hand` actions.
 - Non-instant timing now respects active-player main-phase + empty-stack constraints.
@@ -132,6 +133,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - AI scores legal moves using:
   - board evaluation (life delta, card advantage, creature power)
   - archetype-aware weighting (burn priority, counterspell timing preference, etc.)
+- Master AI adds short-horizon tactical lookahead (own move + opponent best reply) to avoid obvious punts.
 - Difficulty:
   - Casual: weaker action pick
   - Strong: top heuristic move

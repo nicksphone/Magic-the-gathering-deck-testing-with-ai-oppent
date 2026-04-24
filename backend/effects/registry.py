@@ -27,10 +27,19 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "untap": handlers.untap_card,
     "continuous_buff": handlers.continuous_buff,
     "grant_keyword": handlers.grant_keyword,
+    "discard_cards": handlers.discard_cards,
 }
 
 
 def resolve_effect(state: MatchState, controller: int, effect_key: str, payload: dict) -> None:
+    if effect_key == "effect_sequence":
+        for item in payload.get("effects", []):
+            key = item.get("effect_key")
+            data = item.get("payload", {})
+            if not key:
+                continue
+            resolve_effect(state, controller, key, data)
+        return
     handler = EFFECT_HANDLERS.get(effect_key)
     if handler is None:
         state.log.append(f"Missing effect handler: {effect_key}")

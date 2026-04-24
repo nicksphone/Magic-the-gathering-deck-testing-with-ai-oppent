@@ -24,23 +24,26 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import draw_card
 
+    target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
-    draw_card(state, controller, amount)
-    state.log.append(f"{state.players[controller].name} draws {amount}.")
+    draw_card(state, target_player, amount)
+    state.log.append(f"{state.players[target_player].name} draws {amount}.")
 
 
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
+    target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 0))
-    state.players[controller].life += amount
-    state.log.append(f"{state.players[controller].name} gains {amount} life.")
+    state.players[target_player].life += amount
+    state.log.append(f"{state.players[target_player].name} gains {amount} life.")
     if amount > 0:
-        emit_event(state, "life_gain", {"player_id": controller, "amount": amount})
+        emit_event(state, "life_gain", {"player_id": target_player, "amount": amount})
 
 
 def lose_life(state: MatchState, controller: int, payload: dict) -> None:
+    target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 0))
-    state.players[controller].life -= amount
-    state.log.append(f"{state.players[controller].name} loses {amount} life.")
+    state.players[target_player].life -= amount
+    state.log.append(f"{state.players[target_player].name} loses {amount} life.")
 
 
 def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None:
@@ -199,3 +202,16 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
         card = state.cards[target]
         if keyword not in card.keywords:
             card.keywords.append(keyword)
+
+
+def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
+    target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
+    amount = int(payload.get("amount", 1))
+    player = state.players[target_player]
+    discarded = 0
+    while player.hand and discarded < max(0, amount):
+        cid = player.hand.pop(0)
+        player.graveyard.append(cid)
+        state.cards[cid].zone = Zone.GRAVEYARD
+        discarded += 1
+    state.log.append(f"{player.name} discards {discarded}.")

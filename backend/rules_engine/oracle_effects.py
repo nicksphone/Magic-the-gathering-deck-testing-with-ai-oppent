@@ -11,6 +11,10 @@ X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|\d+)\s+card")
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
+LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
+SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
+COUNTER_RE = re.compile(r"put\s+(a|an|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
+MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
@@ -39,68 +43,16 @@ def infer_effect_from_oracle(
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         return "counter_spell", {"target_stack_id": target_stack_id}
 
-    damage_match = DAMAGE_RE.search(oracle)
-    if damage_match:
-        amount = int(damage_match.group(1))
-        if DIVIDE_RE.search(oracle):
-            distribution = action_targets.get("target_distribution", {})
-            return "deal_damage_multi", {"target_distribution": distribution}
-        target_player = action_targets.get("target_player")
-        target_card_id = action_targets.get("target_card_id")
-        if target_card_id:
-            return "deal_damage", {"target_card_id": target_card_id, "amount": amount}
-        if target_player is None:
-            target_player = 1 if controller == 2 else 2
-        return "deal_damage", {"target_player": target_player, "amount": amount}
-    if X_DAMAGE_RE.search(oracle):
-        amount = max(0, x_value)
-        if DIVIDE_RE.search(oracle):
-            distribution = action_targets.get("target_distribution", {})
-            return "deal_damage_multi", {"target_distribution": distribution}
-        target_player = action_targets.get("target_player")
-        target_card_id = action_targets.get("target_card_id")
-        if target_card_id:
-            return "deal_damage", {"target_card_id": target_card_id, "amount": amount}
-        if target_player is None:
-            target_player = 1 if controller == 2 else 2
-        return "deal_damage", {"target_player": target_player, "amount": amount}
-
-    draw_match = DRAW_RE.search(oracle)
-    if draw_match:
-        raw = draw_match.group(1)
-        amount = 1 if raw == "a" else int(raw)
-        return "draw_cards", {"amount": amount}
-    if X_DRAW_RE.search(oracle):
-        return "draw_cards", {"amount": max(0, x_value)}
-
-    gain_match = GAIN_RE.search(oracle)
-    if gain_match:
-        return "gain_life", {"amount": int(gain_match.group(1))}
-
-    if "destroy target" in oracle:
-        target = action_targets.get("target_card_id")
-        if target:
-            return "destroy_permanent", {"target_card_id": target}
-        opp = 1 if controller == 2 else 2
-        target = _first_creature(state, opp)
-        if target:
-            return "destroy_permanent", {"target_card_id": target}
-
-    if "exile target" in oracle:
-        target = action_targets.get("target_card_id")
-        if target:
-            return "exile", {"target_card_id": target}
-        opp = 1 if controller == 2 else 2
-        target = _first_creature(state, opp)
-        if target:
-            return "exile", {"target_card_id": target}
-
-    if "return target" in oracle and "graveyard" in oracle and "hand" in oracle:
-        return "return_from_graveyard", {}
-
-    token_match = TOKEN_PT_RE.search(oracle)
-    if "token" in oracle and token_match:
-        return "create_token", {"name": "Token", "power": int(token_match.group(1)), "toughness": int(token_match.group(2))}
+    clauses = _split_clauses(oracle)
+    effects: list[tuple[str, dict[str, Any]]] = []
+    for clause in clauses:
+        inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
+        if inferred is not None:
+            effects.append(inferred)
+    if len(effects) >= 2:
+        return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
+    if len(effects) == 1:
+        return effects[0]
 
     if any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
         opp = action_targets.get("target_player", 1 if controller == 2 else 2)
@@ -130,7 +82,7 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
 
     if "counter target spell" in oracle:
         hints["stack_targets"] = [{"id": x.id, "label": x.label} for x in state.stack]
-    if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle:
+    if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
@@ -161,3 +113,150 @@ def _extract_modes(oracle: str) -> list[str]:
     body = body.replace("\n", " ")
     candidates = [x.strip(" ;:.") for x in body.split(";")]
     return [c for c in candidates if c]
+
+
+def _split_clauses(oracle: str) -> list[str]:
+    cleaned = oracle.replace("\n", " ")
+    parts = re.split(r"\.\s+|\s*;\s+|\s+then\s+", cleaned)
+    return [p.strip(" .;") for p in parts if p.strip(" .;")]
+
+
+def _infer_clause_effect(
+    state: MatchState,
+    card: CardInstance,
+    controller: int,
+    oracle: str,
+    action_targets: dict[str, Any],
+    x_value: int,
+) -> tuple[str, dict[str, Any]] | None:
+    opponent = 1 if controller == 2 else 2
+    target_player = action_targets.get("target_player")
+    target_card_id = action_targets.get("target_card_id")
+
+    damage_match = DAMAGE_RE.search(oracle)
+    if damage_match:
+        amount = int(damage_match.group(1))
+        if DIVIDE_RE.search(oracle):
+            distribution = action_targets.get("target_distribution", {})
+            return "deal_damage_multi", {"target_distribution": distribution}
+        if target_card_id:
+            return "deal_damage", {"target_card_id": target_card_id, "amount": amount}
+        if target_player is None:
+            target_player = opponent
+        return "deal_damage", {"target_player": target_player, "amount": amount}
+
+    if X_DAMAGE_RE.search(oracle):
+        amount = max(0, x_value)
+        if DIVIDE_RE.search(oracle):
+            distribution = action_targets.get("target_distribution", {})
+            return "deal_damage_multi", {"target_distribution": distribution}
+        if target_card_id:
+            return "deal_damage", {"target_card_id": target_card_id, "amount": amount}
+        if target_player is None:
+            target_player = opponent
+        return "deal_damage", {"target_player": target_player, "amount": amount}
+
+    draw_match = DRAW_RE.search(oracle)
+    if draw_match:
+        raw = draw_match.group(1)
+        amount = 1 if raw == "a" else int(raw)
+        return "draw_cards", {"amount": amount}
+    if X_DRAW_RE.search(oracle):
+        return "draw_cards", {"amount": max(0, x_value)}
+
+    gain_match = GAIN_RE.search(oracle)
+    if gain_match:
+        amount = int(gain_match.group(1))
+        if "target player" in oracle and target_player is not None:
+            return "gain_life", {"amount": amount, "target_player": target_player}
+        return "gain_life", {"amount": amount}
+
+    lose_match = LOSE_RE.search(oracle)
+    if lose_match:
+        amount = int(lose_match.group(1))
+        if "you lose" in oracle:
+            return "lose_life", {"amount": amount, "target_player": controller}
+        if "target player" in oracle and target_player is not None:
+            return "lose_life", {"amount": amount, "target_player": target_player}
+        return "lose_life", {"amount": amount, "target_player": opponent}
+
+    if "destroy target" in oracle:
+        target = target_card_id or _first_creature(state, opponent)
+        if target:
+            return "destroy_permanent", {"target_card_id": target}
+
+    if "exile target" in oracle:
+        target = target_card_id or _first_creature(state, opponent)
+        if target:
+            return "exile", {"target_card_id": target}
+
+    if "tap target" in oracle:
+        target = target_card_id or _first_creature(state, opponent)
+        if target:
+            return "tap", {"target_card_id": target}
+
+    if "untap target" in oracle:
+        target = target_card_id
+        if target:
+            return "untap", {"target_card_id": target}
+
+    if "return target" in oracle and "graveyard" in oracle and "hand" in oracle:
+        return "return_from_graveyard", {}
+
+    if "search your library for" in oracle:
+        contains = action_targets.get("search_contains")
+        if not contains:
+            if "basic land" in oracle:
+                contains = "island"
+            elif "creature card" in oracle:
+                contains = ""
+        return "search_library", {"contains": contains}
+
+    token_match = TOKEN_PT_RE.search(oracle)
+    if "token" in oracle and token_match:
+        return "create_token", {"name": "Token", "power": int(token_match.group(1)), "toughness": int(token_match.group(2))}
+
+    counters_match = COUNTER_RE.search(oracle)
+    if counters_match:
+        raw = counters_match.group(1)
+        amount = 1 if raw in {"a", "an"} else int(raw)
+        target = target_card_id or _first_creature(state, controller)
+        if target:
+            return "add_counters", {"target_card_id": target, "counter": "+1/+1", "amount": amount}
+
+    if "creatures you control get +1/+1" in oracle:
+        return "continuous_buff", {"amount": 1}
+
+    if "add " in oracle and "{" in oracle and "}" in oracle:
+        symbols = MANA_SYMBOL_RE.findall(oracle.upper())
+        if symbols:
+            counts: dict[str, int] = {}
+            for sym in symbols:
+                counts[sym] = counts.get(sym, 0) + 1
+            if len(counts) == 1:
+                color, amount = next(iter(counts.items()))
+                return "add_mana", {"color": color, "amount": amount}
+            return "effect_sequence", {"effects": [{"effect_key": "add_mana", "payload": {"color": c, "amount": a}} for c, a in counts.items()]}
+
+    sac_match = SAC_RE.search(oracle)
+    if sac_match:
+        raw = sac_match.group(1)
+        amount = 1 if raw == "a" else int(raw)
+        target = target_card_id
+        if target:
+            return "sacrifice", {"target_card_id": target}
+        own_creatures = [cid for cid in state.players[controller].battlefield if "Creature" in state.cards[cid].types]
+        if own_creatures and amount == 1:
+            return "sacrifice", {"target_card_id": own_creatures[0]}
+
+    if "discard" in oracle and "card" in oracle:
+        amount = 1
+        if "two cards" in oracle:
+            amount = 2
+        if "three cards" in oracle:
+            amount = 3
+        if "you discard" in oracle:
+            return "discard_cards", {"target_player": controller, "amount": amount}
+        return "discard_cards", {"target_player": target_player or opponent, "amount": amount}
+
+    return None
