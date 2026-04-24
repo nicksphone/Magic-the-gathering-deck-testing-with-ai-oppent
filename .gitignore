@@ -8,3 +8,6 @@ frontend/dist/
 .DS_Store
 *.sqlite3
 *.db
+
+backend/.graphify_*.json
+frontend/*.tsbuildinfo
