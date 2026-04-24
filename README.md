@@ -221,8 +221,28 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 ## Known Limitations and Next Upgrades
 
 - Current engine is rules-aware but not full comprehensive MTG CR coverage.
-- Oracle-text inference is implemented for common patterns (damage/draw/counter/life/token/destroy/exile) but not full CR-complete parsing.
+- Oracle-text inference now supports clause sequencing and more patterns, but is still not full CR-complete parsing.
 - Replacement effects, layered continuous effects, and many triggered interactions are scaffolded but not exhaustive.
 - Sideboarding is implemented between games; UI support for interactive swap builders is still minimal.
 - AI is strong heuristic-based, not exhaustive game-tree search.
-- Next upgrades should prioritize full oracle effect interpretation, expanded interaction tests, and deeper tactical AI.
+- Next upgrades should prioritize CR-level corner-case coverage, richer target-choice UX, and deeper search-based AI.
+
+## Recent Improvements (2026-04-24)
+
+- Configurable match length: best-of is now selectable (odd values), end-to-end API/UI support.
+- Oracle effect interpretation expanded:
+  - clause-based sequencing across multi-sentence effects
+  - broader effect parsing for discard, counters, tap/untap, mana-symbol adds, and targeted life effects
+- Effect resolution enhancements:
+  - sequence execution (`effect_sequence`)
+  - targeted draw/gain/lose life behavior
+- Tactical AI improvements:
+  - master two-ply lookahead (action + opponent best reply)
+  - improved counterspell timing, attack pressure, and pass-priority posture logic
+  - stronger board evaluation features (toughness/untapped/mana pressure)
+- Expanded backend interaction tests covering oracle sequencing, discard targeting, and AI tactical choices.
+- Backend test environment verified in project venv: `29 passed`.
+
+## Documentation Rule
+
+- Any new feature, rule-system change, AI behavior change, or API contract change must be reflected in this README in the same push.
