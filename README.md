@@ -266,6 +266,11 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - AI improvements:
   - new `master_plus` rollout difficulty in match play + batch simulator
 - Backend test environment verified in project venv: `36 passed`.
+- Batch simulation correctness fix:
+  - unresolved simulations are now recorded as `timeouts` instead of being auto-awarded to Deck A
+  - pregame priority now correctly passes to the next player after a keep/mulligan decision
+  - backend test suite now verifies this behavior
+  - backend test environment verified in project venv: `38 passed`
 
 ## Documentation Rule
 

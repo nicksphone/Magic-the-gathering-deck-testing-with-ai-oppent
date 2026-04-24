@@ -17,10 +17,18 @@ class AnalyticsService:
         self.repo = repo
         self.engine = RulesEngine()
 
-    def run_batch(self, deck_a: list[dict], deck_b: list[dict], matches: int = 100, difficulty: str = "master") -> dict:
+    def run_batch(
+        self,
+        deck_a: list[dict],
+        deck_b: list[dict],
+        matches: int = 100,
+        difficulty: str = "master",
+        max_ticks: int = 500,
+    ) -> dict:
         stats = Counter()
         turn_counts = []
         play_win = 0
+        resolved_play_games = 0
         opener_quality_a: list[float] = []
         opener_quality_b: list[float] = []
 
@@ -30,7 +38,6 @@ class AnalyticsService:
             opener_quality_b.append(self._opening_hand_quality(state, 2))
             a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a))
             b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b))
-            max_ticks = 500
             ticks = 0
             while state.winner is None and ticks < max_ticks:
                 pid = state.priority_player
@@ -42,18 +49,26 @@ class AnalyticsService:
                     self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
                 ticks += 1
 
-            winner = state.winner or 1
-            stats[f"wins_{winner}"] += 1
-            if winner == 1 and i % 2 == 0:
-                play_win += 1
+            winner = state.winner
+            if winner in (1, 2):
+                stats[f"wins_{winner}"] += 1
+                if i % 2 == 0:
+                    resolved_play_games += 1
+                    if winner == 1:
+                        play_win += 1
+            else:
+                stats["timeouts"] += 1
             turn_counts.append(state.turn)
 
         total = matches
+        wins_a = stats["wins_1"]
+        wins_b = stats["wins_2"]
         result = {
             "matches": matches,
-            "win_rate_deck_a": round((stats["wins_1"] / total) * 100, 2),
-            "win_rate_deck_b": round((stats["wins_2"] / total) * 100, 2),
-            "draw_play_advantage_deck_a": round((play_win / max(1, matches // 2)) * 100, 2),
+            "win_rate_deck_a": round((wins_a / total) * 100, 2),
+            "win_rate_deck_b": round((wins_b / total) * 100, 2),
+            "timeouts": int(stats["timeouts"]),
+            "draw_play_advantage_deck_a": round((play_win / max(1, resolved_play_games)) * 100, 2),
             "average_turns": round(sum(turn_counts) / max(1, len(turn_counts)), 2),
             "mulligan_stats": {
                 "deck_a_avg_opening_hand_quality": round(sum(opener_quality_a) / max(1, len(opener_quality_a)), 2),

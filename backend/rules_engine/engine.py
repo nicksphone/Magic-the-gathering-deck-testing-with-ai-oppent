@@ -190,6 +190,9 @@ class RulesEngine:
 
     def _handle_pregame_action(self, state: MatchState, player_id: int, action: dict) -> None:
         if player_id in state.kept_hands:
+            remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
+            if remaining:
+                state.priority_player = remaining[0]
             return
         kind = action.get("type")
         player = state.players[player_id]
@@ -207,6 +210,9 @@ class RulesEngine:
                 draw_card(state, player_id)
             state.mulligan_count[player_id] = state.mulligan_count.get(player_id, 0) + 1
             state.log.append(f"{player.name} takes a mulligan to {7 - state.mulligan_count[player_id]}.")
+            remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
+            if remaining:
+                state.priority_player = remaining[0]
             return
         if kind == "keep_hand":
             bottom = action.get("bottom_card_ids", [])
@@ -227,6 +233,10 @@ class RulesEngine:
                 state.step = Step.UNTAP
                 self._apply_step_start_actions(state)
                 state.log.append("Pregame complete. Proceeding to turn structure.")
+            else:
+                remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
+                if remaining:
+                    state.priority_player = remaining[0]
 
 
 def _infer_mana_from_land(name: str) -> str:
