@@ -156,6 +156,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 ## Deck Import and Built-in Decks
 
 - Built-in master archetypes are available via `/decks/builtin`.
+- Built-ins are auto-seeded into saved deck records at backend startup (`source = "builtin"`), so they appear in deck selectors without manual import.
 - User decks can be imported by text format:
 
 ```text
@@ -271,6 +272,10 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - pregame priority now correctly passes to the next player after a keep/mulligan decision
   - backend test suite now verifies this behavior
   - backend test environment verified in project venv: `38 passed`
+- Deck visibility and card metadata UX fixes:
+  - built-in decks are auto-imported on startup if missing
+  - deck panel supports direct `Import Built-in`
+  - serialized hand/battlefield card views now include `mana_cost` for UI display
 
 ## Documentation Rule
 

@@ -28,6 +28,20 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(data.deck_text.trim());
   }
 
+  async function importSelectedBuiltin() {
+    if (!selectedBuiltin) return;
+    const data = await api.getBuiltinText(selectedBuiltin);
+    const imported = await api.importDeck(data.name, data.deck_text.trim(), "builtin");
+    if (imported.errors?.length) {
+      setStatus(`Built-in import errors: ${imported.errors.join(" | ")}`);
+      return;
+    }
+    setDeckName(data.name);
+    setDeckText(data.deck_text.trim());
+    setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess})`);
+    onDecksLoaded(await api.listDecks());
+  }
+
   async function importDeck() {
     const data = await api.importDeck(deckName || "Imported Deck", deckText, "user");
     if (data.errors?.length) {
@@ -51,6 +65,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
           ))}
         </select>
         <button onClick={loadBuiltin}>Load Built-in</button>
+        <button onClick={importSelectedBuiltin}>Import Built-in</button>
       </div>
       <input placeholder="Deck Name" value={deckName} onChange={(e) => setDeckName(e.target.value)} />
       <textarea

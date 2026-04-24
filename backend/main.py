@@ -20,7 +20,7 @@ from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from game_state.serializers import serialize_match
 from game_state.state import MatchFactory, Step
-from persistence.db import get_session, init_db
+from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 
@@ -110,6 +110,8 @@ def get_repo(session: Session = Depends(get_session)) -> Repository:
 @app.on_event("startup")
 def on_startup() -> None:
     init_db()
+    with Session(engine) as session:
+        _ensure_builtin_decks(Repository(session))
 
 
 @app.get("/health")
@@ -419,6 +421,19 @@ def _default_player_for_state(match: MatchController) -> int:
             if pid not in match.state.kept_hands:
                 return pid
     return match.state.priority_player
+
+
+def _ensure_builtin_decks(repo: Repository) -> None:
+    existing = {
+        (row.name.strip().lower(), (row.source or "").strip().lower())
+        for row in repo.list_decks()
+    }
+    service = DeckService(repo)
+    for name in sorted(BUILTIN_DECKS.keys()):
+        key = (name.strip().lower(), "builtin")
+        if key in existing:
+            continue
+        service.import_deck_text(name=name, deck_text=BUILTIN_DECKS[name], source="builtin")
 
 
 def _human_priority_pause(match: MatchController, player_id: int) -> bool:

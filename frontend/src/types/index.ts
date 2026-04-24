@@ -12,6 +12,7 @@ export type DeckRecord = {
 export type CardView = {
   id: string;
   name: string;
+  mana_cost?: string;
   tapped: boolean;
   summoning_sick: boolean;
   power: number | null;
@@ -27,7 +28,7 @@ export type PlayerView = {
   library_count: number;
   hand_count: number;
   battlefield: CardView[];
-  hand: { id: string; name: string; types: string[] }[];
+  hand: { id: string; name: string; mana_cost?: string; types: string[] }[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;

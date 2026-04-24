@@ -1,6 +1,8 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
-const API = "http://127.0.0.1:8000";
+const API =
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  `http://${typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"}:8000`;
 
 export type DeckImportResponse = {
   deck_id: number | null;

@@ -53,6 +53,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           {p2.battlefield.map((card) => (
             <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
               <h4>{card.name}</h4>
+              {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
               <small>
                 {card.power ?? "-"}/{card.toughness ?? "-"}
@@ -74,6 +75,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           {p1.battlefield.map((card) => (
             <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
               <h4>{card.name}</h4>
+              {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
               <small>
                 {card.power ?? "-"}/{card.toughness ?? "-"}
@@ -153,7 +155,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             if (!move) {
               return (
                 <button key={card.id} disabled>
-                  {card.name} (not castable)
+                  {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
                 </button>
               );
             }
