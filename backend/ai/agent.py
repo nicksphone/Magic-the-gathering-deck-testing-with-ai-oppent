@@ -59,6 +59,7 @@ class AIAgent:
             mtype = move.get("type")
             base = evaluate_board(state, player_id)
             stack_items = getattr(state, "stack", []) or []
+            cast_moves = [m for m in moves if m.get("type") == "cast_spell"]
             if mtype == "cast_spell":
                 name = move.get("card_name", "").lower()
                 if "bolt" in name or "spike" in name:
@@ -71,7 +72,11 @@ class AIAgent:
             elif mtype == "play_land":
                 base += 5
             elif mtype == "tap_land_for_mana":
-                base += 3
+                # Avoid floating mana loops: only tap proactively if it helps convert to a cast now.
+                if cast_moves:
+                    base += 0.4
+                else:
+                    base -= 3.0
             elif mtype == "attack":
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "pass_priority":
@@ -197,6 +202,8 @@ class AIAgent:
 
     def _pick_rollout_move(self, state: MatchState, legal: list[dict], player_id: int) -> dict:
         # Fast rollout policy (no nested simulations).
+        has_cast = any(m.get("type") == "cast_spell" for m in legal)
+
         def quick_score(move: dict) -> float:
             mtype = move.get("type")
             base = 0.0
@@ -210,6 +217,8 @@ class AIAgent:
                 base += 3
             elif mtype == "play_land":
                 base += 2
+            elif mtype == "tap_land_for_mana":
+                base += 0.2 if has_cast else -2.5
             elif mtype == "activate_loyalty":
                 base += 2.5
             elif mtype == "pass_priority":

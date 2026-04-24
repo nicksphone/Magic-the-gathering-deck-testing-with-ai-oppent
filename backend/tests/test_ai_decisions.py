@@ -49,3 +49,19 @@ def test_master_plus_ai_prefers_lethal_line() -> None:
     ]
     decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
+
+
+def test_ai_avoids_mana_tap_loop_when_no_cast_available() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "tap_land_for_mana", "card_id": "land-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        players = {1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(), 2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})()}
+        cards = {}
+        stack = []
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"
