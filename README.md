@@ -76,6 +76,7 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 - desktop-first battlefield layout
 - deck import panel
 - controls for phases/priority/autoplay
+- automatic AI turn progression (AI vs AI continuous autoplay, Player vs AI auto-runs AI turns)
 - attacker target selection (player vs planeswalker) and loyalty ability actions
 - stack + match log
 - structured target allocation UI for divide-damage spells
@@ -276,6 +277,9 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - built-in decks are auto-imported on startup if missing
   - deck panel supports direct `Import Built-in`
   - serialized hand/battlefield card views now include `mana_cost` for UI display
+- AI flow UX fix:
+  - AI vs AI starts and continues autoplay immediately (no manual step button required)
+  - Player vs AI auto-advances AI turns while preserving human decision priority windows
 
 ## Documentation Rule
 

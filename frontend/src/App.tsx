@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./api/client";
 import { AnalyticsPanel } from "./components/AnalyticsPanel";
 import { Battlefield } from "./components/Battlefield";
@@ -17,6 +17,7 @@ export function App() {
   const [match, setMatch] = useState<MatchState | null>(null);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
+  const autoTickInFlight = useRef(false);
 
   const onDecksLoaded = useCallback((records: DeckRecord[]) => {
     setDecks(records);
@@ -45,11 +46,11 @@ export function App() {
     setLegalMoves(legal.moves);
   }
 
-  async function syncMoves(nextMatch: MatchState) {
+  const syncMoves = useCallback(async (nextMatch: MatchState) => {
     const legal = await api.legalMoves(nextMatch.id);
     setLegalPlayerId(legal.player_id);
     setLegalMoves(legal.moves);
-  }
+  }, []);
 
   async function passPriority() {
     if (!match) return;
@@ -132,6 +133,38 @@ export function App() {
     setMatch(nextMatch);
     await syncMoves(nextMatch);
   }
+
+  useEffect(() => {
+    if (!match) return;
+    if (autoTickInFlight.current) return;
+    if (match.match_complete) return;
+
+    const aiVsAi = mode === "ai_vs_ai";
+    const aiTurnInPvA = mode === "player_vs_ai" && legalPlayerId === 2;
+    const shouldAutoRun = aiVsAi || aiTurnInPvA;
+    if (!shouldAutoRun) return;
+
+    const timer = window.setTimeout(async () => {
+      if (!match || autoTickInFlight.current) return;
+      autoTickInFlight.current = true;
+      try {
+        if (aiVsAi && match.winner && !match.match_complete) {
+          const next = await api.nextGame(match.id);
+          setMatch(next);
+          await syncMoves(next);
+          return;
+        }
+        const ticks = aiVsAi ? 20 : 1;
+        const next = await api.autoplay(match.id, ticks);
+        setMatch(next);
+        await syncMoves(next);
+      } finally {
+        autoTickInFlight.current = false;
+      }
+    }, 160);
+
+    return () => window.clearTimeout(timer);
+  }, [match, legalPlayerId, mode, syncMoves]);
 
   return (
     <main className="layout">
