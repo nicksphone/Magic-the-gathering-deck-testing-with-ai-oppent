@@ -6,7 +6,7 @@ from typing import Literal
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 
 from ai.agent import AIAgent
@@ -70,6 +70,14 @@ class StartMatchRequest(BaseModel):
     controller_b: Literal["human", "ai"] = "ai"
     ai_difficulty: str = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
+    best_of: int = Field(default=3, ge=3, le=15)
+
+    @field_validator("best_of")
+    @classmethod
+    def validate_best_of_odd(cls, value: int) -> int:
+        if value % 2 == 0:
+            raise ValueError("best_of must be an odd number")
+        return value
 
 
 class ActionRequest(BaseModel):
@@ -192,7 +200,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
     deck_a = _hydrate_deck_cards(repo, payload.deck_a)
     deck_b = _hydrate_deck_cards(repo, payload.deck_b)
     state = MatchFactory.from_decks(deck_a, deck_b)
-    state.best_of = 3
+    state.best_of = payload.best_of
     rules = RulesEngine()
     a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_a))
     b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_b))
@@ -208,7 +216,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         game_number=1,
         current_game_recorded=False,
         match_complete=False,
-        best_of=3,
+        best_of=payload.best_of,
     )
     ACTIVE_MATCHES[state.id] = controller
     return _serialize_match_controller(controller)

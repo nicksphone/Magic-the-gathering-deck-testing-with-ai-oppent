@@ -13,6 +13,7 @@ export function App() {
   const [selectedB, setSelectedB] = useState<number | null>(null);
   const [mode, setMode] = useState<"player_vs_ai" | "ai_vs_ai" | "human_vs_human">("player_vs_ai");
   const [difficulty, setDifficulty] = useState("master");
+  const [bestOf, setBestOf] = useState<number>(3);
   const [match, setMatch] = useState<MatchState | null>(null);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
@@ -36,6 +37,7 @@ export function App() {
       controller_b: mode === "human_vs_human" ? "human" : "ai",
       ai_difficulty: difficulty,
       mode,
+      best_of: bestOf,
     });
     setMatch(data);
     const legal = await api.legalMoves(data.id, data.priority_player);
@@ -132,6 +134,8 @@ export function App() {
           setStartMode={setMode}
           difficulty={difficulty}
           setDifficulty={setDifficulty}
+          bestOf={bestOf}
+          setBestOf={setBestOf}
           onStart={startMatch}
           onPassPriority={passPriority}
           onKeepHand={keepHand}

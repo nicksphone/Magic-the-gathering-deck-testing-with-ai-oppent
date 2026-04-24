@@ -43,6 +43,7 @@ export const api = {
     controller_b: "human" | "ai";
     ai_difficulty: string;
     mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
+    best_of: number;
   }) => req<MatchState>("/matches/start", { method: "POST", body: JSON.stringify(payload) }),
   getMatch: (id: string) => req<MatchState>(`/matches/${id}`),
   legalMoves: (matchId: string, playerId?: number) =>

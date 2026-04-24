@@ -117,7 +117,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - Priority is tracked per player; stack resolution occurs after both pass.
 - Spells/abilities are pushed as stack items and resolved via effect handlers.
 - Spell effect selection is oracle-text-driven first, with fallback heuristics for uncached/unknown text.
-- Best-of-3 flow supports between-game sideboarding and explicit `next-game` transitions.
+- Configurable best-of flow (odd values, default 3) supports between-game sideboarding and explicit `next-game` transitions.
 - London mulligan flow is implemented as pregame `mulligan`/`keep_hand` actions.
 - Non-instant timing now respects active-player main-phase + empty-stack constraints.
 - Combat validates legal attackers/blockers, then applies combat damage.

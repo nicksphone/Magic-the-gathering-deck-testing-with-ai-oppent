@@ -11,6 +11,8 @@ type Props = {
   setStartMode: (mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human") => void;
   difficulty: string;
   setDifficulty: (d: string) => void;
+  bestOf: number;
+  setBestOf: (bestOf: number) => void;
   onStart: () => void;
   onPassPriority: () => void;
   onKeepHand: () => void;
@@ -76,8 +78,14 @@ export function Controls(props: Props) {
           <option value="strong">Strong</option>
           <option value="master">Master</option>
         </select>
+        <select value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
+          <option value={3}>Best-of-3</option>
+          <option value={5}>Best-of-5</option>
+          <option value={7}>Best-of-7</option>
+          <option value={9}>Best-of-9</option>
+        </select>
       </div>
-      <button onClick={props.onStart}>Start Best-of-3 Match</button>
+      <button onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
       {props.match ? (
         <p>
           Score P1:{props.match.score?.["1"] ?? 0} P2:{props.match.score?.["2"] ?? 0} | Game {props.match.game_number ?? 1} | Best-of-{props.match.best_of ?? 3}
