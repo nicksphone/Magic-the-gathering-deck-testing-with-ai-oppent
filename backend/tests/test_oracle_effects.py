@@ -77,3 +77,24 @@ def test_oracle_add_counters_parsing() -> None:
     assert effect_key == "add_counters"
     assert payload["target_card_id"] == target
     assert payload["amount"] == 2
+
+
+def test_oracle_token_count_and_keywords_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="tok",
+        name="Raise Patrol",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Create two 1/1 white Soldier creature tokens with vigilance.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "create_token"
+    assert payload["amount"] == 2
+    assert payload["power"] == 1
+    assert payload["toughness"] == 1
+    assert payload["name"] == "White Soldier"
+    assert "vigilance" in payload["keywords"]

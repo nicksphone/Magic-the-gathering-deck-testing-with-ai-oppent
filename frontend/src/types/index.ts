@@ -43,6 +43,7 @@ export type MatchState = {
   pregame_pending?: boolean;
   mulligan_count?: Record<string, number>;
   kept_hands?: number[];
+  priority_stops?: Record<string, string[]>;
   players: Record<string, PlayerView>;
   stack: { id: string; label: string; controller: number; effect_key: string }[];
   attackers?: string[];

@@ -22,6 +22,7 @@ type Props = {
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: () => void;
+  onSetPriorityStops: (playerId: number, stops: string[]) => void;
   legalMoves: LegalMove[];
   match: MatchState | null;
 };
@@ -40,11 +41,26 @@ function parseDeckLines(text: string): DeckItem[] {
 }
 
 export function Controls(props: Props) {
+  const stepOptions = [
+    "untap",
+    "upkeep",
+    "draw",
+    "precombat_main",
+    "begin_combat",
+    "declare_attackers",
+    "declare_blockers",
+    "combat_damage",
+    "end_combat",
+    "postcombat_main",
+    "end_step",
+    "cleanup",
+  ];
   const blockMove = useMemo(() => props.legalMoves.find((m) => m.type === "block"), [props.legalMoves]);
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [sbPlayer, setSbPlayer] = useState(1);
   const [sbOut, setSbOut] = useState("");
   const [sbIn, setSbIn] = useState("");
+  const [stopPlayer, setStopPlayer] = useState(1);
 
   return (
     <section className="panel controls">
@@ -90,6 +106,36 @@ export function Controls(props: Props) {
         <p>
           Score P1:{props.match.score?.["1"] ?? 0} P2:{props.match.score?.["2"] ?? 0} | Game {props.match.game_number ?? 1} | Best-of-{props.match.best_of ?? 3}
         </p>
+      ) : null}
+      {props.match ? (
+        <div className="block-panel">
+          <h3>Priority Stops</h3>
+          <div className="row">
+            <select value={stopPlayer} onChange={(e) => setStopPlayer(Number(e.target.value))}>
+              <option value={1}>Player 1</option>
+              <option value={2}>Player 2</option>
+            </select>
+          </div>
+          {stepOptions.map((step) => {
+            const current = new Set(props.match?.priority_stops?.[String(stopPlayer)] ?? []);
+            const checked = current.has(step);
+            return (
+              <label key={`stop-${stopPlayer}-${step}`} style={{ display: "block", fontSize: "0.85rem" }}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    const next = new Set(current);
+                    if (e.target.checked) next.add(step);
+                    else next.delete(step);
+                    props.onSetPriorityStops(stopPlayer, Array.from(next));
+                  }}
+                />
+                {" "}{step}
+              </label>
+            );
+          })}
+        </div>
       ) : null}
       <div className="grid-actions">
         <button onClick={props.onPassPriority} disabled={!props.match}>

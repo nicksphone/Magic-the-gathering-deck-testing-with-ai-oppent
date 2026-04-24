@@ -75,6 +75,7 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 - deck import panel
 - controls for phases/priority/autoplay
 - stack + match log
+- structured target allocation UI for divide-damage spells
 - testing simulator analytics panel
 
 ## Setup Instructions
@@ -115,9 +116,10 @@ cd /home/nick/mtg-deck-testing-lab/backend
   - Postcombat Main
   - End Step, Cleanup
 - Priority is tracked per player; stack resolution occurs after both pass.
+- Per-player priority stops are configurable by step and exposed in match controls.
 - Spells/abilities are pushed as stack items and resolved via effect handlers.
 - Spell effect selection is oracle-text-driven first, with fallback heuristics for uncached/unknown text.
-- Oracle effect inference now parses multi-clause text into executable effect sequences (damage/draw/life/tap/counters/discard/token/mana patterns).
+- Oracle effect inference now parses multi-clause text into executable effect sequences (damage/draw/life/tap/counters/discard/token/mana patterns), including token count + keyword extraction.
 - Configurable best-of flow (odd values, default 3) supports between-game sideboarding and explicit `next-game` transitions.
 - London mulligan flow is implemented as pregame `mulligan`/`keep_hand` actions.
 - Non-instant timing now respects active-player main-phase + empty-stack constraints.
@@ -177,6 +179,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - `POST /matches/{match_id}/autoplay`
 - `POST /matches/{match_id}/sideboard`
 - `POST /matches/{match_id}/next-game`
+- `POST /matches/{match_id}/priority-stops`
 - `POST /simulate/batch`
 - `GET /analytics/history`
 
@@ -209,8 +212,8 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 
 ## Future Roadmap
 
-- deeper oracle interpretation (multi-target choices, \"up to\" semantics, and mode selection)
-- richer targeting UI and advanced priority stops
+- deeper oracle interpretation (remaining CR edge cases, layered continuous effects, complex replacement timing)
+- richer targeting UX for complex multi-target cards (current divide/selection UX implemented)
 - broader planeswalker and token rule automation
 - true mulligan decision simulation and opening hand quality model
 - MCTS / rollout AI for master-level tactical depth
@@ -241,7 +244,15 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - improved counterspell timing, attack pressure, and pass-priority posture logic
   - stronger board evaluation features (toughness/untapped/mana pressure)
 - Expanded backend interaction tests covering oracle sequencing, discard targeting, and AI tactical choices.
-- Backend test environment verified in project venv: `29 passed`.
+- Advanced priority-stop system:
+  - per-player stop configuration by step (`/matches/{id}/priority-stops`)
+  - autoplay now pauses when configured stop windows have meaningful human decisions
+- Richer targeting UX:
+  - divide-damage targeting now uses structured per-target numeric allocation instead of raw JSON input
+- Broader token automation:
+  - oracle parsing now extracts token count + combat keywords for token creation clauses
+  - token handler now supports multi-token creation with attached keywords
+- Backend test environment verified in project venv: `33 passed`.
 
 ## Documentation Rule
 

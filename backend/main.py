@@ -19,7 +19,7 @@ from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from game_state.serializers import serialize_match
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, Step
 from persistence.db import get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -89,6 +89,11 @@ class SideboardRequest(BaseModel):
     player_id: int
     cards_out: list[dict]
     cards_in: list[dict]
+
+
+class PriorityStopsRequest(BaseModel):
+    player_id: int
+    stops: list[str] = []
 
 
 class BulkSyncRequest(BaseModel):
@@ -266,10 +271,28 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
         else:
             if match.state.pregame_pending:
                 break
+            if _human_priority_pause(match, pid):
+                break
             match.rules.take_action(match.state, pid, {"type": "pass_priority"})
         if not match.state.pregame_pending and match.state.step == match.state.step.COMBAT_DAMAGE:
             match.rules.take_action(match.state, match.state.active_player, {"type": "combat_damage"})
     _post_step_finalize(match, repo)
+    return _serialize_match_controller(match)
+
+
+@app.post("/matches/{match_id}/priority-stops")
+def set_priority_stops(match_id: str, payload: PriorityStopsRequest) -> dict:
+    match = ACTIVE_MATCHES.get(match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    if payload.player_id not in [1, 2]:
+        raise HTTPException(status_code=400, detail="Invalid player_id")
+    valid = {s.value for s in Step}
+    chosen = {s for s in payload.stops if s in valid}
+    match.state.priority_stops[payload.player_id] = {Step(s) for s in chosen}
+    match.state.log.append(
+        f"{match.state.players[payload.player_id].name} priority stops updated: {', '.join(sorted(chosen)) or 'none'}."
+    )
     return _serialize_match_controller(match)
 
 
@@ -393,3 +416,15 @@ def _default_player_for_state(match: MatchController) -> int:
             if pid not in match.state.kept_hands:
                 return pid
     return match.state.priority_player
+
+
+def _human_priority_pause(match: MatchController, player_id: int) -> bool:
+    state = match.state
+    legal = match.rules.legal_moves(state, player_id)
+    has_non_pass = any(m.get("type") != "pass_priority" for m in legal)
+    step_stop = state.step in state.priority_stops.get(player_id, set())
+    if state.stack and has_non_pass:
+        return True
+    if step_stop and has_non_pass:
+        return True
+    return False

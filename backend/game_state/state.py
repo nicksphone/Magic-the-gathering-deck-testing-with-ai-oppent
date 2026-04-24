@@ -109,6 +109,12 @@ class MatchState:
     pregame_pending: bool = True
     mulligan_count: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     kept_hands: set[int] = field(default_factory=set)
+    priority_stops: dict[int, set[Step]] = field(
+        default_factory=lambda: {
+            1: {Step.UPKEEP, Step.PRECOMBAT_MAIN, Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.POSTCOMBAT_MAIN, Step.END_STEP},
+            2: {Step.UPKEEP, Step.BEGIN_COMBAT, Step.DECLARE_BLOCKERS, Step.END_STEP},
+        }
+    )
     log: list[str] = field(default_factory=list)
 
 

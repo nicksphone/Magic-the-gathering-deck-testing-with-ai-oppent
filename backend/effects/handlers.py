@@ -120,21 +120,26 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     name = payload.get("name", "Token")
     p = int(payload.get("power", 1))
     t = int(payload.get("toughness", 1))
-    cid = str(uuid.uuid4())
-    token = CardInstance(
-        id=cid,
-        name=name,
-        owner=controller,
-        controller=controller,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature", "Token"],
-        power=p,
-        toughness=t,
-        summoning_sick=True,
-    )
-    state.cards[cid] = token
-    state.players[controller].battlefield.append(cid)
-    state.log.append(f"{state.players[controller].name} creates a {p}/{t} token.")
+    amount = max(1, int(payload.get("amount", 1)))
+    types = list(payload.get("types", ["Creature", "Token"]))
+    keywords = list(payload.get("keywords", []))
+    for _ in range(amount):
+        cid = str(uuid.uuid4())
+        token = CardInstance(
+            id=cid,
+            name=name,
+            owner=controller,
+            controller=controller,
+            zone=Zone.BATTLEFIELD,
+            types=types,
+            power=p,
+            toughness=t,
+            summoning_sick="Creature" in types,
+            keywords=keywords,
+        )
+        state.cards[cid] = token
+        state.players[controller].battlefield.append(cid)
+    state.log.append(f"{state.players[controller].name} creates {amount} {p}/{t} token(s).")
 
 
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:

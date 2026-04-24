@@ -1,9 +1,15 @@
 from __future__ import annotations
 
-from game_state.state import MatchState
+from game_state.state import MatchState, TURN_STEPS
 
 
 def serialize_match(state: MatchState) -> dict:
+    step_order = [x.value for x in TURN_STEPS]
+
+    def _sort_steps(steps: set) -> list[str]:
+        vals = [s.value for s in steps]
+        return sorted(vals, key=lambda x: step_order.index(x) if x in step_order else 999)
+
     return {
         "id": state.id,
         "turn": state.turn,
@@ -15,6 +21,10 @@ def serialize_match(state: MatchState) -> dict:
         "pregame_pending": state.pregame_pending,
         "mulligan_count": state.mulligan_count,
         "kept_hands": sorted(list(state.kept_hands)),
+        "priority_stops": {
+            str(pid): _sort_steps(steps)
+            for pid, steps in state.priority_stops.items()
+        },
         "players": {
             pid: {
                 "id": p.id,

@@ -115,6 +115,13 @@ export function App() {
     await syncMoves(nextMatch);
   }
 
+  async function onSetPriorityStops(playerId: number, stops: string[]) {
+    if (!match) return;
+    const nextMatch = await api.setPriorityStops(match.id, playerId, stops);
+    setMatch(nextMatch);
+    await syncMoves(nextMatch);
+  }
+
   return (
     <main className="layout">
       <header className="topbar">
@@ -145,6 +152,7 @@ export function App() {
           onSubmitBlocks={onSubmitBlocks}
           onApplySideboard={onApplySideboard}
           onNextGame={onNextGame}
+          onSetPriorityStops={onSetPriorityStops}
           legalMoves={legalMoves}
           match={match}
         />

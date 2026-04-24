@@ -16,6 +16,11 @@ SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
+TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
+TOKEN_NAME_RE = re.compile(
+    r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
+    re.IGNORECASE,
+)
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
@@ -214,7 +219,20 @@ def _infer_clause_effect(
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
-        return "create_token", {"name": "Token", "power": int(token_match.group(1)), "toughness": int(token_match.group(2))}
+        count_match = TOKEN_COUNT_RE.search(oracle)
+        token_count = _parse_count_token(count_match.group(1)) if count_match else 1
+        token_name_match = TOKEN_NAME_RE.search(oracle)
+        token_name = "Token"
+        if token_name_match:
+            token_name = token_name_match.group(1).strip().title()
+        token_keywords = _extract_keywords_from_text(oracle)
+        return "create_token", {
+            "name": token_name,
+            "power": int(token_match.group(1)),
+            "toughness": int(token_match.group(2)),
+            "amount": token_count,
+            "keywords": token_keywords,
+        }
 
     counters_match = COUNTER_RE.search(oracle)
     if counters_match:
@@ -270,6 +288,11 @@ def _parse_count_token(token: str) -> int:
         "three": 3,
         "four": 4,
         "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+        "ten": 10,
     }
     t = (token or "").strip().lower()
     if t in mapping:
@@ -278,3 +301,12 @@ def _parse_count_token(token: str) -> int:
         return int(t)
     except Exception:
         return 1
+
+
+def _extract_keywords_from_text(text: str) -> list[str]:
+    lower = (text or "").lower()
+    found: list[str] = []
+    for kw in ["trample", "first strike", "double strike", "haste", "flash", "lifelink", "deathtouch", "vigilance", "flying", "menace"]:
+        if kw in lower:
+            found.append(kw)
+    return found

@@ -13,6 +13,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
+  const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
 
   function castAction(cardId: string) {
     const t = targets[cardId] ?? {};
@@ -214,17 +215,28 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                   )
                 ) : null}
                 {hints?.supports_divide ? (
-                  <input
-                    placeholder='Divide distribution JSON, e.g. {"1":2,"2":1}'
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value || "{}");
-                        setTargets((prev) => ({ ...prev, [card.id]: { ...prev[card.id], target_distribution: parsed } }));
-                      } catch {
-                        // ignore invalid json input until parsable
-                      }
-                    }}
-                  />
+                  <div className="divide-box">
+                    <p style={{ margin: "0.2rem 0" }}>Damage Distribution</p>
+                    {[...(hints.player_targets ?? []).map((p) => ({ id: String(p.id), name: p.name })), ...(hints.creature_targets ?? [])].map(
+                      (targetOption) => (
+                        <div key={`${card.id}-dist-${targetOption.id}`} className="row">
+                          <span>{targetOption.name}</span>
+                          <input
+                            type="number"
+                            min={0}
+                            value={divideInputs[card.id]?.[targetOption.id] ?? 0}
+                            onChange={(e) => {
+                              const amount = Math.max(0, Number(e.target.value) || 0);
+                              const cardDist = { ...(divideInputs[card.id] ?? {}), [targetOption.id]: amount };
+                              const filtered = Object.fromEntries(Object.entries(cardDist).filter(([, v]) => Number(v) > 0));
+                              setDivideInputs((prev) => ({ ...prev, [card.id]: cardDist }));
+                              setTargets((prev) => ({ ...prev, [card.id]: { ...prev[card.id], target_distribution: filtered } }));
+                            }}
+                          />
+                        </div>
+                      ),
+                    )}
+                  </div>
                 ) : null}
                 {hints?.stack_targets?.length ? (
                   <select

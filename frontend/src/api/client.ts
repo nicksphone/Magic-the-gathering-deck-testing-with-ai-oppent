@@ -59,6 +59,11 @@ export const api = {
       body: JSON.stringify({ player_id, cards_out, cards_in }),
     }),
   nextGame: (matchId: string) => req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST" }),
+  setPriorityStops: (matchId: string, player_id: number, stops: string[]) =>
+    req<MatchState>(`/matches/${matchId}/priority-stops`, {
+      method: "POST",
+      body: JSON.stringify({ player_id, stops }),
+    }),
   simulateBatch: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string) =>
     req("/simulate/batch", {
       method: "POST",
