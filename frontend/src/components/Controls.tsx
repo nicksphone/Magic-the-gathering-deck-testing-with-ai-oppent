@@ -24,6 +24,9 @@ type Props = {
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: () => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
+  responseCountdown: number | null;
+  autoResponsePaused: boolean;
+  onToggleAutoResponsePause: () => void;
   legalMoves: LegalMove[];
   match: MatchState | null;
 };
@@ -110,6 +113,23 @@ export function Controls(props: Props) {
         <p>
           Score P1:{props.match.score?.["1"] ?? 0} P2:{props.match.score?.["2"] ?? 0} | Game {props.match.game_number ?? 1} | Best-of-{props.match.best_of ?? 3}
         </p>
+      ) : null}
+      {props.responseCountdown !== null ? (
+        <div className="block-panel">
+          <h3>Interrupt Window</h3>
+          <p>
+            Auto-pass in {props.responseCountdown}s unless you respond.
+          </p>
+          <button onClick={props.onToggleAutoResponsePause}>
+            {props.autoResponsePaused ? "Resume Auto Response Timer" : "Hold Priority Timer"}
+          </button>
+        </div>
+      ) : props.match && props.autoResponsePaused ? (
+        <div className="block-panel">
+          <h3>Interrupt Window</h3>
+          <p>Priority timer is paused.</p>
+          <button onClick={props.onToggleAutoResponsePause}>Resume Auto Response Timer</button>
+        </div>
       ) : null}
       {props.match ? (
         <div className="block-panel">

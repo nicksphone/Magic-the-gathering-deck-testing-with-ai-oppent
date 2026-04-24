@@ -17,7 +17,11 @@ export function App() {
   const [match, setMatch] = useState<MatchState | null>(null);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
+  const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
+  const [autoResponsePaused, setAutoResponsePaused] = useState(false);
   const autoTickInFlight = useRef(false);
+  const responsePassInFlight = useRef(false);
+  const responseWindowSigRef = useRef("");
 
   const onDecksLoaded = useCallback((records: DeckRecord[]) => {
     setDecks(records);
@@ -166,6 +170,60 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [match, legalPlayerId, mode, syncMoves]);
 
+  const humanResponseWindowActive =
+    mode === "player_vs_ai"
+    && !!match
+    && !match.pregame_pending
+    && !match.match_complete
+    && legalPlayerId === 1
+    && (match.stack?.length ?? 0) > 0
+    && legalMoves.some((m) => m.type !== "pass_priority");
+
+  useEffect(() => {
+    if (!humanResponseWindowActive) {
+      setResponseCountdown(null);
+      setAutoResponsePaused(false);
+      responseWindowSigRef.current = "";
+      return;
+    }
+    if (autoResponsePaused) {
+      setResponseCountdown(null);
+      return;
+    }
+    const sig = `${match?.id ?? ""}|${(match?.stack ?? []).map((s) => s.id).join(",")}|${legalPlayerId}`;
+    if (responseWindowSigRef.current !== sig) {
+      responseWindowSigRef.current = sig;
+      setResponseCountdown(6);
+    }
+  }, [humanResponseWindowActive, autoResponsePaused, match, legalPlayerId]);
+
+  useEffect(() => {
+    if (!humanResponseWindowActive) return;
+    if (autoResponsePaused) return;
+    if (responseCountdown === null) return;
+    if (responseCountdown <= 0) return;
+    const timer = window.setTimeout(() => setResponseCountdown((v) => (v === null ? null : v - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown]);
+
+  useEffect(() => {
+    if (!humanResponseWindowActive) return;
+    if (autoResponsePaused) return;
+    if (responseCountdown !== 0) return;
+    if (!match || responsePassInFlight.current) return;
+    responsePassInFlight.current = true;
+    void (async () => {
+      try {
+        const nextMatch = await api.act(match.id, 1, { type: "pass_priority" });
+        setMatch(nextMatch);
+        await syncMoves(nextMatch);
+      } finally {
+        responsePassInFlight.current = false;
+        setResponseCountdown(null);
+      }
+    })();
+  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, syncMoves]);
+
   return (
     <main className="layout">
       <header className="topbar">
@@ -198,6 +256,9 @@ export function App() {
           onApplySideboard={onApplySideboard}
           onNextGame={onNextGame}
           onSetPriorityStops={onSetPriorityStops}
+          responseCountdown={responseCountdown}
+          autoResponsePaused={autoResponsePaused}
+          onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}
           legalMoves={legalMoves}
           match={match}
         />

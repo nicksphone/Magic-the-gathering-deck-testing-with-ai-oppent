@@ -77,6 +77,7 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 - deck import panel
 - controls for phases/priority/autoplay
 - automatic AI turn progression (AI vs AI continuous autoplay, Player vs AI auto-runs AI turns)
+- player response countdown window for stack interactions (with hold/resume timer control)
 - attacker target selection (player vs planeswalker) and loyalty ability actions
 - stack + match log
 - structured target allocation UI for divide-damage spells
@@ -280,6 +281,10 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - AI flow UX fix:
   - AI vs AI starts and continues autoplay immediately (no manual step button required)
   - Player vs AI auto-advances AI turns while preserving human decision priority windows
+- Player-vs-AI interrupt UX:
+  - when AI actions create stack interaction windows, a countdown appears for instant-speed responses
+  - if no action is taken before countdown expiry, priority auto-passes
+  - timer can be paused/resumed with Hold Priority control
 
 ## Documentation Rule
 
