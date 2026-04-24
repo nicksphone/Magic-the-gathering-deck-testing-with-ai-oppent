@@ -13,7 +13,7 @@ X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
-COUNTER_RE = re.compile(r"put\s+(a|an|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
+COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
@@ -218,8 +218,7 @@ def _infer_clause_effect(
 
     counters_match = COUNTER_RE.search(oracle)
     if counters_match:
-        raw = counters_match.group(1)
-        amount = 1 if raw in {"a", "an"} else int(raw)
+        amount = _parse_count_token(counters_match.group(1))
         target = target_card_id or _first_creature(state, controller)
         if target:
             return "add_counters", {"target_card_id": target, "counter": "+1/+1", "amount": amount}
@@ -260,3 +259,22 @@ def _infer_clause_effect(
         return "discard_cards", {"target_player": target_player or opponent, "amount": amount}
 
     return None
+
+
+def _parse_count_token(token: str) -> int:
+    mapping = {
+        "a": 1,
+        "an": 1,
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+    }
+    t = (token or "").strip().lower()
+    if t in mapping:
+        return mapping[t]
+    try:
+        return int(t)
+    except Exception:
+        return 1

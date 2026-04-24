@@ -58,12 +58,13 @@ class AIAgent:
         def score(move: dict) -> float:
             mtype = move.get("type")
             base = evaluate_board(state, player_id)
+            stack_items = getattr(state, "stack", []) or []
             if mtype == "cast_spell":
                 name = move.get("card_name", "").lower()
                 if "bolt" in name or "spike" in name:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
                 if "counterspell" in name:
-                    if state.stack:
+                    if stack_items:
                         base += 8 if self.archetype in {"Control", "Counter-heavy", "Tempo"} else 4
                     else:
                         base -= 2
@@ -143,7 +144,7 @@ class AIAgent:
             if "Instant" in c.types or "flash" in [k.lower() for k in c.keywords]:
                 has_instant_like = True
                 break
-        if state.stack:
+        if getattr(state, "stack", []) or []:
             return -2.0
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8

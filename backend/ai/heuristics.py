@@ -23,7 +23,9 @@ def evaluate_board(state: MatchState, player_id: int) -> float:
     )
     life_delta = me.life - opp.life
     cards_delta = len(me.hand) - len(opp.hand)
-    mana_delta = sum(me.mana_pool.values()) - sum(opp.mana_pool.values())
+    my_mana_pool = getattr(me, "mana_pool", {}) or {}
+    opp_mana_pool = getattr(opp, "mana_pool", {}) or {}
+    mana_delta = sum(my_mana_pool.values()) - sum(opp_mana_pool.values())
     return (
         life_delta * 1.6
         + cards_delta * 0.9
