@@ -1,0 +1,84 @@
+export type DeckItem = { quantity: number; card_name: string };
+
+export type DeckRecord = {
+  id: number;
+  name: string;
+  source: string;
+  archetype_guess: string;
+  mainboard: DeckItem[];
+  sideboard: DeckItem[];
+};
+
+export type CardView = {
+  id: string;
+  name: string;
+  tapped: boolean;
+  summoning_sick: boolean;
+  power: number | null;
+  toughness: number | null;
+  types: string[];
+};
+
+export type PlayerView = {
+  id: number;
+  name: string;
+  life: number;
+  library_count: number;
+  hand_count: number;
+  battlefield: CardView[];
+  hand: { id: string; name: string; types: string[] }[];
+  graveyard_count: number;
+  exile_count: number;
+  mana_pool: Record<string, number>;
+};
+
+export type MatchState = {
+  id: string;
+  turn: number;
+  active_player: number;
+  priority_player: number;
+  step: string;
+  winner: number | null;
+  score: Record<string, number>;
+  pregame_pending?: boolean;
+  mulligan_count?: Record<string, number>;
+  kept_hands?: number[];
+  players: Record<string, PlayerView>;
+  stack: { id: string; label: string; controller: number; effect_key: string }[];
+  attackers?: string[];
+  blocks?: Record<string, string>;
+  game_number?: number;
+  best_of?: number;
+  games_needed?: number;
+  match_complete?: boolean;
+  sideboard_sizes?: Record<string, number>;
+  log: string[];
+};
+
+export type LegalMove = {
+  type: string;
+  card_id?: string;
+  card_name?: string;
+  mana_cost?: string;
+  cost_options?: {
+    id: string;
+    label: string;
+    mana_cost: string;
+    pay_life: number;
+    discard_cards: number;
+    sacrifice_creatures: number;
+  }[];
+  options?: string[];
+  attackers?: { id: string; name: string }[];
+  blockers?: { id: string; name: string }[];
+  target_hints?: {
+    player_targets?: { id: number; name: string }[];
+    creature_targets?: { id: string; name: string }[];
+    stack_targets?: { id: string; label: string }[];
+    modes?: string[];
+    choose_two_modes?: boolean;
+    requires_x_value?: boolean;
+    up_to_target_count?: number;
+    supports_divide?: boolean;
+  };
+};

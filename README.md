@@ -1,0 +1,226 @@
+# MTG Deck Testing Lab
+
+Professional desktop-first web application for serious Magic: The Gathering deck testing.
+
+This project delivers a modular 2-player simulator with:
+- Player vs AI
+- AI pilot mode for either deck
+- AI vs AI testing mode
+- Deck import from text
+- Built-in master archetype decks
+- Manual priority/phase progression controls
+- Batch simulation analytics
+
+## Project Structure
+
+```text
+mtg-deck-testing-lab/
+  backend/
+    main.py
+    requirements.txt
+    card_data/
+    rules_engine/
+    effects/
+    game_state/
+    ai/
+    decks/
+    analytics/
+    persistence/
+    tests/
+  frontend/
+    src/
+    package.json
+```
+
+## Architecture Overview
+
+Rules and gameplay logic are implemented in application code, never in SQL.
+
+### Layer Map
+
+1. Card Data Layer (`backend/card_data`)
+- Scryfall sync service
+- local card cache reads
+- fuzzy name correction support
+
+2. Rules Engine (`backend/rules_engine`)
+- turn structure and step progression
+- priority passing
+- stack management
+- legal move generation
+- combat and state-based actions
+
+3. Effect Resolution Layer (`backend/effects`)
+- reusable modular effect handlers
+- registry-based effect dispatch
+- handlers for damage, draw, life, destroy, counter, exile, token creation, mana, counters, sacrifice, tap/untap, buffs, keyword grant
+
+4. Game State Layer (`backend/game_state`)
+- normalized state objects
+- zones, cards, players, turn metadata
+- serialization for API/UI
+
+5. Persistence Layer (`backend/persistence`)
+- SQLModel storage for cached cards, decks, matches, snapshots
+- replaceable DB boundary via repository abstraction
+
+6. AI Layer (`backend/ai`)
+- archetype detection
+- heuristic board evaluation
+- difficulty levels: Casual / Strong / Master
+- decision policy across legal moves
+
+7. UI Layer (`frontend/src`)
+- desktop-first battlefield layout
+- deck import panel
+- controls for phases/priority/autoplay
+- stack + match log
+- testing simulator analytics panel
+
+## Setup Instructions
+
+## 1) Backend
+
+```bash
+cd /home/nick/mtg-deck-testing-lab/backend
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/uvicorn main:app --reload --port 8000
+```
+
+## 2) Frontend
+
+```bash
+cd /home/nick/mtg-deck-testing-lab/frontend
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`.
+
+## 3) Tests
+
+```bash
+cd /home/nick/mtg-deck-testing-lab/backend
+.venv/bin/python -m pytest -q
+```
+
+## How the Rules Engine Works
+
+- Match creation expands decklists into card instances and initializes zones.
+- Turn order follows explicit MTG step sequencing:
+  - Untap, Upkeep, Draw
+  - Precombat Main
+  - Beginning of Combat, Declare Attackers, Declare Blockers, Combat Damage, End Combat
+  - Postcombat Main
+  - End Step, Cleanup
+- Priority is tracked per player; stack resolution occurs after both pass.
+- Spells/abilities are pushed as stack items and resolved via effect handlers.
+- Spell effect selection is oracle-text-driven first, with fallback heuristics for uncached/unknown text.
+- Best-of-3 flow supports between-game sideboarding and explicit `next-game` transitions.
+- London mulligan flow is implemented as pregame `mulligan`/`keep_hand` actions.
+- Non-instant timing now respects active-player main-phase + empty-stack constraints.
+- Combat validates legal attackers/blockers, then applies combat damage.
+- Combat now supports multi-block assignment, first/double strike step handling, and trample spillover.
+- Trigger event bus now pushes triggered abilities in APNAP order.
+- State-based actions run after actions/resolution and enforce loss/death checks.
+
+## How the AI Works
+
+- Deck archetype is inferred from card-name signatures.
+- AI policy changes by inferred archetype (Burn, Control, Tempo, etc.).
+- AI scores legal moves using:
+  - board evaluation (life delta, card advantage, creature power)
+  - archetype-aware weighting (burn priority, counterspell timing preference, etc.)
+- Difficulty:
+  - Casual: weaker action pick
+  - Strong: top heuristic move
+  - Master: top heuristic move with full priority/autoplay loops
+
+## Card Data Sync and Cache
+
+- `POST /cards/sync?name=<card>` pulls card data from Scryfall and stores local cache.
+- Cache stores oracle-like fields, mana cost, types, stats, colors, legalities, image URI metadata.
+- Deck parser uses fuzzy lookup against cached names for typo recovery.
+
+## Deck Import and Built-in Decks
+
+- Built-in master archetypes are available via `/decks/builtin`.
+- User decks can be imported by text format:
+
+```text
+4 Lightning Bolt
+3 Counterspell
+20 Island
+```
+
+- Parser validates line format, mainboard size (60+), and produces suggestions for unknown names.
+
+## API Summary
+
+- `GET /health`
+- `POST /cards/sync`
+- `POST /cards/sync-bulk`
+- `GET /cards`
+- `GET /cards/suggest`
+- `GET /decks/builtin`
+- `GET /decks/builtin/{name}`
+- `POST /decks/import`
+- `POST /decks/import-file`
+- `GET /decks`
+- `POST /matches/start`
+- `GET /matches/{match_id}`
+- `GET /matches/{match_id}/legal-moves`
+- `POST /matches/{match_id}/action`
+- `POST /matches/{match_id}/autoplay`
+- `POST /matches/{match_id}/sideboard`
+- `POST /matches/{match_id}/next-game`
+- `POST /simulate/batch`
+- `GET /analytics/history`
+
+## How to Add Cards
+
+1. Sync with Scryfall:
+```bash
+curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
+```
+
+2. Card enters local cache table (`CardCache`) and becomes available for fuzzy deck validation.
+
+3. To expand card behavior, add or update rules/effect mapping in:
+- `backend/rules_engine/engine.py`
+- `backend/rules_engine/oracle_effects.py`
+- `backend/rules_engine/mana.py`
+- `backend/rules_engine/cast_choice.py`
+- `backend/rules_engine/hooks.py`
+- `backend/rules_engine/events.py`
+- `backend/rules_engine/costs.py`
+- `backend/rules_engine/targeting.py`
+- `backend/effects/registry.py`
+- `backend/effects/handlers.py`
+
+## How to Add Decks
+
+1. Use UI deck import panel or call `POST /decks/import`.
+2. To add new built-ins, update `backend/decks/builtin_decks.py`.
+3. Saved decks are persisted in `DeckRecord` and available in match controls.
+
+## Future Roadmap
+
+- deeper oracle interpretation (multi-target choices, \"up to\" semantics, and mode selection)
+- richer targeting UI and advanced priority stops
+- broader planeswalker and token rule automation
+- true mulligan decision simulation and opening hand quality model
+- MCTS / rollout AI for master-level tactical depth
+- PostgreSQL production profile and migration tooling
+- card image prefetch/cache worker and search indexing
+- multiplayer-ready engine abstractions
+
+## Known Limitations and Next Upgrades
+
+- Current engine is rules-aware but not full comprehensive MTG CR coverage.
+- Oracle-text inference is implemented for common patterns (damage/draw/counter/life/token/destroy/exile) but not full CR-complete parsing.
+- Replacement effects, layered continuous effects, and many triggered interactions are scaffolded but not exhaustive.
+- Sideboarding is implemented between games; UI support for interactive swap builders is still minimal.
+- AI is strong heuristic-based, not exhaustive game-tree search.
+- Next upgrades should prioritize full oracle effect interpretation, expanded interaction tests, and deeper tactical AI.

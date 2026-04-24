@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/api/client.ts","./src/components/AnalyticsPanel.tsx","./src/components/Battlefield.tsx","./src/components/Controls.tsx","./src/components/DeckPanel.tsx","./src/components/StackLog.tsx","./src/types/index.ts"],"version":"5.9.3"}

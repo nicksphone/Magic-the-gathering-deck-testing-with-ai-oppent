@@ -1,0 +1,37 @@
+from __future__ import annotations
+
+from game_state.state import MatchFactory, Step
+from rules_engine.engine import RulesEngine
+from rules_engine.move_generator import legal_moves
+
+
+def test_london_mulligan_flow_completes_pregame() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+
+    assert state.pregame_pending is True
+    engine.take_action(state, 1, {"type": "mulligan"})
+    assert state.mulligan_count[1] == 1
+    engine.take_action(state, 1, {"type": "keep_hand", "bottom_card_ids": []})
+    engine.take_action(state, 2, {"type": "keep_hand", "bottom_card_ids": []})
+    assert state.pregame_pending is False
+
+
+def test_sorcery_speed_not_castable_off_main_timing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    # Make player 2 priority on player 1 turn, non-instant spell in hand.
+    state.active_player = 1
+    state.priority_player = 2
+    state.step = Step.BEGIN_COMBAT
+    cid = state.players[2].hand[0]
+    state.cards[cid].name = "Sorcery Test"
+    state.cards[cid].types = ["Sorcery"]
+    state.cards[cid].mana_cost = "{1}{U}"
+
+    moves = legal_moves(state, 2)
+    assert not any(m.get("type") == "cast_spell" and m.get("card_id") == cid for m in moves)

@@ -1,0 +1,215 @@
+from __future__ import annotations
+
+from game_state.state import MatchState, Step, TURN_STEPS, Zone, draw_card
+from rules_engine import combat
+from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
+from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
+from rules_engine.mana import auto_pay_cost
+from rules_engine.move_generator import legal_moves
+from rules_engine.oracle_effects import infer_effect_from_oracle
+from rules_engine.priority import pass_priority
+from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
+from rules_engine.state_based_actions import apply_state_based_actions
+
+
+class RulesEngine:
+    def next_step(self, state: MatchState) -> None:
+        if state.pregame_pending:
+            return
+        if state.winner is not None:
+            return
+        if state.stack:
+            resolve_top_of_stack(state)
+            apply_state_based_actions(state)
+            state.priority_player = state.active_player
+            return
+
+        idx = TURN_STEPS.index(state.step)
+        if idx == len(TURN_STEPS) - 1:
+            state.turn += 1
+            state.active_player = 1 if state.active_player == 2 else 2
+            state.step = TURN_STEPS[0]
+            for cid in state.players[state.active_player].battlefield:
+                state.cards[cid].summoning_sick = False
+            state.players[state.active_player].lands_played_this_turn = 0
+        else:
+            state.step = TURN_STEPS[idx + 1]
+
+        self._apply_step_start_actions(state)
+        state.priority_player = state.active_player
+        state.passed_priority = set()
+
+    def _apply_step_start_actions(self, state: MatchState) -> None:
+        player = state.players[state.active_player]
+        if state.step == Step.UNTAP:
+            for cid in player.battlefield:
+                state.cards[cid].tapped = False
+            state.log.append(f"{player.name} untaps.")
+        elif state.step == Step.DRAW and state.turn > 1:
+            draw_card(state, state.active_player)
+            state.log.append(f"{player.name} draws a card.")
+        elif state.step == Step.CLEANUP:
+            for color in player.mana_pool:
+                player.mana_pool[color] = 0
+
+    def take_action(self, state: MatchState, player_id: int, action: dict) -> None:
+        if state.winner is not None:
+            return
+        kind = action.get("type")
+
+        if state.pregame_pending:
+            self._handle_pregame_action(state, player_id, action)
+            return
+
+        if kind == "pass_priority":
+            both_passed = pass_priority(state, player_id)
+            if both_passed:
+                if state.stack:
+                    resolve_top_of_stack(state)
+                    state.priority_player = state.active_player
+                else:
+                    self.next_step(state)
+            apply_state_based_actions(state)
+            return
+
+        if state.priority_player != player_id:
+            return
+
+        player = state.players[player_id]
+        if kind == "play_land":
+            cid = action["card_id"]
+            if cid in player.hand and player.lands_played_this_turn < 1:
+                player.hand.remove(cid)
+                player.battlefield.append(cid)
+                player.lands_played_this_turn += 1
+                state.cards[cid].zone = Zone.BATTLEFIELD
+                state.cards[cid].summoning_sick = False
+                state.log.append(f"{player.name} plays {state.cards[cid].name}.")
+
+        elif kind == "tap_land_for_mana":
+            cid = action["card_id"]
+            if cid in player.battlefield and not state.cards[cid].tapped and "Land" in state.cards[cid].types:
+                state.cards[cid].tapped = True
+                color = _infer_mana_from_land(state.cards[cid].name)
+                player.mana_pool[color] += 1
+                state.log.append(f"{player.name} taps {state.cards[cid].name} for {color}.")
+
+        elif kind == "cast_spell":
+            cid = action["card_id"]
+            if cid in player.hand:
+                card = state.cards[cid]
+                options = collect_cost_options(state, player_id, card)
+                chosen = normalize_cost_choice(action, options)
+                if not check_cost_option_available(state, player_id, card, chosen):
+                    state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
+                    apply_state_based_actions(state)
+                    return
+                paid = auto_pay_cost(state, player_id, chosen.mana_cost, is_land=("Land" in card.types), card_name=card.name)
+                if not paid:
+                    state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
+                    apply_state_based_actions(state)
+                    return
+                if not apply_additional_costs(state, player_id, chosen, cid):
+                    state.log.append(f"{player.name} failed additional costs for {card.name}.")
+                    apply_state_based_actions(state)
+                    return
+                action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+                action_targets = enrich_divide_total(card, action_targets)
+                hints = build_cast_hints(state, card, player_id)
+                ok, error = validate_cast_choice(hints, action_targets)
+                if not ok:
+                    state.log.append(f"Invalid targets for {card.name}: {error}")
+                    apply_state_based_actions(state)
+                    return
+                effect_key, payload = infer_effect_from_oracle(state, card, player_id, action_targets=action_targets)
+
+                player.hand.remove(cid)
+                card.zone = Zone.STACK
+                add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
+
+        elif kind == "attack":
+            ids = action.get("attackers", [])
+            combat.declare_attackers(state, ids)
+
+        elif kind == "block":
+            blocks = action.get("blocks", {})
+            combat.declare_blockers(state, blocks)
+
+        elif kind == "combat_damage":
+            combat.combat_damage(state)
+
+        apply_state_based_actions(state)
+
+    def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
+        return legal_moves(state, player_id)
+
+    def _handle_pregame_action(self, state: MatchState, player_id: int, action: dict) -> None:
+        if player_id in state.kept_hands:
+            return
+        kind = action.get("type")
+        player = state.players[player_id]
+        if kind == "mulligan":
+            if state.mulligan_count.get(player_id, 0) >= 3:
+                return
+            while player.hand:
+                cid = player.hand.pop()
+                player.library.append(cid)
+                state.cards[cid].zone = Zone.LIBRARY
+            import random
+
+            random.shuffle(player.library)
+            for _ in range(7):
+                draw_card(state, player_id)
+            state.mulligan_count[player_id] = state.mulligan_count.get(player_id, 0) + 1
+            state.log.append(f"{player.name} takes a mulligan to {7 - state.mulligan_count[player_id]}.")
+            return
+        if kind == "keep_hand":
+            bottom = action.get("bottom_card_ids", [])
+            need_bottom = state.mulligan_count.get(player_id, 0)
+            chosen = [cid for cid in bottom if cid in player.hand][:need_bottom]
+            if len(chosen) < need_bottom:
+                chosen += _auto_bottom_cards(state, player_id, need_bottom - len(chosen), exclude=set(chosen))
+            for cid in chosen:
+                if cid in player.hand:
+                    player.hand.remove(cid)
+                    player.library.insert(0, cid)
+                    state.cards[cid].zone = Zone.LIBRARY
+            state.kept_hands.add(player_id)
+            state.log.append(f"{player.name} keeps hand.")
+            if len(state.kept_hands) == 2:
+                state.pregame_pending = False
+                state.priority_player = state.active_player
+                state.step = Step.UNTAP
+                self._apply_step_start_actions(state)
+                state.log.append("Pregame complete. Proceeding to turn structure.")
+
+
+def _infer_mana_from_land(name: str) -> str:
+    n = name.lower()
+    if "plains" in n:
+        return "W"
+    if "island" in n:
+        return "U"
+    if "swamp" in n:
+        return "B"
+    if "mountain" in n:
+        return "R"
+    if "forest" in n:
+        return "G"
+    return "C"
+
+
+def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: set[str] | None = None) -> list[str]:
+    from rules_engine.mana import parse_mana_cost
+
+    exclude = exclude or set()
+    hand_cards = [state.cards[cid] for cid in state.players[player_id].hand if cid not in exclude]
+    scored = []
+    for card in hand_cards:
+        land_bias = -3 if "Land" in card.types else 0
+        req = parse_mana_cost(card.mana_cost, is_land=("Land" in card.types))
+        cmc = req["generic"] + sum(req[c] for c in ["W", "U", "B", "R", "G"])
+        score = cmc + land_bias
+        scored.append((score, card.id))
+    scored.sort(reverse=True)
+    return [cid for _, cid in scored[: max(0, count)]]

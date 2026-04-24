@@ -1,0 +1,10 @@
+backend/.venv/
+backend/.pytest_cache/
+backend/__pycache__/
+backend/**/*.pyc
+backend/graphify-out/
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+*.sqlite3
+*.db
