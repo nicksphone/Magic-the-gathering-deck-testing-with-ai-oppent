@@ -101,6 +101,17 @@ export function App() {
     await syncMoves(nextMatch);
   }
 
+  async function onSubmitAttack(attackers: string[], attackTargets: Record<string, string>) {
+    if (!match) return;
+    const nextMatch = await api.act(match.id, match.priority_player, {
+      type: "attack",
+      attackers,
+      attack_targets: attackTargets,
+    });
+    setMatch(nextMatch);
+    await syncMoves(nextMatch);
+  }
+
   async function onApplySideboard(playerId: number, outCards: DeckItem[], inCards: DeckItem[]) {
     if (!match) return;
     const nextMatch = await api.sideboard(match.id, playerId, outCards, inCards);
@@ -150,6 +161,7 @@ export function App() {
           onNextStep={nextStep}
           onAutoplayTick={autoplayTick}
           onSubmitBlocks={onSubmitBlocks}
+          onSubmitAttack={onSubmitAttack}
           onApplySideboard={onApplySideboard}
           onNextGame={onNextGame}
           onSetPriorityStops={onSetPriorityStops}

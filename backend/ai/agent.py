@@ -30,7 +30,7 @@ class AIAgent:
         sorted_moves = self._rank_moves(state, legal_moves, player_id)
         if self.difficulty == "casual":
             move = sorted_moves[min(1, len(sorted_moves) - 1)]
-        elif self.difficulty == "master":
+        elif self.difficulty in {"master", "master_plus"}:
             move = sorted_moves[0]
         else:
             move = sorted_moves[0]
@@ -76,8 +76,10 @@ class AIAgent:
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "pass_priority":
                 base += self._pass_bias(state, player_id)
-            if self.difficulty == "master":
+            if self.difficulty in {"master", "master_plus"}:
                 base += self._simulate_delta(state, move, player_id)
+            if self.difficulty == "master_plus":
+                base += self._rollout_delta(state, move, player_id)
             return base
 
         ranked = sorted(moves, key=score, reverse=True)
@@ -149,3 +151,71 @@ class AIAgent:
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8
         return 0.3
+
+    def _rollout_delta(self, state: MatchState, move: dict, player_id: int) -> float:
+        # Lightweight rollout approximation for deeper tactical planning.
+        try:
+            sim = copy.deepcopy(state)
+            self.engine.take_action(sim, player_id, move)
+        except Exception:
+            return 0.0
+        if sim.winner == player_id:
+            return 100.0
+        if sim.winner is not None and sim.winner != player_id:
+            return -100.0
+        total = 0.0
+        samples = 3
+        plies = 6
+        for _ in range(samples):
+            branch = copy.deepcopy(sim)
+            total += self._rollout_playout(branch, player_id, plies)
+        return total / samples
+
+    def _rollout_playout(self, state: MatchState, eval_for_player: int, plies: int) -> float:
+        for _ in range(max(0, plies)):
+            if state.winner is not None:
+                break
+            pid = state.priority_player
+            legal = self.engine.legal_moves(state, pid)
+            if not legal:
+                break
+            chosen = self._pick_rollout_move(state, legal, pid)
+            try:
+                self.engine.take_action(state, pid, chosen)
+            except Exception:
+                break
+            if state.step == state.step.COMBAT_DAMAGE:
+                try:
+                    self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
+                except Exception:
+                    break
+        if state.winner == eval_for_player:
+            return 40.0
+        if state.winner is not None and state.winner != eval_for_player:
+            return -40.0
+        return evaluate_board(state, eval_for_player) * 0.05
+
+    def _pick_rollout_move(self, state: MatchState, legal: list[dict], player_id: int) -> dict:
+        # Fast rollout policy (no nested simulations).
+        def quick_score(move: dict) -> float:
+            mtype = move.get("type")
+            base = 0.0
+            if mtype == "cast_spell":
+                name = str(move.get("card_name", "")).lower()
+                if "counterspell" in name and getattr(state, "stack", []):
+                    base += 3
+                if any(k in name for k in ["bolt", "shock", "spike"]):
+                    base += 4
+            elif mtype == "attack":
+                base += 3
+            elif mtype == "play_land":
+                base += 2
+            elif mtype == "activate_loyalty":
+                base += 2.5
+            elif mtype == "pass_priority":
+                base -= 0.2
+            return base
+
+        ranked = sorted(legal, key=quick_score, reverse=True)
+        top = ranked[: min(3, len(ranked))]
+        return top[0]

@@ -6,7 +6,7 @@ from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, vali
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.mana import auto_pay_cost
 from rules_engine.move_generator import legal_moves
-from rules_engine.oracle_effects import infer_effect_from_oracle
+from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
@@ -29,6 +29,7 @@ class RulesEngine:
             state.turn += 1
             state.active_player = 1 if state.active_player == 2 else 2
             state.step = TURN_STEPS[0]
+            state.loyalty_activated_this_turn = set()
             for cid in state.players[state.active_player].battlefield:
                 state.cards[cid].summoning_sick = False
             state.players[state.active_player].lands_played_this_turn = 0
@@ -129,7 +130,51 @@ class RulesEngine:
 
         elif kind == "attack":
             ids = action.get("attackers", [])
-            combat.declare_attackers(state, ids)
+            attack_targets = action.get("attack_targets", {})
+            combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {})
+
+        elif kind == "activate_loyalty":
+            if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
+                state.log.append("Loyalty abilities can only be activated at sorcery speed on your turn.")
+                apply_state_based_actions(state)
+                return
+            cid = action.get("card_id")
+            ability_index = int(action.get("ability_index", -1))
+            if not cid or cid not in player.battlefield:
+                apply_state_based_actions(state)
+                return
+            if cid in state.loyalty_activated_this_turn:
+                state.log.append(f"{state.cards[cid].name} already activated a loyalty ability this turn.")
+                apply_state_based_actions(state)
+                return
+            pw = state.cards[cid]
+            if "Planeswalker" not in pw.types:
+                apply_state_based_actions(state)
+                return
+            abilities = extract_loyalty_abilities(pw)
+            if ability_index < 0 or ability_index >= len(abilities):
+                state.log.append(f"Invalid loyalty ability index for {pw.name}.")
+                apply_state_based_actions(state)
+                return
+            ability = abilities[ability_index]
+            next_loyalty = (pw.loyalty or 0) + int(ability["delta"])
+            if next_loyalty < 0:
+                state.log.append(f"{pw.name} does not have enough loyalty for that ability.")
+                apply_state_based_actions(state)
+                return
+            pw.loyalty = next_loyalty
+            state.loyalty_activated_this_turn.add(cid)
+            action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+            proxy = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
+            effect_key, payload = infer_effect_from_oracle(state, proxy, player_id, action_targets=action_targets)
+            add_to_stack(
+                state,
+                source_card_id=cid,
+                controller=player_id,
+                label=f"{pw.name} loyalty ability",
+                effect_key=effect_key,
+                payload=payload,
+            )
 
         elif kind == "block":
             blocks = action.get("blocks", {})

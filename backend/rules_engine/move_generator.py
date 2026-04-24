@@ -4,6 +4,7 @@ from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.costs import check_cost_option_available, collect_cost_options
 from rules_engine.mana import can_pay_with_pool_and_lands
+from rules_engine.oracle_effects import extract_loyalty_abilities
 
 
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
@@ -30,7 +31,18 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not state.cards[cid].tapped
             and not state.cards[cid].summoning_sick
         ]
-        moves.append({"type": "attack", "options": attackers})
+        defender_id = 1 if state.active_player == 2 else 2
+        defenders = [{"id": f"player:{defender_id}", "label": state.players[defender_id].name, "kind": "player"}]
+        defenders.extend(
+            {
+                "id": f"planeswalker:{cid}",
+                "label": state.cards[cid].name,
+                "kind": "planeswalker",
+            }
+            for cid in state.players[defender_id].battlefield
+            if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
+        )
+        moves.append({"type": "attack", "options": attackers, "defenders": defenders})
     if state.step == Step.DECLARE_BLOCKERS and state.active_player != player_id and state.attackers:
         blockers = [
             cid
@@ -73,6 +85,33 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "target_hints": build_cast_hints(state, card, player_id),
                 }
             )
+
+    # Planeswalker loyalty abilities: sorcery speed, once per planeswalker each turn.
+    if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if "Planeswalker" not in card.types:
+                continue
+            if cid in state.loyalty_activated_this_turn:
+                continue
+            abilities = extract_loyalty_abilities(card)
+            for idx, ability in enumerate(abilities):
+                next_loyalty = (card.loyalty or 0) + int(ability["delta"])
+                if next_loyalty < 0:
+                    continue
+                hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+                hints = build_cast_hints(state, hints_card, player_id)
+                moves.append(
+                    {
+                        "type": "activate_loyalty",
+                        "card_id": cid,
+                        "card_name": card.name,
+                        "ability_index": idx,
+                        "ability_label": ability["label"],
+                        "ability_delta": ability["delta"],
+                        "target_hints": hints,
+                    }
+                )
 
     for cid in player.battlefield:
         if "Land" in state.cards[cid].types and not state.cards[cid].tapped:

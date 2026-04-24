@@ -406,6 +406,9 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             out["type_line"] = row.type_line
             out["power"] = row.power
             out["toughness"] = row.toughness
+            loyalty = getattr(row, "loyalty", None)
+            if loyalty is not None:
+                out["loyalty"] = loyalty
         hydrated.append(out)
     return hydrated
 

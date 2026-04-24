@@ -25,6 +25,7 @@ CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOT
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
+LOYALTY_ABILITY_RE = re.compile(r"([+-]?\d+):\s*([^\n]+)")
 
 
 def infer_effect_from_oracle(
@@ -100,6 +101,12 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
         ]
     if DIVIDE_RE.search(oracle):
         hints["supports_divide"] = True
+    if "any target" in oracle or "target creature or planeswalker" in oracle:
+        hints["planeswalker_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[opponent].battlefield
+            if "Planeswalker" in state.cards[cid].types
+        ]
     return hints
 
 
@@ -124,6 +131,16 @@ def _split_clauses(oracle: str) -> list[str]:
     cleaned = oracle.replace("\n", " ")
     parts = re.split(r"\.\s+|\s*;\s+|\s+then\s+", cleaned)
     return [p.strip(" .;") for p in parts if p.strip(" .;")]
+
+
+def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
+    oracle = card.oracle_text or ""
+    out: list[dict[str, Any]] = []
+    for match in LOYALTY_ABILITY_RE.finditer(oracle):
+        delta = int(match.group(1))
+        text = match.group(2).strip()
+        out.append({"delta": delta, "text": text, "label": f"{delta:+d}: {text}"})
+    return out
 
 
 def _infer_clause_effect(

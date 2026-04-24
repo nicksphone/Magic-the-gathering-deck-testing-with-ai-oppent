@@ -17,3 +17,10 @@ def apply_state_based_actions(state: MatchState) -> None:
                 pstate.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD
                 state.log.append(f"State-based action: {card.name} dies due to 0 toughness.")
+        if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
+            pstate = state.players[card.controller]
+            if cid in pstate.battlefield:
+                pstate.battlefield.remove(cid)
+                pstate.graveyard.append(cid)
+                card.zone = Zone.GRAVEYARD
+                state.log.append(f"State-based action: {card.name} is put into graveyard due to 0 loyalty.")

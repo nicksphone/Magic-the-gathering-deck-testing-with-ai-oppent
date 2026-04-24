@@ -40,6 +40,7 @@ def serialize_match(state: MatchState) -> dict:
                         "summoning_sick": state.cards[cid].summoning_sick,
                         "power": state.cards[cid].power,
                         "toughness": state.cards[cid].toughness,
+                        "loyalty": state.cards[cid].loyalty,
                         "types": state.cards[cid].types,
                     }
                     for cid in p.battlefield
@@ -69,6 +70,7 @@ def serialize_match(state: MatchState) -> dict:
             for item in state.stack
         ],
         "attackers": state.attackers,
+        "attack_targets": state.attack_targets,
         "blocks": state.blocks,
         "log": state.log[-120:],
     }

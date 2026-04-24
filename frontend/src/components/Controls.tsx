@@ -20,6 +20,7 @@ type Props = {
   onNextStep: () => void;
   onAutoplayTick: (ticks: number) => void;
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
+  onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: () => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
@@ -56,7 +57,9 @@ export function Controls(props: Props) {
     "cleanup",
   ];
   const blockMove = useMemo(() => props.legalMoves.find((m) => m.type === "block"), [props.legalMoves]);
+  const attackMove = useMemo(() => props.legalMoves.find((m) => m.type === "attack"), [props.legalMoves]);
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
+  const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
   const [sbPlayer, setSbPlayer] = useState(1);
   const [sbOut, setSbOut] = useState("");
   const [sbIn, setSbIn] = useState("");
@@ -93,6 +96,7 @@ export function Controls(props: Props) {
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>
           <option value="master">Master</option>
+          <option value="master_plus">Master+</option>
         </select>
         <select value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
           <option value={3}>Best-of-3</option>
@@ -190,6 +194,40 @@ export function Controls(props: Props) {
           ))}
           <button onClick={() => props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, v]) => v.length > 0)))}>
             Submit Blocks
+          </button>
+        </div>
+      ) : null}
+
+      {attackMove ? (
+        <div className="block-panel">
+          <h3>Declare Attackers</h3>
+          {(attackMove.options ?? []).map((attackerId) => {
+            const attacker = props.match?.players?.["1"]?.battlefield?.find((c) => c.id === attackerId)
+              || props.match?.players?.["2"]?.battlefield?.find((c) => c.id === attackerId);
+            return (
+              <div className="row" key={`atk-${attackerId}`}>
+                <span>{attacker?.name ?? attackerId}</span>
+                <select
+                  value={attackTargets[attackerId] ?? ""}
+                  onChange={(e) =>
+                    setAttackTargets((prev) => ({
+                      ...prev,
+                      [attackerId]: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Default Defender</option>
+                  {attackMove.defenders?.map((d) => (
+                    <option key={`${attackerId}-def-${d.id}`} value={d.id}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
+          <button onClick={() => props.onSubmitAttack(attackMove.options ?? [], attackTargets)}>
+            Submit Attackers
           </button>
         </div>
       ) : null}

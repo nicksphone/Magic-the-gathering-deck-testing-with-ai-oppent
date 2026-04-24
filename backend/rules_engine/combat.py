@@ -4,8 +4,12 @@ from game_state.state import MatchState, Zone
 from rules_engine.events import emit_event
 
 
-def declare_attackers(state: MatchState, attacker_ids: list[str]) -> None:
+def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None) -> None:
+    attack_targets = attack_targets or {}
     legal: list[str] = []
+    legal_targets: dict[str, str] = {}
+    defender = 1 if state.active_player == 2 else 2
+    valid_defenders = _valid_defenders(state, defender)
     for cid in attacker_ids:
         if cid not in state.cards:
             continue
@@ -21,10 +25,16 @@ def declare_attackers(state: MatchState, attacker_ids: list[str]) -> None:
         if card.summoning_sick and "haste" not in [k.lower() for k in card.keywords]:
             continue
         legal.append(cid)
+        desired = attack_targets.get(cid, f"player:{defender}")
+        legal_targets[cid] = desired if desired in valid_defenders else f"player:{defender}"
         card.tapped = True
     state.attackers = legal
+    state.attack_targets = legal_targets
     if legal:
-        names = ", ".join(state.cards[c].name for c in legal)
+        names = ", ".join(
+            f"{state.cards[c].name} -> {_defender_label(state, state.attack_targets.get(c, f'player:{defender}'))}"
+            for c in legal
+        )
         state.log.append(f"Attackers declared: {names}")
 
 
@@ -55,17 +65,18 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
 
 
 def combat_damage(state: MatchState) -> None:
-    defender = 1 if state.active_player == 2 else 2
-    _combat_damage_step(state, defender, first_strike_only=True)
+    default_defender = 1 if state.active_player == 2 else 2
+    _combat_damage_step(state, default_defender, first_strike_only=True)
     _remove_dead_creatures(state)
-    _combat_damage_step(state, defender, first_strike_only=False)
+    _combat_damage_step(state, default_defender, first_strike_only=False)
     _remove_dead_creatures(state)
 
     state.attackers = []
+    state.attack_targets = {}
     state.blocks = {}
 
 
-def _combat_damage_step(state: MatchState, defender: int, first_strike_only: bool) -> None:
+def _combat_damage_step(state: MatchState, default_defender: int, first_strike_only: bool) -> None:
     for attacker in list(state.attackers):
         if attacker not in state.cards:
             continue
@@ -79,8 +90,9 @@ def _combat_damage_step(state: MatchState, defender: int, first_strike_only: boo
             continue
 
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
+        defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
         if not blocks:
-            state.players[defender].life -= atk.power or 0
+            _deal_unblocked_damage(state, defender_key, atk.power or 0)
             continue
 
         atk_power = atk.power or 0
@@ -97,7 +109,7 @@ def _combat_damage_step(state: MatchState, defender: int, first_strike_only: boo
             remaining -= dealt
 
         if _has_keyword(atk, "trample") and remaining > 0:
-            state.players[defender].life -= remaining
+            _deal_unblocked_damage(state, defender_key, remaining)
 
         blocker_total = 0
         for blocker_id in blocks:
@@ -132,3 +144,38 @@ def _remove_dead_creatures(state: MatchState) -> None:
 
 def _has_keyword(card, keyword: str) -> bool:
     return keyword.lower() in [k.lower() for k in card.keywords]
+
+
+def _valid_defenders(state: MatchState, defending_player: int) -> set[str]:
+    out = {f"player:{defending_player}"}
+    for cid in state.players[defending_player].battlefield:
+        card = state.cards[cid]
+        if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
+            out.add(f"planeswalker:{cid}")
+    return out
+
+
+def _defender_label(state: MatchState, key: str) -> str:
+    if key.startswith("planeswalker:"):
+        cid = key.split(":", 1)[1]
+        card = state.cards.get(cid)
+        if card:
+            return card.name
+    if key.startswith("player:"):
+        pid = int(key.split(":", 1)[1])
+        return state.players[pid].name
+    return key
+
+
+def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int) -> None:
+    if amount <= 0:
+        return
+    if defender_key.startswith("planeswalker:"):
+        cid = defender_key.split(":", 1)[1]
+        card = state.cards.get(cid)
+        if card and "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
+            card.loyalty = (card.loyalty or 0) - amount
+            state.log.append(f"{card.name} loses {amount} loyalty.")
+            return
+    pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
+    state.players[pid].life -= amount

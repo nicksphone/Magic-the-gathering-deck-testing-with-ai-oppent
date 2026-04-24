@@ -57,6 +57,7 @@ class CardInstance:
     mana_cost: str = ""
     power: int | None = None
     toughness: int | None = None
+    loyalty: int | None = None
     tapped: bool = False
     summoning_sick: bool = True
     counters: dict[str, int] = field(default_factory=dict)
@@ -102,6 +103,7 @@ class MatchState:
     step: Step = Step.UNTAP
     passed_priority: set[int] = field(default_factory=set)
     attackers: list[str] = field(default_factory=list)
+    attack_targets: dict[str, str] = field(default_factory=dict)
     blocks: dict[str, list[str]] = field(default_factory=dict)
     winner: int | None = None
     best_of: int = 3
@@ -109,6 +111,7 @@ class MatchState:
     pregame_pending: bool = True
     mulligan_count: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     kept_hands: set[int] = field(default_factory=set)
+    loyalty_activated_this_turn: set[str] = field(default_factory=set)
     priority_stops: dict[int, set[Step]] = field(
         default_factory=lambda: {
             1: {Step.UPKEEP, Step.PRECOMBAT_MAIN, Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.POSTCOMBAT_MAIN, Step.END_STEP},
@@ -145,6 +148,7 @@ class MatchFactory:
                     mana_cost=raw_item.get("mana_cost", ""),
                     power=_infer_power(card_name, raw_item.get("power")),
                     toughness=_infer_toughness(card_name, raw_item.get("toughness")),
+                    loyalty=_infer_loyalty(card_name, raw_item.get("loyalty"), types),
                     summoning_sick="Creature" in types,
                     keywords=_infer_keywords(raw_item.get("oracle_text", "") or ""),
                     oracle_text=raw_item.get("oracle_text", "") or "",
@@ -236,6 +240,23 @@ def _infer_toughness(name: str, toughness: str | int | None = None) -> int | Non
     if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp", "counterspell", "bolt", "consider"]):
         return None
     return 2
+
+
+def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str] | None = None) -> int | None:
+    if loyalty is not None and str(loyalty).isdigit():
+        return int(loyalty)
+    if types and "Planeswalker" not in types:
+        return None
+    n = name.lower()
+    if "teferi" in n:
+        return 4
+    if "nissa" in n:
+        return 3
+    if "ugin" in n:
+        return 7
+    if "emperor" in n:
+        return 3
+    return 4
 
 
 def _infer_keywords(oracle_text: str) -> list[str]:

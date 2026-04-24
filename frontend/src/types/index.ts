@@ -16,6 +16,7 @@ export type CardView = {
   summoning_sick: boolean;
   power: number | null;
   toughness: number | null;
+  loyalty?: number | null;
   types: string[];
 };
 
@@ -47,6 +48,7 @@ export type MatchState = {
   players: Record<string, PlayerView>;
   stack: { id: string; label: string; controller: number; effect_key: string }[];
   attackers?: string[];
+  attack_targets?: Record<string, string>;
   blocks?: Record<string, string>;
   game_number?: number;
   best_of?: number;
@@ -71,10 +73,15 @@ export type LegalMove = {
   }[];
   options?: string[];
   attackers?: { id: string; name: string }[];
+  defenders?: { id: string; label: string; kind: string }[];
   blockers?: { id: string; name: string }[];
+  ability_index?: number;
+  ability_label?: string;
+  ability_delta?: number;
   target_hints?: {
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];
+    planeswalker_targets?: { id: string; name: string }[];
     stack_targets?: { id: string; label: string }[];
     modes?: string[];
     choose_two_modes?: boolean;

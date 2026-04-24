@@ -11,6 +11,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p1 = match.players["1"];
   const p2 = match.players["2"];
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
+  const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
@@ -56,6 +57,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
               <small>
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
+              {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
             </article>
           ))}
         </div>
@@ -76,9 +78,75 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
               <small>
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
+              {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
             </article>
           ))}
         </div>
+        {loyaltyMoves.length ? (
+          <div className="hand-row">
+            {loyaltyMoves.map((move, i) => {
+              const key = `${move.card_id}-loyalty-${move.ability_index ?? i}`;
+              const hints = move.target_hints;
+              return (
+                <div key={key} className="cast-card-box">
+                  <button
+                    onClick={() =>
+                      onCardAction(1, {
+                        type: "activate_loyalty",
+                        card_id: move.card_id,
+                        ability_index: move.ability_index,
+                        targets: targets[key] ?? {},
+                      })
+                    }
+                  >
+                    {move.card_name}: {move.ability_label}
+                  </button>
+                  {hints?.player_targets?.length ? (
+                    <select
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], target_player: Number(e.target.value) },
+                        }))
+                      }
+                      defaultValue=""
+                    >
+                      <option value="">Target Player</option>
+                      {hints.player_targets.map((t) => (
+                        <option key={`${key}-p-${t.id}`} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                  {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
+                    <select
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          [key]: { ...prev[key], target_card_id: e.target.value },
+                        }))
+                      }
+                      defaultValue=""
+                    >
+                      <option value="">Target Permanent</option>
+                      {(hints.creature_targets ?? []).map((t) => (
+                        <option key={`${key}-c-${t.id}`} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                      {(hints.planeswalker_targets ?? []).map((t) => (
+                        <option key={`${key}-pw-${t.id}`} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
         <div className="hand-row">
           {p1.hand.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
@@ -175,7 +243,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                     }
                   />
                 ) : null}
-                {hints?.creature_targets?.length ? (
+                {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
                   hints.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple
@@ -189,9 +257,14 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                         }))
                       }
                     >
-                      {hints.creature_targets.map((t) => (
+                      {(hints.creature_targets ?? []).map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
+                        </option>
+                      ))}
+                      {(hints.planeswalker_targets ?? []).map((t) => (
+                        <option key={`pw-multi-${t.id}`} value={t.id}>
+                          {t.name} (Planeswalker)
                         </option>
                       ))}
                     </select>
@@ -206,9 +279,14 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                       defaultValue=""
                     >
                       <option value="">Target Creature</option>
-                      {hints.creature_targets.map((t) => (
+                      {(hints.creature_targets ?? []).map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
+                        </option>
+                      ))}
+                      {(hints.planeswalker_targets ?? []).map((t) => (
+                        <option key={`pw-${t.id}`} value={t.id}>
+                          {t.name} (Planeswalker)
                         </option>
                       ))}
                     </select>

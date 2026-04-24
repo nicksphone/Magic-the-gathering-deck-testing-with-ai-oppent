@@ -49,6 +49,7 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 - stack management
 - legal move generation
 - combat and state-based actions
+- planeswalker combat targeting and loyalty state actions
 
 3. Effect Resolution Layer (`backend/effects`)
 - reusable modular effect handlers
@@ -68,12 +69,14 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 - archetype detection
 - heuristic board evaluation
 - difficulty levels: Casual / Strong / Master
+- advanced rollout mode: Master+
 - decision policy across legal moves
 
 7. UI Layer (`frontend/src`)
 - desktop-first battlefield layout
 - deck import panel
 - controls for phases/priority/autoplay
+- attacker target selection (player vs planeswalker) and loyalty ability actions
 - stack + match log
 - structured target allocation UI for divide-damage spells
 - testing simulator analytics panel
@@ -125,8 +128,10 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - Non-instant timing now respects active-player main-phase + empty-stack constraints.
 - Combat validates legal attackers/blockers, then applies combat damage.
 - Combat now supports multi-block assignment, first/double strike step handling, and trample spillover.
+- Combat now supports per-attacker defender assignment (player or planeswalker).
 - Trigger event bus now pushes triggered abilities in APNAP order.
 - State-based actions run after actions/resolution and enforce loss/death checks.
+- Planeswalkers are put into graveyard as a state-based action at 0 loyalty.
 
 ## How the AI Works
 
@@ -140,6 +145,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
   - Casual: weaker action pick
   - Strong: top heuristic move
   - Master: top heuristic move with full priority/autoplay loops
+  - Master+: rollout-enhanced tactical selection for deeper simulation quality
 
 ## Card Data Sync and Cache
 
@@ -214,7 +220,7 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 
 - deeper oracle interpretation (remaining CR edge cases, layered continuous effects, complex replacement timing)
 - richer targeting UX for complex multi-target cards (current divide/selection UX implemented)
-- broader planeswalker and token rule automation
+- broader planeswalker and token rule automation (combat targeting + loyalty abilities now in; deeper loyalty-card coverage remaining)
 - true mulligan decision simulation and opening hand quality model
 - MCTS / rollout AI for master-level tactical depth
 - PostgreSQL production profile and migration tooling
@@ -252,7 +258,14 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - Broader token automation:
   - oracle parsing now extracts token count + combat keywords for token creation clauses
   - token handler now supports multi-token creation with attached keywords
-- Backend test environment verified in project venv: `33 passed`.
+- Planeswalker rules surface:
+  - attackers can target opposing planeswalkers
+  - combat damage removes planeswalker loyalty
+  - state-based action moves planeswalkers with 0 loyalty to graveyard
+  - loyalty abilities are exposed as legal moves and can be activated at sorcery speed
+- AI improvements:
+  - new `master_plus` rollout difficulty in match play + batch simulator
+- Backend test environment verified in project venv: `36 passed`.
 
 ## Documentation Rule
 
