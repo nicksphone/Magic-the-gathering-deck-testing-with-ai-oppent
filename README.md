@@ -192,6 +192,7 @@ cd /home/nick/mtg-deck-testing-lab/backend
 - `POST /matches/{match_id}/next-game`
 - `POST /matches/{match_id}/priority-stops`
 - `POST /simulate/batch`
+- `POST /ai/diagnostics`
 - `GET /analytics/history`
 
 ## How to Add Cards
@@ -232,6 +233,31 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - card image prefetch/cache worker and search indexing
 - multiplayer-ready engine abstractions
 
+## AI Diagnostics Module
+
+- Use `POST /ai/diagnostics` to run automated round-robin AI self-play diagnostics across selected decks.
+- Goal: accelerate bug finding by automatically surfacing:
+  - invalid target loops
+  - cost-payment failures
+  - repeated error bursts
+  - timeouts / stalled games
+- Typical payload:
+
+```json
+{
+  "include_builtins": true,
+  "max_decks": 10,
+  "matches_per_pair": 5,
+  "difficulty": "master",
+  "max_ticks": 3000
+}
+```
+
+- Output includes:
+  - `global_anomalies` summary counts
+  - `top_errors` ranked by frequency
+  - `suspicious_matchups` sorted by anomaly severity
+
 ## Known Limitations and Next Upgrades
 
 - Current engine is rules-aware but not full comprehensive MTG CR coverage.
@@ -258,6 +284,31 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - Advanced priority-stop system:
   - per-player stop configuration by step (`/matches/{id}/priority-stops`)
   - autoplay now pauses when configured stop windows have meaningful human decisions
+- High-skill AI threat deployment improvements (2026-04-25):
+  - master/control/midrange/ramp casting heuristics now prioritize big castable creatures in safe main-phase windows
+  - pass-priority scoring now penalizes stalling when a castable creature threat is available
+  - simulated lookahead now approximates creature resolution after cast to avoid undervaluing board development
+  - regression tests added for master midrange and control finisher-cast decisions
+- Control-vs-Ramp stability and offline-hydration fixes (2026-04-25):
+  - expanded fallback card-type inference to avoid noncreature cards being misclassified as creatures in unhydrated/offline starts
+  - named dual lands (e.g., Hallowed Fountain) now infer color pairs even without cached type line/oracle
+  - added offline fallback card metadata (mana cost/type/oracle baseline) for core Blue Control and Ramp cards when cache sync is unavailable
+  - AI now materializes `x_value` automatically for X-cost spells to avoid invalid-cast loops
+  - cast validation now occurs before mana payment, preventing invalid target selections from tapping lands/spending mana
+  - added regression coverage for fallback hydration, type inference, named dual-land color inference, and X-spell action materialization
+- Casting-cost robustness improvements (2026-04-25):
+  - backend cast handling now falls back to the first currently available cost option when no explicit `cost_choice` is provided
+  - AI action materialization now includes a default `cost_choice` when multiple legal cost options are present
+  - regression tests added for alternate-cost fallback and AI default cost-option selection
+- Planeswalker X-target parsing fix (2026-04-25):
+  - cast target hints no longer require `x_value` just because a planeswalker's full oracle text contains a `-X` loyalty ability
+  - this prevents invalid cast loops for cards like `Ugin, the Spirit Dragon`
+  - regression test added to ensure Ugin cast does not require `x_value`
+- Targeting-hint stability fixes for control/ramp spells (2026-04-25):
+  - `requires_x_value` is now keyed to cast mana cost (`{X}`) instead of generic oracle-text `X` references
+  - fixes invalid-target loops for `Memory Deluge` and `Shark Typhoon` casts
+  - divide-total auto-fill now only runs for true “divide damage among targets” effects
+  - fixes false divide-distribution errors on non-divide X spells such as `March of Otherworldly Light`
 - AI automation reliability hardening:
   - match payload now includes authoritative `mode` and `controllers`
   - frontend autoplay now follows active match controllers (not only current UI selector state)
@@ -277,6 +328,8 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - match log now displays in chronological order and preserves context across game transitions in best-of matches
   - aggro AI cast logic now weights early creature development higher to reduce over-prioritization of burn spells
   - battlefield UI now stacks lands into compact counters (ready/tapped counts) to avoid board overflow from full-size land images
+  - mulligan policy now uses archetype-specific land windows (control/counter-heavy mulligan land-light openers more aggressively)
+  - AI autoplay visualization speed reduced to 25% of prior pace to make AI-vs-AI turns easier to follow
 - Richer targeting UX:
   - divide-damage targeting now uses structured per-target numeric allocation instead of raw JSON input
 - Broader token automation:

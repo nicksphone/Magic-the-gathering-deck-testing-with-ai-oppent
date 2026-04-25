@@ -105,6 +105,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     continue
                 hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id)
+                if ability["delta"] < 0 and "x" in ability["text"].lower():
+                    hints["requires_x_value"] = True
                 moves.append(
                     {
                         "type": "activate_loyalty",

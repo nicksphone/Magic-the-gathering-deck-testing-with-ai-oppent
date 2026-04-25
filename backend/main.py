@@ -12,8 +12,9 @@ from sqlmodel import Session
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
-from analytics.schemas import BatchSimulationRequest
+from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.service import AnalyticsService
+from card_data.fallback_cards import fallback_card_payload
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
@@ -358,6 +359,50 @@ def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(g
     )
 
 
+@app.post("/ai/diagnostics")
+def ai_diagnostics(payload: AIDiagnosticsRequest, repo: Repository = Depends(get_repo)) -> dict:
+    rows = repo.list_decks()
+    by_id = {row.id: row for row in rows}
+
+    selected_rows = []
+    if payload.deck_ids:
+        for deck_id in payload.deck_ids:
+            row = by_id.get(deck_id)
+            if row is not None:
+                selected_rows.append(row)
+    else:
+        builtins = [r for r in rows if (r.source or "").strip().lower() == "builtin"]
+        others = [r for r in rows if (r.source or "").strip().lower() != "builtin"]
+        if payload.include_builtins:
+            selected_rows.extend(sorted(builtins, key=lambda r: r.name.lower()))
+        selected_rows.extend(others)
+
+    # De-duplicate while preserving order.
+    seen: set[int] = set()
+    dedup_rows = []
+    for row in selected_rows:
+        if row.id in seen:
+            continue
+        seen.add(row.id)
+        dedup_rows.append(row)
+    selected_rows = dedup_rows[: payload.max_decks]
+
+    if len(selected_rows) < 2:
+        raise HTTPException(status_code=400, detail="Need at least 2 decks for diagnostics.")
+
+    deck_pool = []
+    for row in selected_rows:
+        mainboard = _hydrate_deck_cards(repo, json.loads(row.mainboard_json))
+        deck_pool.append({"id": row.id, "name": row.name, "mainboard": mainboard})
+
+    return AnalyticsService(repo).run_ai_diagnostics(
+        deck_pool=deck_pool,
+        matches_per_pair=payload.matches_per_pair,
+        difficulty=payload.difficulty,
+        max_ticks=payload.max_ticks,
+    )
+
+
 @app.get("/analytics/history")
 def analytics_history(repo: Repository = Depends(get_repo)) -> dict:
     return AnalyticsService(repo).aggregate_history()
@@ -430,6 +475,10 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             loyalty = getattr(row, "loyalty", None)
             if loyalty is not None:
                 out["loyalty"] = loyalty
+        else:
+            fallback = fallback_card_payload(item["card_name"])
+            if fallback:
+                out.update({k: v for k, v in fallback.items() if v is not None})
         hydrated.append(out)
     return hydrated
 

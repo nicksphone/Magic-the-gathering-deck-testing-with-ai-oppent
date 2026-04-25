@@ -129,7 +129,26 @@ class RulesEngine:
                 options = collect_cost_options(state, player_id, card)
                 chosen = normalize_cost_choice(action, options)
                 if not check_cost_option_available(state, player_id, card, chosen):
-                    state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
+                    explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
+                    if not explicit_choice:
+                        chosen = next(
+                            (
+                                opt
+                                for opt in options
+                                if check_cost_option_available(state, player_id, card, opt)
+                            ),
+                            chosen,
+                        )
+                    if not check_cost_option_available(state, player_id, card, chosen):
+                        state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
+                        apply_state_based_actions(state)
+                        return
+                action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+                action_targets = enrich_divide_total(card, action_targets)
+                hints = build_cast_hints(state, card, player_id)
+                ok, error = validate_cast_choice(hints, action_targets)
+                if not ok:
+                    state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
                 paid = auto_pay_cost(state, player_id, chosen.mana_cost, is_land=("Land" in card.types), card_name=card.name)
@@ -139,14 +158,6 @@ class RulesEngine:
                     return
                 if not apply_additional_costs(state, player_id, chosen, cid):
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
-                    apply_state_based_actions(state)
-                    return
-                action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
-                action_targets = enrich_divide_total(card, action_targets)
-                hints = build_cast_hints(state, card, player_id)
-                ok, error = validate_cast_choice(hints, action_targets)
-                if not ok:
-                    state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
                 effect_key, payload = infer_effect_from_oracle(state, card, player_id, action_targets=action_targets)
@@ -268,6 +279,20 @@ class RulesEngine:
 
 def _infer_mana_from_land(name: str) -> str:
     n = name.lower()
+    dual_pref = {
+        "hallowed fountain": "U",
+        "sacred foundry": "R",
+        "watery grave": "U",
+        "blood crypt": "B",
+        "overgrown tomb": "B",
+        "breeding pool": "U",
+        "stomping ground": "R",
+        "steam vents": "U",
+        "godless shrine": "W",
+        "temple garden": "W",
+    }
+    if n in dual_pref:
+        return dual_pref[n]
     if "plains" in n:
         return "W"
     if "island" in n:

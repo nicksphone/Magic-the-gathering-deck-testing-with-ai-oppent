@@ -80,7 +80,10 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
         hints["modes"] = modes
     if CHOOSE_TWO_RE.search(oracle):
         hints["choose_two_modes"] = True
-    if "x" in (card.mana_cost or "").lower() or " x " in oracle:
+    # X should generally be user-supplied only when present in cast cost.
+    # Do not require x_value for cards whose oracle text references X contextually
+    # (e.g. "where X is..." or cycling text) unless the spell itself has {X} cost.
+    if "x" in (card.mana_cost or "").lower():
         hints["requires_x_value"] = True
     up_to_match = UP_TO_RE.search(oracle)
     if up_to_match:

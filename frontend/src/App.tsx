@@ -23,6 +23,7 @@ export function App() {
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+  const AI_AUTOPLAY_DELAY_MS = 640;
 
   const onDecksLoaded = useCallback((records: DeckRecord[]) => {
     setDecks(records);
@@ -168,10 +169,10 @@ export function App() {
         autoTickInFlight.current = false;
         setAutoLoopBeat((v) => v + 1);
       }
-    }, 160);
+    }, AI_AUTOPLAY_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [match, syncMoves, autoLoopBeat]);
+  }, [match, syncMoves, autoLoopBeat, AI_AUTOPLAY_DELAY_MS]);
 
   const humanResponseWindowActive =
     mode === "player_vs_ai"

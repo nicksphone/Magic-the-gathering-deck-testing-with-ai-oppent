@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+from itertools import combinations
 from collections import Counter
 
 from ai.agent import AIAgent
@@ -101,6 +102,101 @@ class AnalyticsService:
             "avg_turns": round(sum(turns) / len(turns), 2),
         }
 
+    def run_ai_diagnostics(
+        self,
+        deck_pool: list[dict],
+        matches_per_pair: int = 5,
+        difficulty: str = "master",
+        max_ticks: int = 3000,
+    ) -> dict:
+        if len(deck_pool) < 2:
+            return {
+                "deck_count": len(deck_pool),
+                "pairs_tested": 0,
+                "games": 0,
+                "global_anomalies": {},
+                "top_errors": [],
+                "suspicious_matchups": [],
+            }
+
+        global_counts: Counter = Counter()
+        top_errors: Counter = Counter()
+        suspicious: list[dict] = []
+        total_games = 0
+
+        for left, right in combinations(deck_pool, 2):
+            pair_counts: Counter = Counter()
+            pair_turns: list[int] = []
+            pair_games = 0
+            pair_first_player_wins = 0
+
+            for game_idx in range(matches_per_pair):
+                state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
+                a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(left["mainboard"]))
+                b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(right["mainboard"]))
+                ticks = 0
+                while state.winner is None and ticks < max_ticks:
+                    pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
+                    legal = self.engine.legal_moves(state, pid)
+                    if not legal:
+                        pair_counts["no_legal_moves"] += 1
+                        self.engine.take_action(state, pid, {"type": "pass_priority"})
+                    else:
+                        agent = a_agent if pid == 1 else b_agent
+                        decision = agent.choose_action(state, legal, pid)
+                        self.engine.take_action(state, pid, decision.action)
+                    if state.step == state.step.COMBAT_DAMAGE:
+                        self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
+                    ticks += 1
+
+                if state.winner is None:
+                    pair_counts["timeouts"] += 1
+                elif state.winner == 1 and game_idx % 2 == 0:
+                    pair_first_player_wins += 1
+
+                self._scan_log_for_anomalies(state.log, pair_counts, top_errors)
+                pair_turns.append(state.turn)
+                pair_games += 1
+                total_games += 1
+
+            global_counts.update(pair_counts)
+            avg_turns = round(sum(pair_turns) / max(1, len(pair_turns)), 2)
+            suspicious.append(
+                {
+                    "deck_a": left["name"],
+                    "deck_b": right["name"],
+                    "games": pair_games,
+                    "avg_turns": avg_turns,
+                    "timeouts": int(pair_counts["timeouts"]),
+                    "invalid_targets": int(pair_counts["invalid_targets"]),
+                    "cost_failures": int(pair_counts["cost_failures"]),
+                    "repeated_error_bursts": int(pair_counts["repeated_error_bursts"]),
+                    "draw_play_advantage_deck_a": round((pair_first_player_wins / max(1, pair_games // 2 or 1)) * 100, 2),
+                }
+            )
+
+        suspicious.sort(
+            key=lambda x: (x["timeouts"] * 5 + x["invalid_targets"] * 3 + x["cost_failures"] * 2 + x["repeated_error_bursts"]),
+            reverse=True,
+        )
+        result = {
+            "deck_count": len(deck_pool),
+            "pairs_tested": len(suspicious),
+            "games": total_games,
+            "global_anomalies": {
+                "timeouts": int(global_counts["timeouts"]),
+                "invalid_targets": int(global_counts["invalid_targets"]),
+                "cost_failures": int(global_counts["cost_failures"]),
+                "additional_cost_failures": int(global_counts["additional_cost_failures"]),
+                "no_legal_moves": int(global_counts["no_legal_moves"]),
+                "repeated_error_bursts": int(global_counts["repeated_error_bursts"]),
+            },
+            "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
+            "suspicious_matchups": suspicious[:20],
+        }
+        self.repo.save_snapshot("ai_diagnostics", result)
+        return result
+
     @staticmethod
     def decode_match_log(raw: str) -> list[str]:
         return json.loads(raw)
@@ -140,3 +236,29 @@ class AnalyticsService:
             variance = sum((x - avg) ** 2 for x in cmcs) / len(cmcs)
             sample_scores.append(1 / (1 + variance))
         return sum(sample_scores) / len(sample_scores)
+
+    def _scan_log_for_anomalies(self, log: list[str], out: Counter, top_errors: Counter) -> None:
+        error_lines: list[str] = []
+        for line in log:
+            low = line.lower()
+            if "invalid targets for" in low:
+                out["invalid_targets"] += 1
+                error_lines.append(line.strip())
+            if "cannot satisfy chosen costs for" in low or "cannot pay mana cost for" in low:
+                out["cost_failures"] += 1
+                error_lines.append(line.strip())
+            if "failed additional costs for" in low:
+                out["additional_cost_failures"] += 1
+                error_lines.append(line.strip())
+        for e in error_lines:
+            top_errors[e] += 1
+        # Detect repeated consecutive error bursts, which usually indicate AI stall loops.
+        streak = 1
+        for i in range(1, len(error_lines)):
+            if error_lines[i] == error_lines[i - 1]:
+                streak += 1
+                if streak >= 3:
+                    out["repeated_error_bursts"] += 1
+                    streak = 1
+            else:
+                streak = 1

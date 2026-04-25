@@ -193,16 +193,74 @@ def _infer_types(name: str, type_line: str = "") -> list[str]:
         if out:
             return out
     n = name.lower()
+    if n in {
+        "hallowed fountain",
+        "sacred foundry",
+        "watery grave",
+        "blood crypt",
+        "overgrown tomb",
+        "breeding pool",
+        "stomping ground",
+        "steam vents",
+        "godless shrine",
+        "temple garden",
+    }:
+        return ["Land"]
     if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp"]):
         return ["Land"]
     if any(k in n for k in ["teferi", "nissa", "ugin", "emperor"]):
         return ["Planeswalker"]
-    if any(k in n for k in ["counterspell", "bolt", "push", "spike", "consider", "deluge", "ritual"]):
+    if any(
+        k in n
+        for k in [
+            "counterspell",
+            "bolt",
+            "push",
+            "spike",
+            "consider",
+            "deluge",
+            "ritual",
+            "growth spiral",
+            "march of otherworldly light",
+            "go for the throat",
+            "drown in the loch",
+            "skullcrack",
+            "boros charm",
+            "searing blaze",
+            "spell pierce",
+            "unholy heat",
+            "deadly dispute",
+            "village rites",
+            "abrupt decay",
+        ]
+    ):
         return ["Instant"]
-    if any(k in n for k in ["fable", "wedding", "massacre", "festival"]):
+    if any(k in n for k in ["fable", "wedding", "massacre", "festival", "shark typhoon", "kumano"]):
         return ["Enchantment"]
-    if any(k in n for k in ["verdict", "farewell", "procession"]):
+    if any(
+        k in n
+        for k in [
+            "verdict",
+            "farewell",
+            "procession",
+            "migration path",
+            "cultivate",
+            "lay down arms",
+            "light up the stage",
+            "lava spike",
+            "storm the festival",
+            "expressive iteration",
+            "secure the wastes",
+            "raise the alarm",
+            "march of the multitudes",
+            "ossification",
+            "claim the firstborn",
+            "collected company",
+        ]
+    ):
         return ["Sorcery"]
+    if "witch's oven" in n:
+        return ["Artifact"]
     return ["Creature"]
 
 

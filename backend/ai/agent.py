@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import copy
+import re
 from dataclasses import dataclass
 
 from ai.heuristics import evaluate_board
 from game_state.state import MatchState
 from rules_engine.engine import RulesEngine
-from rules_engine.mana import parse_mana_cost
+from rules_engine.mana import can_pay_with_pool_and_lands, parse_mana_cost
 
 
 @dataclass
@@ -50,12 +51,46 @@ class AIAgent:
             cmc = cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"])
             if cmc <= 2:
                 early_spells += 1
+        mulligans = state.mulligan_count.get(player_id, 0)
+        min_lands, max_lands = self._preferred_land_window()
+        too_land_light = lands < min_lands
+        too_land_heavy = lands > max_lands
         quality = (1.0 - min(abs(lands - 3), 3) / 3) * 0.7 + min(early_spells / 2, 1.0) * 0.3
-        if state.mulligan_count.get(player_id, 0) < 2 and quality < 0.45:
+        if mulligans < 2 and (too_land_light or too_land_heavy):
+            return AIDecision(
+                action={"type": "mulligan"},
+                reasoning=f"Opening hand outside {min_lands}-{max_lands} land window for {self.archetype}",
+            )
+        if mulligans < 2 and quality < 0.45:
             return AIDecision(action={"type": "mulligan"}, reasoning="Opening hand quality too low")
         return AIDecision(action={"type": "keep_hand", "bottom_card_ids": []}, reasoning="Keep acceptable hand")
 
+    def _preferred_land_window(self) -> tuple[int, int]:
+        arche = self.archetype
+        if arche in {"Control", "Counter-heavy"}:
+            return (3, 5)
+        if arche in {"Ramp"}:
+            return (3, 5)
+        if arche in {"Aggro", "Burn", "Tempo", "Tribal", "Tokens"}:
+            return (2, 4)
+        return (2, 5)
+
     def _rank_moves(self, state: MatchState, moves: list[dict], player_id: int) -> list[dict]:
+        in_main = str(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+        own_main_sorcery_window = (
+            in_main
+            and getattr(state, "active_player", player_id) == player_id
+            and not (getattr(state, "stack", []) or [])
+        )
+        castable_creature_moves = []
+        for m in moves:
+            if m.get("type") != "cast_spell":
+                continue
+            cid = m.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if card and "Creature" in card.types:
+                castable_creature_moves.append(m)
+
         def score(move: dict) -> float:
             mtype = move.get("type")
             base = evaluate_board(state, player_id)
@@ -83,6 +118,9 @@ class AIAgent:
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "pass_priority":
                 base += self._pass_bias(state, player_id)
+                if own_main_sorcery_window and castable_creature_moves:
+                    # Avoid stalling with threats stranded in hand when we can safely deploy.
+                    base -= 2.6
             if self.difficulty in {"master", "master_plus"}:
                 base += self._simulate_delta(state, move, player_id)
             if self.difficulty == "master_plus":
@@ -104,6 +142,7 @@ class AIAgent:
             before = evaluate_board(state, player_id)
             sim_state = copy.deepcopy(state)
             self.engine.take_action(sim_state, player_id, move)
+            self._approximate_resolution_for_creature_cast(sim_state, move, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = self.engine.legal_moves(sim_state, sim_state.priority_player)
@@ -150,7 +189,8 @@ class AIAgent:
             c = state.cards.get(cid)
             if not c:
                 continue
-            if "Instant" in c.types or "flash" in [k.lower() for k in c.keywords]:
+            keywords = [k.lower() for k in (getattr(c, "keywords", []) or [])]
+            if "Instant" in c.types or "flash" in keywords:
                 has_instant_like = True
                 break
         if getattr(state, "stack", []) or []:
@@ -174,6 +214,15 @@ class AIAgent:
         )
         early_turn = state.turn <= 4
         in_main = str(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+        own_main_sorcery_window = (
+            in_main
+            and getattr(state, "active_player", player_id) == player_id
+            and not (getattr(state, "stack", []) or [])
+        )
+        mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=("Land" in card.types))
+        cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
+        power = getattr(card, "power", 0) or 0
+        is_big_threat = power >= 4 or cmc >= 4
 
         if is_creature:
             if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
@@ -186,9 +235,19 @@ class AIAgent:
                     bonus += 1.0
                 return bonus
             if arche in {"Midrange", "Ramp", "Aristocrats"}:
-                return 2.0 + (0.8 if my_creatures < 2 else 0.0)
+                bonus = 2.0 + (0.8 if my_creatures < 2 else 0.0)
+                if is_big_threat and (my_creatures < 2 or state.turn >= 5):
+                    bonus += 2.2
+                if arche == "Ramp" and state.turn >= 4 and is_big_threat:
+                    bonus += 1.2
+                return bonus
             if arche in {"Control", "Counter-heavy"}:
-                return 0.8
+                bonus = 0.8
+                if is_big_threat and (my_creatures == 0 or state.turn >= 6):
+                    bonus += 3.0
+                if own_main_sorcery_window and is_big_threat:
+                    bonus += 0.7
+                return bonus
             return 1.2
 
         if arche in {"Control", "Counter-heavy"}:
@@ -260,6 +319,25 @@ class AIAgent:
             return -1.8
         return 0.0
 
+    def _approximate_resolution_for_creature_cast(self, sim_state: MatchState, move: dict, player_id: int) -> None:
+        if move.get("type") != "cast_spell":
+            return
+        cid = move.get("card_id")
+        if not cid:
+            return
+        card = sim_state.cards.get(cid)
+        if not card or "Creature" not in card.types:
+            return
+        if not getattr(sim_state, "stack", []):
+            return
+        # Approximation: if both players pass, creature resolves and enters battlefield.
+        # This prevents lookahead from systematically undervaluing creature development.
+        if sim_state.priority_player != player_id:
+            return
+        opp_id = 1 if player_id == 2 else 2
+        self.engine.take_action(sim_state, player_id, {"type": "pass_priority"})
+        self.engine.take_action(sim_state, opp_id, {"type": "pass_priority"})
+
     def _spell_tags(self, card) -> set[str]:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
         tags: set[str] = set()
@@ -296,6 +374,9 @@ class AIAgent:
         out = dict(move)
         hints = move.get("target_hints") or {}
         targets = dict((move.get("targets") or {}))
+        cost_options = move.get("cost_options") or []
+        if cost_options and not (move.get("cost_choice") or {}).get("id"):
+            out["cost_choice"] = {"id": cost_options[0]["id"]}
         tags: set[str] = set()
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -342,8 +423,32 @@ class AIAgent:
             else:
                 targets["mode_text"] = hints["modes"][0]
 
+        mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
+        if "{X}" in mana_cost.upper() and "x_value" not in targets:
+            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost)
+        elif hints.get("requires_x_value") and "x_value" not in targets:
+            if mtype == "activate_loyalty" and cid:
+                loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)
+                targets["x_value"] = max(0, min(3, loyalty_now))
+            else:
+                targets["x_value"] = 1
+
         out["targets"] = targets
         return out
+
+    def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str) -> int:
+        pool_total = sum((state.players[player_id].mana_pool or {}).values())
+        untapped_lands = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if "Land" in state.cards.get(cid, type("X", (), {"types": []})()).types and not state.cards[cid].tapped
+        )
+        upper = max(0, pool_total + untapped_lands)
+        for x in range(upper, 0, -1):
+            cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
+            if can_pay_with_pool_and_lands(state, player_id, cost):
+                return x
+        return 0
 
     def _rollout_delta(self, state: MatchState, move: dict, player_id: int) -> float:
         # Lightweight rollout approximation for deeper tactical planning.

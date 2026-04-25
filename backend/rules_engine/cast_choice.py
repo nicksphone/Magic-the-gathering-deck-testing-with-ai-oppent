@@ -9,6 +9,7 @@ from rules_engine.targeting import validate_cast_targets
 
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 FIXED_DAMAGE_RE = re.compile(r"deals?\\s+(\\d+)\\s+damage", re.IGNORECASE)
+DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 
 
 def build_cast_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
@@ -41,6 +42,9 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
 def enrich_divide_total(card: CardInstance, action_targets: dict[str, Any]) -> dict[str, Any]:
     targets = dict(action_targets or {})
     if "divide_total" in targets:
+        return targets
+    oracle_or_mode = f"{card.oracle_text or ''} {targets.get('mode_text') or ''} {' '.join(str(x) for x in (targets.get('mode_texts') or []))}".lower()
+    if not DIVIDE_RE.search(oracle_or_mode):
         return targets
     x_value = targets.get("x_value")
     if x_value is not None:

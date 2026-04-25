@@ -9,6 +9,18 @@ from rules_engine.hooks import CostContext, apply_cost_modifiers
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
+DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
+    "hallowed fountain": {"W", "U"},
+    "sacred foundry": {"R", "W"},
+    "watery grave": {"U", "B"},
+    "blood crypt": {"B", "R"},
+    "overgrown tomb": {"B", "G"},
+    "breeding pool": {"U", "G"},
+    "stomping ground": {"R", "G"},
+    "steam vents": {"U", "R"},
+    "godless shrine": {"W", "B"},
+    "temple garden": {"W", "G"},
+}
 
 
 def parse_mana_cost(mana_cost: str, is_land: bool = False) -> dict[str, int]:
@@ -175,6 +187,9 @@ def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic
 
 
 def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> Set[str]:
+    n = (name or "").strip().lower()
+    if n in DUAL_LAND_NAME_COLORS:
+        return set(DUAL_LAND_NAME_COLORS[n])
     text = f"{name or ''} {type_line or ''}".lower()
     out: Set[str] = set()
     if "plains" in text:
