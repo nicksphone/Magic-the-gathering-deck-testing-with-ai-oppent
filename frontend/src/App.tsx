@@ -19,6 +19,7 @@ export function App() {
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
   const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
   const [autoResponsePaused, setAutoResponsePaused] = useState(false);
+  const [autoLoopBeat, setAutoLoopBeat] = useState(0);
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
@@ -142,33 +143,35 @@ export function App() {
     if (!match) return;
     if (autoTickInFlight.current) return;
     if (match.match_complete) return;
-
-    const aiVsAi = mode === "ai_vs_ai";
-    const aiTurnInPvA = mode === "player_vs_ai" && legalPlayerId === 2;
-    const shouldAutoRun = aiVsAi || aiTurnInPvA;
+    const controllers = match.controllers ?? {};
+    const uiAiVsAi = mode === "ai_vs_ai";
+    const kept = new Set(match.kept_hands ?? []);
+    const actingPlayer = match.pregame_pending
+      ? ([1, 2].find((pid) => !kept.has(pid)) ?? match.priority_player)
+      : match.priority_player;
+    const actingController = controllers[String(actingPlayer)] ?? (uiAiVsAi ? "ai" : "human");
+    const bothAi = ((controllers["1"] ?? "human") === "ai" && (controllers["2"] ?? "human") === "ai") || uiAiVsAi;
+    const shouldAutoRun = actingController === "ai" || (bothAi && !!match.winner && !match.match_complete);
     if (!shouldAutoRun) return;
 
     const timer = window.setTimeout(async () => {
       if (!match || autoTickInFlight.current) return;
       autoTickInFlight.current = true;
       try {
-        if (aiVsAi && match.winner && !match.match_complete) {
-          const next = await api.nextGame(match.id);
-          setMatch(next);
-          await syncMoves(next);
-          return;
-        }
-        const ticks = aiVsAi ? 20 : 1;
+        const ticks = bothAi ? 20 : 1;
         const next = await api.autoplay(match.id, ticks);
         setMatch(next);
         await syncMoves(next);
+      } catch (error) {
+        console.error("Auto progression tick failed", error);
       } finally {
         autoTickInFlight.current = false;
+        setAutoLoopBeat((v) => v + 1);
       }
     }, 160);
 
     return () => window.clearTimeout(timer);
-  }, [match, legalPlayerId, mode, syncMoves]);
+  }, [match, syncMoves, autoLoopBeat]);
 
   const humanResponseWindowActive =
     mode === "player_vs_ai"

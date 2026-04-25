@@ -13,3 +13,4 @@ def test_generates_basic_legal_moves() -> None:
     moves = engine.legal_moves(state, state.priority_player)
     move_types = {m["type"] for m in moves}
     assert "pass_priority" in move_types
+    assert "tap_land_for_mana" not in move_types

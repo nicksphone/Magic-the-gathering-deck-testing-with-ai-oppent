@@ -91,7 +91,7 @@ Rules and gameplay logic are implemented in application code, never in SQL.
 cd /home/nick/mtg-deck-testing-lab/backend
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-.venv/bin/uvicorn main:app --reload --port 8000
+.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ## 2) Frontend
@@ -102,7 +102,7 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`.
+Open `http://<server-ip>:5173` from your client machine (or `http://127.0.0.1:5173` locally).
 
 ## 3) Tests
 
@@ -152,7 +152,9 @@ cd /home/nick/mtg-deck-testing-lab/backend
 ## Card Data Sync and Cache
 
 - `POST /cards/sync?name=<card>` pulls card data from Scryfall and stores local cache.
+- Match start now auto-hydrates missing card cache entries for deck cards (cache-first, sync-once fallback).
 - Cache stores oracle-like fields, mana cost, types, stats, colors, legalities, image URI metadata.
+- Card images are downloaded once into local disk cache (`backend/card_data/image_cache`) and served by backend at `/card-images/...`.
 - Deck parser uses fuzzy lookup against cached names for typo recovery.
 
 ## Deck Import and Built-in Decks
@@ -256,6 +258,25 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - Advanced priority-stop system:
   - per-player stop configuration by step (`/matches/{id}/priority-stops`)
   - autoplay now pauses when configured stop windows have meaningful human decisions
+- AI automation reliability hardening:
+  - match payload now includes authoritative `mode` and `controllers`
+  - frontend autoplay now follows active match controllers (not only current UI selector state)
+  - AI-vs-AI now auto-advances between games more robustly after each game winner is set
+- Card data + image cache reliability:
+  - missing card metadata is auto-synced on match start and persisted in SQLite
+  - Scryfall images are cached locally and re-used (no repeated image download after first sync)
+  - battlefield now renders card art from cached image URLs
+- Priority correctness fix:
+  - spell/ability caster now correctly retains priority after adding an object to the stack
+  - enables proper same-player sequencing of multiple castable spells in a turn when mana allows
+- AI progression and simulation stability fixes:
+  - backend autoplay now auto-advances to the next game in full AI-vs-AI matches (no manual next-game clicks)
+  - legal move generation no longer exposes manual land-tap moves, preventing AI tap-loop stalls
+  - batch simulator pregame actor selection now follows keep/mulligan flow correctly
+  - batch simulator now supports configurable `max_ticks` (action budget per game) to reduce false timeout-heavy outputs
+  - match log now displays in chronological order and preserves context across game transitions in best-of matches
+  - aggro AI cast logic now weights early creature development higher to reduce over-prioritization of burn spells
+  - battlefield UI now stacks lands into compact counters (ready/tapped counts) to avoid board overflow from full-size land images
 - Richer targeting UX:
   - divide-damage targeting now uses structured per-target numeric allocation instead of raw JSON input
 - Broader token automation:

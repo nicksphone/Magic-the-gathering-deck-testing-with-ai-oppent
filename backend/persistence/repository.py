@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Iterable
 
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from persistence.models import CardCache, DeckRecord, MatchRecord, StatsSnapshot
 
@@ -28,11 +28,20 @@ class Repository:
     def list_cards(self) -> list[CardCache]:
         return list(self.session.exec(select(CardCache)).all())
 
+    def get_cached_card_by_name(self, name: str) -> CardCache | None:
+        normalized = name.strip().lower()
+        if not normalized:
+            return None
+        query = select(CardCache).where(func.lower(CardCache.name) == normalized)
+        return self.session.exec(query).first()
+
     def get_cached_cards_by_names(self, names: list[str]) -> dict[str, CardCache]:
         if not names:
             return {}
-        lowered = {n.lower() for n in names}
-        rows = self.session.exec(select(CardCache)).all()
+        lowered = {n.strip().lower() for n in names if n.strip()}
+        if not lowered:
+            return {}
+        rows = self.session.exec(select(CardCache).where(func.lower(CardCache.name).in_(lowered))).all()
         out: dict[str, CardCache] = {}
         for row in rows:
             if row.name.lower() in lowered:

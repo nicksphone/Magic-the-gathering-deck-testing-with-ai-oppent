@@ -40,7 +40,10 @@ class AnalyticsService:
             b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b))
             ticks = 0
             while state.winner is None and ticks < max_ticks:
-                pid = state.priority_player
+                if state.pregame_pending:
+                    pid = 1 if 1 not in state.kept_hands else 2
+                else:
+                    pid = state.priority_player
                 legal = self.engine.legal_moves(state, pid)
                 agent = a_agent if pid == 1 else b_agent
                 decision = agent.choose_action(state, legal, pid)

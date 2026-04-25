@@ -64,6 +64,7 @@ class CardInstance:
     keywords: list[str] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
+    image_uri: str | None = None
 
 
 @dataclass
@@ -153,6 +154,7 @@ class MatchFactory:
                     keywords=_infer_keywords(raw_item.get("oracle_text", "") or ""),
                     oracle_text=raw_item.get("oracle_text", "") or "",
                     type_line=type_line,
+                    image_uri=raw_item.get("image_uri"),
                 )
                 cards[cid] = card
                 player.library.append(cid)

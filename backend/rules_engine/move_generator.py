@@ -65,6 +65,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             available_options = [o for o in options if check_cost_option_available(state, player_id, card, o)]
             if not available_options:
                 continue
+            hints = build_cast_hints(state, card, player_id)
+            oracle = (card.oracle_text or "").lower()
+            if "target" in oracle and not _has_any_target_options(hints):
+                continue
             moves.append(
                 {
                     "type": "cast_spell",
@@ -82,7 +86,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         }
                         for o in available_options
                     ],
-                    "target_hints": build_cast_hints(state, card, player_id),
+                    "target_hints": hints,
                 }
             )
 
@@ -113,9 +117,6 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
 
-    for cid in player.battlefield:
-        if "Land" in state.cards[cid].types and not state.cards[cid].tapped:
-            moves.append({"type": "tap_land_for_mana", "card_id": cid})
     return moves
 
 
@@ -127,3 +128,10 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
     if "flash" in [k.lower() for k in card.keywords]:
         return True
     return False
+
+
+def _has_any_target_options(hints: dict) -> bool:
+    return any(
+        bool(hints.get(key))
+        for key in ["player_targets", "creature_targets", "planeswalker_targets", "stack_targets"]
+    )

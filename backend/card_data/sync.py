@@ -1,26 +1,28 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
 from persistence.repository import Repository
 
 SCRYFALL_NAMED_URL = "https://api.scryfall.com/cards/named"
+CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
+CACHE_ROUTE_PREFIX = "/card-images"
 
 
 class ScryfallSyncService:
     def __init__(self, repository: Repository):
         self.repository = repository
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    def _normalize_payload(self, raw: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_payload(self, raw: dict[str, Any], image_uri: str | None) -> dict[str, Any]:
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
-        image_uri = raw.get("image_uris", {}).get("normal")
-        if image_uri is None and face:
-            image_uri = face.get("image_uris", {}).get("normal")
         return {
             "scryfall_id": raw["id"],
             "name": raw["name"],
@@ -34,13 +36,49 @@ class ScryfallSyncService:
             "legalities_json": json.dumps(raw.get("legalities", {})),
         }
 
-    def sync_card_by_name(self, name: str) -> dict[str, Any]:
+    def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
+        cached = self.repository.get_cached_card_by_name(name)
+        if cached and not force and self._cached_image_available(cached.image_uri):
+            return self._serialize_card(cached)
+
         with httpx.Client(timeout=20) as client:
             response = client.get(SCRYFALL_NAMED_URL, params={"fuzzy": name})
             response.raise_for_status()
             raw = response.json()
-        payload = self._normalize_payload(raw)
+            remote_image_uri = self._extract_remote_image_uri(raw)
+            image_uri = self._cache_image(raw["id"], remote_image_uri, client) if remote_image_uri else None
+        payload = self._normalize_payload(raw, image_uri=image_uri or remote_image_uri)
         card = self.repository.upsert_card(payload)
+        return self._serialize_card(card)
+
+    def _extract_remote_image_uri(self, raw: dict[str, Any]) -> str | None:
+        face = raw["card_faces"][0] if raw.get("card_faces") else None
+        return raw.get("image_uris", {}).get("normal") or (face.get("image_uris", {}).get("normal") if face else None)
+
+    def _cache_image(self, scryfall_id: str, remote_uri: str, client: httpx.Client) -> str | None:
+        ext = Path(urlparse(remote_uri).path).suffix or ".jpg"
+        target = CACHE_DIR / f"{scryfall_id}{ext}"
+        if target.exists():
+            return f"{CACHE_ROUTE_PREFIX}/{target.name}"
+        try:
+            res = client.get(remote_uri)
+            res.raise_for_status()
+            target.write_bytes(res.content)
+            return f"{CACHE_ROUTE_PREFIX}/{target.name}"
+        except Exception:
+            return None
+
+    def _cached_image_available(self, image_uri: str | None) -> bool:
+        if not image_uri:
+            return False
+        if image_uri.startswith("http://") or image_uri.startswith("https://"):
+            return False
+        if not image_uri.startswith(f"{CACHE_ROUTE_PREFIX}/"):
+            return False
+        image_name = image_uri.split("/", 2)[-1]
+        return (CACHE_DIR / image_name).exists()
+
+    def _serialize_card(self, card) -> dict[str, Any]:
         return {
             "id": card.id,
             "scryfall_id": card.scryfall_id,

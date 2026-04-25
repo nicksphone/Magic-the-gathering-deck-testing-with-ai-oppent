@@ -24,6 +24,7 @@ class RulesEngine:
             state.priority_player = state.active_player
             return
 
+        self._clear_mana_pools(state)
         idx = TURN_STEPS.index(state.step)
         if idx == len(TURN_STEPS) - 1:
             state.turn += 1
@@ -49,9 +50,11 @@ class RulesEngine:
         elif state.step == Step.DRAW and state.turn > 1:
             draw_card(state, state.active_player)
             state.log.append(f"{player.name} draws a card.")
-        elif state.step == Step.CLEANUP:
-            for color in player.mana_pool:
-                player.mana_pool[color] = 0
+
+    def _clear_mana_pools(self, state: MatchState) -> None:
+        for p in state.players.values():
+            for color in p.mana_pool:
+                p.mana_pool[color] = 0
 
     def take_action(self, state: MatchState, player_id: int, action: dict) -> None:
         if state.winner is not None:
@@ -94,6 +97,30 @@ class RulesEngine:
                 color = _infer_mana_from_land(state.cards[cid].name)
                 player.mana_pool[color] += 1
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {color}.")
+
+        elif kind == "tap_lands_bulk":
+            land_name = str(action.get("land_name", "")).strip().lower()
+            count = max(0, int(action.get("count", 0)))
+            if land_name and count > 0:
+                tapped = 0
+                produced = None
+                for cid in list(player.battlefield):
+                    card = state.cards[cid]
+                    if tapped >= count:
+                        break
+                    if "Land" not in card.types or card.tapped:
+                        continue
+                    if card.name.strip().lower() != land_name:
+                        continue
+                    card.tapped = True
+                    color = _infer_mana_from_land(card.name)
+                    player.mana_pool[color] += 1
+                    produced = color
+                    tapped += 1
+                if tapped > 0 and produced:
+                    state.log.append(
+                        f"{player.name} taps {tapped}x {action.get('land_name')} for {tapped} {produced}."
+                    )
 
         elif kind == "cast_spell":
             cid = action["card_id"]

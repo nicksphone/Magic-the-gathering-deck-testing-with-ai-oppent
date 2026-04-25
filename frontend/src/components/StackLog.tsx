@@ -20,7 +20,7 @@ export function StackLog({ match }: Props) {
         ))}
       </div>
       <div className="log-box">
-        {match.log.slice().reverse().map((line, i) => (
+        {match.log.map((line, i) => (
           <p key={`${line}-${i}`}>{line}</p>
         ))}
       </div>

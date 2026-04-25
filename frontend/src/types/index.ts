@@ -13,6 +13,7 @@ export type CardView = {
   id: string;
   name: string;
   mana_cost?: string;
+  image_uri?: string;
   tapped: boolean;
   summoning_sick: boolean;
   power: number | null;
@@ -28,7 +29,7 @@ export type PlayerView = {
   library_count: number;
   hand_count: number;
   battlefield: CardView[];
-  hand: { id: string; name: string; mana_cost?: string; types: string[] }[];
+  hand: { id: string; name: string; mana_cost?: string; image_uri?: string; types: string[] }[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;
@@ -36,6 +37,8 @@ export type PlayerView = {
 
 export type MatchState = {
   id: string;
+  mode?: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
+  controllers?: Record<string, "human" | "ai">;
   turn: number;
   active_player: number;
   priority_player: number;

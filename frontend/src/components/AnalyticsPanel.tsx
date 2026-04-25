@@ -11,13 +11,14 @@ export function AnalyticsPanel({ decks }: Props) {
   const [deckB, setDeckB] = useState<number | null>(null);
   const [matches, setMatches] = useState(100);
   const [difficulty, setDifficulty] = useState("master_plus");
+  const [maxTicks, setMaxTicks] = useState(3000);
   const [result, setResult] = useState<string>("");
 
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
     const b = decks.find((d) => d.id === deckB);
     if (!a || !b) return;
-    const data = await api.simulateBatch(a.mainboard, b.mainboard, matches, difficulty);
+    const data = await api.simulateBatch(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
     setResult(JSON.stringify(data, null, 2));
   }
 
@@ -42,6 +43,7 @@ export function AnalyticsPanel({ decks }: Props) {
           ))}
         </select>
         <input type="number" min={10} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
+        <input type="number" min={200} max={20000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
         <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>

@@ -34,6 +34,7 @@ class AIAgent:
             move = sorted_moves[0]
         else:
             move = sorted_moves[0]
+        move = self._materialize_action(state, move, player_id)
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
 
@@ -62,6 +63,7 @@ class AIAgent:
             cast_moves = [m for m in moves if m.get("type") == "cast_spell"]
             if mtype == "cast_spell":
                 name = move.get("card_name", "").lower()
+                base += self._cast_bias(state, move, player_id)
                 if "bolt" in name or "spike" in name:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
                 if "counterspell" in name:
@@ -156,6 +158,192 @@ class AIAgent:
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8
         return 0.3
+
+    def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
+        cid = move.get("card_id")
+        card = state.cards.get(cid) if cid else None
+        if not card:
+            return 0.0
+        is_creature = "Creature" in card.types
+        arche = self.archetype
+        tags = self._spell_tags(card)
+        my_creatures = sum(
+            1
+            for perm_id in state.players[player_id].battlefield
+            if "Creature" in state.cards.get(perm_id, type("X", (), {"types": []})()).types
+        )
+        early_turn = state.turn <= 4
+        in_main = str(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+
+        if is_creature:
+            if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
+                bonus = 4.0
+                if in_main:
+                    bonus += 1.2
+                if my_creatures < 2:
+                    bonus += 2.0
+                if early_turn:
+                    bonus += 1.0
+                return bonus
+            if arche in {"Midrange", "Ramp", "Aristocrats"}:
+                return 2.0 + (0.8 if my_creatures < 2 else 0.0)
+            if arche in {"Control", "Counter-heavy"}:
+                return 0.8
+            return 1.2
+
+        if arche in {"Control", "Counter-heavy"}:
+            bonus = 0.0
+            if "counter" in tags:
+                bonus += 5.5 if getattr(state, "stack", []) else -2.5
+            if "draw" in tags:
+                bonus += 2.2
+                if "Instant" in card.types:
+                    on_opp_turn = getattr(state, "active_player", player_id) != player_id
+                    in_end = str(getattr(state, "step", "")) == "end_step"
+                    if on_opp_turn or in_end:
+                        bonus += 2.4
+            if "removal" in tags:
+                bonus += 2.0
+            return bonus
+
+        if arche in {"Midrange"}:
+            bonus = 0.0
+            if "removal" in tags:
+                bonus += 2.0
+            if "draw" in tags:
+                bonus += 1.2
+            if "burn" in tags and state.players[1 if player_id == 2 else 2].life <= 6:
+                bonus += 1.5
+            return bonus
+
+        if arche in {"Ramp"}:
+            bonus = 0.0
+            if "ramp" in tags:
+                bonus += 4.0 if early_turn else 1.0
+            if "draw" in tags:
+                bonus += 1.5
+            return bonus
+
+        if arche in {"Tokens"}:
+            bonus = 0.0
+            if "token" in tags:
+                bonus += 4.0
+            if "anthem" in tags:
+                bonus += 2.0
+            return bonus
+
+        if arche in {"Reanimator"}:
+            bonus = 0.0
+            if "reanimate" in tags:
+                bonus += 4.0
+            if "discard" in tags or "mill" in tags:
+                bonus += 2.0
+            return bonus
+
+        if arche in {"Aristocrats", "Drain"}:
+            bonus = 0.0
+            if "drain" in tags:
+                bonus += 3.2
+            if "sacrifice" in tags:
+                bonus += 2.4
+            return bonus
+
+        if arche in {"Tempo"}:
+            bonus = 0.0
+            if "counter" in tags:
+                bonus += 3.6 if getattr(state, "stack", []) else -1.4
+            if "removal" in tags:
+                bonus += 1.8
+            return bonus
+
+        if arche in {"Aggro", "Tribal", "Tokens", "Tempo"} and my_creatures == 0 and early_turn and in_main:
+            return -1.8
+        return 0.0
+
+    def _spell_tags(self, card) -> set[str]:
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        tags: set[str] = set()
+        if "counter target spell" in text or "counterspell" in text:
+            tags.add("counter")
+        if "draw" in text:
+            tags.add("draw")
+        if "destroy target" in text or "exile target" in text or "deals" in text:
+            tags.add("removal")
+        if any(k in text for k in ["bolt", "spike", "shock", "lava"]):
+            tags.add("burn")
+        if "add {" in text or any(k in text for k in ["cultivate", "rampant", "llanowar", "mana dork"]):
+            tags.add("ramp")
+        if "create" in text and "token" in text:
+            tags.add("token")
+        if "creatures you control get" in text or "+1/+1" in text:
+            tags.add("anthem")
+        if "return target creature card from your graveyard" in text or "reanimate" in text:
+            tags.add("reanimate")
+        if "discard" in text:
+            tags.add("discard")
+        if "mill" in text:
+            tags.add("mill")
+        if "sacrifice" in text:
+            tags.add("sacrifice")
+        if "lose" in text and "gain" in text:
+            tags.add("drain")
+        return tags
+
+    def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
+        mtype = move.get("type")
+        if mtype not in {"cast_spell", "activate_loyalty"}:
+            return move
+        out = dict(move)
+        hints = move.get("target_hints") or {}
+        targets = dict((move.get("targets") or {}))
+        tags: set[str] = set()
+        cid = move.get("card_id")
+        card = state.cards.get(cid) if cid else None
+        if card:
+            tags = self._spell_tags(card)
+        opponent = 1 if player_id == 2 else 2
+
+        stack_targets = hints.get("stack_targets") or []
+        if stack_targets and not targets.get("target_stack_id"):
+            # Prefer top-of-stack by default.
+            targets["target_stack_id"] = stack_targets[-1]["id"]
+
+        player_targets = hints.get("player_targets") or []
+        if player_targets and targets.get("target_player") is None and not targets.get("target_card_id"):
+            if "gain" in tags and "drain" not in tags:
+                targets["target_player"] = player_id
+            else:
+                targets["target_player"] = opponent
+
+        creature_targets = hints.get("creature_targets") or []
+        if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                creature_targets,
+                key=lambda t: (state.cards.get(t["id"]).power or 0, state.cards.get(t["id"]).toughness or 0),
+                default=None,
+            )
+            if best:
+                targets["target_card_id"] = best["id"]
+
+        planeswalker_targets = hints.get("planeswalker_targets") or []
+        if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            targets["target_card_id"] = planeswalker_targets[0]["id"]
+
+        if hints.get("supports_divide") and not targets.get("target_distribution"):
+            if creature_targets:
+                targets["target_distribution"] = {creature_targets[0]["id"]: 1}
+            elif player_targets:
+                targets["target_distribution"] = {str(opponent): 1}
+            targets.setdefault("divide_total", 1)
+
+        if hints.get("modes") and not targets.get("mode_text") and not targets.get("mode_texts"):
+            if hints.get("choose_two_modes"):
+                targets["mode_texts"] = list(hints["modes"][:2])
+            else:
+                targets["mode_text"] = hints["modes"][0]
+
+        out["targets"] = targets
+        return out
 
     def _rollout_delta(self, state: MatchState, move: dict, player_id: int) -> float:
         # Lightweight rollout approximation for deeper tactical planning.

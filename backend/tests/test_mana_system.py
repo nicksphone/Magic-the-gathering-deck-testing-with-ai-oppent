@@ -3,7 +3,7 @@ from __future__ import annotations
 from game_state.state import Zone
 from game_state.state import MatchFactory, Step
 from rules_engine.engine import RulesEngine
-from rules_engine.mana import can_pay_with_pool_and_lands
+from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands
 
 
 def test_can_pay_known_mana_cost_with_untapped_lands() -> None:
@@ -42,3 +42,105 @@ def test_cast_spell_rejects_if_cost_unpaid() -> None:
     before_hand = len(state.players[1].hand)
     engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid})
     assert len(state.players[1].hand) == before_hand
+
+
+def test_mana_pool_empties_on_step_transition() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    state.players[1].mana_pool["U"] = 2
+    state.players[2].mana_pool["R"] = 1
+
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+
+    assert state.step == Step.BEGIN_COMBAT
+    assert sum(state.players[1].mana_pool.values()) == 0
+    assert sum(state.players[2].mana_pool.values()) == 0
+
+
+def test_generic_cost_can_use_colored_mana_pool() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.mana_pool["U"] = 3
+
+    assert can_pay_with_pool_and_lands(state, 1, "{3}") is True
+    assert auto_pay_cost(state, 1, "{3}") is True
+    assert sum(p1.mana_pool.values()) == 0
+
+
+def test_explicit_colorless_symbols_can_use_colored_mana_in_simulator() -> None:
+    deck = [{"quantity": 60, "card_name": "Mountain"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.mana_pool["R"] = 2
+
+    assert can_pay_with_pool_and_lands(state, 1, "{C}{C}") is True
+    assert auto_pay_cost(state, 1, "{C}{C}") is True
+    assert sum(p1.mana_pool.values()) == 0
+
+
+def test_dual_land_type_line_counts_as_blue_source_for_double_blue_cost() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+    # Two Hallowed Fountains should satisfy {U}{U}.
+    for _ in range(2):
+        cid = p1.library.pop()
+        p1.battlefield.append(cid)
+        card = state.cards[cid]
+        card.zone = Zone.BATTLEFIELD
+        card.types = ["Land"]
+        card.name = "Hallowed Fountain"
+        card.type_line = "Land — Plains Island"
+        card.tapped = False
+
+    assert can_pay_with_pool_and_lands(state, 1, "{U}{U}") is True
+    assert auto_pay_cost(state, 1, "{U}{U}") is True
+    tapped = sum(1 for cid in p1.battlefield if state.cards[cid].tapped)
+    assert tapped == 2
+
+
+def test_dual_land_type_line_supports_multiple_other_colors() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+    # Two Stomping Ground should satisfy {R}{G}.
+    for _ in range(2):
+        cid = p1.library.pop()
+        p1.battlefield.append(cid)
+        card = state.cards[cid]
+        card.zone = Zone.BATTLEFIELD
+        card.types = ["Land"]
+        card.name = "Stomping Ground"
+        card.type_line = "Land — Mountain Forest"
+        card.tapped = False
+
+    assert can_pay_with_pool_and_lands(state, 1, "{R}{G}") is True
+    assert auto_pay_cost(state, 1, "{R}{G}") is True
+
+
+def test_oracle_text_dual_land_without_basic_subtypes_is_supported() -> None:
+    deck = [{"quantity": 60, "card_name": "Plains"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+    cid = p1.library.pop()
+    p1.battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Land"]
+    card.name = "Battlefield Forge"
+    card.type_line = "Land"
+    card.oracle_text = "{T}: Add {R} or {W}."
+    card.tapped = False
+
+    assert can_pay_with_pool_and_lands(state, 1, "{W}") is True

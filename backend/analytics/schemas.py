@@ -8,3 +8,4 @@ class BatchSimulationRequest(BaseModel):
     deck_b: list[dict]
     matches: int = Field(default=100, ge=1, le=500)
     difficulty: str = "master"
+    max_ticks: int = Field(default=3000, ge=200, le=20000)

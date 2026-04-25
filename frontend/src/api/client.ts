@@ -4,6 +4,15 @@ const API =
   (import.meta as any).env?.VITE_API_BASE_URL ||
   `http://${typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"}:8000`;
 
+export const API_BASE = API;
+
+export function resolveCardMediaUrl(uri?: string): string | undefined {
+  if (!uri) return undefined;
+  if (uri.startsWith("http://") || uri.startsWith("https://")) return uri;
+  const path = uri.startsWith("/") ? uri : `/${uri}`;
+  return `${API}${path}`;
+}
+
 export type DeckImportResponse = {
   deck_id: number | null;
   name: string;
@@ -66,9 +75,9 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ player_id, stops }),
     }),
-  simulateBatch: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string) =>
+  simulateBatch: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
     req("/simulate/batch", {
       method: "POST",
-      body: JSON.stringify({ deck_a, deck_b, matches, difficulty }),
+      body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
 };

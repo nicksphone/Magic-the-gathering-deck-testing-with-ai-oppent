@@ -65,3 +65,82 @@ def test_ai_avoids_mana_tap_loop_when_no_cast_available() -> None:
 
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "pass_priority"
+
+
+def test_aggro_ai_prefers_creature_development_over_burn_early() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+    moves = [
+        {"type": "cast_spell", "card_name": "Monastery Swiftspear", "card_id": "creature-1"},
+        {"type": "cast_spell", "card_name": "Lightning Bolt", "card_id": "spell-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 2
+        step = type("Step", (), {"PRECOMBAT_MAIN": "precombat_main", "POSTCOMBAT_MAIN": "postcombat_main"})().PRECOMBAT_MAIN
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "creature-1": type("C", (), {"types": ["Creature"]})(),
+            "spell-1": type("C", (), {"types": ["Instant"]})(),
+        }
+        stack = []
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["card_id"] == "creature-1"
+
+
+def test_control_ai_prefers_card_draw_over_creature_on_empty_stack() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+    moves = [
+        {"type": "cast_spell", "card_name": "Merfolk Looter", "card_id": "creature-1"},
+        {"type": "cast_spell", "card_name": "Consider", "card_id": "draw-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "creature-1": type("C", (), {"types": ["Creature"], "name": "Merfolk Looter", "oracle_text": ""})(),
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card."})(),
+        }
+        stack = []
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["card_id"] == "draw-1"
+
+
+def test_control_ai_sets_counterspell_stack_target() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_name": "Counterspell",
+            "card_id": "counter-1",
+            "target_hints": {"stack_targets": [{"id": "stack-a", "label": "Lightning Bolt"}]},
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell."})(),
+        }
+        stack = [type("S", (), {"id": "stack-a", "label": "Lightning Bolt"})()]
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["targets"]["target_stack_id"] == "stack-a"

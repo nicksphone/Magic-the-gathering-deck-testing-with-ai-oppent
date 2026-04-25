@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from typing import Set
 
 from game_state.state import MatchState
 from rules_engine.hooks import CostContext, apply_cost_modifiers
@@ -22,6 +23,9 @@ def parse_mana_cost(mana_cost: str, is_land: bool = False) -> dict[str, int]:
             req["generic"] += int(sym)
         elif sym in {"W", "U", "B", "R", "G"}:
             req[sym] += 1
+        elif sym == "C":
+            # Simulator rule: treat explicit colorless symbol as generic payable by any mana.
+            req["generic"] += 1
         elif "/" in sym:
             left = sym.split("/")[0]
             if left in req:
@@ -34,13 +38,12 @@ def parse_mana_cost(mana_cost: str, is_land: bool = False) -> dict[str, int]:
 
 
 def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
-    from rules_engine.engine import _infer_mana_from_land
-
     out: Counter = Counter()
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
         if "Land" in card.types and not card.tapped:
-            out[_infer_mana_from_land(card.name)] += 1
+            for color in _land_colors(card.name, card.type_line, card.oracle_text):
+                out[color] += 1
             out["ANY"] += 1
     return out
 
@@ -89,8 +92,6 @@ def auto_pay_cost(
     is_land: bool = False,
     card_name: str = "",
 ) -> bool:
-    from rules_engine.engine import _infer_mana_from_land
-
     context = apply_cost_modifiers(CostContext(player_id=player_id, card_name=card_name, mana_cost=mana_cost))
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
     if not can_pay_with_pool_and_lands(state, player_id, mana_cost, is_land=is_land, card_name=card_name):
@@ -110,6 +111,7 @@ def auto_pay_cost(
             if not land_id:
                 return False
             state.cards[land_id].tapped = True
+            state.log.append(f"{player.name} taps {state.cards[land_id].name} for {color} to pay spell cost.")
             req[color] -= 1
 
     generic_need = req["generic"]
@@ -124,7 +126,18 @@ def auto_pay_cost(
         land_id = _find_any_untapped_land(state, player_id)
         if not land_id:
             return False
-        produced = _infer_mana_from_land(state.cards[land_id].name)
+        produced = next(
+            iter(
+                _ordered_colors(
+                    _land_colors(
+                        state.cards[land_id].name,
+                        state.cards[land_id].type_line,
+                        state.cards[land_id].oracle_text,
+                    )
+                )
+            ),
+            "C",
+        )
         state.cards[land_id].tapped = True
         state.log.append(f"{player.name} taps {state.cards[land_id].name} for {produced} to pay spell cost.")
         generic_need -= 1
@@ -133,11 +146,9 @@ def auto_pay_cost(
 
 
 def _find_untapped_land_for_color(state: MatchState, player_id: int, color: str) -> str | None:
-    from rules_engine.engine import _infer_mana_from_land
-
     for cid in state.players[player_id].battlefield:
         c = state.cards[cid]
-        if "Land" in c.types and not c.tapped and _infer_mana_from_land(c.name) == color:
+        if "Land" in c.types and not c.tapped and color in _land_colors(c.name, c.type_line, c.oracle_text):
             return cid
     return None
 
@@ -161,3 +172,30 @@ def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic
         + ("{R}" * req["R"])
         + ("{G}" * req["G"])
     )
+
+
+def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> Set[str]:
+    text = f"{name or ''} {type_line or ''}".lower()
+    out: Set[str] = set()
+    if "plains" in text:
+        out.add("W")
+    if "island" in text:
+        out.add("U")
+    if "swamp" in text:
+        out.add("B")
+    if "mountain" in text:
+        out.add("R")
+    if "forest" in text:
+        out.add("G")
+    # Also infer from mana abilities printed in oracle text, e.g. "{T}: Add {R} or {W}."
+    for sym in MANA_SYMBOL_RE.findall((oracle_text or "").upper()):
+        if sym in {"W", "U", "B", "R", "G", "C"}:
+            out.add(sym)
+    if not out:
+        out.add("C")
+    return out
+
+
+def _ordered_colors(colors: Set[str]) -> list[str]:
+    order = ["W", "U", "B", "R", "G", "C"]
+    return [c for c in order if c in colors]

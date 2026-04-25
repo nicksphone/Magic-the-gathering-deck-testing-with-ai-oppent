@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { resolveCardMediaUrl } from "../api/client";
 import type { LegalMove, MatchState } from "../types";
 
 type Props = {
@@ -7,14 +8,70 @@ type Props = {
   onCardAction: (playerId: number, action: Record<string, unknown>) => void;
 };
 
+type LandPile = {
+  key: string;
+  name: string;
+  imageUri?: string;
+  total: number;
+  untapped: number;
+  tapped: number;
+  color: string;
+};
+
+function inferLandColor(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("plains")) return "W";
+  if (n.includes("island")) return "U";
+  if (n.includes("swamp")) return "B";
+  if (n.includes("mountain")) return "R";
+  if (n.includes("forest")) return "G";
+  return "C";
+}
+
+function groupBattlefield(cards: MatchState["players"]["1"]["battlefield"]): { nonLands: typeof cards; lands: LandPile[] } {
+  const nonLands = cards.filter((c) => !c.types.includes("Land"));
+  const piles = new Map<string, LandPile>();
+  for (const card of cards) {
+    if (!card.types.includes("Land")) continue;
+    const key = `${card.name}|${card.image_uri ?? ""}`;
+    const existing = piles.get(key) ?? {
+      key,
+      name: card.name,
+      imageUri: card.image_uri,
+      total: 0,
+      untapped: 0,
+      tapped: 0,
+      color: inferLandColor(card.name),
+    };
+    existing.total += 1;
+    if (card.tapped) existing.tapped += 1;
+    else existing.untapped += 1;
+    piles.set(key, existing);
+  }
+  return { nonLands, lands: Array.from(piles.values()).sort((a, b) => a.name.localeCompare(b.name)) };
+}
+
+function manaSummary(lands: LandPile[]): string {
+  const counts: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+  for (const pile of lands) counts[pile.color] = (counts[pile.color] ?? 0) + pile.untapped;
+  return Object.entries(counts)
+    .filter(([, n]) => n > 0)
+    .map(([c, n]) => `${c}:${n}`)
+    .join("  ");
+}
+
 export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p1 = match.players["1"];
   const p2 = match.players["2"];
+  const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
+  const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
+  const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
+  const canManualTapP1 = match.priority_player === 1;
 
   function castAction(cardId: string) {
     const t = targets[cardId] ?? {};
@@ -48,10 +105,12 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           <span>GY {p2.graveyard_count}</span>
           <span>Exile {p2.exile_count}</span>
           <span>Hand {p2.hand_count}</span>
+          <span>Untapped Mana {manaSummary(p2Groups.lands) || "-"}</span>
         </div>
         <div className="cards">
-          {p2.battlefield.map((card) => (
+          {p2Groups.nonLands.map((card) => (
             <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
+              {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
@@ -62,6 +121,19 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             </article>
           ))}
         </div>
+        {p2Groups.lands.length ? (
+          <div className="land-stacks">
+            {p2Groups.lands.map((pile) => (
+              <article key={pile.key} className="land-stack">
+                {resolveCardMediaUrl(pile.imageUri) ? <img src={resolveCardMediaUrl(pile.imageUri)} alt={pile.name} loading="lazy" /> : null}
+                <div>
+                  <strong>{pile.name}</strong>
+                  <p>Total {pile.total} | Ready {pile.untapped} | Tapped {pile.tapped}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="player-row player">
@@ -70,10 +142,12 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           <span>GY {p1.graveyard_count}</span>
           <span>Exile {p1.exile_count}</span>
           <span>Hand {p1.hand_count}</span>
+          <span>Untapped Mana {manaSummary(p1Groups.lands) || "-"}</span>
         </div>
         <div className="cards">
-          {p1.battlefield.map((card) => (
+          {p1Groups.nonLands.map((card) => (
             <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
+              {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
@@ -84,6 +158,49 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             </article>
           ))}
         </div>
+        {p1Groups.lands.length ? (
+          <div className="land-stacks">
+            {p1Groups.lands.map((pile) => (
+              <article key={pile.key} className="land-stack">
+                {resolveCardMediaUrl(pile.imageUri) ? <img src={resolveCardMediaUrl(pile.imageUri)} alt={pile.name} loading="lazy" /> : null}
+                <div>
+                  <strong>{pile.name}</strong>
+                  <p>Total {pile.total} | Ready {pile.untapped} | Tapped {pile.tapped}</p>
+                  {canManualTapP1 && pile.untapped > 0 ? (
+                    <div className="row" style={{ marginBottom: 0 }}>
+                      <select
+                        value={landTapCounts[pile.key] ?? 1}
+                        onChange={(e) =>
+                          setLandTapCounts((prev) => ({
+                            ...prev,
+                            [pile.key]: Math.max(1, Math.min(pile.untapped, Number(e.target.value) || 1)),
+                          }))
+                        }
+                      >
+                        {Array.from({ length: pile.untapped }, (_, i) => i + 1).map((n) => (
+                          <option key={`${pile.key}-tap-${n}`} value={n}>
+                            Tap {n}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() =>
+                          onCardAction(1, {
+                            type: "tap_lands_bulk",
+                            land_name: pile.name,
+                            count: landTapCounts[pile.key] ?? 1,
+                          })
+                        }
+                      >
+                        Add {pile.color}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
         {loyaltyMoves.length ? (
           <div className="hand-row">
             {loyaltyMoves.map((move, i) => {

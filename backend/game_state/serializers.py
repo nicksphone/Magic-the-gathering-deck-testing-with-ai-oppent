@@ -42,6 +42,7 @@ def serialize_match(state: MatchState) -> dict:
                         "toughness": state.cards[cid].toughness,
                         "loyalty": state.cards[cid].loyalty,
                         "mana_cost": state.cards[cid].mana_cost,
+                        "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
                     }
                     for cid in p.battlefield
@@ -51,6 +52,7 @@ def serialize_match(state: MatchState) -> dict:
                         "id": cid,
                         "name": state.cards[cid].name,
                         "mana_cost": state.cards[cid].mana_cost,
+                        "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
                     }
                     for cid in p.hand

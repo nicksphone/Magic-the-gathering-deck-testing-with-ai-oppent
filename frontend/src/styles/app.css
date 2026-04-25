@@ -147,15 +147,56 @@ button:hover {
 }
 
 .card {
-  min-width: 130px;
+  min-width: 104px;
+  max-width: 120px;
   border: 1px solid #5f95a6;
   border-radius: 9px;
-  padding: 8px;
+  padding: 6px;
   background: linear-gradient(180deg, #213e49, #172b34);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #4e7a89;
+  margin-bottom: 4px;
+  object-fit: cover;
+  max-height: 112px;
 }
 
 .card.tapped {
   transform: rotate(90deg);
+}
+
+.land-stacks {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.land-stack {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #3f6774;
+  border-radius: 8px;
+  padding: 6px;
+  background: rgba(14, 40, 50, 0.82);
+}
+
+.land-stack img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #4e7a89;
+}
+
+.land-stack p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .hand-row {

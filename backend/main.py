@@ -6,6 +6,7 @@ from typing import Literal
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 
@@ -14,7 +15,7 @@ from ai.deck_analysis import guess_archetype
 from analytics.schemas import BatchSimulationRequest
 from analytics.service import AnalyticsService
 from card_data.service import CardService
-from card_data.sync import ScryfallSyncService
+from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
@@ -32,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/card-images", StaticFiles(directory=str(CACHE_DIR)), name="card-images")
 
 
 @dataclass
@@ -263,7 +266,15 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
         raise HTTPException(status_code=404, detail="Match not found")
     ticks = max(1, min(100, ticks))
     for _ in range(ticks):
-        if match.state.winner is not None or match.match_complete:
+        if match.match_complete:
+            break
+        if match.state.winner is not None:
+            _post_step_finalize(match, repo)
+            if match.match_complete:
+                break
+            if _is_full_ai_match(match):
+                _start_next_game_state(match)
+                continue
             break
         pid = _default_player_for_state(match)
         if match.controllers.get(pid) == "ai":
@@ -332,25 +343,19 @@ def next_game(match_id: str) -> dict:
     if match.state.winner is None:
         raise HTTPException(status_code=400, detail="Current game not finished.")
 
-    prior_id = match.state.id
-    p1_name = match.state.players[1].name
-    p2_name = match.state.players[2].name
-    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name)
-    new_state.id = prior_id
-    new_state.score = dict(match.state.score)
-    new_state.best_of = match.best_of
-    new_state.active_player = 1 if match.game_number % 2 == 1 else 2
-    new_state.priority_player = new_state.active_player
-    new_state.log.insert(0, f"Starting game {match.game_number + 1}.")
-    match.state = new_state
-    match.game_number += 1
-    match.current_game_recorded = False
+    _start_next_game_state(match)
     return _serialize_match_controller(match)
 
 
 @app.post("/simulate/batch")
 def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
-    return AnalyticsService(repo).run_batch(payload.deck_a, payload.deck_b, payload.matches, payload.difficulty)
+    return AnalyticsService(repo).run_batch(
+        payload.deck_a,
+        payload.deck_b,
+        payload.matches,
+        payload.difficulty,
+        max_ticks=payload.max_ticks,
+    )
 
 
 @app.get("/analytics/history")
@@ -384,6 +389,8 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
 
 def _serialize_match_controller(match: MatchController) -> dict:
     payload = serialize_match(match.state)
+    payload["mode"] = match.mode
+    payload["controllers"] = {str(pid): controller for pid, controller in match.controllers.items()}
     payload["game_number"] = match.game_number
     payload["best_of"] = match.best_of
     payload["match_complete"] = match.match_complete
@@ -398,6 +405,17 @@ def _serialize_match_controller(match: MatchController) -> dict:
 def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]:
     names = [item["card_name"] for item in deck]
     cached = repo.get_cached_cards_by_names(names) if repo else {}
+    if repo:
+        missing = sorted({name for name in names if name.strip() and name.strip().lower() not in cached})
+        if missing:
+            sync = ScryfallSyncService(repo)
+            for name in missing:
+                try:
+                    sync.sync_card_by_name(name)
+                except Exception:
+                    # Match start should still proceed if external sync is unavailable.
+                    continue
+            cached = repo.get_cached_cards_by_names(names)
     hydrated: list[dict] = []
     for item in deck:
         row = cached.get(item["card_name"].lower())
@@ -408,6 +426,7 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             out["type_line"] = row.type_line
             out["power"] = row.power
             out["toughness"] = row.toughness
+            out["image_uri"] = row.image_uri
             loyalty = getattr(row, "loyalty", None)
             if loyalty is not None:
                 out["loyalty"] = loyalty
@@ -421,6 +440,28 @@ def _default_player_for_state(match: MatchController) -> int:
             if pid not in match.state.kept_hands:
                 return pid
     return match.state.priority_player
+
+
+def _is_full_ai_match(match: MatchController) -> bool:
+    return match.controllers.get(1) == "ai" and match.controllers.get(2) == "ai"
+
+
+def _start_next_game_state(match: MatchController) -> None:
+    prior_log_tail = list(match.state.log[-80:])
+    prior_id = match.state.id
+    p1_name = match.state.players[1].name
+    p2_name = match.state.players[2].name
+    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name)
+    new_state.id = prior_id
+    new_state.score = dict(match.state.score)
+    new_state.best_of = match.best_of
+    new_state.active_player = 1 if match.game_number % 2 == 1 else 2
+    new_state.priority_player = new_state.active_player
+    transition = f"--- Starting game {match.game_number + 1} ---"
+    new_state.log = prior_log_tail + [transition] + new_state.log
+    match.state = new_state
+    match.game_number += 1
+    match.current_game_recorded = False
 
 
 def _ensure_builtin_decks(repo: Repository) -> None:
