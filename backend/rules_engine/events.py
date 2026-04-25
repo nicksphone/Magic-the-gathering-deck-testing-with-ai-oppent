@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+import re
 from typing import Any
 
 from game_state.state import MatchState, StackItem
@@ -33,13 +34,15 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             oracle = (card.oracle_text or "").lower()
 
             if event == "draw_card" and payload.get("player_id") == card.controller and "whenever you draw a card" in oracle:
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger"))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "draw_card" and payload.get("player_id") != card.controller and "whenever an opponent draws a card" in oracle:
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "life_gain" and payload.get("player_id") == card.controller and "whenever you gain life" in oracle:
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger"))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "creature_dies" and ("whenever a creature dies" in oracle or "whenever another creature dies" in oracle):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger"))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and payload.get("card_id") == cid and f"when {card.name.lower()} enters the battlefield" in oracle:
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB"))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
     return out
 
 
@@ -51,8 +54,37 @@ def _order_apnap(state: MatchState, triggers: list[dict[str, Any]]) -> list[dict
     return first + second
 
 
-def _trigger_from_oracle(state: MatchState, source_card_id: str, controller: int, oracle: str, default_label: str) -> dict[str, Any]:
+def _trigger_from_oracle(
+    state: MatchState,
+    source_card_id: str,
+    controller: int,
+    oracle: str,
+    default_label: str,
+    event: str,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
     opponent = 1 if controller == 2 else 2
+    gain_amount = _first_number(oracle, r"gain (\d+) life")
+    lose_amount = _first_number(oracle, r"lose (\d+) life")
+    if event == "draw_card":
+        drawn_by = int(payload.get("player_id", 0) or 0)
+        if drawn_by == controller and "whenever you draw a card" in oracle and gain_amount > 0:
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "gain_life",
+                "payload": {"target_player": controller, "amount": gain_amount},
+            }
+        if drawn_by != controller and "whenever an opponent draws a card" in oracle and lose_amount > 0:
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "lose_life",
+                "payload": {"target_player": drawn_by, "amount": lose_amount},
+            }
+
     if "draw a card" in oracle:
         return {
             "source_card_id": source_card_id,
@@ -67,7 +99,7 @@ def _trigger_from_oracle(state: MatchState, source_card_id: str, controller: int
             "controller": controller,
             "label": default_label,
             "effect_key": "gain_life",
-            "payload": {"amount": 1},
+            "payload": {"amount": gain_amount or 1},
         }
     if "deals 1 damage" in oracle or "deal 1 damage" in oracle:
         return {
@@ -84,3 +116,13 @@ def _trigger_from_oracle(state: MatchState, source_card_id: str, controller: int
         "effect_key": "gain_life",
         "payload": {"amount": 0},
     }
+
+
+def _first_number(text: str, pattern: str) -> int:
+    match = re.search(pattern, text)
+    if not match:
+        return 0
+    try:
+        return int(match.group(1))
+    except Exception:
+        return 0

@@ -320,3 +320,61 @@ def test_ai_materialize_sets_default_cost_choice_when_options_present() -> None:
 
     out = ai._materialize_action(FakeState(), move, 1)
     assert out["cost_choice"]["id"] == "base"
+
+
+def test_ai_forces_land_drop_on_own_main_phase() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Counterspell", "card_id": "counter-1"},
+        {"type": "play_land", "card_id": "island-1"},
+    ]
+
+    class FakeState:
+        turn = 2
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1", "island-1"], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "play_land"
+
+
+def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "play_land", "card_id": "swamp-1"},
+        {"type": "play_land", "card_id": "island-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 1
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1", "swamp-1", "island-1"], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "swamp-1": type("C", (), {"types": ["Land"], "name": "Swamp", "type_line": "Basic Land — Swamp", "oracle_text": "{T}: Add {B}."})(),
+            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "play_land"
+    assert decision.action["card_id"] == "island-1"

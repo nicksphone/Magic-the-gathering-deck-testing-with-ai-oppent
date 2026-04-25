@@ -23,7 +23,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.priority_player != player_id:
         return moves
 
-    if state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id:
+    if state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not getattr(state, "attackers_declared", False):
         attackers = [
             cid
             for cid in player.battlefield
@@ -31,18 +31,19 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not state.cards[cid].tapped
             and not state.cards[cid].summoning_sick
         ]
-        defender_id = 1 if state.active_player == 2 else 2
-        defenders = [{"id": f"player:{defender_id}", "label": state.players[defender_id].name, "kind": "player"}]
-        defenders.extend(
-            {
-                "id": f"planeswalker:{cid}",
-                "label": state.cards[cid].name,
-                "kind": "planeswalker",
-            }
-            for cid in state.players[defender_id].battlefield
-            if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
-        )
-        moves.append({"type": "attack", "options": attackers, "defenders": defenders})
+        if attackers:
+            defender_id = 1 if state.active_player == 2 else 2
+            defenders = [{"id": f"player:{defender_id}", "label": state.players[defender_id].name, "kind": "player"}]
+            defenders.extend(
+                {
+                    "id": f"planeswalker:{cid}",
+                    "label": state.cards[cid].name,
+                    "kind": "planeswalker",
+                }
+                for cid in state.players[defender_id].battlefield
+                if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
+            )
+            moves.append({"type": "attack", "options": attackers, "defenders": defenders})
     if state.step == Step.DECLARE_BLOCKERS and state.active_player != player_id and state.attackers:
         blockers = [
             cid

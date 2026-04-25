@@ -106,6 +106,7 @@ class MatchState:
     attackers: list[str] = field(default_factory=list)
     attack_targets: dict[str, str] = field(default_factory=dict)
     blocks: dict[str, list[str]] = field(default_factory=dict)
+    attackers_declared: bool = False
     winner: int | None = None
     best_of: int = 3
     score: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
@@ -235,7 +236,7 @@ def _infer_types(name: str, type_line: str = "") -> list[str]:
         ]
     ):
         return ["Instant"]
-    if any(k in n for k in ["fable", "wedding", "massacre", "festival", "shark typhoon", "kumano"]):
+    if any(k in n for k in ["fable", "wedding", "massacre", "festival", "shark typhoon", "kumano", "ossification", "intangible virtue"]):
         return ["Enchantment"]
     if any(
         k in n
@@ -253,7 +254,6 @@ def _infer_types(name: str, type_line: str = "") -> list[str]:
             "secure the wastes",
             "raise the alarm",
             "march of the multitudes",
-            "ossification",
             "claim the firstborn",
             "collected company",
         ]

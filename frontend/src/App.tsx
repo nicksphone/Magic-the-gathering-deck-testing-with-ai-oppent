@@ -20,10 +20,10 @@ export function App() {
   const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
   const [autoResponsePaused, setAutoResponsePaused] = useState(false);
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
+  const [autoplayDelayMs, setAutoplayDelayMs] = useState<number>(1800);
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
-  const AI_AUTOPLAY_DELAY_MS = 640;
 
   const onDecksLoaded = useCallback((records: DeckRecord[]) => {
     setDecks(records);
@@ -159,7 +159,7 @@ export function App() {
       if (!match || autoTickInFlight.current) return;
       autoTickInFlight.current = true;
       try {
-        const ticks = bothAi ? 20 : 1;
+        const ticks = bothAi ? 3 : 1;
         const next = await api.autoplay(match.id, ticks);
         setMatch(next);
         await syncMoves(next);
@@ -169,10 +169,10 @@ export function App() {
         autoTickInFlight.current = false;
         setAutoLoopBeat((v) => v + 1);
       }
-    }, AI_AUTOPLAY_DELAY_MS);
+    }, autoplayDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [match, syncMoves, autoLoopBeat, AI_AUTOPLAY_DELAY_MS]);
+  }, [match, syncMoves, autoLoopBeat, autoplayDelayMs]);
 
   const humanResponseWindowActive =
     mode === "player_vs_ai"
@@ -255,6 +255,8 @@ export function App() {
           onMulligan={mulligan}
           onNextStep={nextStep}
           onAutoplayTick={autoplayTick}
+          autoplayDelayMs={autoplayDelayMs}
+          setAutoplayDelayMs={setAutoplayDelayMs}
           onSubmitBlocks={onSubmitBlocks}
           onSubmitAttack={onSubmitAttack}
           onApplySideboard={onApplySideboard}

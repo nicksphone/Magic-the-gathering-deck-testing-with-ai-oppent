@@ -13,6 +13,7 @@ export type CardView = {
   id: string;
   name: string;
   mana_cost?: string;
+  oracle_text?: string;
   image_uri?: string;
   tapped: boolean;
   summoning_sick: boolean;
@@ -29,7 +30,7 @@ export type PlayerView = {
   library_count: number;
   hand_count: number;
   battlefield: CardView[];
-  hand: { id: string; name: string; mana_cost?: string; image_uri?: string; types: string[] }[];
+  hand: { id: string; name: string; mana_cost?: string; oracle_text?: string; image_uri?: string; types: string[] }[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;

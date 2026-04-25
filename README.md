@@ -359,6 +359,27 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - when AI actions create stack interaction windows, a countdown appears for instant-speed responses
   - if no action is taken before countdown expiry, priority auto-passes
   - timer can be paused/resumed with Hold Priority control
+- Legendary rules correctness fix (2026-04-25):
+  - added state-based `legend rule` enforcement in the rules engine
+  - if a player controls multiple legendary permanents with the same name, one is kept and extras are moved to graveyard
+  - per-controller behavior is preserved (both players may control the same legendary permanent name simultaneously)
+  - regression tests added for duplicate-legend cleanup and cross-controller legendary coexistence
+- Legendary/offline typing and combat-pressure fixes (2026-04-25):
+  - legend detection now includes an offline fallback heuristic for named permanent cards when cache type lines are unavailable
+  - prevents duplicate named legendary permanents from persisting after cache-miss hydration cases
+  - corrected offline type inference for `Ossification` and `Intangible Virtue` to `Enchantment` handling
+  - AI attack scoring now adds strong pressure in open-board situations (including lethal checks), reducing missed attacks with large threats
+  - regression tests added for offline legendary enforcement, enchantment type inference, and open-board attack decisions
+  - end-of-game logging now appends a summary with both players' life and library counts to make non-obvious win conditions easier to diagnose
+  - cleanup phase now enforces default max hand size of 7, discarding excess cards automatically unless a battlefield effect grants "no maximum hand size"
+  - regression tests added for default cleanup discard behavior and "no maximum hand size" exemption
+  - draw-trigger parsing fixed for Sheoldred-style text so draw events produce life gain/loss effects instead of accidental recursive draw effects
+  - prevents runaway self-draw loops that could incorrectly deck a player while life totals still look healthy
+  - regression tests added for both "you draw" and "opponent draws" trigger branches
+  - AI playback pacing updated for watchability: AI-vs-AI autoplay now advances in smaller action batches and includes a UI speed slider (0.6s-3.5s per AI beat, default slower)
+  - AI land sequencing hardening: on own main phase, AI now prioritizes making a land drop when available before passing/stalling
+  - color-aware land selection added (e.g., blue-source preference for counterspell-heavy hands) to reduce incorrect early sequencing like Swamp-first into stranded blue interaction
+  - regression tests added for forced land-drop behavior and blue-source preference in control setup hands
 
 ## Documentation Rule
 

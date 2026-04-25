@@ -28,6 +28,10 @@ class AIAgent:
         if not legal_moves:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No legal actions")
 
+        forced_land = self._choose_forced_land_play(state, legal_moves, player_id)
+        if forced_land is not None:
+            return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
+
         sorted_moves = self._rank_moves(state, legal_moves, player_id)
         if self.difficulty == "casual":
             move = sorted_moves[min(1, len(sorted_moves) - 1)]
@@ -38,6 +42,21 @@ class AIAgent:
         move = self._materialize_action(state, move, player_id)
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _choose_forced_land_play(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        step = str(getattr(state, "step", ""))
+        own_main = step in {"precombat_main", "postcombat_main"} and getattr(state, "active_player", player_id) == player_id
+        if not own_main:
+            return None
+        if getattr(state, "stack", []) or []:
+            return None
+        player = state.players[player_id]
+        if getattr(player, "lands_played_this_turn", 0) >= 1:
+            return None
+        land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
+        if not land_moves:
+            return None
+        return self._best_land_move(state, land_moves, player_id)
 
     def choose_mulligan_action(self, state: MatchState, player_id: int) -> AIDecision:
         player = state.players[player_id]
@@ -179,9 +198,16 @@ class AIAgent:
             for c in state.players[opp_id].battlefield
             if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
         )
+        opp_blockers = sum(
+            1
+            for c in state.players[opp_id].battlefield
+            if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
+        )
         race_pressure = max(0, 20 - state.players[opp_id].life) * 0.2
         archetype_bias = 5 if self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} else 2
-        return archetype_bias + attack_power * 0.8 - opp_block_power * 0.35 + race_pressure
+        unblocked_bonus = 3.5 if opp_blockers == 0 else 0.0
+        lethal_bonus = 20.0 if attack_power >= state.players[opp_id].life else 0.0
+        return archetype_bias + attack_power * 0.8 - opp_block_power * 0.35 + race_pressure + unblocked_bonus + lethal_bonus
 
     def _pass_bias(self, state: MatchState, player_id: int) -> float:
         has_instant_like = False
@@ -521,3 +547,68 @@ class AIAgent:
         ranked = sorted(legal, key=quick_score, reverse=True)
         top = ranked[: min(3, len(ranked))]
         return top[0]
+
+    def _best_land_move(self, state: MatchState, land_moves: list[dict], player_id: int) -> dict:
+        demand = self._color_demand(state, player_id)
+        current_sources = self._current_color_sources(state, player_id)
+
+        def score_land(move: dict) -> float:
+            cid = move.get("card_id")
+            if not cid or cid not in state.cards:
+                return -999.0
+            card = state.cards[cid]
+            produced = self._land_colors(card)
+            if not produced:
+                return 0.0
+            score = 0.0
+            for color, need in demand.items():
+                if need > 0 and color in produced:
+                    score += 1.5 + need * 0.2
+            for color in produced:
+                if current_sources.get(color, 0) == 0 and demand.get(color, 0) > 0:
+                    score += 3.5
+            score += len(produced) * 0.15
+            return score
+
+        return max(land_moves, key=score_land)
+
+    def _color_demand(self, state: MatchState, player_id: int) -> dict[str, int]:
+        demand = {c: 0 for c in ["W", "U", "B", "R", "G"]}
+        for cid in state.players[player_id].hand:
+            card = state.cards.get(cid)
+            if not card or "Land" in card.types:
+                continue
+            cost = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
+            cmc = cost["generic"] + sum(cost[c] for c in ["W", "U", "B", "R", "G"])
+            weight = 2 if cmc <= 2 else (1 if cmc <= 4 else 0)
+            for c in ["W", "U", "B", "R", "G"]:
+                if cost[c] > 0:
+                    demand[c] += weight * cost[c]
+            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+            if "counter target spell" in text:
+                demand["U"] += 2
+        return demand
+
+    def _current_color_sources(self, state: MatchState, player_id: int) -> dict[str, int]:
+        sources = {c: 0 for c in ["W", "U", "B", "R", "G"]}
+        for cid in state.players[player_id].battlefield:
+            card = state.cards.get(cid)
+            if not card or "Land" not in card.types:
+                continue
+            for c in self._land_colors(card):
+                if c in sources:
+                    sources[c] += 1
+        return sources
+
+    def _land_colors(self, card) -> set[str]:
+        colors: set[str] = set()
+        type_line = (getattr(card, "type_line", "") or "").lower()
+        name = (getattr(card, "name", "") or "").lower()
+        oracle = (getattr(card, "oracle_text", "") or "").upper()
+        mapping = {"plains": "W", "island": "U", "swamp": "B", "mountain": "R", "forest": "G"}
+        for basic, sym in mapping.items():
+            if basic in type_line or basic in name:
+                colors.add(sym)
+        for sym in re.findall(r"\{([WUBRG])\}", oracle):
+            colors.add(sym)
+        return colors

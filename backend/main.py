@@ -412,6 +412,13 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     state = match.state
     if state.winner is None or match.current_game_recorded:
         return
+    p1 = state.players[1]
+    p2 = state.players[2]
+    state.log.append(
+        "Game ended summary: "
+        f"{p1.name} life={p1.life}, library={len(p1.library)}; "
+        f"{p2.name} life={p2.life}, library={len(p2.library)}."
+    )
     if state.winner in state.score:
         state.score[state.winner] += 1
     match.current_game_recorded = True

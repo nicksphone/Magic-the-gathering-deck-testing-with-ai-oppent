@@ -8,6 +8,17 @@ type Props = {
   onCardAction: (playerId: number, action: Record<string, unknown>) => void;
 };
 
+type HoverPreview = {
+  name: string;
+  manaCost?: string;
+  oracleText?: string;
+  imageUri?: string;
+  types?: string[];
+  power?: number | null;
+  toughness?: number | null;
+  loyalty?: number | null;
+};
+
 type LandPile = {
   key: string;
   name: string;
@@ -71,7 +82,21 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
+  const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
   const canManualTapP1 = match.priority_player === 1;
+
+  function previewFromCard(card: MatchState["players"]["1"]["battlefield"][number] | MatchState["players"]["1"]["hand"][number]): HoverPreview {
+    return {
+      name: card.name,
+      manaCost: card.mana_cost,
+      oracleText: card.oracle_text,
+      imageUri: card.image_uri,
+      types: card.types,
+      power: "power" in card ? card.power : null,
+      toughness: "toughness" in card ? card.toughness : null,
+      loyalty: "loyalty" in card ? card.loyalty : null,
+    };
+  }
 
   function castAction(cardId: string) {
     const t = targets[cardId] ?? {};
@@ -109,7 +134,13 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         </div>
         <div className="cards">
           {p2Groups.nonLands.map((card) => (
-            <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
+            <article
+              key={card.id}
+              className={`card ${card.tapped ? "tapped" : ""}`}
+              title={card.name}
+              onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+              onMouseLeave={() => setHoverPreview(null)}
+            >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
@@ -124,7 +155,12 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         {p2Groups.lands.length ? (
           <div className="land-stacks">
             {p2Groups.lands.map((pile) => (
-              <article key={pile.key} className="land-stack">
+              <article
+                key={pile.key}
+                className="land-stack"
+                onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
+                onMouseLeave={() => setHoverPreview(null)}
+              >
                 {resolveCardMediaUrl(pile.imageUri) ? <img src={resolveCardMediaUrl(pile.imageUri)} alt={pile.name} loading="lazy" /> : null}
                 <div>
                   <strong>{pile.name}</strong>
@@ -146,7 +182,13 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         </div>
         <div className="cards">
           {p1Groups.nonLands.map((card) => (
-            <article key={card.id} className={`card ${card.tapped ? "tapped" : ""}`} title={card.name}>
+            <article
+              key={card.id}
+              className={`card ${card.tapped ? "tapped" : ""}`}
+              title={card.name}
+              onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+              onMouseLeave={() => setHoverPreview(null)}
+            >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
@@ -161,7 +203,12 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         {p1Groups.lands.length ? (
           <div className="land-stacks">
             {p1Groups.lands.map((pile) => (
-              <article key={pile.key} className="land-stack">
+              <article
+                key={pile.key}
+                className="land-stack"
+                onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
+                onMouseLeave={() => setHoverPreview(null)}
+              >
                 {resolveCardMediaUrl(pile.imageUri) ? <img src={resolveCardMediaUrl(pile.imageUri)} alt={pile.name} loading="lazy" /> : null}
                 <div>
                   <strong>{pile.name}</strong>
@@ -271,7 +318,12 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             const move = castMoves.find((m) => m.card_id === card.id);
             if (!move) {
               return (
-                <button key={card.id} disabled>
+                <button
+                  key={card.id}
+                  disabled
+                  onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+                  onMouseLeave={() => setHoverPreview(null)}
+                >
                   {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
                 </button>
               );
@@ -279,7 +331,11 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             const hints = move.target_hints;
             return (
               <div key={card.id} className="cast-card-box">
-                <button onClick={() => castAction(card.id)}>
+                <button
+                  onClick={() => castAction(card.id)}
+                  onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+                  onMouseLeave={() => setHoverPreview(null)}
+                >
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
                 {move.cost_options?.length ? (
@@ -458,6 +514,25 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           })}
         </div>
       </div>
+      {hoverPreview ? (
+        <aside className="card-hover-preview">
+          {resolveCardMediaUrl(hoverPreview.imageUri) ? (
+            <img src={resolveCardMediaUrl(hoverPreview.imageUri)} alt={hoverPreview.name} loading="lazy" />
+          ) : null}
+          <div className="card-hover-meta">
+            <h4>{hoverPreview.name}</h4>
+            {hoverPreview.manaCost ? <p>{hoverPreview.manaCost}</p> : null}
+            {hoverPreview.types?.length ? <p>{hoverPreview.types.join(" ")}</p> : null}
+            {(hoverPreview.power !== null && hoverPreview.power !== undefined) || (hoverPreview.toughness !== null && hoverPreview.toughness !== undefined) ? (
+              <p>
+                {hoverPreview.power ?? "-"}/{hoverPreview.toughness ?? "-"}
+              </p>
+            ) : null}
+            {hoverPreview.loyalty !== null && hoverPreview.loyalty !== undefined ? <p>LOY: {hoverPreview.loyalty}</p> : null}
+            {hoverPreview.oracleText ? <small>{hoverPreview.oracleText}</small> : null}
+          </div>
+        </aside>
+      ) : null}
     </section>
   );
 }

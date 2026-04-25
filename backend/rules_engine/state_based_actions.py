@@ -24,3 +24,49 @@ def apply_state_based_actions(state: MatchState) -> None:
                 pstate.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD
                 state.log.append(f"State-based action: {card.name} is put into graveyard due to 0 loyalty.")
+
+    _apply_legend_rule(state)
+
+
+def _apply_legend_rule(state: MatchState) -> None:
+    # If a player controls two or more legendary permanents with the same name, keep one and move the rest to graveyard.
+    for pid, player in state.players.items():
+        legendary_by_name: dict[str, list[str]] = {}
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if card.zone != Zone.BATTLEFIELD:
+                continue
+            if not _is_legendary(card):
+                continue
+            legendary_by_name.setdefault(card.name.lower(), []).append(cid)
+
+        for same_name_ids in legendary_by_name.values():
+            if len(same_name_ids) <= 1:
+                continue
+            keep = same_name_ids[0]
+            for cid in same_name_ids:
+                if cid == keep:
+                    continue
+                card = state.cards[cid]
+                if cid in player.battlefield:
+                    player.battlefield.remove(cid)
+                player.graveyard.append(cid)
+                card.zone = Zone.GRAVEYARD
+                state.log.append(
+                    f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
+                )
+
+
+def _is_legendary(card) -> bool:
+    if any(str(t).lower() == "legendary" for t in getattr(card, "types", [])):
+        return True
+    if "legendary" in (getattr(card, "type_line", "") or "").lower():
+        return True
+    # Offline/cache-miss fallback: many legendary permanents in real card names include commas.
+    # Restrict heuristic to permanents only to avoid misclassifying instants/sorceries.
+    if "," in (getattr(card, "name", "") or "") and any(
+        t in getattr(card, "types", [])
+        for t in ["Creature", "Planeswalker", "Artifact", "Enchantment", "Land"]
+    ):
+        return True
+    return False

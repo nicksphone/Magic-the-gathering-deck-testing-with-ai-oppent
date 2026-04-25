@@ -214,6 +214,43 @@ button:hover {
   padding: 6px;
 }
 
+.card-hover-preview {
+  position: fixed;
+  right: 20px;
+  top: 100px;
+  width: 320px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  border: 1px solid #5f95a6;
+  border-radius: 10px;
+  background: rgba(10, 26, 33, 0.96);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.45);
+  padding: 10px;
+  z-index: 30;
+}
+
+.card-hover-preview img {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #4e7a89;
+  margin-bottom: 8px;
+}
+
+.card-hover-meta h4 {
+  margin: 0 0 4px;
+}
+
+.card-hover-meta p {
+  margin: 0 0 4px;
+  color: #c8d8de;
+}
+
+.card-hover-meta small {
+  display: block;
+  color: #d8e4e8;
+  line-height: 1.35;
+}
+
 .grid-actions {
   margin-top: 10px;
   display: grid;
@@ -265,5 +302,8 @@ h3 {
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+  .card-hover-preview {
+    display: none;
   }
 }

@@ -42,6 +42,7 @@ def serialize_match(state: MatchState) -> dict:
                         "toughness": state.cards[cid].toughness,
                         "loyalty": state.cards[cid].loyalty,
                         "mana_cost": state.cards[cid].mana_cost,
+                        "oracle_text": state.cards[cid].oracle_text,
                         "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
                     }
@@ -52,6 +53,7 @@ def serialize_match(state: MatchState) -> dict:
                         "id": cid,
                         "name": state.cards[cid].name,
                         "mana_cost": state.cards[cid].mana_cost,
+                        "oracle_text": state.cards[cid].oracle_text,
                         "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
                     }

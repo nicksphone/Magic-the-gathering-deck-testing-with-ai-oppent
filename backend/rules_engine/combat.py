@@ -74,6 +74,7 @@ def combat_damage(state: MatchState) -> None:
     state.attackers = []
     state.attack_targets = {}
     state.blocks = {}
+    state.attackers_declared = False
 
 
 def _combat_damage_step(state: MatchState, default_defender: int, first_strike_only: bool) -> None:

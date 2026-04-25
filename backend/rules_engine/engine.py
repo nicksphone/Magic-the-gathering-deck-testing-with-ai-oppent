@@ -36,6 +36,8 @@ class RulesEngine:
             state.players[state.active_player].lands_played_this_turn = 0
         else:
             state.step = TURN_STEPS[idx + 1]
+            if state.step == Step.DECLARE_ATTACKERS:
+                state.attackers_declared = False
 
         self._apply_step_start_actions(state)
         state.priority_player = state.active_player
@@ -50,11 +52,36 @@ class RulesEngine:
         elif state.step == Step.DRAW and state.turn > 1:
             draw_card(state, state.active_player)
             state.log.append(f"{player.name} draws a card.")
+        elif state.step == Step.CLEANUP:
+            self._enforce_cleanup_hand_size(state, state.active_player)
 
     def _clear_mana_pools(self, state: MatchState) -> None:
         for p in state.players.values():
             for color in p.mana_pool:
                 p.mana_pool[color] = 0
+
+    def _enforce_cleanup_hand_size(self, state: MatchState, player_id: int) -> None:
+        player = state.players[player_id]
+        if self._has_no_max_hand_size_effect(state, player_id):
+            return
+        max_hand_size = 7
+        if len(player.hand) <= max_hand_size:
+            return
+        discard_count = len(player.hand) - max_hand_size
+        for _ in range(discard_count):
+            cid = player.hand.pop(0)
+            player.graveyard.append(cid)
+            state.cards[cid].zone = Zone.GRAVEYARD
+            state.log.append(f"{player.name} discards {state.cards[cid].name} during cleanup.")
+
+    def _has_no_max_hand_size_effect(self, state: MatchState, player_id: int) -> bool:
+        player = state.players[player_id]
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            oracle = (card.oracle_text or "").lower()
+            if "no maximum hand size" in oracle:
+                return True
+        return False
 
     def take_action(self, state: MatchState, player_id: int, action: dict) -> None:
         if state.winner is not None:
@@ -170,6 +197,7 @@ class RulesEngine:
             ids = action.get("attackers", [])
             attack_targets = action.get("attack_targets", {})
             combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {})
+            state.attackers_declared = True
 
         elif kind == "activate_loyalty":
             if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):

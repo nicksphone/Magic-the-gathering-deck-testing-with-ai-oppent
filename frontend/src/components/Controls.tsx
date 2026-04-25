@@ -19,6 +19,8 @@ type Props = {
   onMulligan: () => void;
   onNextStep: () => void;
   onAutoplayTick: (ticks: number) => void;
+  autoplayDelayMs: number;
+  setAutoplayDelayMs: (ms: number) => void;
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
   onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
@@ -109,6 +111,18 @@ export function Controls(props: Props) {
         </select>
       </div>
       <button onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
+      <div className="block-panel">
+        <h3>AI Playback Speed</h3>
+        <p>{(props.autoplayDelayMs / 1000).toFixed(1)}s per AI beat</p>
+        <input
+          type="range"
+          min={600}
+          max={3500}
+          step={100}
+          value={props.autoplayDelayMs}
+          onChange={(e) => props.setAutoplayDelayMs(Number(e.target.value))}
+        />
+      </div>
       {props.match ? (
         <p>
           Score P1:{props.match.score?.["1"] ?? 0} P2:{props.match.score?.["2"] ?? 0} | Game {props.match.game_number ?? 1} | Best-of-{props.match.best_of ?? 3}
