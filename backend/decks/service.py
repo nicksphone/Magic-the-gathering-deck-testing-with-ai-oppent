@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ai.deck_analysis import guess_archetype
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
 from persistence.repository import Repository
 
@@ -16,6 +17,40 @@ class DeckService:
 
     def get_builtin_text(self, name: str) -> str:
         return BUILTIN_DECKS[name]
+
+    def list_expansion_top_decks(self) -> list[dict]:
+        out: list[dict] = []
+        for item in EXPANSION_TOP_DECKS:
+            out.append(
+                {
+                    "code": item["code"],
+                    "expansion": item["expansion"],
+                    "release_year": item["release_year"],
+                    "deck_name": item["deck_name"],
+                    "archetype": item["archetype"],
+                }
+            )
+        return out
+
+    def get_expansion_top_deck(self, code: str) -> dict:
+        key = (code or "").strip().upper()
+        if key not in EXPANSION_TOP_DECKS_BY_CODE:
+            raise KeyError(key)
+        return EXPANSION_TOP_DECKS_BY_CODE[key]
+
+    def import_expansion_top_deck(self, code: str) -> dict:
+        item = self.get_expansion_top_deck(code)
+        return self.import_deck_text(
+            name=item["deck_name"],
+            deck_text=item["deck_text"],
+            source=f"expansion_top:{item['code']}",
+        )
+
+    def import_all_expansion_top_decks(self) -> list[dict]:
+        results: list[dict] = []
+        for item in EXPANSION_TOP_DECKS:
+            results.append(self.import_expansion_top_deck(item["code"]))
+        return results
 
     def import_deck_text(self, name: str, deck_text: str, source: str = "user") -> dict:
         parsed = self.parser.parse(deck_text)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
+import type { ExpansionTopDeckMeta } from "../api/client";
 
 type Props = {
   decks: DeckRecord[];
@@ -9,7 +10,9 @@ type Props = {
 
 export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [builtins, setBuiltins] = useState<string[]>([]);
+  const [expansionDecks, setExpansionDecks] = useState<ExpansionTopDeckMeta[]>([]);
   const [selectedBuiltin, setSelectedBuiltin] = useState("");
+  const [selectedExpansionCode, setSelectedExpansionCode] = useState("");
   const [deckText, setDeckText] = useState("");
   const [deckName, setDeckName] = useState("");
   const [status, setStatus] = useState("");
@@ -17,6 +20,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   useEffect(() => {
     void (async () => {
       setBuiltins(await api.listBuiltins());
+      setExpansionDecks(await api.listExpansionTopDecks());
       onDecksLoaded(await api.listDecks());
     })();
   }, [onDecksLoaded]);
@@ -39,6 +43,34 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
     setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess})`);
+    onDecksLoaded(await api.listDecks());
+  }
+
+  async function loadExpansionTopDeck() {
+    if (!selectedExpansionCode) return;
+    const data = await api.getExpansionTopDeck(selectedExpansionCode);
+    setDeckName(data.name);
+    setDeckText(data.deck_text.trim());
+    setStatus(`Loaded ${data.expansion} (${data.code}) ${data.archetype}`);
+  }
+
+  async function importSelectedExpansionTopDeck() {
+    if (!selectedExpansionCode) return;
+    const imported = await api.importExpansionTopDeck(selectedExpansionCode);
+    if (imported.errors?.length) {
+      setStatus(`Expansion import errors: ${imported.errors.join(" | ")}`);
+      return;
+    }
+    const loaded = await api.getExpansionTopDeck(selectedExpansionCode);
+    setDeckName(loaded.name);
+    setDeckText(loaded.deck_text.trim());
+    setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess})`);
+    onDecksLoaded(await api.listDecks());
+  }
+
+  async function importAllExpansionTopDecks() {
+    const data = await api.importAllExpansionTopDecks();
+    setStatus(`Expansion import-all complete: imported ${data.imported}/${data.requested} (errors: ${data.with_errors})`);
     onDecksLoaded(await api.listDecks());
   }
 
@@ -66,6 +98,19 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
         </select>
         <button onClick={loadBuiltin}>Load Built-in</button>
         <button onClick={importSelectedBuiltin}>Import Built-in</button>
+      </div>
+      <div className="row">
+        <select value={selectedExpansionCode} onChange={(e) => setSelectedExpansionCode(e.target.value)}>
+          <option value="">Top Decks by Expansion</option>
+          {expansionDecks.map((d) => (
+            <option key={d.code} value={d.code}>
+              {d.release_year} {d.code} - {d.expansion} ({d.archetype})
+            </option>
+          ))}
+        </select>
+        <button onClick={loadExpansionTopDeck}>Load Expansion Deck</button>
+        <button onClick={importSelectedExpansionTopDeck}>Import Expansion Deck</button>
+        <button onClick={importAllExpansionTopDecks}>Import All Expansions</button>
       </div>
       <input placeholder="Deck Name" value={deckName} onChange={(e) => setDeckName(e.target.value)} />
       <textarea

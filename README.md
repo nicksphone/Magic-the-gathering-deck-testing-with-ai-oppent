@@ -8,6 +8,7 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - 2-player MTG simulation with explicit turn/step progression
 - Player vs AI, AI vs AI, and AI pilot controls
 - Deck import from text + built-in archetype decks
+- Expansion top-deck catalog (curated one per expansion code) with one-click import
 - Stack, priority passing, legal move generation, combat flow
 - State-based actions including legend rule and loyalty checks
 - Oracle-text-driven effect inference (partial but functional)
@@ -161,6 +162,10 @@ Access from another machine:
 - `GET /cards/suggest`
 - `GET /decks/builtin`
 - `GET /decks/builtin/{name}`
+- `GET /decks/expansion-top`
+- `GET /decks/expansion-top/{code}`
+- `POST /decks/expansion-top/{code}/import`
+- `POST /decks/expansion-top/import-all`
 - `POST /decks/import`
 - `POST /decks/import-file`
 - `GET /decks`
@@ -227,6 +232,15 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
 - `POST /decks/import-file`
 3. Built-ins are defined in:
 - `backend/decks/builtin_decks.py`
+
+### Expansion Top Deck Catalog
+- Catalog is defined in:
+  - `backend/decks/expansion_top_decks.py`
+- Startup auto-seeds expansion catalog decks into saved decks (`source = expansion_top:<CODE>`) if missing.
+- UI supports:
+  - load one expansion deck
+  - import one expansion deck
+  - import all expansion decks
 
 ## Diagnostics and Simulation
 

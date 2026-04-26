@@ -18,6 +18,7 @@ from card_data.fallback_cards import fallback_card_payload
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.expansion_top_decks import EXPANSION_TOP_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from game_state.serializers import serialize_match
@@ -103,6 +104,7 @@ class PriorityStopsRequest(BaseModel):
 class BulkSyncRequest(BaseModel):
     names: list[str] = []
     include_builtins: bool = True
+    include_expansion_top_decks: bool = True
     include_saved_decks: bool = True
     limit: int = 300
 
@@ -115,7 +117,9 @@ def get_repo(session: Session = Depends(get_session)) -> Repository:
 def on_startup() -> None:
     init_db()
     with Session(engine) as session:
-        _ensure_builtin_decks(Repository(session))
+        repo = Repository(session)
+        _ensure_builtin_decks(repo)
+        _ensure_expansion_top_decks(repo)
 
 
 @app.get("/health")
@@ -131,12 +135,18 @@ def sync_card(name: str, repo: Repository = Depends(get_repo)) -> dict:
 @app.post("/cards/sync-bulk")
 def sync_cards_bulk(payload: BulkSyncRequest, repo: Repository = Depends(get_repo)) -> dict:
     names = {n.strip() for n in payload.names if n.strip()}
+    service = DeckService(repo)
     if payload.include_builtins:
-        service = DeckService(repo)
         for deck_name in service.list_builtins():
             parsed = service.parser.parse(service.get_builtin_text(deck_name))
             for item in parsed.mainboard + parsed.sideboard:
                 names.add(item["card_name"])
+    if payload.include_expansion_top_decks:
+        for item in service.list_expansion_top_decks():
+            deck = service.get_expansion_top_deck(item["code"])
+            parsed = service.parser.parse(deck["deck_text"])
+            for card in parsed.mainboard + parsed.sideboard:
+                names.add(card["card_name"])
     if payload.include_saved_decks:
         for row in repo.list_decks():
             for item in json.loads(row.mainboard_json) + json.loads(row.sideboard_json):
@@ -174,6 +184,50 @@ def builtin_deck_text(name: str) -> dict:
     if name not in BUILTIN_DECKS:
         raise HTTPException(status_code=404, detail="Deck not found")
     return {"name": name, "deck_text": BUILTIN_DECKS[name]}
+
+
+@app.get("/decks/expansion-top")
+def list_expansion_top_decks(repo: Repository = Depends(get_repo)) -> list[dict]:
+    return DeckService(repo).list_expansion_top_decks()
+
+
+@app.get("/decks/expansion-top/{code}")
+def get_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> dict:
+    service = DeckService(repo)
+    try:
+        item = service.get_expansion_top_deck(code)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Expansion top deck not found") from None
+    return {
+        "code": item["code"],
+        "expansion": item["expansion"],
+        "release_year": item["release_year"],
+        "name": item["deck_name"],
+        "archetype": item["archetype"],
+        "deck_text": item["deck_text"],
+    }
+
+
+@app.post("/decks/expansion-top/{code}/import")
+def import_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> dict:
+    service = DeckService(repo)
+    try:
+        return service.import_expansion_top_deck(code)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Expansion top deck not found") from None
+
+
+@app.post("/decks/expansion-top/import-all")
+def import_all_expansion_top_decks(repo: Repository = Depends(get_repo)) -> dict:
+    service = DeckService(repo)
+    results = service.import_all_expansion_top_decks()
+    imported = [r for r in results if r.get("deck_id")]
+    errors = [r for r in results if r.get("errors")]
+    return {
+        "requested": len(results),
+        "imported": len(imported),
+        "with_errors": len(errors),
+    }
 
 
 @app.post("/decks/import")
@@ -542,6 +596,21 @@ def _ensure_builtin_decks(repo: Repository) -> None:
         if key in existing:
             continue
         service.import_deck_text(name=name, deck_text=BUILTIN_DECKS[name], source="builtin")
+
+
+def _ensure_expansion_top_decks(repo: Repository) -> None:
+    existing = {
+        (row.name.strip().lower(), (row.source or "").strip().lower())
+        for row in repo.list_decks()
+    }
+    service = DeckService(repo)
+    for item in EXPANSION_TOP_DECKS:
+        name = item["deck_name"]
+        source = f"expansion_top:{item['code']}".lower()
+        key = (name.strip().lower(), source)
+        if key in existing:
+            continue
+        service.import_deck_text(name=name, deck_text=item["deck_text"], source=source)
 
 
 def _human_priority_pause(match: MatchController, player_id: int) -> bool:

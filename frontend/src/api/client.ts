@@ -25,6 +25,23 @@ export type DeckImportResponse = {
   color_profile: Record<string, number>;
 };
 
+export type ExpansionTopDeckMeta = {
+  code: string;
+  expansion: string;
+  release_year: number;
+  deck_name: string;
+  archetype: string;
+};
+
+export type ExpansionTopDeckPayload = {
+  code: string;
+  expansion: string;
+  release_year: number;
+  name: string;
+  archetype: string;
+  deck_text: string;
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -40,6 +57,12 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   listBuiltins: () => req<string[]>("/decks/builtin"),
   getBuiltinText: (name: string) => req<{ name: string; deck_text: string }>(`/decks/builtin/${encodeURIComponent(name)}`),
+  listExpansionTopDecks: () => req<ExpansionTopDeckMeta[]>("/decks/expansion-top"),
+  getExpansionTopDeck: (code: string) =>
+    req<ExpansionTopDeckPayload>(`/decks/expansion-top/${encodeURIComponent(code)}`),
+  importExpansionTopDeck: (code: string) =>
+    req<DeckImportResponse>(`/decks/expansion-top/${encodeURIComponent(code)}/import`, { method: "POST" }),
+  importAllExpansionTopDecks: () => req<{ requested: number; imported: number; with_errors: number }>("/decks/expansion-top/import-all", { method: "POST" }),
   importDeck: (name: string, deck_text: string, source = "user") =>
     req<DeckImportResponse>("/decks/import", { method: "POST", body: JSON.stringify({ name, deck_text, source }) }),
   listDecks: () => req<DeckRecord[]>("/decks"),
