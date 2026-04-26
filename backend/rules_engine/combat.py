@@ -29,10 +29,13 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             continue
         if card.summoning_sick and "haste" not in [k.lower() for k in card.keywords]:
             continue
+        if _has_keyword(card, "defender"):
+            continue
         legal.append(cid)
         desired = attack_targets.get(cid, f"player:{defender}")
         legal_targets[cid] = desired if desired in valid_defenders else f"player:{defender}"
-        card.tapped = True
+        if not _has_keyword(card, "vigilance"):
+            card.tapped = True
     state.attackers = legal
     state.attack_targets = legal_targets
     if legal:

@@ -42,6 +42,9 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - `prevent the next N damage` parsing for target player/creature
   - prevention shields are consumed by both spell damage and combat damage
   - non-combat spell damage to creatures now marks damage (CR-consistent), rather than permanently reducing toughness
+- Added additional combat keyword correctness:
+  - `vigilance` attackers no longer tap when declared
+  - `defender` creatures cannot be declared as attackers
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

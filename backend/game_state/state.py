@@ -89,6 +89,7 @@ class PlayerState:
     graveyard: list[str] = field(default_factory=list)
     exile: list[str] = field(default_factory=list)
     mana_pool: dict[str, int] = field(default_factory=lambda: {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0})
+    prevent_damage_shield: int = 0
     max_land_plays_this_turn: int = 1
     lands_played_this_turn: int = 0
     last_land_play_turn: int = 0
@@ -340,7 +341,7 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 def _infer_keywords(oracle_text: str) -> list[str]:
     text = (oracle_text or "").lower()
     out: list[str] = []
-    for kw in ["trample", "first strike", "double strike", "haste", "flash", "lifelink", "deathtouch", "flying", "reach", "menace"]:
+    for kw in ["trample", "first strike", "double strike", "haste", "flash", "lifelink", "deathtouch", "flying", "reach", "menace", "vigilance", "defender"]:
         if kw in text:
             out.append(kw)
     return out

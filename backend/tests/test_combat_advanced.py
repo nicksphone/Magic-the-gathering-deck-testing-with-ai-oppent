@@ -243,3 +243,30 @@ def test_anthem_effect_allows_creature_to_survive_marked_damage() -> None:
     assert state.cards[blk].zone == Zone.BATTLEFIELD
     # Blocker deals effectively 2 damage back and kills the 1/1 attacker.
     assert state.cards[atk].zone == Zone.GRAVEYARD
+
+
+def test_vigilance_attacker_does_not_tap() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+
+    atk = _setup_creature(state, 1, "Vigilant Knight", 3, 3, ["vigilance"])
+    combat.declare_attackers(state, [atk], {atk: "player:2"})
+    assert atk in state.attackers
+    assert state.cards[atk].tapped is False
+
+
+def test_defender_creature_cannot_attack() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+
+    atk = _setup_creature(state, 1, "Wall", 0, 4, ["defender"])
+    combat.declare_attackers(state, [atk], {atk: "player:2"})
+    assert atk not in state.attackers
