@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchFactory, Step, Zone
+from rules_engine.engine import RulesEngine
 from rules_engine import combat
 
 
@@ -70,3 +71,83 @@ def test_multi_block_assignment_kills_multiple_small_blockers() -> None:
     combat.combat_damage(state)
     assert state.cards[blk1].zone == Zone.GRAVEYARD
     assert state.cards[blk2].zone == Zone.GRAVEYARD
+
+
+def test_lifelink_gains_life_on_combat_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Lifelink Attacker", 3, 3, ["lifelink"])
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    a_life_before = state.players[1].life
+    b_life_before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[1].life == a_life_before + 3
+    assert state.players[2].life == b_life_before - 3
+
+
+def test_deathtouch_trample_assigns_one_to_blocker_and_spills_rest() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Deadly Trampler", 4, 4, ["deathtouch", "trample"])
+    blk = _setup_creature(state, 2, "Big Blocker", 5, 5, [])
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    state.blocks = {atk: [blk]}
+    b_life_before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[2].life == b_life_before - 3
+    assert state.cards[blk].zone == Zone.GRAVEYARD
+
+
+def test_double_strike_deals_damage_in_both_steps() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Double Striker", 2, 2, ["double strike"])
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    b_life_before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[2].life == b_life_before - 4
+
+
+def test_combat_damage_marks_clear_on_cleanup() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 1
+    state.step = Step.COMBAT_DAMAGE
+    engine = RulesEngine()
+
+    atk = _setup_creature(state, 1, "Attacker", 2, 2, [])
+    blk = _setup_creature(state, 2, "Blocker", 1, 3, [])
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    state.blocks = {atk: [blk]}
+    combat.combat_damage(state)
+    assert state.cards[blk].zone == Zone.BATTLEFIELD
+    assert int(state.cards[blk].counters.get("__damage_marked", 0)) > 0
+
+    state.step = Step.END_STEP
+    state.priority_player = 1
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.step == Step.CLEANUP
+    assert int(state.cards[blk].counters.get("__damage_marked", 0)) == 0

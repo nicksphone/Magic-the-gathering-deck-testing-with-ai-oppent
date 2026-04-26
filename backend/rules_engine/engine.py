@@ -58,12 +58,20 @@ class RulesEngine:
             draw_card(state, state.active_player)
             state.log.append(f"{player.name} draws a card.")
         elif state.step == Step.CLEANUP:
+            self._clear_marked_damage(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
 
     def _clear_mana_pools(self, state: MatchState) -> None:
         for p in state.players.values():
             for color in p.mana_pool:
                 p.mana_pool[color] = 0
+
+    def _clear_marked_damage(self, state: MatchState) -> None:
+        for card in state.cards.values():
+            if "__damage_marked" in card.counters:
+                card.counters.pop("__damage_marked", None)
+            if "__deathtouch_damaged" in card.counters:
+                card.counters.pop("__deathtouch_damaged", None)
 
     def _enforce_cleanup_hand_size(self, state: MatchState, player_id: int) -> None:
         player = state.players[player_id]

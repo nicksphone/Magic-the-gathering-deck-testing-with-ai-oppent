@@ -26,6 +26,11 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - Added turn-level land-play invariant (`last_land_play_turn`) in engine and move generation to prevent any double-land same-turn bug even if counters desync
 - Refined land-play invariant to be rules-compatible with future “play an additional land” effects via per-turn `max_land_plays_this_turn` while still blocking accidental double-land bugs
 - Added dynamic additional-land-play parsing from battlefield oracle text (e.g., “play an additional land”, “play two additional lands”) to drive legal move generation and engine enforcement
+- Combat keyword fidelity expanded:
+  - `lifelink` life gain on combat damage
+  - `deathtouch` lethal assignment/kill semantics (including trample interaction)
+  - `double strike` damage in both first-strike and regular combat-damage steps
+  - combat damage is now marked and removed at cleanup (instead of permanently reducing toughness)
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

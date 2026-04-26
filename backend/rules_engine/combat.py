@@ -3,6 +3,9 @@ from __future__ import annotations
 from game_state.state import MatchState, Zone
 from rules_engine.events import emit_event
 
+DMG_MARK_KEY = "__damage_marked"
+DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
+
 
 def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None) -> None:
     attack_targets = attack_targets or {}
@@ -93,26 +96,34 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
         defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
         if not blocks:
-            _deal_unblocked_damage(state, defender_key, atk.power or 0)
+            dealt = _deal_unblocked_damage(state, defender_key, atk.power or 0)
+            if dealt > 0 and _has_keyword(atk, "lifelink"):
+                state.players[atk.controller].life += dealt
             continue
 
         atk_power = atk.power or 0
         remaining = atk_power
+        atk_has_deathtouch = _has_keyword(atk, "deathtouch")
         for blocker_id in blocks:
             if remaining <= 0:
                 break
             blocker = state.cards[blocker_id]
             if blocker.toughness is None:
                 continue
-            lethal = max(1, blocker.toughness)
+            lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(blocker)
             dealt = min(remaining, lethal)
-            blocker.toughness -= dealt
+            _mark_creature_damage(blocker, dealt, deathtouch=atk_has_deathtouch)
+            if dealt > 0 and _has_keyword(atk, "lifelink"):
+                state.players[atk.controller].life += dealt
             remaining -= dealt
 
         if _has_keyword(atk, "trample") and remaining > 0:
-            _deal_unblocked_damage(state, defender_key, remaining)
+            dealt = _deal_unblocked_damage(state, defender_key, remaining)
+            if dealt > 0 and _has_keyword(atk, "lifelink"):
+                state.players[atk.controller].life += dealt
 
-        blocker_total = 0
+        atk_damage_taken = 0
+        got_deathtouch_from_blocker = False
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
             blk_has_fs = _has_keyword(blk, "first strike") or _has_keyword(blk, "double strike")
@@ -120,9 +131,14 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
                 continue
             if not first_strike_only and _has_keyword(blk, "first strike") and not _has_keyword(blk, "double strike"):
                 continue
-            blocker_total += blk.power or 0
-        if atk.toughness is not None:
-            atk.toughness -= blocker_total
+            blk_power = blk.power or 0
+            atk_damage_taken += blk_power
+            if blk_power > 0 and _has_keyword(blk, "deathtouch"):
+                got_deathtouch_from_blocker = True
+            if blk_power > 0 and _has_keyword(blk, "lifelink"):
+                state.players[blk.controller].life += blk_power
+        if atk_damage_taken > 0:
+            _mark_creature_damage(atk, atk_damage_taken, deathtouch=got_deathtouch_from_blocker)
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
@@ -130,7 +146,7 @@ def _remove_dead_creatures(state: MatchState) -> None:
     for cid, card in state.cards.items():
         if card.zone != Zone.BATTLEFIELD or "Creature" not in card.types:
             continue
-        if card.toughness is not None and card.toughness <= 0:
+        if _creature_is_lethally_damaged(card):
             dead.append(cid)
     for cid in dead:
         card = state.cards[cid]
@@ -170,13 +186,39 @@ def _defender_label(state: MatchState, key: str) -> str:
 
 def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int) -> None:
     if amount <= 0:
-        return
+        return 0
     if defender_key.startswith("planeswalker:"):
         cid = defender_key.split(":", 1)[1]
         card = state.cards.get(cid)
         if card and "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
             card.loyalty = (card.loyalty or 0) - amount
             state.log.append(f"{card.name} loses {amount} loyalty.")
-            return
+            return amount
     pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
     state.players[pid].life -= amount
+    return amount
+
+
+def _mark_creature_damage(card, amount: int, deathtouch: bool = False) -> None:
+    if amount <= 0:
+        return
+    card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(amount)
+    if deathtouch:
+        card.counters[DEATHTOUCH_MARK_KEY] = 1
+
+
+def _remaining_lethal_damage(card) -> int:
+    toughness = card.toughness or 0
+    marked = int(card.counters.get(DMG_MARK_KEY, 0))
+    return max(1, toughness - marked)
+
+
+def _creature_is_lethally_damaged(card) -> bool:
+    if card.toughness is None:
+        return False
+    marked = int(card.counters.get(DMG_MARK_KEY, 0))
+    if marked >= int(card.toughness):
+        return True
+    if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
+        return True
+    return False
