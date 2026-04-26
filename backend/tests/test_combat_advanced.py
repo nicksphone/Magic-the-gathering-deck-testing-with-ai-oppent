@@ -201,3 +201,45 @@ def test_menace_requires_two_blockers() -> None:
 
     combat.declare_blockers(state, {atk: [blk1, blk2]})
     assert state.blocks.get(atk) == [blk1, blk2]
+
+
+def test_anthem_effect_increases_combat_damage_output() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Soldier", 2, 2, [])
+    anthem = _setup_creature(state, 1, "Anthem Source", 0, 1, [])
+    state.cards[anthem].types = ["Enchantment"]
+    state.cards[anthem].oracle_text = "Creatures you control get +1/+1."
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[2].life == before - 3
+
+
+def test_anthem_effect_allows_creature_to_survive_marked_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Attacker", 1, 1, [])
+    blk = _setup_creature(state, 2, "Defender", 1, 1, [])
+    anthem = _setup_creature(state, 2, "Anthem Source", 0, 1, [])
+    state.cards[anthem].types = ["Enchantment"]
+    state.cards[anthem].oracle_text = "Creatures you control get +1/+1."
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    state.blocks = {atk: [blk]}
+    combat.combat_damage(state)
+    # With +1/+1 anthem, blocker is effectively 2/2 and survives 1 marked damage.
+    assert state.cards[blk].zone == Zone.BATTLEFIELD
+    # Blocker deals effectively 2 damage back and kills the 1/1 attacker.
+    assert state.cards[atk].zone == Zone.GRAVEYARD

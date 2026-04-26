@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.continuous import effective_toughness
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -17,8 +18,8 @@ def apply_state_based_actions(state: MatchState) -> None:
             and card.zone == Zone.BATTLEFIELD
             and card.toughness is not None
             and (
-                card.toughness <= 0
-                or int(card.counters.get(DMG_MARK_KEY, 0)) >= int(card.toughness)
+                effective_toughness(state, cid) <= 0
+                or int(card.counters.get(DMG_MARK_KEY, 0)) >= int(effective_toughness(state, cid))
                 or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0
             )
         ):
