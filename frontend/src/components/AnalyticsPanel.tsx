@@ -17,9 +17,16 @@ export function AnalyticsPanel({ decks }: Props) {
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
     const b = decks.find((d) => d.id === deckB);
-    if (!a || !b) return;
-    const data = await api.simulateBatch(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
-    setResult(JSON.stringify(data, null, 2));
+    if (!a || !b) {
+      setResult("Select both decks before running Testing Simulator.");
+      return;
+    }
+    try {
+      const data = await api.simulateBatch(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
+      setResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      setResult(`Testing Simulator request failed: ${String(err)}`);
+    }
   }
 
   return (
@@ -43,7 +50,7 @@ export function AnalyticsPanel({ decks }: Props) {
           ))}
         </select>
         <input type="number" min={10} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
-        <input type="number" min={200} max={20000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
+        <input type="number" min={500} max={50000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
         <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>

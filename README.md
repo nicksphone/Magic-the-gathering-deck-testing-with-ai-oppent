@@ -266,6 +266,10 @@ PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
 Note:
 - Deck-out is the natural end condition for long control mirrors; diagnostics/simulation defaults now use a higher `max_ticks` so matches can resolve by draw-from-empty-library loss instead of early cutoffs.
 
+Frontend reliability:
+- Deck loading now degrades gracefully: if optional sources fail (for example expansion catalog endpoint), saved decks still load so AI-vs-AI deck selectors remain usable.
+- Testing Simulator now shows explicit API errors in-panel instead of silently failing.
+
 ## Priority Roadmap (Next)
 
 1. Improve AI blocking quality beyond current assignment

@@ -18,12 +18,39 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    void (async () => {
-      setBuiltins(await api.listBuiltins());
-      setExpansionDecks(await api.listExpansionTopDecks());
-      onDecksLoaded(await api.listDecks());
-    })();
+    void refreshDeckData();
   }, [onDecksLoaded]);
+
+  async function refreshDeckData() {
+    const [builtinsRes, expansionRes, decksRes] = await Promise.allSettled([
+      api.listBuiltins(),
+      api.listExpansionTopDecks(),
+      api.listDecks(),
+    ]);
+    if (builtinsRes.status === "fulfilled") {
+      setBuiltins(builtinsRes.value);
+    }
+    if (expansionRes.status === "fulfilled") {
+      setExpansionDecks(expansionRes.value);
+    } else {
+      setExpansionDecks([]);
+    }
+    if (decksRes.status === "fulfilled") {
+      onDecksLoaded(decksRes.value);
+      if (!decksRes.value.length) {
+        setStatus("No saved decks found yet. Import a built-in deck to start AI vs AI testing.");
+      }
+    } else {
+      onDecksLoaded([]);
+      setStatus(`Deck load failed: ${String(decksRes.reason)}`);
+    }
+    if (builtinsRes.status === "rejected" || expansionRes.status === "rejected") {
+      const builtinsErr = builtinsRes.status === "rejected" ? `built-ins: ${String(builtinsRes.reason)}` : "";
+      const expansionErr = expansionRes.status === "rejected" ? `expansion decks: ${String(expansionRes.reason)}` : "";
+      const detail = [builtinsErr, expansionErr].filter(Boolean).join(" | ");
+      setStatus((prev) => (prev ? `${prev} | Optional sources failed: ${detail}` : `Optional sources failed: ${detail}`));
+    }
+  }
 
   async function loadBuiltin() {
     if (!selectedBuiltin) return;
@@ -43,7 +70,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
     setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess})`);
-    onDecksLoaded(await api.listDecks());
+    await refreshDeckData();
   }
 
   async function loadExpansionTopDeck() {
@@ -65,13 +92,13 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(loaded.name);
     setDeckText(loaded.deck_text.trim());
     setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess})`);
-    onDecksLoaded(await api.listDecks());
+    await refreshDeckData();
   }
 
   async function importAllExpansionTopDecks() {
     const data = await api.importAllExpansionTopDecks();
     setStatus(`Expansion import-all complete: imported ${data.imported}/${data.requested} (errors: ${data.with_errors})`);
-    onDecksLoaded(await api.listDecks());
+    await refreshDeckData();
   }
 
   async function importDeck() {
@@ -81,7 +108,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       return;
     }
     setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess})`);
-    onDecksLoaded(await api.listDecks());
+    await refreshDeckData();
   }
 
   return (
@@ -98,6 +125,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
         </select>
         <button onClick={loadBuiltin}>Load Built-in</button>
         <button onClick={importSelectedBuiltin}>Import Built-in</button>
+        <button onClick={refreshDeckData}>Refresh Decks</button>
       </div>
       <div className="row">
         <select value={selectedExpansionCode} onChange={(e) => setSelectedExpansionCode(e.target.value)}>
