@@ -19,6 +19,7 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - AI land-drop reliability and color-source preference
 - AI step-enum normalization fixed (`Step.PRECOMBAT_MAIN` etc.), preventing missed forced land-drop windows in live games
 - Backend autoplay now hard-enforces AI land drops on legal own-main windows (fallback to a legal `play_land` action even if AI returns pass)
+- Backend autoplay now hard-overrides any non-land AI action during legal own-main land windows, ensuring land drop occurs first when available
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

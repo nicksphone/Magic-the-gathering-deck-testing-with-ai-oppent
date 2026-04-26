@@ -286,9 +286,9 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             else:
                 decision = match.ai[pid].choose_action(match.state, legal, pid)
                 action = decision.action
-                # Backend hard guard: if AI attempts to pass during a legal own-main
-                # land-drop window, override to play a land.
-                if action.get("type") == "pass_priority":
+                # Strict backend invariant: on legal own-main land-drop windows,
+                # override any non-land action to ensure deterministic land development.
+                if action.get("type") != "play_land":
                     guard_land = _force_ai_land_action(match, pid, legal)
                     if guard_land is not None:
                         action = guard_land
