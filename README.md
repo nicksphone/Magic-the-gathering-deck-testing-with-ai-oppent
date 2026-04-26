@@ -191,6 +191,7 @@ Access from another machine:
   - Postcombat Main
   - End Step, Cleanup
 - Legal actions are generated from current step, priority owner, and board state.
+- Land-play legality is now strictly active-player main-phase only (both move generation and engine execution guards).
 - Actions can place spells/abilities on stack; stack resolves after both pass.
 - State-based actions execute repeatedly to enforce loss/death/legend/loyalty checks.
 - Continuous/static evaluation computes effective power/toughness and effective keywords from battlefield text each time rules checks run.
@@ -207,6 +208,7 @@ Access from another machine:
   - cast legality edge cases
   - blocker-loop prevention in declare blockers
   - menace / “two-or-more blockers” assignment support
+  - main-phase anti-stall fallback for control mirrors when proactive legal actions exist
 
 ## How to Add Cards
 

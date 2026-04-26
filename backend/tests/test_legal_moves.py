@@ -176,3 +176,41 @@ def test_additional_land_effect_text_allows_second_land_same_turn() -> None:
     moves = engine.legal_moves(state, 1)
     second_land_moves = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == second]
     assert len(second_land_moves) == 1
+
+
+def test_non_active_player_cannot_get_play_land_legal_move() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 2
+    engine = RulesEngine()
+
+    cid = state.players[2].hand[0]
+    state.cards[cid].types = ["Land"]
+    state.cards[cid].name = "Island"
+
+    moves = engine.legal_moves(state, 2)
+    assert all(m.get("type") != "play_land" for m in moves)
+
+
+def test_engine_rejects_play_land_when_player_is_not_active() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 2
+    engine = RulesEngine()
+
+    cid = state.players[2].hand[0]
+    state.cards[cid].types = ["Land"]
+    state.cards[cid].name = "Forest"
+
+    before_hand = list(state.players[2].hand)
+    engine.take_action(state, 2, {"type": "play_land", "card_id": cid})
+    assert state.players[2].hand == before_hand
+    assert cid not in state.players[2].battlefield

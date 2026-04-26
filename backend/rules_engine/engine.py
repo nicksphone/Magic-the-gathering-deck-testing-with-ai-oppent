@@ -135,6 +135,9 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "play_land":
             cid = action["card_id"]
+            if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
+                apply_state_based_actions(state)
+                return
             player.max_land_plays_this_turn = compute_max_land_plays_this_turn(state, player_id)
             max_land_plays = max(1, int(getattr(player, "max_land_plays_this_turn", 1)))
             if getattr(player, "last_land_play_turn", 0) != state.turn:

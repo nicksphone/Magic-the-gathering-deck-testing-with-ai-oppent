@@ -408,6 +408,48 @@ def test_ai_forces_land_drop_even_when_legal_moves_omit_play_land() -> None:
     assert decision.action["card_id"] == "forest-1"
 
 
+def test_ai_forces_legal_land_drop_even_if_land_counter_is_desynced() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Memory Deluge", "card_id": "deluge-1"},
+        {"type": "play_land", "card_id": "island-1"},
+    ]
+
+    class FakeState:
+        turn = 6
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type(
+                "P",
+                (),
+                {
+                    "life": 20,
+                    "hand": ["deluge-1", "island-1"],
+                    "battlefield": [],
+                    "mana_pool": {},
+                    # Simulates stale counter drift; legal move still allows land.
+                    "lands_played_this_turn": 1,
+                    "land_plays_recorded_on_turn": 0,
+                    "last_land_play_turn": 0,
+                },
+            )(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+        }
+        cards = {
+            "deluge-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "play_land"
+    assert decision.action["card_id"] == "island-1"
+
+
 def test_control_ai_mulligan_counts_land_with_missing_types_from_oracle() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
 
@@ -494,6 +536,41 @@ def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "wedding-1"
+
+
+def test_control_ai_breaks_late_game_main_phase_pass_loop_with_proactive_spell() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Counterspell", "card_id": "counter-1"},
+        {"type": "cast_spell", "card_name": "Teferi, Hero of Dominaria", "card_id": "teferi-1"},
+    ]
+
+    class FakeState:
+        turn = 9
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1", "teferi-1"], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
+            "teferi-1": type("C", (), {"types": ["Planeswalker"], "name": "Teferi, Hero of Dominaria", "oracle_text": "+1: Draw a card.", "mana_cost": "{3}{W}{U}", "keywords": []})(),
+        }
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "teferi-1"
 
 
 def test_ai_materializes_block_assignments() -> None:

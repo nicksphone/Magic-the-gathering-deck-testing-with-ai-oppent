@@ -64,7 +64,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             int(getattr(player, "lands_played_this_turn", 0)),
             int(getattr(player, "land_plays_recorded_on_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
         )
-        if _is_land_card(card) and used_land_plays < max_land_plays and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        if (
+            _is_land_card(card)
+            and used_land_plays < max_land_plays
+            and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
+            and state.active_player == player_id
+        ):
             moves.append({"type": "play_land", "card_id": cid})
         elif (
             card.zone == Zone.HAND

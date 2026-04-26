@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from ai.heuristics import evaluate_board
 from game_state.state import MatchState
 from rules_engine.engine import RulesEngine
+from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, parse_mana_cost
 
 
@@ -36,6 +37,11 @@ class AIAgent:
             return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
 
         sorted_moves = self._rank_moves(state, legal_moves, player_id)
+        if self._should_break_stall(state, legal_moves, player_id):
+            proactive = self._best_proactive_non_pass(sorted_moves, state)
+            if proactive is not None:
+                proactive = self._materialize_action(state, proactive, player_id)
+                return AIDecision(action=proactive, reasoning="Break pass-loop by selecting proactive legal action")
         if self.difficulty == "casual":
             move = sorted_moves[min(1, len(sorted_moves) - 1)]
         elif self.difficulty in {"master", "master_plus"}:
@@ -57,10 +63,13 @@ class AIAgent:
             return None
         if getattr(state, "stack", []) or []:
             return None
-        player = state.players[player_id]
-        if getattr(player, "lands_played_this_turn", 0) >= 1:
-            return None
         land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
+        if land_moves:
+            return self._best_land_move(state, land_moves, player_id)
+        player = state.players[player_id]
+        if self._remaining_land_plays(state, player_id) <= 0:
+            return None
+        # Defensive fallback for legal-move omissions.
         if not land_moves:
             # Defensive fallback for legal-move omissions: derive land plays from hand.
             for cid in list(getattr(player, "hand", [])):
@@ -793,6 +802,55 @@ class AIAgent:
             return score
 
         return max(land_moves, key=score_land)
+
+    def _remaining_land_plays(self, state: MatchState, player_id: int) -> int:
+        player = state.players[player_id]
+        max_land_plays = compute_max_land_plays_this_turn(state, player_id)
+        if getattr(player, "last_land_play_turn", 0) == state.turn:
+            used = max(
+                int(getattr(player, "lands_played_this_turn", 0)),
+                int(getattr(player, "land_plays_recorded_on_turn", 0)),
+            )
+        else:
+            used = int(getattr(player, "lands_played_this_turn", 0))
+        return max(0, int(max_land_plays) - int(used))
+
+    def _should_break_stall(self, state: MatchState, legal_moves: list[dict], player_id: int) -> bool:
+        if getattr(state, "active_player", player_id) != player_id:
+            return False
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return False
+        if getattr(state, "stack", []) or []:
+            return False
+        non_pass = [m for m in legal_moves if m.get("type") != "pass_priority"]
+        if not non_pass:
+            return False
+        if any(m.get("type") == "play_land" for m in non_pass):
+            return True
+        # Control-style decks may pass to hold interaction, but once mana/turn grows
+        # they should proactively advance board/card advantage.
+        if self.archetype in {"Control", "Counter-heavy"}:
+            hand_size = len(getattr(state.players[player_id], "hand", []))
+            if getattr(state, "turn", 1) < 6 and hand_size < 6:
+                return False
+        return True
+
+    def _best_proactive_non_pass(self, ranked_moves: list[dict], state: MatchState) -> dict | None:
+        non_pass = [m for m in ranked_moves if m.get("type") != "pass_priority"]
+        if not non_pass:
+            return None
+        if getattr(state, "stack", []) or []:
+            return non_pass[0]
+        for move in non_pass:
+            if move.get("type") != "cast_spell":
+                return move
+            cid = move.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower() if card else ""
+            if "counter target spell" in text:
+                continue
+            return move
+        return non_pass[0]
 
     def _color_demand(self, state: MatchState, player_id: int) -> dict[str, int]:
         demand = {c: 0 for c in ["W", "U", "B", "R", "G"]}
