@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.costs import check_cost_option_available, collect_cost_options
+from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_loyalty_abilities
 
@@ -56,8 +57,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand):
         card = state.cards[cid]
-        already_played_this_turn = getattr(player, "last_land_play_turn", 0) == state.turn
-        if _is_land_card(card) and player.lands_played_this_turn < 1 and (not already_played_this_turn) and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        max_land_plays = compute_max_land_plays_this_turn(state, player_id)
+        used_land_plays = max(
+            int(getattr(player, "lands_played_this_turn", 0)),
+            int(getattr(player, "land_plays_recorded_on_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
+        )
+        if _is_land_card(card) and used_land_plays < max_land_plays and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
             moves.append({"type": "play_land", "card_id": cid})
         elif (
             card.zone == Zone.HAND

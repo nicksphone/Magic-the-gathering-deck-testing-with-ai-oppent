@@ -89,8 +89,10 @@ class PlayerState:
     graveyard: list[str] = field(default_factory=list)
     exile: list[str] = field(default_factory=list)
     mana_pool: dict[str, int] = field(default_factory=lambda: {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0})
+    max_land_plays_this_turn: int = 1
     lands_played_this_turn: int = 0
     last_land_play_turn: int = 0
+    land_plays_recorded_on_turn: int = 0
 
 
 @dataclass

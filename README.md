@@ -24,6 +24,8 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - AI core policy now includes the same synthesized land fallback, so forced land development also applies in non-autoplay code paths (batch simulations/diagnostics and direct AI action loops)
 - Land heuristics now avoid false positives on mana creatures (e.g., `Llanowar Elves` style `{T}: Add ...` cards are no longer eligible for `play_land`)
 - Added turn-level land-play invariant (`last_land_play_turn`) in engine and move generation to prevent any double-land same-turn bug even if counters desync
+- Refined land-play invariant to be rules-compatible with future “play an additional land” effects via per-turn `max_land_plays_this_turn` while still blocking accidental double-land bugs
+- Added dynamic additional-land-play parsing from battlefield oracle text (e.g., “play an additional land”, “play two additional lands”) to drive legal move generation and engine enforcement
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

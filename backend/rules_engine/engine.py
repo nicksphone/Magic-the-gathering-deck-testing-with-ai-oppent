@@ -6,6 +6,7 @@ from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, vali
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.mana import auto_pay_cost
 from rules_engine.move_generator import legal_moves
+from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
@@ -34,6 +35,10 @@ class RulesEngine:
             for cid in state.players[state.active_player].battlefield:
                 state.cards[cid].summoning_sick = False
             state.players[state.active_player].lands_played_this_turn = 0
+            state.players[state.active_player].max_land_plays_this_turn = compute_max_land_plays_this_turn(
+                state, state.active_player
+            )
+            state.players[state.active_player].land_plays_recorded_on_turn = 0
         else:
             state.step = TURN_STEPS[idx + 1]
             if state.step == Step.DECLARE_ATTACKERS:
@@ -109,11 +114,20 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "play_land":
             cid = action["card_id"]
-            already_played_this_turn = getattr(player, "last_land_play_turn", 0) == state.turn
-            if cid in player.hand and player.lands_played_this_turn < 1 and (not already_played_this_turn) and _is_land_card(state.cards[cid]):
+            player.max_land_plays_this_turn = compute_max_land_plays_this_turn(state, player_id)
+            max_land_plays = max(1, int(getattr(player, "max_land_plays_this_turn", 1)))
+            if getattr(player, "last_land_play_turn", 0) != state.turn:
+                player.last_land_play_turn = state.turn
+                player.land_plays_recorded_on_turn = 0
+            used_land_plays = max(
+                int(getattr(player, "lands_played_this_turn", 0)),
+                int(getattr(player, "land_plays_recorded_on_turn", 0)),
+            )
+            if cid in player.hand and used_land_plays < max_land_plays and _is_land_card(state.cards[cid]):
                 player.hand.remove(cid)
                 player.battlefield.append(cid)
-                player.lands_played_this_turn += 1
+                player.lands_played_this_turn = used_land_plays + 1
+                player.land_plays_recorded_on_turn = used_land_plays + 1
                 player.last_land_play_turn = state.turn
                 state.cards[cid].zone = Zone.BATTLEFIELD
                 state.cards[cid].summoning_sick = False

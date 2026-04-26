@@ -114,3 +114,65 @@ def test_no_second_land_move_same_turn_even_if_land_counter_desynced() -> None:
     moves = engine.legal_moves(state, 1)
     second_land_moves = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == second]
     assert second_land_moves == []
+
+
+def test_second_land_is_legal_when_effect_allows_two_land_plays() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    engine = RulesEngine()
+
+    # Stage a synthetic static effect allowing two extra land plays.
+    effect_id = state.players[1].library.pop()
+    state.players[1].battlefield.append(effect_id)
+    effect = state.cards[effect_id]
+    effect.types = ["Enchantment"]
+    effect.name = "Wayward Surge"
+    effect.oracle_text = "You may play two additional lands on each of your turns."
+
+    first = state.players[1].hand[0]
+    second = state.players[1].hand[1]
+    state.cards[first].types = ["Land"]
+    state.cards[first].name = "Forest"
+    state.cards[second].types = ["Land"]
+    state.cards[second].name = "Forest"
+
+    engine.take_action(state, 1, {"type": "play_land", "card_id": first})
+    moves = engine.legal_moves(state, 1)
+    second_land_moves = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == second]
+    assert len(second_land_moves) == 1
+
+
+def test_additional_land_effect_text_allows_second_land_same_turn() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    engine = RulesEngine()
+
+    # Stage an "Exploration"-style static effect in battlefield.
+    effect_id = state.players[1].library.pop()
+    state.players[1].battlefield.append(effect_id)
+    effect = state.cards[effect_id]
+    effect.types = ["Enchantment"]
+    effect.name = "Exploration"
+    effect.oracle_text = "You may play an additional land on each of your turns."
+
+    first = state.players[1].hand[0]
+    second = state.players[1].hand[1]
+    state.cards[first].types = ["Land"]
+    state.cards[first].name = "Forest"
+    state.cards[second].types = ["Land"]
+    state.cards[second].name = "Forest"
+
+    engine.take_action(state, 1, {"type": "play_land", "card_id": first})
+    moves = engine.legal_moves(state, 1)
+    second_land_moves = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == second]
+    assert len(second_land_moves) == 1
