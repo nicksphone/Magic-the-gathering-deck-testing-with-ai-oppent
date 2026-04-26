@@ -148,7 +148,12 @@ def _is_land_card(card) -> bool:
     if "land" in type_line:
         return True
     oracle = (getattr(card, "oracle_text", "") or "").lower()
-    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+    mana_cost = (getattr(card, "mana_cost", "") or "").strip()
+    nonland_typed = any(
+        t in set(getattr(card, "types", []))
+        for t in ["Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker"]
+    )
+    if not mana_cost and not nonland_typed and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
         return True
     name = (getattr(card, "name", "") or "").strip().lower()
     return name in {"island", "swamp", "mountain", "forest", "plains"}

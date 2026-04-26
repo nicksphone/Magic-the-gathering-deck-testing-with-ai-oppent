@@ -430,6 +430,32 @@ def test_control_ai_mulligan_counts_land_with_missing_types_from_oracle() -> Non
     assert decision.action["type"] == "mulligan"
 
 
+def test_ai_does_not_treat_mana_creature_as_land_in_forced_land_logic() -> None:
+    ai = AIAgent(difficulty="master", archetype="Tribal")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Llanowar Elves", "card_id": "elves-1"},
+    ]
+
+    class FakeState:
+        turn = 2
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["elves-1"], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+        }
+        cards = {
+            "elves-1": type("C", (), {"types": [], "name": "Llanowar Elves", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": "{G}"})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] != "play_land"
+
+
 def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
     ai = AIAgent(difficulty="strong", archetype="Tokens")
     moves = [

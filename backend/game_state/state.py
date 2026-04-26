@@ -200,8 +200,8 @@ def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_tex
             return out
     oracle = (oracle_text or "").lower()
     # Metadata can occasionally be incomplete during early cache hydrate.
-    # Land cards are still identifiable by canonical mana ability text.
-    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+    # Only treat mana-text as land signal when mana cost is empty.
+    if not (mana_cost or "").strip() and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
         return ["Land"]
     # Last-resort heuristic for no-cost cards with no explicit type line.
     if not (mana_cost or "").strip():

@@ -64,3 +64,25 @@ def test_mana_ability_oracle_marks_land_playable_when_type_metadata_missing() ->
     engine.take_action(state, 1, {"type": "play_land", "card_id": cid})
     assert cid in state.players[1].battlefield
     assert cid not in state.players[1].hand
+
+
+def test_mana_creature_is_not_misclassified_as_land_from_oracle_text() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    engine = RulesEngine()
+
+    cid = state.players[1].hand[0]
+    state.cards[cid].name = "Llanowar Elves"
+    state.cards[cid].types = []  # simulate incomplete metadata
+    state.cards[cid].type_line = ""
+    state.cards[cid].mana_cost = "{G}"
+    state.cards[cid].oracle_text = "{T}: Add {G}."
+
+    moves = engine.legal_moves(state, 1)
+    play_land = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == cid]
+    assert play_land == []
