@@ -139,7 +139,12 @@ class MatchFactory:
                 card_name = raw_item["card_name"]
                 cid = str(uuid.uuid4())
                 type_line = raw_item.get("type_line", "")
-                types = _infer_types(card_name, type_line=type_line)
+                types = _infer_types(
+                    card_name,
+                    type_line=type_line,
+                    mana_cost=raw_item.get("mana_cost", "") or "",
+                    oracle_text=raw_item.get("oracle_text", "") or "",
+                )
                 card = CardInstance(
                     id=cid,
                     name=card_name,
@@ -184,7 +189,7 @@ def draw_card(state: MatchState, player_id: int, count: int = 1) -> None:
         emit_event(state, "draw_card", {"player_id": player_id, "card_id": cid})
 
 
-def _infer_types(name: str, type_line: str = "") -> list[str]:
+def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_text: str = "") -> list[str]:
     if type_line:
         line = type_line.lower()
         out = []
@@ -193,6 +198,16 @@ def _infer_types(name: str, type_line: str = "") -> list[str]:
                 out.append(t.capitalize())
         if out:
             return out
+    oracle = (oracle_text or "").lower()
+    # Metadata can occasionally be incomplete during early cache hydrate.
+    # Land cards are still identifiable by canonical mana ability text.
+    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+        return ["Land"]
+    # Last-resort heuristic for no-cost cards with no explicit type line.
+    if not (mana_cost or "").strip():
+        n = name.lower()
+        if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp"]):
+            return ["Land"]
     n = name.lower()
     if n in {
         "hallowed fountain",

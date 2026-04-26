@@ -147,5 +147,8 @@ def _is_land_card(card) -> bool:
     type_line = (getattr(card, "type_line", "") or "").lower()
     if "land" in type_line:
         return True
+    oracle = (getattr(card, "oracle_text", "") or "").lower()
+    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+        return True
     name = (getattr(card, "name", "") or "").strip().lower()
     return name in {"island", "swamp", "mountain", "forest", "plains"}
