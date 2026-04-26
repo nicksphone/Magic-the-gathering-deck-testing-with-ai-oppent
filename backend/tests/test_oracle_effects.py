@@ -125,6 +125,25 @@ def test_oracle_collected_company_style_parsing() -> None:
     assert payload["mv_max"] == 3
 
 
+def test_oracle_prevent_next_damage_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    target = state.players[1].hand[0]
+    card = CardInstance(
+        id="foglet",
+        name="Protective Burst",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Prevent the next 3 damage that would be dealt to target creature this turn.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"target_card_id": target})
+    assert effect_key == "prevent_damage"
+    assert payload["amount"] == 3
+    assert payload["target_card_id"] == target
+
+
 def test_topdeck_creature_deploy_effect_puts_eligible_creatures_onto_battlefield() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

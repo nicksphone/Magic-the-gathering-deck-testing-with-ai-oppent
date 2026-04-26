@@ -4,6 +4,12 @@ from game_state.state import MatchState, Zone
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
 from rules_engine.mana import parse_mana_cost
+from rules_engine.prevention import (
+    add_card_prevention_shield,
+    add_player_prevention_shield,
+    consume_card_prevention_shield,
+    consume_player_prevention_shield,
+)
 
 
 def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
@@ -13,13 +19,23 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
     amount = int(payload.get("amount", 0))
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
-        if card.toughness is not None:
-            card.toughness -= amount
-            state.log.append(f"{card.name} takes {amount} damage.")
+        if card.toughness is not None and amount > 0:
+            post, prevented = consume_card_prevention_shield(card, amount)
+            if prevented > 0:
+                state.log.append(f"{card.name} prevents {prevented} damage.")
+            if post <= 0:
+                return
+            card.counters["__damage_marked"] = int(card.counters.get("__damage_marked", 0)) + int(post)
+            state.log.append(f"{card.name} takes {post} damage.")
             return
     if target_player is not None:
-        state.players[target_player].life -= amount
-        state.log.append(f"{state.players[target_player].name} takes {amount} damage.")
+        post, prevented = consume_player_prevention_shield(state, int(target_player), amount)
+        if prevented > 0:
+            state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
+        if post <= 0:
+            return
+        state.players[target_player].life -= post
+        state.log.append(f"{state.players[target_player].name} takes {post} damage.")
 
 
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
@@ -208,6 +224,20 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
         card = state.cards[target]
         if keyword not in card.keywords:
             card.keywords.append(keyword)
+
+
+def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:
+    amount = int(payload.get("amount", 0))
+    target_player = payload.get("target_player")
+    target_card_id = payload.get("target_card_id")
+    if target_player is not None:
+        add_player_prevention_shield(state, int(target_player), amount)
+        state.log.append(f"{state.players[int(target_player)].name} gains a prevention shield of {amount}.")
+        return
+    if target_card_id in state.cards:
+        card = state.cards[target_card_id]
+        add_card_prevention_shield(card, amount)
+        state.log.append(f"{card.name} gains a prevention shield of {amount}.")
 
 
 def discard_cards(state: MatchState, controller: int, payload: dict) -> None:

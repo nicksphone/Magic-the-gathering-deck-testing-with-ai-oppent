@@ -38,6 +38,10 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - “your upkeep/end step” vs “each upkeep/end step” oracle distinctions are enforced
 - Added first continuous-effect stat layer support:
   - static anthem text (`creatures you control get +1/+1`, `other creatures you control get +1/+1`) now affects effective power/toughness in combat and lethal SBA checks
+- Added first prevention/replacement-like damage shield support:
+  - `prevent the next N damage` parsing for target player/creature
+  - prevention shields are consumed by both spell damage and combat damage
+  - non-combat spell damage to creatures now marks damage (CR-consistent), rather than permanently reducing toughness
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

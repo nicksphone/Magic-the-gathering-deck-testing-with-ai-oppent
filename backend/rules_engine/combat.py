@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Zone
 from rules_engine.continuous import effective_power, effective_toughness
 from rules_engine.events import emit_event
+from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -123,7 +124,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
                 continue
             lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
             dealt = min(remaining, lethal)
-            _mark_creature_damage(blocker, dealt, deathtouch=atk_has_deathtouch)
+            _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch)
             if dealt > 0 and _has_keyword(atk, "lifelink"):
                 state.players[atk.controller].life += dealt
             remaining -= dealt
@@ -149,7 +150,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             if blk_power > 0 and _has_keyword(blk, "lifelink"):
                 state.players[blk.controller].life += blk_power
         if atk_damage_taken > 0:
-            _mark_creature_damage(atk, atk_damage_taken, deathtouch=got_deathtouch_from_blocker)
+            _mark_creature_damage(state, attacker, atk_damage_taken, deathtouch=got_deathtouch_from_blocker)
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
@@ -213,14 +214,25 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int) ->
             state.log.append(f"{card.name} loses {amount} loyalty.")
             return amount
     pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
-    state.players[pid].life -= amount
-    return amount
+    post, prevented = consume_player_prevention_shield(state, pid, amount)
+    if prevented > 0:
+        state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")
+    if post <= 0:
+        return 0
+    state.players[pid].life -= post
+    return post
 
 
-def _mark_creature_damage(card, amount: int, deathtouch: bool = False) -> None:
+def _mark_creature_damage(state: MatchState, card_id: str, amount: int, deathtouch: bool = False) -> None:
     if amount <= 0:
         return
-    card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(amount)
+    card = state.cards[card_id]
+    post, prevented = consume_card_prevention_shield(card, amount)
+    if prevented > 0:
+        state.log.append(f"{card.name} prevents {prevented} damage.")
+    if post <= 0:
+        return
+    card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(post)
     if deathtouch:
         card.counters[DEATHTOUCH_MARK_KEY] = 1
 

@@ -12,6 +12,7 @@ DRAW_RE = re.compile(r"draw\s+(a|\d+)\s+card")
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
+PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
@@ -231,6 +232,18 @@ def _infer_clause_effect(
         if "target player" in oracle and target_player is not None:
             return "lose_life", {"amount": amount, "target_player": target_player}
         return "lose_life", {"amount": amount, "target_player": opponent}
+
+    prevent_match = PREVENT_RE.search(oracle)
+    if prevent_match:
+        amount = int(prevent_match.group(1))
+        if "target creature" in oracle:
+            target = target_card_id or _first_creature(state, controller)
+            if target:
+                return "prevent_damage", {"amount": amount, "target_card_id": target}
+        if "target player" in oracle:
+            if target_player is None:
+                target_player = controller
+            return "prevent_damage", {"amount": amount, "target_player": int(target_player)}
 
     if "destroy target" in oracle:
         target = target_card_id or _first_creature(state, opponent)

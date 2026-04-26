@@ -64,6 +64,7 @@ class RulesEngine:
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:
             self._clear_marked_damage(state)
+            self._clear_prevention_shields(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
 
     def _clear_mana_pools(self, state: MatchState) -> None:
@@ -77,6 +78,12 @@ class RulesEngine:
                 card.counters.pop("__damage_marked", None)
             if "__deathtouch_damaged" in card.counters:
                 card.counters.pop("__deathtouch_damaged", None)
+
+    def _clear_prevention_shields(self, state: MatchState) -> None:
+        for player in state.players.values():
+            player.prevent_damage_shield = 0
+        for card in state.cards.values():
+            card.counters.pop("__prevent_damage_shield", None)
 
     def _enforce_cleanup_hand_size(self, state: MatchState, player_id: int) -> None:
         player = state.players[player_id]
