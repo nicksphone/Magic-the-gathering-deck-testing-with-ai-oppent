@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import CardInstance, MatchFactory, Zone
+from effects.registry import resolve_effect
 from rules_engine.oracle_effects import infer_effect_from_oracle
 
 
@@ -98,3 +99,68 @@ def test_oracle_token_count_and_keywords_parsing() -> None:
     assert payload["toughness"] == 1
     assert payload["name"] == "White Soldier"
     assert "vigilance" in payload["keywords"]
+
+
+def test_oracle_collected_company_style_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="cc",
+        name="Collected Company",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        mana_cost="{3}{G}",
+        oracle_text=(
+            "Look at the top six cards of your library. "
+            "Put up to two creature cards with mana value 3 or less from among them onto the battlefield. "
+            "Put the rest on the bottom of your library in any order."
+        ),
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "topdeck_put_creatures_battlefield"
+    assert payload["top_n"] == 6
+    assert payload["max_creatures"] == 2
+    assert payload["mv_max"] == 3
+
+
+def test_topdeck_creature_deploy_effect_puts_eligible_creatures_onto_battlefield() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+    p1.library = p1.library + p1.hand
+    p1.hand = []
+
+    top6 = p1.library[-6:]
+    # Build top six: two eligible creatures (<=3 MV), one too expensive creature, three noncreatures.
+    state.cards[top6[0]].name = "Spell A"
+    state.cards[top6[0]].types = ["Instant"]
+    state.cards[top6[0]].mana_cost = "{1}{U}"
+
+    state.cards[top6[1]].name = "Elf 2"
+    state.cards[top6[1]].types = ["Creature"]
+    state.cards[top6[1]].mana_cost = "{1}{G}"
+
+    state.cards[top6[2]].name = "Big 5"
+    state.cards[top6[2]].types = ["Creature"]
+    state.cards[top6[2]].mana_cost = "{3}{G}{G}"
+
+    state.cards[top6[3]].name = "Elf 3"
+    state.cards[top6[3]].types = ["Creature"]
+    state.cards[top6[3]].mana_cost = "{2}{G}"
+
+    state.cards[top6[4]].name = "Spell B"
+    state.cards[top6[4]].types = ["Sorcery"]
+    state.cards[top6[4]].mana_cost = "{2}{G}"
+
+    state.cards[top6[5]].name = "Spell C"
+    state.cards[top6[5]].types = ["Instant"]
+    state.cards[top6[5]].mana_cost = "{1}{G}"
+
+    resolve_effect(state, 1, "topdeck_put_creatures_battlefield", {"top_n": 6, "max_creatures": 2, "mv_max": 3})
+    names = [state.cards[cid].name for cid in p1.battlefield]
+    assert "Elf 2" in names
+    assert "Elf 3" in names
+    assert "Big 5" not in names

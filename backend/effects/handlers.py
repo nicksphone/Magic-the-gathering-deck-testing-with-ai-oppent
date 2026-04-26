@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Zone
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
+from rules_engine.mana import parse_mana_cost
 
 
 def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
@@ -220,3 +221,66 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[cid].zone = Zone.GRAVEYARD
         discarded += 1
     state.log.append(f"{player.name} discards {discarded}.")
+
+
+def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    top_n = max(1, int(payload.get("top_n", 6)))
+    max_creatures = max(1, int(payload.get("max_creatures", 2)))
+    mv_max = max(0, int(payload.get("mv_max", 3)))
+    if not player.library:
+        return
+
+    # Library top is the tail (draw pops from end).
+    top_slice = player.library[-top_n:]
+
+    def is_eligible(cid: str) -> bool:
+        card = state.cards[cid]
+        if "Creature" not in card.types:
+            return False
+        req = parse_mana_cost(getattr(card, "mana_cost", "") or "")
+        mv = int(req["generic"] + req["W"] + req["U"] + req["B"] + req["R"] + req["G"])
+        return mv <= mv_max
+
+    eligibles = [cid for cid in top_slice if is_eligible(cid)]
+    eligibles.sort(
+        key=lambda cid: (
+            state.cards[cid].power or 0,
+            state.cards[cid].toughness or 0,
+            -(
+                parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["generic"]
+                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["W"]
+                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["U"]
+                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["B"]
+                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["R"]
+                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["G"]
+            ),
+        ),
+        reverse=True,
+    )
+    chosen = eligibles[:max_creatures]
+
+    # Remove inspected cards from library in top-to-bottom order.
+    inspected_set = set(top_slice)
+    remaining_library = [cid for cid in player.library if cid not in inspected_set]
+    player.library = remaining_library
+
+    # Put chosen creatures onto battlefield.
+    for cid in chosen:
+        card = state.cards[cid]
+        card.zone = Zone.BATTLEFIELD
+        card.summoning_sick = "Creature" in card.types
+        player.battlefield.append(cid)
+        emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
+
+    # Put the rest onto the bottom (deterministic order).
+    rest = [cid for cid in top_slice if cid not in set(chosen)]
+    for cid in rest:
+        state.cards[cid].zone = Zone.LIBRARY
+        player.library.insert(0, cid)
+
+    if chosen:
+        names = ", ".join(state.cards[cid].name for cid in chosen)
+        state.log.append(f"{player.name} puts {names} onto the battlefield from top of library.")
+    else:
+        state.log.append(f"{player.name} finds no eligible creature cards in top {top_n}.")

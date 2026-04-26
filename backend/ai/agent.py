@@ -322,6 +322,16 @@ class AIAgent:
                 return bonus
             return 1.2
 
+        if "creature_deploy_topdeck" in tags:
+            bonus = 3.6
+            if arche in {"Tribal", "Aggro", "Midrange", "Tempo", "Ramp"}:
+                bonus += 2.2
+            if len(state.players[player_id].hand) <= 2:
+                bonus += 1.4
+            if state.turn >= 4:
+                bonus += 0.8
+            return bonus
+
         if arche in {"Control", "Counter-heavy"}:
             bonus = 0.0
             if "counter" in tags:
@@ -429,6 +439,8 @@ class AIAgent:
             tags.add("ramp")
         if "create" in text and "token" in text:
             tags.add("token")
+        if "look at the top" in text and "creature cards" in text and "onto the battlefield" in text:
+            tags.add("creature_deploy_topdeck")
         if "creatures you control get" in text or "+1/+1" in text:
             tags.add("anthem")
         if "enchantment" in text:

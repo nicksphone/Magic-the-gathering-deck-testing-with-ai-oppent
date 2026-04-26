@@ -560,3 +560,56 @@ def test_ai_prefers_block_over_pass_when_good_block_exists() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "block"
     assert decision.action.get("blocks") == {"atk-2-2": "blk-3-3"}
+
+
+def test_tribal_ai_prefers_collected_company_style_spell_over_pass() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Tribal")
+    moves = [
+        {"type": "pass_priority"},
+        {
+            "type": "cast_spell",
+            "card_name": "Collected Company",
+            "card_id": "cc-1",
+            "mana_cost": "{3}{G}",
+            "target_hints": {},
+        },
+    ]
+
+    class FakeState:
+        turn = 5
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        players = {
+            1: type("P", (), {"life": 14, "hand": ["cc-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "cc-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Instant"],
+                    "name": "Collected Company",
+                    "oracle_text": (
+                        "Look at the top six cards of your library. "
+                        "Put up to two creature cards with mana value 3 or less from among them onto the battlefield. "
+                        "Put the rest on the bottom of your library in any order."
+                    ),
+                    "mana_cost": "{3}{G}",
+                    "keywords": [],
+                },
+            )(),
+        }
+        stack = []
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "cc-1"

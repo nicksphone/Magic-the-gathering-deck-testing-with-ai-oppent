@@ -22,6 +22,9 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - Combat decision heuristics tightened:
   - attack action now selects an attacker subset (avoids many low-value/suicidal 1/1 attacks into larger blockers)
   - blocking logic prioritizes damage prevention and better trade selection in defender role
+- Topdeck creature-deployment effects (Collected Company-style) now resolve generically:
+  - infer from oracle text pattern (`look at top N`, `put up to X creature cards with mana value Y or less onto battlefield`)
+  - AI now values this spell class appropriately in creature-centric archetypes
 - Land can no longer be cast as spell regression fixed
 - Memory Deluge / X-target validation loop fixes
 - Tokens AI now casts key enchantments more consistently

@@ -28,6 +28,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "continuous_buff": handlers.continuous_buff,
     "grant_keyword": handlers.grant_keyword,
     "discard_cards": handlers.discard_cards,
+    "topdeck_put_creatures_battlefield": handlers.topdeck_put_creatures_battlefield,
 }
 
 

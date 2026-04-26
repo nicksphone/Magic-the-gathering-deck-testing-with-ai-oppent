@@ -26,6 +26,11 @@ CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?\d+):\s*([^\n]+)")
+LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+PUT_CREATURES_FROM_TOP_RE = re.compile(
+    r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+creature cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
+    re.IGNORECASE,
+)
 
 
 def infer_effect_from_oracle(
@@ -48,6 +53,9 @@ def infer_effect_from_oracle(
     if "counter target spell" in oracle and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         return "counter_spell", {"target_stack_id": target_stack_id}
+    topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
+    if topdeck_creatures is not None:
+        return topdeck_creatures
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
@@ -69,6 +77,25 @@ def infer_effect_from_oracle(
         return "counter_spell", {"target_stack_id": state.stack[-1].id}
 
     return "gain_life", {"amount": 0}
+
+
+def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    look_match = LOOK_TOP_RE.search(oracle)
+    put_match = PUT_CREATURES_FROM_TOP_RE.search(oracle)
+    if not (look_match and put_match):
+        return None
+    top_n = _parse_count_token(look_match.group(1))
+    max_creatures = _parse_count_token(put_match.group(1))
+    mv_max = _parse_count_token(put_match.group(2))
+    # Optional overrides for future UI/testing hooks.
+    top_n = int(action_targets.get("top_n", top_n) or top_n)
+    max_creatures = int(action_targets.get("max_creatures", max_creatures) or max_creatures)
+    mv_max = int(action_targets.get("mv_max", mv_max) or mv_max)
+    return "topdeck_put_creatures_battlefield", {
+        "top_n": max(1, top_n),
+        "max_creatures": max(1, max_creatures),
+        "mv_max": max(0, mv_max),
+    }
 
 
 def inspect_target_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
