@@ -151,3 +151,53 @@ def test_combat_damage_marks_clear_on_cleanup() -> None:
     engine.take_action(state, 2, {"type": "pass_priority"})
     assert state.step == Step.CLEANUP
     assert int(state.cards[blk].counters.get("__damage_marked", 0)) == 0
+
+
+def test_flying_attacker_cannot_be_blocked_by_ground_creature() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Sky Drake", 2, 2, ["flying"])
+    blk = _setup_creature(state, 2, "Bear", 2, 2, [])
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks == {}
+
+
+def test_reach_creature_can_block_flying_attacker() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Sky Drake", 2, 2, ["flying"])
+    blk = _setup_creature(state, 2, "Spider", 1, 3, ["reach"])
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks.get(atk) == [blk]
+
+
+def test_menace_requires_two_blockers() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Menace Attacker", 3, 3, ["menace"])
+    blk1 = _setup_creature(state, 2, "B1", 2, 2, [])
+    blk2 = _setup_creature(state, 2, "B2", 2, 2, [])
+    state.attackers = [atk]
+
+    combat.declare_blockers(state, {atk: [blk1]})
+    assert state.blocks == {}
+
+    combat.declare_blockers(state, {atk: [blk1, blk2]})
+    assert state.blocks.get(atk) == [blk1, blk2]

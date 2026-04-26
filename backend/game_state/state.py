@@ -340,7 +340,7 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 def _infer_keywords(oracle_text: str) -> list[str]:
     text = (oracle_text or "").lower()
     out: list[str] = []
-    for kw in ["trample", "first strike", "double strike", "haste", "flash", "lifelink", "deathtouch"]:
+    for kw in ["trample", "first strike", "double strike", "haste", "flash", "lifelink", "deathtouch", "flying", "reach", "menace"]:
         if kw in text:
             out.append(kw)
     return out

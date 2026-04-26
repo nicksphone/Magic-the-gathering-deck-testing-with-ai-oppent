@@ -31,6 +31,7 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - `deathtouch` lethal assignment/kill semantics (including trample interaction)
   - `double strike` damage in both first-strike and regular combat-damage steps
   - combat damage is now marked and removed at cleanup (instead of permanently reducing toughness)
+  - blocker legality now enforces `flying`/`reach` and `menace` constraints
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

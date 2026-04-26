@@ -60,10 +60,20 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
                 continue
             if "Creature" not in block_card.types:
                 continue
+            atk_card = state.cards[attacker]
+            if not _can_block_attacker(atk_card, block_card):
+                continue
             picked.append(blocker)
             used_blockers.add(blocker)
         if picked:
             legal[attacker] = picked
+    # Menace: must be blocked by two or more creatures.
+    for attacker in list(legal.keys()):
+        atk_card = state.cards.get(attacker)
+        if atk_card and _has_keyword(atk_card, "menace") and len(legal[attacker]) < 2:
+            for blocker in legal[attacker]:
+                used_blockers.discard(blocker)
+            legal.pop(attacker, None)
     state.blocks = legal
 
 
@@ -161,6 +171,13 @@ def _remove_dead_creatures(state: MatchState) -> None:
 
 def _has_keyword(card, keyword: str) -> bool:
     return keyword.lower() in [k.lower() for k in card.keywords]
+
+
+def _can_block_attacker(attacker, blocker) -> bool:
+    # Flying can only be blocked by flying or reach.
+    if _has_keyword(attacker, "flying"):
+        return _has_keyword(blocker, "flying") or _has_keyword(blocker, "reach")
+    return True
 
 
 def _valid_defenders(state: MatchState, defending_player: int) -> set[str]:
