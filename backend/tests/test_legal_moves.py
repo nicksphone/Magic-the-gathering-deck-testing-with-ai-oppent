@@ -86,3 +86,31 @@ def test_mana_creature_is_not_misclassified_as_land_from_oracle_text() -> None:
     moves = engine.legal_moves(state, 1)
     play_land = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == cid]
     assert play_land == []
+
+
+def test_no_second_land_move_same_turn_even_if_land_counter_desynced() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    engine = RulesEngine()
+
+    first = state.players[1].hand[0]
+    second = state.players[1].hand[1]
+    state.cards[first].name = "Forest"
+    state.cards[first].types = ["Land"]
+    state.cards[second].name = "Forest"
+    state.cards[second].types = ["Land"]
+
+    engine.take_action(state, 1, {"type": "play_land", "card_id": first})
+    assert state.players[1].lands_played_this_turn == 1
+    assert state.players[1].last_land_play_turn == state.turn
+
+    # Simulate counter drift bug elsewhere; turn-level invariant should still block.
+    state.players[1].lands_played_this_turn = 0
+    moves = engine.legal_moves(state, 1)
+    second_land_moves = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == second]
+    assert second_land_moves == []

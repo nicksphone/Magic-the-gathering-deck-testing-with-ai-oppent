@@ -109,10 +109,12 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "play_land":
             cid = action["card_id"]
-            if cid in player.hand and player.lands_played_this_turn < 1 and _is_land_card(state.cards[cid]):
+            already_played_this_turn = getattr(player, "last_land_play_turn", 0) == state.turn
+            if cid in player.hand and player.lands_played_this_turn < 1 and (not already_played_this_turn) and _is_land_card(state.cards[cid]):
                 player.hand.remove(cid)
                 player.battlefield.append(cid)
                 player.lands_played_this_turn += 1
+                player.last_land_play_turn = state.turn
                 state.cards[cid].zone = Zone.BATTLEFIELD
                 state.cards[cid].summoning_sick = False
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")

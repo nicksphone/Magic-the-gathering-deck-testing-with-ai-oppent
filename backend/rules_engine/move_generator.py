@@ -56,7 +56,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand):
         card = state.cards[cid]
-        if _is_land_card(card) and player.lands_played_this_turn < 1 and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        already_played_this_turn = getattr(player, "last_land_play_turn", 0) == state.turn
+        if _is_land_card(card) and player.lands_played_this_turn < 1 and (not already_played_this_turn) and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
             moves.append({"type": "play_land", "card_id": cid})
         elif (
             card.zone == Zone.HAND
