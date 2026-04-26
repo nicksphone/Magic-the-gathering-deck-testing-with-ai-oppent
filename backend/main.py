@@ -567,7 +567,8 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
         return None
     if state.active_player != player_id:
         return None
-    if state.step not in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+    step_key = _step_key(state.step)
+    if step_key not in {"precombat_main", "postcombat_main"}:
         return None
     if state.players[player_id].lands_played_this_turn >= 1:
         return None
@@ -606,3 +607,11 @@ def _card_looks_like_land(card) -> bool:
         return True
     name = (getattr(card, "name", "") or "").strip().lower()
     return any(basic in name for basic in ["island", "swamp", "mountain", "forest", "plains"])
+
+
+def _step_key(step_obj) -> str:
+    value = getattr(step_obj, "value", step_obj)
+    raw = str(value or "").strip()
+    if raw.startswith("Step."):
+        raw = raw.split(".", 1)[1]
+    return raw.lower()
