@@ -207,3 +207,35 @@ def test_summoning_sick_mana_creature_cannot_pay_tap_cost() -> None:
     elf.summoning_sick = True
 
     assert can_pay_with_pool_and_lands(state, 1, "{1}{G}") is False
+
+
+def test_noncreature_mana_source_can_pay_cost() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+
+    # One Island land.
+    land_id = p1.library.pop()
+    p1.battlefield.append(land_id)
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Island"
+    land.type_line = "Basic Land — Island"
+    land.tapped = False
+
+    # One mana rock artifact.
+    rock_id = p1.library.pop()
+    p1.battlefield.append(rock_id)
+    rock = state.cards[rock_id]
+    rock.zone = Zone.BATTLEFIELD
+    rock.types = ["Artifact"]
+    rock.name = "Mind Stone"
+    rock.oracle_text = "{T}: Add {C}."
+    rock.tapped = False
+
+    assert can_pay_with_pool_and_lands(state, 1, "{1}{U}") is True
+    assert auto_pay_cost(state, 1, "{1}{U}") is True
+    assert land.tapped is True
+    assert rock.tapped is True

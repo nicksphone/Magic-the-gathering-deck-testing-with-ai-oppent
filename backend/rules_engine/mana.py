@@ -60,11 +60,11 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
     return out
 
 
-def count_untapped_mana_creatures_by_color(state: MatchState, player_id: int) -> Counter:
+def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: int) -> Counter:
     out: Counter = Counter()
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        colors = _mana_creature_colors(card)
+        colors = _nonland_mana_source_colors(card)
         if not colors:
             continue
         for color in colors:
@@ -85,7 +85,7 @@ def can_pay_with_pool_and_lands(
     req = parse_mana_cost(mana_cost, is_land=is_land)
     pool = dict(state.players[player_id].mana_pool)
     lands = count_untapped_lands_by_color(state, player_id)
-    dorks = count_untapped_mana_creatures_by_color(state, player_id)
+    nonlands = count_untapped_nonland_mana_sources_by_color(state, player_id)
 
     for color in ["W", "U", "B", "R", "G"]:
         need = req[color]
@@ -97,10 +97,10 @@ def can_pay_with_pool_and_lands(
         need -= use_from_lands
         lands[color] -= use_from_lands
         lands["ANY"] -= use_from_lands
-        use_from_dorks = min(need, dorks.get(color, 0))
-        need -= use_from_dorks
-        dorks[color] -= use_from_dorks
-        dorks["ANY"] -= use_from_dorks
+        use_from_nonlands = min(need, nonlands.get(color, 0))
+        need -= use_from_nonlands
+        nonlands[color] -= use_from_nonlands
+        nonlands["ANY"] -= use_from_nonlands
         if need > 0:
             return False
 
@@ -110,7 +110,7 @@ def can_pay_with_pool_and_lands(
         generic_need -= pay
         if generic_need <= 0:
             return True
-    if lands.get("ANY", 0) + dorks.get("ANY", 0) < generic_need:
+    if lands.get("ANY", 0) + nonlands.get("ANY", 0) < generic_need:
         return False
     return True
 
@@ -143,10 +143,10 @@ def auto_pay_cost(
                 state.log.append(f"{player.name} taps {state.cards[land_id].name} for {color} to pay spell cost.")
                 req[color] -= 1
                 continue
-            creature_id = _find_untapped_mana_creature_for_color(state, player_id, color)
-            if creature_id:
-                state.cards[creature_id].tapped = True
-                state.log.append(f"{player.name} taps {state.cards[creature_id].name} for {color} to pay spell cost.")
+            nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, color)
+            if nonland_id:
+                state.cards[nonland_id].tapped = True
+                state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {color} to pay spell cost.")
                 req[color] -= 1
                 continue
             return False
@@ -178,11 +178,11 @@ def auto_pay_cost(
             state.log.append(f"{player.name} taps {state.cards[land_id].name} for {produced} to pay spell cost.")
             generic_need -= 1
             continue
-        creature_id = _find_any_untapped_mana_creature(state, player_id)
-        if creature_id:
-            produced = next(iter(_ordered_colors(_mana_creature_colors(state.cards[creature_id]))), "C")
-            state.cards[creature_id].tapped = True
-            state.log.append(f"{player.name} taps {state.cards[creature_id].name} for {produced} to pay spell cost.")
+        nonland_id = _find_any_untapped_nonland_mana_source(state, player_id)
+        if nonland_id:
+            produced = next(iter(_ordered_colors(_nonland_mana_source_colors(state.cards[nonland_id]))), "C")
+            state.cards[nonland_id].tapped = True
+            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {produced} to pay spell cost.")
             generic_need -= 1
             continue
         return False
@@ -206,19 +206,19 @@ def _find_any_untapped_land(state: MatchState, player_id: int) -> str | None:
     return None
 
 
-def _find_untapped_mana_creature_for_color(state: MatchState, player_id: int, color: str) -> str | None:
+def _find_untapped_nonland_mana_source_for_color(state: MatchState, player_id: int, color: str) -> str | None:
     for cid in state.players[player_id].battlefield:
         c = state.cards[cid]
-        colors = _mana_creature_colors(c)
+        colors = _nonland_mana_source_colors(c)
         if colors and color in colors:
             return cid
     return None
 
 
-def _find_any_untapped_mana_creature(state: MatchState, player_id: int) -> str | None:
+def _find_any_untapped_nonland_mana_source(state: MatchState, player_id: int) -> str | None:
     for cid in state.players[player_id].battlefield:
         c = state.cards[cid]
-        if _mana_creature_colors(c):
+        if _nonland_mana_source_colors(c):
             return cid
     return None
 
@@ -266,17 +266,20 @@ def _ordered_colors(colors: Set[str]) -> list[str]:
     return [c for c in order if c in colors]
 
 
-def _mana_creature_colors(card) -> Set[str]:
-    if "Creature" not in getattr(card, "types", []):
+def _nonland_mana_source_colors(card) -> Set[str]:
+    card_types = set(getattr(card, "types", []) or [])
+    if "Land" in card_types:
         return set()
     if getattr(card, "tapped", False):
-        return set()
-    keywords = [str(x).lower() for x in (getattr(card, "keywords", []) or [])]
-    if getattr(card, "summoning_sick", False) and "haste" not in keywords:
         return set()
     oracle = (getattr(card, "oracle_text", "") or "").upper()
     if "{T}" not in oracle or "ADD" not in oracle:
         return set()
+    # Summoning sickness prevents creatures from using tap abilities unless they have haste.
+    if "Creature" in card_types:
+        keywords = [str(x).lower() for x in (getattr(card, "keywords", []) or [])]
+        if getattr(card, "summoning_sick", False) and "haste" not in keywords:
+            return set()
     colors: Set[str] = set()
     for sym in MANA_SYMBOL_RE.findall(oracle):
         if sym in {"W", "U", "B", "R", "G", "C"}:
