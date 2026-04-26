@@ -11,6 +11,7 @@ from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
+from rules_engine.events import emit_event
 
 
 class RulesEngine:
@@ -54,9 +55,13 @@ class RulesEngine:
             for cid in player.battlefield:
                 state.cards[cid].tapped = False
             state.log.append(f"{player.name} untaps.")
+        elif state.step == Step.UPKEEP:
+            emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
         elif state.step == Step.DRAW and state.turn > 1:
             draw_card(state, state.active_player)
             state.log.append(f"{player.name} draws a card.")
+        elif state.step == Step.END_STEP:
+            emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:
             self._clear_marked_damage(state)
             self._enforce_cleanup_hand_size(state, state.active_player)

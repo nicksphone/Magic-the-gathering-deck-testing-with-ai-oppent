@@ -32,6 +32,10 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - `double strike` damage in both first-strike and regular combat-damage steps
   - combat damage is now marked and removed at cleanup (instead of permanently reducing toughness)
   - blocker legality now enforces `flying`/`reach` and `menace` constraints
+- Expanded trigger timing windows:
+  - beginning-of-upkeep and beginning-of-end-step triggers are now emitted at step start
+  - APNAP ordering is applied to simultaneous step triggers
+  - “your upkeep/end step” vs “each upkeep/end step” oracle distinctions are enforced
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

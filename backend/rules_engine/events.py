@@ -43,6 +43,59 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and payload.get("card_id") == cid and f"when {card.name.lower()} enters the battlefield" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
+            elif event == "begin_step":
+                step = str(payload.get("step", "")).lower()
+                active_player = int(payload.get("active_player", 0) or 0)
+                if step == "upkeep":
+                    if "at the beginning of each upkeep" in oracle or "at the beginning of upkeep" in oracle:
+                        out.append(
+                            _trigger_from_oracle(
+                                state,
+                                cid,
+                                card.controller,
+                                oracle,
+                                default_label=f"{card.name} upkeep trigger",
+                                event=event,
+                                payload=payload,
+                            )
+                        )
+                    elif "at the beginning of your upkeep" in oracle and card.controller == active_player:
+                        out.append(
+                            _trigger_from_oracle(
+                                state,
+                                cid,
+                                card.controller,
+                                oracle,
+                                default_label=f"{card.name} upkeep trigger",
+                                event=event,
+                                payload=payload,
+                            )
+                        )
+                elif step == "end_step":
+                    if "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
+                        out.append(
+                            _trigger_from_oracle(
+                                state,
+                                cid,
+                                card.controller,
+                                oracle,
+                                default_label=f"{card.name} end-step trigger",
+                                event=event,
+                                payload=payload,
+                            )
+                        )
+                    elif "at the beginning of your end step" in oracle and card.controller == active_player:
+                        out.append(
+                            _trigger_from_oracle(
+                                state,
+                                cid,
+                                card.controller,
+                                oracle,
+                                default_label=f"{card.name} end-step trigger",
+                                event=event,
+                                payload=payload,
+                            )
+                        )
     return out
 
 
