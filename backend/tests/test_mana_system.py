@@ -144,3 +144,66 @@ def test_oracle_text_dual_land_without_basic_subtypes_is_supported() -> None:
     card.tapped = False
 
     assert can_pay_with_pool_and_lands(state, 1, "{W}") is True
+
+
+def test_mana_creature_can_help_pay_cost_when_not_summoning_sick() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+
+    # One Forest land.
+    land_id = p1.library.pop()
+    p1.battlefield.append(land_id)
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Forest"
+    land.type_line = "Basic Land — Forest"
+    land.tapped = False
+
+    # One Llanowar Elves mana creature that can tap for G.
+    elf_id = p1.library.pop()
+    p1.battlefield.append(elf_id)
+    elf = state.cards[elf_id]
+    elf.zone = Zone.BATTLEFIELD
+    elf.types = ["Creature"]
+    elf.name = "Llanowar Elves"
+    elf.oracle_text = "{T}: Add {G}."
+    elf.tapped = False
+    elf.summoning_sick = False
+
+    assert can_pay_with_pool_and_lands(state, 1, "{1}{G}") is True
+    assert auto_pay_cost(state, 1, "{1}{G}") is True
+    assert land.tapped is True
+    assert elf.tapped is True
+
+
+def test_summoning_sick_mana_creature_cannot_pay_tap_cost() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+
+    # One Forest land.
+    land_id = p1.library.pop()
+    p1.battlefield.append(land_id)
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Forest"
+    land.type_line = "Basic Land — Forest"
+    land.tapped = False
+
+    # Llanowar Elves exists but is summoning sick, so can't tap for mana yet.
+    elf_id = p1.library.pop()
+    p1.battlefield.append(elf_id)
+    elf = state.cards[elf_id]
+    elf.zone = Zone.BATTLEFIELD
+    elf.types = ["Creature"]
+    elf.name = "Llanowar Elves"
+    elf.oracle_text = "{T}: Add {G}."
+    elf.tapped = False
+    elf.summoning_sick = True
+
+    assert can_pay_with_pool_and_lands(state, 1, "{1}{G}") is False
