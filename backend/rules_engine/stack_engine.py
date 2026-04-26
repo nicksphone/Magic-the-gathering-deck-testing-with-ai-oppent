@@ -29,7 +29,9 @@ def resolve_top_of_stack(state: MatchState) -> None:
     if not state.stack:
         return
     item = state.stack.pop()
-    resolve_effect(state, item.controller, item.effect_key, item.payload)
+    payload = dict(item.payload or {})
+    payload["__source_card_id"] = item.source_card_id
+    resolve_effect(state, item.controller, item.effect_key, payload)
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK:
         owner = state.players[card.controller]

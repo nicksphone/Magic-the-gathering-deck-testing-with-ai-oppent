@@ -11,6 +11,7 @@ from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
+from rules_engine.targeting import validate_protection_targets
 from rules_engine.events import emit_event
 
 
@@ -216,6 +217,11 @@ class RulesEngine:
                 ok, error = validate_cast_choice(hints, action_targets)
                 if not ok:
                     state.log.append(f"Invalid targets for {card.name}: {error}")
+                    apply_state_based_actions(state)
+                    return
+                ok_prot, err_prot = validate_protection_targets(state, card, action_targets)
+                if not ok_prot:
+                    state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
                 paid = auto_pay_cost(state, player_id, chosen.mana_cost, is_land=("Land" in card.types), card_name=card.name)

@@ -45,6 +45,10 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - Added additional combat keyword correctness:
   - `vigilance` attackers no longer tap when declared
   - `defender` creatures cannot be declared as attackers
+- Added legacy mechanics coverage:
+  - `landwalk` unblockability checks against defending player land types (`islandwalk`, `swampwalk`, `mountainwalk`, `forestwalk`, `plainswalk`)
+  - `protection from <color>` now affects block legality, target legality, and damage prevention from matching-color sources
+  - “can’t be blocked except by two or more creatures” oracle wording is enforced as menace-equivalent blocking constraint
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows

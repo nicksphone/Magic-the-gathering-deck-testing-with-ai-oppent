@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from rules_engine.colors import card_color_names
+
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
     action_targets = action_targets or {}
@@ -60,4 +62,25 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         if action_targets.get("target_player") is None and not action_targets.get("target_card_id"):
             return False, "A player or permanent target is required."
 
+    return True, ""
+
+
+def validate_protection_targets(state, source_card, action_targets: dict[str, Any]) -> tuple[bool, str]:
+    source_colors = card_color_names(source_card)
+    if not source_colors:
+        return True, ""
+    target_ids: list[str] = []
+    target_card_id = action_targets.get("target_card_id")
+    if target_card_id:
+        target_ids.append(target_card_id)
+    target_card_ids = action_targets.get("target_card_ids") or []
+    target_ids.extend([cid for cid in target_card_ids if cid not in target_ids])
+    for cid in target_ids:
+        target = state.cards.get(cid)
+        if not target:
+            continue
+        kws = [str(k).lower() for k in (getattr(target, "keywords", []) or [])]
+        for color in source_colors:
+            if f"protection from {color}" in kws:
+                return False, f"Target {target.name} has protection from {color}."
     return True, ""

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
 from rules_engine.mana import parse_mana_cost
@@ -17,8 +18,17 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")
     amount = int(payload.get("amount", 0))
+    source_card_id = payload.get("__source_card_id")
+    source_colors: set[str] = set()
+    if source_card_id in state.cards:
+        source_colors = card_color_names(state.cards[source_card_id])
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
+        kws = [str(k).lower() for k in (getattr(card, "keywords", []) or [])]
+        for color in source_colors:
+            if f"protection from {color}" in kws:
+                state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
+                return
         if card.toughness is not None and amount > 0:
             post, prevented = consume_card_prevention_shield(card, amount)
             if prevented > 0:

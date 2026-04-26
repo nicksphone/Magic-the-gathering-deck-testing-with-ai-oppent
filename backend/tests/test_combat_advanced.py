@@ -270,3 +270,74 @@ def test_defender_creature_cannot_attack() -> None:
     atk = _setup_creature(state, 1, "Wall", 0, 4, ["defender"])
     combat.declare_attackers(state, [atk], {atk: "player:2"})
     assert atk not in state.attackers
+
+
+def test_islandwalk_attacker_is_unblockable_if_defender_controls_island() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Merfolk", 2, 2, ["islandwalk"])
+    blk = _setup_creature(state, 2, "Bear", 2, 2, [])
+    land = _setup_creature(state, 2, "Island", 0, 0, [])
+    state.cards[land].types = ["Land"]
+    state.cards[land].type_line = "Basic Land — Island"
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks == {}
+
+
+def test_islandwalk_attacker_can_be_blocked_without_island() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Merfolk", 2, 2, ["islandwalk"])
+    blk = _setup_creature(state, 2, "Bear", 2, 2, [])
+    land = _setup_creature(state, 2, "Forest", 0, 0, [])
+    state.cards[land].types = ["Land"]
+    state.cards[land].type_line = "Basic Land — Forest"
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks.get(atk) == [blk]
+
+
+def test_protection_from_color_prevents_blocking_by_that_color() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Paladin", 2, 2, ["protection from red"])
+    blk = _setup_creature(state, 2, "Red Bear", 2, 2, [])
+    state.cards[blk].mana_cost = "{1}{R}"
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks == {}
+
+
+def test_cant_be_blocked_except_by_two_or_more_oracle_text() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Sneak", 3, 3, [])
+    state.cards[atk].oracle_text = "This creature can't be blocked except by two or more creatures."
+    blk1 = _setup_creature(state, 2, "B1", 2, 2, [])
+    blk2 = _setup_creature(state, 2, "B2", 2, 2, [])
+    state.attackers = [atk]
+    combat.declare_blockers(state, {atk: [blk1]})
+    assert state.blocks == {}
+    combat.declare_blockers(state, {atk: [blk1, blk2]})
+    assert state.blocks.get(atk) == [blk1, blk2]

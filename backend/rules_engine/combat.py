@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.colors import card_color_names
 from rules_engine.continuous import effective_power, effective_toughness
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
@@ -66,7 +67,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
             if "Creature" not in block_card.types:
                 continue
             atk_card = state.cards[attacker]
-            if not _can_block_attacker(atk_card, block_card):
+            if not _can_block_attacker(state, atk_card, block_card):
                 continue
             picked.append(blocker)
             used_blockers.add(blocker)
@@ -75,7 +76,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
     # Menace: must be blocked by two or more creatures.
     for attacker in list(legal.keys()):
         atk_card = state.cards.get(attacker)
-        if atk_card and _has_keyword(atk_card, "menace") and len(legal[attacker]) < 2:
+        if atk_card and _requires_two_or_more_blockers(atk_card) and len(legal[attacker]) < 2:
             for blocker in legal[attacker]:
                 used_blockers.discard(blocker)
             legal.pop(attacker, None)
@@ -125,6 +126,8 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             blocker = state.cards[blocker_id]
             if blocker.toughness is None:
                 continue
+            if _damage_prevented_by_protection(atk, blocker):
+                continue
             lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
             dealt = min(remaining, lethal)
             _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch)
@@ -147,6 +150,8 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             if not first_strike_only and _has_keyword(blk, "first strike") and not _has_keyword(blk, "double strike"):
                 continue
             blk_power = effective_power(state, blocker_id)
+            if _damage_prevented_by_protection(blk, atk):
+                continue
             atk_damage_taken += blk_power
             if blk_power > 0 and _has_keyword(blk, "deathtouch"):
                 got_deathtouch_from_blocker = True
@@ -178,11 +183,51 @@ def _has_keyword(card, keyword: str) -> bool:
     return keyword.lower() in [k.lower() for k in card.keywords]
 
 
-def _can_block_attacker(attacker, blocker) -> bool:
+def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
     # Flying can only be blocked by flying or reach.
     if _has_keyword(attacker, "flying"):
-        return _has_keyword(blocker, "flying") or _has_keyword(blocker, "reach")
+        if not (_has_keyword(blocker, "flying") or _has_keyword(blocker, "reach")):
+            return False
+    # Landwalk: unblockable if defending player controls relevant land type.
+    if _attacker_has_active_landwalk_with_state(state, attacker, blocker.controller):
+        return False
+    # Protection from color: creatures of that color cannot block.
+    for color in card_color_names(blocker):
+        if _has_keyword(attacker, f"protection from {color}"):
+            return False
     return True
+
+
+def _damage_prevented_by_protection(source, target) -> bool:
+    target_kws = [str(k).lower() for k in (getattr(target, "keywords", []) or [])]
+    for color in card_color_names(source):
+        if f"protection from {color}" in target_kws:
+            return True
+    return False
+
+
+def _requires_two_or_more_blockers(attacker) -> bool:
+    if _has_keyword(attacker, "menace"):
+        return True
+    text = (getattr(attacker, "oracle_text", "") or "").lower()
+    return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text
+
+
+def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defending_player_id: int) -> bool:
+    walks = ["islandwalk", "swampwalk", "mountainwalk", "forestwalk", "plainswalk"]
+    active_walks = [w for w in walks if _has_keyword(attacker, w)]
+    if not active_walks:
+        return False
+    defender_bf = state.players[defending_player_id].battlefield
+    for cid in defender_bf:
+        card = state.cards[cid]
+        tl = (card.type_line or "").lower()
+        nm = (card.name or "").lower()
+        for walk in active_walks:
+            subtype = walk.replace("walk", "")
+            if subtype in tl or subtype in nm:
+                return True
+    return False
 
 
 def _valid_defenders(state: MatchState, defending_player: int) -> set[str]:
