@@ -479,3 +479,84 @@ def test_ai_passes_in_declare_blockers_when_no_assignment_exists() -> None:
 
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "pass_priority"
+
+
+def test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    move = {"type": "attack", "options": ["a_small", "a_big"]}
+
+    class FakeState:
+        players = {
+            1: type("P", (), {"life": 18, "hand": [], "battlefield": ["a_small", "a_big"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["b1", "b2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "a_small": type("C", (), {"types": ["Creature"], "name": "1/1", "power": 1, "toughness": 1, "tapped": False})(),
+            "a_big": type("C", (), {"types": ["Creature"], "name": "4/4", "power": 4, "toughness": 4, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
+            "b2": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
+        }
+        stack = []
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "attack"
+    assert "a_small" not in out.get("attackers", [])
+
+
+def test_ai_blocks_with_stronger_creature_to_prevent_damage() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    move = {
+        "type": "block",
+        "attackers": [{"id": "atk-2-2", "name": "2/2"}],
+        "blockers": [{"id": "blk-3-3", "name": "3/3"}],
+    }
+
+    class FakeState:
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["blk-3-3"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-2-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-2-2": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": True})(),
+            "blk-3-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
+        }
+        stack = []
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "block"
+    assert out.get("blocks") == {"atk-2-2": "blk-3-3"}
+
+
+def test_ai_prefers_block_over_pass_when_good_block_exists() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    moves = [
+        {"type": "pass_priority"},
+        {
+            "type": "block",
+            "attackers": [{"id": "atk-2-2", "name": "2/2"}],
+            "blockers": [{"id": "blk-3-3", "name": "3/3"}],
+        },
+    ]
+
+    class FakeState:
+        pregame_pending = False
+        step = Step.DECLARE_BLOCKERS
+        active_player = 2
+        priority_player = 1
+        turn = 5
+        winner = None
+        blocks = {}
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["blk-3-3"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-2-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-2-2": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": True, "controller": 2})(),
+            "blk-3-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False, "controller": 1})(),
+        }
+        stack = []
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "block"
+    assert decision.action.get("blocks") == {"atk-2-2": "blk-3-3"}

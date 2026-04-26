@@ -19,6 +19,9 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 - AI land-drop reliability and color-source preference
 - AI step-enum normalization fixed (`Step.PRECOMBAT_MAIN` etc.), preventing missed forced land-drop windows in live games
 - Nonland mana-permanent payment support added (e.g., `Llanowar Elves`, mana rocks), including summoning-sickness tap restrictions for creature `{T}` mana abilities
+- Combat decision heuristics tightened:
+  - attack action now selects an attacker subset (avoids many low-value/suicidal 1/1 attacks into larger blockers)
+  - blocking logic prioritizes damage prevention and better trade selection in defender role
 - Land can no longer be cast as spell regression fixed
 - Memory Deluge / X-target validation loop fixes
 - Tokens AI now casts key enchantments more consistently

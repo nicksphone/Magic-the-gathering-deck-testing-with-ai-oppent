@@ -45,6 +45,8 @@ class AIAgent:
         move = self._materialize_action(state, move, player_id)
         if move.get("type") == "block" and not move.get("blocks"):
             return AIDecision(action={"type": "pass_priority"}, reasoning="No profitable/legal block assignment; pass")
+        if move.get("type") == "attack" and not (move.get("attackers") or []):
+            return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
 
@@ -447,8 +449,9 @@ class AIAgent:
         mtype = move.get("type")
         if mtype == "attack":
             out = dict(move)
-            if not out.get("attackers"):
-                out["attackers"] = list(move.get("options") or [])
+            candidates = list(move.get("options") or out.get("attackers") or [])
+            if candidates:
+                out["attackers"] = self._choose_attackers(state, candidates, player_id)
             return out
         if mtype == "block":
             out = dict(move)
@@ -529,6 +532,25 @@ class AIAgent:
         if not available:
             return {}
         assignments: dict[str, str | list[str]] = {}
+        player_id = getattr(state, "priority_player", None)
+        if player_id not in getattr(state, "players", {}):
+            player_id = None
+            for bid in available:
+                blk = state.cards.get(bid)
+                ctrl = getattr(blk, "controller", None)
+                if ctrl in getattr(state, "players", {}):
+                    player_id = ctrl
+                    break
+            if player_id is None:
+                player_id = 1
+        incoming_total = sum(
+            (state.cards[a["id"]].power or 0)
+            for a in attackers
+            if a.get("id") in state.cards
+        )
+        life = state.players[player_id].life if player_id in state.players else 20
+        lethal_pressure = incoming_total >= life
+        prevented = 0
         sorted_attackers = sorted(
             [a for a in attackers if a.get("id") in state.cards],
             key=lambda a: (state.cards[a["id"]].power or 0),
@@ -550,20 +572,69 @@ class AIAgent:
                 blk_pow = blk.power or 0
                 blk_tgh = blk.toughness or 0
                 score = 0.0
+                # Primary value: prevent face damage.
+                score += (atk_pow or 0) * 1.15
                 if blk_pow >= atk_tgh:
                     score += 2.2
                 if blk_tgh > atk_pow:
                     score += 1.0
+                if blk_tgh <= atk_pow and blk_pow < atk_tgh:
+                    # Pure chump trades are less desirable unless needed.
+                    score -= 1.4
                 score += min(atk_pow, 5) * 0.25
                 if score > best_score:
                     best_score = score
                     best_bid = bid
-            if best_bid is not None and best_score > 0.7:
+            threshold = -0.8 if lethal_pressure else 0.45
+            if best_bid is not None and best_score > threshold:
                 assignments[aid] = best_bid
+                prevented += max(0, atk_pow)
                 available.remove(best_bid)
                 if not available:
                     break
+                # If we have prevented enough to avoid lethal and remaining trades are poor, stop.
+                if lethal_pressure and incoming_total - prevented < life:
+                    lethal_pressure = False
         return assignments
+
+    def _choose_attackers(self, state: MatchState, candidates: list[str], player_id: int) -> list[str]:
+        opp_id = 1 if player_id == 2 else 2
+        opp_blockers = [
+            cid
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        ]
+        if not opp_blockers:
+            return list(candidates)
+
+        opp_life = state.players[opp_id].life
+        chosen: list[str] = []
+        for cid in candidates:
+            card = state.cards.get(cid)
+            if not card:
+                continue
+            atk_pow = card.power or 0
+            atk_tgh = card.toughness or 0
+            if atk_pow <= 0:
+                continue
+
+            dies_to_some = any((state.cards[b].power or 0) >= atk_tgh for b in opp_blockers)
+            kills_some = any((state.cards[b].toughness or 0) <= atk_pow for b in opp_blockers)
+            # Avoid obvious bad attacks with small bodies into larger blockers.
+            if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1:
+                continue
+            # General anti-suicide rule unless aggression/lethal pressure justifies it.
+            if dies_to_some and not kills_some and self.archetype not in {"Aggro", "Burn", "Tempo"} and opp_life > atk_pow + 2:
+                continue
+
+            chosen.append(cid)
+
+        # If nothing qualifies but we have lethal on board, send all.
+        if not chosen:
+            total_power = sum((state.cards[c].power or 0) for c in candidates if c in state.cards)
+            if total_power >= opp_life:
+                return list(candidates)
+        return chosen
 
     def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())
