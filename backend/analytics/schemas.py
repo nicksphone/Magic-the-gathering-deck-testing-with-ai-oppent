@@ -8,7 +8,7 @@ class BatchSimulationRequest(BaseModel):
     deck_b: list[dict]
     matches: int = Field(default=100, ge=1, le=500)
     difficulty: str = "master"
-    max_ticks: int = Field(default=3000, ge=200, le=20000)
+    max_ticks: int = Field(default=6000, ge=500, le=50000)
 
 
 class AIDiagnosticsRequest(BaseModel):
@@ -17,4 +17,4 @@ class AIDiagnosticsRequest(BaseModel):
     max_decks: int = Field(default=10, ge=2, le=20)
     matches_per_pair: int = Field(default=5, ge=1, le=100)
     difficulty: str = "master"
-    max_ticks: int = Field(default=3000, ge=200, le=20000)
+    max_ticks: int = Field(default=6000, ge=500, le=50000)

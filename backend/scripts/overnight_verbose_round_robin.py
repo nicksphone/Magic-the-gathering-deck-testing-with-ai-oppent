@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Verbose overnight MTG AI diagnostics round-robin")
     p.add_argument("--matches-per-pair", type=int, default=1000)
     p.add_argument("--difficulty", type=str, default="master")
-    p.add_argument("--max-ticks", type=int, default=3000)
+    p.add_argument("--max-ticks", type=int, default=6000)
     p.add_argument("--sources", type=str, default="builtin", help="comma list: builtin,user")
     p.add_argument("--output-dir", type=str, default="diagnostics")
     p.add_argument("--write-full-log-for-all-games", action="store_true")

@@ -263,6 +263,8 @@ PYTHONPATH=. .venv/bin/python scripts/debug_head_to_head.py \
 cd /home/nick/mtg-deck-testing-lab/backend
 PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
 ```
+Note:
+- Deck-out is the natural end condition for long control mirrors; diagnostics/simulation defaults now use a higher `max_ticks` so matches can resolve by draw-from-empty-library loss instead of early cutoffs.
 
 ## Priority Roadmap (Next)
 

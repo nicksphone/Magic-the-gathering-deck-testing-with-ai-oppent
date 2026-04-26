@@ -24,7 +24,7 @@ class AnalyticsService:
         deck_b: list[dict],
         matches: int = 100,
         difficulty: str = "master",
-        max_ticks: int = 500,
+        max_ticks: int = 6000,
     ) -> dict:
         stats = Counter()
         turn_counts = []
@@ -107,7 +107,7 @@ class AnalyticsService:
         deck_pool: list[dict],
         matches_per_pair: int = 5,
         difficulty: str = "master",
-        max_ticks: int = 3000,
+        max_ticks: int = 6000,
     ) -> dict:
         if len(deck_pool) < 2:
             return {

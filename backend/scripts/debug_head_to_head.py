@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--deck-b", required=True, help="Saved deck name")
     p.add_argument("--matches", type=int, default=10)
     p.add_argument("--difficulty", default="master")
-    p.add_argument("--max-ticks", type=int, default=3000)
+    p.add_argument("--max-ticks", type=int, default=6000)
     p.add_argument("--out-dir", default="diagnostics")
     return p.parse_args()
 
