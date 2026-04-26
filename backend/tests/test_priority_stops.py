@@ -49,3 +49,30 @@ def test_set_priority_stops_updates_match_state() -> None:
     finally:
         ACTIVE_MATCHES.pop(match.state.id, None)
     assert out["priority_stops"]["1"] == ["upkeep", "end_step"]
+
+
+def test_human_priority_pause_always_stops_for_land_drop_window() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    state.priority_stops[1] = set()
+
+    match = MatchController(
+        state=state,
+        rules=RulesEngine(),
+        controllers={1: "human", 2: "human"},
+        ai={1: AIAgent(), 2: AIAgent()},
+        mode="human_vs_human",
+        deck_ids=(None, None),
+        mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []},
+        game_number=1,
+        current_game_recorded=False,
+        match_complete=False,
+        best_of=3,
+    )
+    assert _human_priority_pause(match, 1) is True

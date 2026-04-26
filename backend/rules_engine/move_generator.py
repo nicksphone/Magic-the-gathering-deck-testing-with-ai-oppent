@@ -56,10 +56,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand):
         card = state.cards[cid]
-        if "Land" in card.types and player.lands_played_this_turn < 1 and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        if _is_land_card(card) and player.lands_played_this_turn < 1 and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
             moves.append({"type": "play_land", "card_id": cid})
         elif (
             card.zone == Zone.HAND
+            and not _is_land_card(card)
             and _can_cast_spell(state, card, player_id)
         ):
             options = collect_cost_options(state, player_id, card)
@@ -138,3 +139,13 @@ def _has_any_target_options(hints: dict) -> bool:
         bool(hints.get(key))
         for key in ["player_targets", "creature_targets", "planeswalker_targets", "stack_targets"]
     )
+
+
+def _is_land_card(card) -> bool:
+    if "Land" in getattr(card, "types", []):
+        return True
+    type_line = (getattr(card, "type_line", "") or "").lower()
+    if "land" in type_line:
+        return True
+    name = (getattr(card, "name", "") or "").strip().lower()
+    return name in {"island", "swamp", "mountain", "forest", "plains"}

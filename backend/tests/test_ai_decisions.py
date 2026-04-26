@@ -378,3 +378,104 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "play_land"
     assert decision.action["card_id"] == "island-1"
+
+
+def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Tokens")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Adeline, Resplendent Cathar", "card_id": "adeline-1"},
+        {"type": "cast_spell", "card_name": "Wedding Announcement", "card_id": "wedding-1"},
+    ]
+
+    class FakeState:
+        turn = 4
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["adeline-1", "wedding-1"], "battlefield": ["tok-a", "tok-b"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
+        }
+        cards = {
+            "adeline-1": type("C", (), {"types": ["Creature"], "name": "Adeline, Resplendent Cathar", "oracle_text": "", "mana_cost": "{1}{W}{W}"})(),
+            "wedding-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Enchantment"],
+                    "name": "Wedding Announcement",
+                    "oracle_text": "At the beginning of your end step, create a 1/1 white Human creature token.",
+                    "mana_cost": "{2}{W}",
+                },
+            )(),
+            "tok-a": type("C", (), {"types": ["Creature"], "name": "Human Token", "power": 1, "toughness": 1, "tapped": False})(),
+            "tok-b": type("C", (), {"types": ["Creature"], "name": "Human Token", "power": 1, "toughness": 1, "tapped": False})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "wedding-1"
+
+
+def test_ai_materializes_block_assignments() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    move = {
+        "type": "block",
+        "attackers": [
+            {"id": "atk-1", "name": "Attacker"},
+            {"id": "atk-2", "name": "Small Attacker"},
+        ],
+        "blockers": [
+            {"id": "blk-1", "name": "Big Blocker"},
+            {"id": "blk-2", "name": "Small Blocker"},
+        ],
+    }
+
+    class FakeState:
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["blk-1", "blk-2"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-1", "atk-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-1": type("C", (), {"types": ["Creature"], "name": "Attacker", "power": 4, "toughness": 4, "tapped": False})(),
+            "atk-2": type("C", (), {"types": ["Creature"], "name": "Small Attacker", "power": 2, "toughness": 2, "tapped": False})(),
+            "blk-1": type("C", (), {"types": ["Creature"], "name": "Big Blocker", "power": 4, "toughness": 4, "tapped": False})(),
+            "blk-2": type("C", (), {"types": ["Creature"], "name": "Small Blocker", "power": 2, "toughness": 2, "tapped": False})(),
+        }
+        stack = []
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "block"
+    assert out.get("blocks")
+    assert "atk-1" in out["blocks"]
+
+
+def test_ai_passes_in_declare_blockers_when_no_assignment_exists() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "block", "attackers": [{"id": "atk-1", "name": "Atk"}], "blockers": []},
+    ]
+
+    class FakeState:
+        pregame_pending = False
+        step = "Step.DECLARE_BLOCKERS"
+        active_player = 2
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-1": type("C", (), {"types": ["Creature"], "name": "Attacker", "power": 4, "toughness": 4, "tapped": True})(),
+        }
+        stack = []
+        blocks = {}
+        turn = 3
+        winner = None
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"

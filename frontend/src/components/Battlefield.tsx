@@ -77,6 +77,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
+  const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
@@ -316,25 +317,37 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         <div className="hand-row">
           {p1.hand.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
+            const landMove = playLandMoves.find((m) => m.card_id === card.id);
             if (!move) {
               return (
-                <button
+                <div
                   key={card.id}
-                  disabled
+                  className="cast-card-box"
                   onMouseEnter={() => setHoverPreview(previewFromCard(card))}
                   onMouseLeave={() => setHoverPreview(null)}
                 >
-                  {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
-                </button>
+                  {landMove ? (
+                    <button onClick={() => onCardAction(1, { type: "play_land", card_id: card.id })}>
+                      Play Land {card.name}
+                    </button>
+                  ) : (
+                    <button disabled>
+                      {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
+                    </button>
+                  )}
+                </div>
               );
             }
             const hints = move.target_hints;
             return (
-              <div key={card.id} className="cast-card-box">
+              <div
+                key={card.id}
+                className="cast-card-box"
+                onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+                onMouseLeave={() => setHoverPreview(null)}
+              >
                 <button
                   onClick={() => castAction(card.id)}
-                  onMouseEnter={() => setHoverPreview(previewFromCard(card))}
-                  onMouseLeave={() => setHoverPreview(null)}
                 >
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>

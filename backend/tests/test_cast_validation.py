@@ -47,3 +47,26 @@ def test_invalid_x_target_choice_does_not_spend_mana() -> None:
 
     assert state.cards[land_id].tapped is False
     assert spell_id in p1.hand
+
+
+def test_land_named_card_cannot_be_cast_as_spell() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+
+    cid = p1.hand[0]
+    state.cards[cid].name = "Forest"
+    state.cards[cid].types = ["Sorcery"]  # simulate incorrect type hydration
+    state.cards[cid].type_line = ""
+
+    engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid})
+
+    assert cid in p1.hand
+    assert state.stack == []
+    assert any("cannot cast land card Forest as a spell" in line for line in state.log)

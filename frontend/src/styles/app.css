@@ -304,6 +304,10 @@ h3 {
     grid-template-columns: 1fr;
   }
   .card-hover-preview {
-    display: none;
+    right: 10px;
+    top: auto;
+    bottom: 10px;
+    width: min(280px, calc(100vw - 20px));
+    max-height: 42vh;
   }
 }

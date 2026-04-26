@@ -280,8 +280,12 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
         pid = _default_player_for_state(match)
         if match.controllers.get(pid) == "ai":
             legal = match.rules.legal_moves(match.state, pid)
-            decision = match.ai[pid].choose_action(match.state, legal, pid)
-            match.rules.take_action(match.state, pid, decision.action)
+            forced_land = _force_ai_land_action(match, pid, legal)
+            if forced_land is not None:
+                match.rules.take_action(match.state, pid, forced_land)
+            else:
+                decision = match.ai[pid].choose_action(match.state, legal, pid)
+                match.rules.take_action(match.state, pid, decision.action)
         else:
             if match.state.pregame_pending:
                 break
@@ -537,9 +541,31 @@ def _human_priority_pause(match: MatchController, player_id: int) -> bool:
     state = match.state
     legal = match.rules.legal_moves(state, player_id)
     has_non_pass = any(m.get("type") != "pass_priority" for m in legal)
+    has_land_play = any(m.get("type") == "play_land" for m in legal)
     step_stop = state.step in state.priority_stops.get(player_id, set())
+    # Always pause on a legal land drop for human players so autoplay cannot skip
+    # the primary main-phase development window.
+    if has_land_play:
+        return True
     if state.stack and has_non_pass:
         return True
     if step_stop and has_non_pass:
         return True
     return False
+
+
+def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: list[dict]) -> dict | None:
+    state = match.state
+    if state.pregame_pending or state.stack:
+        return None
+    if state.active_player != player_id:
+        return None
+    if state.step not in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        return None
+    if state.players[player_id].lands_played_this_turn >= 1:
+        return None
+    land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
+    if not land_moves:
+        return None
+    # Let AI keep color-aware land selection by choosing among only play-land actions.
+    return match.ai[player_id].choose_action(state, land_moves, player_id).action

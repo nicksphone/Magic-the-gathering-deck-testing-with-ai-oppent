@@ -27,6 +27,9 @@ class AIAgent:
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No legal actions")
+        if str(getattr(state, "step", "")) == "Step.DECLARE_BLOCKERS" and getattr(state, "active_player", player_id) != player_id:
+            if bool(getattr(state, "blocks", {})):
+                return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
 
         forced_land = self._choose_forced_land_play(state, legal_moves, player_id)
         if forced_land is not None:
@@ -40,6 +43,8 @@ class AIAgent:
         else:
             move = sorted_moves[0]
         move = self._materialize_action(state, move, player_id)
+        if move.get("type") == "block" and not move.get("blocks"):
+            return AIDecision(action={"type": "pass_priority"}, reasoning="No profitable/legal block assignment; pass")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
 
@@ -135,6 +140,8 @@ class AIAgent:
                     base -= 3.0
             elif mtype == "attack":
                 base += self._attack_bias(state, move, player_id)
+            elif mtype == "block":
+                base += self._block_bias(state, move, player_id)
             elif mtype == "pass_priority":
                 base += self._pass_bias(state, player_id)
                 if own_main_sorcery_window and castable_creature_moves:
@@ -225,6 +232,43 @@ class AIAgent:
             return 1.8
         return 0.3
 
+    def _block_bias(self, state: MatchState, move: dict, player_id: int) -> float:
+        blocker_ids = [x["id"] for x in (move.get("blockers") or [])]
+        attacker_ids = [x["id"] for x in (move.get("attackers") or [])]
+        if not blocker_ids or not attacker_ids:
+            return -0.8
+        threatened = sum((state.cards.get(cid).power or 0) for cid in attacker_ids if cid in state.cards)
+        life = state.players[player_id].life
+        lethal_pressure = 4.0 if threatened >= life else 0.0
+        profitable = 0.0
+        for aid in attacker_ids:
+            atk = state.cards.get(aid)
+            if not atk:
+                continue
+            atk_pow = atk.power or 0
+            atk_tgh = atk.toughness or 0
+            best = 0.0
+            for bid in blocker_ids:
+                blk = state.cards.get(bid)
+                if not blk:
+                    continue
+                blk_pow = blk.power or 0
+                blk_tgh = blk.toughness or 0
+                score = 0.0
+                if blk_pow >= atk_tgh:
+                    score += 1.6
+                if blk_tgh > atk_pow:
+                    score += 0.8
+                if atk_pow > 0:
+                    score += min(atk_pow, 4) * 0.2
+                if score > best:
+                    best = score
+            profitable += best
+        arche_bonus = 0.8 if self.archetype in {"Control", "Midrange", "Ramp"} else 0.3
+        if self.archetype in {"Aggro", "Burn", "Tempo"} and life > 8:
+            arche_bonus -= 0.4
+        return profitable + lethal_pressure + arche_bonus
+
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -312,9 +356,13 @@ class AIAgent:
         if arche in {"Tokens"}:
             bonus = 0.0
             if "token" in tags:
-                bonus += 4.0
+                bonus += 5.5
             if "anthem" in tags:
-                bonus += 2.0
+                bonus += 5.0 if my_creatures >= 2 else 2.2
+            if "Enchantment" in card.types:
+                bonus += 3.2
+                if state.turn <= 4:
+                    bonus += 1.2
             return bonus
 
         if arche in {"Reanimator"}:
@@ -381,6 +429,8 @@ class AIAgent:
             tags.add("token")
         if "creatures you control get" in text or "+1/+1" in text:
             tags.add("anthem")
+        if "enchantment" in text:
+            tags.add("enchantment")
         if "return target creature card from your graveyard" in text or "reanimate" in text:
             tags.add("reanimate")
         if "discard" in text:
@@ -395,6 +445,18 @@ class AIAgent:
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
         mtype = move.get("type")
+        if mtype == "attack":
+            out = dict(move)
+            if not out.get("attackers"):
+                out["attackers"] = list(move.get("options") or [])
+            return out
+        if mtype == "block":
+            out = dict(move)
+            attackers = list(move.get("attackers") or [])
+            blockers = list(move.get("blockers") or [])
+            if attackers and blockers and not out.get("blocks"):
+                out["blocks"] = self._choose_blocks(state, attackers, blockers)
+            return out
         if mtype not in {"cast_spell", "activate_loyalty"}:
             return move
         out = dict(move)
@@ -461,6 +523,47 @@ class AIAgent:
 
         out["targets"] = targets
         return out
+
+    def _choose_blocks(self, state: MatchState, attackers: list[dict], blockers: list[dict]) -> dict[str, str | list[str]]:
+        available = [b["id"] for b in blockers if b.get("id") in state.cards]
+        if not available:
+            return {}
+        assignments: dict[str, str | list[str]] = {}
+        sorted_attackers = sorted(
+            [a for a in attackers if a.get("id") in state.cards],
+            key=lambda a: (state.cards[a["id"]].power or 0),
+            reverse=True,
+        )
+        for a in sorted_attackers:
+            aid = a["id"]
+            atk = state.cards.get(aid)
+            if not atk:
+                continue
+            atk_pow = atk.power or 0
+            atk_tgh = atk.toughness or 0
+            best_bid = None
+            best_score = -999.0
+            for bid in available:
+                blk = state.cards.get(bid)
+                if not blk:
+                    continue
+                blk_pow = blk.power or 0
+                blk_tgh = blk.toughness or 0
+                score = 0.0
+                if blk_pow >= atk_tgh:
+                    score += 2.2
+                if blk_tgh > atk_pow:
+                    score += 1.0
+                score += min(atk_pow, 5) * 0.25
+                if score > best_score:
+                    best_score = score
+                    best_bid = bid
+            if best_bid is not None and best_score > 0.7:
+                assignments[aid] = best_bid
+                available.remove(best_bid)
+                if not available:
+                    break
+        return assignments
 
     def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())

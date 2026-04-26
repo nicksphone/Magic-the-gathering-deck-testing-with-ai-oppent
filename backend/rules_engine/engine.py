@@ -109,7 +109,7 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "play_land":
             cid = action["card_id"]
-            if cid in player.hand and player.lands_played_this_turn < 1:
+            if cid in player.hand and player.lands_played_this_turn < 1 and _is_land_card(state.cards[cid]):
                 player.hand.remove(cid)
                 player.battlefield.append(cid)
                 player.lands_played_this_turn += 1
@@ -153,6 +153,10 @@ class RulesEngine:
             cid = action["card_id"]
             if cid in player.hand:
                 card = state.cards[cid]
+                if _is_land_card(card):
+                    state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
+                    apply_state_based_actions(state)
+                    return
                 options = collect_cost_options(state, player_id, card)
                 chosen = normalize_cost_choice(action, options)
                 if not check_cost_option_available(state, player_id, card, chosen):
@@ -332,6 +336,16 @@ def _infer_mana_from_land(name: str) -> str:
     if "forest" in n:
         return "G"
     return "C"
+
+
+def _is_land_card(card) -> bool:
+    if "Land" in getattr(card, "types", []):
+        return True
+    type_line = (getattr(card, "type_line", "") or "").lower()
+    if "land" in type_line:
+        return True
+    name = (getattr(card, "name", "") or "").strip().lower()
+    return name in {"island", "swamp", "mountain", "forest", "plains"}
 
 
 def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: set[str] | None = None) -> list[str]:

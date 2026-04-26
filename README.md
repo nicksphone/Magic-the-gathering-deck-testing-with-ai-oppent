@@ -380,7 +380,30 @@ curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
   - AI land sequencing hardening: on own main phase, AI now prioritizes making a land drop when available before passing/stalling
   - color-aware land selection added (e.g., blue-source preference for counterspell-heavy hands) to reduce incorrect early sequencing like Swamp-first into stranded blue interaction
   - regression tests added for forced land-drop behavior and blue-source preference in control setup hands
+  - backend autoplay now includes an explicit server-side land-drop guard for AI turns, ensuring available land plays are not skipped on own main phase due to policy drift
+  - hand-card hover preview UX fixed:
+    - hover events now bind to hand card containers (including non-castable cards), not disabled buttons
+    - card preview panel remains visible on narrower layouts with responsive sizing/positioning instead of being hidden
+  - hand action labeling fix: playable lands in hand now render as `Play Land ...` when legal, instead of incorrectly showing as `(not castable)`
+  - autoplay/human priority flow now always pauses when a legal `play_land` action exists, creating a guaranteed land-drop window even if custom priority-stop settings omit precombat main
 
 ## Documentation Rule
 
 - Any new feature, rule-system change, AI behavior change, or API contract change must be reflected in this README in the same push.
+
+## Recent Improvements (2026-04-26)
+
+- AI blocker decision loop fix:
+  - during `DECLARE_BLOCKERS`, AI now passes priority when no valid/profitable block assignment exists instead of repeatedly issuing empty `block` actions
+  - AI also passes after blocks are already declared in the current blockers window
+  - prevents long blocker-step stalls/timeouts in AI-vs-AI simulations
+- Combat interaction improvements:
+  - AI now materializes explicit blocker assignments from legal attacker/blocker options
+  - combat logs now show meaningful combat deaths in Tokens-focused matchups, confirming active blocking/trading behavior
+- Tokens archetype casting policy improvement:
+  - increased priority for enchantment token engines/anthem effects (for example `Wedding Announcement`, `Intangible Virtue`) so Tokens no longer over-indexes on creature-only lines
+  - validated in 20-game diagnostics where those enchantments are now cast/resolved repeatedly
+- Added regression tests:
+  - Tokens enchantment-priority decision test
+  - block-assignment materialization test
+  - declare-blockers pass fallback test for no-assignment scenarios

@@ -22,6 +22,7 @@ def test_discard_additional_cost_is_paid() -> None:
     state.cards[lid].name = "Island"
 
     spell_id = p1.hand[0]
+    state.cards[spell_id].name = "Test Additional Cost Spell"
     state.cards[spell_id].types = ["Sorcery"]
     state.cards[spell_id].mana_cost = "{U}"
     state.cards[spell_id].oracle_text = "As an additional cost to cast this spell, discard a card. Draw a card."
