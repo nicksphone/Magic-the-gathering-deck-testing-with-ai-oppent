@@ -573,6 +573,14 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
         return None
     land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
     if not land_moves:
+        # Defensive fallback: if legal-move generation misses land actions,
+        # derive them directly from hand card identities.
+        player = state.players[player_id]
+        for cid in list(player.hand):
+            card = state.cards.get(cid)
+            if card and _card_looks_like_land(card):
+                land_moves.append({"type": "play_land", "card_id": cid})
+    if not land_moves:
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
     # Hard-fallback to first legal play_land if AI returns a non-land action.
@@ -580,3 +588,16 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     if picked.get("type") == "play_land":
         return picked
     return land_moves[0]
+
+
+def _card_looks_like_land(card) -> bool:
+    if "Land" in getattr(card, "types", []):
+        return True
+    type_line = (getattr(card, "type_line", "") or "").lower()
+    if "land" in type_line:
+        return True
+    oracle = (getattr(card, "oracle_text", "") or "").lower()
+    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+        return True
+    name = (getattr(card, "name", "") or "").strip().lower()
+    return any(basic in name for basic in ["island", "swamp", "mountain", "forest", "plains"])
