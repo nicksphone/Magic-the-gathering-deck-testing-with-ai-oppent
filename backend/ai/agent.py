@@ -581,8 +581,10 @@ class AIAgent:
                 continue
             atk_pow = atk.power or 0
             atk_tgh = atk.toughness or 0
+            required_blockers = 2 if self._requires_two_or_more_blockers(atk) else 1
             best_bid = None
             best_score = -999.0
+            scored: list[tuple[float, str]] = []
             for bid in available:
                 blk = state.cards.get(bid)
                 if not blk:
@@ -600,10 +602,31 @@ class AIAgent:
                     # Pure chump trades are less desirable unless needed.
                     score -= 1.4
                 score += min(atk_pow, 5) * 0.25
+                scored.append((score, bid))
                 if score > best_score:
                     best_score = score
                     best_bid = bid
             threshold = -0.8 if lethal_pressure else 0.45
+            if required_blockers == 2:
+                scored.sort(reverse=True)
+                if len(scored) < 2:
+                    continue
+                pair = [scored[0][1], scored[1][1]]
+                pair_score = scored[0][0] + scored[1][0]
+                if pair_score <= threshold * 2:
+                    continue
+                assignments[aid] = pair
+                prevented += max(0, atk_pow)
+                for bid in pair:
+                    if bid in available:
+                        available.remove(bid)
+                if not available:
+                    break
+                # If we have prevented enough to avoid lethal and remaining trades are poor, stop.
+                if lethal_pressure and incoming_total - prevented < life:
+                    lethal_pressure = False
+                continue
+
             if best_bid is not None and best_score > threshold:
                 assignments[aid] = best_bid
                 prevented += max(0, atk_pow)
@@ -614,6 +637,13 @@ class AIAgent:
                 if lethal_pressure and incoming_total - prevented < life:
                     lethal_pressure = False
         return assignments
+
+    def _requires_two_or_more_blockers(self, attacker) -> bool:
+        keywords = {str(k).lower() for k in (getattr(attacker, "keywords", []) or [])}
+        if "menace" in keywords:
+            return True
+        text = (getattr(attacker, "oracle_text", "") or "").lower()
+        return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text
 
     def _choose_attackers(self, state: MatchState, candidates: list[str], player_id: int) -> list[str]:
         opp_id = 1 if player_id == 2 else 2

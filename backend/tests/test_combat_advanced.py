@@ -341,3 +341,43 @@ def test_cant_be_blocked_except_by_two_or_more_oracle_text() -> None:
     assert state.blocks == {}
     combat.declare_blockers(state, {atk: [blk1, blk2]})
     assert state.blocks.get(atk) == [blk1, blk2]
+
+
+def test_protection_from_creatures_prevents_creature_blocks_and_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Protector", 3, 3, ["protection from creatures"])
+    blk = _setup_creature(state, 2, "Bear", 3, 3, [])
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks == {}
+
+    state.step = Step.COMBAT_DAMAGE
+    before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[2].life == before - 3
+    assert state.cards[atk].zone == Zone.BATTLEFIELD
+    assert state.cards[blk].zone == Zone.BATTLEFIELD
+
+
+def test_protection_from_multicolored_blocks_multicolored_source_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Gold Knight", 3, 3, [])
+    state.cards[atk].mana_cost = "{R}{W}"
+    blk = _setup_creature(state, 2, "Warded", 2, 2, ["protection from multicolored"])
+    state.attackers = [atk]
+    state.blocks = {atk: [blk]}
+    combat.combat_damage(state)
+    assert state.cards[blk].zone == Zone.BATTLEFIELD

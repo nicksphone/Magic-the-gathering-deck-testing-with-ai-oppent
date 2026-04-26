@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
-from rules_engine.colors import card_color_names
-from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
+from rules_engine.continuous import effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
+from rules_engine.protection import protected_from_source
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -187,20 +187,15 @@ def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
     # Landwalk: unblockable if defending player controls relevant land type.
     if _attacker_has_active_landwalk_with_state(state, attacker, blocker.controller):
         return False
-    # Protection from color: creatures of that color cannot block.
-    for color in card_color_names(blocker):
-        if has_keyword(state, attacker.id, f"protection from {color}"):
-            return False
+    # Protection prevents blocking from protected qualities.
+    if protected_from_source(state, attacker.id, blocker):
+        return False
     return True
 
 
 def _damage_prevented_by_protection(state: MatchState, source_id: str, target_id: str) -> bool:
     source = state.cards[source_id]
-    target_kws = set(effective_keywords(state, target_id))
-    for color in card_color_names(source):
-        if f"protection from {color}" in target_kws:
-            return True
-    return False
+    return protected_from_source(state, target_id, source)
 
 
 def _requires_two_or_more_blockers(state: MatchState, attacker_id: str) -> bool:

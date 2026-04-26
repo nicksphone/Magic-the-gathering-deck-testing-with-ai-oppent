@@ -194,6 +194,7 @@ Access from another machine:
 - Actions can place spells/abilities on stack; stack resolves after both pass.
 - State-based actions execute repeatedly to enforce loss/death/legend/loyalty checks.
 - Continuous/static evaluation computes effective power/toughness and effective keywords from battlefield text each time rules checks run.
+- Protection handling now supports color and legacy-style qualifiers (`protection from creatures`, `artifacts`, `multicolored`, `monocolored`, `everything`) for both targeting and combat damage/blocking.
 - Cleanup enforces hand size by default unless explicit effect grants no max hand size.
 
 ## How AI Works
@@ -205,6 +206,7 @@ Access from another machine:
   - mandatory land development windows
   - cast legality edge cases
   - blocker-loop prevention in declare blockers
+  - menace / “two-or-more blockers” assignment support
 
 ## How to Add Cards
 
@@ -262,9 +264,9 @@ PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
 
 ## Priority Roadmap (Next)
 
-1. Improve AI blocking quality beyond basic assignment
-- better multi-block logic
-- better trade/no-trade evaluation by archetype and race state
+1. Improve AI blocking quality beyond current assignment
+- improve trade/no-trade evaluation by archetype and race state
+- increase quality of coordinated multi-attacker / multi-blocker combat decisions
 
 2. Expand enchantment and triggered interaction fidelity
 - extend static parser beyond current common templates (attachments/auras, noncreature permanent stat/text modifications, multi-condition clauses)

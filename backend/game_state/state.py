@@ -363,6 +363,30 @@ def _infer_keywords(oracle_text: str) -> list[str]:
     ]:
         if kw in text:
             out.append(kw)
-    for m in re.finditer(r"protection from (white|blue|black|red|green)", text):
-        out.append(f"protection from {m.group(1)}")
+    for clause in re.findall(r"protection from ([^.;,\n]+)", text):
+        for raw in re.split(r"\s*(?:,|and|or)\s*", clause):
+            token = raw.strip().removeprefix("from ").strip()
+            if token in {
+                "white",
+                "blue",
+                "black",
+                "red",
+                "green",
+                "artifact",
+                "artifacts",
+                "creature",
+                "creatures",
+                "enchantment",
+                "enchantments",
+                "instant",
+                "instants",
+                "sorcery",
+                "sorceries",
+                "planeswalker",
+                "planeswalkers",
+                "monocolored",
+                "multicolored",
+                "everything",
+            }:
+                out.append(f"protection from {token}")
     return out

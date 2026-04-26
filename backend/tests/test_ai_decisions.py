@@ -638,6 +638,40 @@ def test_ai_prefers_block_over_pass_when_good_block_exists() -> None:
     assert decision.action.get("blocks") == {"atk-2-2": "blk-3-3"}
 
 
+def test_ai_assigns_two_blockers_against_menace_attacker() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+    move = {
+        "type": "block",
+        "attackers": [{"id": "atk-menace", "name": "Menace"}],
+        "blockers": [
+            {"id": "blk-a", "name": "2/2"},
+            {"id": "blk-b", "name": "3/3"},
+        ],
+    }
+
+    class FakeState:
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["blk-a", "blk-b"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-menace"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-menace": type(
+                "C",
+                (),
+                {"types": ["Creature"], "name": "Menace", "power": 4, "toughness": 4, "tapped": True, "keywords": ["menace"], "oracle_text": ""},
+            )(),
+            "blk-a": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
+            "blk-b": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
+        }
+        stack = []
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "block"
+    assert isinstance(out.get("blocks", {}).get("atk-menace"), list)
+    assert len(out["blocks"]["atk-menace"]) == 2
+
+
 def test_tribal_ai_prefers_collected_company_style_spell_over_pass() -> None:
     ai = AIAgent(difficulty="strong", archetype="Tribal")
     moves = [
