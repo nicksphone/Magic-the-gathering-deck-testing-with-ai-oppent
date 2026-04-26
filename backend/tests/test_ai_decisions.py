@@ -380,6 +380,56 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
     assert decision.action["card_id"] == "island-1"
 
 
+def test_ai_forces_land_drop_even_when_legal_moves_omit_play_land() -> None:
+    ai = AIAgent(difficulty="master", archetype="Tribal")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Elvish Warmaster", "card_id": "warmaster-1"},
+    ]
+
+    class FakeState:
+        turn = 3
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["warmaster-1", "forest-1"], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
+        }
+        cards = {
+            "warmaster-1": type("C", (), {"types": ["Creature"], "name": "Elvish Warmaster", "oracle_text": "", "mana_cost": "{1}{G}"})(),
+            "forest-1": type("C", (), {"types": [], "name": "Forest", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": ""})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "play_land"
+    assert decision.action["card_id"] == "forest-1"
+
+
+def test_control_ai_mulligan_counts_land_with_missing_types_from_oracle() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        mulligan_count = {1: 0}
+        players = {
+            1: type("P", (), {"hand": ["l1", "s1", "s2", "s3", "s4", "s5", "s6"]})(),
+        }
+        cards = {
+            "l1": type("C", (), {"types": [], "name": "Island", "type_line": "", "oracle_text": "{T}: Add {U}.", "mana_cost": ""})(),
+            "s1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "type_line": "Instant", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "s2": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "type_line": "Instant", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+            "s3": type("C", (), {"types": ["Instant"], "name": "March", "type_line": "Instant", "oracle_text": "Exile target.", "mana_cost": "{X}{W}"})(),
+            "s4": type("C", (), {"types": ["Sorcery"], "name": "Supreme Verdict", "type_line": "Sorcery", "oracle_text": "Destroy all creatures.", "mana_cost": "{1}{W}{W}{U}"})(),
+            "s5": type("C", (), {"types": ["Enchantment"], "name": "Shark Typhoon", "type_line": "Enchantment", "oracle_text": "", "mana_cost": "{5}{U}"})(),
+            "s6": type("C", (), {"types": ["Instant"], "name": "Consider", "type_line": "Instant", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
+        }
+
+    decision = ai.choose_mulligan_action(FakeState(), 1)
+    assert decision.action["type"] == "mulligan"
+
+
 def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
     ai = AIAgent(difficulty="strong", archetype="Tokens")
     moves = [

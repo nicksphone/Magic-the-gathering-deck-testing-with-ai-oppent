@@ -62,16 +62,22 @@ class AIAgent:
             return None
         land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
         if not land_moves:
+            # Defensive fallback for legal-move omissions: derive land plays from hand.
+            for cid in list(getattr(player, "hand", [])):
+                card = state.cards.get(cid)
+                if card and _card_looks_like_land(card):
+                    land_moves.append({"type": "play_land", "card_id": cid})
+        if not land_moves:
             return None
         return self._best_land_move(state, land_moves, player_id)
 
     def choose_mulligan_action(self, state: MatchState, player_id: int) -> AIDecision:
         player = state.players[player_id]
         hand = [state.cards[cid] for cid in player.hand]
-        lands = sum(1 for c in hand if "Land" in c.types)
+        lands = sum(1 for c in hand if _card_looks_like_land(c))
         early_spells = 0
         for c in hand:
-            if "Land" in c.types:
+            if _card_looks_like_land(c):
                 continue
             cost = parse_mana_cost(c.mana_cost)
             cmc = cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"])
@@ -806,3 +812,16 @@ def _step_key(step) -> str:
     if s.startswith("Step."):
         s = s.split(".", 1)[1]
     return s.lower()
+
+
+def _card_looks_like_land(card) -> bool:
+    if "Land" in getattr(card, "types", []):
+        return True
+    type_line = (getattr(card, "type_line", "") or "").lower()
+    if "land" in type_line:
+        return True
+    oracle = (getattr(card, "oracle_text", "") or "").lower()
+    if ("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle:
+        return True
+    name = (getattr(card, "name", "") or "").strip().lower()
+    return any(basic in name for basic in ["island", "swamp", "mountain", "forest", "plains"])
