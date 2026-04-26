@@ -49,6 +49,14 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - `landwalk` unblockability checks against defending player land types (`islandwalk`, `swampwalk`, `mountainwalk`, `forestwalk`, `plainswalk`)
   - `protection from <color>` now affects block legality, target legality, and damage prevention from matching-color sources
   - “can’t be blocked except by two or more creatures” oracle wording is enforced as menace-equivalent blocking constraint
+  - source-color propagation now carries through multi-clause `effect_sequence` resolution so protection checks remain consistent for composite spells
+- Expanded static/continuous effect coverage for enchantments/artifacts and similar permanents:
+  - generic parsing of battlefield static text for `get +/-X +/-Y` and `have <keyword>` clauses
+  - supports `you control` and `your opponents control` scopes
+  - supports `other creatures`, `creature tokens`, `artifact creatures`, and tribal creature groups (e.g., Elves)
+  - static keyword grants now flow into combat legality and outcomes (e.g., global `reach`, `indestructible`)
+  - static keyword grants now flow into targeting/protection validation and creature mana-tap legality (`haste` from static effects)
+  - lethal SBA and combat death checks now respect static `indestructible`
 - Land recognition is now resilient to partial card metadata:
   - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
   - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows
@@ -180,6 +188,7 @@ Access from another machine:
 - Legal actions are generated from current step, priority owner, and board state.
 - Actions can place spells/abilities on stack; stack resolves after both pass.
 - State-based actions execute repeatedly to enforce loss/death/legend/loyalty checks.
+- Continuous/static evaluation computes effective power/toughness and effective keywords from battlefield text each time rules checks run.
 - Cleanup enforces hand size by default unless explicit effect grants no max hand size.
 
 ## How AI Works
@@ -244,7 +253,7 @@ PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
 - better trade/no-trade evaluation by archetype and race state
 
 2. Expand enchantment and triggered interaction fidelity
-- improve oracle interpretation for non-trivial enchantments
+- extend static parser beyond current common templates (attachments/auras, noncreature permanent stat/text modifications, multi-condition clauses)
 - improve event-hook coverage for delayed/conditional triggers
 
 3. Reduce matchup skew and tune deck-specific AI policy

@@ -35,9 +35,12 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
 
 def resolve_effect(state: MatchState, controller: int, effect_key: str, payload: dict) -> None:
     if effect_key == "effect_sequence":
+        source_card_id = payload.get("__source_card_id")
         for item in payload.get("effects", []):
             key = item.get("effect_key")
-            data = item.get("payload", {})
+            data = dict(item.get("payload", {}) or {})
+            if source_card_id and "__source_card_id" not in data:
+                data["__source_card_id"] = source_card_id
             if not key:
                 continue
             resolve_effect(state, controller, key, data)

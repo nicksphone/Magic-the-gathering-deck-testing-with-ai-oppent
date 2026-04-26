@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.continuous import effective_keywords
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
@@ -24,7 +25,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
         source_colors = card_color_names(state.cards[source_card_id])
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
-        kws = [str(k).lower() for k in (getattr(card, "keywords", []) or [])]
+        kws = effective_keywords(state, target_card_id)
         for color in source_colors:
             if f"protection from {color}" in kws:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")

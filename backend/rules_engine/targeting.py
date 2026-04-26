@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from rules_engine.colors import card_color_names
+from rules_engine.continuous import effective_keywords
 
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
@@ -79,7 +80,10 @@ def validate_protection_targets(state, source_card, action_targets: dict[str, An
         target = state.cards.get(cid)
         if not target:
             continue
-        kws = [str(k).lower() for k in (getattr(target, "keywords", []) or [])]
+        if target.zone == "battlefield" or str(target.zone).lower() == "zone.battlefield":
+            kws = effective_keywords(state, cid)
+        else:
+            kws = [str(k).lower() for k in (getattr(target, "keywords", []) or [])]
         for color in source_colors:
             if f"protection from {color}" in kws:
                 return False, f"Target {target.name} has protection from {color}."

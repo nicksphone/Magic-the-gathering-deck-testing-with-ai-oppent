@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
-from rules_engine.continuous import effective_toughness
+from rules_engine.continuous import effective_toughness, has_keyword
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -13,22 +13,18 @@ def apply_state_based_actions(state: MatchState) -> None:
             state.log.append(f"{player.name} has 0 or less life and loses.")
 
     for cid, card in list(state.cards.items()):
-        if (
-            "Creature" in card.types
-            and card.zone == Zone.BATTLEFIELD
-            and card.toughness is not None
-            and (
-                effective_toughness(state, cid) <= 0
-                or int(card.counters.get(DMG_MARK_KEY, 0)) >= int(effective_toughness(state, cid))
-                or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0
-            )
-        ):
-            pstate = state.players[card.controller]
-            if cid in pstate.battlefield:
-                pstate.battlefield.remove(cid)
-                pstate.graveyard.append(cid)
-                card.zone = Zone.GRAVEYARD
-                state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
+        if "Creature" in card.types and card.zone == Zone.BATTLEFIELD and card.toughness is not None:
+            lethal_from_zero_toughness = effective_toughness(state, cid) <= 0
+            indestructible = has_keyword(state, cid, "indestructible")
+            lethal_from_damage = int(card.counters.get(DMG_MARK_KEY, 0)) >= int(effective_toughness(state, cid))
+            lethal_from_deathtouch = int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0
+            if lethal_from_zero_toughness or (not indestructible and (lethal_from_damage or lethal_from_deathtouch)):
+                pstate = state.players[card.controller]
+                if cid in pstate.battlefield:
+                    pstate.battlefield.remove(cid)
+                    pstate.graveyard.append(cid)
+                    card.zone = Zone.GRAVEYARD
+                    state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
         if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
             pstate = state.players[card.controller]
             if cid in pstate.battlefield:

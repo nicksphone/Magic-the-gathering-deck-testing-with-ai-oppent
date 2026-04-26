@@ -1,0 +1,124 @@
+from __future__ import annotations
+
+from game_state.state import MatchFactory, Step, Zone
+from rules_engine import combat
+from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+from rules_engine.engine import RulesEngine
+from rules_engine.state_based_actions import apply_state_based_actions
+
+
+def _setup_creature(state, player_id: int, name: str, power: int, toughness: int, keywords: list[str] | None = None) -> str:
+    p = state.players[player_id]
+    cid = p.hand[0]
+    p.hand.remove(cid)
+    p.battlefield.append(cid)
+    c = state.cards[cid]
+    c.zone = Zone.BATTLEFIELD
+    c.name = name
+    c.types = ["Creature"]
+    c.power = power
+    c.toughness = toughness
+    c.summoning_sick = False
+    c.keywords = keywords or []
+    return cid
+
+
+def _setup_permanent(state, player_id: int, name: str, type_name: str, oracle_text: str) -> str:
+    p = state.players[player_id]
+    cid = p.hand[0]
+    p.hand.remove(cid)
+    p.battlefield.append(cid)
+    c = state.cards[cid]
+    c.zone = Zone.BATTLEFIELD
+    c.name = name
+    c.types = [type_name]
+    c.oracle_text = oracle_text
+    return cid
+
+
+def test_other_creatures_you_control_get_bonus_excludes_source() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    anthem = _setup_creature(state, 1, "Chief", 2, 2, [])
+    state.cards[anthem].type_line = "Creature - Elf Warrior"
+    state.cards[anthem].oracle_text = "Other creatures you control get +1/+1."
+    buddy = _setup_creature(state, 1, "Buddy", 2, 2, [])
+
+    assert effective_power(state, anthem) == 2
+    assert effective_toughness(state, anthem) == 2
+    assert effective_power(state, buddy) == 3
+    assert effective_toughness(state, buddy) == 3
+
+
+def test_tribal_static_buff_applies_to_subtype() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    _setup_permanent(state, 1, "Elvish Anthem", "Enchantment", "Elves you control get +1/+1.")
+    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1, [])
+    state.cards[elf].type_line = "Creature - Elf Druid"
+    beast = _setup_creature(state, 1, "Bear", 2, 2, [])
+    state.cards[beast].type_line = "Creature - Bear"
+
+    assert effective_power(state, elf) == 2
+    assert effective_toughness(state, elf) == 2
+    assert effective_power(state, beast) == 2
+    assert effective_toughness(state, beast) == 2
+
+
+def test_creatures_you_control_have_reach_allows_blocking_flyers() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    attacker = _setup_creature(state, 1, "Sky Drake", 2, 2, ["flying"])
+    blocker = _setup_creature(state, 2, "Ground Bear", 2, 2, [])
+    _setup_permanent(state, 2, "Global Reach", "Enchantment", "Creatures you control have reach.")
+    state.attackers = [attacker]
+
+    assert "reach" in effective_keywords(state, blocker)
+    combat.declare_blockers(state, {attacker: [blocker]})
+    assert state.blocks.get(attacker) == [blocker]
+
+
+def test_opponent_static_minus_kills_x1_creature() -> None:
+    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    _setup_permanent(state, 1, "Curse Aura", "Enchantment", "Creatures your opponents control get -1/-1.")
+    victim = _setup_creature(state, 2, "Token", 1, 1, [])
+    apply_state_based_actions(state)
+    assert state.cards[victim].zone == Zone.GRAVEYARD
+
+
+def test_indestructible_grant_prevents_combat_lethal_death() -> None:
+    deck = [{"quantity": 60, "card_name": "Plains"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    attacker = _setup_creature(state, 1, "Attacker", 2, 2, [])
+    blocker = _setup_creature(state, 2, "Blocker", 2, 2, [])
+    _setup_permanent(state, 2, "Shield", "Artifact", "Creatures you control have indestructible.")
+    state.attackers = [attacker]
+    state.blocks = {attacker: [blocker]}
+
+    combat.combat_damage(state)
+    assert state.cards[blocker].zone == Zone.BATTLEFIELD
+
+    # Run SBA as a second safety check path.
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    assert state.cards[blocker].zone == Zone.BATTLEFIELD

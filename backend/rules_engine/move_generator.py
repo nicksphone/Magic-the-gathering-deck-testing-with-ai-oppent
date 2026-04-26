@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
+from rules_engine.continuous import has_keyword
 from rules_engine.costs import check_cost_option_available, collect_cost_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
@@ -30,7 +31,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             for cid in player.battlefield
             if "Creature" in state.cards[cid].types
             and not state.cards[cid].tapped
-            and not state.cards[cid].summoning_sick
+            and (not state.cards[cid].summoning_sick or has_keyword(state, cid, "haste"))
+            and not has_keyword(state, cid, "defender")
         ]
         if attackers:
             defender_id = 1 if state.active_player == 2 else 2
@@ -135,7 +137,7 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
         return True
     if "Instant" in card.types:
         return True
-    if "flash" in [k.lower() for k in card.keywords]:
+    if has_keyword(state, card.id, "flash"):
         return True
     return False
 
