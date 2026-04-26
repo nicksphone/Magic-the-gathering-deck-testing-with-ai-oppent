@@ -285,7 +285,14 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                 match.rules.take_action(match.state, pid, forced_land)
             else:
                 decision = match.ai[pid].choose_action(match.state, legal, pid)
-                match.rules.take_action(match.state, pid, decision.action)
+                action = decision.action
+                # Backend hard guard: if AI attempts to pass during a legal own-main
+                # land-drop window, override to play a land.
+                if action.get("type") == "pass_priority":
+                    guard_land = _force_ai_land_action(match, pid, legal)
+                    if guard_land is not None:
+                        action = guard_land
+                match.rules.take_action(match.state, pid, action)
         else:
             if match.state.pregame_pending:
                 break
@@ -568,4 +575,8 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     if not land_moves:
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
-    return match.ai[player_id].choose_action(state, land_moves, player_id).action
+    # Hard-fallback to first legal play_land if AI returns a non-land action.
+    picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
+    if picked.get("type") == "play_land":
+        return picked
+    return land_moves[0]

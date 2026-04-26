@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlmodel import Session
 
-from ai.agent import AIAgent
+from ai.agent import AIAgent, AIDecision
 from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, autoplay_tick
 from persistence.db import engine, init_db
@@ -87,4 +87,46 @@ def test_autoplay_forces_ai_land_drop_on_own_main_phase() -> None:
 
     assert len(p1.battlefield) == battlefield_before + 1
     assert len(p1.hand) == hand_before - 1
+    assert p1.lands_played_this_turn == 1
+
+
+def test_autoplay_land_guard_overrides_ai_pass_when_land_is_legal() -> None:
+    class PassOnlyAI:
+        def choose_action(self, state, legal_moves, player_id):
+            return AIDecision(action={"type": "pass_priority"}, reasoning="forced test pass")
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = state.step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p1.lands_played_this_turn = 0
+    battlefield_before = len(p1.battlefield)
+
+    match = MatchController(
+        state=state,
+        rules=RulesEngine(),
+        controllers={1: "ai", 2: "ai"},
+        ai={1: PassOnlyAI(), 2: PassOnlyAI()},
+        mode="ai_vs_ai",
+        deck_ids=(None, None),
+        mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []},
+        game_number=1,
+        current_game_recorded=False,
+        match_complete=False,
+        best_of=3,
+    )
+    ACTIVE_MATCHES[state.id] = match
+    init_db()
+    try:
+        with Session(engine) as session:
+            _ = autoplay_tick(state.id, ticks=1, repo=Repository(session))
+    finally:
+        ACTIVE_MATCHES.pop(state.id, None)
+
+    assert len(p1.battlefield) == battlefield_before + 1
     assert p1.lands_played_this_turn == 1
