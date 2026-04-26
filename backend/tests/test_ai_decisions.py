@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ai.agent import AIAgent
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, Step
 
 
 def test_ai_prefers_non_pass_action_when_available() -> None:
@@ -332,7 +332,7 @@ def test_ai_forces_land_drop_on_own_main_phase() -> None:
 
     class FakeState:
         turn = 2
-        step = "precombat_main"
+        step = Step.PRECOMBAT_MAIN
         active_player = 1
         priority_player = 1
         pregame_pending = False
@@ -360,7 +360,7 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
 
     class FakeState:
         turn = 1
-        step = "precombat_main"
+        step = Step.PRECOMBAT_MAIN
         active_player = 1
         priority_player = 1
         pregame_pending = False
@@ -462,7 +462,7 @@ def test_ai_passes_in_declare_blockers_when_no_assignment_exists() -> None:
 
     class FakeState:
         pregame_pending = False
-        step = "Step.DECLARE_BLOCKERS"
+        step = Step.DECLARE_BLOCKERS
         active_player = 2
         priority_player = 1
         players = {

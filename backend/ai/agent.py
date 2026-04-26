@@ -27,7 +27,7 @@ class AIAgent:
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No legal actions")
-        if str(getattr(state, "step", "")) == "Step.DECLARE_BLOCKERS" and getattr(state, "active_player", player_id) != player_id:
+        if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
 
@@ -49,7 +49,7 @@ class AIAgent:
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
 
     def _choose_forced_land_play(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
-        step = str(getattr(state, "step", ""))
+        step = _step_key(getattr(state, "step", ""))
         own_main = step in {"precombat_main", "postcombat_main"} and getattr(state, "active_player", player_id) == player_id
         if not own_main:
             return None
@@ -100,7 +100,7 @@ class AIAgent:
         return (2, 5)
 
     def _rank_moves(self, state: MatchState, moves: list[dict], player_id: int) -> list[dict]:
-        in_main = str(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+        in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main
             and getattr(state, "active_player", player_id) == player_id
@@ -283,7 +283,7 @@ class AIAgent:
             if "Creature" in state.cards.get(perm_id, type("X", (), {"types": []})()).types
         )
         early_turn = state.turn <= 4
-        in_main = str(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+        in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main
             and getattr(state, "active_player", player_id) == player_id
@@ -328,7 +328,7 @@ class AIAgent:
                 bonus += 2.2
                 if "Instant" in card.types:
                     on_opp_turn = getattr(state, "active_player", player_id) != player_id
-                    in_end = str(getattr(state, "step", "")) == "end_step"
+                    in_end = _step_key(getattr(state, "step", "")) == "end_step"
                     if on_opp_turn or in_end:
                         bonus += 2.4
             if "removal" in tags:
@@ -715,3 +715,11 @@ class AIAgent:
         for sym in re.findall(r"\{([WUBRG])\}", oracle):
             colors.add(sym)
         return colors
+
+
+def _step_key(step) -> str:
+    value = getattr(step, "value", step)
+    s = str(value or "").strip()
+    if s.startswith("Step."):
+        s = s.split(".", 1)[1]
+    return s.lower()

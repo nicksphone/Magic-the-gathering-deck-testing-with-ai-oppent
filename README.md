@@ -17,6 +17,7 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
 
 ### Recently stabilized
 - AI land-drop reliability and color-source preference
+- AI step-enum normalization fixed (`Step.PRECOMBAT_MAIN` etc.), preventing missed forced land-drop windows in live games
 - Land can no longer be cast as spell regression fixed
 - Memory Deluge / X-target validation loop fixes
 - Tokens AI now casts key enchantments more consistently
