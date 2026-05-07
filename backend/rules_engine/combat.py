@@ -5,6 +5,13 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
+from rules_engine.restrictions import (
+    card_cant_attack,
+    card_cant_attack_alone,
+    card_cant_block,
+    card_must_attack_if_able,
+    card_must_block_if_able,
+)
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -16,7 +23,25 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
     legal_targets: dict[str, str] = {}
     defender = 1 if state.active_player == 2 else 2
     valid_defenders = _valid_defenders(state, defender)
-    for cid in attacker_ids:
+    requested = list(attacker_ids)
+    must_attack: list[str] = []
+    for cid in state.players[state.active_player].battlefield:
+        card = state.cards[cid]
+        if (
+            "Creature" in card.types
+            and card.zone == Zone.BATTLEFIELD
+            and not card.tapped
+            and (not card.summoning_sick or has_keyword(state, cid, "haste"))
+            and not has_keyword(state, cid, "defender")
+            and not card_cant_attack(state, cid)
+            and card_must_attack_if_able(state, cid)
+        ):
+            must_attack.append(cid)
+    for cid in must_attack:
+        if cid not in requested:
+            requested.append(cid)
+
+    for cid in requested:
         if cid not in state.cards:
             continue
         card = state.cards[cid]
@@ -31,6 +56,8 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         if card.summoning_sick and not has_keyword(state, cid, "haste"):
             continue
         if has_keyword(state, cid, "defender"):
+            continue
+        if card_cant_attack(state, cid):
             continue
         legal.append(cid)
         desired = attack_targets.get(cid, f"player:{defender}")
@@ -50,36 +77,64 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
 def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> None:
     defender = 1 if state.active_player == 2 else 2
     legal: dict[str, list[str]] = {}
-    used_blockers: set[str] = set()
+    blocker_assignments: dict[str, int] = {}
     for attacker, blockers in blocks.items():
         if attacker not in state.attackers:
             continue
         blocker_list = blockers if isinstance(blockers, list) else [blockers]
         picked: list[str] = []
         for blocker in blocker_list:
-            if blocker not in state.cards or blocker in used_blockers:
+            if blocker not in state.cards:
                 continue
             block_card = state.cards[blocker]
+            assigned = int(blocker_assignments.get(blocker, 0))
+            block_cap = _max_attackers_blockable_by_creature(block_card)
+            if assigned >= block_cap:
+                continue
             if block_card.controller != defender:
                 continue
             if block_card.tapped:
                 continue
             if "Creature" not in block_card.types:
                 continue
+            if card_cant_block(state, blocker):
+                continue
             atk_card = state.cards[attacker]
             if not _can_block_attacker(state, atk_card, block_card):
                 continue
             picked.append(blocker)
-            used_blockers.add(blocker)
+            blocker_assignments[blocker] = assigned + 1
         if picked:
             legal[attacker] = picked
     # Menace: must be blocked by two or more creatures.
     for attacker in list(legal.keys()):
         atk_card = state.cards.get(attacker)
-        if atk_card and _requires_two_or_more_blockers(state, attacker) and len(legal[attacker]) < 2:
-            for blocker in legal[attacker]:
-                used_blockers.discard(blocker)
+        min_blockers = _minimum_blockers_required(state, attacker) if atk_card else 1
+        if atk_card and len(legal[attacker]) < min_blockers:
             legal.pop(attacker, None)
+
+    # Enforce "must block each combat if able" for unassigned blockers.
+    for blocker_id in state.players[defender].battlefield:
+        card = state.cards[blocker_id]
+        if blocker_assignments.get(blocker_id, 0) > 0:
+            continue
+        if "Creature" not in card.types or card.tapped or card_cant_block(state, blocker_id):
+            continue
+        if not card_must_block_if_able(state, blocker_id):
+            continue
+        for attacker_id in state.attackers:
+            atk_card = state.cards.get(attacker_id)
+            if not atk_card or atk_card.zone != Zone.BATTLEFIELD:
+                continue
+            min_blockers = _minimum_blockers_required(state, attacker_id)
+            current = legal.get(attacker_id, [])
+            if len(current) >= max(min_blockers, 1):
+                continue
+            if not _can_block_attacker(state, atk_card, card):
+                continue
+            legal.setdefault(attacker_id, []).append(blocker_id)
+            blocker_assignments[blocker_id] = blocker_assignments.get(blocker_id, 0) + 1
+            break
     state.blocks = legal
 
 
@@ -198,12 +253,42 @@ def _damage_prevented_by_protection(state: MatchState, source_id: str, target_id
     return protected_from_source(state, target_id, source)
 
 
-def _requires_two_or_more_blockers(state: MatchState, attacker_id: str) -> bool:
+def _minimum_blockers_required(state: MatchState, attacker_id: str) -> int:
     attacker = state.cards[attacker_id]
+    min_blockers = 2 if has_keyword(state, attacker_id, "menace") else 1
     if has_keyword(state, attacker_id, "menace"):
-        return True
+        min_blockers = max(min_blockers, 2)
     text = (getattr(attacker, "oracle_text", "") or "").lower()
-    return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text
+    if "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text:
+        min_blockers = max(min_blockers, 2)
+    for phrase, value in _NUMBER_WORDS.items():
+        token = f"can't be blocked except by {phrase} or more creatures"
+        token2 = f"cannot be blocked except by {phrase} or more creatures"
+        if token in text or token2 in text:
+            min_blockers = max(min_blockers, value)
+    return min_blockers
+
+
+def _max_attackers_blockable_by_creature(blocker) -> int:
+    text = (getattr(blocker, "oracle_text", "") or "").lower()
+    if "can block any number of creatures" in text:
+        return 99
+    if "can block an additional creature each combat" in text:
+        return 2
+    for phrase, value in _NUMBER_WORDS.items():
+        token = f"can block {phrase} additional creatures each combat"
+        if token in text:
+            return 1 + value
+    return 1
+
+
+_NUMBER_WORDS = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+}
 
 
 def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defending_player_id: int) -> bool:
@@ -254,6 +339,8 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int) ->
             card.loyalty = (card.loyalty or 0) - amount
             state.log.append(f"{card.name} loses {amount} loyalty.")
             return amount
+        # PW left battlefield — damage disappears, does NOT redirect to player
+        return 0
     pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
     post, prevented = consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
@@ -297,3 +384,8 @@ def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
         return True
     return False
+    if len(legal) == 1:
+        lone = legal[0]
+        if card_cant_attack_alone(state, lone):
+            legal = []
+            legal_targets = {}

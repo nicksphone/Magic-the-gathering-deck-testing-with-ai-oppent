@@ -50,7 +50,13 @@ Professional desktop-first Magic: The Gathering deck testing platform with a rul
   - `landwalk` unblockability checks against defending player land types (`islandwalk`, `swampwalk`, `mountainwalk`, `forestwalk`, `plainswalk`)
   - `protection from <color>` now affects block legality, target legality, and damage prevention from matching-color sources
   - “can’t be blocked except by two or more creatures” oracle wording is enforced as menace-equivalent blocking constraint
-  - source-color propagation now carries through multi-clause `effect_sequence` resolution so protection checks remain consistent for composite spells
+  - generalized “can’t be blocked except by N or more creatures” parsing (`two`..`five`) is enforced in blocker legality
+  - blockers with explicit expanded capacity are supported (`can block an additional creature each combat`, `can block N additional creatures each combat`, `can block any number of creatures`)
+  - attack/block requirement + prohibition text support:
+    - `attacks each combat if able` / `must attack each combat if able`
+    - `blocks each combat if able` / `must block each combat if able`
+    - `can't attack`, `can't block`, `can't attack alone`
+- source-color propagation now carries through multi-clause `effect_sequence` resolution so protection checks remain consistent for composite spells
 - Expanded static/continuous effect coverage for enchantments/artifacts and similar permanents:
   - generic parsing of battlefield static text for `get +/-X +/-Y` and `have <keyword>` clauses
   - supports `you control` and `your opponents control` scopes
@@ -208,7 +214,27 @@ Access from another machine:
   - cast legality edge cases
   - blocker-loop prevention in declare blockers
   - menace / “two-or-more blockers” assignment support
+  - multi-attacker blocking with explicit blocker-capacity text
   - main-phase anti-stall fallback for control mirrors when proactive legal actions exist
+  - rule-aware attack/block restrictions (must/can’t clauses) applied during declare attackers/blockers
+  - spell timing restriction enforcement from oracle/static text (both legal-move generation and engine action validation)
+  - ward targeting tax support (`Ward {N}` generic tax enforced on targeted casts)
+  - attachment legality/state checks:
+    - Aura attach-on-resolve to legal targets
+    - Aura falls to graveyard when unattached/illegal
+    - Equipment detaches when target leaves battlefield
+    - protection now blocks illegal Aura/Equipment attachment from protected sources
+  - replacement-effect framework (initial rules):
+    - gain-life replacement into draw (`if you would gain life, draw that many cards instead`)
+    - draw replacement into life gain (`if you would draw a card, gain 1 life instead`)
+    - damage prevention replacement hooks (`prevent 1` style self-replacement clauses)
+  - optional trigger (`you may`) handling:
+    - triggered payloads now carry optional-choice metadata
+    - stack resolution can decline optional triggers and skip effect
+
+Legal move visibility:
+- Restricted cast windows now appear as `cast_spell_restricted` legal-move entries with reason text so UI can surface why a spell is currently unavailable.
+- Frontend hand panel now renders restriction reason text next to non-castable cards when a `cast_spell_restricted` move exists.
 
 ## How to Add Cards
 
@@ -265,6 +291,13 @@ PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
 ```
 Note:
 - Deck-out is the natural end condition for long control mirrors; diagnostics/simulation defaults now use a higher `max_ticks` so matches can resolve by draw-from-empty-library loss instead of early cutoffs.
+- Added anomaly clustering utility for overnight logs:
+  ```bash
+  cd /home/nick/mtg-deck-testing-lab/backend
+  PYTHONPATH=. .venv/bin/python scripts/anomaly_cluster_report.py \
+    --input diagnostics/overnight-YYYYMMDD-HHMMSS/all_games.jsonl \
+    --out diagnostics/overnight-YYYYMMDD-HHMMSS/anomaly-clusters.json
+  ```
 
 Frontend reliability:
 - Deck loading now degrades gracefully: if optional sources fail (for example expansion catalog endpoint), saved decks still load so AI-vs-AI deck selectors remain usable.

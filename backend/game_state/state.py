@@ -61,11 +61,13 @@ class CardInstance:
     loyalty: int | None = None
     tapped: bool = False
     summoning_sick: bool = True
+    entered_turn: int = 0
     counters: dict[str, int] = field(default_factory=dict)
     keywords: list[str] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
     image_uri: str | None = None
+    attached_to: str | None = None
 
 
 @dataclass

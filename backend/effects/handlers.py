@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
-from rules_engine.continuous import effective_keywords
+from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
@@ -12,6 +12,35 @@ from rules_engine.prevention import (
     consume_card_prevention_shield,
     consume_player_prevention_shield,
 )
+from rules_engine.replacement import apply_damage_replacements, replace_draw_cards, replace_gain_life
+
+DMG_MARK_KEY = "__damage_marked"
+DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
+
+
+def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
+    card = state.cards[card_id]
+    if card.toughness is None:
+        return False
+    if has_keyword(state, card_id, "indestructible"):
+        return False
+    marked = int(card.counters.get(DMG_MARK_KEY, 0))
+    if marked >= int(effective_toughness(state, card_id)):
+        return True
+    if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
+        return True
+    return False
+
+
+def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
+    card = state.cards[card_id]
+    owner = state.players[card.controller]
+    if card_id in owner.battlefield:
+        owner.battlefield.remove(card_id)
+        owner.graveyard.append(card_id)
+        card.zone = Zone.GRAVEYARD
+        state.log.append(f"{card.name} dies.")
+        emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
 def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
@@ -36,11 +65,15 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
                 return
-            card.counters["__damage_marked"] = int(card.counters.get("__damage_marked", 0)) + int(post)
+            card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(post)
             state.log.append(f"{card.name} takes {post} damage.")
+            # Check for lethal damage — creatures die state-based, not just at combat cleanup.
+            if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+                _move_creature_to_graveyard(state, target_card_id)
             return
     if target_player is not None:
-        post, prevented = consume_player_prevention_shield(state, int(target_player), amount)
+        replaced_amount = apply_damage_replacements(state, int(target_player), amount)
+        post, prevented = consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
         if post <= 0:
@@ -54,6 +87,12 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
+    replaced = replace_draw_cards(state, target_player, amount)
+    if replaced is not None:
+        key, repl_payload = replaced
+        from effects.registry import resolve_effect
+        resolve_effect(state, controller, key, repl_payload)
+        return
     draw_card(state, target_player, amount)
     state.log.append(f"{state.players[target_player].name} draws {amount}.")
 
@@ -61,6 +100,12 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 0))
+    replaced = replace_gain_life(state, target_player, amount)
+    if replaced is not None:
+        key, repl_payload = replaced
+        from effects.registry import resolve_effect
+        resolve_effect(state, controller, key, repl_payload)
+        return
     state.players[target_player].life += amount
     state.log.append(f"{state.players[target_player].name} gains {amount} life.")
     if amount > 0:
@@ -151,23 +196,25 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     amount = max(1, int(payload.get("amount", 1)))
     types = list(payload.get("types", ["Creature", "Token"]))
     keywords = list(payload.get("keywords", []))
+    token_controller = int(payload.get("controller", controller))
     for _ in range(amount):
         cid = str(uuid.uuid4())
         token = CardInstance(
             id=cid,
             name=name,
-            owner=controller,
-            controller=controller,
+            owner=token_controller,
+            controller=token_controller,
             zone=Zone.BATTLEFIELD,
             types=types,
             power=p,
             toughness=t,
             summoning_sick="Creature" in types,
+            entered_turn=state.turn,
             keywords=keywords,
         )
         state.cards[cid] = token
-        state.players[controller].battlefield.append(cid)
-    state.log.append(f"{state.players[controller].name} creates {amount} {p}/{t} token(s).")
+        state.players[token_controller].battlefield.append(cid)
+    state.log.append(f"{state.players[token_controller].name} creates {amount} {p}/{t} token(s).")
 
 
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:
@@ -183,9 +230,7 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     if target in state.cards:
         card = state.cards[target]
         card.counters[counter] = card.counters.get(counter, 0) + amount
-        if counter == "+1/+1" and card.power is not None and card.toughness is not None:
-            card.power += amount
-            card.toughness += amount
+        # PT delta from counters is computed dynamically by effective_power/toughness
 
 
 def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
@@ -220,12 +265,12 @@ def untap_card(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def continuous_buff(state: MatchState, controller: int, payload: dict) -> None:
-    buff = int(payload.get("amount", 1))
-    for cid in state.players[controller].battlefield:
-        c = state.cards[cid]
-        if "Creature" in c.types and c.power is not None and c.toughness is not None:
-            c.power += buff
-            c.toughness += buff
+    # No-op — continuous PT bonuses are computed dynamically by
+    # effective_power() / effective_toughness() which scan all battlefield
+    # permanents for anthem-like oracle text via _continuous_pt_delta().
+    # Permanently mutating base stats here caused buffs to persist after
+    # the source left the battlefield (Bug #7).
+    pass
 
 
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
@@ -311,6 +356,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
         card.summoning_sick = "Creature" in card.types
+        card.entered_turn = state.turn
         player.battlefield.append(cid)
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
 

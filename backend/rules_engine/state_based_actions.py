@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.attachments import attached_to, is_aura, is_equipment
 from rules_engine.continuous import effective_toughness, has_keyword
 
 DMG_MARK_KEY = "__damage_marked"
@@ -34,6 +35,7 @@ def apply_state_based_actions(state: MatchState) -> None:
                 state.log.append(f"State-based action: {card.name} is put into graveyard due to 0 loyalty.")
 
     _apply_legend_rule(state)
+    _apply_attachment_state_checks(state)
 
 
 def _apply_legend_rule(state: MatchState) -> None:
@@ -78,3 +80,33 @@ def _is_legendary(card) -> bool:
     ):
         return True
     return False
+
+
+def _apply_attachment_state_checks(state: MatchState) -> None:
+    for cid, card in list(state.cards.items()):
+        if card.zone != Zone.BATTLEFIELD:
+            continue
+        if not (is_aura(card) or is_equipment(card)):
+            continue
+        target_id = attached_to(card)
+        if not target_id:
+            if is_aura(card):
+                owner = state.players[card.controller]
+                if cid in owner.battlefield:
+                    owner.battlefield.remove(cid)
+                    owner.graveyard.append(cid)
+                    card.zone = Zone.GRAVEYARD
+                    state.log.append(f"State-based action: {card.name} has no legal attachment and is put into graveyard.")
+            continue
+        target = state.cards.get(target_id)
+        if not target or target.zone != Zone.BATTLEFIELD:
+            if is_aura(card):
+                owner = state.players[card.controller]
+                if cid in owner.battlefield:
+                    owner.battlefield.remove(cid)
+                    owner.graveyard.append(cid)
+                    card.zone = Zone.GRAVEYARD
+                    state.log.append(f"State-based action: {card.name} loses attachment and is put into graveyard.")
+            elif is_equipment(card):
+                card.attached_to = None
+                state.log.append(f"State-based action: {card.name} becomes unattached.")

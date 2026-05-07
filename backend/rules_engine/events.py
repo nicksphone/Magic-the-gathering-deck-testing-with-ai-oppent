@@ -127,7 +127,7 @@ def _trigger_from_oracle(
                 "controller": controller,
                 "label": default_label,
                 "effect_key": "gain_life",
-                "payload": {"target_player": controller, "amount": gain_amount},
+                "payload": _maybe_payload(oracle, {"target_player": controller, "amount": gain_amount}),
             }
         if drawn_by != controller and "whenever an opponent draws a card" in oracle and lose_amount > 0:
             return {
@@ -135,7 +135,7 @@ def _trigger_from_oracle(
                 "controller": controller,
                 "label": default_label,
                 "effect_key": "lose_life",
-                "payload": {"target_player": drawn_by, "amount": lose_amount},
+                "payload": _maybe_payload(oracle, {"target_player": drawn_by, "amount": lose_amount}),
             }
 
     if "draw a card" in oracle:
@@ -144,7 +144,7 @@ def _trigger_from_oracle(
             "controller": controller,
             "label": default_label,
             "effect_key": "draw_cards",
-            "payload": {"amount": 1},
+            "payload": _maybe_payload(oracle, {"amount": 1}),
         }
     if "gain 1 life" in oracle or "gain life" in oracle:
         return {
@@ -152,7 +152,7 @@ def _trigger_from_oracle(
             "controller": controller,
             "label": default_label,
             "effect_key": "gain_life",
-            "payload": {"amount": gain_amount or 1},
+            "payload": _maybe_payload(oracle, {"amount": gain_amount or 1}),
         }
     if "deals 1 damage" in oracle or "deal 1 damage" in oracle:
         return {
@@ -160,14 +160,14 @@ def _trigger_from_oracle(
             "controller": controller,
             "label": default_label,
             "effect_key": "deal_damage",
-            "payload": {"target_player": opponent, "amount": 1},
+            "payload": _maybe_payload(oracle, {"target_player": opponent, "amount": 1}),
         }
     return {
         "source_card_id": source_card_id,
         "controller": controller,
         "label": default_label,
         "effect_key": "gain_life",
-        "payload": {"amount": 0},
+        "payload": _maybe_payload(oracle, {"amount": 0}),
     }
 
 
@@ -179,3 +179,17 @@ def _first_number(text: str, pattern: str) -> int:
         return int(match.group(1))
     except Exception:
         return 0
+
+
+def _maybe_payload(oracle: str, payload: dict[str, Any]) -> dict[str, Any]:
+    out = dict(payload)
+    low = (oracle or "").lower()
+    if "you may" not in low:
+        return out
+    out["__may"] = True
+    # Conservative default: skip optional effects that only lose life; otherwise choose yes.
+    if "lose life" in low and "gain life" not in low and "draw" not in low:
+        out["__may_choose"] = False
+    else:
+        out["__may_choose"] = True
+    return out

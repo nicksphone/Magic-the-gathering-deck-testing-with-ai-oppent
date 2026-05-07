@@ -83,6 +83,7 @@ export type LegalMove = {
   ability_index?: number;
   ability_label?: string;
   ability_delta?: number;
+  reason?: string;
   target_hints?: {
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];

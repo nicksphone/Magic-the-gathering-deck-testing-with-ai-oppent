@@ -4,6 +4,7 @@ import uuid
 
 from effects.registry import resolve_effect
 from game_state.state import MatchState, StackItem, Zone
+from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 
 
@@ -30,6 +31,9 @@ def resolve_top_of_stack(state: MatchState) -> None:
         return
     item = state.stack.pop()
     payload = dict(item.payload or {})
+    if bool(payload.get("__may")) and not bool(payload.get("__may_choose", True)):
+        state.log.append(f"{state.players[item.controller].name} declines optional effect: {item.label}.")
+        return
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
     card = state.cards.get(item.source_card_id)
@@ -42,5 +46,15 @@ def resolve_top_of_stack(state: MatchState) -> None:
             owner.battlefield.append(card.id)
             card.zone = Zone.BATTLEFIELD
             card.summoning_sick = "Creature" in card.types
+            card.entered_turn = state.turn
+            if is_aura(card):
+                target_id = payload.get("target_card_id")
+                if not attach_if_legal(state, card.id, target_id):
+                    owner.battlefield.remove(card.id)
+                    owner.graveyard.append(card.id)
+                    card.zone = Zone.GRAVEYARD
+                    state.log.append(f"{card.name} has no legal attachment target and is put into graveyard.")
+                    state.log.append(f"{item.label} resolves.")
+                    return
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller})
     state.log.append(f"{item.label} resolves.")

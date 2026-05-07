@@ -4,7 +4,7 @@ from game_state.state import MatchState, Step, TURN_STEPS, Zone, draw_card
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
-from rules_engine.mana import auto_pay_cost
+from rules_engine.mana import add_generic_to_cost, auto_pay_cost
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
@@ -13,6 +13,8 @@ from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_protection_targets
 from rules_engine.events import emit_event
+from rules_engine.restrictions import can_cast_in_current_timing
+from rules_engine.ward import ward_tax_for_targets
 
 
 class RulesEngine:
@@ -197,6 +199,11 @@ class RulesEngine:
             cid = action["card_id"]
             if cid in player.hand:
                 card = state.cards[cid]
+                timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
+                if not timing_ok:
+                    state.log.append(f"{player.name} cannot cast {card.name}: {timing_reason}")
+                    apply_state_based_actions(state)
+                    return
                 if _is_land_card(card):
                     state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
@@ -231,9 +238,18 @@ class RulesEngine:
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
-                paid = auto_pay_cost(state, player_id, chosen.mana_cost, is_land=("Land" in card.types), card_name=card.name)
+                target_ids: list[str] = []
+                if action_targets.get("target_card_id"):
+                    target_ids.append(action_targets["target_card_id"])
+                target_ids.extend([x for x in (action_targets.get("target_card_ids") or []) if x not in target_ids])
+                ward_tax = ward_tax_for_targets(state, player_id, target_ids)
+                adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
+                paid = auto_pay_cost(state, player_id, adjusted_cost, is_land=("Land" in card.types), card_name=card.name)
                 if not paid:
-                    state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
+                    if ward_tax > 0:
+                        state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")
+                    else:
+                        state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
                 if not apply_additional_costs(state, player_id, chosen, cid):

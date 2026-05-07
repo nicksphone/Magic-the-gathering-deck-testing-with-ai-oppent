@@ -78,6 +78,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
+  const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
@@ -318,6 +319,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           {p1.hand.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
             const landMove = playLandMoves.find((m) => m.card_id === card.id);
+            const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             if (!move) {
               return (
                 <div
@@ -335,6 +337,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                       {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
                     </button>
                   )}
+                  {restrictedMove?.reason ? <small>Restriction: {restrictedMove.reason}</small> : null}
                 </div>
               );
             }

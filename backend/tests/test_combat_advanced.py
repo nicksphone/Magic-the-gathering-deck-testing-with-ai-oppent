@@ -203,6 +203,65 @@ def test_menace_requires_two_blockers() -> None:
     assert state.blocks.get(atk) == [blk1, blk2]
 
 
+def test_cannot_be_blocked_except_by_three_or_more_creatures() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Huge Threat", 5, 5, [])
+    state.cards[atk].oracle_text = "This creature can't be blocked except by three or more creatures."
+    blk1 = _setup_creature(state, 2, "B1", 2, 2, [])
+    blk2 = _setup_creature(state, 2, "B2", 2, 2, [])
+    blk3 = _setup_creature(state, 2, "B3", 2, 2, [])
+    state.attackers = [atk]
+
+    combat.declare_blockers(state, {atk: [blk1, blk2]})
+    assert state.blocks == {}
+
+    combat.declare_blockers(state, {atk: [blk1, blk2, blk3]})
+    assert state.blocks.get(atk) == [blk1, blk2, blk3]
+
+
+def test_blocker_with_additional_block_capacity_can_block_two_attackers() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk1 = _setup_creature(state, 1, "A1", 2, 2, [])
+    atk2 = _setup_creature(state, 1, "A2", 2, 2, [])
+    blocker = _setup_creature(state, 2, "Wall Captain", 1, 5, [])
+    state.cards[blocker].oracle_text = "Wall Captain can block an additional creature each combat."
+    state.attackers = [atk1, atk2]
+
+    combat.declare_blockers(state, {atk1: [blocker], atk2: [blocker]})
+    assert state.blocks.get(atk1) == [blocker]
+    assert state.blocks.get(atk2) == [blocker]
+
+
+def test_default_blocker_cannot_block_two_attackers() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk1 = _setup_creature(state, 1, "A1", 2, 2, [])
+    atk2 = _setup_creature(state, 1, "A2", 2, 2, [])
+    blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
+    state.attackers = [atk1, atk2]
+
+    combat.declare_blockers(state, {atk1: [blocker], atk2: [blocker]})
+    blocked_count = sum(1 for blockers in state.blocks.values() if blocker in blockers)
+    assert blocked_count == 1
+
+
 def test_anthem_effect_increases_combat_damage_output() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

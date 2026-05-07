@@ -7,6 +7,7 @@ from rules_engine.costs import check_cost_option_available, collect_cost_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_loyalty_abilities
+from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timing
 
 
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
@@ -33,6 +34,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not state.cards[cid].tapped
             and (not state.cards[cid].summoning_sick or has_keyword(state, cid, "haste"))
             and not has_keyword(state, cid, "defender")
+            and not card_cant_attack(state, cid)
         ]
         if attackers:
             defender_id = 1 if state.active_player == 2 else 2
@@ -80,6 +82,17 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not _is_land_card(card)
             and _can_cast_spell(state, card, player_id)
         ):
+            timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
+            if not timing_ok:
+                moves.append(
+                    {
+                        "type": "cast_spell_restricted",
+                        "card_id": cid,
+                        "card_name": card.name,
+                        "reason": timing_reason,
+                    }
+                )
+                continue
             options = collect_cost_options(state, player_id, card)
             available_options = [o for o in options if check_cost_option_available(state, player_id, card, o)]
             if not available_options:

@@ -250,7 +250,27 @@ class AIAgent:
             return -2.0
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8
+        if self._should_hold_up_interaction(state, player_id):
+            return 1.4
         return 0.3
+
+    def _should_hold_up_interaction(self, state: MatchState, player_id: int) -> bool:
+        if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
+            return False
+        if getattr(state, "active_player", player_id) != player_id:
+            return False
+        opp_id = 1 if player_id == 2 else 2
+        opp_untapped = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if "Land" in (state.cards.get(cid).types if cid in state.cards else []) and not state.cards[cid].tapped
+        )
+        has_counter = any(
+            "counter target spell" in f"{(state.cards[cid].name or '').lower()} {(state.cards[cid].oracle_text or '').lower()}"
+            for cid in state.players[player_id].hand
+            if cid in state.cards
+        )
+        return has_counter and opp_untapped >= 2
 
     def _block_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         blocker_ids = [x["id"] for x in (move.get("blockers") or [])]
@@ -601,6 +621,8 @@ class AIAgent:
                 continue
             atk_pow = atk.power or 0
             atk_tgh = atk.toughness or 0
+            atk_has_trample = "trample" in {str(k).lower() for k in (getattr(atk, "keywords", []) or [])}
+            atk_has_deathtouch = "deathtouch" in {str(k).lower() for k in (getattr(atk, "keywords", []) or [])}
             required_blockers = 2 if self._requires_two_or_more_blockers(atk) else 1
             best_bid = None
             best_score = -999.0
@@ -618,6 +640,10 @@ class AIAgent:
                     score += 2.2
                 if blk_tgh > atk_pow:
                     score += 1.0
+                if atk_has_trample and blk_tgh <= atk_pow:
+                    score -= 0.7
+                if atk_has_deathtouch:
+                    score -= 0.6
                 if blk_tgh <= atk_pow and blk_pow < atk_tgh:
                     # Pure chump trades are less desirable unless needed.
                     score -= 1.4
@@ -691,16 +717,19 @@ class AIAgent:
                 continue
             atk_pow = _eff_pow(state, cid)
             atk_tgh = _eff_tgh(state, cid)
+            atk_kw = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+            has_trample = "trample" in atk_kw
+            has_deathtouch = "deathtouch" in atk_kw
             if atk_pow <= 0:
                 continue
 
             dies_to_some = any(_eff_pow(state, b) >= atk_tgh for b in opp_blockers)
             kills_some = any(_eff_tgh(state, b) <= atk_pow for b in opp_blockers)
             # Avoid obvious bad attacks with small bodies into larger blockers.
-            if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1:
+            if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1 and not has_trample:
                 continue
             # General anti-suicide rule unless aggression/lethal pressure justifies it.
-            if dies_to_some and not kills_some and self.archetype not in {"Aggro", "Burn", "Tempo"} and opp_life > atk_pow + 2:
+            if dies_to_some and not kills_some and not has_deathtouch and self.archetype not in {"Aggro", "Burn", "Tempo"} and opp_life > atk_pow + 2:
                 continue
 
             chosen.append(cid)

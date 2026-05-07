@@ -237,6 +237,19 @@ def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic
     )
 
 
+def add_generic_to_cost(mana_cost: str, generic_add: int) -> str:
+    req = parse_mana_cost(mana_cost)
+    req["generic"] = max(0, req["generic"] + max(0, int(generic_add)))
+    return (
+        ("{" + str(req["generic"]) + "}" if req["generic"] > 0 else "")
+        + ("{W}" * req["W"])
+        + ("{U}" * req["U"])
+        + ("{B}" * req["B"])
+        + ("{R}" * req["R"])
+        + ("{G}" * req["G"])
+    )
+
+
 def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> Set[str]:
     n = (name or "").strip().lower()
     if n in DUAL_LAND_NAME_COLORS:
