@@ -26,6 +26,7 @@ from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.land_rules import compute_max_land_plays_this_turn
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0")
 app.add_middleware(
@@ -340,6 +341,10 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             else:
                 decision = match.ai[pid].choose_action(match.state, legal, pid)
                 action = decision.action
+                # Safety: if AI returns an action not in legal moves, treat as pass
+                legal_types = {m["type"] for m in legal}
+                if action.get("type") not in legal_types:
+                    action = {"type": "pass_priority"}
                 # Strict backend invariant: on legal own-main land-drop windows,
                 # override any non-land action to ensure deterministic land development.
                 if action.get("type") != "play_land":
@@ -639,13 +644,21 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     step_key = _step_key(state.step)
     if step_key not in {"precombat_main", "postcombat_main"}:
         return None
-    if state.players[player_id].lands_played_this_turn >= 1:
+    player = state.players[player_id]
+    max_land_plays = compute_max_land_plays_this_turn(state, player_id)
+    if getattr(player, "last_land_play_turn", 0) == state.turn:
+        used_land_plays = max(
+            int(getattr(player, "lands_played_this_turn", 0)),
+            int(getattr(player, "land_plays_recorded_on_turn", 0)),
+        )
+    else:
+        used_land_plays = 0
+    if used_land_plays >= max_land_plays:
         return None
     land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
     if not land_moves:
         # Defensive fallback: if legal-move generation misses land actions,
         # derive them directly from hand card identities.
-        player = state.players[player_id]
         for cid in list(player.hand):
             card = state.cards.get(cid)
             if card and _card_looks_like_land(card):

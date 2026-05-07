@@ -34,8 +34,11 @@ class RulesEngine:
             state.active_player = 1 if state.active_player == 2 else 2
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
-            for cid in state.players[state.active_player].battlefield:
-                state.cards[cid].summoning_sick = False
+            player = state.players[state.active_player]
+            for cid in list(player.battlefield):
+                card = state.cards[cid]
+                if "Creature" in card.types and card.entered_turn < state.turn:
+                    card.summoning_sick = False
             state.players[state.active_player].lands_played_this_turn = 0
             state.players[state.active_player].max_land_plays_this_turn = compute_max_land_plays_this_turn(
                 state, state.active_player
@@ -142,9 +145,10 @@ class RulesEngine:
             max_land_plays = max(1, int(getattr(player, "max_land_plays_this_turn", 1)))
             if getattr(player, "last_land_play_turn", 0) != state.turn:
                 player.last_land_play_turn = state.turn
+                player.lands_played_this_turn = 0
                 player.land_plays_recorded_on_turn = 0
             used_land_plays = max(
-                int(getattr(player, "lands_played_this_turn", 0)),
+                int(getattr(player, "lands_played_this_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
                 int(getattr(player, "land_plays_recorded_on_turn", 0)),
             )
             if cid in player.hand and used_land_plays < max_land_plays and _is_land_card(state.cards[cid]):

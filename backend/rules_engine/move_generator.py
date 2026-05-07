@@ -60,10 +60,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     for cid in list(player.hand):
         card = state.cards[cid]
         max_land_plays = compute_max_land_plays_this_turn(state, player_id)
-        used_land_plays = max(
-            int(getattr(player, "lands_played_this_turn", 0)),
-            int(getattr(player, "land_plays_recorded_on_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
-        )
+        if getattr(player, "last_land_play_turn", 0) == state.turn:
+            used_land_plays = max(
+                int(getattr(player, "lands_played_this_turn", 0)),
+                int(getattr(player, "land_plays_recorded_on_turn", 0)),
+            )
+        else:
+            # Ignore stale counter drift from older turns; only this-turn land records matter.
+            used_land_plays = 0
         if (
             _is_land_card(card)
             and used_land_plays < max_land_plays

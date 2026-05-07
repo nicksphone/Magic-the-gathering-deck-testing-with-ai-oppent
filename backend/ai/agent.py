@@ -58,10 +58,13 @@ class AIAgent:
 
     def _choose_forced_land_play(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         step = _step_key(getattr(state, "step", ""))
-        own_main = step in {"precombat_main", "postcombat_main"} and getattr(state, "active_player", player_id) == player_id
+        own_main = step in {"precombat_main", "postcombat_main"}
         if not own_main:
             return None
         if getattr(state, "stack", []) or []:
+            return None
+        # Must be active player to play lands — skip the defensive fallback otherwise
+        if getattr(state, "active_player", player_id) != player_id:
             return None
         land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
         if land_moves:
@@ -148,7 +151,7 @@ class AIAgent:
                     else:
                         base -= 2
             elif mtype == "play_land":
-                base += 5
+                base += 8
             elif mtype == "tap_land_for_mana":
                 # Avoid floating mana loops: only tap proactively if it helps convert to a cast now.
                 if cast_moves:
@@ -284,7 +287,15 @@ class AIAgent:
         arche_bonus = 0.8 if self.archetype in {"Control", "Midrange", "Ramp"} else 0.3
         if self.archetype in {"Aggro", "Burn", "Tempo"} and life > 8:
             arche_bonus -= 0.4
-        return profitable + lethal_pressure + arche_bonus
+        # Penalize blocking with mana-producing creatures
+        mana_penalty = 0.0
+        for bid in blocker_ids:
+            blk = state.cards.get(bid)
+            if blk:
+                blk_text = (getattr(blk, "oracle_text", "") or "").lower()
+                if ("{t}" in blk_text or "(t)" in blk_text) and ("add " in blk_text or "adds " in blk_text):
+                    mana_penalty += 3.5
+        return profitable + lethal_pressure + arche_bonus - mana_penalty
 
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
@@ -611,6 +622,11 @@ class AIAgent:
                     # Pure chump trades are less desirable unless needed.
                     score -= 1.4
                 score += min(atk_pow, 5) * 0.25
+                # Penalize blocking with mana-producing creatures — they're
+                # worth more untapped than the damage they prevent, especially early game.
+                blk_text = (getattr(blk, "oracle_text", "") or "").lower()
+                if ("{t}" in blk_text or "(t)" in blk_text) and ("add " in blk_text or "adds " in blk_text):
+                    score -= 3.5
                 scored.append((score, bid))
                 if score > best_score:
                     best_score = score
@@ -664,19 +680,22 @@ class AIAgent:
         if not opp_blockers:
             return list(candidates)
 
+        from rules_engine.continuous import effective_power as _eff_pow
+        from rules_engine.continuous import effective_toughness as _eff_tgh
+
         opp_life = state.players[opp_id].life
         chosen: list[str] = []
         for cid in candidates:
             card = state.cards.get(cid)
             if not card:
                 continue
-            atk_pow = card.power or 0
-            atk_tgh = card.toughness or 0
+            atk_pow = _eff_pow(state, cid)
+            atk_tgh = _eff_tgh(state, cid)
             if atk_pow <= 0:
                 continue
 
-            dies_to_some = any((state.cards[b].power or 0) >= atk_tgh for b in opp_blockers)
-            kills_some = any((state.cards[b].toughness or 0) <= atk_pow for b in opp_blockers)
+            dies_to_some = any(_eff_pow(state, b) >= atk_tgh for b in opp_blockers)
+            kills_some = any(_eff_tgh(state, b) <= atk_pow for b in opp_blockers)
             # Avoid obvious bad attacks with small bodies into larger blockers.
             if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1:
                 continue
@@ -812,7 +831,7 @@ class AIAgent:
                 int(getattr(player, "land_plays_recorded_on_turn", 0)),
             )
         else:
-            used = int(getattr(player, "lands_played_this_turn", 0))
+            used = 0
         return max(0, int(max_land_plays) - int(used))
 
     def _should_break_stall(self, state: MatchState, legal_moves: list[dict], player_id: int) -> bool:
