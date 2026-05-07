@@ -54,3 +54,102 @@ def test_create_token_respects_amount_and_keywords() -> None:
     assert len(created) == 2
     assert all(state.cards[cid].name == "Soldier" for cid in created)
     assert all("vigilance" in state.cards[cid].keywords for cid in created)
+
+
+def test_deal_damage_destroys_creature_with_lethal_damage() -> None:
+    """Spell damage should kill creatures — state-based lethal check after damage."""
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    battlefield_before = len(state.players[2].battlefield)
+    resolve_effect(
+        state,
+        1,
+        "create_token",
+        {"name": "Creature", "power": 2, "toughness": 2, "amount": 1, "keywords": [], "controller": 2},
+    )
+    creature_ids = state.players[2].battlefield[battlefield_before:]
+    assert len(creature_ids) == 1
+    cid = creature_ids[0]
+    assert state.cards[cid].zone == state.cards[cid].zone  # smoke test
+    from game_state.state import Zone
+    assert state.cards[cid].zone == Zone.BATTLEFIELD
+
+    # Deal 3 damage (lethal for a 2/2)
+    resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 3})
+
+    # Creature should be dead
+    assert state.cards[cid].zone == Zone.GRAVEYARD
+    assert cid not in state.players[2].battlefield
+    assert cid in state.players[2].graveyard
+
+
+def test_deal_damage_respects_indestructible() -> None:
+    """Indestructible creatures should survive lethal spell damage."""
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    battlefield_before = len(state.players[2].battlefield)
+    resolve_effect(
+        state,
+        1,
+        "create_token",
+        {"name": "Indestructible Creature", "power": 2, "toughness": 2, "amount": 1, "keywords": ["indestructible"], "controller": 2},
+    )
+    creature_ids = state.players[2].battlefield[battlefield_before:]
+    assert len(creature_ids) == 1
+    cid = creature_ids[0]
+
+    # Deal 3 damage (would be lethal without indestructible)
+    resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 3})
+
+    # Should still be alive
+    from game_state.state import Zone
+    assert state.cards[cid].zone == Zone.BATTLEFIELD
+    assert cid in state.players[2].battlefield
+
+
+def test_deal_damage_non_lethal_doesnt_kill() -> None:
+    """Sub-lethal damage should not kill the creature."""
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    battlefield_before = len(state.players[2].battlefield)
+    resolve_effect(
+        state,
+        1,
+        "create_token",
+        {"name": "Creature", "power": 2, "toughness": 2, "amount": 1, "keywords": [], "controller": 2},
+    )
+    creature_ids = state.players[2].battlefield[battlefield_before:]
+    cid = creature_ids[0]
+
+    # Deal 1 damage (not lethal for a 2/2)
+    resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 1})
+
+    from game_state.state import Zone
+    assert state.cards[cid].zone == Zone.BATTLEFIELD
+    assert cid in state.players[2].battlefield
+    assert state.cards[cid].counters.get("__damage_marked", 0) == 1
+
+
+def test_deal_damage_cumulative_lethal() -> None:
+    """Multiple damage instances should accumulate and kill."""
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    battlefield_before = len(state.players[2].battlefield)
+    resolve_effect(
+        state,
+        1,
+        "create_token",
+        {"name": "Creature", "power": 2, "toughness": 3, "amount": 1, "keywords": [], "controller": 2},
+    )
+    creature_ids = state.players[2].battlefield[battlefield_before:]
+    cid = creature_ids[0]
+
+    # Deal 2 damage — not lethal for 3 toughness
+    resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 2})
+    from game_state.state import Zone
+    assert state.cards[cid].zone == Zone.BATTLEFIELD
+
+    # Deal 1 more — now lethal (2+1 >= 3)
+    resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 1})
+    assert state.cards[cid].zone == Zone.GRAVEYARD
+    assert cid not in state.players[2].battlefield

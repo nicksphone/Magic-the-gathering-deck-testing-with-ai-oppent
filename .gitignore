@@ -12,3 +12,8 @@ frontend/dist/
 backend/.graphify_*.json
 frontend/*.tsbuildinfo
 backend/card_data/image_cache/
+backend/diagnostics/
+graphify-out/cache/
+BUG_AUDIT.md
+FIXES.md
+backend/BUGFIXES.md

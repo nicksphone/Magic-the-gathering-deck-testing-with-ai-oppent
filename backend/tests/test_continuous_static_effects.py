@@ -122,3 +122,60 @@ def test_indestructible_grant_prevents_combat_lethal_death() -> None:
     engine = RulesEngine()
     engine.take_action(state, 1, {"type": "pass_priority"})
     assert state.cards[blocker].zone == Zone.BATTLEFIELD
+
+
+def test_continuous_buff_does_not_mutate_base_stats() -> None:
+    """Anthem-like buffs must not permanently modify card.power/toughness."""
+    from effects.registry import resolve_effect
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+
+    # Create a 2/2 creature
+    resolve_effect(
+        state, 1, "create_token",
+        {"name": "TestCreature", "power": 2, "toughness": 2, "amount": 1, "keywords": []},
+    )
+    cid = [c for c in state.players[1].battlefield if state.cards[c].name == "TestCreature"][0]
+    base_power = state.cards[cid].power
+    base_toughness = state.cards[cid].toughness
+
+    # Call continuous_buff — should NOT mutate base stats
+    resolve_effect(state, 1, "continuous_buff", {"amount": 1})
+
+    # Base stats unchanged
+    assert state.cards[cid].power == base_power
+    assert state.cards[cid].toughness == base_toughness
+
+
+def test_counters_affect_effective_stats_dynamically() -> None:
+    """+1/+1 and -1/-1 counters should affect effective_power/toughness without mutating base."""
+    from effects.registry import resolve_effect
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+
+    # Create a 2/2 creature
+    resolve_effect(
+        state, 1, "create_token",
+        {"name": "TestCreature", "power": 2, "toughness": 2, "amount": 1, "keywords": []},
+    )
+    cid = [c for c in state.players[1].battlefield if state.cards[c].name == "TestCreature"][0]
+
+    # Base stats
+    assert state.cards[cid].power == 2
+    assert state.cards[cid].toughness == 2
+    assert effective_power(state, cid) == 2
+    assert effective_toughness(state, cid) == 2
+
+    # Add a +1/+1 counter
+    resolve_effect(state, 1, "add_counters", {"target_card_id": cid, "counter": "+1/+1", "amount": 1})
+    assert state.cards[cid].power == 2  # base unchanged
+    assert state.cards[cid].toughness == 2  # base unchanged
+    assert effective_power(state, cid) == 3  # effective increased
+    assert effective_toughness(state, cid) == 3
+
+    # Add a -1/-1 counter
+    resolve_effect(state, 1, "add_counters", {"target_card_id": cid, "counter": "-1/-1", "amount": 1})
+    assert effective_power(state, cid) == 2  # back to base
+    assert effective_toughness(state, cid) == 2

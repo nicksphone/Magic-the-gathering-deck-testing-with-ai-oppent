@@ -39,14 +39,27 @@ def effective_power(state, card_id: str) -> int:
     card = state.cards[card_id]
     base = int(card.power or 0)
     p_bonus, _ = _continuous_pt_delta(state, card_id)
-    return base + p_bonus
+    counter_bonus = _counter_pt_delta(card)
+    return base + p_bonus + counter_bonus
 
 
 def effective_toughness(state, card_id: str) -> int:
     card = state.cards[card_id]
     base = int(card.toughness or 0)
     _, t_bonus = _continuous_pt_delta(state, card_id)
-    return base + t_bonus
+    counter_bonus = _counter_pt_delta(card)
+    return base + t_bonus + counter_bonus
+
+
+def _counter_pt_delta(card) -> int:
+    """Return PT bonus from +1/+1 and -1/-1 counters on a card."""
+    bonus = 0
+    for counter, amount in (getattr(card, "counters", {}) or {}).items():
+        if counter == "+1/+1":
+            bonus += int(amount)
+        elif counter == "-1/-1":
+            bonus -= int(amount)
+    return bonus
 
 
 def effective_keywords(state, card_id: str) -> list[str]:

@@ -48,6 +48,10 @@ class AnalyticsService:
                 legal = self.engine.legal_moves(state, pid)
                 agent = a_agent if pid == 1 else b_agent
                 decision = agent.choose_action(state, legal, pid)
+                # Safety: if AI returns an action not in legal moves, treat as pass
+                legal_types = {m["type"] for m in legal}
+                if decision.action.get("type") not in legal_types:
+                    decision.action = {"type": "pass_priority"}
                 self.engine.take_action(state, pid, decision.action)
                 if state.step == state.step.COMBAT_DAMAGE:
                     self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
@@ -144,6 +148,10 @@ class AnalyticsService:
                     else:
                         agent = a_agent if pid == 1 else b_agent
                         decision = agent.choose_action(state, legal, pid)
+                        # Safety: if AI returns an action not in legal moves, treat as pass
+                        legal_types = {m["type"] for m in legal}
+                        if decision.action.get("type") not in legal_types:
+                            decision.action = {"type": "pass_priority"}
                         self.engine.take_action(state, pid, decision.action)
                     if state.step == state.step.COMBAT_DAMAGE:
                         self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
