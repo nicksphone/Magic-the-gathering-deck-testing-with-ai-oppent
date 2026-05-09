@@ -210,23 +210,25 @@ class RulesEngine:
                     return
                 options = collect_cost_options(state, player_id, card)
                 chosen = normalize_cost_choice(action, options)
-                if not check_cost_option_available(state, player_id, card, chosen):
+                # Extract x_value early — needed for cost checking and payment
+                at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+                x_value = int(at_targets.get("x_value", 0) or 0)
+                if not check_cost_option_available(state, player_id, card, chosen, x_value=x_value):
                     explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
                     if not explicit_choice:
                         chosen = next(
                             (
                                 opt
                                 for opt in options
-                                if check_cost_option_available(state, player_id, card, opt)
+                                if check_cost_option_available(state, player_id, card, opt, x_value=x_value)
                             ),
                             chosen,
                         )
-                    if not check_cost_option_available(state, player_id, card, chosen):
+                    if not check_cost_option_available(state, player_id, card, chosen, x_value=x_value):
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
                         return
-                action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
-                action_targets = enrich_divide_total(card, action_targets)
+                action_targets = enrich_divide_total(card, at_targets)
                 hints = build_cast_hints(state, card, player_id)
                 ok, error = validate_cast_choice(hints, action_targets)
                 if not ok:
@@ -244,7 +246,7 @@ class RulesEngine:
                 target_ids.extend([x for x in (action_targets.get("target_card_ids") or []) if x not in target_ids])
                 ward_tax = ward_tax_for_targets(state, player_id, target_ids)
                 adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
-                paid = auto_pay_cost(state, player_id, adjusted_cost, is_land=("Land" in card.types), card_name=card.name)
+                paid = auto_pay_cost(state, player_id, adjusted_cost, is_land=("Land" in card.types), card_name=card.name, x_value=x_value)
                 if not paid:
                     if ward_tax > 0:
                         state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")

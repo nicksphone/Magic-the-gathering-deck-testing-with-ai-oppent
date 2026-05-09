@@ -4,6 +4,8 @@ import json
 from dataclasses import dataclass
 from typing import Literal
 
+from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -28,7 +30,16 @@ from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 
-app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app_instance: FastAPI):
+    init_db()
+    with Session(engine) as session:
+        repo = Repository(session)
+        _ensure_builtin_decks(repo)
+        _ensure_expansion_top_decks(repo)
+    yield
+
+app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -114,13 +125,7 @@ def get_repo(session: Session = Depends(get_session)) -> Repository:
     return Repository(session)
 
 
-@app.on_event("startup")
-def on_startup() -> None:
-    init_db()
-    with Session(engine) as session:
-        repo = Repository(session)
-        _ensure_builtin_decks(repo)
-        _ensure_expansion_top_decks(repo)
+
 
 
 @app.get("/health")

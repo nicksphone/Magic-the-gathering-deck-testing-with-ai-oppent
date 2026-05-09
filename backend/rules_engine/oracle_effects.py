@@ -77,6 +77,10 @@ def infer_effect_from_oracle(
     if "counterspell" in name and state.stack:
         return "counter_spell", {"target_stack_id": state.stack[-1].id}
 
+    # Fallback: log uninferrable oracle text instead of silent no-op.
+    # Cards whose text doesn't match any known pattern get a logged warning
+    # and a harmless gain_life(0) so the stack still resolves cleanly.
+    state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
     return "gain_life", {"amount": 0}
 
 

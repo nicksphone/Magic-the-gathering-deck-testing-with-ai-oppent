@@ -51,7 +51,7 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
     return options
 
 
-def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption) -> bool:
+def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
     player = state.players[player_id]
     if player.life <= option.pay_life:
         return False
@@ -59,7 +59,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if sum(1 for cid in player.battlefield if "Creature" in state.cards[cid].types) < option.sacrifice_creatures:
         return False
-    return can_pay_with_pool_and_lands(state, player_id, option.mana_cost, is_land=("Land" in card.types), card_name=card.name)
+    return can_pay_with_pool_and_lands(state, player_id, option.mana_cost, is_land=("Land" in card.types), card_name=card.name, x_value=x_value)
 
 
 def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> CostOption:

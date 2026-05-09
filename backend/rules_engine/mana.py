@@ -24,7 +24,7 @@ DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
 }
 
 
-def parse_mana_cost(mana_cost: str, is_land: bool = False) -> dict[str, int]:
+def parse_mana_cost(mana_cost: str, is_land: bool = False, x_value: int = 0) -> dict[str, int]:
     if is_land:
         return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0}
     if not mana_cost:
@@ -39,6 +39,9 @@ def parse_mana_cost(mana_cost: str, is_land: bool = False) -> dict[str, int]:
         elif sym == "C":
             # Simulator rule: treat explicit colorless symbol as generic payable by any mana.
             req["generic"] += 1
+        elif sym in {"X", "Y"}:
+            # {X} and {Y} are variable generic costs — substitute the actual X value.
+            req["generic"] += max(0, x_value)
         elif "/" in sym:
             left = sym.split("/")[0]
             if left in req:
@@ -80,10 +83,11 @@ def can_pay_with_pool_and_lands(
     mana_cost: str,
     is_land: bool = False,
     card_name: str = "",
+    x_value: int = 0,
 ) -> bool:
     context = apply_cost_modifiers(CostContext(player_id=player_id, card_name=card_name, mana_cost=mana_cost))
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    req = parse_mana_cost(mana_cost, is_land=is_land)
+    req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
     pool = dict(state.players[player_id].mana_pool)
     lands = count_untapped_lands_by_color(state, player_id)
     nonlands = count_untapped_nonland_mana_sources_by_color(state, player_id)
@@ -122,18 +126,19 @@ def auto_pay_cost(
     mana_cost: str,
     is_land: bool = False,
     card_name: str = "",
+    x_value: int = 0,
 ) -> bool:
     context = apply_cost_modifiers(CostContext(player_id=player_id, card_name=card_name, mana_cost=mana_cost))
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    if not can_pay_with_pool_and_lands(state, player_id, mana_cost, is_land=is_land, card_name=card_name):
+    if not can_pay_with_pool_and_lands(state, player_id, mana_cost, is_land=is_land, card_name=card_name, x_value=x_value):
         return False
-    req = parse_mana_cost(mana_cost, is_land=is_land)
+    req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
     player = state.players[player_id]
 
     for color in ["W", "U", "B", "R", "G"]:
         need = req[color]
-        use_pool = min(need, player.mana_pool.get(color, 0))
-        player.mana_pool[color] -= use_pool
+        use_pool = min(need, max(0, player.mana_pool.get(color, 0)))
+        player.mana_pool[color] = max(0, player.mana_pool.get(color, 0) - use_pool)
         req[color] -= use_pool
 
     for color in ["W", "U", "B", "R", "G"]:
@@ -156,8 +161,8 @@ def auto_pay_cost(
     for color in ["C", "W", "U", "B", "R", "G"]:
         if generic_need <= 0:
             break
-        pay = min(generic_need, player.mana_pool.get(color, 0))
-        player.mana_pool[color] -= pay
+        pay = min(generic_need, max(0, player.mana_pool.get(color, 0)))
+        player.mana_pool[color] = max(0, player.mana_pool.get(color, 0) - pay)
         generic_need -= pay
 
     while generic_need > 0:

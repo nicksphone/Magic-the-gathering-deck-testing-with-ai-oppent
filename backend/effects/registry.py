@@ -34,6 +34,9 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
 
 
 def resolve_effect(state: MatchState, controller: int, effect_key: str, payload: dict) -> None:
+    if not isinstance(payload, dict):
+        state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
+        return
     if effect_key == "effect_sequence":
         source_card_id = payload.get("__source_card_id")
         for item in payload.get("effects", []):

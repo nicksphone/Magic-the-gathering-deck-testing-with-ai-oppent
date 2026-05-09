@@ -106,3 +106,17 @@ def test_timing_restriction_first_main_phase_only() -> None:
     moves = engine.legal_moves(state, 1)
     restricted = [m for m in moves if m.get("type") == "cast_spell_restricted" and m.get("card_id") == cid]
     assert len(restricted) == 1
+
+
+def test_resolve_effect_rejects_non_dict_payload() -> None:
+    """Bug #8: resolve_effect should gracefully handle non-dict payloads."""
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
+    # None payload
+    resolve_effect(state, 1, "gain_life", None)  # type: ignore
+    assert any("Invalid payload type" in line for line in state.log)
+    # List payload
+    resolve_effect(state, 1, "gain_life", [1, 2])  # type: ignore
+    assert any("Invalid payload type" in line for line in state.log)
+    # String payload
+    resolve_effect(state, 1, "gain_life", "bad")  # type: ignore
+    assert any("Invalid payload type" in line for line in state.log)
