@@ -80,6 +80,7 @@ export type LegalMove = {
   attackers?: { id: string; name: string }[];
   defenders?: { id: string; label: string; kind: string }[];
   blockers?: { id: string; name: string }[];
+  targets?: { id: string; name: string }[];
   ability_index?: number;
   ability_label?: string;
   ability_delta?: number;

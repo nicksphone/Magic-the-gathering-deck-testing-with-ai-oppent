@@ -121,6 +121,7 @@ class MatchState:
     mulligan_count: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     kept_hands: set[int] = field(default_factory=set)
     loyalty_activated_this_turn: set[str] = field(default_factory=set)
+    trigger_once_seen_this_turn: set[str] = field(default_factory=set)
     priority_stops: dict[int, set[Step]] = field(
         default_factory=lambda: {
             1: {Step.UPKEEP, Step.PRECOMBAT_MAIN, Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.POSTCOMBAT_MAIN, Step.END_STEP},

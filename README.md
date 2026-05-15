@@ -228,13 +228,19 @@ Access from another machine:
     - gain-life replacement into draw (`if you would gain life, draw that many cards instead`)
     - draw replacement into life gain (`if you would draw a card, gain 1 life instead`)
     - damage prevention replacement hooks (`prevent 1` style self-replacement clauses)
-  - optional trigger (`you may`) handling:
+- optional trigger (`you may`) handling:
     - triggered payloads now carry optional-choice metadata
     - stack resolution can decline optional triggers and skip effect
 
 Legal move visibility:
 - Restricted cast windows now appear as `cast_spell_restricted` legal-move entries with reason text so UI can surface why a spell is currently unavailable.
 - Frontend hand panel now renders restriction reason text next to non-castable cards when a `cast_spell_restricted` move exists.
+- Combat phase now exposes attacker-level restriction reasons (`attack_restricted`) in controls.
+- Equipment now supports explicit equip actions at sorcery speed with target selection and cost payment.
+- Continuous layer support expanded with base power/toughness setters (`base power and toughness X/Y`) before additive buffs.
+- Oracle parser expanded for draw-then-discard (“loot”) sequencing and delayed token self-sacrifice at next end step.
+- Trigger engine adds once-per-turn guard support for text containing `only once each turn`.
+- Replacement system expanded with zone replacement for dies-to-exile style effects (`if a creature you control would die, exile it instead`).
 
 ## How to Add Cards
 
@@ -298,6 +304,7 @@ Note:
     --input diagnostics/overnight-YYYYMMDD-HHMMSS/all_games.jsonl \
     --out diagnostics/overnight-YYYYMMDD-HHMMSS/anomaly-clusters.json
   ```
+- Overnight round-robin now auto-writes `anomaly-clusters.json` in the run directory.
 
 Frontend reliability:
 - Deck loading now degrades gracefully: if optional sources fail (for example expansion catalog endpoint), saved decks still load so AI-vs-AI deck selectors remain usable.

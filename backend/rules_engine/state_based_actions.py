@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Zone
 from rules_engine.attachments import attached_to, is_aura, is_equipment
 from rules_engine.continuous import effective_toughness, has_keyword
+from rules_engine.replacement import replace_die_zone
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -23,9 +24,15 @@ def apply_state_based_actions(state: MatchState) -> None:
                 pstate = state.players[card.controller]
                 if cid in pstate.battlefield:
                     pstate.battlefield.remove(cid)
-                    pstate.graveyard.append(cid)
-                    card.zone = Zone.GRAVEYARD
-                    state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
+                    destination = replace_die_zone(state, card.controller, cid)
+                    if destination == "exile":
+                        pstate.exile.append(cid)
+                        card.zone = Zone.EXILE
+                        state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
+                    else:
+                        pstate.graveyard.append(cid)
+                        card.zone = Zone.GRAVEYARD
+                        state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
         if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
             pstate = state.players[card.controller]
             if cid in pstate.battlefield:

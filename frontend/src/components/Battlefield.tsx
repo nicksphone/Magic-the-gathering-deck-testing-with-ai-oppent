@@ -80,6 +80,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
+  const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
@@ -310,6 +311,43 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                       ))}
                     </select>
                   ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+        {equipMoves.length ? (
+          <div className="hand-row">
+            {equipMoves.map((move, i) => {
+              const key = `${move.card_id}-equip-${i}`;
+              return (
+                <div key={key} className="cast-card-box">
+                  <button
+                    onClick={() =>
+                      onCardAction(1, {
+                        type: "equip",
+                        card_id: move.card_id,
+                        target_card_id: (targets[key]?.target_card_id as string) || move.targets?.[0]?.id,
+                      })
+                    }
+                  >
+                    Equip {move.card_name} {move.mana_cost ? `(${move.mana_cost})` : ""}
+                  </button>
+                  <select
+                    onChange={(e) =>
+                      setTargets((prev) => ({
+                        ...prev,
+                        [key]: { ...prev[key], target_card_id: e.target.value },
+                      }))
+                    }
+                    defaultValue={move.targets?.[0]?.id ?? ""}
+                  >
+                    {(move.targets ?? []).map((t) => (
+                      <option key={`${key}-t-${t.id}`} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               );
             })}

@@ -29,3 +29,13 @@ def replace_draw_cards(state, target_player: int, amount: int) -> tuple[str, dic
         if "if you would draw a card, gain 1 life instead" in text:
             return ("gain_life", {"target_player": target_player, "amount": int(amount)})
     return None
+
+
+def replace_die_zone(state, controller: int, card_id: str) -> str:
+    """Return destination zone for a dying creature: 'graveyard' or 'exile'."""
+    for cid in state.players[controller].battlefield:
+        card = state.cards[cid]
+        text = (card.oracle_text or "").lower()
+        if "if a creature you control would die, exile it instead" in text:
+            return "exile"
+    return "graveyard"

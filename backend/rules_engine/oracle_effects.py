@@ -32,6 +32,8 @@ PUT_CREATURES_FROM_TOP_RE = re.compile(
     r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+creature cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
     re.IGNORECASE,
 )
+LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
+SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
 
 
 def infer_effect_from_oracle(
@@ -214,6 +216,18 @@ def _infer_clause_effect(
         return "deal_damage", {"target_player": target_player, "amount": amount}
 
     draw_match = DRAW_RE.search(oracle)
+    loot_match = LOOT_RE.search(oracle)
+    if loot_match:
+        draw_raw = loot_match.group(1)
+        disc_raw = loot_match.group(2)
+        draw_n = 1 if draw_raw == "a" else int(draw_raw)
+        disc_n = 1 if disc_raw == "a" else int(disc_raw)
+        return "effect_sequence", {
+            "effects": [
+                {"effect_key": "draw_cards", "payload": {"amount": draw_n}},
+                {"effect_key": "discard_cards", "payload": {"target_player": controller, "amount": disc_n}},
+            ]
+        }
     if draw_match:
         raw = draw_match.group(1)
         amount = 1 if raw == "a" else int(raw)
@@ -290,13 +304,16 @@ def _infer_clause_effect(
         if token_name_match:
             token_name = token_name_match.group(1).strip().title()
         token_keywords = _extract_keywords_from_text(oracle)
-        return "create_token", {
+        out = {
             "name": token_name,
             "power": int(token_match.group(1)),
             "toughness": int(token_match.group(2)),
             "amount": token_count,
             "keywords": token_keywords,
         }
+        if SAC_AT_EOT_RE.search(oracle):
+            out["sacrifice_next_end_step"] = True
+        return "create_token", out
 
     counters_match = COUNTER_RE.search(oracle)
     if counters_match:

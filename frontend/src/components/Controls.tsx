@@ -63,6 +63,7 @@ export function Controls(props: Props) {
   ];
   const blockMove = useMemo(() => props.legalMoves.find((m) => m.type === "block"), [props.legalMoves]);
   const attackMove = useMemo(() => props.legalMoves.find((m) => m.type === "attack"), [props.legalMoves]);
+  const attackRestrictions = useMemo(() => props.legalMoves.filter((m) => m.type === "attack_restricted"), [props.legalMoves]);
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
   const [sbPlayer, setSbPlayer] = useState(1);
@@ -263,6 +264,16 @@ export function Controls(props: Props) {
           <button onClick={() => props.onSubmitAttack(attackMove.options ?? [], attackTargets)}>
             Submit Attackers
           </button>
+        </div>
+      ) : null}
+      {attackRestrictions.length ? (
+        <div className="block-panel">
+          <h3>Attack Restrictions</h3>
+          {attackRestrictions.map((r, i) => (
+            <p key={`atk-res-${r.card_id ?? i}`}>
+              {r.card_name}: {r.reason}
+            </p>
+          ))}
         </div>
       ) : null}
 

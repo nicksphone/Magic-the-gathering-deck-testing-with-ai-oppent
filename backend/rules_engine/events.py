@@ -32,6 +32,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         for cid in list(pstate.battlefield):
             card = state.cards[cid]
             oracle = (card.oracle_text or "").lower()
+            once_each_turn = "only once each turn" in oracle or "this ability triggers only once each turn" in oracle
+            trigger_key = f"{cid}:{event}"
+            if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
+                continue
 
             if event == "draw_card" and payload.get("player_id") == card.controller and "whenever you draw a card" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
@@ -72,6 +76,17 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                             )
                         )
                 elif step == "end_step":
+                    # Delayed sacrifice marker support for token effects.
+                    if card.counters.get("__sac_next_end_step", 0) > 0 and card.controller == active_player:
+                        out.append(
+                            {
+                                "source_card_id": cid,
+                                "controller": card.controller,
+                                "label": f"{card.name} delayed sacrifice",
+                                "effect_key": "sacrifice",
+                                "payload": {"target_card_id": cid},
+                            }
+                        )
                     if "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
                         out.append(
                             _trigger_from_oracle(
@@ -96,6 +111,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                                 payload=payload,
                             )
                         )
+            if once_each_turn:
+                state.trigger_once_seen_this_turn.add(trigger_key)
     return out
 
 

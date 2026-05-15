@@ -8,6 +8,9 @@ PT_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+get\s+([+-]\d+)\/([+-]\d+)"
 )
+PT_SET_RE = re.compile(
+    r"\bbase power and toughness\s+(\d+)\/(\d+)\b"
+)
 KW_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
@@ -37,7 +40,8 @@ KNOWN_KEYWORDS = [
 
 def effective_power(state, card_id: str) -> int:
     card = state.cards[card_id]
-    base = int(card.power or 0)
+    base_p, _ = _base_pt_with_layers(state, card_id)
+    base = int(base_p or 0)
     p_bonus, _ = _continuous_pt_delta(state, card_id)
     counter_bonus = _counter_pt_delta(card)
     return base + p_bonus + counter_bonus
@@ -45,7 +49,8 @@ def effective_power(state, card_id: str) -> int:
 
 def effective_toughness(state, card_id: str) -> int:
     card = state.cards[card_id]
-    base = int(card.toughness or 0)
+    _, base_t = _base_pt_with_layers(state, card_id)
+    base = int(base_t or 0)
     _, t_bonus = _continuous_pt_delta(state, card_id)
     counter_bonus = _counter_pt_delta(card)
     return base + t_bonus + counter_bonus
@@ -85,6 +90,31 @@ def effective_keywords(state, card_id: str) -> list[str]:
 def has_keyword(state, card_id: str, keyword: str) -> bool:
     k = (keyword or "").lower()
     return k in set(effective_keywords(state, card_id))
+
+
+def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
+    card = state.cards[card_id]
+    base_p = card.power
+    base_t = card.toughness
+    # Minimal layer support: base PT setters from static text.
+    for src_id in _all_battlefield_ids(state):
+        src = state.cards.get(src_id)
+        if not src:
+            continue
+        text = (getattr(src, "oracle_text", "") or "").lower()
+        if "creatures you control have base power and toughness" in text:
+            if src.controller != card.controller or "Creature" not in card.types:
+                continue
+            m = PT_SET_RE.search(text)
+            if m:
+                base_p = int(m.group(1))
+                base_t = int(m.group(2))
+        elif src_id == card_id:
+            m = PT_SET_RE.search(text)
+            if m:
+                base_p = int(m.group(1))
+                base_t = int(m.group(2))
+    return base_p, base_t
 
 
 def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:

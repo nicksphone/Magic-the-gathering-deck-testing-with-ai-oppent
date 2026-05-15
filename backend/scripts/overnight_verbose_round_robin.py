@@ -7,6 +7,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
+import re
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
@@ -254,8 +255,10 @@ def run() -> int:
             "progress_log": str(progress_path),
             "anomaly_games_jsonl": str(anomalies_path),
             "all_games_jsonl": str(all_games_path),
+            "anomaly_clusters_json": str(run_dir / "anomaly-clusters.json"),
         },
     }
+    _write_anomaly_clusters(anomalies_path, run_dir / "anomaly-clusters.json")
     summary_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result["output"], indent=2))
     return 0
@@ -263,3 +266,44 @@ def run() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(run())
+
+
+def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
+    pats = [
+        ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
+        ("cannot_pay", re.compile(r"cannot pay", re.IGNORECASE)),
+        ("land_miss", re.compile(r"missed_land_windows", re.IGNORECASE)),
+        ("stall", re.compile(r"pass_priority", re.IGNORECASE)),
+    ]
+    clusters: Counter = Counter()
+    samples: dict[str, list[dict]] = {}
+    if not anomaly_games_path.exists():
+        out_path.write_text(json.dumps({"total_games": 0, "clusters": []}, indent=2), encoding="utf-8")
+        return
+    with anomaly_games_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            log_text = "\n".join(row.get("log", []) or [])
+            labels = [name for name, pat in pats if pat.search(log_text)]
+            if not labels:
+                labels = ["other"]
+            key = "+".join(sorted(labels))
+            clusters[key] += 1
+            samples.setdefault(key, [])
+            if len(samples[key]) < 3:
+                samples[key].append(
+                    {
+                        "deck_a": row.get("deck_a"),
+                        "deck_b": row.get("deck_b"),
+                        "game_index": row.get("game_index"),
+                        "winner": row.get("winner"),
+                        "turns": row.get("turns"),
+                    }
+                )
+    payload = {
+        "total_games": int(sum(clusters.values())),
+        "clusters": [{"label": k, "count": int(v), "samples": samples.get(k, [])} for k, v in clusters.most_common()],
+    }
+    out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

@@ -27,6 +27,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         return moves
 
     if state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not getattr(state, "attackers_declared", False):
+        restricted_attackers: list[dict] = []
         attackers = [
             cid
             for cid in player.battlefield
@@ -36,6 +37,18 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not has_keyword(state, cid, "defender")
             and not card_cant_attack(state, cid)
         ]
+        for cid in player.battlefield:
+            c = state.cards[cid]
+            if "Creature" not in c.types:
+                continue
+            if c.tapped:
+                restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Tapped"})
+            elif c.summoning_sick and not has_keyword(state, cid, "haste"):
+                restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Summoning sick"})
+            elif has_keyword(state, cid, "defender"):
+                restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Defender can't attack"})
+            elif card_cant_attack(state, cid):
+                restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Can't attack"})
         if attackers:
             defender_id = 1 if state.active_player == 2 else 2
             defenders = [{"id": f"player:{defender_id}", "label": state.players[defender_id].name, "kind": "player"}]
@@ -49,6 +62,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
             )
             moves.append({"type": "attack", "options": attackers, "defenders": defenders})
+        moves.extend(restricted_attackers)
     if state.step == Step.DECLARE_BLOCKERS and state.active_player != player_id and state.attackers:
         blockers = [
             cid
@@ -150,6 +164,28 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         "target_hints": hints,
                     }
                 )
+    # Equipment equip abilities (sorcery speed only).
+    if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
+        own_creatures = [cid for cid in player.battlefield if "Creature" in state.cards[cid].types]
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if "Artifact" not in card.types:
+                continue
+            equip_cost = _extract_equip_cost(card.oracle_text or "")
+            if not equip_cost:
+                continue
+            if not can_pay_with_pool_and_lands(state, player_id, equip_cost):
+                continue
+            if own_creatures:
+                moves.append(
+                    {
+                        "type": "equip",
+                        "card_id": cid,
+                        "card_name": card.name,
+                        "mana_cost": equip_cost,
+                        "targets": [{"id": c, "name": state.cards[c].name} for c in own_creatures],
+                    }
+                )
 
     return moves
 
@@ -187,3 +223,12 @@ def _is_land_card(card) -> bool:
         return True
     name = (getattr(card, "name", "") or "").strip().lower()
     return name in {"island", "swamp", "mountain", "forest", "plains"}
+
+
+def _extract_equip_cost(oracle_text: str) -> str:
+    text = oracle_text or ""
+    import re
+    m = re.search(r"Equip\s+(\{[^}]+\}(?:\{[^}]+\})*)", text, flags=re.IGNORECASE)
+    if not m:
+        return ""
+    return m.group(1).upper()

@@ -322,6 +322,8 @@ class AIAgent:
         card = state.cards.get(cid) if cid else None
         if not card:
             return 0.0
+        if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types:
+            return -1.4
         is_creature = "Creature" in card.types
         arche = self.archetype
         tags = self._spell_tags(card)

@@ -197,6 +197,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     types = list(payload.get("types", ["Creature", "Token"]))
     keywords = list(payload.get("keywords", []))
     token_controller = int(payload.get("controller", controller))
+    sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
     for _ in range(amount):
         cid = str(uuid.uuid4())
         token = CardInstance(
@@ -214,6 +215,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         )
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
+        if sac_next_end:
+            token.counters["__sac_next_end_step"] = 1
     state.log.append(f"{state.players[token_controller].name} creates {amount} {p}/{t} token(s).")
 
 

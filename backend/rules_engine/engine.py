@@ -15,6 +15,7 @@ from rules_engine.targeting import validate_protection_targets
 from rules_engine.events import emit_event
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
+from rules_engine.attachments import attach_if_legal
 
 
 class RulesEngine:
@@ -36,6 +37,7 @@ class RulesEngine:
             state.active_player = 1 if state.active_player == 2 else 2
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
+            state.trigger_once_seen_this_turn = set()
             player = state.players[state.active_player]
             for cid in list(player.battlefield):
                 card = state.cards[cid]
@@ -313,6 +315,28 @@ class RulesEngine:
                 payload=payload,
             )
 
+        elif kind == "equip":
+            cid = action.get("card_id")
+            target_id = action.get("target_card_id")
+            if not cid or not target_id:
+                apply_state_based_actions(state)
+                return
+            if cid not in player.battlefield:
+                apply_state_based_actions(state)
+                return
+            equip_cost = _extract_equip_cost_text(state.cards[cid].oracle_text or "")
+            if not equip_cost:
+                apply_state_based_actions(state)
+                return
+            if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name):
+                state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
+                apply_state_based_actions(state)
+                return
+            if attach_if_legal(state, cid, target_id):
+                state.log.append(f"{player.name} equips {state.cards[cid].name} to {state.cards[target_id].name}.")
+            else:
+                state.log.append(f"{player.name} cannot legally equip {state.cards[cid].name} to chosen target.")
+
         elif kind == "block":
             blocks = action.get("blocks", {})
             combat.declare_blockers(state, blocks)
@@ -437,3 +461,9 @@ def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: s
         scored.append((score, card.id))
     scored.sort(reverse=True)
     return [cid for _, cid in scored[: max(0, count)]]
+
+
+def _extract_equip_cost_text(oracle_text: str) -> str:
+    import re
+    m = re.search(r"Equip\s+(\{[^}]+\}(?:\{[^}]+\})*)", oracle_text or "", flags=re.IGNORECASE)
+    return m.group(1).upper() if m else ""
