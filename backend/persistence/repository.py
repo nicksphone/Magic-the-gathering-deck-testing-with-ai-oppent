@@ -33,7 +33,14 @@ class Repository:
         if not normalized:
             return None
         query = select(CardCache).where(func.lower(CardCache.name) == normalized)
-        return self.session.exec(query).first()
+        hit = self.session.exec(query).first()
+        if hit is not None:
+            return hit
+        # Handle split/DFC names cached as "Front Face // Back Face".
+        for row in self.session.exec(select(CardCache)).all():
+            if normalized in _name_aliases(row.name):
+                return row
+        return None
 
     def get_cached_cards_by_names(self, names: list[str]) -> dict[str, CardCache]:
         if not names:
@@ -41,11 +48,12 @@ class Repository:
         lowered = {n.strip().lower() for n in names if n.strip()}
         if not lowered:
             return {}
-        rows = self.session.exec(select(CardCache).where(func.lower(CardCache.name).in_(lowered))).all()
+        rows = self.session.exec(select(CardCache)).all()
         out: dict[str, CardCache] = {}
         for row in rows:
-            if row.name.lower() in lowered:
-                out[row.name.lower()] = row
+            for alias in _name_aliases(row.name):
+                if alias in lowered:
+                    out[alias] = row
         return out
 
     def save_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
@@ -162,3 +170,13 @@ class Repository:
     def list_tournament_decks(self, event_id: int) -> list[TournamentDeck]:
         q = select(TournamentDeck).where(TournamentDeck.event_id == event_id).order_by(TournamentDeck.placement.asc())
         return list(self.session.exec(q).all())
+
+
+def _name_aliases(name: str | None) -> set[str]:
+    raw = (name or "").strip().lower()
+    if not raw:
+        return set()
+    aliases = {raw}
+    if "//" in raw:
+        aliases.update(part.strip() for part in raw.split("//") if part.strip())
+    return aliases

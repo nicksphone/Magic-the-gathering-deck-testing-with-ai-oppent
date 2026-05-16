@@ -198,6 +198,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     keywords = list(payload.get("keywords", []))
     token_controller = int(payload.get("controller", controller))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
+    token_image_uri = payload.get("image_uri")
     for _ in range(amount):
         cid = str(uuid.uuid4())
         token = CardInstance(
@@ -212,6 +213,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             summoning_sick="Creature" in types,
             entered_turn=state.turn,
             keywords=keywords,
+            image_uri=token_image_uri,
         )
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
