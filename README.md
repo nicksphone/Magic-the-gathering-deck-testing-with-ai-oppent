@@ -91,6 +91,8 @@ Gameplay logic is implemented in application code, not SQL.
 - Counterspell/interaction hold-up heuristics
 - Counterspell target selection now evaluates all stack objects and prefers highest-threat spells
 - Improved late-game control behavior: deploys major castable threats instead of over-holding interaction
+- Additional X-spell safety guards in AI selection to prevent invalid `X=0` cast loops
+- Late-game attack progression policy in declare-attackers to reduce pass-loop timeouts
 - Limited lookahead and rollout scoring at higher difficulties
 
 ### Deck Workflows
@@ -118,6 +120,9 @@ Gameplay logic is implemented in application code, not SQL.
 - Overnight round-robin scripts
 - Anomaly clustering report generation
 - Stall and land-window anomaly counters in diagnostics
+- Head-to-head debug traces now include `legal_non_pass` and `legal_has_land` markers
+- Card-play analytics script for per-matchup action/cast/pass profiling:
+  - `backend/scripts/card_play_analytics.py`
 - Round-robin script startup bug fixed (`_write_anomaly_clusters` call order)
 
 ## Recent Improvements (2026-05-16)

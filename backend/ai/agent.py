@@ -31,30 +31,151 @@ class AIAgent:
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
+        if _step_key(getattr(state, "step", "")) == "declare_attackers" and getattr(state, "active_player", player_id) == player_id:
+            forced_attack = self._forced_progress_attack(state, legal_moves, player_id)
+            if forced_attack is not None:
+                return AIDecision(action=forced_attack, reasoning="Late-game progress attack to avoid stall timeout")
 
         forced_land = self._choose_forced_land_play(state, legal_moves, player_id)
         if forced_land is not None:
             return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
+
+        closure = self._choose_forced_closure_action(state, legal_moves, player_id)
+        if closure is not None:
+            return AIDecision(action=closure, reasoning="Force late-game proactive line to avoid control stall/timeouts")
 
         sorted_moves = self._rank_moves(state, legal_moves, player_id)
         if self._should_break_stall(state, legal_moves, player_id):
             proactive = self._best_proactive_non_pass(sorted_moves, state)
             if proactive is not None:
                 proactive = self._materialize_action(state, proactive, player_id)
-                return AIDecision(action=proactive, reasoning="Break pass-loop by selecting proactive legal action")
+                if not proactive.get("_invalid_ai_choice") and not self._is_unplayable_x_action(proactive):
+                    return AIDecision(action=proactive, reasoning="Break pass-loop by selecting proactive legal action")
         if self.difficulty == "casual":
-            move = sorted_moves[min(1, len(sorted_moves) - 1)]
-        elif self.difficulty in {"master", "master_plus"}:
-            move = sorted_moves[0]
+            ranked_candidates = sorted_moves[min(1, len(sorted_moves) - 1) :]
         else:
-            move = sorted_moves[0]
-        move = self._materialize_action(state, move, player_id)
+            ranked_candidates = sorted_moves
+        move = None
+        for cand in ranked_candidates:
+            materialized = self._materialize_action(state, cand, player_id)
+            if materialized.get("_invalid_ai_choice"):
+                continue
+            if self._is_unplayable_x_action(materialized):
+                continue
+            move = materialized
+            break
+        if move is None:
+            move = {"type": "pass_priority"}
         if move.get("type") == "block" and not move.get("blocks"):
             return AIDecision(action={"type": "pass_priority"}, reasoning="No profitable/legal block assignment; pass")
         if move.get("type") == "attack" and not (move.get("attackers") or []):
             return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _forced_progress_attack(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        turn = int(getattr(state, "turn", 1) or 1)
+        if turn < 20:
+            return None
+        attack_moves = [m for m in legal_moves if m.get("type") == "attack"]
+        if not attack_moves:
+            return None
+        move = dict(attack_moves[0])
+        options = list(move.get("options") or move.get("attackers") or [])
+        if not options:
+            return None
+        chosen = self._choose_attackers(state, options, player_id)
+        if not chosen:
+            chosen = self._fallback_progress_attackers(state, options, player_id)
+        if not chosen:
+            return None
+        move["attackers"] = chosen
+        return move
+
+    def _fallback_progress_attackers(self, state: MatchState, candidates: list[str], player_id: int) -> list[str]:
+        opp_id = 1 if player_id == 2 else 2
+        from rules_engine.continuous import effective_power as _eff_pow
+        from rules_engine.continuous import effective_toughness as _eff_tgh
+
+        opp_blockers = [
+            cid
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        ]
+        out: list[str] = []
+        for cid in candidates:
+            card = state.cards.get(cid)
+            if not card:
+                continue
+            p = _eff_pow(state, cid)
+            t = _eff_tgh(state, cid)
+            if p <= 0:
+                continue
+            kws = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+            evasive = bool(kws.intersection({"flying", "trample", "deathtouch", "menace"}))
+            dies_to_any = any(_eff_pow(state, b) >= t for b in opp_blockers)
+            trades_up = any(_eff_tgh(state, b) <= p for b in opp_blockers)
+            if evasive or not dies_to_any or trades_up or p >= 3:
+                out.append(cid)
+        return out
+
+    def _choose_forced_closure_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if getattr(state, "active_player", player_id) != player_id:
+            return None
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return None
+        if getattr(state, "stack", []) or []:
+            return None
+        turn = int(getattr(state, "turn", 1) or 1)
+        if turn < 10:
+            return None
+
+        # Look for non-pass cast lines that actually advance board/card quality.
+        cast_moves = [m for m in legal_moves if m.get("type") == "cast_spell"]
+        if not cast_moves:
+            return None
+
+        candidates: list[tuple[float, dict]] = []
+        for m in cast_moves:
+            cid = m.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if not card:
+                continue
+            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+            # Do not force pure stack-dependent counters when stack is empty.
+            if "counter target spell" in text and not (getattr(state, "stack", []) or []):
+                continue
+            materialized = self._materialize_action(state, m, player_id)
+            if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
+                continue
+            score = self._closure_spell_score(card, text)
+            candidates.append((score, materialized))
+        if not candidates:
+            return None
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        # Require meaningful proactive value.
+        if candidates[0][0] < 1.0:
+            return None
+        return candidates[0][1]
+
+    def _closure_spell_score(self, card, text: str) -> float:
+        score = 0.0
+        types = set(getattr(card, "types", []) or [])
+        if "Planeswalker" in types:
+            score += 5.0
+        if "Creature" in types:
+            p = int(getattr(card, "power", 0) or 0)
+            t = int(getattr(card, "toughness", 0) or 0)
+            score += min(6.0, p * 0.9 + t * 0.25)
+        if "draw" in text or "deluge" in text or "consider" in text:
+            score += 1.8
+        if "token" in text or "create " in text:
+            score += 1.5
+        if "shark typhoon" in text:
+            score += 2.2
+        if "counter target spell" in text:
+            score -= 2.5
+        return score
 
     def _choose_forced_land_play(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         step = _step_key(getattr(state, "step", ""))
@@ -347,6 +468,12 @@ class AIAgent:
         )
         mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=("Land" in card.types))
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
+        mana_cost_text = (getattr(card, "mana_cost", "") or "").upper()
+        if "{X}" in mana_cost_text:
+            x = self._choose_x_value(state, player_id, mana_cost_text)
+            if x <= 0:
+                # Avoid invalid X=0 loops for spells that need explicit positive X targeting.
+                return -8.0
         power = getattr(card, "power", 0) or 0
         is_big_threat = power >= 4 or cmc >= 4
 
@@ -595,6 +722,21 @@ class AIAgent:
             else:
                 targets["x_value"] = 1
 
+        requires_x = bool(hints.get("requires_x_value"))
+        if card:
+            mana_text = (getattr(card, "mana_cost", "") or "").upper()
+            oracle_text = (getattr(card, "oracle_text", "") or "").lower()
+            if "{X}" in mana_text or (" x " in f" {oracle_text} " and "target" in oracle_text):
+                requires_x = True
+
+        if requires_x:
+            try:
+                xv = int(targets.get("x_value", 0) or 0)
+            except Exception:
+                xv = 0
+            if xv <= 0:
+                out["_invalid_ai_choice"] = True
+
         out["targets"] = targets
         return out
 
@@ -778,6 +920,18 @@ class AIAgent:
             if can_pay_with_pool_and_lands(state, player_id, cost):
                 return x
         return 0
+
+    def _is_unplayable_x_action(self, action: dict) -> bool:
+        if action.get("type") != "cast_spell":
+            return False
+        targets = action.get("targets") or {}
+        if "x_value" not in targets:
+            return False
+        try:
+            xv = int(targets.get("x_value", 0) or 0)
+        except Exception:
+            xv = 0
+        return xv <= 0
 
     def _rollout_delta(self, state: MatchState, move: dict, player_id: int) -> float:
         # Lightweight rollout approximation for deeper tactical planning.

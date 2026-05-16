@@ -128,6 +128,8 @@ def main() -> int:
                         "step": str(state.step),
                         "hand": hand_snapshot(state, pid),
                         "mana_pool": dict(state.players[pid].mana_pool),
+                        "legal_non_pass": any(m.get("type") != "pass_priority" for m in legal),
+                        "legal_has_land": any(m.get("type") == "play_land" for m in legal),
                         "action": compact_action(action),
                     }
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")
