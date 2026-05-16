@@ -147,6 +147,10 @@ Gameplay logic is implemented in application code, not SQL.
   - `backend/ai/matchup_profiles.py` defines archetype-vs-archetype proactive/hold-up bias knobs.
   - `backend/ai/endgame_policy.py` centralizes late-game closure thresholds by matchup.
   - `backend/ai/agent.py` now consumes those profiles for pass/interaction pressure decisions.
+- Token image support improved:
+  - Token creation now attempts Scryfall token-art resolution by token name/P/T.
+  - If exact token art is unavailable, a local generic token image is used.
+  - Supports DFC face-name cache aliasing (e.g., `Delver of Secrets` matching `Delver of Secrets // Insectile Aberration`).
 - Board heuristic hardening:
   - `evaluate_inevitability()` now gracefully handles lightweight/fake state objects used by tests.
   - Full backend suite remains green after integration (`187 passed`).

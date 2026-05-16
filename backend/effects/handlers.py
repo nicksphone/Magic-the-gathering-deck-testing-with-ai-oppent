@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
@@ -198,7 +199,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     keywords = list(payload.get("keywords", []))
     token_controller = int(payload.get("controller", controller))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
-    token_image_uri = payload.get("image_uri")
+    token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     for _ in range(amount):
         cid = str(uuid.uuid4())
         token = CardInstance(
