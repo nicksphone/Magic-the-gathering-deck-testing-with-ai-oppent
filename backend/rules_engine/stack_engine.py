@@ -20,6 +20,15 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
     )
     state.stack.append(item)
     state.log.append(f"{state.players[controller].name} casts/activates {label}.")
+    emit_event(
+        state,
+        "spell_cast",
+        {
+            "source_card_id": source_card_id,
+            "controller": controller,
+            "label": label,
+        },
+    )
     # MTG priority rule: after casting/activating, the same player receives priority first.
     state.priority_player = controller
     state.passed_priority = set()

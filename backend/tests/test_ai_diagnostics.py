@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from analytics.service import AnalyticsService
+from collections import Counter
 
 
 class FakeRepo:
@@ -32,3 +33,23 @@ def test_ai_diagnostics_reports_matchup_metrics() -> None:
     assert "suspicious_matchups" in result
     assert len(result["suspicious_matchups"]) == 1
     assert repo.saved and repo.saved[0][0] == "ai_diagnostics"
+
+
+def test_scan_log_tracks_stall_and_land_window_anomalies() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    out = Counter()
+    top = Counter()
+    svc._scan_log_for_anomalies(
+        [
+            "Player A passes priority.",
+            "Player B passes priority.",
+            "Player A passes priority.",
+            "Player B passes priority.",
+            "Missed land-play window for Player A.",
+        ],
+        out,
+        top,
+    )
+    assert out["stall_pass_streaks"] == 1
+    assert out["missed_land_windows"] == 1

@@ -198,6 +198,8 @@ class AnalyticsService:
                 "additional_cost_failures": int(global_counts["additional_cost_failures"]),
                 "no_legal_moves": int(global_counts["no_legal_moves"]),
                 "repeated_error_bursts": int(global_counts["repeated_error_bursts"]),
+                "stall_pass_streaks": int(global_counts["stall_pass_streaks"]),
+                "missed_land_windows": int(global_counts["missed_land_windows"]),
             },
             "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
             "suspicious_matchups": suspicious[:20],
@@ -247,8 +249,16 @@ class AnalyticsService:
 
     def _scan_log_for_anomalies(self, log: list[str], out: Counter, top_errors: Counter) -> None:
         error_lines: list[str] = []
+        consecutive_passes = 0
         for line in log:
             low = line.lower()
+            if "passes priority" in low:
+                consecutive_passes += 1
+                if consecutive_passes >= 4:
+                    out["stall_pass_streaks"] += 1
+                    consecutive_passes = 0
+            else:
+                consecutive_passes = 0
             if "invalid targets for" in low:
                 out["invalid_targets"] += 1
                 error_lines.append(line.strip())
@@ -257,6 +267,9 @@ class AnalyticsService:
                 error_lines.append(line.strip())
             if "failed additional costs for" in low:
                 out["additional_cost_failures"] += 1
+                error_lines.append(line.strip())
+            if "missed land-play window" in low or "land in hand but no land play available" in low:
+                out["missed_land_windows"] += 1
                 error_lines.append(line.strip())
         for e in error_lines:
             top_errors[e] += 1

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from game_state.state import MatchFactory, Zone
 from rules_engine.events import emit_event
+from rules_engine.stack_engine import add_to_stack
 from rules_engine.engine import RulesEngine
 
 
@@ -82,3 +83,25 @@ def test_engine_upkeep_start_enqueues_begin_step_triggers() -> None:
     engine.take_action(state, 2, {"type": "pass_priority"})
     assert state.step == state.step.UPKEEP
     assert len(state.stack) >= before + 1
+
+
+def test_spell_cast_trigger_from_permanent() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+
+    _put_trigger_creature(state, 1, "Whenever you cast an instant or sorcery spell, draw a card.")
+    source = state.players[1].hand[0]
+    spell = state.cards[source]
+    spell.types = ["Instant"]
+    spell.zone = Zone.HAND
+
+    state.players[1].hand.remove(source)
+    spell.zone = Zone.STACK
+    before = len(state.stack)
+    add_to_stack(state, source, 1, "Test Instant", "draw_cards", {"amount": 1})
+
+    assert len(state.stack) >= before + 2
+    assert any(x.controller == 1 and "cast trigger" in x.label.lower() for x in state.stack)

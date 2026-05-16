@@ -47,6 +47,39 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and payload.get("card_id") == cid and f"when {card.name.lower()} enters the battlefield" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
+            elif event == "spell_cast":
+                cast_controller = int(payload.get("controller", 0) or 0)
+                source_card_id = str(payload.get("source_card_id", "") or "")
+                source_card = state.cards.get(source_card_id) if source_card_id else None
+                source_types = {t.lower() for t in (getattr(source_card, "types", []) or [])}
+                if cast_controller == card.controller and "whenever you cast a spell" in oracle:
+                    out.append(
+                        _trigger_from_oracle(
+                            state,
+                            cid,
+                            card.controller,
+                            oracle,
+                            default_label=f"{card.name} cast trigger",
+                            event=event,
+                            payload=payload,
+                        )
+                    )
+                elif cast_controller == card.controller and (
+                    ("whenever you cast an instant spell" in oracle and "instant" in source_types)
+                    or ("whenever you cast a sorcery spell" in oracle and "sorcery" in source_types)
+                    or ("whenever you cast an instant or sorcery spell" in oracle and ("instant" in source_types or "sorcery" in source_types))
+                ):
+                    out.append(
+                        _trigger_from_oracle(
+                            state,
+                            cid,
+                            card.controller,
+                            oracle,
+                            default_label=f"{card.name} cast trigger",
+                            event=event,
+                            payload=payload,
+                        )
+                    )
             elif event == "begin_step":
                 step = str(payload.get("step", "")).lower()
                 active_player = int(payload.get("active_player", 0) or 0)
