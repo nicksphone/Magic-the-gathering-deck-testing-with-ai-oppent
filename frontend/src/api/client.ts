@@ -2,7 +2,7 @@ import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
 const API =
   (import.meta as any).env?.VITE_API_BASE_URL ||
-  `http://${typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"}:8000`;
+  `http://${typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"}:9999`;
 
 export const API_BASE = API;
 

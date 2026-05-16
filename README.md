@@ -119,7 +119,7 @@ Gameplay logic is implemented in application code, not SQL.
 
 ## API Overview
 
-Base backend default: `http://0.0.0.0:8000`
+Base backend default: `http://0.0.0.0:9999`
 
 Key endpoints:
 - `GET /health`
@@ -157,7 +157,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 9999 --reload
 ```
 
 ## 3) Frontend
