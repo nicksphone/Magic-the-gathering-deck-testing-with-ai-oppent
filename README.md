@@ -151,6 +151,13 @@ Gameplay logic is implemented in application code, not SQL.
   - Token creation now attempts Scryfall token-art resolution by token name/P/T.
   - If exact token art is unavailable, a local generic token image is used.
   - Supports DFC face-name cache aliasing (e.g., `Delver of Secrets` matching `Delver of Secrets // Insectile Aberration`).
+- Log-driven AI priors:
+  - Added `backend/ai/log_priors.py` to build/load card timing priors from replay/training logs.
+  - Added `backend/scripts/build_ai_log_priors.py` to extract priors from local match history and `backend/training_runs`.
+  - Added API endpoints:
+    - `GET /ai/priors` returns current priors payload.
+    - `POST /ai/priors/rebuild` rebuilds priors from available logs and hot-loads them into AI.
+  - AI cast scoring now incorporates historical timing bias for noncreature spells, improving control/slow-deck hold-vs-cast behavior.
 - Board heuristic hardening:
   - `evaluate_inevitability()` now gracefully handles lightweight/fake state objects used by tests.
   - Full backend suite remains green after integration (`187 passed`).

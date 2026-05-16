@@ -485,6 +485,67 @@ def test_ai_avoids_low_value_secure_the_wastes_early() -> None:
     assert decision.action["type"] == "pass_priority"
 
 
+def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    old = AIAgent._log_priors_cache
+    AIAgent._log_priors_cache = {
+        "generated_at": None,
+        "samples": {"games": 10, "logs": 1000},
+        "cards": {
+            "secure the wastes": {
+                "casts": 30,
+                "seen_in_logs": 100,
+                "avg_turn": 8.2,
+                "early_turn_cast_rate": 0.05,
+                "mid_turn_cast_rate": 0.25,
+                "late_turn_cast_rate": 0.70,
+                "preferred_min_turn": 7,
+            }
+        },
+    }
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_id": "xspell-1",
+            "card_name": "Secure the Wastes",
+            "mana_cost": "{X}{W}",
+            "target_hints": {"requires_x_value": True},
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 4
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["xspell-1"], "battlefield": ["l1", "l2", "l3", "l4"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l4": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    try:
+        decision = ai.choose_action(FakeState(), moves, 1)
+        assert decision.action["type"] == "pass_priority"
+    finally:
+        AIAgent._log_priors_cache = old
+
+
 def test_ai_materialize_sets_default_cost_choice_when_options_present() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     move = {

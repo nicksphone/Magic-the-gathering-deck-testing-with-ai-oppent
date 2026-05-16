@@ -1,0 +1,738 @@
+{
+  "cards": {
+    "abrupt decay": {
+      "avg_turn": 6.808,
+      "casts": 308,
+      "early_turn_cast_rate": 0.562,
+      "late_turn_cast_rate": 0.263,
+      "mid_turn_cast_rate": 0.175,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 1720
+    },
+    "adeline, resplendent cathar": {
+      "avg_turn": 14.044,
+      "casts": 655,
+      "early_turn_cast_rate": 0.432,
+      "late_turn_cast_rate": 0.475,
+      "mid_turn_cast_rate": 0.093,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 2400
+    },
+    "arboreal grazer": {
+      "avg_turn": 11.623,
+      "casts": 632,
+      "early_turn_cast_rate": 0.441,
+      "late_turn_cast_rate": 0.445,
+      "mid_turn_cast_rate": 0.114,
+      "preferred_min_turn": 11,
+      "seen_in_logs": 3453
+    },
+    "blood artist": {
+      "avg_turn": 10.342,
+      "casts": 524,
+      "early_turn_cast_rate": 0.433,
+      "late_turn_cast_rate": 0.452,
+      "mid_turn_cast_rate": 0.115,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4133
+    },
+    "bloodtithe harvester": {
+      "avg_turn": 9.175,
+      "casts": 303,
+      "early_turn_cast_rate": 0.492,
+      "late_turn_cast_rate": 0.38,
+      "mid_turn_cast_rate": 0.129,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 2731
+    },
+    "bonecrusher giant": {
+      "avg_turn": 8.72,
+      "casts": 393,
+      "early_turn_cast_rate": 0.534,
+      "late_turn_cast_rate": 0.331,
+      "mid_turn_cast_rate": 0.135,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 3174
+    },
+    "boros charm": {
+      "avg_turn": 7.015,
+      "casts": 463,
+      "early_turn_cast_rate": 0.508,
+      "late_turn_cast_rate": 0.367,
+      "mid_turn_cast_rate": 0.125,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 1849
+    },
+    "brazen borrower": {
+      "avg_turn": 9.15,
+      "casts": 632,
+      "early_turn_cast_rate": 0.468,
+      "late_turn_cast_rate": 0.402,
+      "mid_turn_cast_rate": 0.13,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 4402
+    },
+    "cauldron familiar": {
+      "avg_turn": 9.51,
+      "casts": 557,
+      "early_turn_cast_rate": 0.469,
+      "late_turn_cast_rate": 0.415,
+      "mid_turn_cast_rate": 0.117,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 5042
+    },
+    "claim the firstborn": {
+      "avg_turn": 10.383,
+      "casts": 574,
+      "early_turn_cast_rate": 0.451,
+      "late_turn_cast_rate": 0.425,
+      "mid_turn_cast_rate": 0.124,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 5793
+    },
+    "clarion spirit": {
+      "avg_turn": 13.161,
+      "casts": 659,
+      "early_turn_cast_rate": 0.439,
+      "late_turn_cast_rate": 0.46,
+      "mid_turn_cast_rate": 0.102,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 2873
+    },
+    "collected company": {
+      "avg_turn": 9.297,
+      "casts": 546,
+      "early_turn_cast_rate": 0.549,
+      "late_turn_cast_rate": 0.35,
+      "mid_turn_cast_rate": 0.101,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 3789
+    },
+    "consider": {
+      "avg_turn": 10.074,
+      "casts": 1968,
+      "early_turn_cast_rate": 0.428,
+      "late_turn_cast_rate": 0.428,
+      "mid_turn_cast_rate": 0.144,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 13136
+    },
+    "counterspell": {
+      "avg_turn": 10.168,
+      "casts": 1981,
+      "early_turn_cast_rate": 0.404,
+      "late_turn_cast_rate": 0.456,
+      "mid_turn_cast_rate": 0.14,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 20361
+    },
+    "cultivate": {
+      "avg_turn": 12.896,
+      "casts": 616,
+      "early_turn_cast_rate": 0.391,
+      "late_turn_cast_rate": 0.481,
+      "mid_turn_cast_rate": 0.128,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 4905
+    },
+    "deadly dispute": {
+      "avg_turn": 8.492,
+      "casts": 539,
+      "early_turn_cast_rate": 0.479,
+      "late_turn_cast_rate": 0.375,
+      "mid_turn_cast_rate": 0.147,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 2263
+    },
+    "delver of secrets": {
+      "avg_turn": 9.472,
+      "casts": 608,
+      "early_turn_cast_rate": 0.48,
+      "late_turn_cast_rate": 0.385,
+      "mid_turn_cast_rate": 0.135,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 4058
+    },
+    "dreadhorde butcher": {
+      "avg_turn": 9.575,
+      "casts": 555,
+      "early_turn_cast_rate": 0.465,
+      "late_turn_cast_rate": 0.42,
+      "mid_turn_cast_rate": 0.115,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4471
+    },
+    "drown in the loch": {
+      "avg_turn": 9.888,
+      "casts": 667,
+      "early_turn_cast_rate": 0.436,
+      "late_turn_cast_rate": 0.412,
+      "mid_turn_cast_rate": 0.151,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 3971
+    },
+    "eidolon of the great revel": {
+      "avg_turn": 7.839,
+      "casts": 485,
+      "early_turn_cast_rate": 0.474,
+      "late_turn_cast_rate": 0.367,
+      "mid_turn_cast_rate": 0.159,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 4913
+    },
+    "elvish archdruid": {
+      "avg_turn": 10.23,
+      "casts": 551,
+      "early_turn_cast_rate": 0.528,
+      "late_turn_cast_rate": 0.359,
+      "mid_turn_cast_rate": 0.113,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 2723
+    },
+    "elvish clancaller": {
+      "avg_turn": 9.581,
+      "casts": 571,
+      "early_turn_cast_rate": 0.494,
+      "late_turn_cast_rate": 0.37,
+      "mid_turn_cast_rate": 0.137,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 2773
+    },
+    "elvish mystic": {
+      "avg_turn": 10.262,
+      "casts": 588,
+      "early_turn_cast_rate": 0.526,
+      "late_turn_cast_rate": 0.349,
+      "mid_turn_cast_rate": 0.126,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 2711
+    },
+    "elvish warmaster": {
+      "avg_turn": 10.526,
+      "casts": 548,
+      "early_turn_cast_rate": 0.536,
+      "late_turn_cast_rate": 0.347,
+      "mid_turn_cast_rate": 0.117,
+      "preferred_min_turn": 10,
+      "seen_in_logs": 2635
+    },
+    "expressive iteration": {
+      "avg_turn": 9.758,
+      "casts": 627,
+      "early_turn_cast_rate": 0.456,
+      "late_turn_cast_rate": 0.429,
+      "mid_turn_cast_rate": 0.115,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4610
+    },
+    "fable of the mirror-breaker": {
+      "avg_turn": 8.52,
+      "casts": 421,
+      "early_turn_cast_rate": 0.537,
+      "late_turn_cast_rate": 0.33,
+      "mid_turn_cast_rate": 0.133,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 4445
+    },
+    "farewell": {
+      "avg_turn": 14.153,
+      "casts": 340,
+      "early_turn_cast_rate": 0.15,
+      "late_turn_cast_rate": 0.526,
+      "mid_turn_cast_rate": 0.324,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 16533
+    },
+    "fatal push": {
+      "avg_turn": 9.285,
+      "casts": 1097,
+      "early_turn_cast_rate": 0.437,
+      "late_turn_cast_rate": 0.407,
+      "mid_turn_cast_rate": 0.156,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 5795
+    },
+    "forest": {
+      "avg_turn": 1.0,
+      "casts": 43,
+      "early_turn_cast_rate": 1.0,
+      "late_turn_cast_rate": 0.0,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 1,
+      "seen_in_logs": 287895
+    },
+    "go for the throat": {
+      "avg_turn": 9.976,
+      "casts": 658,
+      "early_turn_cast_rate": 0.395,
+      "late_turn_cast_rate": 0.447,
+      "mid_turn_cast_rate": 0.158,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4078
+    },
+    "goblin guide": {
+      "avg_turn": 8.1,
+      "casts": 521,
+      "early_turn_cast_rate": 0.472,
+      "late_turn_cast_rate": 0.392,
+      "mid_turn_cast_rate": 0.136,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 5737
+    },
+    "growth spiral": {
+      "avg_turn": 11.418,
+      "casts": 519,
+      "early_turn_cast_rate": 0.408,
+      "late_turn_cast_rate": 0.447,
+      "mid_turn_cast_rate": 0.145,
+      "preferred_min_turn": 10,
+      "seen_in_logs": 11367
+    },
+    "hopeful initiate": {
+      "avg_turn": 1.0,
+      "casts": 3,
+      "early_turn_cast_rate": 1.0,
+      "late_turn_cast_rate": 0.0,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 1,
+      "seen_in_logs": 0
+    },
+    "hydroid krasis": {
+      "avg_turn": 13.414,
+      "casts": 452,
+      "early_turn_cast_rate": 0.363,
+      "late_turn_cast_rate": 0.527,
+      "mid_turn_cast_rate": 0.111,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 9395
+    },
+    "intangible virtue": {
+      "avg_turn": 13.421,
+      "casts": 651,
+      "early_turn_cast_rate": 0.455,
+      "late_turn_cast_rate": 0.45,
+      "mid_turn_cast_rate": 0.095,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 3335
+    },
+    "kumano faces kakkazan": {
+      "avg_turn": 6.929,
+      "casts": 504,
+      "early_turn_cast_rate": 0.496,
+      "late_turn_cast_rate": 0.335,
+      "mid_turn_cast_rate": 0.169,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 4637
+    },
+    "lava spike": {
+      "avg_turn": 7.561,
+      "casts": 1074,
+      "early_turn_cast_rate": 0.479,
+      "late_turn_cast_rate": 0.388,
+      "mid_turn_cast_rate": 0.133,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 1828
+    },
+    "light up the stage": {
+      "avg_turn": 7.926,
+      "casts": 484,
+      "early_turn_cast_rate": 0.469,
+      "late_turn_cast_rate": 0.372,
+      "mid_turn_cast_rate": 0.159,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 4277
+    },
+    "lightning bolt": {
+      "avg_turn": 8.317,
+      "casts": 1674,
+      "early_turn_cast_rate": 0.495,
+      "late_turn_cast_rate": 0.396,
+      "mid_turn_cast_rate": 0.109,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 2753
+    },
+    "llanowar elves": {
+      "avg_turn": 9.639,
+      "casts": 1012,
+      "early_turn_cast_rate": 0.514,
+      "late_turn_cast_rate": 0.36,
+      "mid_turn_cast_rate": 0.126,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 6597
+    },
+    "march of otherworldly light": {
+      "avg_turn": 11.322,
+      "casts": 622,
+      "early_turn_cast_rate": 0.386,
+      "late_turn_cast_rate": 0.463,
+      "mid_turn_cast_rate": 0.151,
+      "preferred_min_turn": 10,
+      "seen_in_logs": 33881
+    },
+    "march of the multitudes": {
+      "avg_turn": 13.482,
+      "casts": 652,
+      "early_turn_cast_rate": 0.423,
+      "late_turn_cast_rate": 0.442,
+      "mid_turn_cast_rate": 0.135,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 3922
+    },
+    "memory deluge": {
+      "avg_turn": 10.557,
+      "casts": 1329,
+      "early_turn_cast_rate": 0.399,
+      "late_turn_cast_rate": 0.486,
+      "mid_turn_cast_rate": 0.115,
+      "preferred_min_turn": 10,
+      "seen_in_logs": 15714
+    },
+    "migration path": {
+      "avg_turn": 12.374,
+      "casts": 668,
+      "early_turn_cast_rate": 0.394,
+      "late_turn_cast_rate": 0.494,
+      "mid_turn_cast_rate": 0.112,
+      "preferred_min_turn": 11,
+      "seen_in_logs": 6633
+    },
+    "monastery swiftspear": {
+      "avg_turn": 7.09,
+      "casts": 1003,
+      "early_turn_cast_rate": 0.521,
+      "late_turn_cast_rate": 0.333,
+      "mid_turn_cast_rate": 0.146,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 9939
+    },
+    "nissa, who shakes the world": {
+      "avg_turn": 13.351,
+      "casts": 601,
+      "early_turn_cast_rate": 0.364,
+      "late_turn_cast_rate": 0.547,
+      "mid_turn_cast_rate": 0.088,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 6486
+    },
+    "nissa, who shakes the world loyalty ability": {
+      "avg_turn": 21.535,
+      "casts": 142,
+      "early_turn_cast_rate": 0.0,
+      "late_turn_cast_rate": 1.0,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 21,
+      "seen_in_logs": 0
+    },
+    "priest of forgotten gods": {
+      "avg_turn": 9.654,
+      "casts": 537,
+      "early_turn_cast_rate": 0.436,
+      "late_turn_cast_rate": 0.428,
+      "mid_turn_cast_rate": 0.136,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4239
+    },
+    "raise the alarm": {
+      "avg_turn": 12.844,
+      "casts": 654,
+      "early_turn_cast_rate": 0.44,
+      "late_turn_cast_rate": 0.443,
+      "mid_turn_cast_rate": 0.116,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 4184
+    },
+    "realmwalker": {
+      "avg_turn": 10.132,
+      "casts": 569,
+      "early_turn_cast_rate": 0.536,
+      "late_turn_cast_rate": 0.339,
+      "mid_turn_cast_rate": 0.125,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 2721
+    },
+    "recruitment officer": {
+      "avg_turn": 1.0,
+      "casts": 5,
+      "early_turn_cast_rate": 1.0,
+      "late_turn_cast_rate": 0.0,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 1,
+      "seen_in_logs": 0
+    },
+    "rift bolt": {
+      "avg_turn": 7.86,
+      "casts": 1050,
+      "early_turn_cast_rate": 0.5,
+      "late_turn_cast_rate": 0.384,
+      "mid_turn_cast_rate": 0.116,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 1864
+    },
+    "searing blaze": {
+      "avg_turn": 7.041,
+      "casts": 1023,
+      "early_turn_cast_rate": 0.527,
+      "late_turn_cast_rate": 0.346,
+      "mid_turn_cast_rate": 0.127,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 3958
+    },
+    "secure the wastes": {
+      "avg_turn": 13.571,
+      "casts": 611,
+      "early_turn_cast_rate": 0.427,
+      "late_turn_cast_rate": 0.452,
+      "mid_turn_cast_rate": 0.121,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 3854
+    },
+    "shaman of the pack": {
+      "avg_turn": 11.915,
+      "casts": 505,
+      "early_turn_cast_rate": 0.481,
+      "late_turn_cast_rate": 0.386,
+      "mid_turn_cast_rate": 0.133,
+      "preferred_min_turn": 11,
+      "seen_in_logs": 2538
+    },
+    "shark typhoon": {
+      "avg_turn": 14.154,
+      "casts": 701,
+      "early_turn_cast_rate": 0.148,
+      "late_turn_cast_rate": 0.553,
+      "mid_turn_cast_rate": 0.298,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 23409
+    },
+    "sheoldred, the apocalypse": {
+      "avg_turn": 10.255,
+      "casts": 823,
+      "early_turn_cast_rate": 0.414,
+      "late_turn_cast_rate": 0.407,
+      "mid_turn_cast_rate": 0.179,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 6675
+    },
+    "skewer the critics": {
+      "avg_turn": 7.869,
+      "casts": 502,
+      "early_turn_cast_rate": 0.486,
+      "late_turn_cast_rate": 0.382,
+      "mid_turn_cast_rate": 0.131,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 4006
+    },
+    "skullcrack": {
+      "avg_turn": 6.936,
+      "casts": 993,
+      "early_turn_cast_rate": 0.508,
+      "late_turn_cast_rate": 0.348,
+      "mid_turn_cast_rate": 0.144,
+      "preferred_min_turn": 6,
+      "seen_in_logs": 3773
+    },
+    "soul-scar mage": {
+      "avg_turn": 8.221,
+      "casts": 493,
+      "early_turn_cast_rate": 0.487,
+      "late_turn_cast_rate": 0.371,
+      "mid_turn_cast_rate": 0.142,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 3820
+    },
+    "spectral procession": {
+      "avg_turn": 13.871,
+      "casts": 589,
+      "early_turn_cast_rate": 0.396,
+      "late_turn_cast_rate": 0.475,
+      "mid_turn_cast_rate": 0.129,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 3404
+    },
+    "spell pierce": {
+      "avg_turn": 8.507,
+      "casts": 540,
+      "early_turn_cast_rate": 0.489,
+      "late_turn_cast_rate": 0.361,
+      "mid_turn_cast_rate": 0.15,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 2222
+    },
+    "sprite dragon": {
+      "avg_turn": 9.66,
+      "casts": 606,
+      "early_turn_cast_rate": 0.452,
+      "late_turn_cast_rate": 0.411,
+      "mid_turn_cast_rate": 0.137,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4052
+    },
+    "storm the festival": {
+      "avg_turn": 13.145,
+      "casts": 317,
+      "early_turn_cast_rate": 0.388,
+      "late_turn_cast_rate": 0.508,
+      "mid_turn_cast_rate": 0.104,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 3154
+    },
+    "supreme verdict": {
+      "avg_turn": 15.005,
+      "casts": 639,
+      "early_turn_cast_rate": 0.135,
+      "late_turn_cast_rate": 0.557,
+      "mid_turn_cast_rate": 0.308,
+      "preferred_min_turn": 14,
+      "seen_in_logs": 35439
+    },
+    "tarmogoyf": {
+      "avg_turn": 8.302,
+      "casts": 441,
+      "early_turn_cast_rate": 0.537,
+      "late_turn_cast_rate": 0.338,
+      "mid_turn_cast_rate": 0.125,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 3024
+    },
+    "teferi, hero of dominaria": {
+      "avg_turn": 14.159,
+      "casts": 485,
+      "early_turn_cast_rate": 0.105,
+      "late_turn_cast_rate": 0.573,
+      "mid_turn_cast_rate": 0.322,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 17624
+    },
+    "teferi, hero of dominaria loyalty ability": {
+      "avg_turn": 28.065,
+      "casts": 505,
+      "early_turn_cast_rate": 0.002,
+      "late_turn_cast_rate": 0.998,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 27,
+      "seen_in_logs": 0
+    },
+    "thalia, guardian of thraben": {
+      "avg_turn": 1.0,
+      "casts": 3,
+      "early_turn_cast_rate": 1.0,
+      "late_turn_cast_rate": 0.0,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 1,
+      "seen_in_logs": 0
+    },
+    "the meathook massacre": {
+      "avg_turn": 12.317,
+      "casts": 514,
+      "early_turn_cast_rate": 0.058,
+      "late_turn_cast_rate": 0.484,
+      "mid_turn_cast_rate": 0.457,
+      "preferred_min_turn": 11,
+      "seen_in_logs": 14582
+    },
+    "the wandering emperor": {
+      "avg_turn": 14.476,
+      "casts": 521,
+      "early_turn_cast_rate": 0.134,
+      "late_turn_cast_rate": 0.516,
+      "mid_turn_cast_rate": 0.349,
+      "preferred_min_turn": 13,
+      "seen_in_logs": 23875
+    },
+    "the wandering emperor loyalty ability": {
+      "avg_turn": 31.168,
+      "casts": 339,
+      "early_turn_cast_rate": 0.006,
+      "late_turn_cast_rate": 0.994,
+      "mid_turn_cast_rate": 0.0,
+      "preferred_min_turn": 30,
+      "seen_in_logs": 0
+    },
+    "thoughtseize": {
+      "avg_turn": 8.995,
+      "casts": 425,
+      "early_turn_cast_rate": 0.539,
+      "late_turn_cast_rate": 0.353,
+      "mid_turn_cast_rate": 0.108,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 4296
+    },
+    "topiary stomper": {
+      "avg_turn": 12.949,
+      "casts": 644,
+      "early_turn_cast_rate": 0.37,
+      "late_turn_cast_rate": 0.492,
+      "mid_turn_cast_rate": 0.138,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 3771
+    },
+    "torrential gearhulk": {
+      "avg_turn": 10.836,
+      "casts": 365,
+      "early_turn_cast_rate": 0.389,
+      "late_turn_cast_rate": 0.455,
+      "mid_turn_cast_rate": 0.156,
+      "preferred_min_turn": 10,
+      "seen_in_logs": 3512
+    },
+    "ugin, the spirit dragon": {
+      "avg_turn": 13.0,
+      "casts": 439,
+      "early_turn_cast_rate": 0.401,
+      "late_turn_cast_rate": 0.474,
+      "mid_turn_cast_rate": 0.125,
+      "preferred_min_turn": 12,
+      "seen_in_logs": 8044
+    },
+    "unholy heat": {
+      "avg_turn": 8.77,
+      "casts": 525,
+      "early_turn_cast_rate": 0.474,
+      "late_turn_cast_rate": 0.427,
+      "mid_turn_cast_rate": 0.099,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 2048
+    },
+    "village rites": {
+      "avg_turn": 8.196,
+      "casts": 499,
+      "early_turn_cast_rate": 0.469,
+      "late_turn_cast_rate": 0.401,
+      "mid_turn_cast_rate": 0.13,
+      "preferred_min_turn": 7,
+      "seen_in_logs": 2068
+    },
+    "wedding announcement": {
+      "avg_turn": 11.996,
+      "casts": 709,
+      "early_turn_cast_rate": 0.461,
+      "late_turn_cast_rate": 0.417,
+      "mid_turn_cast_rate": 0.121,
+      "preferred_min_turn": 11,
+      "seen_in_logs": 3939
+    },
+    "witch's oven": {
+      "avg_turn": 9.419,
+      "casts": 540,
+      "early_turn_cast_rate": 0.443,
+      "late_turn_cast_rate": 0.409,
+      "mid_turn_cast_rate": 0.148,
+      "preferred_min_turn": 8,
+      "seen_in_logs": 5487
+    },
+    "zulaport cutthroat": {
+      "avg_turn": 9.881,
+      "casts": 537,
+      "early_turn_cast_rate": 0.443,
+      "late_turn_cast_rate": 0.413,
+      "mid_turn_cast_rate": 0.143,
+      "preferred_min_turn": 9,
+      "seen_in_logs": 4550
+    }
+  },
+  "generated_at": "2026-05-16T23:39:29.047878+00:00",
+  "samples": {
+    "games": 2767,
+    "logs": 1318629
+  }
+}

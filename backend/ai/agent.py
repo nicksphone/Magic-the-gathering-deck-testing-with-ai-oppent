@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from ai.endgame_policy import should_force_closure
 from ai.heuristics import evaluate_board
+from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from game_state.state import MatchState
 from rules_engine.engine import RulesEngine
@@ -20,12 +21,16 @@ class AIDecision:
 
 
 class AIAgent:
+    _log_priors_cache: dict | None = None
+
     def __init__(self, difficulty: str = "strong", archetype: str = "Midrange", opponent_archetype: str | None = None):
         self.difficulty = difficulty.lower()
         self.archetype = archetype
         self.opponent_archetype = opponent_archetype
         self.matchup_profile = profile_for(archetype, opponent_archetype)
         self.engine = RulesEngine()
+        if AIAgent._log_priors_cache is None:
+            AIAgent._log_priors_cache = load_log_priors()
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         if getattr(state, "pregame_pending", False):
@@ -598,6 +603,36 @@ class AIAgent:
 
         if arche in {"Aggro", "Tribal", "Tokens", "Tempo"} and my_creatures == 0 and early_turn and in_main:
             return -1.8
+        # Log-driven priors: leverage observed tournament/simulation cast timing.
+        return self._historical_cast_timing_bias(state, card)
+
+    def _historical_cast_timing_bias(self, state: MatchState, card) -> float:
+        priors = AIAgent._log_priors_cache or {}
+        cards = priors.get("cards") if isinstance(priors, dict) else None
+        if not isinstance(cards, dict):
+            return 0.0
+        key = str(getattr(card, "name", "") or "").strip().lower()
+        row = cards.get(key)
+        if not isinstance(row, dict):
+            return 0.0
+        casts = int(row.get("casts", 0) or 0)
+        if casts < 6:
+            return 0.0
+        turn = int(getattr(state, "turn", 1) or 1)
+        preferred_min = int(row.get("preferred_min_turn", 1) or 1)
+        early_rate = float(row.get("early_turn_cast_rate", 0.0) or 0.0)
+        late_rate = float(row.get("late_turn_cast_rate", 0.0) or 0.0)
+        text = (getattr(card, "oracle_text", "") or "").lower()
+        non_creature = "Creature" not in set(getattr(card, "types", []) or [])
+        # Slow-play/control heuristics from logs: punish premature timing on low-early cards.
+        if turn < preferred_min and early_rate <= 0.2 and non_creature:
+            severity = min(3.5, max(0.6, (preferred_min - turn) * 0.8))
+            if "counter target spell" in text and not (getattr(state, "stack", []) or []):
+                severity += 0.8
+            return -severity
+        # Reward cards historically skewed late once the game is developed.
+        if turn >= preferred_min and late_rate >= 0.45:
+            return 0.8
         return 0.0
 
     def _x_spell_timing_penalty(self, state: MatchState, card, player_id: int, x_value: int) -> float:

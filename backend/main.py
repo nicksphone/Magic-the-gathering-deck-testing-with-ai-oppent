@@ -5,6 +5,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from contextlib import asynccontextmanager
@@ -17,6 +18,7 @@ from sqlmodel import Session
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.service import AnalyticsService
 from card_data.fallback_cards import fallback_card_payload
@@ -625,6 +627,52 @@ def ai_diagnostics(payload: AIDiagnosticsRequest, repo: Repository = Depends(get
         difficulty=payload.difficulty,
         max_ticks=payload.max_ticks,
     )
+
+
+@app.get("/ai/priors")
+def get_ai_priors() -> dict:
+    return load_log_priors()
+
+
+@app.post("/ai/priors/rebuild")
+def rebuild_ai_priors(repo: Repository = Depends(get_repo)) -> dict:
+    logs: list[list[str]] = []
+    for match in repo.list_matches():
+        try:
+            decoded = json.loads(match.log_json)
+        except Exception:
+            continue
+        if isinstance(decoded, list) and decoded:
+            logs.append([str(x) for x in decoded])
+    training_root = Path(__file__).resolve().parent / "training_runs"
+    if training_root.exists():
+        for p in training_root.rglob("*.jsonl"):
+            if "games" not in p.name and "all_games" not in p.name and "anomaly_games" not in p.name:
+                continue
+            try:
+                lines = p.read_text(encoding="utf-8").splitlines()
+            except Exception:
+                continue
+            for raw in lines:
+                raw = raw.strip()
+                if not raw:
+                    continue
+                try:
+                    row = json.loads(raw)
+                except Exception:
+                    continue
+                log = row.get("log")
+                if isinstance(log, list) and log:
+                    logs.append([str(x) for x in log])
+    payload = build_priors_from_logs(logs)
+    saved = save_log_priors(payload)
+    AIAgent._log_priors_cache = saved
+    return {
+        "generated_at": saved.get("generated_at"),
+        "games": saved.get("samples", {}).get("games", 0),
+        "logs": saved.get("samples", {}).get("logs", 0),
+        "cards": len(saved.get("cards", {})),
+    }
 
 
 @app.get("/analytics/history")
