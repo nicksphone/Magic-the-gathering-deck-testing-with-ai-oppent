@@ -64,6 +64,11 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal_targets[cid] = desired if desired in valid_defenders else f"player:{defender}"
         if not has_keyword(state, cid, "vigilance"):
             card.tapped = True
+    if len(legal) == 1 and card_cant_attack_alone(state, legal[0]):
+        lone = legal[0]
+        state.log.append(f"{state.cards[lone].name} can't attack alone.")
+        legal = []
+        legal_targets = {}
     state.attackers = legal
     state.attack_targets = legal_targets
     if legal:
@@ -384,8 +389,3 @@ def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
         return True
     return False
-    if len(legal) == 1:
-        lone = legal[0]
-        if card_cant_attack_alone(state, lone):
-            legal = []
-            legal_targets = {}

@@ -30,6 +30,7 @@ KNOWN_KEYWORDS = [
     "defender",
     "indestructible",
     "hexproof",
+    "shroud",
     "islandwalk",
     "swampwalk",
     "mountainwalk",

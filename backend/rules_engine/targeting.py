@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from rules_engine.continuous import has_keyword
 from rules_engine.protection import protection_match_reason
 
 
@@ -79,4 +80,29 @@ def validate_protection_targets(state, source_card, action_targets: dict[str, An
         reason = protection_match_reason(state, cid, source_card)
         if reason is not None:
             return False, f"Target {target.name} has protection from {reason}."
+    return True, ""
+
+
+def validate_hexproof_shroud_targets(
+    state,
+    source_controller: int,
+    action_targets: dict[str, Any],
+) -> tuple[bool, str]:
+    target_ids: list[str] = []
+    target_card_id = action_targets.get("target_card_id")
+    if target_card_id:
+        target_ids.append(target_card_id)
+    target_card_ids = action_targets.get("target_card_ids") or []
+    target_ids.extend([cid for cid in target_card_ids if cid not in target_ids])
+    target_distribution = action_targets.get("target_distribution") or {}
+    target_ids.extend([cid for cid in target_distribution.keys() if cid not in target_ids and cid in state.cards])
+
+    for cid in target_ids:
+        target = state.cards.get(cid)
+        if not target:
+            continue
+        if has_keyword(state, cid, "shroud"):
+            return False, f"Target {target.name} has shroud."
+        if target.controller != source_controller and has_keyword(state, cid, "hexproof"):
+            return False, f"Target {target.name} has hexproof."
     return True, ""

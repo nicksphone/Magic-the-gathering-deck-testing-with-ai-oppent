@@ -57,6 +57,20 @@ def test_cant_attack_alone_enforced() -> None:
     assert lone not in state.attackers
 
 
+def test_cant_attack_alone_not_treated_as_global_cant_attack() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+
+    lone = _setup_creature(state, 1, "Lone Wolf", 3, 1, "This creature can't attack alone.")
+    ally = _setup_creature(state, 1, "Ally", 2, 2, "")
+    combat.declare_attackers(state, [lone, ally], {lone: "player:2", ally: "player:2"})
+    assert lone in state.attackers
+    assert ally in state.attackers
+
+
 def test_must_block_if_able_auto_assignment() -> None:
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
     state.pregame_pending = False

@@ -52,6 +52,53 @@ def test_ward_tax_blocks_underpaid_targeted_spell() -> None:
     assert any("ward tax" in line.lower() for line in state.log)
 
 
+def test_hexproof_blocks_opponent_targeted_spell() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    engine = RulesEngine()
+
+    target_id = state.players[2].hand[0]
+    state.players[2].hand.remove(target_id)
+    state.players[2].battlefield.append(target_id)
+    target = state.cards[target_id]
+    target.zone = Zone.BATTLEFIELD
+    target.types = ["Creature"]
+    target.keywords = ["hexproof"]
+
+    spell_id = state.players[1].hand[0]
+    spell = state.cards[spell_id]
+    spell.name = "Needle Ray"
+    spell.types = ["Instant"]
+    spell.type_line = "Instant"
+    spell.mana_cost = "{U}"
+    spell.oracle_text = "Destroy target creature."
+
+    land_id = state.players[1].hand[1]
+    state.players[1].battlefield.append(land_id)
+    state.players[1].hand.remove(land_id)
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Island"
+
+    before_stack = len(state.stack)
+    engine.take_action(
+        state,
+        1,
+        {
+            "type": "cast_spell",
+            "card_id": spell_id,
+            "targets": {"target_card_id": target_id},
+        },
+    )
+    assert len(state.stack) == before_stack
+    assert any("hexproof" in line.lower() for line in state.log)
+
+
 def test_aura_without_target_goes_to_graveyard() -> None:
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
     aura_id = state.players[1].hand[0]

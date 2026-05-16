@@ -6,6 +6,8 @@ from game_state.state import Step, Zone
 def card_cant_attack(state, card_id: str) -> bool:
     card = state.cards[card_id]
     text = (card.oracle_text or "").lower()
+    if "can't attack alone" in text or "cannot attack alone" in text:
+        return False
     if "can't attack" in text or "cannot attack" in text:
         if "unless" not in text:
             return True

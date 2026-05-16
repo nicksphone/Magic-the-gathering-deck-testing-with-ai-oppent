@@ -11,7 +11,7 @@ from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
-from rules_engine.targeting import validate_protection_targets
+from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
 from rules_engine.events import emit_event
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
@@ -242,6 +242,11 @@ class RulesEngine:
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
+                ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
+                if not ok_hs:
+                    state.log.append(f"Invalid targets for {card.name}: {err_hs}")
+                    apply_state_based_actions(state)
+                    return
                 target_ids: list[str] = []
                 if action_targets.get("target_card_id"):
                     target_ids.append(action_targets["target_card_id"])
@@ -305,6 +310,16 @@ class RulesEngine:
             state.loyalty_activated_this_turn.add(cid)
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             proxy = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
+            ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
+            if not ok_hs:
+                state.log.append(f"Invalid targets for {pw.name}: {err_hs}")
+                apply_state_based_actions(state)
+                return
+            ok_prot, err_prot = validate_protection_targets(state, pw, action_targets)
+            if not ok_prot:
+                state.log.append(f"Invalid targets for {pw.name}: {err_prot}")
+                apply_state_based_actions(state)
+                return
             effect_key, payload = infer_effect_from_oracle(state, proxy, player_id, action_targets=action_targets)
             add_to_stack(
                 state,

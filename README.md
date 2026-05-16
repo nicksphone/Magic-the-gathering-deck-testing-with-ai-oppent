@@ -66,6 +66,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Trigger processing with APNAP ordering
 - Spell-cast trigger support (`whenever you cast ...` patterns)
 - Combat system with attacker/blocker legality
+- Correct `can't attack alone` enforcement (with proper distinction from global `can't attack`)
 - Menace / multi-block requirements
 - Flying/reach and unblockability checks (including landwalk patterns)
 - Summoning sickness and tap/untap handling
@@ -79,6 +80,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Replacement hooks for key interaction patterns
 - Delayed trigger support (including delayed sacrifice marker flows)
 - Modular effect handlers for damage, draw, life, counters, tokens, exile, destroy, etc.
+- Target legality checks now include protection + `hexproof` + `shroud`
 
 ### AI System
 - Difficulty levels: `casual`, `strong`, `master`, `master_plus`
