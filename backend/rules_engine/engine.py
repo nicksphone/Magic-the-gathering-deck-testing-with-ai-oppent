@@ -68,6 +68,8 @@ class RulesEngine:
         elif state.step == Step.DRAW and state.turn > 1:
             draw_card(state, state.active_player)
             state.log.append(f"{player.name} draws a card.")
+        elif state.step == Step.DRAW and state.turn == 1:
+            state.log.append(f"{player.name} skips draw on turn 1 (on the play rule).")
         elif state.step == Step.END_STEP:
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:

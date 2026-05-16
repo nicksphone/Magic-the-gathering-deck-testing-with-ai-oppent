@@ -35,3 +35,26 @@ def test_sorcery_speed_not_castable_off_main_timing() -> None:
 
     moves = legal_moves(state, 2)
     assert not any(m.get("type") == "cast_spell" and m.get("card_id") == cid for m in moves)
+
+
+def test_first_player_skips_first_draw_with_explicit_log() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "keep_hand", "bottom_card_ids": []})
+    engine.take_action(state, 2, {"type": "keep_hand", "bottom_card_ids": []})
+    # Advance from UNTAP -> UPKEEP -> DRAW on turn 1
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+
+    assert state.step == Step.DRAW
+    hand_before = len(state.players[1].hand)
+    lib_before = len(state.players[1].library)
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert len(state.players[1].hand) == hand_before
+    assert len(state.players[1].library) == lib_before
+    assert any("skips draw on turn 1" in line.lower() for line in state.log)
