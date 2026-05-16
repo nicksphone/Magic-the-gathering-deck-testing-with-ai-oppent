@@ -52,8 +52,20 @@ class ScryfallSyncService:
         return self._serialize_card(card)
 
     def _extract_remote_image_uri(self, raw: dict[str, Any]) -> str | None:
-        face = raw["card_faces"][0] if raw.get("card_faces") else None
-        return raw.get("image_uris", {}).get("normal") or (face.get("image_uris", {}).get("normal") if face else None)
+        # Prefer stable "normal", then gracefully fall back through other known Scryfall sizes.
+        preferred_sizes = ("normal", "large", "png", "small", "art_crop", "border_crop")
+        image_uris = raw.get("image_uris") or {}
+        for key in preferred_sizes:
+            uri = image_uris.get(key)
+            if uri:
+                return uri
+        for face in raw.get("card_faces") or []:
+            face_uris = face.get("image_uris") or {}
+            for key in preferred_sizes:
+                uri = face_uris.get(key)
+                if uri:
+                    return uri
+        return None
 
     def _cache_image(self, scryfall_id: str, remote_uri: str, client: httpx.Client) -> str | None:
         ext = Path(urlparse(remote_uri).path).suffix or ".jpg"

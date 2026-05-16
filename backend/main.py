@@ -683,9 +683,17 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
     cached = repo.get_cached_cards_by_names(names) if repo else {}
     if repo:
         missing = sorted({name for name in names if name.strip() and name.strip().lower() not in cached})
-        if missing:
+        stale = sorted(
+            {
+                row.name
+                for row in cached.values()
+                if not (getattr(row, "image_uri", None) and getattr(row, "mana_cost", None) is not None and getattr(row, "type_line", None))
+            }
+        )
+        to_sync = sorted(set(missing + stale))
+        if to_sync:
             sync = ScryfallSyncService(repo)
-            for name in missing:
+            for name in to_sync:
                 try:
                     sync.sync_card_by_name(name)
                 except Exception:
