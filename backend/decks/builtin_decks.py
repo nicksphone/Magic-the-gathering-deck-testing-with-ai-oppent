@@ -23,7 +23,7 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Wedding Announcement
 4 Ossification
 4 Lay Down Arms
-24 Plains
+28 Plains
 """,
     "Blue Control": """
 4 Counterspell

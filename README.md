@@ -97,6 +97,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Upload deck files
 - Built-in deck library
 - Expansion top-deck catalog import
+- Expansion catalog mainboards normalized to 60-card minimum for clean import-all runs
 - Sideboard swap endpoint and between-game BO3 flow
 
 ### UI Workflows
