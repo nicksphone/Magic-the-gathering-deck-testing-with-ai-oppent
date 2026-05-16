@@ -23,8 +23,16 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     elif modes and action_targets.get("mode_text") and action_targets.get("mode_text") not in modes:
         return False, "Invalid mode selected."
 
-    if target_hints.get("requires_x_value") and int(action_targets.get("x_value", -1) or -1) < 0:
-        return False, "X value is required and must be non-negative."
+    if target_hints.get("requires_x_value"):
+        raw_x = action_targets.get("x_value", None)
+        if raw_x is None:
+            return False, "X value is required and must be non-negative."
+        try:
+            x_val = int(raw_x)
+        except Exception:
+            return False, "X value is required and must be non-negative."
+        if x_val < 0:
+            return False, "X value is required and must be non-negative."
 
     up_to = int(target_hints.get("up_to_target_count", 0) or 0)
     if up_to > 0:

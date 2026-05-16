@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from rules_engine.cast_choice import validate_cast_choice
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.cast_choice import enrich_divide_total
 from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
@@ -105,3 +106,13 @@ def test_non_divide_x_spell_does_not_auto_set_divide_total() -> None:
     )
     targets = enrich_divide_total(card, {"x_value": 3, "target_card_id": "c1"})
     assert "divide_total" not in targets
+
+
+def test_validate_cast_choice_accepts_zero_x_value_when_required() -> None:
+    hints = {
+        "requires_x_value": True,
+        "creature_targets": [{"id": "c1", "name": "Target"}],
+    }
+    ok, msg = validate_cast_choice(hints, {"x_value": 0, "target_card_id": "c1"})
+    assert ok is True
+    assert msg == ""

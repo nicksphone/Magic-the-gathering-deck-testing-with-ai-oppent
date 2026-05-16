@@ -383,6 +383,7 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
     }
 
     class FakeState:
+        turn = 3
         step = "precombat_main"
         active_player = 1
         priority_player = 1
@@ -402,6 +403,45 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
     out = ai._materialize_action(FakeState(), move, 1)
     assert out["targets"]["target_card_id"] == "enemy-1"
     assert out["targets"]["x_value"] >= 1
+
+
+def test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_id": "xspell-1",
+            "card_name": "Secure the Wastes",
+            "mana_cost": "{X}{W}",
+            "target_hints": {"requires_x_value": True},
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["xspell-1"], "battlefield": ["l1"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"
 
 
 def test_ai_materialize_sets_default_cost_choice_when_options_present() -> None:
