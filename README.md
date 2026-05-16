@@ -1,361 +1,303 @@
 # MTG Deck Testing Lab
 
-Professional desktop-first Magic: The Gathering deck testing platform with a rules-aware game engine, AI pilots, and matchup diagnostics.
+A professional desktop-first Magic: The Gathering deck testing application focused on rules correctness, repeatable AI testing, and fast iteration.
 
-## Current Status (April 26, 2026)
+This project is designed for serious deck validation workflows:
+- Human vs AI playtesting
+- AI vs AI live match playback
+- Batch simulation and diagnostics
+- Deck import and archetype testing
+- Rules engine-first architecture (database is storage only)
 
-### Working now
-- 2-player MTG simulation with explicit turn/step progression
-- Player vs AI, AI vs AI, and AI pilot controls
-- Deck import from text + built-in archetype decks
-- Expansion top-deck catalog (curated one per expansion code) with one-click import
-- Stack, priority passing, legal move generation, combat flow
-- State-based actions including legend rule and loyalty checks
-- Oracle-text-driven effect inference (partial but functional)
-- Card cache + image metadata via Scryfall sync
-- Batch simulation + AI diagnostics endpoints
-- Extensive backend test coverage for core logic paths
+## Core Principles
 
-### Recently stabilized
-- AI land-drop reliability and color-source preference
-- AI step-enum normalization fixed (`Step.PRECOMBAT_MAIN` etc.), preventing missed forced land-drop windows in live games
-- Backend autoplay now hard-enforces AI land drops on legal own-main windows (fallback to a legal `play_land` action even if AI returns pass)
-- Backend autoplay now hard-overrides any non-land AI action during legal own-main land windows, ensuring land drop occurs first when available
-- Additional fallback: if legal move generation ever omits `play_land`, autoplay derives land options directly from hand card identity and still forces land play
-- AI core policy now includes the same synthesized land fallback, so forced land development also applies in non-autoplay code paths (batch simulations/diagnostics and direct AI action loops)
-- Land heuristics now avoid false positives on mana creatures (e.g., `Llanowar Elves` style `{T}: Add ...` cards are no longer eligible for `play_land`)
-- Added turn-level land-play invariant (`last_land_play_turn`) in engine and move generation to prevent any double-land same-turn bug even if counters desync
-- Refined land-play invariant to be rules-compatible with future “play an additional land” effects via per-turn `max_land_plays_this_turn` while still blocking accidental double-land bugs
-- Added dynamic additional-land-play parsing from battlefield oracle text (e.g., “play an additional land”, “play two additional lands”) to drive legal move generation and engine enforcement
-- Combat keyword fidelity expanded:
-  - `lifelink` life gain on combat damage
-  - `deathtouch` lethal assignment/kill semantics (including trample interaction)
-  - `double strike` damage in both first-strike and regular combat-damage steps
-  - combat damage is now marked and removed at cleanup (instead of permanently reducing toughness)
-  - blocker legality now enforces `flying`/`reach` and `menace` constraints
-- Expanded trigger timing windows:
-  - beginning-of-upkeep and beginning-of-end-step triggers are now emitted at step start
-  - APNAP ordering is applied to simultaneous step triggers
-  - spell-cast trigger windows now supported for `whenever you cast a spell` and `whenever you cast an instant or sorcery spell`
-  - “your upkeep/end step” vs “each upkeep/end step” oracle distinctions are enforced
-- Added first continuous-effect stat layer support:
-  - static anthem text (`creatures you control get +1/+1`, `other creatures you control get +1/+1`) now affects effective power/toughness in combat and lethal SBA checks
-- Added first prevention/replacement-like damage shield support:
-  - `prevent the next N damage` parsing for target player/creature
-  - prevention shields are consumed by both spell damage and combat damage
-  - non-combat spell damage to creatures now marks damage (CR-consistent), rather than permanently reducing toughness
-- Added additional combat keyword correctness:
-  - `vigilance` attackers no longer tap when declared
-  - `defender` creatures cannot be declared as attackers
-- Added legacy mechanics coverage:
-  - `landwalk` unblockability checks against defending player land types (`islandwalk`, `swampwalk`, `mountainwalk`, `forestwalk`, `plainswalk`)
-  - `protection from <color>` now affects block legality, target legality, and damage prevention from matching-color sources
-  - “can’t be blocked except by two or more creatures” oracle wording is enforced as menace-equivalent blocking constraint
-  - generalized “can’t be blocked except by N or more creatures” parsing (`two`..`five`) is enforced in blocker legality
-  - blockers with explicit expanded capacity are supported (`can block an additional creature each combat`, `can block N additional creatures each combat`, `can block any number of creatures`)
-  - attack/block requirement + prohibition text support:
-    - `attacks each combat if able` / `must attack each combat if able`
-    - `blocks each combat if able` / `must block each combat if able`
-    - `can't attack`, `can't block`, `can't attack alone`
-- source-color propagation now carries through multi-clause `effect_sequence` resolution so protection checks remain consistent for composite spells
-- Expanded static/continuous effect coverage for enchantments/artifacts and similar permanents:
-  - generic parsing of battlefield static text for `get +/-X +/-Y` and `have <keyword>` clauses
-  - supports `you control` and `your opponents control` scopes
-  - supports `other creatures`, `creature tokens`, `artifact creatures`, and tribal creature groups (e.g., Elves)
-  - static keyword grants now flow into combat legality and outcomes (e.g., global `reach`, `indestructible`)
-  - static keyword grants now flow into targeting/protection validation and creature mana-tap legality (`haste` from static effects)
-  - lethal SBA and combat death checks now respect static `indestructible`
-- Land recognition is now resilient to partial card metadata:
-  - land detection also keys off oracle mana-ability text (`{T}: Add ...`) when type metadata is missing
-  - prevents nonbasic lands from being misclassified and skipped in AI land-drop windows
-- Nonland mana-permanent payment support added (e.g., `Llanowar Elves`, mana rocks), including summoning-sickness tap restrictions for creature `{T}` mana abilities
-- Combat decision heuristics tightened:
-  - attack action now selects an attacker subset (avoids many low-value/suicidal 1/1 attacks into larger blockers)
-  - blocking logic prioritizes damage prevention and better trade selection in defender role
-- Topdeck creature-deployment effects (Collected Company-style) now resolve generically:
-  - infer from oracle text pattern (`look at top N`, `put up to X creature cards with mana value Y or less onto battlefield`)
-  - AI now values this spell class appropriately in creature-centric archetypes
-- Land can no longer be cast as spell regression fixed
-- Memory Deluge / X-target validation loop fixes
-- Tokens AI now casts key enchantments more consistently
-- Combat execution now includes meaningful combat deaths/trades in tested matchups
-- AI blockers loop guard prevents endless empty `block` actions
+1. Rules correctness first
+2. Stability and deterministic debugging
+3. Playability and iteration speed
+4. Strong tactical AI with archetype-aware behavior
+5. Extensible architecture for future rules/mechanics
 
-## Project Structure
-
-```text
-mtg-deck-testing-lab/
-  backend/
-    ai/
-    analytics/
-    card_data/
-    decks/
-    effects/
-    game_state/
-    persistence/
-    rules_engine/
-    scripts/
-    tests/
-    main.py
-  frontend/
-    src/
-```
-
-## Architecture Overview
-
-Rules live in application code, not SQL.
-
-### Layer Map
-1. Card Data Layer (`backend/card_data`)
-- Scryfall sync/cache
-- fuzzy card lookup
-- local metadata/image references
-
-2. Rules Engine (`backend/rules_engine`)
-- turn/step flow
-- priority windows
-- legal move generation
-- stack and resolution hooks
-- combat and state-based actions
-
-3. Effect Resolution Layer (`backend/effects` + oracle parsing)
-- reusable effect handlers
-- oracle-text pattern interpretation for common effects
-
-4. Game State Layer (`backend/game_state`)
-- zones, cards, players, match state
-- serialization for API/UI
-
-5. Persistence Layer (`backend/persistence`)
-- SQLModel + SQLite storage for decks/cards/history
-- DB boundary is separated from gameplay logic
-
-6. AI Layer (`backend/ai`)
-- archetype-aware decision policy
-- difficulty modes (`casual`, `strong`, `master`, `master_plus`)
-- tactical scoring + limited lookahead/rollout behavior
-
-7. UI Layer (`frontend/src`)
-- battlefield + hand + stack + controls + logs
-- autoplay controls and pacing
-- desktop-first layout
-
-## Setup
-
-### Backend
-```bash
-cd /home/nick/mtg-deck-testing-lab/backend
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
-```
+## Tech Stack
 
 ### Frontend
-```bash
-cd /home/nick/mtg-deck-testing-lab/frontend
-npm install
-npm run dev -- --host 0.0.0.0 --port 5173
-```
+- React
+- TypeScript
+- Vite
 
-Access from another machine:
-- `http://<server-ip>:5173`
+### Backend
+- Python
+- FastAPI
 
-## API Summary
+### Storage
+- SQLite (default local)
+- PostgreSQL-ready persistence abstraction (upgrade path)
 
+## Architecture
+
+Gameplay logic is implemented in application code, not SQL.
+
+### Layers
+- `backend/card_data`
+  - Card sync/cache, fuzzy lookup, image cache hydration
+- `backend/rules_engine`
+  - Turn structure, priority, stack, combat, targeting, timing, state-based checks
+- `backend/effects`
+  - Modular effect handlers and resolver registry
+- `backend/game_state`
+  - Canonical state model and serialization
+- `backend/persistence`
+  - DB models/repository (storage only)
+- `backend/ai`
+  - Deck-aware tactical AI and decision policies
+- `backend/analytics`
+  - Batch simulation, diagnostics, anomaly scanning
+- `backend/decks`
+  - Deck parser/import, built-ins, expansion top decks, sideboarding
+- `frontend/src`
+  - Board UI, controls, logs, analytics, testing flow
+
+## Current Feature Set
+
+### Gameplay Engine
+- 2-player game state and turn loop
+- London mulligan flow
+- Manual phase progression and priority passing
+- Stack casting/activation + resolution
+- Trigger processing with APNAP ordering
+- Spell-cast trigger support (`whenever you cast ...` patterns)
+- Combat system with attacker/blocker legality
+- Menace / multi-block requirements
+- Flying/reach and unblockability checks (including landwalk patterns)
+- Summoning sickness and tap/untap handling
+- Mana payment and color requirement checks
+- State-based actions (including death handling and zone replacement hooks)
+- Legend rule enforcement
+- Draw-from-empty-library loss condition
+
+### Oracle/Effect Interpretation
+- Pattern-based oracle interpretation for common effects
+- Replacement hooks for key interaction patterns
+- Delayed trigger support (including delayed sacrifice marker flows)
+- Modular effect handlers for damage, draw, life, counters, tokens, exile, destroy, etc.
+
+### AI System
+- Difficulty levels: `casual`, `strong`, `master`, `master_plus`
+- Archetype-aware behavior (aggro/control/ramp/tempo/etc.)
+- Mulligan logic by land window + hand quality
+- Land-development prioritization safeguards
+- Tactical attack/block selection
+- Counterspell/interaction hold-up heuristics
+- Limited lookahead and rollout scoring at higher difficulties
+
+### Deck Workflows
+- Paste/import deck text
+- Upload deck files
+- Built-in deck library
+- Expansion top-deck catalog import
+- Sideboard swap endpoint and between-game BO3 flow
+
+### UI Workflows
+- Desktop-first board layout
+- Match controls for phase progression and autoplay ticks
+- AI-vs-AI autoplay progression
+- Priority stop controls
+- Between-game sideboard panel
+- Match log / stack visibility
+- Analytics panel
+
+### Diagnostics / Simulation
+- Batch simulation endpoint
+- AI diagnostics across deck pool pairs
+- Replay endpoint for match logs
+- Deterministic start seed support
+- Overnight round-robin scripts
+- Anomaly clustering report generation
+- Stall and land-window anomaly counters in diagnostics
+
+## API Overview
+
+Base backend default: `http://0.0.0.0:8000`
+
+Key endpoints:
 - `GET /health`
+- `GET /cards`
 - `POST /cards/sync`
 - `POST /cards/sync-bulk`
-- `GET /cards`
-- `GET /cards/suggest`
-- `GET /decks/builtin`
-- `GET /decks/builtin/{name}`
-- `GET /decks/expansion-top`
-- `GET /decks/expansion-top/{code}`
-- `POST /decks/expansion-top/{code}/import`
-- `POST /decks/expansion-top/import-all`
+- `GET /decks`
 - `POST /decks/import`
 - `POST /decks/import-file`
-- `GET /decks`
+- `GET /decks/builtin`
+- `GET /decks/expansion-top`
 - `POST /matches/start`
 - `GET /matches/{match_id}`
-- `GET /matches/{match_id}/replay`
 - `GET /matches/{match_id}/legal-moves`
 - `POST /matches/{match_id}/action`
 - `POST /matches/{match_id}/autoplay`
-- `POST /matches/{match_id}/priority-stops`
+- `GET /matches/{match_id}/replay`
 - `POST /matches/{match_id}/sideboard`
 - `POST /matches/{match_id}/next-game`
 - `POST /simulate/batch`
 - `POST /ai/diagnostics`
 - `GET /analytics/history`
 
-## How Rules Engine Works
+## Setup Instructions
 
-- Match initializes from parsed decklists into card instances and zones.
-- Match start accepts optional deterministic `seed` for reproducible draws/shuffles in debug/simulation workflows.
-- Step order:
-  - Untap, Upkeep, Draw
-  - Precombat Main
-  - Begin Combat, Declare Attackers, Declare Blockers, Combat Damage, End Combat
-  - Postcombat Main
-  - End Step, Cleanup
-- Legal actions are generated from current step, priority owner, and board state.
-- Land-play legality is now strictly active-player main-phase only (both move generation and engine execution guards).
-- Actions can place spells/abilities on stack; stack resolves after both pass.
-- State-based actions execute repeatedly to enforce loss/death/legend/loyalty checks.
-- Continuous/static evaluation computes effective power/toughness and effective keywords from battlefield text each time rules checks run.
-- Protection handling now supports color and legacy-style qualifiers (`protection from creatures`, `artifacts`, `multicolored`, `monocolored`, `everything`) for both targeting and combat damage/blocking.
-- Cleanup enforces hand size by default unless explicit effect grants no max hand size.
-
-## How AI Works
-
-- AI infers or uses provided deck archetype.
-- Action selection uses board-eval + archetype-biased heuristics.
-- `master` adds tactical lookahead; `master_plus` adds light rollout.
-- AI now includes safeguards for:
-  - mandatory land development windows
-  - cast legality edge cases
-  - blocker-loop prevention in declare blockers
-  - menace / “two-or-more blockers” assignment support
-  - multi-attacker blocking with explicit blocker-capacity text
-  - main-phase anti-stall fallback for control mirrors when proactive legal actions exist
-  - rule-aware attack/block restrictions (must/can’t clauses) applied during declare attackers/blockers
-  - spell timing restriction enforcement from oracle/static text (both legal-move generation and engine action validation)
-  - ward targeting tax support (`Ward {N}` generic tax enforced on targeted casts)
-  - attachment legality/state checks:
-    - Aura attach-on-resolve to legal targets
-    - Aura falls to graveyard when unattached/illegal
-    - Equipment detaches when target leaves battlefield
-    - protection now blocks illegal Aura/Equipment attachment from protected sources
-  - replacement-effect framework (initial rules):
-    - gain-life replacement into draw (`if you would gain life, draw that many cards instead`)
-    - draw replacement into life gain (`if you would draw a card, gain 1 life instead`)
-    - damage prevention replacement hooks (`prevent 1` style self-replacement clauses)
-- optional trigger (`you may`) handling:
-    - triggered payloads now carry optional-choice metadata
-    - stack resolution can decline optional triggers and skip effect
-
-Legal move visibility:
-- Restricted cast windows now appear as `cast_spell_restricted` legal-move entries with reason text so UI can surface why a spell is currently unavailable.
-- Frontend hand panel now renders restriction reason text next to non-castable cards when a `cast_spell_restricted` move exists.
-- Combat phase now exposes attacker-level restriction reasons (`attack_restricted`) in controls.
-- Equipment now supports explicit equip actions at sorcery speed with target selection and cost payment.
-- Continuous layer support expanded with base power/toughness setters (`base power and toughness X/Y`) before additive buffs.
-- Oracle parser expanded for draw-then-discard (“loot”) sequencing and delayed token self-sacrifice at next end step.
-- Trigger engine adds once-per-turn guard support for text containing `only once each turn`.
-- Replacement system expanded with zone replacement for dies-to-exile style effects (`if a creature you control would die, exile it instead`).
-
-## How to Add Cards
-
-1. Sync card data:
+## 1) Clone
 ```bash
-curl -X POST "http://127.0.0.1:8000/cards/sync?name=Lightning%20Bolt"
+git clone git@github.com:nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent.git
+cd Magic-the-gathering-deck-testing-with-ai-oppent
 ```
-2. Card cache is persisted and then available to deck validation and gameplay hydration.
-3. Extend behavior in:
-- `backend/rules_engine/oracle_effects.py`
-- `backend/effects/handlers.py`
-- `backend/rules_engine/events.py`
-- `backend/rules_engine/engine.py`
 
-## How to Add Decks
+## 2) Backend
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-1. Import with text format:
+## 3) Frontend
+```bash
+cd ../frontend
+npm install
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+## 4) Open UI
+- `http://<server-ip>:5173`
+
+## Testing
+
+### Backend tests
+```bash
+cd backend
+pytest -q
+```
+
+### Frontend build check
+```bash
+cd frontend
+npm run build
+```
+
+## Card Data + Image Cache
+
+Card cache and image metadata are stored locally via backend card sync service.
+- Card hydration is performed at deck/match workflows.
+- Missing cards attempt sync, then fallback metadata when needed.
+- Card images are served from backend static mount:
+  - `/card-images/...`
+
+## Deck Import Format
+
+Supports deck text like:
 ```text
 4 Lightning Bolt
 3 Counterspell
 20 Island
-```
-2. API:
-- `POST /decks/import`
-- `POST /decks/import-file`
-3. Built-ins are defined in:
-- `backend/decks/builtin_decks.py`
 
-### Expansion Top Deck Catalog
-- Catalog is defined in:
+Sideboard
+2 Negate
+2 Dispel
+```
+
+Parser behavior:
+- Quantity + card name parsing
+- Sideboard section parsing
+- Validation + suggestions for bad names
+- Archetype guess support downstream
+
+## Rules Engine Notes
+
+Rules logic is intentionally isolated from persistence. SQL never decides legality or resolution.
+
+Important implementation behaviors:
+- Legal moves are generated from live state
+- Action execution mutates state through rules engine only
+- Stack/effect resolution is centralized
+- Trigger collection and APNAP ordering happen at event boundaries
+- State-based checks and win/loss checks run through engine flow
+
+## AI Notes
+
+AI selects actions from legal move sets only.
+
+Key mechanics:
+- Archetype-scored move ranking
+- Forced land development guardrails during own main phases
+- Combat biasing by board state and race pressure
+- Defensive stall-loop prevention
+- Difficulty-based deeper evaluation (`master`, `master_plus`)
+
+## Simulator + Diagnostics
+
+### Batch simulation
+Use `/simulate/batch` for matchup rate sampling.
+
+### AI diagnostics
+Use `/ai/diagnostics` for pairwise anomaly scans across decks.
+Current anomaly signals include:
+- invalid target patterns
+- mana/cost failures
+- repeated error bursts
+- no-legal-move anomalies
+- repeated pass-priority stall streaks
+- missed land-play window markers
+
+### Overnight verbose runs
+Scripts in `backend/scripts` support long-form diagnostics and anomaly clustering output.
+
+## Adding Cards
+
+Preferred path:
+1. Import deck or call card sync endpoints.
+2. Backend hydrates card metadata from cache/sync.
+3. Fallback metadata is used only when live/cached data is unavailable.
+
+For custom local additions, extend fallback payloads in:
+- `backend/card_data/fallback_cards.py`
+
+## Adding Decks
+
+Options:
+- Import text through API/UI
+- Add built-ins in:
+  - `backend/decks/builtin_decks.py`
+- Add expansion catalog entries in:
   - `backend/decks/expansion_top_decks.py`
-- Startup auto-seeds expansion catalog decks into saved decks (`source = expansion_top:<CODE>`) if missing.
-- UI supports:
-  - load one expansion deck
-  - import one expansion deck
-  - import all expansion decks
 
-## Diagnostics and Simulation
+## Development Workflow Rules
 
-### Quick matchup debug
-```bash
-cd /home/nick/mtg-deck-testing-lab/backend
-PYTHONPATH=. .venv/bin/python scripts/debug_head_to_head.py \
-  --deck-a "Dimir Control" \
-  --deck-b "Ramp" \
-  --matches 20 \
-  --max-ticks 1500
-```
+- If rules/AI/endpoint behavior changes, update this README in the same push.
+- Keep gameplay rules in application code only.
+- Keep persistence schema and gameplay logic decoupled.
 
-### Round-robin anomaly scan
-```bash
-cd /home/nick/mtg-deck-testing-lab/backend
-PYTHONPATH=. .venv/bin/python scripts/overnight_verbose_round_robin.py
-```
-Note:
-- Deck-out is the natural end condition for long control mirrors; diagnostics/simulation defaults now use a higher `max_ticks` so matches can resolve by draw-from-empty-library loss instead of early cutoffs.
-- Added anomaly clustering utility for overnight logs:
-  ```bash
-  cd /home/nick/mtg-deck-testing-lab/backend
-  PYTHONPATH=. .venv/bin/python scripts/anomaly_cluster_report.py \
-    --input diagnostics/overnight-YYYYMMDD-HHMMSS/all_games.jsonl \
-    --out diagnostics/overnight-YYYYMMDD-HHMMSS/anomaly-clusters.json
-  ```
-- Overnight round-robin now auto-writes `anomaly-clusters.json` in the run directory.
-- AI diagnostics anomaly metrics now include:
-  - repeated pass-priority stall streaks
-  - explicit missed land-play window signals
+## Roadmap (Priority)
 
-Frontend reliability:
-- Deck loading now degrades gracefully: if optional sources fail (for example expansion catalog endpoint), saved decks still load so AI-vs-AI deck selectors remain usable.
-- Testing Simulator now shows explicit API errors in-panel instead of silently failing.
-
-## Priority Roadmap (Next)
-
-1. Improve AI blocking quality beyond current assignment
-- improve trade/no-trade evaluation by archetype and race state
-- increase quality of coordinated multi-attacker / multi-blocker combat decisions
-
-2. Expand enchantment and triggered interaction fidelity
-- extend static parser beyond current common templates (attachments/auras, noncreature permanent stat/text modifications, multi-condition clauses)
-- improve event-hook coverage for delayed/conditional triggers
-
-3. Reduce matchup skew and tune deck-specific AI policy
-- control vs aggro pacing and removal timing
-- tempo and drain sequencing improvements
-
-4. Improve combat telemetry and explainability
-- clearer structured logs for attack/block decisions
-- expose decision rationale in diagnostics output
-
-5. Finish sideboard UX and between-game testing flow
-- make best-of sideboard workflows easier to run from frontend
-
-6. Continue rules-edge hardening
-- replacement effects
-- continuous/layered effects
-- more comprehensive CR corner-case handling
-
-## Contribution/Workflow Rule
-
-If code behavior changes (rules, AI, endpoints, diagnostics), update this README in the same push.
+1. Expand comprehensive rules coverage (layers/replacement/legacy mechanics)
+2. Deepen oracle interpretation for complex multi-clause text
+3. Improve tactical AI for high-skill control/combo lines
+4. Add stronger explainability for AI decision rationale
+5. Expand sideboard UX and full tournament-style BO3 flows
+6. Increase property/regression test coverage for edge interactions
+7. Improve large-scale simulator analytics and replay diff tooling
+8. Expand historical/top-tier deck library breadth
+9. Harden card sync retry/version/invalidation behavior
+10. Add stricter benchmark gates for release quality
 
 ## Known Limitations and Next Upgrades
 
-- Not full comprehensive MTG Comprehensive Rules coverage yet.
-- Oracle interpretation is pattern-based and incomplete for highly complex cards.
-- AI is heuristic/tactical, not full MCTS or deep search.
-- Matchup balance is still being tuned deck-by-deck.
-- Sideboard and advanced test orchestration UX still needs expansion.
+Known limitations:
+- Full Comprehensive Rules parity is not complete yet.
+- Oracle effect interpretation is still pattern-based for many complex cards.
+- AI remains heuristic + tactical (not full strategic search/planning engine).
+- Matchup tuning is ongoing and still deck-dependent in edge cases.
+- Some rare legacy mechanics and old-edition corner interactions are not fully implemented.
 
-Planned upgrades focus on:
-- deeper rules fidelity,
-- stronger tactical AI,
-- clearer diagnostics,
-- and smoother competitive deck-testing workflows.
+Next upgrades:
+- Broader rules/mechanics coverage with stronger replacement/layer fidelity.
+- Deeper tactical/strategic AI planning under complex board states.
+- Larger regression matrix with long-run deterministic replay validation.
+- Improved simulator diagnostics and anomaly root-cause attribution.
+- Continued UX polish for long-session competitive deck testing.
