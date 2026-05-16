@@ -74,8 +74,9 @@ BUILTIN_DECKS: dict[str, str] = {
 3 Sheoldred, the Apocalypse
 3 Bloodtithe Harvester
 3 Abrupt Decay
-23 Forest
-23 Swamp
+9 Forest
+9 Swamp
+9 Mountain
 """,
     "Ramp": """
 4 Arboreal Grazer

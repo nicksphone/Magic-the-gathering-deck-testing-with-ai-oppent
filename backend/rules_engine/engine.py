@@ -66,8 +66,10 @@ class RulesEngine:
         elif state.step == Step.UPKEEP:
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
         elif state.step == Step.DRAW and state.turn > 1:
+            before = len(player.hand)
             draw_card(state, state.active_player)
-            state.log.append(f"{player.name} draws a card.")
+            after = len(player.hand)
+            state.log.append(f"{player.name} draws a card. Hand {before}->{after}.")
         elif state.step == Step.DRAW and state.turn == 1:
             state.log.append(f"{player.name} skips draw on turn 1 (on the play rule).")
         elif state.step == Step.END_STEP:

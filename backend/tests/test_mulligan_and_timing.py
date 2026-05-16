@@ -58,3 +58,35 @@ def test_first_player_skips_first_draw_with_explicit_log() -> None:
     assert len(state.players[1].hand) == hand_before
     assert len(state.players[1].library) == lib_before
     assert any("skips draw on turn 1" in line.lower() for line in state.log)
+
+
+def test_players_draw_on_later_turns_with_hand_count_change_log() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "keep_hand", "bottom_card_ids": []})
+    engine.take_action(state, 2, {"type": "keep_hand", "bottom_card_ids": []})
+
+    def pass_until_turn(target_turn: int, active_player: int, step: Step) -> None:
+        for _ in range(300):
+            if state.turn == target_turn and state.active_player == active_player and state.step == step:
+                return
+            pid = state.priority_player
+            engine.take_action(state, pid, {"type": "pass_priority"})
+        assert False, "did not reach expected turn/step"
+
+    # Player 2 should draw on turn 2 (between upkeep -> draw transition).
+    pass_until_turn(2, 2, Step.UPKEEP)
+    h2_before = len(state.players[2].hand)
+    engine.take_action(state, state.priority_player, {"type": "pass_priority"})
+    engine.take_action(state, state.priority_player, {"type": "pass_priority"})
+    assert len(state.players[2].hand) == h2_before + 1
+
+    # Player 1 should draw on turn 3 (between upkeep -> draw transition).
+    pass_until_turn(3, 1, Step.UPKEEP)
+    h1_before = len(state.players[1].hand)
+    engine.take_action(state, state.priority_player, {"type": "pass_priority"})
+    engine.take_action(state, state.priority_player, {"type": "pass_priority"})
+    assert len(state.players[1].hand) == h1_before + 1
+    assert any("draws a card. hand" in line.lower() for line in state.log)

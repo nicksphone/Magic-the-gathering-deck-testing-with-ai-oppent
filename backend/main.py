@@ -277,8 +277,13 @@ async def import_deck_file(name: str, file: UploadFile = File(...), repo: Reposi
 @app.get("/decks")
 def list_decks(repo: Repository = Depends(get_repo)) -> list[dict]:
     rows = repo.list_decks()
-    out = []
+    latest_by_key: dict[tuple[str, str], object] = {}
     for row in rows:
+        key = ((row.name or "").strip().lower(), (row.source or "").strip().lower())
+        if key not in latest_by_key:
+            latest_by_key[key] = row
+    out = []
+    for row in latest_by_key.values():
         out.append(
             {
                 "id": row.id,
