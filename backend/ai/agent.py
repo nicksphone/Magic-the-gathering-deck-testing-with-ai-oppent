@@ -248,6 +248,8 @@ class AIAgent:
                 break
         if getattr(state, "stack", []) or []:
             return -2.0
+        if self._can_deploy_major_threat(state, player_id):
+            return -1.2
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8
         if self._should_hold_up_interaction(state, player_id):
@@ -256,6 +258,8 @@ class AIAgent:
 
     def _should_hold_up_interaction(self, state: MatchState, player_id: int) -> bool:
         if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
+            return False
+        if self._can_deploy_major_threat(state, player_id):
             return False
         if getattr(state, "active_player", player_id) != player_id:
             return False
@@ -322,7 +326,7 @@ class AIAgent:
         card = state.cards.get(cid) if cid else None
         if not card:
             return 0.0
-        if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types:
+        if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types and not self._is_major_threat_card(card):
             return -1.4
         is_creature = "Creature" in card.types
         arche = self.archetype
@@ -901,6 +905,34 @@ class AIAgent:
                 continue
             return move
         return non_pass[0]
+
+    def _is_major_threat_card(self, card) -> bool:
+        types = set(getattr(card, "types", []) or [])
+        if "Planeswalker" in types:
+            return True
+        if "Creature" in types:
+            power = int(getattr(card, "power", 0) or 0)
+            mana_cost = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
+            cmc = mana_cost["generic"] + sum(mana_cost[c] for c in ["W", "U", "B", "R", "G"])
+            return power >= 4 or cmc >= 5
+        return False
+
+    def _can_deploy_major_threat(self, state: MatchState, player_id: int) -> bool:
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return False
+        if getattr(state, "active_player", player_id) != player_id:
+            return False
+        if getattr(state, "stack", []) or []:
+            return False
+        turn = int(getattr(state, "turn", 1) or 1)
+        for cid in getattr(state.players[player_id], "hand", []):
+            card = state.cards.get(cid)
+            if not card or not self._is_major_threat_card(card):
+                continue
+            if can_pay_with_pool_and_lands(state, player_id, getattr(card, "mana_cost", "")):
+                # Preserve early-game hold-up discipline; deploy in developed states.
+                return turn >= 5
+        return False
 
     def _color_demand(self, state: MatchState, player_id: int) -> dict[str, int]:
         demand = {c: 0 for c in ["W", "U", "B", "R", "G"]}

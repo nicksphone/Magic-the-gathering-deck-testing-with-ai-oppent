@@ -573,6 +573,50 @@ def test_control_ai_breaks_late_game_main_phase_pass_loop_with_proactive_spell()
     assert decision.action["card_id"] == "teferi-1"
 
 
+def test_control_ai_deploys_major_threat_instead_of_holding_counter_late() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Counterspell", "card_id": "counter-1"},
+        {"type": "cast_spell", "card_name": "Dream Trawler", "card_id": "threat-1"},
+    ]
+
+    class FakeState:
+        turn = 7
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1", "threat-1"], "battlefield": ["i1", "i2", "i3", "i4", "i5", "i6"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["o1", "o2", "o3"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
+            "threat-1": type("C", (), {"types": ["Creature"], "name": "Dream Trawler", "oracle_text": "Flying, lifelink.", "mana_cost": "{2}{W}{W}{U}{U}", "keywords": ["flying", "lifelink"], "power": 3, "toughness": 5})(),
+            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "i4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "i5": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i6": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "o1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
+            "o2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
+            "o3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
+        }
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "threat-1"
+
+
 def test_ai_materializes_block_assignments() -> None:
     ai = AIAgent(difficulty="strong", archetype="Midrange")
     move = {

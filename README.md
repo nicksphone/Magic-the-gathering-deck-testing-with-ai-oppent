@@ -89,6 +89,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Land-development prioritization safeguards
 - Tactical attack/block selection
 - Counterspell/interaction hold-up heuristics
+- Improved late-game control behavior: deploys major castable threats instead of over-holding interaction
 - Limited lookahead and rollout scoring at higher difficulties
 
 ### Deck Workflows
