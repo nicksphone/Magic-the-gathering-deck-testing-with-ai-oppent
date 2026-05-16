@@ -724,6 +724,8 @@ class AIAgent:
 
         opp_life = state.players[opp_id].life
         chosen: list[str] = []
+        my_life = state.players[player_id].life
+        race_mode = my_life <= 7 or opp_life <= 6
         for cid in candidates:
             card = state.cards.get(cid)
             if not card:
@@ -738,11 +740,20 @@ class AIAgent:
 
             dies_to_some = any(_eff_pow(state, b) >= atk_tgh for b in opp_blockers)
             kills_some = any(_eff_tgh(state, b) <= atk_pow for b in opp_blockers)
+            favorable_trade = kills_some and (not dies_to_some or atk_pow >= 2)
             # Avoid obvious bad attacks with small bodies into larger blockers.
             if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1 and not has_trample:
                 continue
-            # General anti-suicide rule unless aggression/lethal pressure justifies it.
-            if dies_to_some and not kills_some and not has_deathtouch and self.archetype not in {"Aggro", "Burn", "Tempo"} and opp_life > atk_pow + 2:
+            # General anti-suicide rule for all archetypes.
+            # Aggro can still pressure in race/lethal setups, but should not throw creatures away for no value.
+            if (
+                dies_to_some
+                and not favorable_trade
+                and not has_deathtouch
+                and not has_trample
+                and opp_life > atk_pow
+                and not race_mode
+            ):
                 continue
 
             chosen.append(cid)

@@ -179,3 +179,45 @@ def test_counters_affect_effective_stats_dynamically() -> None:
     resolve_effect(state, 1, "add_counters", {"target_card_id": cid, "counter": "-1/-1", "amount": 1})
     assert effective_power(state, cid) == 2  # back to base
     assert effective_toughness(state, cid) == 2
+
+
+def test_self_scales_from_creatures_in_your_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    scaler = _setup_creature(state, 1, "Grave Scaler", 1, 1, [])
+    state.cards[scaler].oracle_text = "This creature gets +1/+1 for each creature card in your graveyard."
+
+    # Put two creature cards in controller graveyard.
+    p1 = state.players[1]
+    for idx in range(2):
+        cid = p1.library.pop()
+        p1.graveyard.append(cid)
+        c = state.cards[cid]
+        c.zone = Zone.GRAVEYARD
+        c.types = ["Creature"]
+        c.name = f"Dead Creature {idx+1}"
+        c.type_line = "Creature - Elf"
+
+    assert effective_power(state, scaler) == 3
+    assert effective_toughness(state, scaler) == 3
+
+
+def test_self_scales_from_other_creatures_you_control() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    scaler = _setup_creature(state, 1, "Pack Leader", 2, 2, [])
+    state.cards[scaler].oracle_text = "Pack Leader gets +1/+1 for each other Elf you control."
+    state.cards[scaler].type_line = "Creature - Elf Warrior"
+    buddy = _setup_creature(state, 1, "Elf Buddy", 1, 1, [])
+    state.cards[buddy].type_line = "Creature - Elf Druid"
+    non_elf = _setup_creature(state, 1, "Bear", 2, 2, [])
+    state.cards[non_elf].type_line = "Creature - Bear"
+
+    assert effective_power(state, scaler) == 3
+    assert effective_toughness(state, scaler) == 3

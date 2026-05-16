@@ -11,6 +11,12 @@ PT_STATIC_RE = re.compile(
 PT_SET_RE = re.compile(
     r"\bbase power and toughness\s+(\d+)\/(\d+)\b"
 )
+SELF_SCALE_GRAVE_RE = re.compile(
+    r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+([a-z\s]+?)\s+card[s]?\s+in\s+(your|all)\s+graveyard[s]?\b"
+)
+SELF_SCALE_BF_RE = re.compile(
+    r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+(other\s+)?([a-z\s]+?)\s+you control\b"
+)
 KW_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
@@ -139,7 +145,50 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
                 continue
             p_bonus += p_delta
             t_bonus += t_delta
+        if src_id == card_id:
+            self_p, self_t = _self_scaling_pt_delta(state, src)
+            p_bonus += self_p
+            t_bonus += self_t
     return p_bonus, t_bonus
+
+
+def _self_scaling_pt_delta(state, source_card) -> tuple[int, int]:
+    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    total_p = 0
+    total_t = 0
+
+    for m in SELF_SCALE_GRAVE_RE.finditer(text):
+        p_step = int(m.group(1))
+        t_step = int(m.group(2))
+        selector = (m.group(3) or "").strip()
+        scope = (m.group(4) or "your").strip()
+        if scope == "all":
+            grave_ids: list[str] = []
+            for pid in state.players:
+                grave_ids.extend(list(state.players[pid].graveyard))
+        else:
+            grave_ids = list(state.players[source_card.controller].graveyard)
+        count = sum(1 for cid in grave_ids if _graveyard_card_matches_selector(state.cards.get(cid), selector))
+        total_p += p_step * count
+        total_t += t_step * count
+
+    for m in SELF_SCALE_BF_RE.finditer(text):
+        p_step = int(m.group(1))
+        t_step = int(m.group(2))
+        other_only = bool((m.group(3) or "").strip())
+        selector = (m.group(4) or "").strip()
+        bf_ids = list(state.players[source_card.controller].battlefield)
+        count = 0
+        for cid in bf_ids:
+            if other_only and cid == source_card.id:
+                continue
+            c = state.cards.get(cid)
+            if _battlefield_card_matches_selector(c, selector):
+                count += 1
+        total_p += p_step * count
+        total_t += t_step * count
+
+    return total_p, total_t
 
 
 def _iter_pt_modifiers(source_card):
@@ -215,6 +264,48 @@ def _has_subtype(card, subtype: str) -> bool:
     if subtype.lower().endswith("fe"):
         candidates.add(f"{subtype.lower()[:-2]}ves")
     return any(tok in candidates for tok in tokens)
+
+
+def _graveyard_card_matches_selector(card, selector: str) -> bool:
+    if not card:
+        return False
+    s = selector.strip().lower()
+    if s in {"", "card"}:
+        return True
+    type_map = {
+        "creature": "Creature",
+        "instant": "Instant",
+        "sorcery": "Sorcery",
+        "artifact": "Artifact",
+        "enchantment": "Enchantment",
+        "land": "Land",
+        "planeswalker": "Planeswalker",
+    }
+    if s in type_map:
+        return type_map[s] in (getattr(card, "types", []) or [])
+    if s.endswith("s") and s[:-1] in type_map:
+        return type_map[s[:-1]] in (getattr(card, "types", []) or [])
+    if "Creature" not in (getattr(card, "types", []) or []):
+        return False
+    if s.endswith("s"):
+        s = s[:-1]
+    return _has_subtype(card, s)
+
+
+def _battlefield_card_matches_selector(card, selector: str) -> bool:
+    if not card:
+        return False
+    s = selector.strip().lower()
+    if s in {"creature", "creatures"}:
+        return "Creature" in (getattr(card, "types", []) or [])
+    if s in {"artifact creature", "artifact creatures"}:
+        return "Creature" in (getattr(card, "types", []) or []) and "Artifact" in (getattr(card, "types", []) or [])
+    if s.endswith(" creatures"):
+        tribe = s.replace(" creatures", "").strip()
+        return _has_subtype(card, tribe)
+    if s.endswith("s"):
+        s = s[:-1]
+    return _has_subtype(card, s)
 
 
 def _all_battlefield_ids(state) -> list[str]:

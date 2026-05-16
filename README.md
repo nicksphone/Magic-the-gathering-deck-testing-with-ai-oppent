@@ -127,6 +127,11 @@ Gameplay logic is implemented in application code, not SQL.
 - AI counterspell logic improved:
   - Better stack threat scoring for interaction timing.
   - Counter target selection prefers highest-impact opposing stack spell.
+- Combat decision quality improved:
+  - Aggro/tempo attack selection now avoids obvious suicide attacks into larger blockers unless race/lethal pressure justifies it.
+- Continuous rules coverage expanded:
+  - Added support for self-scaling buffs from graveyard counts (for example, "gets +X/+Y for each ... card in your graveyard").
+  - Added support for self-scaling buffs from battlefield counts (for example, "gets +X/+Y for each other ... you control").
 - Land tapping logic improved for dual/multi-color lands:
   - `tap_land_for_mana` and bulk tap now accept optional requested color.
   - Color inference now reads both known land names and oracle mana symbols.

@@ -146,6 +146,39 @@ def test_control_ai_sets_counterspell_stack_target() -> None:
     assert decision.action["targets"]["target_stack_id"] == "stack-a"
 
 
+def test_aggro_ai_avoids_suicide_attack_into_larger_blocker() -> None:
+    ai = AIAgent(difficulty="master", archetype="Aggro")
+    moves = [
+        {"type": "attack", "options": ["atk-1"]},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 4
+        step = "declare_attackers"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-1"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["blk-1"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+        }
+        cards = {
+            "atk-1": type("C", (), {"types": ["Creature"], "name": "1/1", "power": 1, "toughness": 1, "keywords": [], "tapped": False})(),
+            "blk-1": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "keywords": [], "tapped": False})(),
+        }
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"
+
+
 def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     moves = [
