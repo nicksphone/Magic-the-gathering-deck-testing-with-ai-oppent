@@ -42,6 +42,22 @@ export type ExpansionTopDeckPayload = {
   deck_text: string;
 };
 
+export type BatchSimulationJobStart = {
+  job_id: string;
+  status: string;
+};
+
+export type BatchSimulationJobStatus = {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  completed_matches: number;
+  total_matches: number;
+  started_at: number;
+  finished_at?: number | null;
+  error?: string | null;
+  result?: any;
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -103,4 +119,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
+  startSimulateBatchJob: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
+    req<BatchSimulationJobStart>("/simulate/batch/start", {
+      method: "POST",
+      body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
+    }),
+  getSimulateBatchJob: (jobId: string) =>
+    req<BatchSimulationJobStatus>(`/simulate/batch/${encodeURIComponent(jobId)}`),
 };

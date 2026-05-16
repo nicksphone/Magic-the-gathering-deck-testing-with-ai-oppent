@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
 
@@ -9,10 +9,13 @@ type Props = {
 export function AnalyticsPanel({ decks }: Props) {
   const [deckA, setDeckA] = useState<number | null>(null);
   const [deckB, setDeckB] = useState<number | null>(null);
-  const [matches, setMatches] = useState(100);
-  const [difficulty, setDifficulty] = useState("master_plus");
-  const [maxTicks, setMaxTicks] = useState(3000);
+  const [matches, setMatches] = useState(20);
+  const [difficulty, setDifficulty] = useState("master");
+  const [maxTicks, setMaxTicks] = useState(2000);
   const [result, setResult] = useState<string>("");
+  const [running, setRunning] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [progressText, setProgressText] = useState<string>("");
 
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
@@ -22,11 +25,63 @@ export function AnalyticsPanel({ decks }: Props) {
       return;
     }
     try {
-      const data = await api.simulateBatch(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
-      setResult(JSON.stringify(data, null, 2));
+      setRunning(true);
+      setResult("");
+      setProgressText("Queueing simulator job...");
+      const job = await api.startSimulateBatchJob(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
+      setJobId(job.job_id);
     } catch (err) {
       setResult(`Testing Simulator request failed: ${String(err)}`);
+      setProgressText("");
+      setJobId(null);
+      setRunning(false);
     }
+  }
+
+  useEffect(() => {
+    if (!jobId) return;
+    let cancelled = false;
+    const timer = window.setInterval(async () => {
+      try {
+        const job = await api.getSimulateBatchJob(jobId);
+        if (cancelled) return;
+        const pct = job.total_matches > 0
+          ? Math.floor((job.completed_matches / job.total_matches) * 100)
+          : 0;
+        const elapsedSec = Math.max(0, Math.floor(Date.now() / 1000 - job.started_at));
+        setProgressText(
+          `Status: ${job.status} | ${job.completed_matches}/${job.total_matches} matches (${pct}%) | ${elapsedSec}s elapsed`,
+        );
+        if (job.status === "completed") {
+          setResult(JSON.stringify(job.result ?? {}, null, 2));
+          setRunning(false);
+          setJobId(null);
+          window.clearInterval(timer);
+        } else if (job.status === "failed") {
+          setResult(`Testing Simulator failed: ${job.error ?? "unknown error"}`);
+          setRunning(false);
+          setJobId(null);
+          window.clearInterval(timer);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setResult(`Testing Simulator progress failed: ${String(err)}`);
+        setRunning(false);
+        setJobId(null);
+        window.clearInterval(timer);
+      }
+    }, 800);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [jobId]);
+
+  function cancelDisplay() {
+    setRunning(false);
+    setJobId(null);
+    setProgressText("Polling stopped. Job may still be running on backend.");
   }
 
   return (
@@ -49,7 +104,7 @@ export function AnalyticsPanel({ decks }: Props) {
             </option>
           ))}
         </select>
-        <input type="number" min={10} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
+        <input type="number" min={5} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
         <input type="number" min={500} max={50000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
         <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
@@ -57,9 +112,11 @@ export function AnalyticsPanel({ decks }: Props) {
           <option value="master">Master</option>
           <option value="master_plus">Master+</option>
         </select>
-        <button onClick={runBatch}>Run {matches} Matches</button>
+        <button onClick={runBatch} disabled={running}>{running ? "Running..." : `Run ${matches} Matches`}</button>
+        {running ? <button onClick={cancelDisplay}>Stop Polling</button> : null}
       </div>
-      <pre>{result || "No simulation yet."}</pre>
+      <pre>{progressText || "Idle."}</pre>
+      <pre>{result || "No simulation result yet."}</pre>
     </section>
   );
 }

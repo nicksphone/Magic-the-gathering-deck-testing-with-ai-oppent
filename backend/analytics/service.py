@@ -25,6 +25,7 @@ class AnalyticsService:
         matches: int = 100,
         difficulty: str = "master",
         max_ticks: int = 6000,
+        progress_callback=None,
     ) -> dict:
         stats = Counter()
         turn_counts = []
@@ -67,6 +68,11 @@ class AnalyticsService:
             else:
                 stats["timeouts"] += 1
             turn_counts.append(state.turn)
+            if progress_callback is not None:
+                try:
+                    progress_callback(i + 1, matches)
+                except Exception:
+                    pass
 
         total = matches
         wins_a = stats["wins_1"]
