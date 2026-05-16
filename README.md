@@ -177,6 +177,7 @@ Access from another machine:
 - `GET /decks`
 - `POST /matches/start`
 - `GET /matches/{match_id}`
+- `GET /matches/{match_id}/replay`
 - `GET /matches/{match_id}/legal-moves`
 - `POST /matches/{match_id}/action`
 - `POST /matches/{match_id}/autoplay`
@@ -190,6 +191,7 @@ Access from another machine:
 ## How Rules Engine Works
 
 - Match initializes from parsed decklists into card instances and zones.
+- Match start accepts optional deterministic `seed` for reproducible draws/shuffles in debug/simulation workflows.
 - Step order:
   - Untap, Upkeep, Draw
   - Precombat Main

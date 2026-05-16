@@ -88,6 +88,7 @@ class StartMatchRequest(BaseModel):
     ai_difficulty: str = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
     best_of: int = Field(default=3, ge=3, le=15)
+    seed: int | None = None
 
     @field_validator("best_of")
     @classmethod
@@ -270,7 +271,7 @@ def list_decks(repo: Repository = Depends(get_repo)) -> list[dict]:
 def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)) -> dict:
     deck_a = _hydrate_deck_cards(repo, payload.deck_a)
     deck_b = _hydrate_deck_cards(repo, payload.deck_b)
-    state = MatchFactory.from_decks(deck_a, deck_b)
+    state = MatchFactory.from_decks(deck_a, deck_b, seed=payload.seed)
     state.best_of = payload.best_of
     rules = RulesEngine()
     a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_a))
@@ -299,6 +300,28 @@ def get_match(match_id: str) -> dict:
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
     return _serialize_match_controller(match)
+
+
+@app.get("/matches/{match_id}/replay")
+def get_match_replay(match_id: str) -> dict:
+    match = ACTIVE_MATCHES.get(match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    entries: list[dict] = []
+    current_turn = 1
+    for idx, line in enumerate(match.state.log):
+        if line.startswith("Turn ") and line.endswith("."):
+            try:
+                current_turn = int(line.split()[1].strip("."))
+            except Exception:
+                pass
+        entries.append({"index": idx, "turn": current_turn, "line": line})
+    return {
+        "match_id": match_id,
+        "game_number": match.game_number,
+        "winner": match.state.winner,
+        "entries": entries,
+    }
 
 
 @app.get("/matches/{match_id}/legal-moves")

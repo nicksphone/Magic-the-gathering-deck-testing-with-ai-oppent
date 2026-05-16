@@ -133,16 +133,23 @@ class MatchState:
 
 class MatchFactory:
     @staticmethod
-    def from_decks(deck_a: list[dict], deck_b: list[dict], player_a_name: str = "Player A", player_b_name: str = "Player B") -> MatchState:
+    def from_decks(
+        deck_a: list[dict],
+        deck_b: list[dict],
+        player_a_name: str = "Player A",
+        player_b_name: str = "Player B",
+        seed: int | None = None,
+    ) -> MatchState:
         cards: dict[str, CardInstance] = {}
         p1 = PlayerState(id=1, name=player_a_name)
         p2 = PlayerState(id=2, name=player_b_name)
+        rng = random.Random(seed) if seed is not None else random
         for owner, deck, player in [(1, deck_a, p1), (2, deck_b, p2)]:
             expanded = []
             for item in deck:
                 for _ in range(item["quantity"]):
                     expanded.append(item)
-            random.shuffle(expanded)
+            rng.shuffle(expanded)
             for raw_item in expanded:
                 card_name = raw_item["card_name"]
                 cid = str(uuid.uuid4())
