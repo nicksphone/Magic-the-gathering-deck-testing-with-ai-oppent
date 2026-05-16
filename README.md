@@ -143,6 +143,16 @@ Gameplay logic is implemented in application code, not SQL.
 - Training run completed after fixes:
   - Run: `backend/training_runs/overnight-20260516-175903`
   - 45 deck pairs x 2 games each, anomaly outputs generated (`summary.json`, `anomaly-clusters.json`).
+- AI matchup behavior scaffolding added:
+  - `backend/ai/matchup_profiles.py` defines archetype-vs-archetype proactive/hold-up bias knobs.
+  - `backend/ai/endgame_policy.py` centralizes late-game closure thresholds by matchup.
+  - `backend/ai/agent.py` now consumes those profiles for pass/interaction pressure decisions.
+- Board heuristic hardening:
+  - `evaluate_inevitability()` now gracefully handles lightweight/fake state objects used by tests.
+  - Full backend suite remains green after integration (`187 passed`).
+- Head-to-head debug command note:
+  - `scripts/debug_head_to_head.py` uses `--max-ticks` (not `--max-turns`).
+  - Very low tick caps can produce artificial timeouts in priority-heavy control mirrors.
 
 ## API Overview
 

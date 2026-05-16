@@ -4,7 +4,9 @@ import copy
 import re
 from dataclasses import dataclass
 
+from ai.endgame_policy import should_force_closure
 from ai.heuristics import evaluate_board
+from ai.matchup_profiles import profile_for
 from game_state.state import MatchState
 from rules_engine.engine import RulesEngine
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -18,9 +20,11 @@ class AIDecision:
 
 
 class AIAgent:
-    def __init__(self, difficulty: str = "strong", archetype: str = "Midrange"):
+    def __init__(self, difficulty: str = "strong", archetype: str = "Midrange", opponent_archetype: str | None = None):
         self.difficulty = difficulty.lower()
         self.archetype = archetype
+        self.opponent_archetype = opponent_archetype
+        self.matchup_profile = profile_for(archetype, opponent_archetype)
         self.engine = RulesEngine()
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
@@ -127,7 +131,7 @@ class AIAgent:
         if getattr(state, "stack", []) or []:
             return None
         turn = int(getattr(state, "turn", 1) or 1)
-        if turn < 10:
+        if not should_force_closure(turn, self.archetype, self.opponent_archetype):
             return None
 
         # Look for non-pass cast lines that actually advance board/card quality.
@@ -374,10 +378,10 @@ class AIAgent:
         if self._can_deploy_major_threat(state, player_id):
             return -1.2
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
-            return 1.8
+            return 1.8 + float(self.matchup_profile.get("holdup_bias", 0.0))
         if self._should_hold_up_interaction(state, player_id):
-            return 1.4
-        return 0.3
+            return 1.4 + float(self.matchup_profile.get("holdup_bias", 0.0))
+        return 0.3 - float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.25
 
     def _should_hold_up_interaction(self, state: MatchState, player_id: int) -> bool:
         if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
@@ -397,7 +401,7 @@ class AIAgent:
             for cid in state.players[player_id].hand
             if cid in state.cards
         )
-        return has_counter and opp_untapped >= 2
+        return has_counter and opp_untapped >= 2 and float(self.matchup_profile.get("holdup_bias", 0.0)) >= -0.2
 
     def _block_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         blocker_ids = [x["id"] for x in (move.get("blockers") or [])]
