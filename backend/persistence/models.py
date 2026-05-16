@@ -47,3 +47,30 @@ class StatsSnapshot(SQLModel, table=True):
     label: str = Field(index=True)
     stats_json: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TournamentEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    external_id: str = Field(index=True)
+    source: str = Field(index=True)
+    name: str = Field(index=True)
+    format: str = "unknown"
+    event_date: str = ""
+    url: str = ""
+    metadata_json: str = "{}"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TournamentDeck(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    event_id: int = Field(index=True)
+    player_name: str = Field(index=True)
+    archetype: str = Field(index=True, default="unknown")
+    placement: int = 0
+    wins: int = 0
+    losses: int = 0
+    draws: int = 0
+    mainboard_json: str
+    sideboard_json: str = "[]"
+    metadata_json: str = "{}"
+    created_at: datetime = Field(default_factory=datetime.utcnow)

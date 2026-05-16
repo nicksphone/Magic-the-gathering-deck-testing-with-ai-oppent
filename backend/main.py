@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import threading
+import time
+import uuid
 from dataclasses import dataclass
 from typing import Literal
 
@@ -23,6 +26,7 @@ from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
+from data_ingest.service import TournamentIngestService
 from game_state.serializers import serialize_match
 from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
@@ -68,6 +72,8 @@ class MatchController:
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
+SIM_JOBS: dict[str, dict] = {}
+SIM_JOBS_LOCK = threading.Lock()
 
 
 class DeckImportRequest(BaseModel):
@@ -120,6 +126,26 @@ class BulkSyncRequest(BaseModel):
     include_expansion_top_decks: bool = True
     include_saved_decks: bool = True
     limit: int = 300
+
+
+class TournamentIngestRequest(BaseModel):
+    payload: dict
+
+
+class BatchSimulationJobStartResponse(BaseModel):
+    job_id: str
+    status: str
+
+
+class BatchSimulationJobStatusResponse(BaseModel):
+    job_id: str
+    status: str
+    completed_matches: int
+    total_matches: int
+    started_at: float
+    finished_at: float | None = None
+    error: str | None = None
+    result: dict | None = None
 
 
 def get_repo(session: Session = Depends(get_session)) -> Repository:
@@ -265,6 +291,37 @@ def list_decks(repo: Repository = Depends(get_repo)) -> list[dict]:
             }
         )
     return out
+
+
+@app.post("/ingest/tournaments/import-json")
+def ingest_tournament_json(payload: TournamentIngestRequest, repo: Repository = Depends(get_repo)) -> dict:
+    try:
+        return TournamentIngestService(repo).ingest_event_payload(payload.payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/ingest/tournaments/events")
+def list_tournament_events(limit: int = 50, repo: Repository = Depends(get_repo)) -> list[dict]:
+    rows = repo.list_tournament_events(limit=max(1, min(limit, 500)))
+    return [
+        {
+            "id": r.id,
+            "external_id": r.external_id,
+            "source": r.source,
+            "name": r.name,
+            "format": r.format,
+            "event_date": r.event_date,
+            "url": r.url,
+            "created_at": r.created_at,
+        }
+        for r in rows
+    ]
+
+
+@app.get("/ingest/tournaments/events/{event_id}/summary")
+def tournament_event_summary(event_id: int, repo: Repository = Depends(get_repo)) -> dict:
+    return TournamentIngestService(repo).summarize_event(event_id)
 
 
 @app.post("/matches/start")
@@ -455,6 +512,70 @@ def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(g
         payload.difficulty,
         max_ticks=payload.max_ticks,
     )
+
+
+@app.post("/simulate/batch/start", response_model=BatchSimulationJobStartResponse)
+def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
+    job_id = str(uuid.uuid4())
+    job = {
+        "job_id": job_id,
+        "status": "queued",
+        "completed_matches": 0,
+        "total_matches": int(payload.matches),
+        "started_at": time.time(),
+        "finished_at": None,
+        "error": None,
+        "result": None,
+    }
+    with SIM_JOBS_LOCK:
+        SIM_JOBS[job_id] = job
+
+    def _runner() -> None:
+        with SIM_JOBS_LOCK:
+            if job_id in SIM_JOBS:
+                SIM_JOBS[job_id]["status"] = "running"
+        try:
+            with Session(engine) as session:
+                thread_repo = Repository(session)
+                def _progress(done: int, total: int) -> None:
+                    with SIM_JOBS_LOCK:
+                        if job_id in SIM_JOBS:
+                            SIM_JOBS[job_id]["completed_matches"] = int(done)
+                            SIM_JOBS[job_id]["total_matches"] = int(total)
+
+                result = AnalyticsService(thread_repo).run_batch(
+                    payload.deck_a,
+                    payload.deck_b,
+                    payload.matches,
+                    payload.difficulty,
+                    max_ticks=payload.max_ticks,
+                    progress_callback=_progress,
+                )
+            with SIM_JOBS_LOCK:
+                if job_id in SIM_JOBS:
+                    SIM_JOBS[job_id]["status"] = "completed"
+                    SIM_JOBS[job_id]["completed_matches"] = int(payload.matches)
+                    SIM_JOBS[job_id]["finished_at"] = time.time()
+                    SIM_JOBS[job_id]["result"] = result
+        except Exception as exc:
+            with SIM_JOBS_LOCK:
+                if job_id in SIM_JOBS:
+                    SIM_JOBS[job_id]["status"] = "failed"
+                    SIM_JOBS[job_id]["finished_at"] = time.time()
+                    SIM_JOBS[job_id]["error"] = str(exc)
+
+    t = threading.Thread(target=_runner, daemon=True)
+    t.start()
+    return {"job_id": job_id, "status": "queued"}
+
+
+@app.get("/simulate/batch/{job_id}", response_model=BatchSimulationJobStatusResponse)
+def simulate_batch_status(job_id: str) -> dict:
+    with SIM_JOBS_LOCK:
+        job = SIM_JOBS.get(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Simulation job not found")
+        return dict(job)
 
 
 @app.post("/ai/diagnostics")

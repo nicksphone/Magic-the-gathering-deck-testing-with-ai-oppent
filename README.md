@@ -252,6 +252,62 @@ Current anomaly signals include:
 ### Overnight verbose runs
 Scripts in `backend/scripts` support long-form diagnostics and anomaly clustering output.
 
+## Tournament Data Ingest (Training Corpus)
+
+The project now includes a local tournament data ingest module for importing full event decklists into the database.
+
+Backend module:
+- `backend/data_ingest`
+
+New tables:
+- `TournamentEvent`
+- `TournamentDeck`
+
+New API endpoints:
+- `POST /ingest/tournaments/import-json`
+- `GET /ingest/tournaments/events?limit=50`
+- `GET /ingest/tournaments/events/{event_id}/summary`
+
+Expected JSON payload:
+```json
+{
+  "source": "mtgtop8",
+  "event": {
+    "external_id": "event-123",
+    "name": "RCQ Springfield",
+    "format": "modern",
+    "event_date": "2026-05-01",
+    "url": "https://example.com/event/123"
+  },
+  "decks": [
+    {
+      "player_name": "Alice",
+      "archetype": "Burn",
+      "placement": 1,
+      "wins": 8,
+      "losses": 1,
+      "draws": 0,
+      "mainboard": [
+        { "quantity": 4, "card_name": "Lightning Bolt" },
+        { "quantity": 56, "card_name": "Mountain" }
+      ],
+      "sideboard": [
+        { "quantity": 2, "card_name": "Roiling Vortex" }
+      ]
+    }
+  ]
+}
+```
+
+Validation:
+- mainboard minimum `60` cards is enforced during ingest.
+
+CLI helper:
+```bash
+cd backend
+PYTHONPATH=. .venv/bin/python scripts/import_tournament_json.py --input /path/to/event.json
+```
+
 ## Adding Cards
 
 Preferred path:
