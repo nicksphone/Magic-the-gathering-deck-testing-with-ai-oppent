@@ -473,11 +473,15 @@ class AIAgent:
         mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=("Land" in card.types))
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         mana_cost_text = (getattr(card, "mana_cost", "") or "").upper()
+        x_value = 0
         if "{X}" in mana_cost_text:
-            x = self._choose_x_value(state, player_id, mana_cost_text)
-            if x <= 0:
+            x_value = self._choose_x_value(state, player_id, mana_cost_text)
+            if x_value <= 0:
                 # Avoid invalid X=0 loops for spells that need explicit positive X targeting.
                 return -8.0
+            x_penalty = self._x_spell_timing_penalty(state, card, player_id, x_value)
+            if x_penalty <= -3.5:
+                return x_penalty
         power = getattr(card, "power", 0) or 0
         is_big_threat = power >= 4 or cmc >= 4
 
@@ -530,6 +534,8 @@ class AIAgent:
                         bonus += 2.4
             if "removal" in tags:
                 bonus += 2.0
+            if "{X}" in mana_cost_text:
+                bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus
 
         if arche in {"Midrange"}:
@@ -560,6 +566,8 @@ class AIAgent:
                 bonus += 3.2
                 if state.turn <= 4:
                     bonus += 1.2
+            if "{X}" in mana_cost_text:
+                bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus
 
         if arche in {"Reanimator"}:
@@ -584,10 +592,35 @@ class AIAgent:
                 bonus += 3.6 if getattr(state, "stack", []) else -1.4
             if "removal" in tags:
                 bonus += 1.8
+            if "{X}" in mana_cost_text:
+                bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus
 
         if arche in {"Aggro", "Tribal", "Tokens", "Tempo"} and my_creatures == 0 and early_turn and in_main:
             return -1.8
+        return 0.0
+
+    def _x_spell_timing_penalty(self, state: MatchState, card, player_id: int, x_value: int) -> float:
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        turn = int(getattr(state, "turn", 1) or 1)
+        opp_id = 1 if player_id == 2 else 2
+        opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
+        if x_value <= 0:
+            return -8.0
+        # Token X-spells (e.g. Secure the Wastes): avoid low-impact early casts.
+        if "create x" in text and "token" in text:
+            if x_value <= 1:
+                return -7.0
+            if x_value == 2 and turn < 7:
+                return -4.0
+            if x_value <= 3 and self.archetype in {"Control", "Counter-heavy"} and opp_life > 8:
+                return -2.0
+        # Draw-X spells should usually wait for meaningful value.
+        if "draw x" in text and x_value <= 1:
+            return -3.0
+        # X-damage with tiny X is usually poor unless lethal.
+        if "deals x damage" in text and x_value <= 1 and opp_life > x_value:
+            return -2.5
         return 0.0
 
     def _approximate_resolution_for_creature_cast(self, sim_state: MatchState, move: dict, player_id: int) -> None:
