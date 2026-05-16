@@ -264,10 +264,6 @@ def run() -> int:
     return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(run())
-
-
 def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
     pats = [
         ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
@@ -307,3 +303,7 @@ def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
         "clusters": [{"label": k, "count": int(v), "samples": samples.get(k, [])} for k, v in clusters.most_common()],
     }
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+if __name__ == "__main__":
+    raise SystemExit(run())

@@ -173,7 +173,11 @@ class RulesEngine:
             cid = action["card_id"]
             if cid in player.battlefield and not state.cards[cid].tapped and "Land" in state.cards[cid].types:
                 state.cards[cid].tapped = True
-                color = _infer_mana_from_land(state.cards[cid].name)
+                color = _infer_mana_from_land(
+                    state.cards[cid].name,
+                    oracle_text=getattr(state.cards[cid], "oracle_text", "") or "",
+                    requested_color=action.get("color"),
+                )
                 player.mana_pool[color] += 1
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {color}.")
 
@@ -192,7 +196,11 @@ class RulesEngine:
                     if card.name.strip().lower() != land_name:
                         continue
                     card.tapped = True
-                    color = _infer_mana_from_land(card.name)
+                    color = _infer_mana_from_land(
+                        card.name,
+                        oracle_text=getattr(card, "oracle_text", "") or "",
+                        requested_color=action.get("color"),
+                    )
                     player.mana_pool[color] += 1
                     produced = color
                     tapped += 1
@@ -419,33 +427,55 @@ class RulesEngine:
                     state.priority_player = remaining[0]
 
 
-def _infer_mana_from_land(name: str) -> str:
+def _infer_mana_from_land(name: str, oracle_text: str = "", requested_color: str | None = None) -> str:
+    import re
+
+    colors = _land_colors_from_metadata(name, oracle_text)
+    req = (requested_color or "").strip().upper()
+    if req in colors:
+        return req
+    if colors:
+        # Deterministic default when no requested color is provided.
+        for preferred in ["U", "B", "R", "G", "W", "C"]:
+            if preferred in colors:
+                return preferred
+    return "C"
+
+
+def _land_colors_from_metadata(name: str, oracle_text: str = "") -> set[str]:
+    import re
+
     n = name.lower()
+    colors: set[str] = set()
     dual_pref = {
-        "hallowed fountain": "U",
-        "sacred foundry": "R",
-        "watery grave": "U",
-        "blood crypt": "B",
-        "overgrown tomb": "B",
-        "breeding pool": "U",
-        "stomping ground": "R",
-        "steam vents": "U",
-        "godless shrine": "W",
-        "temple garden": "W",
+        "hallowed fountain": {"W", "U"},
+        "sacred foundry": {"R", "W"},
+        "watery grave": {"U", "B"},
+        "blood crypt": {"B", "R"},
+        "overgrown tomb": {"B", "G"},
+        "breeding pool": {"U", "G"},
+        "stomping ground": {"R", "G"},
+        "steam vents": {"U", "R"},
+        "godless shrine": {"W", "B"},
+        "temple garden": {"W", "G"},
     }
     if n in dual_pref:
-        return dual_pref[n]
+        colors |= dual_pref[n]
     if "plains" in n:
-        return "W"
+        colors.add("W")
     if "island" in n:
-        return "U"
+        colors.add("U")
     if "swamp" in n:
-        return "B"
+        colors.add("B")
     if "mountain" in n:
-        return "R"
+        colors.add("R")
     if "forest" in n:
-        return "G"
-    return "C"
+        colors.add("G")
+    for sym in re.findall(r"\{([WUBRGC])\}", (oracle_text or "").upper()):
+        colors.add(sym)
+    if not colors:
+        colors.add("C")
+    return colors
 
 
 def _is_land_card(card) -> bool:

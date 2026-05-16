@@ -146,6 +146,49 @@ def test_control_ai_sets_counterspell_stack_target() -> None:
     assert decision.action["targets"]["target_stack_id"] == "stack-a"
 
 
+def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_name": "Counterspell",
+            "card_id": "counter-1",
+            "target_hints": {
+                "stack_targets": [
+                    {"id": "stack-small", "label": "Opt"},
+                    {"id": "stack-big", "label": "Teferi, Hero of Dominaria"},
+                ]
+            },
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 6
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "c-small": type("C", (), {"types": ["Instant"], "name": "Opt", "oracle_text": "Scry 1, draw a card.", "mana_cost": "{U}"})(),
+            "c-big": type("C", (), {"types": ["Planeswalker"], "name": "Teferi, Hero of Dominaria", "oracle_text": "+1: Draw a card.", "mana_cost": "{3}{W}{U}"})(),
+        }
+        stack = [
+            type("S", (), {"id": "stack-small", "label": "Opt", "source_card_id": "c-small", "controller": 2})(),
+            type("S", (), {"id": "stack-big", "label": "Teferi, Hero of Dominaria", "source_card_id": "c-big", "controller": 2})(),
+        ]
+        winner = None
+        pregame_pending = False
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["targets"]["target_stack_id"] == "stack-big"
+
+
 def test_control_ai_mulligans_land_light_hand() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
 

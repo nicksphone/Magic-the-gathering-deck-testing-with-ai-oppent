@@ -147,7 +147,9 @@ class AIAgent:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
                 if "counterspell" in name:
                     if stack_items:
-                        base += 8 if self.archetype in {"Control", "Counter-heavy", "Tempo"} else 4
+                        base += (9 if self.archetype in {"Control", "Counter-heavy", "Tempo"} else 4) + self._best_stack_threat_score(
+                            state, player_id
+                        )
                     else:
                         base -= 2
             elif mtype == "play_land":
@@ -541,8 +543,13 @@ class AIAgent:
 
         stack_targets = hints.get("stack_targets") or []
         if stack_targets and not targets.get("target_stack_id"):
-            # Prefer top-of-stack by default.
-            targets["target_stack_id"] = stack_targets[-1]["id"]
+            # For counters/interaction, target the most threatening spell on stack.
+            if "counter" in tags:
+                best = self._choose_best_stack_target_id(state, player_id, stack_targets)
+                targets["target_stack_id"] = best or stack_targets[-1]["id"]
+            else:
+                # Default to top-of-stack for most non-counter interactions.
+                targets["target_stack_id"] = stack_targets[-1]["id"]
 
         player_targets = hints.get("player_targets") or []
         if player_targets and targets.get("target_player") is None and not targets.get("target_card_id"):
@@ -814,7 +821,7 @@ class AIAgent:
             if mtype == "cast_spell":
                 name = str(move.get("card_name", "")).lower()
                 if "counterspell" in name and getattr(state, "stack", []):
-                    base += 3
+                    base += 3 + self._best_stack_threat_score(state, player_id) * 0.5
                 if any(k in name for k in ["bolt", "shock", "spike"]):
                     base += 4
             elif mtype == "attack":
@@ -894,6 +901,12 @@ class AIAgent:
         if not non_pass:
             return None
         if getattr(state, "stack", []) or []:
+            for move in non_pass:
+                if move.get("type") == "cast_spell":
+                    cid = move.get("card_id")
+                    card = state.cards.get(cid) if cid else None
+                    if card and self._is_counter_card(card):
+                        return move
             return non_pass[0]
         for move in non_pass:
             if move.get("type") != "cast_spell":
@@ -974,6 +987,59 @@ class AIAgent:
         for sym in re.findall(r"\{([WUBRG])\}", oracle):
             colors.add(sym)
         return colors
+
+    def _is_counter_card(self, card) -> bool:
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        return "counter target spell" in text or "counterspell" in text
+
+    def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict]) -> str | None:
+        best_id = None
+        best_score = -999.0
+        for c in candidates:
+            sid = c.get("id")
+            if not sid:
+                continue
+            score = self._stack_item_threat_score(state, sid, player_id)
+            if score > best_score:
+                best_score = score
+                best_id = sid
+        return best_id
+
+    def _best_stack_threat_score(self, state: MatchState, player_id: int) -> float:
+        items = getattr(state, "stack", []) or []
+        if not items:
+            return 0.0
+        return max(self._stack_item_threat_score(state, it.id, player_id) for it in items)
+
+    def _stack_item_threat_score(self, state: MatchState, stack_item_id: str, player_id: int) -> float:
+        item = next((x for x in (getattr(state, "stack", []) or []) if getattr(x, "id", None) == stack_item_id), None)
+        if item is None:
+            return 0.0
+        source = state.cards.get(getattr(item, "source_card_id", ""))
+        if source is None:
+            return 1.0
+        score = 0.0
+        types = set(getattr(source, "types", []) or [])
+        if "Planeswalker" in types:
+            score += 8.0
+        if "Creature" in types:
+            p = int(getattr(source, "power", 0) or 0)
+            t = int(getattr(source, "toughness", 0) or 0)
+            score += min(7.0, p * 0.9 + t * 0.3)
+        mana_cost = parse_mana_cost(getattr(source, "mana_cost", ""), is_land=False)
+        cmc = mana_cost["generic"] + sum(mana_cost[c] for c in ["W", "U", "B", "R", "G"])
+        score += min(5.0, cmc * 0.45)
+        text = f"{getattr(source, 'name', '')} {getattr(source, 'oracle_text', '')}".lower()
+        if any(k in text for k in ["destroy all", "exile all", "sweeper", "wrath", "damnation"]):
+            score += 6.0
+        if any(k in text for k in ["draw", "memory deluge", "dig through", "treasure cruise"]):
+            score += 2.2
+        if any(k in text for k in ["counter target spell"]):
+            score += 1.4
+        controller = getattr(item, "controller", None)
+        if controller == player_id:
+            score -= 10.0
+        return score
 
 
 def _step_key(step) -> str:

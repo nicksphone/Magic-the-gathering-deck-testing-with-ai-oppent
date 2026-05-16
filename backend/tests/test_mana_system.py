@@ -146,6 +146,34 @@ def test_oracle_text_dual_land_without_basic_subtypes_is_supported() -> None:
     assert can_pay_with_pool_and_lands(state, 1, "{W}") is True
 
 
+def test_tap_land_for_mana_honors_requested_color_when_available() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    engine = RulesEngine()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p1.battlefield = []
+    p1.mana_pool = {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+
+    cid = p1.library.pop()
+    p1.battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Land"]
+    card.name = "Hallowed Fountain"
+    card.type_line = "Land — Plains Island"
+    card.oracle_text = "{T}: Add {W} or {U}."
+    card.tapped = False
+
+    engine.take_action(state, 1, {"type": "tap_land_for_mana", "card_id": cid, "color": "W"})
+    assert state.players[1].mana_pool["W"] == 1
+    assert state.players[1].mana_pool["U"] == 0
+
+
 def test_mana_creature_can_help_pay_cost_when_not_summoning_sick() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck)

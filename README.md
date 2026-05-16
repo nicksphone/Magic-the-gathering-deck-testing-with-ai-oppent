@@ -89,6 +89,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Land-development prioritization safeguards
 - Tactical attack/block selection
 - Counterspell/interaction hold-up heuristics
+- Counterspell target selection now evaluates all stack objects and prefers highest-threat spells
 - Improved late-game control behavior: deploys major castable threats instead of over-holding interaction
 - Limited lookahead and rollout scoring at higher difficulties
 
@@ -117,6 +118,21 @@ Gameplay logic is implemented in application code, not SQL.
 - Overnight round-robin scripts
 - Anomaly clustering report generation
 - Stall and land-window anomaly counters in diagnostics
+- Round-robin script startup bug fixed (`_write_anomaly_clusters` call order)
+
+## Recent Improvements (2026-05-16)
+
+- `/decks` response now deduplicates by normalized `(name, source)` and returns newest entries.
+- Local deck DB cleanup path validated (stale historical duplicate deck rows removed from runtime DB).
+- AI counterspell logic improved:
+  - Better stack threat scoring for interaction timing.
+  - Counter target selection prefers highest-impact opposing stack spell.
+- Land tapping logic improved for dual/multi-color lands:
+  - `tap_land_for_mana` and bulk tap now accept optional requested color.
+  - Color inference now reads both known land names and oracle mana symbols.
+- Training run completed after fixes:
+  - Run: `backend/training_runs/overnight-20260516-175903`
+  - 45 deck pairs x 2 games each, anomaly outputs generated (`summary.json`, `anomaly-clusters.json`).
 
 ## API Overview
 
