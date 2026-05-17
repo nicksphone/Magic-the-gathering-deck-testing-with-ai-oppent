@@ -189,6 +189,26 @@ Gameplay logic is implemented in application code, not SQL.
   - `scripts/debug_head_to_head.py` uses `--max-ticks` (not `--max-turns`).
   - Very low tick caps can produce artificial timeouts in priority-heavy control mirrors.
 
+## Recent Improvements (2026-05-17)
+
+- Fixed a high-impact AI timeout loop:
+  - Root cause: repeated selection of stale/invalid `play_land` action in the same priority window.
+  - Fix: added AI legality guard to skip obviously illegal land actions before final action commit.
+  - Result: Blue Control vs Burn tuning run now reports `timeout: 0` in latest 10-game sample.
+- Added explicit priority-pass logging in engine flow:
+  - Match logs now include `passes priority on <step> (stack=<n>)` for direct pass-window diagnostics.
+- Control-vs-burn tuning pass:
+  - Added stabilization-first logic (remove pressure before greedy value lines) for control archetypes.
+  - Added stack-threat and end-step card-advantage forcing hooks for control timing quality.
+- Blue Control built-in deck reworked into a castable interaction shell:
+  - Shifted from white-heavy, color-strained list to a Dimir-style control package with early black removal.
+  - Runtime `deckrecord` rows for `Blue Control` updated to match the new shell.
+- Fallback card metadata expanded for control/removal package:
+  - Added/updated fallback entries for `Fatal Push`, `Go for the Throat`, `Drown in the Loch`,
+    `The Meathook Massacre`, `Torrential Gearhulk`, `Sheoldred, the Apocalypse`, and `Swamp`.
+- Knowledge graph refreshed:
+  - `graphify update .` executed and `graphify-out/*` artifacts updated in-repo.
+
 ## API Overview
 
 Base backend default: `http://0.0.0.0:9999`
@@ -408,16 +428,16 @@ Options:
 
 ## Roadmap (Priority)
 
-1. Expand comprehensive rules coverage (layers/replacement/legacy mechanics)
-2. Deepen oracle interpretation for complex multi-clause text
-3. Improve tactical AI for high-skill control/combo lines
-4. Add stronger explainability for AI decision rationale
-5. Expand sideboard UX and full tournament-style BO3 flows
-6. Increase property/regression test coverage for edge interactions
-7. Improve large-scale simulator analytics and replay diff tooling
-8. Expand historical/top-tier deck library breadth
-9. Harden card sync retry/version/invalidation behavior
-10. Add stricter benchmark gates for release quality
+1. Eliminate remaining control pass-overuse in non-timeout scenarios (reduce `passed_with_options`)
+2. Deepen oracle interpretation for combat-key creatures and legacy keyword interactions
+3. Improve tactical AI for high-skill control/combo lines (counter wars, threat windows, inevitability planning)
+4. Expand sideboard UX and full tournament-style BO3 flows
+5. Increase property/regression test coverage for edge interactions
+6. Improve large-scale simulator analytics and replay diff tooling
+7. Expand historical/top-tier deck library breadth
+8. Harden card sync retry/version/invalidation behavior
+9. Add stricter benchmark gates for release quality
+10. Expand comprehensive rules coverage (layers/replacement/legacy mechanics parity)
 
 ## Known Limitations and Next Upgrades
 
