@@ -79,11 +79,35 @@ def infer_effect_from_oracle(
     if "counterspell" in name and state.stack:
         return "counter_spell", {"target_stack_id": state.stack[-1].id}
 
+    # Static-only/keyword text often has no explicit resolver-side action.
+    # Treat those as no-op without warning to keep logs focused on real misses.
+    if _looks_static_or_keyword_only(card.oracle_text or ""):
+        return "gain_life", {"amount": 0}
     # Fallback: log uninferrable oracle text instead of silent no-op.
-    # Cards whose text doesn't match any known pattern get a logged warning
-    # and a harmless gain_life(0) so the stack still resolves cleanly.
     state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
     return "gain_life", {"amount": 0}
+
+
+def _looks_static_or_keyword_only(text: str) -> bool:
+    t = (text or "").strip().lower()
+    if not t:
+        return True
+    action_verbs = [
+        "draw", "destroy", "exile", "counter", "deals", "deal", "create", "return", "search",
+        "sacrifice", "tap target", "untap", "gain", "lose", "discard", "mill", "put ",
+    ]
+    if any(v in t for v in action_verbs):
+        return False
+    if "whenever " in t and " attacks" in t:
+        # Trigger wiring may still be missing; keep this visible.
+        return False
+    static_markers = [
+        "haste", "flying", "trample", "vigilance", "first strike", "double strike",
+        "deathtouch", "lifelink", "menace", "reach", "ward", "hexproof",
+        "can't be blocked", "cannot be blocked", "can't attack", "can't block",
+        "prowess",
+    ]
+    return any(m in t for m in static_markers)
 
 
 def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:

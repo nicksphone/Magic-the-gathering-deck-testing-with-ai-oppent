@@ -208,6 +208,23 @@ Gameplay logic is implemented in application code, not SQL.
     `The Meathook Massacre`, `Torrential Gearhulk`, `Sheoldred, the Apocalypse`, and `Swamp`.
 - Knowledge graph refreshed:
   - `graphify update .` executed and `graphify-out/*` artifacts updated in-repo.
+- Pass-overuse diagnostics refined:
+  - `passed_with_options` now counts only meaningful own-main-phase pass decisions (active player, empty stack, actionable non-pass options).
+  - This removes inflated counts from non-actionable priority windows.
+- Oracle fallback signal quality improved:
+  - Static/keyword-only text (for example haste/flying/prowess lines) is treated as resolver no-op without warning spam.
+  - True unresolved action/trigger text still logs as inference misses.
+- Added CI regression gate script:
+  - `backend/scripts/ci_regression_gate.py`
+  - Runs verbose round-robin + deterministic replay checks.
+  - Fails on configurable thresholds for:
+    - timeouts
+    - `passed_with_options`
+    - determinism failures
+  - Latest smoke run outcome:
+    - `timeouts: 0`
+    - `passed_with_options: 0`
+    - `determinism_failures: 3` (gate correctly fails and surfaces drift)
 
 ## API Overview
 

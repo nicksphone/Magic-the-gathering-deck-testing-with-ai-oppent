@@ -126,9 +126,19 @@ def run() -> int:
                             action = decision.action
 
                         legal_non_pass = any(m.get("type") != "pass_priority" for m in legal)
+                        meaningful_non_pass = any(
+                            m.get("type") in {"play_land", "cast_spell", "activate_loyalty", "attack", "block"}
+                            for m in legal
+                        )
                         legal_has_land = any(m.get("type") == "play_land" for m in legal)
                         acted_type = action.get("type")
-                        if acted_type == "pass_priority" and legal_non_pass:
+                        if (
+                            acted_type == "pass_priority"
+                            and meaningful_non_pass
+                            and pid == state.active_player
+                            and str(state.step) in {"Step.PRECOMBAT_MAIN", "Step.POSTCOMBAT_MAIN"}
+                            and not state.stack
+                        ):
                             passed_with_options += 1
                             stalled_pass_streak += 1
                         else:
