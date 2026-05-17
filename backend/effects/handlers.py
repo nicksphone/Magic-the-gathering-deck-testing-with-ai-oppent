@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game_state.state import MatchState, Zone
+from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.colors import card_color_names
@@ -13,7 +13,14 @@ from rules_engine.prevention import (
     consume_card_prevention_shield,
     consume_player_prevention_shield,
 )
-from rules_engine.replacement import apply_damage_replacements, replace_draw_cards, replace_gain_life
+from rules_engine.replacement import (
+    apply_damage_replacements,
+    damage_cant_be_prevented,
+    player_cant_gain_life,
+    player_cant_lose_life,
+    replace_draw_cards,
+    replace_gain_life,
+)
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -50,6 +57,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
     target_card_id = payload.get("target_card_id")
     amount = int(payload.get("amount", 0))
     source_card_id = payload.get("__source_card_id")
+    prevention_locked = damage_cant_be_prevented(
+        state,
+        source_card_id=source_card_id,
+        target_player=int(target_player) if target_player is not None else None,
+        target_card_id=target_card_id,
+    )
     source_colors: set[str] = set()
     if source_card_id in state.cards:
         source_colors = card_color_names(state.cards[source_card_id])
@@ -61,7 +74,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return
         if card.toughness is not None and amount > 0:
-            post, prevented = consume_card_prevention_shield(card, amount)
+            post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
@@ -73,8 +86,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 _move_creature_to_graveyard(state, target_card_id)
             return
     if target_player is not None:
-        replaced_amount = apply_damage_replacements(state, int(target_player), amount)
-        post, prevented = consume_player_prevention_shield(state, int(target_player), replaced_amount)
+        replaced_amount = amount if prevention_locked else apply_damage_replacements(state, int(target_player), amount)
+        post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
         if post <= 0:
@@ -101,6 +114,11 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 0))
+    if amount <= 0:
+        return
+    if player_cant_gain_life(state, target_player):
+        state.log.append(f"{state.players[target_player].name} can't gain life.")
+        return
     replaced = replace_gain_life(state, target_player, amount)
     if replaced is not None:
         key, repl_payload = replaced
@@ -116,6 +134,11 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
 def lose_life(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 0))
+    if amount <= 0:
+        return
+    if player_cant_lose_life(state, target_player):
+        state.log.append(f"{state.players[target_player].name} can't lose life.")
+        return
     state.players[target_player].life -= amount
     state.log.append(f"{state.players[target_player].name} loses {amount} life.")
 
@@ -218,6 +241,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         )
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
+        assign_static_order_on_battlefield_entry(state, cid)
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
     state.log.append(f"{state.players[token_controller].name} creates {amount} {p}/{t} token(s).")
@@ -364,6 +388,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         card.summoning_sick = "Creature" in card.types
         card.entered_turn = state.turn
         player.battlefield.append(cid)
+        assign_static_order_on_battlefield_entry(state, cid)
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
 
     # Put the rest onto the bottom (deterministic order).

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game_state.state import MatchState, Step, TURN_STEPS, Zone, draw_card
+from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
@@ -130,6 +130,11 @@ class RulesEngine:
             return
 
         if kind == "pass_priority":
+            actor = state.players.get(player_id)
+            if actor:
+                state.log.append(
+                    f"{actor.name} passes priority on {state.step.value} (stack={len(state.stack)})."
+                )
             both_passed = pass_priority(state, player_id)
             if both_passed:
                 if state.stack:
@@ -167,6 +172,7 @@ class RulesEngine:
                 player.last_land_play_turn = state.turn
                 state.cards[cid].zone = Zone.BATTLEFIELD
                 state.cards[cid].summoning_sick = False
+                assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
 
         elif kind == "tap_land_for_mana":

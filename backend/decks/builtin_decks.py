@@ -26,17 +26,18 @@ BUILTIN_DECKS: dict[str, str] = {
 28 Plains
 """,
     "Blue Control": """
+4 Fatal Push
+4 Go for the Throat
 4 Counterspell
 4 Consider
 4 Memory Deluge
-4 Supreme Verdict
-3 The Wandering Emperor
-3 Teferi, Hero of Dominaria
+4 Drown in the Loch
+3 Sheoldred, the Apocalypse
+2 Torrential Gearhulk
+3 The Meathook Massacre
 4 Shark Typhoon
-4 March of Otherworldly Light
-2 Farewell
-24 Island
-4 Hallowed Fountain
+14 Island
+10 Swamp
 """,
     "Dimir Control": """
 4 Consider

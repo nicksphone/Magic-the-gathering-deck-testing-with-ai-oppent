@@ -286,6 +286,21 @@ button:hover {
   background: rgba(5, 20, 24, 0.7);
 }
 
+.analytics-summary {
+  border: 1px solid #3f6774;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: rgba(10, 30, 38, 0.82);
+}
+
+.analytics-summary p {
+  margin: 2px 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  word-break: break-word;
+}
+
 .block-panel,
 .sideboard-panel {
   margin-top: 12px;

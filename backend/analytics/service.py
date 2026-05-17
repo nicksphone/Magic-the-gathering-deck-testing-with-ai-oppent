@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import random
 from itertools import combinations
 from collections import Counter
@@ -33,6 +34,9 @@ class AnalyticsService:
         resolved_play_games = 0
         opener_quality_a: list[float] = []
         opener_quality_b: list[float] = []
+        anomaly_counts: Counter = Counter()
+        top_errors: Counter = Counter()
+        replay_fingerprint_parts: list[str] = []
 
         for i in range(matches):
             state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B")
@@ -67,6 +71,8 @@ class AnalyticsService:
                         play_win += 1
             else:
                 stats["timeouts"] += 1
+            self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors)
+            replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
             turn_counts.append(state.turn)
             if progress_callback is not None:
                 try:
@@ -96,6 +102,17 @@ class AnalyticsService:
                 "deck_a_archetype": guess_archetype(deck_a),
                 "deck_b_archetype": guess_archetype(deck_b),
             },
+            "anomalies": {
+                "timeouts": int(anomaly_counts["timeouts"]),
+                "invalid_targets": int(anomaly_counts["invalid_targets"]),
+                "cost_failures": int(anomaly_counts["cost_failures"]),
+                "additional_cost_failures": int(anomaly_counts["additional_cost_failures"]),
+                "repeated_error_bursts": int(anomaly_counts["repeated_error_bursts"]),
+                "stall_pass_streaks": int(anomaly_counts["stall_pass_streaks"]),
+                "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
+            },
+            "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
+            "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
         }
         self.repo.save_snapshot("batch_simulation", result)
         return result

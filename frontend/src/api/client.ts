@@ -2,7 +2,7 @@ import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
 const API =
   (import.meta as any).env?.VITE_API_BASE_URL ||
-  `http://${typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"}:9999`;
+  "/api";
 
 export const API_BASE = API;
 
@@ -10,6 +10,7 @@ export function resolveCardMediaUrl(uri?: string): string | undefined {
   if (!uri) return undefined;
   if (uri.startsWith("http://") || uri.startsWith("https://")) return uri;
   const path = uri.startsWith("/") ? uri : `/${uri}`;
+  if (API === "/api" && path.startsWith("/card-images/")) return path;
   return `${API}${path}`;
 }
 

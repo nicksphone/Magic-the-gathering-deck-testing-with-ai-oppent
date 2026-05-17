@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from card_data.placeholders import ensure_placeholder_image
 from persistence.repository import Repository
 
 SCRYFALL_NAMED_URL = "https://api.scryfall.com/cards/named"
@@ -23,12 +24,15 @@ class ScryfallSyncService:
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
+        type_line = raw.get("type_line") or (face.get("type_line") if face else "") or ""
+        if not image_uri:
+            image_uri = ensure_placeholder_image(name=raw.get("name", "Card"), type_line=type_line, token=False)
         return {
             "scryfall_id": raw["id"],
             "name": raw["name"],
             "oracle_text": raw.get("oracle_text") or (face.get("oracle_text") if face else "") or "",
             "mana_cost": raw.get("mana_cost") or (face.get("mana_cost") if face else "") or "",
-            "type_line": raw.get("type_line") or (face.get("type_line") if face else "") or "",
+            "type_line": type_line,
             "colors": ",".join(raw.get("colors", [])),
             "power": raw.get("power") or (face.get("power") if face else None),
             "toughness": raw.get("toughness") or (face.get("toughness") if face else None),

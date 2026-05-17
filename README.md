@@ -151,6 +151,8 @@ Gameplay logic is implemented in application code, not SQL.
   - Token creation now attempts Scryfall token-art resolution by token name/P/T.
   - If exact token art is unavailable, a local generic token image is used.
   - Supports DFC face-name cache aliasing (e.g., `Delver of Secrets` matching `Delver of Secrets // Insectile Aberration`).
+  - Token art now caches to local `/card-images/...` paths when available, reducing remote hotlink failures during long sessions.
+  - Guaranteed local placeholder card art now applies when external card sync/image fetch fails (including enchantments and other noncreature types), preventing blank card tiles.
 - Log-driven AI priors:
   - Added `backend/ai/log_priors.py` to build/load card timing priors from replay/training logs.
   - Added `backend/scripts/build_ai_log_priors.py` to extract priors from local match history and `backend/training_runs`.
@@ -158,6 +160,28 @@ Gameplay logic is implemented in application code, not SQL.
     - `GET /ai/priors` returns current priors payload.
     - `POST /ai/priors/rebuild` rebuilds priors from available logs and hot-loads them into AI.
   - AI cast scoring now incorporates historical timing bias for noncreature spells, improving control/slow-deck hold-vs-cast behavior.
+- Broader replacement + layer fidelity:
+  - Added life-lock replacement support in effect resolution:
+    - `players/your opponents can't gain life`
+    - `you/players/your opponents can't lose life`
+  - Added keyword removal layer handling in continuous effects:
+    - `... lose flying/reach/...`
+    - `... lose all abilities`
+  - Keyword grant/removal ordering now applies in battlefield iteration order for more consistent layer-like behavior in static text interactions.
+- Deeper tactical AI under complex boards:
+  - Added crackback-risk filtering for attack selection to reduce overextension into lethal return swings.
+  - Existing rollout/lookahead plus matchup profile logic now keeps more blockers back when race state is unfavorable.
+  - Threat-based removal targeting now evaluates creature danger (power/evasion/key combat keywords/protection pressure), not only raw power.
+  - Control hold-up logic now shifts proactive when opponent is tapped low, improving seasoned sequencing rather than over-passing.
+  - Control cast heuristics now avoid low-value removal fire into empty boards and better convert windows where interaction risk is low.
+- Improved simulator diagnostics:
+  - Batch simulation now reports anomaly counters and top error lines in addition to win-rate stats.
+  - Added deterministic replay fingerprint (`sha256`) per batch result for quick reproducibility checks.
+- Larger deterministic regression workflow:
+  - Added `backend/scripts/regression_matrix_replay.py`:
+    - Runs deck-pair matrix games with fixed seeds
+    - Replays each seed twice
+    - Flags determinism mismatches (winner/turn/log hash drift)
 - Board heuristic hardening:
   - `evaluate_inevitability()` now gracefully handles lightweight/fake state objects used by tests.
   - Full backend suite remains green after integration (`187 passed`).
@@ -188,6 +212,8 @@ Key endpoints:
 - `POST /matches/{match_id}/sideboard`
 - `POST /matches/{match_id}/next-game`
 - `POST /simulate/batch`
+- `POST /simulate/batch/start`
+- `GET /simulate/batch/{job_id}`
 - `POST /ai/diagnostics`
 - `GET /analytics/history`
 

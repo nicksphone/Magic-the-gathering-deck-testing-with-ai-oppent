@@ -282,6 +282,53 @@ def test_control_ai_mulligans_land_light_hand() -> None:
     assert decision.action["type"] == "mulligan"
 
 
+def test_control_ai_mulligans_missing_primary_color_access() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+
+    class Card:
+        def __init__(self, types, mana_cost="", name="", type_line="", oracle_text=""):
+            self.types = types
+            self.mana_cost = mana_cost
+            self.name = name
+            self.type_line = type_line
+            self.oracle_text = oracle_text
+
+    class FakeState:
+        pregame_pending = True
+        mulligan_count = {1: 0}
+        players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3", "s4", "s5"]})()}
+        cards = {
+            "l1": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
+            "l2": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
+            "s1": Card(["Instant"], "{U}{U}", name="Counterspell"),
+            "s2": Card(["Instant"], "{U}", name="Consider"),
+            "s3": Card(["Instant"], "{1}{U}", name="Memory Deluge"),
+            "s4": Card(["Instant"], "{U}", name="Opt"),
+            "s5": Card(["Instant"], "{2}{U}", name="Negate"),
+        }
+
+    decision = ai.choose_mulligan_action(FakeState(), 1)
+    assert decision.action["type"] == "mulligan"
+
+
+def test_attack_bias_defensive_role_discourages_attacks() -> None:
+    ai = AIAgent(difficulty="master", archetype="Midrange")
+
+    class FakeState:
+        players = {
+            1: type("P", (), {"life": 6, "battlefield": ["a1"]})(),
+            2: type("P", (), {"life": 20, "battlefield": ["b1", "b2"]})(),
+        }
+        cards = {
+            "a1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 4, "toughness": 4, "tapped": False})(),
+            "b2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+        }
+
+    score = ai._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
+    assert score < 5
+
+
 def test_master_ai_casts_big_creature_when_castable() -> None:
     ai = AIAgent(difficulty="master", archetype="Midrange")
     moves = [
@@ -322,6 +369,75 @@ def test_master_ai_casts_big_creature_when_castable() -> None:
         blocks = {}
         passed_priority = set()
         loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+
+
+def test_ai_targets_highest_threat_creature_not_just_highest_toughness() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_name": "Go for the Throat",
+            "card_id": "rmv-1",
+            "target_hints": {
+                "creature_targets": [{"id": "bear"}, {"id": "dragon"}],
+            },
+        },
+    ]
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["rmv-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["bear", "dragon"], "mana_pool": {}})(),
+        }
+        cards = {
+            "rmv-1": type("C", (), {"types": ["Instant"], "name": "Go for the Throat", "oracle_text": "Destroy target creature.", "tapped": False})(),
+            "bear": type("C", (), {"types": ["Creature"], "name": "Runeclaw Bear", "power": 2, "toughness": 2, "keywords": [], "oracle_text": "", "tapped": False})(),
+            "dragon": type("C", (), {"types": ["Creature"], "name": "Dragon", "power": 5, "toughness": 5, "keywords": ["Flying"], "oracle_text": "", "tapped": False})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["targets"]["target_card_id"] == "dragon"
+
+
+def test_control_ai_more_proactive_when_opponent_tapped_down() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "cast_spell", "card_name": "Consider", "card_id": "draw-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 4
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["draw-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type(
+                "P",
+                (),
+                {"life": 20, "hand": [], "battlefield": ["l1", "l2"], "mana_pool": {}},
+            )(),
+        }
+        cards = {
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": True})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": True})(),
+        }
 
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"

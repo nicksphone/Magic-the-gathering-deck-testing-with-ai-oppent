@@ -49,6 +49,18 @@ class AIAgent:
         if forced_land is not None:
             return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
 
+        forced_stabilize = self._forced_burn_stabilization_line(state, legal_moves, player_id)
+        if forced_stabilize is not None:
+            return AIDecision(action=forced_stabilize, reasoning="Burn matchup stabilization: remove pressure before value lines")
+
+        stack_interaction = self._forced_stack_interaction(state, legal_moves, player_id)
+        if stack_interaction is not None:
+            return AIDecision(action=stack_interaction, reasoning="Answer threatening stack item with available interaction")
+
+        endstep_draw = self._forced_endstep_card_advantage(state, legal_moves, player_id)
+        if endstep_draw is not None:
+            return AIDecision(action=endstep_draw, reasoning="Use opponent end step for instant-speed card advantage")
+
         closure = self._choose_forced_closure_action(state, legal_moves, player_id)
         if closure is not None:
             return AIDecision(action=closure, reasoning="Force late-game proactive line to avoid control stall/timeouts")
@@ -69,12 +81,15 @@ class AIAgent:
             materialized = self._materialize_action(state, cand, player_id)
             if materialized.get("_invalid_ai_choice"):
                 continue
+            if self._is_action_obviously_illegal(state, materialized, player_id):
+                continue
             if self._is_unplayable_x_action(materialized):
                 continue
             move = materialized
             break
         if move is None:
             move = {"type": "pass_priority"}
+        move = self._avoid_pass_with_main_phase_options(state, legal_moves, player_id, move)
         if move.get("type") == "block" and not move.get("blocks"):
             return AIDecision(action={"type": "pass_priority"}, reasoning="No profitable/legal block assignment; pass")
         if move.get("type") == "attack" and not (move.get("attackers") or []):
@@ -186,6 +201,111 @@ class AIAgent:
             score -= 2.5
         return score
 
+    def _forced_stack_interaction(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if self.archetype not in {"Control", "Counter-heavy", "Tempo", "Midrange"}:
+            return None
+        if getattr(state, "priority_player", player_id) != player_id:
+            return None
+        if not (getattr(state, "stack", []) or []):
+            return None
+        cast_moves = [m for m in legal_moves if m.get("type") == "cast_spell"]
+        if not cast_moves:
+            return None
+        if self._best_stack_threat_score(state, player_id) < 2.0:
+            return None
+        best: tuple[float, dict] | None = None
+        for move in cast_moves:
+            cid = move.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if not card:
+                continue
+            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            score = 0.0
+            if "counter target spell" in text:
+                score += 7.0
+            elif any(k in text for k in ["destroy target", "exile target", "deals"]):
+                score += 2.5
+            if score <= 0.0:
+                continue
+            mat = self._materialize_action(state, move, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            if best is None or score > best[0]:
+                best = (score, mat)
+        return best[1] if best else None
+
+    def _forced_endstep_card_advantage(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
+            return None
+        if getattr(state, "priority_player", player_id) != player_id:
+            return None
+        if getattr(state, "active_player", player_id) == player_id:
+            return None
+        if _step_key(getattr(state, "step", "")) != "end_step":
+            return None
+        if getattr(state, "stack", []) or []:
+            return None
+        candidates: list[dict] = []
+        for move in legal_moves:
+            if move.get("type") != "cast_spell":
+                continue
+            cid = move.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if not card:
+                continue
+            if "Instant" not in (getattr(card, "types", []) or []):
+                continue
+            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            if not any(k in text for k in ["draw", "deluge", "consider", "scry"]):
+                continue
+            mat = self._materialize_action(state, move, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            candidates.append(mat)
+        return candidates[0] if candidates else None
+
+    def _forced_burn_stabilization_line(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if not self._is_burn_matchup():
+            return None
+        if getattr(state, "active_player", player_id) != player_id:
+            return None
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return None
+        if getattr(state, "stack", []) or []:
+            return None
+        opp_id = 1 if player_id == 2 else 2
+        opp_creatures = [
+            cid
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        ]
+        if not opp_creatures:
+            return None
+        cast_moves = [m for m in legal_moves if m.get("type") == "cast_spell"]
+        best: tuple[float, dict] | None = None
+        for move in cast_moves:
+            cid = move.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if not card:
+                continue
+            tags = self._spell_tags(card)
+            if "removal" not in tags and "sweeper" not in tags:
+                continue
+            mat = self._materialize_action(state, move, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            score = 0.0
+            if "sweeper" in tags:
+                score += 5.0 if len(opp_creatures) >= 2 else 1.0
+            if "removal" in tags:
+                score += 3.0
+            if any(k in text for k in ["exile", "destroy"]):
+                score += 0.8
+            if best is None or score > best[0]:
+                best = (score, mat)
+        return best[1] if best else None
+
     def _choose_forced_land_play(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         step = _step_key(getattr(state, "step", ""))
         own_main = step in {"precombat_main", "postcombat_main"}
@@ -218,6 +338,8 @@ class AIAgent:
         hand = [state.cards[cid] for cid in player.hand]
         lands = sum(1 for c in hand if _card_looks_like_land(c))
         early_spells = 0
+        cheap_interaction = 0
+        colored_pips = {c: 0 for c in ["W", "U", "B", "R", "G"]}
         for c in hand:
             if _card_looks_like_land(c):
                 continue
@@ -225,18 +347,29 @@ class AIAgent:
             cmc = cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"])
             if cmc <= 2:
                 early_spells += 1
+            text = f"{(getattr(c, 'name', '') or '').lower()} {(getattr(c, 'oracle_text', '') or '').lower()}"
+            if cmc <= 2 and any(k in text for k in ["counter target spell", "destroy target", "exile target", "deals"]):
+                cheap_interaction += 1
+            for sym in ["W", "U", "B", "R", "G"]:
+                colored_pips[sym] += int(cost[sym] or 0)
+        likely_sources = self._opening_color_sources_from_hand(hand)
+        missing_primary_color = any(v >= 2 and likely_sources.get(k, 0) == 0 for k, v in colored_pips.items())
         mulligans = state.mulligan_count.get(player_id, 0)
         min_lands, max_lands = self._preferred_land_window()
         too_land_light = lands < min_lands
         too_land_heavy = lands > max_lands
-        quality = (1.0 - min(abs(lands - 3), 3) / 3) * 0.7 + min(early_spells / 2, 1.0) * 0.3
+        quality = (1.0 - min(abs(lands - 3), 3) / 3) * 0.65 + min(early_spells / 2, 1.0) * 0.25 + (0.1 if not missing_primary_color else 0.0)
         if mulligans < 2 and (too_land_light or too_land_heavy):
             return AIDecision(
                 action={"type": "mulligan"},
                 reasoning=f"Opening hand outside {min_lands}-{max_lands} land window for {self.archetype}",
             )
+        if mulligans < 2 and missing_primary_color and lands <= 3:
+            return AIDecision(action={"type": "mulligan"}, reasoning="Missing key color access in opening hand")
         if mulligans < 2 and quality < 0.45:
             return AIDecision(action={"type": "mulligan"}, reasoning="Opening hand quality too low")
+        if mulligans < 2 and self._is_burn_matchup() and (lands < 2 or cheap_interaction == 0):
+            return AIDecision(action={"type": "mulligan"}, reasoning="Burn matchup requires stable mana and early interaction")
         return AIDecision(action={"type": "keep_hand", "bottom_card_ids": []}, reasoning="Keep acceptable hand")
 
     def _preferred_land_window(self) -> tuple[int, int]:
@@ -363,7 +496,12 @@ class AIAgent:
             if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
         )
         race_pressure = max(0, 20 - state.players[opp_id].life) * 0.2
+        role = self._board_role(state, player_id)
         archetype_bias = 5 if self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} else 2
+        if role == "defend":
+            archetype_bias -= 2.2
+        elif role == "race":
+            archetype_bias += 1.4
         unblocked_bonus = 3.5 if opp_blockers == 0 else 0.0
         lethal_bonus = 20.0 if attack_power >= state.players[opp_id].life else 0.0
         return archetype_bias + attack_power * 0.8 - opp_block_power * 0.35 + race_pressure + unblocked_bonus + lethal_bonus
@@ -382,6 +520,10 @@ class AIAgent:
             return -2.0
         if self._can_deploy_major_threat(state, player_id):
             return -1.2
+        if self._should_force_proactive_control_line(state, player_id):
+            return -2.1
+        if self._is_burn_matchup() and getattr(state, "active_player", player_id) == player_id and _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}:
+            return -1.0
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
             return 1.8 + float(self.matchup_profile.get("holdup_bias", 0.0))
         if self._should_hold_up_interaction(state, player_id):
@@ -401,6 +543,11 @@ class AIAgent:
             for cid in state.players[opp_id].battlefield
             if "Land" in (state.cards.get(cid).types if cid in state.cards else []) and not state.cards[cid].tapped
         )
+        # If opponent cannot realistically represent interaction, be more proactive.
+        if opp_untapped <= 1:
+            return False
+        if self._should_force_proactive_control_line(state, player_id):
+            return False
         has_counter = any(
             "counter target spell" in f"{(state.cards[cid].name or '').lower()} {(state.cards[cid].oracle_text or '').lower()}"
             for cid in state.players[player_id].hand
@@ -528,6 +675,17 @@ class AIAgent:
 
         if arche in {"Control", "Counter-heavy"}:
             bonus = 0.0
+            opp_id = 1 if player_id == 2 else 2
+            opp_creatures = sum(
+                1
+                for cid in state.players[opp_id].battlefield
+                if cid in state.cards and "Creature" in state.cards[cid].types
+            )
+            opp_untapped_lands = sum(
+                1
+                for cid in state.players[opp_id].battlefield
+                if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+            )
             if "counter" in tags:
                 bonus += 5.5 if getattr(state, "stack", []) else -2.5
             if "draw" in tags:
@@ -537,8 +695,32 @@ class AIAgent:
                     in_end = _step_key(getattr(state, "step", "")) == "end_step"
                     if on_opp_turn or in_end:
                         bonus += 2.4
+                # Be proactive when opponent is tapped down and interaction risk is low.
+                if opp_untapped_lands <= 1 and own_main_sorcery_window:
+                    bonus += 1.1
+                if own_main_sorcery_window and self._should_force_proactive_control_line(state, player_id):
+                    bonus += 1.0
+                if self._is_burn_matchup() and state.turn <= 4 and opp_creatures > 0:
+                    bonus -= 2.0
             if "removal" in tags:
                 bonus += 2.0
+                # Don't fire premium removal into empty/low-pressure board states.
+                if opp_creatures == 0:
+                    bonus -= 2.5
+                elif own_main_sorcery_window and self._should_force_proactive_control_line(state, player_id):
+                    bonus += 0.8
+                if self._is_burn_matchup() and opp_creatures > 0:
+                    bonus += 2.4
+            if self._is_burn_matchup() and "counter" in tags and state.turn <= 3 and not (getattr(state, "stack", []) or []):
+                bonus -= 0.8
+            if self._is_burn_matchup() and "sweeper" in f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}":
+                if opp_creatures >= 2:
+                    bonus += 2.8
+                else:
+                    bonus -= 1.2
+            if ("Planeswalker" in set(getattr(card, "types", []) or []) or is_big_threat) and own_main_sorcery_window:
+                if self._should_force_proactive_control_line(state, player_id):
+                    bonus += 2.3
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus
@@ -682,6 +864,8 @@ class AIAgent:
         tags: set[str] = set()
         if "counter target spell" in text or "counterspell" in text:
             tags.add("counter")
+        if any(k in text for k in ["destroy all creatures", "wrath", "damnation", "supreme verdict"]):
+            tags.add("sweeper")
         if "draw" in text:
             tags.add("draw")
         if "destroy target" in text or "exile target" in text or "deals" in text:
@@ -759,11 +943,7 @@ class AIAgent:
 
         creature_targets = hints.get("creature_targets") or []
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
-            best = max(
-                creature_targets,
-                key=lambda t: (state.cards.get(t["id"]).power or 0, state.cards.get(t["id"]).toughness or 0),
-                default=None,
-            )
+            best = max(creature_targets, key=lambda t: self._creature_threat_score(state, t.get("id"), player_id), default=None)
             if best:
                 targets["target_card_id"] = best["id"]
 
@@ -773,7 +953,10 @@ class AIAgent:
 
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
-                targets["target_distribution"] = {creature_targets[0]["id"]: 1}
+                # Put first point on highest-threat creature by default.
+                best = max(creature_targets, key=lambda t: self._creature_threat_score(state, t.get("id"), player_id), default=None)
+                if best:
+                    targets["target_distribution"] = {best["id"]: 1}
             elif player_targets:
                 targets["target_distribution"] = {str(opponent): 1}
             targets.setdefault("divide_total", 1)
@@ -972,12 +1155,77 @@ class AIAgent:
 
             chosen.append(cid)
 
+        # Tactical crackback safety: avoid attacks that expose an immediate lethal swing.
+        if chosen and not race_mode:
+            safe = self._remove_high_risk_attackers(state, chosen, candidates, player_id)
+            if safe:
+                chosen = safe
+
         # If nothing qualifies but we have lethal on board, send all.
         if not chosen:
             total_power = sum((state.cards[c].power or 0) for c in candidates if c in state.cards)
             if total_power >= opp_life:
                 return list(candidates)
         return chosen
+
+    def _creature_threat_score(self, state: MatchState, creature_id: str | None, player_id: int) -> float:
+        if not creature_id or creature_id not in state.cards:
+            return -999.0
+        card = state.cards[creature_id]
+        if "Creature" not in (getattr(card, "types", []) or []):
+            return -500.0
+        from rules_engine.continuous import effective_power as _eff_pow
+        from rules_engine.continuous import effective_toughness as _eff_tgh
+
+        power = max(0, _eff_pow(state, creature_id))
+        toughness = max(0, _eff_tgh(state, creature_id))
+        kws = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+        score = power * 1.2 + toughness * 0.35
+        if "flying" in kws or "trample" in kws or "menace" in kws:
+            score += 1.8
+        if "deathtouch" in kws:
+            score += 1.2
+        if "lifelink" in kws:
+            score += 1.0
+        if "ward" in (getattr(card, "oracle_text", "") or "").lower() or "hexproof" in kws:
+            score += 1.0
+        # Prefer removing immediate lethal/race pressure.
+        me = state.players[player_id]
+        if power >= me.life:
+            score += 5.0
+        return score
+
+    def _remove_high_risk_attackers(self, state: MatchState, chosen: list[str], candidates: list[str], player_id: int) -> list[str]:
+        opp_id = 1 if player_id == 2 else 2
+        from rules_engine.continuous import effective_power as _eff_pow
+        from rules_engine.continuous import effective_toughness as _eff_tgh
+
+        def _crackback_risk(attackers: list[str]) -> int:
+            # Approximate worst-case next turn damage by untapped opposing creatures.
+            # We discount by likely defenders we keep back after this attack.
+            our_remaining = [
+                cid
+                for cid in state.players[player_id].battlefield
+                if cid in state.cards and "Creature" in state.cards[cid].types and cid not in attackers
+            ]
+            our_block_value = sum(max(0, _eff_pow(state, cid)) for cid in our_remaining if not state.cards[cid].tapped)
+            opp_attack_value = sum(
+                max(0, _eff_pow(state, cid))
+                for cid in state.players[opp_id].battlefield
+                if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            )
+            return max(0, opp_attack_value - int(our_block_value * 0.6))
+
+        my_life = int(state.players[player_id].life or 0)
+        current = list(chosen)
+        while current:
+            risk = _crackback_risk(current)
+            if risk < my_life:
+                return current
+            # pull back weakest attacker first
+            weakest = min(current, key=lambda cid: (_eff_pow(state, cid), _eff_tgh(state, cid)))
+            current.remove(weakest)
+        return []
 
     def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())
@@ -1129,12 +1377,37 @@ class AIAgent:
         # they should proactively advance board/card advantage.
         if self.archetype in {"Control", "Counter-heavy"}:
             hand_size = len(getattr(state.players[player_id], "hand", []))
-            if getattr(state, "turn", 1) < 6 and hand_size < 6:
+            if getattr(state, "turn", 1) < 6 and hand_size < 6 and not self._should_force_proactive_control_line(state, player_id):
                 return False
         return True
 
+    def _should_force_proactive_control_line(self, state: MatchState, player_id: int) -> bool:
+        """Push control decks to convert resources instead of over-passing in developed boards."""
+        if self.archetype not in {"Control", "Counter-heavy"}:
+            return False
+        if getattr(state, "active_player", player_id) != player_id:
+            return False
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return False
+        if getattr(state, "stack", []) or []:
+            return False
+        turn = int(getattr(state, "turn", 1) or 1)
+        hand_size = len(getattr(state.players[player_id], "hand", []))
+        untapped_lands = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        # Late game or near hand-cap should proactively deploy card advantage/threats.
+        return turn >= 6 and (hand_size >= 6 or untapped_lands >= 5)
+
+    def _is_burn_matchup(self) -> bool:
+        own = (self.archetype or "").strip().lower()
+        opp = (self.opponent_archetype or "").strip().lower()
+        return own in {"control", "counter-heavy"} and opp in {"burn", "aggro", "tempo"}
+
     def _best_proactive_non_pass(self, ranked_moves: list[dict], state: MatchState) -> dict | None:
-        non_pass = [m for m in ranked_moves if m.get("type") != "pass_priority"]
+        non_pass = [m for m in ranked_moves if m.get("type") not in {"pass_priority", "tap_land_for_mana", "tap_lands_bulk"}]
         if not non_pass:
             return None
         if getattr(state, "stack", []) or []:
@@ -1155,6 +1428,55 @@ class AIAgent:
                 continue
             return move
         return non_pass[0]
+
+    def _avoid_pass_with_main_phase_options(self, state: MatchState, legal_moves: list[dict], player_id: int, chosen: dict) -> dict:
+        if chosen.get("type") != "pass_priority":
+            return chosen
+        if getattr(state, "active_player", player_id) != player_id:
+            return chosen
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return chosen
+        if getattr(state, "stack", []) or []:
+            return chosen
+
+        meaningful = [m for m in legal_moves if m.get("type") in {"play_land", "cast_spell", "activate_loyalty", "attack"}]
+        if not meaningful:
+            return chosen
+
+        ranked = self._rank_moves(state, legal_moves, player_id)
+        proactive = self._best_proactive_non_pass(ranked, state)
+        if proactive is None:
+            return chosen
+        proactive = self._materialize_action(state, proactive, player_id)
+        if proactive.get("_invalid_ai_choice") or self._is_unplayable_x_action(proactive):
+            return chosen
+        if self._is_action_obviously_illegal(state, proactive, player_id):
+            return chosen
+        if proactive.get("type") == "attack" and not (proactive.get("attackers") or []):
+            return chosen
+        return proactive
+
+    def _is_action_obviously_illegal(self, state: MatchState, action: dict, player_id: int) -> bool:
+        kind = action.get("type")
+        if kind == "play_land":
+            cid = action.get("card_id")
+            if not cid:
+                return True
+            player = state.players[player_id]
+            if cid not in player.hand:
+                return True
+            card = state.cards.get(cid)
+            if not card or "Land" not in (getattr(card, "types", []) or []):
+                return True
+            if getattr(state, "active_player", player_id) != player_id:
+                return True
+            if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+                return True
+            if (getattr(state, "stack", []) or []):
+                return True
+            if self._remaining_land_plays(state, player_id) <= 0:
+                return True
+        return False
 
     def _is_major_threat_card(self, card) -> bool:
         types = set(getattr(card, "types", []) or [])
@@ -1200,6 +1522,36 @@ class AIAgent:
             if "counter target spell" in text:
                 demand["U"] += 2
         return demand
+
+    def _opening_color_sources_from_hand(self, hand: list) -> dict[str, int]:
+        sources = {c: 0 for c in ["W", "U", "B", "R", "G"]}
+        for c in hand:
+            if not _card_looks_like_land(c):
+                continue
+            for sym in self._land_colors(c):
+                if sym in sources:
+                    sources[sym] += 1
+        return sources
+
+    def _board_role(self, state: MatchState, player_id: int) -> str:
+        opp_id = 1 if player_id == 2 else 2
+        my_life = int(getattr(state.players[player_id], "life", 20) or 20)
+        opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
+        my_power = sum(
+            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        opp_power = sum(
+            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        if opp_life <= 7 or (my_power >= opp_life and opp_life <= 10):
+            return "race"
+        if my_life <= 8 and opp_power > my_power:
+            return "defend"
+        return "normal"
 
     def _current_color_sources(self, state: MatchState, player_id: int) -> dict[str, int]:
         sources = {c: 0 for c in ["W", "U", "B", "R", "G"]}

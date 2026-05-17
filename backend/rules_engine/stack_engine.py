@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from effects.registry import resolve_effect
-from game_state.state import MatchState, StackItem, Zone
+from game_state.state import MatchState, StackItem, Zone, assign_static_order_on_battlefield_entry
 from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 
@@ -56,6 +56,7 @@ def resolve_top_of_stack(state: MatchState) -> None:
             card.zone = Zone.BATTLEFIELD
             card.summoning_sick = "Creature" in card.types
             card.entered_turn = state.turn
+            assign_static_order_on_battlefield_entry(state, card.id)
             if is_aura(card):
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):

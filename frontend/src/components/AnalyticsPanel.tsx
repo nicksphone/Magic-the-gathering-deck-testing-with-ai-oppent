@@ -13,6 +13,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [difficulty, setDifficulty] = useState("master");
   const [maxTicks, setMaxTicks] = useState(2000);
   const [result, setResult] = useState<string>("");
+  const [resultObj, setResultObj] = useState<Record<string, unknown> | null>(null);
   const [running, setRunning] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [progressText, setProgressText] = useState<string>("");
@@ -20,13 +21,15 @@ export function AnalyticsPanel({ decks }: Props) {
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
     const b = decks.find((d) => d.id === deckB);
-    if (!a || !b) {
+      if (!a || !b) {
       setResult("Select both decks before running Testing Simulator.");
+      setResultObj(null);
       return;
     }
     try {
       setRunning(true);
       setResult("");
+      setResultObj(null);
       setProgressText("Queueing simulator job...");
       const job = await api.startSimulateBatchJob(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
       setJobId(job.job_id);
@@ -53,6 +56,7 @@ export function AnalyticsPanel({ decks }: Props) {
           `Status: ${job.status} | ${job.completed_matches}/${job.total_matches} matches (${pct}%) | ${elapsedSec}s elapsed`,
         );
         if (job.status === "completed") {
+          setResultObj((job.result ?? null) as Record<string, unknown> | null);
           setResult(JSON.stringify(job.result ?? {}, null, 2));
           setRunning(false);
           setJobId(null);
@@ -116,6 +120,23 @@ export function AnalyticsPanel({ decks }: Props) {
         {running ? <button onClick={cancelDisplay}>Stop Polling</button> : null}
       </div>
       <pre>{progressText || "Idle."}</pre>
+      {resultObj ? (
+        <div className="analytics-summary">
+          <p>
+            Win Rate: A {(resultObj.win_rate_deck_a as number | undefined) ?? "-"}% | B {(resultObj.win_rate_deck_b as number | undefined) ?? "-"}% |
+            Avg Turns {(resultObj.average_turns as number | undefined) ?? "-"}
+          </p>
+          <p>
+            Fingerprint: {(resultObj.deterministic_replay_fingerprint as string | undefined) ?? "n/a"}
+          </p>
+          <p>
+            Anomalies: {JSON.stringify(resultObj.anomalies ?? {}, null, 0)}
+          </p>
+          <p>
+            Top Errors: {JSON.stringify(resultObj.top_errors ?? [], null, 0)}
+          </p>
+        </div>
+      ) : null}
       <pre>{result || "No simulation result yet."}</pre>
     </section>
   );

@@ -68,6 +68,7 @@ class CardInstance:
     type_line: str = ""
     image_uri: str | None = None
     attached_to: str | None = None
+    static_order: int = 0
 
 
 @dataclass
@@ -129,6 +130,7 @@ class MatchState:
         }
     )
     log: list[str] = field(default_factory=list)
+    next_static_order: int = 1
 
 
 class MatchFactory:
@@ -202,6 +204,14 @@ def draw_card(state: MatchState, player_id: int, count: int = 1) -> None:
         card.zone = Zone.HAND
         player.hand.append(cid)
         emit_event(state, "draw_card", {"player_id": player_id, "card_id": cid})
+
+
+def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) -> None:
+    card = state.cards.get(card_id)
+    if not card:
+        return
+    card.static_order = int(getattr(state, "next_static_order", 1) or 1)
+    state.next_static_order = card.static_order + 1
 
 
 def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_text: str = "") -> list[str]:

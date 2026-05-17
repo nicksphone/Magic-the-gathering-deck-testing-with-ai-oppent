@@ -21,6 +21,10 @@ KW_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
 )
+KW_REMOVE_RE = re.compile(
+    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"(you control|your opponents control)\s+(?:lose|loses)\s+([^.]*)"
+)
 KNOWN_KEYWORDS = [
     "trample",
     "first strike",
@@ -91,6 +95,15 @@ def effective_keywords(state, card_id: str) -> list[str]:
                     continue
                 if _subject_matches(state, card_id, subject):
                     out.update(granted)
+        for scope, other_only, subject, removed in _iter_keyword_removals(src):
+            if _scope_controller(src.controller, scope, card.controller):
+                if other_only and src_id == card_id:
+                    continue
+                if _subject_matches(state, card_id, subject):
+                    if "all abilities" in removed:
+                        out.clear()
+                    else:
+                        out.difference_update(removed)
     return sorted(out)
 
 
@@ -214,6 +227,21 @@ def _iter_keyword_grants(source_card):
             yield (scope, other_only, subject, granted)
 
 
+def _iter_keyword_removals(source_card):
+    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    for match in KW_REMOVE_RE.finditer(text):
+        other_only = bool(match.group(1))
+        subject = match.group(2).strip()
+        scope = match.group(3).strip()
+        removed_text = match.group(4).strip()
+        if "all abilities" in removed_text:
+            yield (scope, other_only, subject, {"all abilities"})
+            continue
+        removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
+        if removed:
+            yield (scope, other_only, subject, set(removed))
+
+
 def _scope_controller(source_controller: int, scope: str, target_controller: int) -> bool:
     if scope == "you control":
         return source_controller == target_controller
@@ -312,6 +340,13 @@ def _all_battlefield_ids(state) -> list[str]:
     ids: list[str] = []
     for pid in state.players:
         ids.extend(list(state.players[pid].battlefield))
+    ids.sort(
+        key=lambda cid: (
+            int(getattr(state.cards.get(cid), "static_order", 0) or 0),
+            int(getattr(state.cards.get(cid), "entered_turn", 0) or 0),
+            str(cid),
+        )
+    )
     return ids
 
 

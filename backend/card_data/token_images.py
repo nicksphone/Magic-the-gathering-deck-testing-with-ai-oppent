@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
+from card_data.placeholders import ensure_placeholder_image
 from card_data.sync import CACHE_DIR, CACHE_ROUTE_PREFIX
 
 SCRYFALL_SEARCH_URL = "https://api.scryfall.com/cards/search"
@@ -23,7 +25,7 @@ def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
         _TOKEN_IMAGE_CACHE[key] = image
         return image
 
-    fallback = _ensure_generic_token_svg()
+    fallback = ensure_placeholder_image(name=name, type_line="Token Creature", token=True)
     _TOKEN_IMAGE_CACHE[key] = fallback
     return fallback
 
@@ -50,7 +52,8 @@ def _search_scryfall_token_image(name: str, power: int, toughness: int) -> str |
                 for row in data:
                     uri = _extract_image_uri(row)
                     if uri:
-                        return uri
+                        cached = _cache_remote_token_image(row, uri, client)
+                        return cached or uri
     except Exception:
         return None
     return None
@@ -72,25 +75,19 @@ def _extract_image_uri(raw: dict[str, Any]) -> str | None:
     return None
 
 
-def _ensure_generic_token_svg() -> str:
+def _cache_remote_token_image(raw: dict[str, Any], remote_uri: str, client: httpx.Client) -> str | None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    path = CACHE_DIR / "generic-token-creature.svg"
-    if not path.exists():
-        path.write_text(
-            (
-                "<svg xmlns='http://www.w3.org/2000/svg' width='488' height='680' viewBox='0 0 488 680'>"
-                "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
-                "<stop offset='0%' stop-color='#1f2937'/><stop offset='100%' stop-color='#111827'/>"
-                "</linearGradient></defs>"
-                "<rect width='488' height='680' fill='url(#g)'/>"
-                "<rect x='24' y='24' width='440' height='632' rx='22' fill='none' stroke='#9ca3af' stroke-width='4'/>"
-                "<text x='244' y='320' font-family='Georgia,serif' font-size='42' fill='#e5e7eb' text-anchor='middle'>"
-                "Creature Token</text>"
-                "<text x='244' y='372' font-family='Georgia,serif' font-size='24' fill='#9ca3af' text-anchor='middle'>"
-                "Generic Art</text>"
-                "</svg>"
-            ),
-            encoding="utf-8",
-        )
-    return f"{CACHE_ROUTE_PREFIX}/{path.name}"
-
+    sid = str(raw.get("id") or "").strip()
+    if not sid:
+        return None
+    ext = Path(urlparse(remote_uri).path).suffix or ".jpg"
+    target = CACHE_DIR / f"token-{sid}{ext}"
+    if target.exists():
+        return f"{CACHE_ROUTE_PREFIX}/{target.name}"
+    try:
+        res = client.get(remote_uri, timeout=12)
+        res.raise_for_status()
+        target.write_bytes(res.content)
+        return f"{CACHE_ROUTE_PREFIX}/{target.name}"
+    except Exception:
+        return None

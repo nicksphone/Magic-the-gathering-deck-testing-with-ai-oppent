@@ -22,6 +22,7 @@ from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_prio
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.service import AnalyticsService
 from card_data.fallback_cards import fallback_card_payload
+from card_data.placeholders import ensure_placeholder_image
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
@@ -766,6 +767,12 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             fallback = fallback_card_payload(item["card_name"])
             if fallback:
                 out.update({k: v for k, v in fallback.items() if v is not None})
+        if not out.get("image_uri"):
+            out["image_uri"] = ensure_placeholder_image(
+                name=str(out.get("card_name") or item.get("card_name") or "Card"),
+                type_line=str(out.get("type_line") or ""),
+                token=False,
+            )
         hydrated.append(out)
     return hydrated
 

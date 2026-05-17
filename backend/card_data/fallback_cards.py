@@ -15,6 +15,7 @@ FALLBACK_CARD_DATA: dict[str, dict[str, Any]] = {
     "march of otherworldly light": {"mana_cost": "{X}{W}", "type_line": "Instant", "oracle_text": "Exile target artifact, creature, or enchantment."},
     "farewell": {"mana_cost": "{4}{W}{W}", "type_line": "Sorcery", "oracle_text": "Exile all creatures."},
     "island": {"mana_cost": "", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."},
+    "plains": {"mana_cost": "", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."},
     "hallowed fountain": {"mana_cost": "", "type_line": "Land — Plains Island", "oracle_text": "{T}: Add {W} or {U}."},
     # Ramp
     "arboreal grazer": {"mana_cost": "{G}", "type_line": "Creature", "oracle_text": "When Arboreal Grazer enters, you may put a land card from your hand onto the battlefield tapped.", "power": "0", "toughness": "3"},
@@ -27,6 +28,14 @@ FALLBACK_CARD_DATA: dict[str, dict[str, Any]] = {
     "hydroid krasis": {"mana_cost": "{X}{G}{U}", "type_line": "Creature", "oracle_text": "Flying, trample. When cast, draw a card and gain life.", "power": "4", "toughness": "4"},
     "storm the festival": {"mana_cost": "{3}{G}{G}{G}", "type_line": "Sorcery", "oracle_text": "Look at the top cards of your library."},
     "forest": {"mana_cost": "", "type_line": "Basic Land — Forest", "oracle_text": "{T}: Add {G}."},
+    # Dimir / black interaction
+    "fatal push": {"mana_cost": "{B}", "type_line": "Instant", "oracle_text": "Destroy target creature."},
+    "go for the throat": {"mana_cost": "{1}{B}", "type_line": "Instant", "oracle_text": "Destroy target creature."},
+    "drown in the loch": {"mana_cost": "{U}{B}", "type_line": "Instant", "oracle_text": "Counter target spell."},
+    "sheoldred, the apocalypse": {"mana_cost": "{2}{B}{B}", "type_line": "Legendary Creature", "oracle_text": "Deathtouch. Whenever you draw a card, you gain 2 life.", "power": "4", "toughness": "5"},
+    "the meathook massacre": {"mana_cost": "{X}{B}{B}", "type_line": "Legendary Enchantment", "oracle_text": "Destroy all creatures."},
+    "torrential gearhulk": {"mana_cost": "{4}{U}{U}", "type_line": "Artifact Creature", "oracle_text": "Flash.", "power": "5", "toughness": "6"},
+    "swamp": {"mana_cost": "", "type_line": "Basic Land — Swamp", "oracle_text": "{T}: Add {B}."},
 }
 
 
