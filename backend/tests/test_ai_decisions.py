@@ -1212,3 +1212,115 @@ def test_tribal_ai_prefers_collected_company_style_spell_over_pass() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "cc-1"
+
+
+def test_control_inevitability_planner_prefers_draw_over_pass() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control", opponent_archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Memory Deluge", "card_id": "draw-1"},
+    ]
+
+    class FakeState:
+        turn = 11
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        players = {
+            1: type(
+                "P",
+                (),
+                {
+                    "life": 16,
+                    "hand": ["draw-1"],
+                    "battlefield": [],
+                    "mana_pool": {},
+                    "library": ["a"] * 30,
+                    "graveyard": ["g"] * 5,
+                },
+            )(),
+            2: type(
+                "P",
+                (),
+                {
+                    "life": 15,
+                    "hand": [],
+                    "battlefield": [],
+                    "mana_pool": {},
+                    "library": ["b"] * 24,
+                    "graveyard": ["h"] * 6,
+                },
+            )(),
+        }
+        cards = {
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+        }
+        stack = []
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "draw-1"
+
+
+def test_control_inevitability_planner_avoids_counter_on_empty_stack() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control", opponent_archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Counterspell", "card_id": "ctr-1"},
+        {"type": "cast_spell", "card_name": "Memory Deluge", "card_id": "draw-1"},
+    ]
+
+    class FakeState:
+        turn = 12
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        players = {
+            1: type(
+                "P",
+                (),
+                {
+                    "life": 18,
+                    "hand": ["ctr-1", "draw-1"],
+                    "battlefield": [],
+                    "mana_pool": {},
+                    "library": ["a"] * 25,
+                    "graveyard": ["g"] * 7,
+                },
+            )(),
+            2: type(
+                "P",
+                (),
+                {
+                    "life": 17,
+                    "hand": [],
+                    "battlefield": [],
+                    "mana_pool": {},
+                    "library": ["b"] * 21,
+                    "graveyard": ["h"] * 8,
+                },
+            )(),
+        }
+        cards = {
+            "ctr-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+        }
+        stack = []
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "draw-1"

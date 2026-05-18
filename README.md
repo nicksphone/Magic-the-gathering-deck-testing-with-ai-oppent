@@ -226,6 +226,28 @@ Gameplay logic is implemented in application code, not SQL.
     - `passed_with_options: 0`
     - `determinism_failures: 3` (gate correctly fails and surfaces drift)
 
+## Recent Improvements (2026-05-18)
+
+- Deeper tactical/strategic AI planning under complex boards:
+  - Added stack-only 2-ply tactical planner for counter-war windows.
+  - Planner now only engages on complex states at higher turn thresholds.
+  - Strategic search depth reduced in generic mode to avoid unstable overreach.
+- Control endgame conversion and long-game planning:
+  - Added explicit inevitability policy (`should_force_inevitability_line`) for control/counter-heavy archetypes.
+  - Added forced inevitability action selection in own main phase:
+    - Prioritizes card-advantage lines (draw), pressure conversion (planeswalkers/threats), and resource denial (discard/mill) over idle passes.
+    - De-prioritizes dead counterspell holding on empty stack in long-game windows.
+  - Pass-bias and cast-bias now incorporate inevitability-plan signals in control mirrors.
+- Regression validation for complicated deck states:
+  - `tests/test_ai_decisions.py` expanded to 40 passing tests.
+  - Added coverage for control inevitability planner behavior.
+  - Ran 9-game complex matchup smoke matrix:
+    - `Dimir Control vs Ramp`: `5-4`, `timeout: 0`
+    - `Blue Control vs Midrange`: `5-3`, `timeout: 1`
+    - `Blue Control vs Dimir Control`: `1-3`, `timeout: 5` (remaining mirror stall hotspot)
+    - `Tempo vs Blue Control`: `5-4`, `timeout: 0`
+  - Result: broad improvement outside pure control mirrors; mirror timeout reduction remains a priority item.
+
 ## API Overview
 
 Base backend default: `http://0.0.0.0:9999`

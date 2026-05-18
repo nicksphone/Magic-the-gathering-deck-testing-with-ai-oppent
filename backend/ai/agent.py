@@ -4,7 +4,7 @@ import copy
 import re
 from dataclasses import dataclass
 
-from ai.endgame_policy import should_force_closure
+from ai.endgame_policy import should_force_closure, should_force_inevitability_line
 from ai.heuristics import evaluate_board
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
@@ -61,9 +61,16 @@ class AIAgent:
         if endstep_draw is not None:
             return AIDecision(action=endstep_draw, reasoning="Use opponent end step for instant-speed card advantage")
 
+        inevitability = self._choose_forced_inevitability_action(state, legal_moves, player_id)
+        if inevitability is not None:
+            return AIDecision(action=inevitability, reasoning="Control endgame planner selected long-game conversion line")
         closure = self._choose_forced_closure_action(state, legal_moves, player_id)
         if closure is not None:
             return AIDecision(action=closure, reasoning="Force late-game proactive line to avoid control stall/timeouts")
+
+        strategic = self._strategic_plan_action(state, legal_moves, player_id)
+        if strategic is not None:
+            return AIDecision(action=strategic, reasoning="Complex-board strategic planner selected best line")
 
         sorted_moves = self._rank_moves(state, legal_moves, player_id)
         if self._should_break_stall(state, legal_moves, player_id):
@@ -96,6 +103,182 @@ class AIAgent:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if self.difficulty not in {"master", "master_plus"}:
+            return None
+        if int(getattr(state, "turn", 1) or 1) < 8:
+            return None
+        if not self._is_complex_board_state(state, player_id):
+            return None
+        proactive_legal = [
+            mv for mv in legal_moves if mv.get("type") in {"cast_spell", "activate_loyalty", "attack"}
+        ]
+        if not proactive_legal:
+            return None
+        candidates = []
+        for mv in self._rank_moves(state, legal_moves, player_id)[:4]:
+            mat = self._materialize_action(state, mv, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            if self._is_action_obviously_illegal(state, mat, player_id):
+                continue
+            candidates.append(mat)
+        if not candidates:
+            return None
+        scored: list[tuple[float, dict]] = []
+        for mv in candidates:
+            score = self._strategic_line_score(state, mv, player_id, depth=1)
+            scored.append((score, mv))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top = scored[0][1]
+        if top.get("type") == "pass_priority":
+            for _, mv in scored:
+                if mv.get("type") in {"cast_spell", "activate_loyalty", "attack"}:
+                    return mv
+            return None
+        return top
+
+    def _is_complex_board_state(self, state: MatchState, player_id: int) -> bool:
+        if getattr(state, "pregame_pending", False):
+            return False
+        opp_id = 1 if player_id == 2 else 2
+        my_bf = len(state.players[player_id].battlefield)
+        opp_bf = len(state.players[opp_id].battlefield)
+        both_hands = len(state.players[player_id].hand) + len(state.players[opp_id].hand)
+        stack_size = len(getattr(state, "stack", []) or [])
+        turn = int(getattr(state, "turn", 1) or 1)
+        return my_bf + opp_bf >= 10 or both_hands >= 10 or stack_size >= 2 or turn >= 10
+
+    def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
+        try:
+            sim = copy.deepcopy(state)
+            self.engine.take_action(sim, player_id, move)
+            if sim.step == sim.step.COMBAT_DAMAGE:
+                self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
+        except Exception:
+            return -9999.0
+        score = evaluate_board(sim, player_id)
+        score += self._strategic_features(sim, player_id)
+        score += self._stack_two_ply_value(sim, player_id)
+        if depth <= 0 or sim.winner is not None:
+            return score
+        pid = sim.priority_player
+        legal = self.engine.legal_moves(sim, pid)
+        if not legal:
+            return score
+        beam: list[tuple[float, dict]] = []
+        for cand in legal[:6]:
+            try:
+                nxt = copy.deepcopy(sim)
+                self.engine.take_action(nxt, pid, cand)
+                if nxt.step == nxt.step.COMBAT_DAMAGE:
+                    self.engine.take_action(nxt, nxt.active_player, {"type": "combat_damage"})
+                val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
+                    nxt, player_id
+                )
+                beam.append((val, cand))
+            except Exception:
+                continue
+        if not beam:
+            return score
+        beam.sort(key=lambda x: x[0], reverse=(pid == player_id))
+        # Opponent turn: assume best line against us; own turn: assume best for us.
+        chosen = beam[0][1] if pid == player_id else beam[-1][1]
+        return 0.6 * score + 0.4 * self._strategic_line_score(sim, chosen, player_id, depth - 1)
+
+    def _stack_two_ply_value(self, state: MatchState, player_id: int) -> float:
+        """Depth-limited stack planner for counter wars; only runs while stack is active."""
+        stack_items = list(getattr(state, "stack", []) or [])
+        if not stack_items or getattr(state, "winner", None) is not None:
+            return 0.0
+        pid = getattr(state, "priority_player", player_id)
+        legal = self.engine.legal_moves(state, pid)
+        if not legal:
+            return 0.0
+        top_actions = self._strategic_top_actions(state, legal, pid, limit=3)
+        if not top_actions:
+            return 0.0
+        maximizing = pid == player_id
+        best = -9999.0 if maximizing else 9999.0
+        for act in top_actions:
+            try:
+                sim = copy.deepcopy(state)
+                self.engine.take_action(sim, pid, act)
+            except Exception:
+                continue
+            immediate = evaluate_board(sim, player_id) + self._strategic_features(sim, player_id)
+            if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
+                val = immediate
+            else:
+                reply_pid = getattr(sim, "priority_player", pid)
+                reply_legal = self.engine.legal_moves(sim, reply_pid)
+                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2)
+                if not replies:
+                    val = immediate
+                else:
+                    reply_vals: list[float] = []
+                    for rep in replies:
+                        try:
+                            nxt = copy.deepcopy(sim)
+                            self.engine.take_action(nxt, reply_pid, rep)
+                            reply_vals.append(evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id))
+                        except Exception:
+                            continue
+                    if not reply_vals:
+                        val = immediate
+                    elif reply_pid == player_id:
+                        val = max(reply_vals)
+                    else:
+                        val = min(reply_vals)
+            best = max(best, val) if maximizing else min(best, val)
+        if best in {-9999.0, 9999.0}:
+            return 0.0
+        return 0.2 * best
+
+    def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int) -> list[dict]:
+        ranked = self._rank_moves(state, legal_moves, player_id)
+        picked: list[dict] = []
+        for mv in ranked[: max(1, limit * 2)]:
+            mat = self._materialize_action(state, mv, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            if self._is_action_obviously_illegal(state, mat, player_id):
+                continue
+            picked.append(mat)
+            if len(picked) >= limit:
+                break
+        return picked
+
+    def _strategic_features(self, state: MatchState, player_id: int) -> float:
+        opp = 1 if player_id == 2 else 2
+        my_life = int(getattr(state.players[player_id], "life", 20) or 20)
+        opp_life = int(getattr(state.players[opp], "life", 20) or 20)
+        my_hand = len(state.players[player_id].hand)
+        opp_hand = len(state.players[opp].hand)
+        my_untapped = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        opp_untapped = sum(
+            1
+            for cid in state.players[opp].battlefield
+            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        f = 0.0
+        f += (my_life - opp_life) * 0.25
+        f += (my_hand - opp_hand) * 0.35
+        if self.archetype in {"Control", "Counter-heavy"}:
+            f += min(3.0, my_untapped * 0.25)
+            f -= max(0.0, opp_untapped - 2) * 0.2
+        if self.archetype in {"Aggro", "Burn", "Tempo"}:
+            f += max(0.0, 14 - opp_life) * 0.2
+        if state.winner == player_id:
+            f += 200.0
+        elif state.winner is not None and state.winner != player_id:
+            f -= 200.0
+        return f
 
     def _forced_progress_attack(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         turn = int(getattr(state, "turn", 1) or 1)
@@ -520,6 +703,8 @@ class AIAgent:
             return -2.0
         if self._can_deploy_major_threat(state, player_id):
             return -1.2
+        if self._should_force_inevitability_plan(state, player_id):
+            return -1.3
         if self._should_force_proactive_control_line(state, player_id):
             return -2.1
         if self._is_burn_matchup() and getattr(state, "active_player", player_id) == player_id and _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}:
@@ -690,6 +875,8 @@ class AIAgent:
                 bonus += 5.5 if getattr(state, "stack", []) else -2.5
             if "draw" in tags:
                 bonus += 2.2
+                if self._should_force_inevitability_plan(state, player_id):
+                    bonus += 1.4
                 if "Instant" in card.types:
                     on_opp_turn = getattr(state, "active_player", player_id) != player_id
                     in_end = _step_key(getattr(state, "step", "")) == "end_step"
@@ -721,6 +908,13 @@ class AIAgent:
             if ("Planeswalker" in set(getattr(card, "types", []) or []) or is_big_threat) and own_main_sorcery_window:
                 if self._should_force_proactive_control_line(state, player_id):
                     bonus += 2.3
+                if self._should_force_inevitability_plan(state, player_id):
+                    bonus += 1.6
+            if self._should_force_inevitability_plan(state, player_id):
+                if "discard" in tags or "mill" in tags:
+                    bonus += 1.7
+                if "counter" in tags and not (getattr(state, "stack", []) or []):
+                    bonus -= 1.0
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus
@@ -1406,6 +1600,83 @@ class AIAgent:
         opp = (self.opponent_archetype or "").strip().lower()
         return own in {"control", "counter-heavy"} and opp in {"burn", "aggro", "tempo"}
 
+    def _should_force_inevitability_plan(self, state: MatchState, player_id: int) -> bool:
+        if getattr(state, "active_player", player_id) != player_id:
+            return False
+        if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
+            return False
+        if getattr(state, "stack", []) or []:
+            return False
+        if not should_force_inevitability_line(
+            int(getattr(state, "turn", 1) or 1),
+            self.archetype,
+            self.opponent_archetype,
+        ):
+            return False
+        me = state.players[player_id]
+        opp_id = 1 if player_id == 2 else 2
+        opp = state.players[opp_id]
+        my_long = len(getattr(me, "library", []) or []) + len(getattr(me, "hand", []) or []) + len(getattr(me, "graveyard", []) or [])
+        opp_long = len(getattr(opp, "library", []) or []) + len(getattr(opp, "hand", []) or []) + len(getattr(opp, "graveyard", []) or [])
+        my_life = int(getattr(me, "life", 20) or 20)
+        opp_life = int(getattr(opp, "life", 20) or 20)
+        return my_long >= opp_long - 2 and my_life >= opp_life - 4
+
+    def _choose_forced_inevitability_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if not self._should_force_inevitability_plan(state, player_id):
+            return None
+        scored: list[tuple[float, dict]] = []
+        for mv in legal_moves:
+            mtype = mv.get("type")
+            if mtype not in {"cast_spell", "activate_loyalty", "attack"}:
+                continue
+            mat = self._materialize_action(state, mv, player_id)
+            if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
+                continue
+            if self._is_action_obviously_illegal(state, mat, player_id):
+                continue
+            score = 0.0
+            if mtype == "activate_loyalty":
+                score += 4.8
+            if mtype == "attack":
+                attackers = list(mat.get("attackers") or [])
+                if not attackers:
+                    continue
+                score += 1.6 + min(2.0, float(len(attackers)) * 0.5)
+            if mtype == "cast_spell":
+                cid = mat.get("card_id")
+                card = state.cards.get(cid) if cid else None
+                if not card:
+                    continue
+                tags = self._spell_tags(card)
+                if "draw" in tags:
+                    score += 4.0
+                if "discard" in tags or "mill" in tags:
+                    score += 3.0
+                if "counter" in tags:
+                    score -= 2.4
+                if "removal" in tags:
+                    opp_id = 1 if player_id == 2 else 2
+                    opp_creatures = sum(
+                        1
+                        for ocid in state.players[opp_id].battlefield
+                        if ocid in state.cards and "Creature" in state.cards[ocid].types
+                    )
+                    score += 2.2 if opp_creatures > 0 else -1.3
+                if "Planeswalker" in set(getattr(card, "types", []) or []):
+                    score += 3.6
+                if "Creature" in set(getattr(card, "types", []) or []):
+                    power = int(getattr(card, "power", 0) or 0)
+                    score += min(2.8, power * 0.5)
+            scored.append((score, mat))
+        if not scored:
+            return None
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top = scored[0][1]
+        if top.get("type") == "attack" and not (top.get("attackers") or []):
+            return None
+        return top
+
     def _best_proactive_non_pass(self, ranked_moves: list[dict], state: MatchState) -> dict | None:
         non_pass = [m for m in ranked_moves if m.get("type") not in {"pass_priority", "tap_land_for_mana", "tap_lands_bulk"}]
         if not non_pass:
@@ -1444,6 +1715,8 @@ class AIAgent:
             return chosen
 
         ranked = self._rank_moves(state, legal_moves, player_id)
+        if ranked and ranked[0].get("type") == "pass_priority":
+            return chosen
         proactive = self._best_proactive_non_pass(ranked, state)
         if proactive is None:
             return chosen
