@@ -471,9 +471,9 @@ Options:
 
 ## Roadmap (Priority)
 
-1. Eliminate remaining control pass-overuse in non-timeout scenarios (reduce `passed_with_options`)
+1. Finish non-control timeout closure in remaining hot spots (`Tempo vs Drain` style long-game stalls)
 2. Deepen oracle interpretation for combat-key creatures and legacy keyword interactions
-3. Improve tactical AI for high-skill control/combo lines (counter wars, threat windows, inevitability planning)
+3. Expand deterministic replay drift tooling with first-divergence root-cause snapshots
 4. Expand sideboard UX and full tournament-style BO3 flows
 5. Increase property/regression test coverage for edge interactions
 6. Improve large-scale simulator analytics and replay diff tooling
@@ -488,7 +488,7 @@ Known limitations:
 - Full Comprehensive Rules parity is not complete yet.
 - Oracle effect interpretation is still pattern-based for many complex cards.
 - AI remains heuristic + tactical (not full strategic search/planning engine).
-- Matchup tuning is ongoing and still deck-dependent in edge cases.
+- Matchup tuning is ongoing and still deck-dependent in edge cases (current timeout hotspot: `Tempo vs Drain`).
 - Some rare legacy mechanics and old-edition corner interactions are not fully implemented.
 
 Next upgrades:

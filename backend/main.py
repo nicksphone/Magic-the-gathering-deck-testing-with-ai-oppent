@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 
 from ai.agent import AIAgent
-from ai.deck_analysis import guess_archetype
+from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.service import AnalyticsService
@@ -133,6 +133,10 @@ class BulkSyncRequest(BaseModel):
 
 class TournamentIngestRequest(BaseModel):
     payload: dict
+
+
+class DeckAnalyzeRequest(BaseModel):
+    deck: list[dict]
 
 
 class BatchSimulationJobStartResponse(BaseModel):
@@ -307,6 +311,13 @@ def ingest_tournament_json(payload: TournamentIngestRequest, repo: Repository = 
         return TournamentIngestService(repo).ingest_event_payload(payload.payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/decks/analyze")
+def analyze_deck_payload(payload: DeckAnalyzeRequest) -> dict:
+    if not payload.deck:
+        raise HTTPException(status_code=400, detail="Deck cannot be empty.")
+    return analyze_deck(payload.deck)
 
 
 @app.get("/ingest/tournaments/events")

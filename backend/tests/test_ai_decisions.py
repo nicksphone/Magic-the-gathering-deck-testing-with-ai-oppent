@@ -1398,3 +1398,38 @@ def test_counter_target_prefers_high_impact_artifact_stack_spell() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["targets"]["target_stack_id"] == "stack-big"
+
+
+def test_early_turn_cheap_proactive_cast_over_pass_when_opponent_tapped_low() -> None:
+    ai = AIAgent(difficulty="master", archetype="Tempo")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Delver of Secrets", "card_id": "delver-1"},
+    ]
+
+    class FakeState:
+        turn = 2
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["delver-1"], "battlefield": ["isl-1"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["isl-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "delver-1": type("C", (), {"types": ["Creature"], "name": "Delver of Secrets", "oracle_text": "", "mana_cost": "{U}"})(),
+            "isl-1": type("C", (), {"types": ["Land"], "name": "Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "isl-2": type("C", (), {"types": ["Land"], "name": "Island", "oracle_text": "{T}: Add {U}.", "tapped": True})(),
+        }
+        stack = []
+        blocks = {}
+        attackers = []
+        attack_targets = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "delver-1"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ai.deck_analysis import guess_archetype
+from ai.deck_analysis import analyze_deck, guess_archetype
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
@@ -54,7 +54,8 @@ class DeckService:
 
     def import_deck_text(self, name: str, deck_text: str, source: str = "user") -> dict:
         parsed = self.parser.parse(deck_text)
-        archetype = guess_archetype(parsed.mainboard)
+        analysis = analyze_deck(parsed.mainboard)
+        archetype = analysis["primary_archetype"]
         if not parsed.errors:
             record = self.repo.save_deck(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
             deck_id = record.id
@@ -70,6 +71,7 @@ class DeckService:
             "sideboard": parsed.sideboard,
             "mana_curve": self._compute_curve(parsed.mainboard),
             "color_profile": self._color_profile(parsed.mainboard),
+            "analysis": analysis,
         }
 
     def _compute_curve(self, mainboard: list[dict]) -> dict[str, int]:
