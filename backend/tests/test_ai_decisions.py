@@ -1324,3 +1324,77 @@ def test_control_inevitability_planner_avoids_counter_on_empty_stack() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
+
+
+def test_ai_targets_high_threat_enchantment_when_available() -> None:
+    ai = AIAgent(difficulty="master", archetype="Aggro")
+    move = {
+        "type": "cast_spell",
+        "card_name": "Disenchant",
+        "card_id": "rem-1",
+        "target_hints": {
+            "enchantment_targets": [{"id": "ench-low", "label": "Minor Aura"}, {"id": "ench-high", "label": "Lock Piece"}],
+        },
+    }
+
+    class FakeState:
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["rem-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["ench-low", "ench-high"], "mana_pool": {}})(),
+        }
+        cards = {
+            "rem-1": type("C", (), {"types": ["Instant"], "name": "Disenchant", "oracle_text": "Destroy target artifact or enchantment."})(),
+            "ench-low": type("C", (), {"types": ["Enchantment"], "name": "Minor Aura", "oracle_text": "Enchanted creature gets +1/+1.", "controller": 2})(),
+            "ench-high": type(
+                "C",
+                (),
+                {"types": ["Enchantment"], "name": "Solemnity Lock", "oracle_text": "Players can't get counters. Your opponents can't gain life.", "controller": 2},
+            )(),
+        }
+        stack = []
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["targets"]["target_card_id"] == "ench-high"
+
+
+def test_counter_target_prefers_high_impact_artifact_stack_spell() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_name": "Counterspell",
+            "card_id": "counter-1",
+            "target_hints": {
+                "stack_targets": [
+                    {"id": "stack-small", "label": "Opt"},
+                    {"id": "stack-big", "label": "The One Ring"},
+                ]
+            },
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 6
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "c-small": type("C", (), {"types": ["Instant"], "name": "Opt", "oracle_text": "Scry 1, draw a card.", "mana_cost": "{U}"})(),
+            "c-big": type("C", (), {"types": ["Artifact"], "name": "The One Ring", "oracle_text": "At the beginning of your upkeep, you lose 1 life for each burden counter on The One Ring.\n{T}: Put a burden counter on The One Ring, then draw a card for each burden counter on The One Ring.", "mana_cost": "{4}"})(),
+        }
+        stack = [
+            type("S", (), {"id": "stack-small", "label": "Opt", "source_card_id": "c-small", "controller": 2})(),
+            type("S", (), {"id": "stack-big", "label": "The One Ring", "source_card_id": "c-big", "controller": 2})(),
+        ]
+        winner = None
+        pregame_pending = False
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["targets"]["target_stack_id"] == "stack-big"

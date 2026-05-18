@@ -232,6 +232,10 @@ Gameplay logic is implemented in application code, not SQL.
   - Added stack-only 2-ply tactical planner for counter-war windows.
   - Planner now only engages on complex states at higher turn thresholds.
   - Strategic search depth reduced in generic mode to avoid unstable overreach.
+  - Counter/removal target quality improved for noncreature game pieces:
+    - New threat scoring for artifacts/enchantments/planeswalkers with matchup-aware weighting.
+    - Counter target selection now better prioritizes high-impact artifact/enchantment stack spells.
+    - Noncreature permanent target hints (`artifact_targets`, `enchantment_targets`, `noncreature_permanent_targets`) are now threat-ranked instead of first-match picked.
 - Control endgame conversion and long-game planning:
   - Added explicit inevitability policy (`should_force_inevitability_line`) for control/counter-heavy archetypes.
   - Added forced inevitability action selection in own main phase:

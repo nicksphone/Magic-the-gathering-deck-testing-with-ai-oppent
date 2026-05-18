@@ -1145,6 +1145,20 @@ class AIAgent:
         if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             targets["target_card_id"] = planeswalker_targets[0]["id"]
 
+        noncreature_permanent_targets = (
+            (hints.get("artifact_targets") or [])
+            + (hints.get("enchantment_targets") or [])
+            + (hints.get("noncreature_permanent_targets") or [])
+        )
+        if noncreature_permanent_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                noncreature_permanent_targets,
+                key=lambda t: self._noncreature_permanent_threat_score(state, t.get("id"), player_id),
+                default=None,
+            )
+            if best:
+                targets["target_card_id"] = best["id"]
+
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
                 # Put first point on highest-threat creature by default.
@@ -1854,6 +1868,45 @@ class AIAgent:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
         return "counter target spell" in text or "counterspell" in text
 
+    def _noncreature_permanent_threat_score(self, state: MatchState, card_id: str | None, player_id: int) -> float:
+        if not card_id or card_id not in state.cards:
+            return 0.0
+        card = state.cards[card_id]
+        opp_id = 1 if player_id == 2 else 2
+        controller = getattr(card, "controller", None)
+        if controller == player_id:
+            return -10.0
+        score = 0.0
+        types = set(getattr(card, "types", []) or [])
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        if "Planeswalker" in types:
+            score += 8.0
+        if "Artifact" in types:
+            score += 3.0
+        if "Enchantment" in types:
+            score += 3.0
+        if any(k in text for k in ["you can't", "players can't", "your opponents can't"]):
+            score += 4.0
+        if any(k in text for k in ["draw", "at the beginning of", "whenever"]):
+            score += 1.5
+        if any(k in text for k in ["creatures you control get", "+1/+1", "anthem"]):
+            score += 2.2
+        if any(k in text for k in ["sacrifice", "exile", "destroy"]):
+            score += 1.0
+        if any(k in text for k in ["treasure", "add {", "create token"]):
+            score += 1.3
+        # Matchup-aware importance boosts.
+        if self.archetype in {"Aggro", "Burn", "Tempo"} and any(k in text for k in ["lifelink", "gain life", "can't lose life"]):
+            score += 3.2
+        if self.archetype in {"Control", "Counter-heavy"} and any(k in text for k in ["draw", "search your library", "return target"]):
+            score += 2.2
+        if self.archetype in {"Tokens", "Tribal"} and any(k in text for k in ["creatures you control get", "token"]):
+            score += 2.2
+        # If permanent belongs to opponent battlefield, it's usually a real target.
+        if card_id in getattr(state.players[opp_id], "battlefield", []):
+            score += 0.8
+        return score
+
     def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict]) -> str | None:
         best_id = None
         best_score = -999.0
@@ -1884,6 +1937,10 @@ class AIAgent:
         types = set(getattr(source, "types", []) or [])
         if "Planeswalker" in types:
             score += 8.0
+        if "Artifact" in types:
+            score += 2.8
+        if "Enchantment" in types:
+            score += 2.8
         if "Creature" in types:
             p = int(getattr(source, "power", 0) or 0)
             t = int(getattr(source, "toughness", 0) or 0)
@@ -1897,6 +1954,12 @@ class AIAgent:
         if any(k in text for k in ["draw", "memory deluge", "dig through", "treasure cruise"]):
             score += 2.2
         if any(k in text for k in ["counter target spell"]):
+            score += 1.4
+        if any(k in text for k in ["you can't", "players can't", "your opponents can't"]):
+            score += 4.0
+        if any(k in text for k in ["creatures you control get", "+1/+1"]):
+            score += 2.0
+        if any(k in text for k in ["at the beginning of", "whenever", "draw"]):
             score += 1.4
         controller = getattr(item, "controller", None)
         if controller == player_id:
