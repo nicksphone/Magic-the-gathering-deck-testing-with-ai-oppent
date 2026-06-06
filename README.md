@@ -252,6 +252,19 @@ Gameplay logic is implemented in application code, not SQL.
     - `Tempo vs Blue Control`: `5-4`, `timeout: 0`
   - Result: broad improvement outside pure control mirrors; mirror timeout reduction remains a priority item.
 
+## Recent Improvements (2026-06-06)
+
+- Combat priority handoff fix:
+  - After blockers are declared, priority now returns to the active player immediately.
+  - This prevents repeated `declare_blockers` loops where the defender was being asked to block again before combat could advance.
+- Combat regression coverage:
+  - Added a unit test that verifies blocker declaration hands priority back to the active player.
+- Combat window closure fix:
+  - The block-declaration window is now single-use per combat step, so the defender cannot re-enter `declare_blockers` after submitting blockers.
+  - This closes the last observed `Tempo vs Drain` timeout loop.
+- Retest result:
+  - `Tempo vs Drain` rerun completed with `timeout: 0` in the latest master-difficulty sample.
+
 ## API Overview
 
 Base backend default: `http://0.0.0.0:9999`
@@ -471,16 +484,16 @@ Options:
 
 ## Roadmap (Priority)
 
-1. Finish non-control timeout closure in remaining hot spots (`Tempo vs Drain` style long-game stalls)
-2. Deepen oracle interpretation for combat-key creatures and legacy keyword interactions
-3. Expand deterministic replay drift tooling with first-divergence root-cause snapshots
-4. Expand sideboard UX and full tournament-style BO3 flows
-5. Increase property/regression test coverage for edge interactions
-6. Improve large-scale simulator analytics and replay diff tooling
-7. Expand historical/top-tier deck library breadth
-8. Harden card sync retry/version/invalidation behavior
-9. Add stricter benchmark gates for release quality
-10. Expand comprehensive rules coverage (layers/replacement/legacy mechanics parity)
+1. Deepen oracle interpretation for combat-key creatures and legacy keyword interactions
+2. Expand deterministic replay drift tooling with first-divergence root-cause snapshots
+3. Expand sideboard UX and full tournament-style BO3 flows
+4. Increase property/regression test coverage for edge interactions
+5. Improve large-scale simulator analytics and replay diff tooling
+6. Expand historical/top-tier deck library breadth
+7. Harden card sync retry/version/invalidation behavior
+8. Add stricter benchmark gates for release quality
+9. Expand comprehensive rules coverage (layers/replacement/legacy mechanics parity)
+10. Continue archetype-specific AI tuning on newly surfaced matchup anomalies
 
 ## Known Limitations and Next Upgrades
 
@@ -488,7 +501,7 @@ Known limitations:
 - Full Comprehensive Rules parity is not complete yet.
 - Oracle effect interpretation is still pattern-based for many complex cards.
 - AI remains heuristic + tactical (not full strategic search/planning engine).
-- Matchup tuning is ongoing and still deck-dependent in edge cases (current timeout hotspot: `Tempo vs Drain`).
+- Matchup tuning is ongoing and still deck-dependent in edge cases.
 - Some rare legacy mechanics and old-edition corner interactions are not fully implemented.
 
 Next upgrades:

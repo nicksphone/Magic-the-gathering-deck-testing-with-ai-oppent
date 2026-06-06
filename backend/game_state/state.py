@@ -115,6 +115,7 @@ class MatchState:
     attack_targets: dict[str, str] = field(default_factory=dict)
     blocks: dict[str, list[str]] = field(default_factory=dict)
     attackers_declared: bool = False
+    blockers_declared: bool = False
     winner: int | None = None
     best_of: int = 3
     score: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})

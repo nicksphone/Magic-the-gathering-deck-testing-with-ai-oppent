@@ -52,6 +52,8 @@ class RulesEngine:
             state.step = TURN_STEPS[idx + 1]
             if state.step == Step.DECLARE_ATTACKERS:
                 state.attackers_declared = False
+            elif state.step == Step.DECLARE_BLOCKERS:
+                state.blockers_declared = False
 
         self._apply_step_start_actions(state)
         state.priority_player = state.active_player
@@ -371,8 +373,17 @@ class RulesEngine:
                 state.log.append(f"{player.name} cannot legally equip {state.cards[cid].name} to chosen target.")
 
         elif kind == "block":
+            if getattr(state, "blockers_declared", False):
+                apply_state_based_actions(state)
+                return
             blocks = action.get("blocks", {})
             combat.declare_blockers(state, blocks)
+            state.blockers_declared = True
+            # After blockers are declared, the active player receives priority.
+            # Without this handoff, the defending player can be re-queried in declare_blockers
+            # and re-submit block actions indefinitely.
+            state.priority_player = state.active_player
+            state.passed_priority = set()
 
         elif kind == "combat_damage":
             combat.combat_damage(state)

@@ -126,6 +126,71 @@ def test_double_strike_deals_damage_in_both_steps() -> None:
     assert state.players[2].life == b_life_before - 4
 
 
+def test_block_declaration_hands_priority_back_to_active_player() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 2
+    state.step = Step.DECLARE_BLOCKERS
+    engine = RulesEngine()
+
+    atk = _setup_creature(state, 1, "Attacker", 3, 3, [])
+    blk = _setup_creature(state, 2, "Blocker", 3, 3, [])
+    state.attackers = [atk]
+    state.attackers_declared = True
+
+    engine.take_action(state, 2, {"type": "block", "blocks": {atk: blk}})
+
+    assert state.blocks == {atk: [blk]}
+    assert state.priority_player == state.active_player == 1
+
+
+def test_block_window_closes_after_block_assignment() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 2
+    state.step = Step.DECLARE_BLOCKERS
+    engine = RulesEngine()
+
+    atk = _setup_creature(state, 1, "Attacker", 3, 3, [])
+    blk = _setup_creature(state, 2, "Blocker", 3, 3, [])
+    state.attackers = [atk]
+    state.attackers_declared = True
+
+    engine.take_action(state, 2, {"type": "block", "blocks": {atk: blk}})
+
+    moves = engine.legal_moves(state, 2)
+    assert all(move.get("type") != "block" for move in moves)
+    assert state.blockers_declared is True
+
+
+def test_combat_progresses_after_blocker_assignment_and_priority_passes() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 2
+    state.step = Step.DECLARE_BLOCKERS
+    engine = RulesEngine()
+
+    atk = _setup_creature(state, 1, "Attacker", 3, 3, [])
+    blk = _setup_creature(state, 2, "Blocker", 3, 3, [])
+    state.attackers = [atk]
+    state.attackers_declared = True
+
+    engine.take_action(state, 2, {"type": "block", "blocks": {atk: blk}})
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+
+    assert state.step == Step.COMBAT_DAMAGE
+
+
 def test_combat_damage_marks_clear_on_cleanup() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

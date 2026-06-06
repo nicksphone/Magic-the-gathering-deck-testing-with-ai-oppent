@@ -63,7 +63,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             )
             moves.append({"type": "attack", "options": attackers, "defenders": defenders})
         moves.extend(restricted_attackers)
-    if state.step == Step.DECLARE_BLOCKERS and state.active_player != player_id and state.attackers:
+    if (
+        state.step == Step.DECLARE_BLOCKERS
+        and state.active_player != player_id
+        and state.attackers
+        and not getattr(state, "blockers_declared", False)
+    ):
         blockers = [
             cid
             for cid in player.battlefield
