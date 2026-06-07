@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import re
+from collections import Counter
 from itertools import combinations
 from pathlib import Path
 
@@ -81,6 +82,62 @@ def first_log_divergence(a_lines: list[str], b_lines: list[str]) -> dict:
     }
 
 
+def classify_log_line(line: str) -> str:
+    if not line:
+        return "unknown"
+    if line.startswith("AI TRACE "):
+        try:
+            payload = json.loads(line[len("AI TRACE ") :])
+            action = payload.get("action") or {}
+            return str(action.get("type") or "unknown")
+        except Exception:
+            return "unknown"
+    low = line.lower()
+    if "mulligan" in low:
+        return "mulligan"
+    if "plays " in low and "land" in low:
+        return "play_land"
+    if "casts/activates" in low:
+        return "cast_spell"
+    if "passes priority" in low or low.endswith("pass priority.") or " passes priority" in low:
+        return "pass_priority"
+    if "attacks" in low:
+        return "attack"
+    if "blocks" in low:
+        return "block"
+    if "resolves" in low:
+        return "resolve"
+    if "draws a card" in low:
+        return "draw"
+    if "damage" in low:
+        return "damage"
+    if "trigger" in low:
+        return "trigger"
+    return "unknown"
+
+
+def classify_first_divergence(drift: dict) -> dict:
+    left = str(drift.get("a") or "")
+    right = str(drift.get("b") or "")
+    left_label = classify_log_line(left)
+    right_label = classify_log_line(right)
+    if left_label == right_label:
+        category = left_label if left_label != "unknown" else "unknown"
+    else:
+        category = "action_mismatch"
+    return {
+        "category": category,
+        "action_a": left_label,
+        "action_b": right_label,
+        "line_a": left,
+        "line_b": right,
+        "index": drift.get("index", -1),
+        "context_before": drift.get("context_before", []),
+        "context_after_a": drift.get("context_after_a", []),
+        "context_after_b": drift.get("context_after_b", []),
+    }
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Deterministic replay regression matrix")
     p.add_argument("--matches-per-pair", type=int, default=3)
@@ -110,8 +167,11 @@ def main() -> None:
         "pairs": 0,
         "games": 0,
         "determinism_failures": 0,
+        "drift_labels": {},
         "pair_results": [],
     }
+    drift_labels = Counter()
+    anomaly_counts = Counter()
 
     for left, right in combinations(decks, 2):
         summary["pairs"] += 1
@@ -124,8 +184,12 @@ def main() -> None:
             if not deterministic_ok:
                 summary["determinism_failures"] += 1
                 drift = first_log_divergence(a.get("log", []), b.get("log", []))
+                drift_label = classify_first_divergence(drift)
+                drift_labels[drift_label["category"]] += 1
+                anomaly_counts[drift_label["action_a"]] += 1
             else:
                 drift = None
+                drift_label = None
             pair["games"].append({
                 "seed": seed,
                 "winner": a["winner"],
@@ -133,9 +197,13 @@ def main() -> None:
                 "timeout": a["timeout"],
                 "deterministic": deterministic_ok,
                 "drift": drift,
+                "drift_label": drift_label,
             })
             summary["games"] += 1
         summary["pair_results"].append(pair)
+
+    summary["drift_labels"] = dict(drift_labels)
+    summary["anomaly_counts"] = dict(anomaly_counts)
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -144,6 +212,7 @@ def main() -> None:
         "output": str(out),
         "games": summary["games"],
         "determinism_failures": summary["determinism_failures"],
+        "drift_labels": summary["drift_labels"],
     }))
 
 

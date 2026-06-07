@@ -134,6 +134,7 @@ Gameplay logic is implemented in application code, not SQL.
   - `backend/scripts/card_play_analytics.py`
 - Training-example export script for converting verbose H2H logs into labeled JSONL rows:
   - `backend/scripts/extract_training_examples.py`
+- Deterministic replay matrix now emits first-divergence labels and anomaly counters per drift category
 - Round-robin script startup bug fixed (`_write_anomaly_clusters` call order)
 
 ## Recent Improvements (2026-06-07)
@@ -163,6 +164,8 @@ Gameplay logic is implemented in application code, not SQL.
   - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.
 - Training-data groundwork improved:
   - Verbose H2H logs now capture battlefield snapshots, life totals, and reasoning strings so future AI training can consume structured labeled examples.
+- Replay diagnostics improved:
+  - Deterministic matrix runs now classify the first divergent log line so drift can be grouped by action type instead of just flagged as a mismatch.
 - Deterministic replay matrix script remains the primary regression gate:
   - `backend/scripts/regression_matrix_replay.py`
   - Normalized log hashing continues to catch true gameplay drift while ignoring transient IDs.

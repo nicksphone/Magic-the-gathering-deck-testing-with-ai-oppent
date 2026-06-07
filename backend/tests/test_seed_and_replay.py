@@ -4,7 +4,7 @@ from ai.agent import AIAgent
 from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, get_match_replay
 from rules_engine.engine import RulesEngine
-from scripts.regression_matrix_replay import _normalize_log_line
+from scripts.regression_matrix_replay import _normalize_log_line, classify_first_divergence, classify_log_line
 
 
 def test_match_factory_seed_reproducible_openers() -> None:
@@ -62,3 +62,24 @@ def test_replay_log_normalization_masks_uuid_instances() -> None:
     left = "AI TRACE {\"action\":{\"card_id\":\"123e4567-e89b-12d3-a456-426614174000\"}}"
     right = "AI TRACE {\"action\":{\"card_id\":\"223e4567-e89b-12d3-a456-426614174999\"}}"
     assert _normalize_log_line(left) == _normalize_log_line(right)
+
+
+def test_classify_log_line_detects_action_kind() -> None:
+    assert classify_log_line('AI TRACE {"action":{"type":"cast_spell","card_name":"Lightning Bolt"}}') == "cast_spell"
+    assert classify_log_line("Player A plays Island.") == "play_land"
+    assert classify_log_line("Player B passes priority on precombat_main (stack=0).") == "pass_priority"
+
+
+def test_classify_first_divergence_uses_action_labels() -> None:
+    drift = {
+        "index": 4,
+        "a": 'AI TRACE {"action":{"type":"cast_spell","card_name":"Lightning Bolt"}}',
+        "b": 'AI TRACE {"action":{"type":"pass_priority"}}',
+        "context_before": ["Turn 4."],
+        "context_after_a": [],
+        "context_after_b": [],
+    }
+    label = classify_first_divergence(drift)
+    assert label["category"] == "action_mismatch"
+    assert label["action_a"] == "cast_spell"
+    assert label["action_b"] == "pass_priority"
