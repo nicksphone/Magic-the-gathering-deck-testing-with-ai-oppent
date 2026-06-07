@@ -96,6 +96,28 @@ def test_split_card_marks_split_hints() -> None:
     assert hints.get("modes")
 
 
+def test_selected_modal_face_drives_oracle_inference() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="modal",
+        name="Modal Adept",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Creature"],
+        mana_cost="{2}{G}",
+        oracle_text="",
+        card_faces=[
+            {"name": "Adept Form", "oracle_text": "Create a 1/1 token.", "mana_cost": "{2}{G}", "type_line": "Creature - Elf"},
+            {"name": "Scholar Form", "oracle_text": "Create two 1/1 tokens.", "mana_cost": "{2}{G}", "type_line": "Creature - Elf"},
+        ],
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"selected_face_index": 1})
+    assert effect_key == "create_token"
+    assert payload["amount"] == 2
+
+
 def test_copy_spell_handler_replays_target_effect() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

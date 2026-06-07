@@ -843,6 +843,10 @@ class AIAgent:
         card = state.cards.get(cid) if cid else None
         if not card:
             return 0.0
+        if self._modal_face_options(card):
+            _, face_score = self._select_modal_face_index(state, card, player_id)
+        else:
+            face_score = 0.0
         if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types and not self._is_major_threat_card(card):
             return -1.4
         is_creature = "Creature" in card.types
@@ -874,6 +878,12 @@ class AIAgent:
                 return x_penalty
         power = getattr(card, "power", 0) or 0
         is_big_threat = power >= 4 or cmc >= 4
+        if face_score:
+            bonus_face = face_score * 0.45
+            if own_main_sorcery_window and face_score <= 0.0 and state.turn <= 4:
+                bonus_face -= 0.8
+        else:
+            bonus_face = 0.0
 
         if is_creature:
             if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
@@ -884,22 +894,22 @@ class AIAgent:
                     bonus += 2.0
                 if early_turn:
                     bonus += 1.0
-                return bonus
+                return bonus + bonus_face
             if arche in {"Midrange", "Ramp", "Aristocrats"}:
                 bonus = 2.0 + (0.8 if my_creatures < 2 else 0.0)
                 if is_big_threat and (my_creatures < 2 or state.turn >= 5):
                     bonus += 2.2
                 if arche == "Ramp" and state.turn >= 4 and is_big_threat:
                     bonus += 1.2
-                return bonus
+                return bonus + bonus_face
             if arche in {"Control", "Counter-heavy"}:
                 bonus = 0.8
                 if is_big_threat and (my_creatures == 0 or state.turn >= 6):
                     bonus += 3.0
                 if own_main_sorcery_window and is_big_threat:
                     bonus += 0.7
-                return bonus
-            return 1.2
+                return bonus + bonus_face
+            return 1.2 + bonus_face
 
         if "creature_deploy_topdeck" in tags:
             bonus = 3.6
@@ -970,7 +980,7 @@ class AIAgent:
                     bonus -= 1.0
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Midrange"}:
             bonus = 0.0
@@ -993,7 +1003,7 @@ class AIAgent:
                 bonus += 1.2
             if "burn" in tags and state.players[1 if player_id == 2 else 2].life <= 6:
                 bonus += 1.5
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Ramp"}:
             bonus = 0.0
@@ -1014,7 +1024,7 @@ class AIAgent:
                 bonus += 1.8
             if "draw" in tags:
                 bonus += 1.5
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Tokens"}:
             bonus = 0.0
@@ -1028,7 +1038,7 @@ class AIAgent:
                     bonus += 1.2
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Reanimator"}:
             bonus = 0.0
@@ -1036,7 +1046,7 @@ class AIAgent:
                 bonus += 4.0
             if "discard" in tags or "mill" in tags:
                 bonus += 2.0
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Aristocrats", "Drain"}:
             bonus = 0.0
@@ -1048,7 +1058,7 @@ class AIAgent:
             text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
             if any(k in text for k in ["blood artist", "zulaport", "cauldron familiar", "witch's oven", "priest of forgotten gods"]):
                 bonus += 2.2
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Tempo"}:
             bonus = 0.0
@@ -1068,12 +1078,12 @@ class AIAgent:
                 bonus += 1.0
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
-            return bonus
+            return bonus + bonus_face
 
         if arche in {"Aggro", "Tribal", "Tokens", "Tempo"} and my_creatures == 0 and early_turn and in_main:
-            return -1.8
+            return -1.8 + bonus_face
         # Log-driven priors: leverage observed tournament/simulation cast timing.
-        return self._historical_cast_timing_bias(state, card)
+        return self._historical_cast_timing_bias(state, card) + bonus_face
 
     def _historical_cast_timing_bias(self, state: MatchState, card) -> float:
         priors = AIAgent._log_priors_cache or {}
@@ -1181,6 +1191,69 @@ class AIAgent:
             tags.add("drain")
         return tags
 
+    def _modal_face_options(self, card) -> list[dict]:
+        return list(getattr(card, "card_faces", []) or [])
+
+    def _modal_face_proxy(self, card, face: dict) -> object:
+        proxy = type("ModalFaceProxy", (), {})()
+        proxy.name = str(face.get("name") or getattr(card, "name", ""))
+        proxy.oracle_text = str(face.get("oracle_text") or getattr(card, "oracle_text", "") or "")
+        proxy.mana_cost = str(face.get("mana_cost") or getattr(card, "mana_cost", "") or "")
+        proxy.types = list(getattr(card, "types", []) or [])
+        return proxy
+
+    def _score_modal_face(self, state: MatchState, card, face: dict, player_id: int) -> float:
+        proxy = self._modal_face_proxy(card, face)
+        tags = self._spell_tags(proxy)
+        text = f"{proxy.name} {proxy.oracle_text}".lower()
+        mana_req = parse_mana_cost(getattr(proxy, "mana_cost", ""), is_land=False)
+        cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
+        score = 0.0
+        opp_id = 1 if player_id == 2 else 2
+        opp_creatures = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        if "burn" in tags or "damage" in text:
+            score += 1.4
+        if "draw" in tags:
+            score += 1.2
+        if "counter" in tags:
+            score += 2.1 if getattr(state, "stack", []) else -1.0
+        if "removal" in tags:
+            score += 1.8 if opp_creatures > 0 else -1.0
+        if "token" in tags:
+            score += 1.0
+        if "Creature" in set(getattr(card, "types", []) or []):
+            score += 0.5
+        if cmc <= 2:
+            score += 0.5
+        if self.archetype in {"Control", "Counter-heavy"} and any(k in tags for k in {"draw", "counter", "removal"}):
+            score += 1.3
+        if self.archetype in {"Burn", "Aggro"} and ("damage" in text or "burn" in tags):
+            score += 1.2
+        if self.archetype == "Tempo" and (cmc <= 2 or "counter" in tags):
+            score += 0.9
+        if self.archetype in {"Midrange", "Ramp"} and "Creature" in set(getattr(card, "types", []) or []) and cmc <= 3:
+            score += 0.7
+        if int(getattr(state, "turn", 1) or 1) <= 3 and score < 1.0:
+            score -= 1.5
+        return score
+
+    def _select_modal_face_index(self, state: MatchState, card, player_id: int) -> tuple[int, float]:
+        faces = self._modal_face_options(card)
+        if len(faces) <= 1:
+            return 0, 0.0
+        scored: list[tuple[float, int]] = []
+        for idx, face in enumerate(faces):
+            scored.append((self._score_modal_face(state, card, face, player_id), idx))
+        scored.sort(key=lambda x: (x[0], -x[1]), reverse=True)
+        best_score, best_idx = scored[0]
+        if best_score <= 0.0:
+            return 0, best_score
+        return best_idx, best_score
+
     def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
         mtype = move.get("type")
         if mtype == "attack":
@@ -1209,6 +1282,9 @@ class AIAgent:
         card = state.cards.get(cid) if cid else None
         if card:
             tags = self._spell_tags(card)
+            if mtype == "cast_spell" and self._modal_face_options(card):
+                selected_face_index, _ = self._select_modal_face_index(state, card, player_id)
+                out["selected_face_index"] = selected_face_index
         opponent = 1 if player_id == 2 else 2
 
         stack_targets = hints.get("stack_targets") or []

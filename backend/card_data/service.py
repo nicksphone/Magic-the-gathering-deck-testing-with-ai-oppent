@@ -23,6 +23,7 @@ class CardService:
                 "image_uri": card.image_uri,
                 "colors": card.colors.split(",") if card.colors else [],
                 "legalities": json.loads(card.legalities_json),
+                "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
             }
             for card in cards
         ]

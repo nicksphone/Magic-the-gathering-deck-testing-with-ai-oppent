@@ -15,6 +15,14 @@ DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE
 def build_cast_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
     hints = inspect_target_hints(state, card, controller)
     hints.setdefault("choice_schema", {})
+    face_names = hints.get("face_names") or []
+    if face_names:
+        hints["choice_schema"]["selected_face_index"] = {
+            "type": "integer",
+            "required": False,
+            "minimum": 0,
+            "maximum": max(0, len(face_names) - 1),
+        }
     if CHOOSE_TWO_RE.search(card.oracle_text or ""):
         hints["choose_two_modes"] = True
     if hints.get("modes"):
@@ -36,7 +44,18 @@ def build_cast_hints(state: MatchState, card: CardInstance, controller: int) -> 
 
 
 def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
-    return validate_cast_targets(hints, action_targets)
+    ok, err = validate_cast_targets(hints, action_targets)
+    if not ok:
+        return ok, err
+    face_names = hints.get("face_names") or []
+    if face_names and action_targets.get("selected_face_index") is not None:
+        try:
+            selected = int(action_targets.get("selected_face_index"))
+        except Exception:
+            return False, "Selected face index must be a valid integer."
+        if selected < 0 or selected >= len(face_names):
+            return False, "Selected face index is out of range."
+    return True, ""
 
 
 def enrich_divide_total(card: CardInstance, action_targets: dict[str, Any]) -> dict[str, Any]:

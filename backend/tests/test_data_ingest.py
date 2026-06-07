@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+
 from sqlmodel import Session
 
+from card_data.service import CardService
 from data_ingest.service import TournamentIngestService
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -73,3 +76,32 @@ def test_ingest_rejects_short_mainboard() -> None:
             assert False, "expected ValueError"
         except ValueError as exc:
             assert "minimum is 60" in str(exc)
+
+
+def test_card_cache_round_trips_card_faces() -> None:
+    init_db()
+    with Session(engine) as session:
+        repo = Repository(session)
+        repo.upsert_card(
+            {
+                "scryfall_id": "card-1",
+                "name": "Fire // Ice",
+                "oracle_text": "Choose one — Fire deals 2 damage divided as you choose among one or two targets; Ice taps target permanent and draws a card.",
+                "mana_cost": "{1}{R} // {1}{U}",
+                "type_line": "Instant",
+                "colors": "R,U",
+                "power": None,
+                "toughness": None,
+                "image_uri": None,
+                "legalities_json": json.dumps({}),
+                "card_faces_json": json.dumps(
+                    [
+                        {"name": "Fire", "mana_cost": "{1}{R}", "type_line": "Instant", "oracle_text": "Fire deals 2 damage divided as you choose among one or two targets.", "power": None, "toughness": None, "image_uri": None},
+                        {"name": "Ice", "mana_cost": "{1}{U}", "type_line": "Instant", "oracle_text": "Tap target permanent. Draw a card.", "power": None, "toughness": None, "image_uri": None},
+                    ]
+                ),
+            }
+        )
+        cards = CardService(repo).list_cards()
+        assert cards[0]["card_faces"][0]["name"] == "Fire"
+        assert cards[0]["card_faces"][1]["name"] == "Ice"

@@ -45,9 +45,8 @@ def infer_effect_from_oracle(
     controller: int,
     action_targets: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
-    oracle = (card.oracle_text or "").lower()
-    name = card.name.lower()
     action_targets = action_targets or {}
+    card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     mode_text = action_targets.get("mode_text")
     mode_texts = action_targets.get("mode_texts") or []
     x_value = int(action_targets.get("x_value", 0) or 0)
@@ -103,6 +102,25 @@ def infer_effect_from_oracle(
     return "gain_life", {"amount": 0}
 
 
+def _resolve_effective_card_surface(card: CardInstance, action_targets: dict[str, Any]) -> tuple[CardInstance, str, str]:
+    faces = list(getattr(card, "card_faces", []) or [])
+    if not faces:
+        return card, (card.oracle_text or "").lower(), card.name.lower()
+    raw_index = action_targets.get("selected_face_index", getattr(card, "selected_face_index", None))
+    if raw_index is None:
+        return card, (card.oracle_text or "").lower(), card.name.lower()
+    try:
+        index = int(raw_index)
+    except Exception:
+        return card, (card.oracle_text or "").lower(), card.name.lower()
+    if index < 0 or index >= len(faces):
+        return card, (card.oracle_text or "").lower(), card.name.lower()
+    face = faces[index] or {}
+    oracle = str(face.get("oracle_text") or card.oracle_text or "").lower()
+    name = str(face.get("name") or card.name or "").lower()
+    return card, oracle, name
+
+
 def _looks_static_or_keyword_only(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t:
@@ -148,10 +166,17 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
     oracle = (card.oracle_text or "").lower()
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
-    if SPLIT_NAME_RE.match((card.name or "").strip()):
+    faces = list(getattr(card, "card_faces", []) or [])
+    split_match = SPLIT_NAME_RE.match((card.name or "").strip())
+    if split_match:
         hints["split_card"] = True
-        left, right = [x.strip() for x in SPLIT_NAME_RE.match((card.name or "").strip()).groups()]
+        left, right = [x.strip() for x in split_match.groups()]
         hints["face_names"] = [left, right]
+    elif faces:
+        face_names = [str(face.get("name", "")).strip() for face in faces if str(face.get("name", "")).strip()]
+        if len(face_names) > 1:
+            hints["split_card"] = True
+            hints["face_names"] = face_names
     modes = _extract_modes(oracle)
     if modes:
         hints["modes"] = modes

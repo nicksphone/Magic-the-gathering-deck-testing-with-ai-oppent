@@ -82,12 +82,14 @@ Gameplay logic is implemented in application code, not SQL.
 - Modular effect handlers for damage, draw, life, counters, tokens, exile, destroy, etc.
 - Target legality checks now include protection + `hexproof` + `shroud`
 - Copy effects now distinguish copied spells from copied activated/triggered abilities
+- Selected modal face text is resolved before oracle inference so split/modal cards carry the correct face into validation and resolution
 - Split-card metadata now exposes face-name hints for downstream validation/rendering
 - Continuous-effect diagnostics now include deterministic layer traces for static-order debugging
 
 ### AI System
 - Difficulty levels: `casual`, `strong`, `master`, `master_plus`
 - Archetype-aware behavior (aggro/control/ramp/tempo/etc.)
+- Whole-card modal evaluation with stage-aware face selection for split/modal cards
 - Mulligan logic by land window + hand quality
 - Land-development prioritization safeguards
 - Tactical attack/block selection
@@ -108,6 +110,8 @@ Gameplay logic is implemented in application code, not SQL.
 
 ### UI Workflows
 - Desktop-first board layout
+- Modal/split cards expose a face picker in the cast panel so players can choose the exact face before committing the spell
+- Hover preview panel shows enlarged card imagery and oracle text for long-session reading
 - Match controls for phase progression and autoplay ticks
 - AI-vs-AI autoplay progression
 - Priority stop controls
@@ -131,6 +135,11 @@ Gameplay logic is implemented in application code, not SQL.
 
 ## Recent Improvements (2026-06-07)
 
+- Modal and split-card handling now works end-to-end:
+  - Card cache rows persist `card_faces` metadata locally.
+  - The rules engine resolves the selected face at cast time instead of treating modal cards as one flat oracle blob.
+  - The AI evaluates modal cards as whole resources and chooses the face from board state, turn stage, and archetype.
+  - The cast UI now exposes a face picker so human players can choose which face to commit.
 - Replay determinism is now clean on the current 8-deck regression slice:
   - Duplicate card copies now receive deterministic per-match instance IDs instead of runtime UUIDs.
   - Replay normalization still strips transient UUID noise from logs and stack events.
@@ -406,6 +415,7 @@ AI selects actions from legal move sets only.
 
 Key mechanics:
 - Archetype-scored move ranking
+- Modal cards are valued as whole resources, not just by their front-face text
 - Forced land development guardrails during own main phases
 - Combat biasing by board state and race pressure
 - Defensive stall-loop prevention
@@ -526,7 +536,7 @@ Options:
 
 Known limitations:
 - Full Comprehensive Rules parity is not complete yet.
-- Oracle effect interpretation is still pattern-based for many legacy/special-case cards.
+- Oracle effect interpretation is still pattern-based for many legacy/special-case cards and some deep layering corner cases.
 - AI remains heuristic + tactical (not full strategic search/planning engine).
 - Matchup tuning is ongoing and still deck-dependent in edge cases.
 - Some rare legacy mechanics and old-edition corner interactions are not fully implemented.

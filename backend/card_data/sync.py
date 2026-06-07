@@ -38,7 +38,33 @@ class ScryfallSyncService:
             "toughness": raw.get("toughness") or (face.get("toughness") if face else None),
             "image_uri": image_uri,
             "legalities_json": json.dumps(raw.get("legalities", {})),
+            "card_faces_json": json.dumps(self._normalize_faces(raw.get("card_faces") or [])),
         }
+
+    def _normalize_faces(self, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        for face in faces:
+            out.append(
+                {
+                    "name": face.get("name", ""),
+                    "mana_cost": face.get("mana_cost"),
+                    "type_line": face.get("type_line"),
+                    "oracle_text": face.get("oracle_text"),
+                    "power": face.get("power"),
+                    "toughness": face.get("toughness"),
+                    "image_uri": self._extract_face_image_uri(face),
+                }
+            )
+        return out
+
+    def _extract_face_image_uri(self, face: dict[str, Any]) -> str | None:
+        preferred_sizes = ("normal", "large", "png", "small", "art_crop", "border_crop")
+        face_uris = face.get("image_uris") or {}
+        for key in preferred_sizes:
+            uri = face_uris.get(key)
+            if uri:
+                return uri
+        return None
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)
@@ -107,4 +133,5 @@ class ScryfallSyncService:
             "toughness": card.toughness,
             "image_uri": card.image_uri,
             "legalities": json.loads(card.legalities_json),
+            "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
         }

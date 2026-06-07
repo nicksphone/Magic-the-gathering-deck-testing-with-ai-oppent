@@ -15,6 +15,13 @@ export type CardView = {
   mana_cost?: string;
   oracle_text?: string;
   image_uri?: string;
+  card_faces?: {
+    name?: string;
+    mana_cost?: string;
+    oracle_text?: string;
+    type_line?: string;
+    image_uri?: string;
+  }[];
   tapped: boolean;
   summoning_sick: boolean;
   power: number | null;
@@ -30,7 +37,7 @@ export type PlayerView = {
   library_count: number;
   hand_count: number;
   battlefield: CardView[];
-  hand: { id: string; name: string; mana_cost?: string; oracle_text?: string; image_uri?: string; types: string[] }[];
+  hand: { id: string; name: string; mana_cost?: string; oracle_text?: string; image_uri?: string; types: string[]; card_faces?: CardView["card_faces"] }[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;
@@ -90,6 +97,7 @@ export type LegalMove = {
     creature_targets?: { id: string; name: string }[];
     planeswalker_targets?: { id: string; name: string }[];
     stack_targets?: { id: string; label: string }[];
+    face_names?: string[];
     modes?: string[];
     choose_two_modes?: boolean;
     requires_x_value?: boolean;

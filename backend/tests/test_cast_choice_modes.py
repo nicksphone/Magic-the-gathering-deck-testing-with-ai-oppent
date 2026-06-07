@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.cast_choice import enrich_divide_total
@@ -116,3 +117,38 @@ def test_validate_cast_choice_accepts_zero_x_value_when_required() -> None:
     ok, msg = validate_cast_choice(hints, {"x_value": 0, "target_card_id": "c1"})
     assert ok is True
     assert msg == ""
+
+
+def test_build_cast_hints_exposes_face_selection_schema() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="modal",
+        name="Modal Adept",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Creature"],
+        mana_cost="{2}{G}",
+        oracle_text="",
+        card_faces=[
+            {"name": "Adept Form", "oracle_text": "Create a 1/1 token.", "mana_cost": "{2}{G}", "type_line": "Creature - Elf"},
+            {"name": "Scholar Form", "oracle_text": "Draw a card and destroy target artifact.", "mana_cost": "{2}{G}", "type_line": "Creature - Elf"},
+        ],
+    )
+    hints = build_cast_hints(state, card, 1)
+    schema = hints["choice_schema"]["selected_face_index"]
+    assert schema["minimum"] == 0
+    assert schema["maximum"] == 1
+
+
+def test_validate_cast_choice_rejects_out_of_range_face_index() -> None:
+    hints = {
+        "face_names": ["Adept Form", "Scholar Form"],
+        "choice_schema": {
+            "selected_face_index": {"type": "integer", "required": False, "minimum": 0, "maximum": 1},
+        },
+    }
+    ok, msg = validate_cast_choice(hints, {"selected_face_index": 2})
+    assert ok is False
+    assert "out of range" in msg.lower()

@@ -70,6 +70,8 @@ class CardInstance:
     attached_to: str | None = None
     static_order: int = 0
     instance_order: int = 0
+    card_faces: list[dict] = field(default_factory=list)
+    selected_face_index: int | None = None
 
 
 @dataclass
@@ -181,6 +183,8 @@ class MatchFactory:
                     oracle_text=raw_item.get("oracle_text", "") or "",
                     type_line=type_line,
                     image_uri=raw_item.get("image_uri"),
+                    card_faces=list(raw_item.get("card_faces") or []),
+                    selected_face_index=raw_item.get("selected_face_index"),
                     instance_order=copy_index,
                 )
                 cards[cid] = card

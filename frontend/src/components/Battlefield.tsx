@@ -83,6 +83,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
+  const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
@@ -101,13 +102,14 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
     };
   }
 
-  function castAction(cardId: string) {
+  function castAction(cardId: string, selectedFaceIndex?: number) {
     const t = targets[cardId] ?? {};
     onCardAction(1, {
       type: "cast_spell",
       card_id: cardId,
       targets: t,
       cost_choice: costChoice[cardId] ? { id: costChoice[cardId] } : undefined,
+      selected_face_index: selectedFaceIndex,
     });
   }
 
@@ -358,6 +360,8 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
             const move = castMoves.find((m) => m.card_id === card.id);
             const landMove = playLandMoves.find((m) => m.card_id === card.id);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
+            const faceNames = move?.target_hints?.face_names ?? [];
+            const selectedFaceIndex = faceChoices[card.id] ?? 0;
             if (!move) {
               return (
                 <div
@@ -388,10 +392,27 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                 onMouseLeave={() => setHoverPreview(null)}
               >
                 <button
-                  onClick={() => castAction(card.id)}
+                  onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
+                {faceNames.length > 1 ? (
+                  <select
+                    value={selectedFaceIndex}
+                    onChange={(e) =>
+                      setFaceChoices((prev) => ({
+                        ...prev,
+                        [card.id]: Number(e.target.value) || 0,
+                      }))
+                    }
+                  >
+                    {faceNames.map((faceName, idx) => (
+                      <option key={`${card.id}-face-${idx}`} value={idx}>
+                        Face {idx + 1}: {faceName}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
                 {move.cost_options?.length ? (
                   <select value={costChoice[card.id] ?? ""} onChange={(e) => setCostChoice((prev) => ({ ...prev, [card.id]: e.target.value }))}>
                     <option value="">Cost Option</option>

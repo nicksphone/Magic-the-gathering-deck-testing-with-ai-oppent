@@ -1433,3 +1433,139 @@ def test_early_turn_cheap_proactive_cast_over_pass_when_opponent_tapped_low() ->
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "delver-1"
+
+
+def test_aggro_cast_bias_values_stronger_modal_face_higher() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        stack = []
+        cards = {
+            "weak": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Modal Adept",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Adept Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Scholar Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                    ],
+                },
+            )(),
+            "strong": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Modal Adept",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Adept Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Scholar Form",
+                            "oracle_text": "When this enters, draw a card and create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                    ],
+                },
+            )(),
+        }
+
+    weak_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "weak"}, 1)
+    strong_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "strong"}, 1)
+    assert strong_score > weak_score
+
+
+def test_midrange_cast_bias_values_stronger_modal_face_higher() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Midrange")
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        stack = []
+        cards = {
+            "weak": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Modal Adept",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Adept Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Scholar Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                    ],
+                },
+            )(),
+            "strong": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Modal Adept",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Adept Form",
+                            "oracle_text": "When this enters, create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Scholar Form",
+                            "oracle_text": "When this enters, draw a card and create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                    ],
+                },
+            )(),
+        }
+
+    weak_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "weak"}, 1)
+    strong_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "strong"}, 1)
+    assert strong_score > weak_score

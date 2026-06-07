@@ -251,13 +251,20 @@ class RulesEngine:
                         apply_state_based_actions(state)
                         return
                 action_targets = enrich_divide_total(card, at_targets)
-                hints = build_cast_hints(state, card, player_id)
+                selected_face_index = action.get("selected_face_index")
+                if selected_face_index is None and isinstance(action_targets, dict):
+                    selected_face_index = action_targets.get("selected_face_index")
+                face_card = _select_face_for_cast(card, selected_face_index)
+                if face_card is not card:
+                    action_targets = dict(action_targets)
+                    action_targets.setdefault("selected_face_index", selected_face_index if selected_face_index is not None else 0)
+                hints = build_cast_hints(state, face_card, player_id)
                 ok, error = validate_cast_choice(hints, action_targets)
                 if not ok:
                     state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
-                ok_prot, err_prot = validate_protection_targets(state, card, action_targets)
+                ok_prot, err_prot = validate_protection_targets(state, face_card, action_targets)
                 if not ok_prot:
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
@@ -285,7 +292,7 @@ class RulesEngine:
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                effect_key, payload = infer_effect_from_oracle(state, card, player_id, action_targets=action_targets)
+                effect_key, payload = infer_effect_from_oracle(state, face_card, player_id, action_targets=action_targets)
 
                 player.hand.remove(cid)
                 card.zone = Zone.STACK
@@ -537,3 +544,45 @@ def _extract_equip_cost_text(oracle_text: str) -> str:
     import re
     m = re.search(r"Equip\s+(\{[^}]+\}(?:\{[^}]+\})*)", oracle_text or "", flags=re.IGNORECASE)
     return m.group(1).upper() if m else ""
+
+
+def _select_face_for_cast(card, selected_face_index) -> object:
+    faces = list(getattr(card, "card_faces", []) or [])
+    if not faces:
+        return card
+    try:
+        index = int(selected_face_index if selected_face_index is not None else getattr(card, "selected_face_index", 0) or 0)
+    except Exception:
+        index = 0
+    if index < 0 or index >= len(faces):
+        index = 0
+    face = faces[index] or {}
+    proxy = type("CardFaceProxy", (), {})()
+    for attr in [
+        "id",
+        "owner",
+        "controller",
+        "zone",
+        "tapped",
+        "summoning_sick",
+        "entered_turn",
+        "counters",
+        "keywords",
+        "attached_to",
+        "static_order",
+        "instance_order",
+        "selected_face_index",
+        "card_faces",
+    ]:
+        setattr(proxy, attr, getattr(card, attr, None))
+    proxy.name = str(face.get("name") or card.name)
+    proxy.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
+    proxy.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
+    proxy.type_line = str(face.get("type_line") or card.type_line or "")
+    proxy.power = face.get("power") if face.get("power") is not None else getattr(card, "power", None)
+    proxy.toughness = face.get("toughness") if face.get("toughness") is not None else getattr(card, "toughness", None)
+    proxy.loyalty = getattr(card, "loyalty", None)
+    proxy.types = list(getattr(card, "types", []) or [])
+    proxy.image_uri = face.get("image_uri") or getattr(card, "image_uri", None)
+    proxy.selected_face_index = index
+    return proxy
