@@ -320,8 +320,12 @@ Gameplay logic is implemented in application code, not SQL.
 - Combat protection edge case:
   - Trample spillover into a protected planeswalker now respects protection instead of leaking loyalty damage.
   - This keeps combat damage aligned with source/target protection checks on the unblocked damage path.
+- Damage-prevention edge case:
+  - Combat damage now respects `damage can't be prevented` effects before consuming prevention shields.
+  - This applies to direct player damage in combat and keeps prevention logic aligned with replacement effects.
 - Combat regression coverage:
   - Added a unit test for trample excess damage into a protected planeswalker.
+  - Added a unit test for combat damage that bypasses prevention shields when the source states damage can't be prevented.
   - Verified surrounding planeswalker and combat tests remain green.
 
 ## API Overview

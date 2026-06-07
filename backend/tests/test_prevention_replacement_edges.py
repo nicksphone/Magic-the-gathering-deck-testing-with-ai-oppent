@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from effects.registry import resolve_effect
 from effects.handlers import deal_damage
-from game_state.state import CardInstance, MatchFactory, Zone
+from rules_engine import combat
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 
 
@@ -95,3 +96,28 @@ def test_optional_stack_effect_can_be_declined() -> None:
     resolve_top_of_stack(state)
     assert state.players[1].life == before
     assert any("declines optional effect" in line.lower() for line in state.log)
+
+
+def test_combat_damage_ignores_prevention_when_source_says_cant_be_prevented() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = state.players[1].hand.pop()
+    state.players[1].battlefield.append(atk)
+    state.cards[atk].zone = Zone.BATTLEFIELD
+    state.cards[atk].types = ["Creature"]
+    state.cards[atk].power = 3
+    state.cards[atk].toughness = 3
+    state.cards[atk].summoning_sick = False
+    state.cards[atk].oracle_text = "Damage can't be prevented."
+
+    state.players[2].prevent_damage_shield = 5
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+
+    before = state.players[2].life
+    combat.combat_damage(state)
+    assert state.players[2].life == before - 3

@@ -5,6 +5,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
+from rules_engine.replacement import damage_cant_be_prevented
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -191,7 +192,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
                 continue
             lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
             dealt = min(remaining, lethal)
-            _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch)
+            _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
             remaining -= dealt
@@ -219,7 +220,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             if blk_power > 0 and has_keyword(state, blocker_id, "lifelink"):
                 state.players[blk.controller].life += blk_power
         if atk_damage_taken > 0:
-            _mark_creature_damage(state, attacker, atk_damage_taken, deathtouch=got_deathtouch_from_blocker)
+            _mark_creature_damage(state, attacker, atk_damage_taken, deathtouch=got_deathtouch_from_blocker, source_id=blocks[0] if len(blocks) == 1 else None)
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
@@ -351,7 +352,12 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         # PW left battlefield — damage disappears, does NOT redirect to player
         return 0
     pid = int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else 2
-    post, prevented = consume_player_prevention_shield(state, pid, amount)
+    prevention_locked = source_id is not None and source_id in state.cards and damage_cant_be_prevented(
+        state,
+        source_card_id=source_id,
+        target_player=pid,
+    )
+    post, prevented = (amount, 0) if prevention_locked else consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
         state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")
     if post <= 0:
@@ -360,11 +366,22 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
     return post
 
 
-def _mark_creature_damage(state: MatchState, card_id: str, amount: int, deathtouch: bool = False) -> None:
+def _mark_creature_damage(
+    state: MatchState,
+    card_id: str,
+    amount: int,
+    deathtouch: bool = False,
+    source_id: str | None = None,
+) -> None:
     if amount <= 0:
         return
     card = state.cards[card_id]
-    post, prevented = consume_card_prevention_shield(card, amount)
+    prevention_locked = source_id is not None and source_id in state.cards and damage_cant_be_prevented(
+        state,
+        source_card_id=source_id,
+        target_card_id=card_id,
+    )
+    post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount)
     if prevented > 0:
         state.log.append(f"{card.name} prevents {prevented} damage.")
     if post <= 0:
