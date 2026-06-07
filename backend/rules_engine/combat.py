@@ -173,7 +173,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
         defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
         if not blocks:
-            dealt = _deal_unblocked_damage(state, defender_key, effective_power(state, attacker))
+            dealt = _deal_unblocked_damage(state, defender_key, effective_power(state, attacker), source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
             continue
@@ -197,7 +197,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             remaining -= dealt
 
         if has_keyword(state, attacker, "trample") and remaining > 0:
-            dealt = _deal_unblocked_damage(state, defender_key, remaining)
+            dealt = _deal_unblocked_damage(state, defender_key, remaining, source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
 
@@ -335,13 +335,16 @@ def _defender_label(state: MatchState, key: str) -> str:
     return key
 
 
-def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int) -> None:
+def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, source_id: str | None = None) -> None:
     if amount <= 0:
         return 0
     if defender_key.startswith("planeswalker:"):
         cid = defender_key.split(":", 1)[1]
         card = state.cards.get(cid)
         if card and "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
+            if source_id is not None and source_id in state.cards and _damage_prevented_by_protection(state, source_id, cid):
+                state.log.append(f"{card.name} prevents {amount} damage.")
+                return 0
             card.loyalty = (card.loyalty or 0) - amount
             state.log.append(f"{card.name} loses {amount} loyalty.")
             return amount

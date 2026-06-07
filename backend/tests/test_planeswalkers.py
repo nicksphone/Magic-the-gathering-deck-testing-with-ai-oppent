@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchFactory, Step, Zone
+from rules_engine import combat
 from rules_engine.engine import RulesEngine
 
 
@@ -98,3 +99,48 @@ def test_unblocked_damage_to_removed_planeswalker_disappears():
     assert result == 0, f"Expected 0 damage, got {result}"
     assert state.players[2].life == p2_life_before, \
         f"Player life changed from {p2_life_before} to {state.players[2].life} — damage leaked to player!"
+
+
+def test_trample_excess_damage_to_protected_planeswalker_is_prevented() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = state.players[1].hand.pop()
+    state.players[1].battlefield.append(atk)
+    state.cards[atk].zone = Zone.BATTLEFIELD
+    state.cards[atk].types = ["Creature"]
+    state.cards[atk].name = "Red Trampler"
+    state.cards[atk].mana_cost = "{3}{R}"
+    state.cards[atk].power = 4
+    state.cards[atk].toughness = 4
+    state.cards[atk].keywords = ["trample"]
+    state.cards[atk].summoning_sick = False
+
+    blk = state.players[2].hand.pop()
+    state.players[2].battlefield.append(blk)
+    state.cards[blk].zone = Zone.BATTLEFIELD
+    state.cards[blk].types = ["Creature"]
+    state.cards[blk].power = 1
+    state.cards[blk].toughness = 1
+    state.cards[blk].summoning_sick = False
+
+    pw = state.players[2].hand.pop()
+    state.players[2].battlefield.append(pw)
+    state.cards[pw].zone = Zone.BATTLEFIELD
+    state.cards[pw].name = "Protected Walker"
+    state.cards[pw].types = ["Planeswalker"]
+    state.cards[pw].loyalty = 5
+    state.cards[pw].keywords = ["protection from red"]
+
+    state.attackers = [atk]
+    state.attack_targets = {atk: f"planeswalker:{pw}"}
+    state.blocks = {atk: [blk]}
+
+    combat.combat_damage(state)
+
+    assert state.cards[pw].loyalty == 5
+    assert state.players[2].life == 20

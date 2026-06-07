@@ -315,6 +315,15 @@ Gameplay logic is implemented in application code, not SQL.
 - Retest result:
   - `Tempo vs Drain` rerun completed with `timeout: 0` in the latest master-difficulty sample.
 
+## Recent Improvements (2026-06-07)
+
+- Combat protection edge case:
+  - Trample spillover into a protected planeswalker now respects protection instead of leaking loyalty damage.
+  - This keeps combat damage aligned with source/target protection checks on the unblocked damage path.
+- Combat regression coverage:
+  - Added a unit test for trample excess damage into a protected planeswalker.
+  - Verified surrounding planeswalker and combat tests remain green.
+
 ## API Overview
 
 Base backend default: `http://0.0.0.0:9999`
