@@ -408,9 +408,13 @@ class RulesEngine:
                 cid = player.hand.pop()
                 player.library.append(cid)
                 state.cards[cid].zone = Zone.LIBRARY
-            import random
+            rng = getattr(state, "rng", None)
+            if rng is not None and hasattr(rng, "shuffle"):
+                rng.shuffle(player.library)
+            else:
+                import random
 
-            random.shuffle(player.library)
+                random.shuffle(player.library)
             for _ in range(7):
                 draw_card(state, player_id)
             state.mulligan_count[player_id] = state.mulligan_count.get(player_id, 0) + 1

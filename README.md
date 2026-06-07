@@ -117,6 +117,7 @@ Gameplay logic is implemented in application code, not SQL.
 - AI diagnostics across deck pool pairs
 - Replay endpoint for match logs
 - Deterministic start seed support
+- Deterministic card-instance IDs for replay-stable duplicate-card tie-breaking
 - Overnight round-robin scripts
 - Anomaly clustering report generation
 - Stall and land-window anomaly counters in diagnostics
@@ -124,6 +125,19 @@ Gameplay logic is implemented in application code, not SQL.
 - Card-play analytics script for per-matchup action/cast/pass profiling:
   - `backend/scripts/card_play_analytics.py`
 - Round-robin script startup bug fixed (`_write_anomaly_clusters` call order)
+
+## Recent Improvements (2026-06-07)
+
+- Replay determinism is now clean on the current 8-deck regression slice:
+  - Duplicate card copies now receive deterministic per-match instance IDs instead of runtime UUIDs.
+  - Replay normalization still strips transient UUID noise from logs and stack events.
+  - Latest verification run: `28 games`, `0 determinism failures`.
+- AI duplicate-copy tie-breaking is now stable:
+  - Equivalent cards with the same name no longer drift because of random instance identifiers.
+  - This removes false replay divergence from choosing between identical copies of the same land or spell.
+- Deterministic replay matrix script remains the primary regression gate:
+  - `backend/scripts/regression_matrix_replay.py`
+  - Normalized log hashing continues to catch true gameplay drift while ignoring transient IDs.
 
 ## Recent Improvements (2026-05-16)
 

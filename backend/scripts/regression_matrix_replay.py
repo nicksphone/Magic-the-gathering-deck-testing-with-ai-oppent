@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from itertools import combinations
 from pathlib import Path
 
@@ -13,6 +14,17 @@ from persistence.db import engine
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
+
+UUID_RE = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)
+
+
+def _stable_seed(left_name: str, right_name: str, index: int) -> int:
+    digest = hashlib.sha256(f"{left_name}::{right_name}::{index}".encode("utf-8")).hexdigest()
+    return int(digest[:8], 16)
+
+
+def _normalize_log_line(line: str) -> str:
+    return UUID_RE.sub("<id>", line)
 
 
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int) -> dict:
@@ -37,18 +49,21 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
             engine_rules.take_action(state, state.active_player, {"type": "combat_damage"})
         ticks += 1
 
-    log_hash = hashlib.sha256("\n".join(state.log).encode("utf-8")).hexdigest()
+    normalized_log = [_normalize_log_line(line) for line in state.log]
+    log_hash = hashlib.sha256("\n".join(normalized_log).encode("utf-8")).hexdigest()
     return {
         "winner": state.winner,
         "turn": state.turn,
         "ticks": ticks,
         "log_hash": log_hash,
-        "log": list(state.log),
+        "log": normalized_log,
         "timeout": state.winner is None,
     }
 
 
 def first_log_divergence(a_lines: list[str], b_lines: list[str]) -> dict:
+    a_lines = [_normalize_log_line(line) for line in a_lines]
+    b_lines = [_normalize_log_line(line) for line in b_lines]
     shared = min(len(a_lines), len(b_lines))
     idx = 0
     while idx < shared and a_lines[idx] == b_lines[idx]:
@@ -102,7 +117,7 @@ def main() -> None:
         summary["pairs"] += 1
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
         for i in range(max(1, args.matches_per_pair)):
-            seed = (hash(left["name"] + right["name"]) & 0xFFFFFFFF) + i
+            seed = _stable_seed(left["name"], right["name"], i)
             a = run_game(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks)
             b = run_game(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks)
             deterministic_ok = a["winner"] == b["winner"] and a["turn"] == b["turn"] and a["log_hash"] == b["log_hash"]

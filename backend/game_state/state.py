@@ -69,6 +69,7 @@ class CardInstance:
     image_uri: str | None = None
     attached_to: str | None = None
     static_order: int = 0
+    instance_order: int = 0
 
 
 @dataclass
@@ -106,6 +107,7 @@ class MatchState:
     players: dict[int, PlayerState]
     cards: dict[str, CardInstance]
     stack: list[StackItem]
+    rng: random.Random = field(default_factory=random.Random)
     turn: int = 1
     active_player: int = 1
     priority_player: int = 1
@@ -153,9 +155,9 @@ class MatchFactory:
                 for _ in range(item["quantity"]):
                     expanded.append(item)
             rng.shuffle(expanded)
-            for raw_item in expanded:
+            for copy_index, raw_item in enumerate(expanded, start=1):
                 card_name = raw_item["card_name"]
-                cid = str(uuid.uuid4())
+                cid = f"p{owner}-{copy_index:03d}"
                 type_line = raw_item.get("type_line", "")
                 types = _infer_types(
                     card_name,
@@ -179,11 +181,13 @@ class MatchFactory:
                     oracle_text=raw_item.get("oracle_text", "") or "",
                     type_line=type_line,
                     image_uri=raw_item.get("image_uri"),
+                    instance_order=copy_index,
                 )
                 cards[cid] = card
                 player.library.append(cid)
 
         match = MatchState(id=str(uuid.uuid4()), players={1: p1, 2: p2}, cards=cards, stack=[])
+        match.rng = rng if seed is not None else random.Random()
         for pid in [1, 2]:
             for _ in range(7):
                 draw_card(match, pid)

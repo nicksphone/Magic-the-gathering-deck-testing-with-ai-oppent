@@ -134,7 +134,7 @@ class AIAgent:
         for mv in candidates:
             score = self._strategic_line_score(state, mv, player_id, depth=1)
             scored.append((score, mv))
-        scored.sort(key=lambda x: x[0], reverse=True)
+        scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top = scored[0][1]
         if top.get("type") == "pass_priority":
             for _, mv in scored:
@@ -168,7 +168,7 @@ class AIAgent:
         if depth <= 0 or sim.winner is not None:
             return score
         pid = sim.priority_player
-        legal = self.engine.legal_moves(sim, pid)
+        legal = sorted(self.engine.legal_moves(sim, pid), key=lambda mv: self._move_sort_key(mv))
         if not legal:
             return score
         beam: list[tuple[float, dict]] = []
@@ -253,6 +253,36 @@ class AIAgent:
             if len(picked) >= limit:
                 break
         return picked
+
+    def _move_sort_key(self, move: dict) -> tuple:
+        def _ids(values: object) -> str:
+            if not isinstance(values, list):
+                return ""
+            out: list[str] = []
+            for item in values:
+                if isinstance(item, dict):
+                    out.append(str(item.get("id") or item.get("name") or ""))
+                else:
+                    out.append(str(item))
+            return ",".join(sorted(out))
+
+        cost_choice = move.get("cost_choice")
+        cost_choice_id = str(cost_choice.get("id")) if isinstance(cost_choice, dict) and cost_choice.get("id") is not None else ""
+        return (
+            str(move.get("type") or ""),
+            str(move.get("card_name") or ""),
+            str(move.get("card_name") or ""),
+            str(move.get("ability_index") if move.get("ability_index") is not None else ""),
+            str(move.get("ability_label") or ""),
+            str(move.get("target_card_name") or ""),
+            str(move.get("target_player_name") or ""),
+            str(move.get("target_stack_label") or ""),
+            cost_choice_id,
+            str((move.get("targets") or {}).get("x_value", "")),
+            _ids(move.get("attackers")),
+            _ids(move.get("blockers")),
+            _ids(move.get("options")),
+        )
 
     def _strategic_features(self, state: MatchState, player_id: int) -> float:
         opp = 1 if player_id == 2 else 2
@@ -625,7 +655,7 @@ class AIAgent:
                 base += self._rollout_delta(state, move, player_id)
             return base
 
-        ranked = sorted(moves, key=score, reverse=True)
+        ranked = sorted(moves, key=lambda mv: (score(mv), self._move_sort_key(mv)), reverse=True)
         normalized = []
         for move in ranked:
             if move.get("type") == "attack" and "attackers" not in move:
@@ -643,7 +673,10 @@ class AIAgent:
             self._approximate_resolution_for_creature_cast(sim_state, move, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
-            opp_moves = self.engine.legal_moves(sim_state, sim_state.priority_player)
+            opp_moves = sorted(
+                self.engine.legal_moves(sim_state, sim_state.priority_player),
+                key=lambda mv: self._move_sort_key(mv),
+            )
             if sim_state.priority_player == opp_id and opp_moves:
                 best_reply = self._best_reply_delta(sim_state, opp_moves, player_id, opp_id)
             else:
@@ -1197,9 +1230,14 @@ class AIAgent:
 
         creature_targets = hints.get("creature_targets") or []
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
-            best = max(creature_targets, key=lambda t: self._creature_threat_score(state, t.get("id"), player_id), default=None)
+            best = max(
+                creature_targets,
+                key=lambda t: (self._creature_threat_score(state, t.get("id"), player_id), str(t.get("name") or t.get("label") or "")),
+                default=None,
+            )
             if best:
                 targets["target_card_id"] = best["id"]
+                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -1213,16 +1251,24 @@ class AIAgent:
         if noncreature_permanent_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(
                 noncreature_permanent_targets,
-                key=lambda t: self._noncreature_permanent_threat_score(state, t.get("id"), player_id),
+                key=lambda t: (
+                    self._noncreature_permanent_threat_score(state, t.get("id"), player_id),
+                    str(t.get("name") or t.get("label") or ""),
+                ),
                 default=None,
             )
             if best:
                 targets["target_card_id"] = best["id"]
+                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
                 # Put first point on highest-threat creature by default.
-                best = max(creature_targets, key=lambda t: self._creature_threat_score(state, t.get("id"), player_id), default=None)
+                best = max(
+                    creature_targets,
+                    key=lambda t: (self._creature_threat_score(state, t.get("id"), player_id), str(t.get("name") or t.get("label") or "")),
+                    default=None,
+                )
                 if best:
                     targets["target_distribution"] = {best["id"]: 1}
             elif player_targets:
@@ -1589,7 +1635,7 @@ class AIAgent:
                 base -= 0.2
             return base
 
-        ranked = sorted(legal, key=quick_score, reverse=True)
+        ranked = sorted(legal, key=lambda mv: (quick_score(mv), self._move_sort_key(mv)), reverse=True)
         top = ranked[: min(3, len(ranked))]
         return top[0]
 
@@ -1615,7 +1661,7 @@ class AIAgent:
             score += len(produced) * 0.15
             return score
 
-        return max(land_moves, key=score_land)
+        return max(land_moves, key=lambda mv: (score_land(mv), self._move_sort_key(mv)))
 
     def _remaining_land_plays(self, state: MatchState, player_id: int) -> int:
         player = state.players[player_id]
@@ -1745,7 +1791,7 @@ class AIAgent:
             scored.append((score, mat))
         if not scored:
             return None
-        scored.sort(key=lambda x: x[0], reverse=True)
+        scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top = scored[0][1]
         if top.get("type") == "attack" and not (top.get("attackers") or []):
             return None
@@ -1947,7 +1993,7 @@ class AIAgent:
             scored.append((score, mv))
         if not scored:
             return None
-        scored.sort(key=lambda x: x[0], reverse=True)
+        scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         return scored[0][1]
 
     def _best_tempo_threat_first_cast(self, non_pass: list[dict], state: MatchState, player_id: int | None = None) -> dict | None:
@@ -1979,7 +2025,7 @@ class AIAgent:
                     choices.append((-2.5, mv))
         if not choices:
             return None
-        choices.sort(key=lambda x: x[0], reverse=True)
+        choices.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top_score, top = choices[0]
         return top if top_score > 0 else None
 
@@ -2195,14 +2241,17 @@ class AIAgent:
     def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict]) -> str | None:
         best_id = None
         best_score = -999.0
+        best_tiebreak = ""
         for c in candidates:
             sid = c.get("id")
             if not sid:
                 continue
             score = self._stack_item_threat_score(state, sid, player_id)
-            if score > best_score:
+            tiebreak = str(c.get("label") or c.get("name") or sid)
+            if score > best_score or (score == best_score and (best_id is None or tiebreak < best_tiebreak)):
                 best_score = score
                 best_id = sid
+                best_tiebreak = tiebreak
         return best_id
 
     def _best_stack_threat_score(self, state: MatchState, player_id: int) -> float:
