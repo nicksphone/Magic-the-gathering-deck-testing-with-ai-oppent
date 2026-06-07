@@ -106,6 +106,9 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
     replaced = replace_draw_cards(state, target_player, amount)
     if replaced is not None:
         key, repl_payload = replaced
+        state.log.append(
+            f"Replacement effect applied: draw_cards -> {key} for {state.players[target_player].name}."
+        )
         from effects.registry import resolve_effect
         resolve_effect(state, controller, key, repl_payload)
         return
@@ -124,6 +127,9 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     replaced = replace_gain_life(state, target_player, amount)
     if replaced is not None:
         key, repl_payload = replaced
+        state.log.append(
+            f"Replacement effect applied: gain_life -> {key} for {state.players[target_player].name}."
+        )
         from effects.registry import resolve_effect
         resolve_effect(state, controller, key, repl_payload)
         return

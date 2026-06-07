@@ -85,6 +85,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Selected modal face text is resolved before oracle inference so split/modal cards carry the correct face into validation and resolution
 - Split-card metadata now exposes face-name hints for downstream validation/rendering
 - Continuous-effect diagnostics now include deterministic layer traces for static-order debugging
+- Optional replacement and stack effects now emit explicit trace lines when they redirect or are declined
 
 ### AI System
 - Difficulty levels: `casual`, `strong`, `master`, `master_plus`
@@ -159,6 +160,7 @@ Gameplay logic is implemented in application code, not SQL.
   - Protection handling now recognizes additional noncreature/nonland style protection tokens.
   - Split-card identities are surfaced explicitly for downstream validation/rendering paths.
   - Continuous-effect traces now expose ordered layer application for diagnostics.
+  - Replacement redirections and optional stack-effect declines now leave traceable log lines for training/debugging.
 - Diagnostics and UI polish:
   - Live replay responses now include log fingerprint metadata for faster debugging.
   - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.
