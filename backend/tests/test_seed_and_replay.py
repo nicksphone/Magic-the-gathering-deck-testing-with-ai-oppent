@@ -52,6 +52,8 @@ def test_replay_endpoint_returns_entries() -> None:
     ACTIVE_MATCHES[state.id] = ctrl
     body = get_match_replay(state.id)
     assert body["match_id"] == state.id
+    assert body["entry_count"] >= 4
+    assert body["log_hash"]
     assert isinstance(body["entries"], list)
     assert len(body["entries"]) >= 4
 

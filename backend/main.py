@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
 import time
@@ -392,10 +393,15 @@ def get_match_replay(match_id: str) -> dict:
             except Exception:
                 pass
         entries.append({"index": idx, "turn": current_turn, "line": line})
+    log_hash = hashlib.sha256("\n".join(entries_entry["line"] for entries_entry in entries).encode("utf-8")).hexdigest()
     return {
         "match_id": match_id,
         "game_number": match.game_number,
         "winner": match.state.winner,
+        "turn": match.state.turn,
+        "step": str(match.state.step),
+        "entry_count": len(entries),
+        "log_hash": log_hash,
         "entries": entries,
     }
 

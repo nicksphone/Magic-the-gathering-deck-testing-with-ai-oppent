@@ -132,9 +132,17 @@ Gameplay logic is implemented in application code, not SQL.
   - Duplicate card copies now receive deterministic per-match instance IDs instead of runtime UUIDs.
   - Replay normalization still strips transient UUID noise from logs and stack events.
   - Latest verification run: `28 games`, `0 determinism failures`.
+- Wider replay verification also passed:
+  - `66 games`, `0 determinism failures` on the 12-deck replay matrix slice.
 - AI duplicate-copy tie-breaking is now stable:
   - Equivalent cards with the same name no longer drift because of random instance identifiers.
   - This removes false replay divergence from choosing between identical copies of the same land or spell.
+- Oracle/rules coverage tightened:
+  - Copy-spell inference now resolves stack targets.
+  - Protection handling now recognizes additional noncreature/nonland style protection tokens.
+- Diagnostics and UI polish:
+  - Live replay responses now include log fingerprint metadata for faster debugging.
+  - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.
 - Deterministic replay matrix script remains the primary regression gate:
   - `backend/scripts/regression_matrix_replay.py`
   - Normalized log hashing continues to catch true gameplay drift while ignoring transient IDs.

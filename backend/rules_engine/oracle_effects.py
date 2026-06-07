@@ -26,6 +26,7 @@ CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOT
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
+COPY_SPELL_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?\d+):\s*([^\n]+)")
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 PUT_CREATURES_FROM_TOP_RE = re.compile(
@@ -56,6 +57,9 @@ def infer_effect_from_oracle(
     if "counter target spell" in oracle and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         return "counter_spell", {"target_stack_id": target_stack_id}
+    if COPY_SPELL_RE.search(oracle) and state.stack:
+        target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
+        return "copy_spell", {"target_stack_id": target_stack_id}
     topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
     if topdeck_creatures is not None:
         return topdeck_creatures
@@ -147,7 +151,7 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
     if up_to_match:
         hints["up_to_target_count"] = int(up_to_match.group(1))
 
-    if "counter target spell" in oracle:
+    if "counter target spell" in oracle or COPY_SPELL_RE.search(oracle):
         hints["stack_targets"] = [{"id": x.id, "label": x.label} for x in state.stack]
     if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle:
         hints["creature_targets"] = [

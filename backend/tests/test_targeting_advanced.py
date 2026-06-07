@@ -55,6 +55,37 @@ def test_validate_protection_targets_blocks_protection_from_creatures() -> None:
     assert "protection" in err.lower()
 
 
+def test_validate_protection_targets_blocks_noncreature_sources() -> None:
+    target = CardInstance(
+        id="t2",
+        name="Ward",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        keywords=["protection from noncreature"],
+    )
+    source = CardInstance(
+        id="s2",
+        name="Removal",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+    )
+    state = MatchState(
+        id="m2",
+        players={1: PlayerState(id=1, name="A"), 2: PlayerState(id=2, name="B")},
+        cards={"t2": target, "s2": source},
+        stack=[],
+    )
+    state.players[2].battlefield.append("t2")
+
+    ok, err = validate_protection_targets(state, source, {"target_card_id": "t2"})
+    assert ok is False
+    assert "protection" in err.lower()
+
+
 def test_validate_hexproof_targets_block_opponent_targeting() -> None:
     target = CardInstance(
         id="t",

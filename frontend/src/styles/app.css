@@ -142,17 +142,28 @@ button:hover {
 .cards {
   display: flex;
   gap: 8px;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  overflow: auto;
+  max-height: 340px;
   padding-bottom: 4px;
 }
 
 .card {
-  min-width: 104px;
-  max-width: 120px;
+  position: relative;
+  min-width: 92px;
+  max-width: 104px;
   border: 1px solid #5f95a6;
   border-radius: 9px;
   padding: 6px;
   background: linear-gradient(180deg, #213e49, #172b34);
+  transition: transform 140ms ease, box-shadow 140ms ease, z-index 0s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.35);
+  z-index: 2;
 }
 
 .card img {
@@ -161,7 +172,7 @@ button:hover {
   border: 1px solid #4e7a89;
   margin-bottom: 4px;
   object-fit: cover;
-  max-height: 112px;
+  max-height: 88px;
 }
 
 .card.tapped {
@@ -216,9 +227,9 @@ button:hover {
 
 .card-hover-preview {
   position: fixed;
-  right: 20px;
-  top: 100px;
-  width: 320px;
+  right: 18px;
+  top: 92px;
+  width: 340px;
   max-height: calc(100vh - 140px);
   overflow: auto;
   border: 1px solid #5f95a6;
@@ -234,6 +245,10 @@ button:hover {
   border-radius: 8px;
   border: 1px solid #4e7a89;
   margin-bottom: 8px;
+}
+
+.card-hover-preview {
+  pointer-events: none;
 }
 
 .card-hover-meta h4 {

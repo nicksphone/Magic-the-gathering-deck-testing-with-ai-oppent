@@ -9,18 +9,28 @@ from rules_engine.continuous import effective_keywords
 _TYPE_PROTECTION_MAP = {
     "artifact": "Artifact",
     "artifacts": "Artifact",
+    "nonartifact": "!Artifact",
+    "non-artifact": "!Artifact",
     "creature": "Creature",
     "creatures": "Creature",
+    "noncreature": "!Creature",
+    "non-creature": "!Creature",
     "enchantment": "Enchantment",
     "enchantments": "Enchantment",
+    "nonenchantment": "!Enchantment",
+    "non-enchantment": "!Enchantment",
     "instant": "Instant",
     "instants": "Instant",
     "sorcery": "Sorcery",
     "sorceries": "Sorcery",
     "planeswalker": "Planeswalker",
     "planeswalkers": "Planeswalker",
+    "land": "Land",
+    "lands": "Land",
+    "nonland": "!Land",
+    "non-land": "!Land",
 }
-_COLOR_TOKENS = {"white", "blue", "black", "red", "green"}
+_COLOR_TOKENS = {"white", "blue", "black", "red", "green", "colorless", "multicolored", "monocolored", "everything"}
 
 
 def protected_from_source(state, target_id: str, source_card) -> bool:
@@ -46,8 +56,15 @@ def protection_match_reason(state, target_id: str, source_card) -> str | None:
 
     source_types = set(getattr(source_card, "types", []) or [])
     for token, canonical in _TYPE_PROTECTION_MAP.items():
-        if token in protections and canonical in source_types:
-            return token
+        if token in protections:
+            if canonical.startswith("!"):
+                blocked = canonical[1:]
+                if blocked not in source_types:
+                    return token
+            elif canonical in source_types:
+                return token
+    if "colorless" in protections and not source_colors:
+        return "colorless"
     return None
 
 
@@ -58,7 +75,7 @@ def extract_protection_keywords(oracle_text: str) -> list[str]:
         for raw in re.split(r"\s*(?:,|and|or)\s*", clause):
             token = raw.strip()
             token = token.removeprefix("from ").strip()
-            if token in _COLOR_TOKENS or token in _TYPE_PROTECTION_MAP or token in {"monocolored", "multicolored", "everything"}:
+            if token in _COLOR_TOKENS or token in _TYPE_PROTECTION_MAP:
                 out.add(f"protection from {token}")
     return sorted(out)
 

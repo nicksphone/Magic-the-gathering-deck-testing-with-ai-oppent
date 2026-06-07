@@ -40,6 +40,24 @@ def test_oracle_counterspell_parsing() -> None:
     assert payload["target_stack_id"] == "stack-1"
 
 
+def test_oracle_copy_spell_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.stack.append(type("SI", (), {"id": "stack-copy"})())
+    card = CardInstance(
+        id="copy",
+        name="Spell Swindle",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Copy target spell.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "copy_spell"
+    assert payload["target_stack_id"] == "stack-copy"
+
+
 def test_oracle_multiclause_sequence_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
