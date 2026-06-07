@@ -139,7 +139,9 @@ Gameplay logic is implemented in application code, not SQL.
   - This removes false replay divergence from choosing between identical copies of the same land or spell.
 - Oracle/rules coverage tightened:
   - Copy-spell inference now resolves stack targets.
+  - Copy effects now execute through the resolver instead of being a no-op.
   - Protection handling now recognizes additional noncreature/nonland style protection tokens.
+  - Split-card identities are surfaced explicitly for downstream validation/rendering paths.
 - Diagnostics and UI polish:
   - Live replay responses now include log fingerprint metadata for faster debugging.
   - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.

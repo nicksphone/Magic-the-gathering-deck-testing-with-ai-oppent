@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
@@ -171,6 +173,21 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
                 card.zone = Zone.GRAVEYARD
             state.log.append(f"{item.label} was countered.")
             return
+
+
+def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
+    target_stack_id = payload.get("target_stack_id")
+    if not target_stack_id:
+        return
+    item = next((x for x in state.stack if x.id == target_stack_id), None)
+    if item is None:
+        return
+    copied_payload = copy.deepcopy(item.payload or {})
+    copied_payload["__source_card_id"] = item.source_card_id
+    from effects.registry import resolve_effect
+
+    resolve_effect(state, controller, item.effect_key, copied_payload)
+    state.log.append(f"{state.players[controller].name} copies {item.label}.")
 
 
 def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:

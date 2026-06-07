@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import CardInstance, MatchFactory, Zone
 from effects.registry import resolve_effect
 from rules_engine.oracle_effects import infer_effect_from_oracle
+from rules_engine.oracle_effects import inspect_target_hints
 
 
 def test_oracle_damage_parsing() -> None:
@@ -56,6 +57,44 @@ def test_oracle_copy_spell_parsing() -> None:
     effect_key, payload = infer_effect_from_oracle(state, card, 1)
     assert effect_key == "copy_spell"
     assert payload["target_stack_id"] == "stack-copy"
+
+
+def test_split_card_marks_split_hints() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="split",
+        name="Fire // Ice",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Choose one — Fire deals 2 damage divided as you choose among one or two targets; Ice taps target permanent and draws a card.",
+    )
+    hints = inspect_target_hints(state, card, 1)
+    assert hints.get("split_card") is True
+    assert hints.get("modes")
+
+
+def test_copy_spell_handler_replays_target_effect() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.players[1].life = 10
+    state.players[2].life = 10
+    state.stack.append(type("SI", (), {"id": "stack-dmg", "label": "Lightning Bolt", "source_card_id": "bolt-1", "effect_key": "deal_damage", "payload": {"target_player": 2, "amount": 3}})())
+    state.cards["bolt-1"] = CardInstance(
+        id="bolt-1",
+        name="Lightning Bolt",
+        owner=1,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Instant"],
+        oracle_text="Lightning Bolt deals 3 damage to any target.",
+    )
+    resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-dmg"})
+    assert state.players[2].life == 7
+
+
 
 
 def test_oracle_multiclause_sequence_parsing() -> None:

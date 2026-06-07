@@ -27,6 +27,7 @@ CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 COPY_SPELL_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
+SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?\d+):\s*([^\n]+)")
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 PUT_CREATURES_FROM_TOP_RE = re.compile(
@@ -53,6 +54,12 @@ def infer_effect_from_oracle(
         oracle = mode_text.lower()
     elif mode_texts:
         oracle = " ; ".join(str(x).lower() for x in mode_texts)
+    split_match = SPLIT_NAME_RE.match(name)
+    if split_match and not mode_text and not mode_texts:
+        # Split cards are represented as a single cached record with aliases in
+        # the repo. Keep the original oracle intact, but preserve the split-card
+        # signal for downstream consumers that need to render or validate them specially.
+        pass
 
     if "counter target spell" in oracle and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
@@ -137,6 +144,8 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
     oracle = (card.oracle_text or "").lower()
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
+    if SPLIT_NAME_RE.match((card.name or "").strip()):
+        hints["split_card"] = True
     modes = _extract_modes(oracle)
     if modes:
         hints["modes"] = modes
