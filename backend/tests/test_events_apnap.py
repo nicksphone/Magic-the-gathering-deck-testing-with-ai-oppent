@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game_state.state import MatchFactory, Zone
+from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.events import emit_event
 from rules_engine.stack_engine import add_to_stack
 from rules_engine.engine import RulesEngine
@@ -105,3 +105,36 @@ def test_spell_cast_trigger_from_permanent() -> None:
 
     assert len(state.stack) >= before + 2
     assert any(x.controller == 1 and "cast trigger" in x.label.lower() for x in state.stack)
+
+
+def test_trigger_stack_items_include_order_metadata() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.players[1].battlefield = ["c1", "c2"]
+    state.cards["c1"] = CardInstance(
+        id="c1",
+        name="B Trigger",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a creature dies, draw a card.",
+    )
+    state.cards["c2"] = CardInstance(
+        id="c2",
+        name="A Trigger",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a creature dies, draw a card.",
+    )
+
+    emit_event(state, "creature_dies", {"card_id": "x"})
+    assert len(state.stack) == 2
+    assert state.stack[0].payload["__trigger_order"] == 0
+    assert state.stack[1].payload["__trigger_order"] == 1
+    assert state.stack[0].payload["__trigger_event"] == "creature_dies"

@@ -86,6 +86,7 @@ Gameplay logic is implemented in application code, not SQL.
 - Split-card metadata now exposes face-name hints for downstream validation/rendering
 - Continuous-effect diagnostics now include deterministic layer traces for static-order debugging
 - Optional replacement and stack effects now emit explicit trace lines when they redirect or are declined
+- Simultaneous trigger resolution now carries explicit trigger-order metadata in stack payloads for debugging and training export
 
 ### AI System
 - Difficulty levels: `casual`, `strong`, `master`, `master_plus`
@@ -168,6 +169,8 @@ Gameplay logic is implemented in application code, not SQL.
   - Verbose H2H logs now capture battlefield snapshots, life totals, and reasoning strings so future AI training can consume structured labeled examples.
 - Replay diagnostics improved:
   - Deterministic matrix runs now classify the first divergent log line so drift can be grouped by action type instead of just flagged as a mismatch.
+- Trigger traceability improved:
+  - Emitted triggers now carry `__trigger_order` and `__trigger_event` in stack payloads so ordering can be reconstructed from logs.
 - Deterministic replay matrix script remains the primary regression gate:
   - `backend/scripts/regression_matrix_replay.py`
   - Normalized log hashing continues to catch true gameplay drift while ignoring transient IDs.

@@ -12,7 +12,7 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     if not triggers:
         return
     ordered = _order_apnap(state, triggers)
-    for trig in ordered:
+    for order_index, trig in enumerate(ordered):
         state.stack.append(
             StackItem(
                 id=str(uuid.uuid4()),
@@ -20,7 +20,7 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
                 controller=trig["controller"],
                 label=trig["label"],
                 effect_key=trig["effect_key"],
-                payload=trig["payload"],
+                payload={**trig["payload"], "__trigger_order": order_index, "__trigger_event": event},
             )
         )
     state.log.append(f"{len(ordered)} triggered ability(s) added to stack ({event}).")
@@ -146,6 +146,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         )
             if once_each_turn:
                 state.trigger_once_seen_this_turn.add(trigger_key)
+    out.sort(key=lambda trig: (0 if trig["controller"] == state.active_player else 1, str(trig["source_card_id"]), str(trig["label"])))
     return out
 
 
