@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from game_state.state import Zone
 
@@ -352,3 +353,56 @@ def _all_battlefield_ids(state) -> list[str]:
 
 def _is_battlefield(card) -> bool:
     return getattr(card, "zone", None) == Zone.BATTLEFIELD
+
+
+def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
+    """Return a deterministic trace of continuous effect application for diagnostics."""
+    card = state.cards[card_id]
+    trace: list[dict[str, Any]] = []
+    for src_id in _all_battlefield_ids(state):
+        src = state.cards.get(src_id)
+        if not src or not _is_battlefield(src):
+            continue
+        layers = _source_continuous_layers(state, src, card_id)
+        if not layers:
+            continue
+        trace.append(
+            {
+                "source_id": src_id,
+                "source_name": src.name,
+                "static_order": int(getattr(src, "static_order", 0) or 0),
+                "entered_turn": int(getattr(src, "entered_turn", 0) or 0),
+                "layers": layers,
+            }
+        )
+    return {
+        "card_id": card_id,
+        "card_name": card.name,
+        "effective_power": effective_power(state, card_id),
+        "effective_toughness": effective_toughness(state, card_id),
+        "trace": trace,
+    }
+
+
+def _source_continuous_layers(state, source_card, target_card_id: str) -> list[str]:
+    layers: list[str] = []
+    if not _is_battlefield(state.cards[target_card_id]):
+        return layers
+    target = state.cards[target_card_id]
+    for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(source_card):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+            layers.append(f"pt-mod:{p_delta}/{t_delta}")
+            break
+    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    if source_card.id == target_card_id and PT_SET_RE.search(text):
+        layers.append("pt-set")
+    for scope, other_only, subject, granted in _iter_keyword_grants(source_card):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+            layers.append(f"keyword-grant:{','.join(granted)}")
+            break
+    for scope, other_only, subject, removed in _iter_keyword_removals(source_card):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+            label = "all-abilities" if "all abilities" in removed else ",".join(sorted(removed))
+            layers.append(f"keyword-remove:{label}")
+            break
+    return layers

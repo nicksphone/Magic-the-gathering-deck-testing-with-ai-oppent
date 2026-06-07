@@ -175,7 +175,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             return
 
 
-def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
+def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str) -> None:
     target_stack_id = payload.get("target_stack_id")
     if not target_stack_id:
         return
@@ -184,10 +184,20 @@ def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
         return
     copied_payload = copy.deepcopy(item.payload or {})
     copied_payload["__source_card_id"] = item.source_card_id
+    copied_payload["__copied_from_stack_id"] = item.id
+    copied_payload["__copied_targets"] = list(getattr(item, "targets", []) or [])
     from effects.registry import resolve_effect
 
     resolve_effect(state, controller, item.effect_key, copied_payload)
-    state.log.append(f"{state.players[controller].name} copies {item.label}.")
+    state.log.append(f"{state.players[controller].name} copies {effect_label} {item.label}.")
+
+
+def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
+    _copy_stack_object(state, controller, payload, "spell")
+
+
+def copy_ability(state: MatchState, controller: int, payload: dict) -> None:
+    _copy_stack_object(state, controller, payload, "ability")
 
 
 def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:

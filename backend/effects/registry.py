@@ -17,6 +17,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "destroy_permanent": handlers.destroy_permanent,
     "counter_spell": handlers.counter_spell,
     "copy_spell": handlers.copy_spell,
+    "copy_ability": handlers.copy_ability,
     "exile": handlers.exile_permanent,
     "return_from_graveyard": handlers.return_from_graveyard,
     "search_library": handlers.search_library,

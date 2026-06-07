@@ -81,6 +81,9 @@ Gameplay logic is implemented in application code, not SQL.
 - Delayed trigger support (including delayed sacrifice marker flows)
 - Modular effect handlers for damage, draw, life, counters, tokens, exile, destroy, etc.
 - Target legality checks now include protection + `hexproof` + `shroud`
+- Copy effects now distinguish copied spells from copied activated/triggered abilities
+- Split-card metadata now exposes face-name hints for downstream validation/rendering
+- Continuous-effect diagnostics now include deterministic layer traces for static-order debugging
 
 ### AI System
 - Difficulty levels: `casual`, `strong`, `master`, `master_plus`
@@ -138,10 +141,11 @@ Gameplay logic is implemented in application code, not SQL.
   - Equivalent cards with the same name no longer drift because of random instance identifiers.
   - This removes false replay divergence from choosing between identical copies of the same land or spell.
 - Oracle/rules coverage tightened:
-  - Copy-spell inference now resolves stack targets.
+  - Copy-spell inference now resolves stack targets and activated/triggered ability copies.
   - Copy effects now execute through the resolver instead of being a no-op.
   - Protection handling now recognizes additional noncreature/nonland style protection tokens.
   - Split-card identities are surfaced explicitly for downstream validation/rendering paths.
+  - Continuous-effect traces now expose ordered layer application for diagnostics.
 - Diagnostics and UI polish:
   - Live replay responses now include log fingerprint metadata for faster debugging.
   - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.
@@ -508,7 +512,7 @@ Options:
 
 ## Roadmap (Priority)
 
-1. Deepen oracle interpretation for combat-key creatures and legacy keyword interactions
+1. Expand comprehensive rules coverage for remaining legacy mechanics and Oracle corner cases
 2. Expand deterministic replay drift tooling with first-divergence root-cause snapshots
 3. Expand sideboard UX and full tournament-style BO3 flows
 4. Increase property/regression test coverage for edge interactions
@@ -516,21 +520,20 @@ Options:
 6. Expand historical/top-tier deck library breadth
 7. Harden card sync retry/version/invalidation behavior
 8. Add stricter benchmark gates for release quality
-9. Expand comprehensive rules coverage (layers/replacement/legacy mechanics parity)
-10. Continue archetype-specific AI tuning on newly surfaced matchup anomalies
+9. Continue archetype-specific AI tuning on newly surfaced matchup anomalies
 
 ## Known Limitations and Next Upgrades
 
 Known limitations:
 - Full Comprehensive Rules parity is not complete yet.
-- Oracle effect interpretation is still pattern-based for many complex cards.
+- Oracle effect interpretation is still pattern-based for many legacy/special-case cards.
 - AI remains heuristic + tactical (not full strategic search/planning engine).
 - Matchup tuning is ongoing and still deck-dependent in edge cases.
 - Some rare legacy mechanics and old-edition corner interactions are not fully implemented.
 
 Next upgrades:
 - Broader rules/mechanics coverage with stronger replacement/layer fidelity.
-- Deeper tactical/strategic AI planning under complex board states.
 - Larger regression matrix with long-run deterministic replay validation.
 - Improved simulator diagnostics and anomaly root-cause attribution.
 - Continued UX polish for long-session competitive deck testing.
+- Deck-type-specific AI tuning from replay and tournament-like logs.

@@ -59,6 +59,25 @@ def test_oracle_copy_spell_parsing() -> None:
     assert payload["target_stack_id"] == "stack-copy"
 
 
+def test_oracle_copy_ability_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.stack.append(type("SI", (), {"id": "stack-ability"})())
+    card = CardInstance(
+        id="copy-ability",
+        name="Rings of Brighthearth",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Artifact"],
+        oracle_text="Copy target activated ability you control.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "copy_ability"
+    assert payload["target_stack_id"] == "stack-ability"
+    assert payload["copy_kind"] == "activated ability"
+
+
 def test_split_card_marks_split_hints() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
@@ -73,6 +92,7 @@ def test_split_card_marks_split_hints() -> None:
     )
     hints = inspect_target_hints(state, card, 1)
     assert hints.get("split_card") is True
+    assert hints.get("face_names") == ["Fire", "Ice"]
     assert hints.get("modes")
 
 
@@ -93,6 +113,37 @@ def test_copy_spell_handler_replays_target_effect() -> None:
     )
     resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-dmg"})
     assert state.players[2].life == 7
+
+
+def test_copy_ability_handler_replays_target_ability() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.players[1].life = 10
+    state.stack.append(
+        type(
+            "SI",
+            (),
+            {
+                "id": "stack-ability",
+                "label": "Soul Warden trigger",
+                "source_card_id": "warden-1",
+                "effect_key": "gain_life",
+                "payload": {"target_player": 1, "amount": 1},
+                "targets": ["player:1"],
+            },
+        )()
+    )
+    state.cards["warden-1"] = CardInstance(
+        id="warden-1",
+        name="Soul Warden",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever another creature enters the battlefield, you gain 1 life.",
+    )
+    resolve_effect(state, 1, "copy_ability", {"target_stack_id": "stack-ability"})
+    assert state.players[1].life == 11
 
 
 
