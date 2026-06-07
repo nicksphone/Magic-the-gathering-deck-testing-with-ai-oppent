@@ -129,8 +129,11 @@ Gameplay logic is implemented in application code, not SQL.
 - Anomaly clustering report generation
 - Stall and land-window anomaly counters in diagnostics
 - Head-to-head debug traces now include `legal_non_pass` and `legal_has_land` markers
+- Head-to-head debug traces now include battlefield snapshots, life totals, AI reasoning, and selected modal face indices for training export
 - Card-play analytics script for per-matchup action/cast/pass profiling:
   - `backend/scripts/card_play_analytics.py`
+- Training-example export script for converting verbose H2H logs into labeled JSONL rows:
+  - `backend/scripts/extract_training_examples.py`
 - Round-robin script startup bug fixed (`_write_anomaly_clusters` call order)
 
 ## Recent Improvements (2026-06-07)
@@ -158,6 +161,8 @@ Gameplay logic is implemented in application code, not SQL.
 - Diagnostics and UI polish:
   - Live replay responses now include log fingerprint metadata for faster debugging.
   - Battlefield card stacks render more compactly for long board states, with stronger hover emphasis.
+- Training-data groundwork improved:
+  - Verbose H2H logs now capture battlefield snapshots, life totals, and reasoning strings so future AI training can consume structured labeled examples.
 - Deterministic replay matrix script remains the primary regression gate:
   - `backend/scripts/regression_matrix_replay.py`
   - Normalized log hashing continues to catch true gameplay drift while ignoring transient IDs.

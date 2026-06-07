@@ -25,9 +25,28 @@ def hand_snapshot(state, pid: int) -> list[str]:
     return names
 
 
+def battlefield_snapshot(state, pid: int) -> list[dict]:
+    out: list[dict] = []
+    for cid in state.players[pid].battlefield:
+        card = state.cards[cid]
+        out.append(
+            {
+                "id": cid,
+                "name": card.name,
+                "types": list(getattr(card, "types", []) or []),
+                "tapped": bool(getattr(card, "tapped", False)),
+                "power": getattr(card, "power", None),
+                "toughness": getattr(card, "toughness", None),
+                "loyalty": getattr(card, "loyalty", None),
+                "selected_face_index": getattr(card, "selected_face_index", None),
+            }
+        )
+    return sorted(out, key=lambda x: (x["name"], x["id"]))
+
+
 def compact_action(action: dict) -> dict:
     out = {"type": action.get("type")}
-    for k in ["card_id", "card_name", "ability_index"]:
+    for k in ["card_id", "card_name", "ability_index", "selected_face_index"]:
         if k in action:
             out[k] = action[k]
     if isinstance(action.get("targets"), dict) and action.get("targets"):
@@ -116,10 +135,12 @@ def main() -> int:
                     legal = engine_rules.legal_moves(state, pid)
                     if not legal:
                         action = {"type": "pass_priority"}
+                        reasoning = "No legal action"
                     else:
                         agent = a_agent if pid == 1 else b_agent
                         decision = agent.choose_action(state, legal, pid)
                         action = decision.action
+                        reasoning = decision.reasoning
 
                     trace = {
                         "trace": True,
@@ -127,10 +148,17 @@ def main() -> int:
                         "turn": state.turn,
                         "step": str(state.step),
                         "hand": hand_snapshot(state, pid),
+                        "battlefield": battlefield_snapshot(state, pid),
+                        "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),
+                        "life": {
+                            "self": state.players[pid].life,
+                            "opp": state.players[1 if pid == 2 else 2].life,
+                        },
                         "mana_pool": dict(state.players[pid].mana_pool),
                         "legal_non_pass": any(m.get("type") != "pass_priority" for m in legal),
                         "legal_has_land": any(m.get("type") == "play_land" for m in legal),
                         "action": compact_action(action),
+                        "reasoning": reasoning,
                     }
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")
 
