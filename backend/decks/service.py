@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from ai.deck_analysis import analyze_deck, guess_archetype
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
@@ -56,6 +58,8 @@ class DeckService:
         parsed = self.parser.parse(deck_text)
         analysis = analyze_deck(parsed.mainboard)
         archetype = analysis["primary_archetype"]
+        resolved_mainboard = self._resolve_card_metadata(parsed.mainboard)
+        resolved_sideboard = self._resolve_card_metadata(parsed.sideboard)
         if not parsed.errors:
             record = self.repo.save_deck(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
             deck_id = record.id
@@ -69,6 +73,8 @@ class DeckService:
             "suggestions": parsed.suggestions,
             "mainboard": parsed.mainboard,
             "sideboard": parsed.sideboard,
+            "resolved_mainboard_cards": resolved_mainboard,
+            "resolved_sideboard_cards": resolved_sideboard,
             "mana_curve": self._compute_curve(parsed.mainboard),
             "color_profile": self._color_profile(parsed.mainboard),
             "analysis": analysis,
@@ -108,3 +114,33 @@ class DeckService:
             if "forest" in n or "green" in n or "elves" in n:
                 color_map["G"] += qty
         return color_map
+
+    def _resolve_card_metadata(self, items: list[dict]) -> list[dict]:
+        cache = self.repo.get_cached_cards_by_names([item["card_name"] for item in items])
+        resolved: list[dict] = []
+        for item in items:
+            card = cache.get(item["card_name"].lower())
+            resolved.append(
+                {
+                    "quantity": item["quantity"],
+                    "card_name": item["card_name"],
+                    "card_metadata": self._serialize_cached_card(card) if card else None,
+                }
+            )
+        return resolved
+
+    def _serialize_cached_card(self, card) -> dict:
+        return {
+            "id": card.id,
+            "scryfall_id": card.scryfall_id,
+            "name": card.name,
+            "oracle_text": card.oracle_text,
+            "mana_cost": card.mana_cost,
+            "type_line": card.type_line,
+            "colors": card.colors.split(",") if card.colors else [],
+            "power": card.power,
+            "toughness": card.toughness,
+            "image_uri": card.image_uri,
+            "legalities": json.loads(card.legalities_json),
+            "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
+        }

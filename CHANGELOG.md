@@ -2,6 +2,15 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-06-11
+
+- Continuous-effect diagnostics:
+  - Layer traces now expose ordered applied layer entries for overlapping static effects.
+  - Combined power/toughness plus keyword clauses are parsed as a single static effect instead of dropping the keyword half.
+- Deck metadata completeness:
+  - Deck import responses now include resolved cached card metadata for mainboard and sideboard lines when available.
+  - This exposes face data, image URIs, oracle text, and legality metadata alongside the parsed deck list.
+
 ## 2026-06-07
 
 - Combat protection and prevention fixes:
@@ -43,4 +52,3 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Expanded fallback metadata for control/removal package cards.
   - Land tapping logic improved for dual/multi-color lands.
   - Added matchup profile scaffolding and endgame policy hooks.
-

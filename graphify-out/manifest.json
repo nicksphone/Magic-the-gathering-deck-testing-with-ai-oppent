@@ -136,8 +136,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/decks/service.py": {
-    "mtime": 1779134324.6264474,
-    "hash": "6a8742da4db09c8e26c7ffce6d6b9384"
+    "mtime": 1781193573.0594013,
+    "hash": "2446d326d71d39dde5f5c3a4c4387f25"
   },
   "/home/nick/mtg-deck-testing-lab/backend/decks/sideboard.py": {
     "mtime": 1777063134.7050612,
@@ -166,6 +166,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_training_example_export.py": {
     "mtime": 1780834707.8962815,
     "hash": "a821af2d2996d8bc8a3190af0c331b5d"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_deck_service_metadata.py": {
+    "mtime": 1781193518.7092905,
+    "hash": "aa94549396b5cdb08411fb640de78c74"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_repository_face_aliases.py": {
     "mtime": 1778973719.1754277,
@@ -252,8 +256,8 @@
     "hash": "a9e07d28f1372c4bfa1eebbcd573ed33"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_continuous_static_order.py": {
-    "mtime": 1780819566.5440936,
-    "hash": "b7f5184df1bf74073c6bed938c4713fb"
+    "mtime": 1781193505.6175044,
+    "hash": "9c86c9f36bc83a7296a929e96b4b07f7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_prevention_replacement_edges.py": {
     "mtime": 1780843968.0218732,
@@ -412,8 +416,8 @@
     "hash": "83312fe577bec80572e40349c6b226a6"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/continuous.py": {
-    "mtime": 1780819545.4634407,
-    "hash": "6772d4f1814c4de9d622b1d780dca390"
+    "mtime": 1781193630.7524552,
+    "hash": "76d7bdf5237e7fb02c91fb40037986c6"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/protection.py": {
     "mtime": 1780817222.5074441,
@@ -484,8 +488,8 @@
     "hash": "791a048b839890a1b94f3d83bf8dd4b5"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/DeckPanel.tsx": {
-    "mtime": 1777228432.7490132,
-    "hash": "50035be8ee595218bdba6b9706d3d86c"
+    "mtime": 1781193599.320971,
+    "hash": "1c4d2dde0f68be42088056d029bbdd6c"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/Controls.tsx": {
     "mtime": 1778878933.2701862,
@@ -504,8 +508,8 @@
     "hash": "e05370fc6882c5aa5ad0b53b51f14b4c"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/client.ts": {
-    "mtime": 1779011323.2772765,
-    "hash": "8bdabdf1fdcc5f99235c35ab57f93f9d"
+    "mtime": 1781193684.1595778,
+    "hash": "f10653e74c5f6e88b4de6d47e0a72307"
   },
   "/home/nick/mtg-deck-testing-lab/FIXES.md": {
     "mtime": 1777489940.342248,
@@ -516,12 +520,12 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1780844415.483556,
-    "hash": "5f1403a494dc1b5e91dff38f780f5c12"
+    "mtime": 1781193651.7761102,
+    "hash": "9ca2ab8f589f8b0af5ef2ac0b4223ee9"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1780844425.7483883,
-    "hash": "7bab50e1fbfdd2cf447fb2ef2c2c4cb7"
+    "mtime": 1781193657.3630183,
+    "hash": "2132e7d35a3b84ad045987fbafb16043"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

@@ -24,6 +24,45 @@ export type DeckImportResponse = {
   sideboard: DeckItem[];
   mana_curve: Record<string, number>;
   color_profile: Record<string, number>;
+  resolved_mainboard_cards?: ResolvedDeckCard[];
+  resolved_sideboard_cards?: ResolvedDeckCard[];
+  analysis?: {
+    primary_archetype?: string;
+    secondary_archetype?: string;
+    confidence?: number;
+    scores?: Record<string, number>;
+    signals?: string[];
+    land_count?: number;
+    creature_count?: number;
+    noncreature_spell_count?: number;
+  };
+};
+
+export type ResolvedCardMetadata = {
+  id: string;
+  scryfall_id: string;
+  name: string;
+  oracle_text?: string;
+  mana_cost?: string;
+  type_line?: string;
+  colors?: string[];
+  power?: number | string | null;
+  toughness?: number | string | null;
+  image_uri?: string | null;
+  legalities?: Record<string, string>;
+  card_faces?: {
+    name?: string;
+    mana_cost?: string;
+    oracle_text?: string;
+    type_line?: string;
+    image_uri?: string | null;
+  }[];
+};
+
+export type ResolvedDeckCard = {
+  quantity: number;
+  card_name: string;
+  card_metadata?: ResolvedCardMetadata | null;
 };
 
 export type ExpansionTopDeckMeta = {

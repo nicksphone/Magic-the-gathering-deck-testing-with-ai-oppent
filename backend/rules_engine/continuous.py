@@ -22,9 +22,17 @@ KW_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
 )
+PT_AND_KW_STATIC_RE = re.compile(
+    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:have|has)\s+([^.]*)"
+)
 KW_REMOVE_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:lose|loses)\s+([^.]*)"
+)
+PT_AND_KW_REMOVE_RE = re.compile(
+    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
     "trample",
@@ -218,6 +226,14 @@ def _iter_pt_modifiers(source_card):
 
 def _iter_keyword_grants(source_card):
     text = (getattr(source_card, "oracle_text", "") or "").lower()
+    for match in PT_AND_KW_STATIC_RE.finditer(text):
+        other_only = bool(match.group(1))
+        subject = match.group(2).strip()
+        scope = match.group(3).strip()
+        granted_text = match.group(4).strip()
+        granted = [kw for kw in KNOWN_KEYWORDS if kw in granted_text]
+        if granted:
+            yield (scope, other_only, subject, granted)
     for match in KW_STATIC_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -230,6 +246,17 @@ def _iter_keyword_grants(source_card):
 
 def _iter_keyword_removals(source_card):
     text = (getattr(source_card, "oracle_text", "") or "").lower()
+    for match in PT_AND_KW_REMOVE_RE.finditer(text):
+        other_only = bool(match.group(1))
+        subject = match.group(2).strip()
+        scope = match.group(3).strip()
+        removed_text = match.group(4).strip()
+        if "all abilities" in removed_text:
+            yield (scope, other_only, subject, {"all abilities"})
+            continue
+        removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
+        if removed:
+            yield (scope, other_only, subject, set(removed))
     for match in KW_REMOVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -359,13 +386,26 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     """Return a deterministic trace of continuous effect application for diagnostics."""
     card = state.cards[card_id]
     trace: list[dict[str, Any]] = []
+    applied_layers: list[dict[str, Any]] = []
+    layer_index = 0
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src or not _is_battlefield(src):
             continue
-        layers = _source_continuous_layers(state, src, card_id)
+        layer_entries = _source_continuous_layer_entries(state, src, card_id)
+        layers = [entry["layer"] for entry in layer_entries]
         if not layers:
             continue
+        for entry in layer_entries:
+            applied_layers.append(
+                {
+                    "layer_index": layer_index,
+                    "source_id": src_id,
+                    "source_name": src.name,
+                    "layer": entry["layer"],
+                }
+            )
+            layer_index += 1
         trace.append(
             {
                 "source_id": src_id,
@@ -380,29 +420,34 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
         "card_name": card.name,
         "effective_power": effective_power(state, card_id),
         "effective_toughness": effective_toughness(state, card_id),
+        "applied_layers": applied_layers,
         "trace": trace,
     }
 
 
-def _source_continuous_layers(state, source_card, target_card_id: str) -> list[str]:
-    layers: list[str] = []
+def _source_continuous_layer_entries(state, source_card, target_card_id: str) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
     if not _is_battlefield(state.cards[target_card_id]):
-        return layers
+        return entries
     target = state.cards[target_card_id]
     for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
-            layers.append(f"pt-mod:{p_delta}/{t_delta}")
+            entries.append({"layer": f"pt-mod:{p_delta}/{t_delta}"})
             break
     text = (getattr(source_card, "oracle_text", "") or "").lower()
     if source_card.id == target_card_id and PT_SET_RE.search(text):
-        layers.append("pt-set")
+        entries.append({"layer": "pt-set"})
     for scope, other_only, subject, granted in _iter_keyword_grants(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
-            layers.append(f"keyword-grant:{','.join(granted)}")
+            entries.append({"layer": f"keyword-grant:{','.join(granted)}"})
             break
     for scope, other_only, subject, removed in _iter_keyword_removals(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
             label = "all-abilities" if "all abilities" in removed else ",".join(sorted(removed))
-            layers.append(f"keyword-remove:{label}")
+            entries.append({"layer": f"keyword-remove:{label}"})
             break
-    return layers
+    return entries
+
+
+def _source_continuous_layers(state, source_card, target_card_id: str) -> list[str]:
+    return [entry["layer"] for entry in _source_continuous_layer_entries(state, source_card, target_card_id)]

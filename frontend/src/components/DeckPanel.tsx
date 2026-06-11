@@ -69,7 +69,8 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     }
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
-    setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess})`);
+    const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
+    setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
     await refreshDeckData();
   }
 
@@ -91,7 +92,8 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     const loaded = await api.getExpansionTopDeck(selectedExpansionCode);
     setDeckName(loaded.name);
     setDeckText(loaded.deck_text.trim());
-    setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess})`);
+    const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
+    setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
     await refreshDeckData();
   }
 
@@ -107,7 +109,8 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       setStatus(`Import errors: ${data.errors.join(" | ")}`);
       return;
     }
-    setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess})`);
+    const resolved = data.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
+    setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - resolved ${resolved}/${data.mainboard.length} card entries`);
     await refreshDeckData();
   }
 

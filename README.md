@@ -79,6 +79,8 @@ Recent large areas of coverage include:
 - deterministic replay stability
 - protection, prevention, and replacement edge cases
 - trigger ordering metadata
+- ordered continuous-effect layer traces for overlapping static effects
+- deck import responses that include resolved cached card metadata for imported lines
 - combat and planeswalker damage correctness
 - stronger archetype-aware AI behavior
 
@@ -193,4 +195,3 @@ The app syncs and caches card data locally.
 ## Changelog
 
 Historical milestone notes now live in [CHANGELOG.md](./CHANGELOG.md).
-
