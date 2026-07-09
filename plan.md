@@ -9,6 +9,7 @@ Completed and verified:
 - Backend and frontend both build and run.
 - Full backend test suite passes.
 - Batch simulator now exposes live status, progress, errors, first-game turn summaries, and a short log excerpt in the UI.
+- Batch runs are deterministically seeded per matchup and game, and include per-game result summaries.
 - Replay tooling can compare logs and classify the first divergence.
 - AI heuristic evaluation is stronger for battlefield state and removal timing.
 - Custom deck analysis uses card metadata and curve shape instead of only name matching.

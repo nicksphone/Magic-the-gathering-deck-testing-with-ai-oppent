@@ -39,9 +39,11 @@ class AnalyticsService:
         top_errors: Counter = Counter()
         replay_fingerprint_parts: list[str] = []
         first_game_log: list[str] = []
+        game_results: list[dict[str, object]] = []
 
         for i in range(matches):
-            state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B")
+            seed = self._batch_seed(deck_a, deck_b, i, difficulty)
+            state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
             opener_quality_a.append(self._opening_hand_quality(state, 1))
             opener_quality_b.append(self._opening_hand_quality(state, 2))
             a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a))
@@ -76,6 +78,15 @@ class AnalyticsService:
             self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors)
             if i == 0:
                 first_game_log = list(state.log)
+            game_results.append(
+                {
+                    "game_index": i,
+                    "seed": seed,
+                    "winner": winner,
+                    "turns": state.turn,
+                    "timeout": winner is None,
+                }
+            )
             replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
             turn_counts.append(state.turn)
             if progress_callback is not None:
@@ -116,6 +127,7 @@ class AnalyticsService:
                 "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
             },
             "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
+            "game_results": game_results,
             "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
             "sample_log_excerpt": first_game_log[:12],
             "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
@@ -327,6 +339,20 @@ class AnalyticsService:
             variance = sum((x - avg) ** 2 for x in cmcs) / len(cmcs)
             sample_scores.append(1 / (1 + variance))
         return sum(sample_scores) / len(sample_scores)
+
+    @staticmethod
+    def _batch_seed(deck_a: list[dict], deck_b: list[dict], game_index: int, difficulty: str) -> int:
+        payload = json.dumps(
+            {
+                "deck_a": deck_a,
+                "deck_b": deck_b,
+                "game_index": int(game_index),
+                "difficulty": difficulty.lower(),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        return int(hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16], 16)
 
     def _scan_log_for_anomalies(self, log: list[str], out: Counter, top_errors: Counter) -> None:
         error_lines: list[str] = []

@@ -25,6 +25,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Replay comparison logic now lives in reusable analytics helpers.
   - Diagnostics can report the first diverging log line and classify whether the mismatch is an action mismatch or a broader replay drift.
   - AI diagnostics now emit turn-level trace summaries with board snapshots for the first game in each matchup.
+- Batch determinism:
+  - Batch simulation now seeds each game deterministically from the matchup and game index.
+  - Batch responses now include per-game results with seeds, winners, turn counts, and timeout flags.
 - AI tactical evaluation:
   - Battlefield scoring is now keyword-aware and values evasive or protected threats more accurately.
   - Control removal decisions now weigh target threat level instead of treating all removal targets equally.
