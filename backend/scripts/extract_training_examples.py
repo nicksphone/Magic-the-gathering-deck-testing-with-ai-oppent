@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 
 
@@ -41,11 +42,33 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "mana_pool": dict(trace.get("mana_pool") or {}),
         "legal_non_pass": bool(trace.get("legal_non_pass")),
         "legal_has_land": bool(trace.get("legal_has_land")),
+        "board_snapshot": _board_snapshot(trace),
         "action_type": action.get("type"),
         "action_card_name": action.get("card_name"),
         "selected_face_index": action.get("selected_face_index"),
         "reasoning": trace.get("reasoning", ""),
     }
+
+
+def _board_snapshot(trace: dict) -> dict:
+    battlefield = list(trace.get("battlefield") or [])
+    opp_battlefield = list(trace.get("opp_battlefield") or [])
+    return {
+        "battlefield_count": len(battlefield),
+        "opp_battlefield_count": len(opp_battlefield),
+        "battlefield_tapped": sum(1 for card in battlefield if card.get("tapped")),
+        "opp_battlefield_tapped": sum(1 for card in opp_battlefield if card.get("tapped")),
+        "battlefield_types": dict(_count_types(battlefield)),
+        "opp_battlefield_types": dict(_count_types(opp_battlefield)),
+    }
+
+
+def _count_types(cards: list[dict]) -> Counter:
+    counts: Counter = Counter()
+    for card in cards:
+        for card_type in card.get("types") or []:
+            counts[str(card_type)] += 1
+    return counts
 
 
 def extract_examples_from_games_jsonl(path: Path) -> list[dict]:

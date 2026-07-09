@@ -336,7 +336,7 @@ def _defender_label(state: MatchState, key: str) -> str:
     return key
 
 
-def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, source_id: str | None = None) -> None:
+def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, source_id: str | None = None) -> int:
     if amount <= 0:
         return 0
     if defender_key.startswith("planeswalker:"):

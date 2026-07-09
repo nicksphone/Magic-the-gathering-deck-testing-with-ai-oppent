@@ -28,6 +28,10 @@ DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 
+def noop(state: MatchState, controller: int, payload: dict) -> None:
+    del state, controller, payload
+
+
 def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
     if card.toughness is None:
@@ -161,6 +165,9 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
         owner_state.battlefield.remove(target)
         owner_state.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
+        card.counters.pop("__damage_marked", None)
+        card.counters.pop("__deathtouch_damaged", None)
+        card.counters.pop("__prevent_damage_shield", None)
         state.log.append(f"{card.name} is destroyed.")
         if "Creature" in card.types:
             emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
@@ -234,13 +241,16 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     if not subtype:
         return
+    found: list[str] = []
     for cid in list(player.library):
         if subtype.lower() in state.cards[cid].name.lower():
             player.library.remove(cid)
             player.hand.append(cid)
             state.cards[cid].zone = Zone.HAND
-            state.log.append(f"{state.players[controller].name} searched library and found {state.cards[cid].name}.")
-            break
+            found.append(state.cards[cid].name)
+    if found:
+        joined = ", ".join(found)
+        state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s): {joined}.")
 
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:

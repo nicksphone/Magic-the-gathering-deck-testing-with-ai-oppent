@@ -58,7 +58,7 @@ Gameplay logic lives in application code. SQL is for storage only.
 - `backend/decks`
   - Deck parser/import, built-ins, expansion decks, sideboarding support
 - `backend/analytics`
-  - Batch simulation, diagnostics, replay summaries, and anomaly analysis
+  - Batch simulation, diagnostics, replay summaries, replay comparison drilldown, and anomaly analysis
 - `backend/persistence`
   - Storage layer only
 - `frontend/src`
@@ -67,12 +67,16 @@ Gameplay logic lives in application code. SQL is for storage only.
 ## Current Status
 
 The application currently supports:
-- Rules-aware 2-player testing
-- Built-in and custom deck import
-- AI-controlled matches in either seat
-- Manual and autoplay simulation modes
-- Replay and batch diagnostics
-- Local-first card caching and image fallback handling
+- Rules-aware 2-player testing with turn structure, priority, stack, combat, cleanup, and turn advancement
+- Human vs AI, AI vs human, and AI vs AI matches
+- Manual phase progression and autoplay-driven simulation
+- Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
+- Local card caching with image fallback handling and token art resolution when available
+- Replay logs, batch simulations, matchup stats, anomaly diagnostics, first-divergence replay drilldown, turn-level AI trace summaries, first-game log excerpts, and training trace export with board snapshots
+- BO3 and sideboarding support with per-game swap locking
+- denser match-status and between-games controls for BO3 sessions
+- Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
+- AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 
 Recent large areas of coverage include:
 - modal/split card face selection
@@ -80,9 +84,13 @@ Recent large areas of coverage include:
 - protection, prevention, and replacement edge cases
 - trigger ordering metadata
 - ordered continuous-effect layer traces for overlapping static effects
+- explicit no-op fallback for unresolved Oracle text
 - deck import responses that include resolved cached card metadata for imported lines
+- sideboard flow now locks to one swap pass per finished game and resets on `next-game`
+- multi-match library search resolution and stale damage-counter cleanup on destroy
+- explicit regression coverage for postcombat main, end step, cleanup, and next-turn advancement
 - combat and planeswalker damage correctness
-- stronger archetype-aware AI behavior
+- stronger archetype-aware AI behavior with threat-weighted removal timing and richer battlefield scoring
 
 ## Setup
 
@@ -183,14 +191,17 @@ The app syncs and caches card data locally.
 - AI vs AI autoplay can be stepped or run continuously
 - Batch runs are used for matchup analysis and regression checks
 - Replay logs are normalized for deterministic comparison
-- Verbose logs can be exported into training examples
+- Verbose logs can be exported into training examples with board snapshots and per-turn action summaries
+- The Testing Simulator panel shows live job status, progress, failure output, and compact first-game turn/log summaries while batch jobs run
 
 ## Known Limitations
 
-- The rules engine covers a large subset of Magic, but not every Oracle edge case yet
-- Some long-tail card interactions still rely on heuristic inference
-- Sideboarding and BO3 flow exist, but remain less complete than core one-game testing
-- AI quality is strong on common archetypes, but still improves as more replay data and rules coverage are added
+- The rules engine still does not cover every Oracle edge case or every older/obscure mechanic
+- Some static/replacement/layer interactions still rely on heuristic inference rather than full Oracle-parity modeling
+- Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
+- AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states
+- Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, and live simulator status/progress display, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
+- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions
 
 ## Changelog
 

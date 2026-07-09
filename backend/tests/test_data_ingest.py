@@ -103,5 +103,6 @@ def test_card_cache_round_trips_card_faces() -> None:
             }
         )
         cards = CardService(repo).list_cards()
-        assert cards[0]["card_faces"][0]["name"] == "Fire"
-        assert cards[0]["card_faces"][1]["name"] == "Ice"
+        hit = next(card for card in cards if card["name"] == "Fire // Ice")
+        assert hit["card_faces"][0]["name"] == "Fire"
+        assert hit["card_faces"][1]["name"] == "Ice"

@@ -168,6 +168,24 @@ def test_copy_ability_handler_replays_target_ability() -> None:
     assert state.players[1].life == 11
 
 
+def test_unknown_oracle_text_falls_back_to_noop() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="mystery",
+        name="Mystery Permanent",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Enchantment"],
+        oracle_text="At the beginning of your turn, do a thing the engine does not know.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "noop"
+    assert payload == {}
+    assert any("oracle effect not inferred" in line.lower() for line in state.log)
+
+
 
 
 def test_oracle_multiclause_sequence_parsing() -> None:

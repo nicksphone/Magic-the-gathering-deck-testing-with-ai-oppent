@@ -121,3 +121,23 @@ def test_combat_damage_ignores_prevention_when_source_says_cant_be_prevented() -
     before = state.players[2].life
     combat.combat_damage(state)
     assert state.players[2].life == before - 3
+
+
+def test_destroy_permanent_clears_stale_damage_and_prevention_counters() -> None:
+    state = _state()
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+    card.counters["__damage_marked"] = 2
+    card.counters["__deathtouch_damaged"] = 1
+    card.counters["__prevent_damage_shield"] = 3
+
+    resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.GRAVEYARD
+    assert "__damage_marked" not in card.counters
+    assert "__deathtouch_damaged" not in card.counters
+    assert "__prevent_damage_shield" not in card.counters

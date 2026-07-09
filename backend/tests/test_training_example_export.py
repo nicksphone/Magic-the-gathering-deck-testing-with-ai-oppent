@@ -33,4 +33,6 @@ def test_training_example_export_preserves_trace_labels(tmp_path: Path) -> None:
     assert row["action_type"] == "cast_spell"
     assert row["selected_face_index"] == 1
     assert row["legal_non_pass"] is True
+    assert row["board_snapshot"]["battlefield_count"] == 1
+    assert row["board_snapshot"]["opp_battlefield_types"]["Creature"] == 1
     assert row["reasoning"].startswith("Whole-card modal evaluation")

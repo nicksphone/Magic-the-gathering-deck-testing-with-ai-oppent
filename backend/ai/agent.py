@@ -961,6 +961,17 @@ class AIAgent:
                     bonus += 0.8
                 if self._is_burn_matchup() and opp_creatures > 0:
                     bonus += 2.4
+                creature_targets = (move.get("target_hints") or {}).get("creature_targets") or []
+                if creature_targets:
+                    target_threat = max(
+                        (
+                            self._creature_threat_score(state, t.get("id"), player_id)
+                            for t in creature_targets
+                            if t.get("id")
+                        ),
+                        default=0.0,
+                    )
+                    bonus += min(3.5, max(0.0, target_threat) * 0.35)
             if self._is_burn_matchup() and "counter" in tags and state.turn <= 3 and not (getattr(state, "stack", []) or []):
                 bonus -= 0.8
             if self._is_burn_matchup() and "sweeper" in f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}":

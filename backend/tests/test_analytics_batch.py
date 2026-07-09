@@ -17,3 +17,5 @@ def test_batch_does_not_auto_award_unresolved_games_to_deck_a() -> None:
     assert out["win_rate_deck_a"] == 0
     assert out["win_rate_deck_b"] == 0
     assert out["timeouts"] == 5
+    assert isinstance(out["sample_turn_summaries"], list)
+    assert isinstance(out["sample_log_excerpt"], list)

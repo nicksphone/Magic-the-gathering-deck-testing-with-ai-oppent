@@ -2,6 +2,39 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-07-09
+
+- Sideboarding flow hardening:
+  - Match controllers now track whether a player has already sideboarded for the current finished game.
+  - The `/matches/{match_id}/sideboard` endpoint now rejects repeated sideboard applications before the next game starts.
+  - The next-game transition clears the per-game sideboard lock so BO3 flow remains consistent across games.
+- Test coverage:
+  - Added regression coverage for the single-sideboard-per-game contract and the reset that happens on `next-game`.
+- Search and cleanup polish:
+  - Library search effects now collect all matching cards instead of stopping at the first hit.
+  - Destroyed permanents clear stale damage and prevention counters before moving to the graveyard.
+- Phase/progress correctness:
+  - Turn progression regression coverage now explicitly exercises postcombat main, end step, cleanup, and the next untap.
+  - `_deal_unblocked_damage()` now has a consistent integer return type contract.
+- Oracle fallback cleanup:
+  - Unresolved Oracle text now maps to an explicit `noop` effect instead of pretending to be life gain.
+- BO3 UI polish:
+  - The match controls panel now shows score, game number, match target, and sideboard availability in a denser status grid.
+  - The between-games panel now says explicitly whether sideboarding is open or the match is already complete.
+- Replay diagnostics:
+  - Replay comparison logic now lives in reusable analytics helpers.
+  - Diagnostics can report the first diverging log line and classify whether the mismatch is an action mismatch or a broader replay drift.
+  - AI diagnostics now emit turn-level trace summaries with board snapshots for the first game in each matchup.
+- AI tactical evaluation:
+  - Battlefield scoring is now keyword-aware and values evasive or protected threats more accurately.
+  - Control removal decisions now weigh target threat level instead of treating all removal targets equally.
+- Training export enrichment:
+  - Structured training rows now include board snapshots derived from AI trace logs.
+- Simulator UI polish:
+  - The Testing Simulator now shows live job status, a progress bar, failure output, and compact first-game turn/log summaries while batch jobs run.
+- Custom deck analysis:
+  - Archetype classification now uses cached card metadata and curve shape when available, not just deck-name keywords.
+
 ## 2026-06-11
 
 - Continuous-effect diagnostics:

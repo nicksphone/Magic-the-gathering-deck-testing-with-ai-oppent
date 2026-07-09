@@ -17,25 +17,33 @@ export function AnalyticsPanel({ decks }: Props) {
   const [running, setRunning] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [progressText, setProgressText] = useState<string>("");
+  const [jobStatus, setJobStatus] = useState<string>("idle");
+  const [progressPct, setProgressPct] = useState(0);
+  const [jobError, setJobError] = useState<string>("");
 
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
     const b = decks.find((d) => d.id === deckB);
-      if (!a || !b) {
+    if (!a || !b) {
       setResult("Select both decks before running Testing Simulator.");
       setResultObj(null);
       return;
     }
     try {
       setRunning(true);
+      setJobStatus("queued");
       setResult("");
       setResultObj(null);
+      setJobError("");
+      setProgressPct(0);
       setProgressText("Queueing simulator job...");
       const job = await api.startSimulateBatchJob(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
       setJobId(job.job_id);
     } catch (err) {
       setResult(`Testing Simulator request failed: ${String(err)}`);
       setProgressText("");
+      setJobStatus("failed");
+      setJobError(String(err));
       setJobId(null);
       setRunning(false);
     }
@@ -52,6 +60,8 @@ export function AnalyticsPanel({ decks }: Props) {
           ? Math.floor((job.completed_matches / job.total_matches) * 100)
           : 0;
         const elapsedSec = Math.max(0, Math.floor(Date.now() / 1000 - job.started_at));
+        setJobStatus(job.status);
+        setProgressPct(pct);
         setProgressText(
           `Status: ${job.status} | ${job.completed_matches}/${job.total_matches} matches (${pct}%) | ${elapsedSec}s elapsed`,
         );
@@ -63,6 +73,7 @@ export function AnalyticsPanel({ decks }: Props) {
           window.clearInterval(timer);
         } else if (job.status === "failed") {
           setResult(`Testing Simulator failed: ${job.error ?? "unknown error"}`);
+          setJobError(job.error ?? "unknown error");
           setRunning(false);
           setJobId(null);
           window.clearInterval(timer);
@@ -70,6 +81,7 @@ export function AnalyticsPanel({ decks }: Props) {
       } catch (err) {
         if (cancelled) return;
         setResult(`Testing Simulator progress failed: ${String(err)}`);
+        setJobError(String(err));
         setRunning(false);
         setJobId(null);
         window.clearInterval(timer);
@@ -85,6 +97,7 @@ export function AnalyticsPanel({ decks }: Props) {
   function cancelDisplay() {
     setRunning(false);
     setJobId(null);
+    setJobStatus("paused");
     setProgressText("Polling stopped. Job may still be running on backend.");
   }
 
@@ -119,7 +132,16 @@ export function AnalyticsPanel({ decks }: Props) {
         <button onClick={runBatch} disabled={running}>{running ? "Running..." : `Run ${matches} Matches`}</button>
         {running ? <button onClick={cancelDisplay}>Stop Polling</button> : null}
       </div>
-      <pre>{progressText || "Idle."}</pre>
+      <div className="sim-status-panel">
+        <div className="sim-status-row">
+          <span className={`sim-status-pill sim-status-${jobStatus}`}>{jobStatus}</span>
+          <span>{progressText || "Idle."}</span>
+        </div>
+        <div className="sim-progress-track" aria-hidden="true">
+          <div className="sim-progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+      </div>
+      {jobError ? <p className="sim-error">Latest simulator error: {jobError}</p> : null}
       {resultObj ? (
         <div className="analytics-summary">
           <p>
@@ -135,6 +157,26 @@ export function AnalyticsPanel({ decks }: Props) {
           <p>
             Top Errors: {JSON.stringify(resultObj.top_errors ?? [], null, 0)}
           </p>
+          {Array.isArray(resultObj.sample_turn_summaries) ? (
+            <div className="analytics-sample-block">
+              <strong>First Game Turn Summary</strong>
+              <ul className="analytics-sample-list">
+                {(resultObj.sample_turn_summaries as Array<Record<string, unknown>>).map((turn) => (
+                  <li key={`${turn.turn ?? "turn"}-${turn.pid ?? "pid"}`}>
+                    T{turn.turn as number | string} P{turn.pid as number | string} {turn.step as string} | {(turn.action_type as string) ?? "pass"} | hand {(turn.hand_size as number | string) ?? "-"} | field {(turn.battlefield_size as number | string) ?? "-"} / {(turn.opp_battlefield_size as number | string) ?? "-"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {Array.isArray(resultObj.sample_log_excerpt) ? (
+            <div className="analytics-sample-block">
+              <strong>First Game Log Excerpt</strong>
+              <pre className="analytics-log-excerpt">
+                {(resultObj.sample_log_excerpt as string[]).join("\n")}
+              </pre>
+            </div>
+          ) : null}
         </div>
       ) : null}
       <pre>{result || "No simulation result yet."}</pre>

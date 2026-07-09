@@ -70,6 +70,13 @@ export function Controls(props: Props) {
   const [sbOut, setSbOut] = useState("");
   const [sbIn, setSbIn] = useState("");
   const [stopPlayer, setStopPlayer] = useState(1);
+  const matchComplete = Boolean(props.match?.match_complete);
+  const betweenGames = Boolean(props.match?.winner && !matchComplete);
+  const gamesNeeded = props.match?.games_needed ?? Math.floor((props.match?.best_of ?? 3) / 2) + 1;
+  const p1Score = props.match?.score?.["1"] ?? 0;
+  const p2Score = props.match?.score?.["2"] ?? 0;
+  const scoreText = props.match ? `${p1Score}-${p2Score}` : "0-0";
+  const sideboardStatus = betweenGames ? "Sideboarding open" : matchComplete ? "Match complete" : "Sideboarding locked";
 
   return (
     <section className="panel controls">
@@ -112,6 +119,28 @@ export function Controls(props: Props) {
         </select>
       </div>
       <button onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
+      {props.match ? (
+        <div className="match-status-grid">
+          <div className="status-card">
+            <span className="status-label">Score</span>
+            <strong>{scoreText}</strong>
+          </div>
+          <div className="status-card">
+            <span className="status-label">Game</span>
+            <strong>
+              {props.match.game_number ?? 1} / {props.match.best_of ?? 3}
+            </strong>
+          </div>
+          <div className="status-card">
+            <span className="status-label">To Win</span>
+            <strong>{gamesNeeded}</strong>
+          </div>
+          <div className="status-card">
+            <span className="status-label">Sideboard</span>
+            <strong>{sideboardStatus}</strong>
+          </div>
+        </div>
+      ) : null}
       <div className="block-panel">
         <h3>AI Playback Speed</h3>
         <p>{(props.autoplayDelayMs / 1000).toFixed(1)}s per AI beat</p>
@@ -124,11 +153,6 @@ export function Controls(props: Props) {
           onChange={(e) => props.setAutoplayDelayMs(Number(e.target.value))}
         />
       </div>
-      {props.match ? (
-        <p>
-          Score P1:{props.match.score?.["1"] ?? 0} P2:{props.match.score?.["2"] ?? 0} | Game {props.match.game_number ?? 1} | Best-of-{props.match.best_of ?? 3}
-        </p>
-      ) : null}
       {props.responseCountdown !== null ? (
         <div className="block-panel">
           <h3>Interrupt Window</h3>
@@ -277,9 +301,12 @@ export function Controls(props: Props) {
         </div>
       ) : null}
 
-      {props.match?.winner && !props.match.match_complete ? (
+      {betweenGames ? (
         <div className="sideboard-panel">
           <h3>Between Games</h3>
+          <p className="status-line">
+            Game complete. Sideboarding is open until you start the next game.
+          </p>
           <div className="row">
             <select value={sbPlayer} onChange={(e) => setSbPlayer(Number(e.target.value))}>
               <option value={1}>Player 1</option>
@@ -294,6 +321,11 @@ export function Controls(props: Props) {
           </div>
           <textarea rows={3} value={sbOut} onChange={(e) => setSbOut(e.target.value)} placeholder="Cards out: e.g. 2 Shock" />
           <textarea rows={3} value={sbIn} onChange={(e) => setSbIn(e.target.value)} placeholder="Cards in: e.g. 2 Negate" />
+        </div>
+      ) : props.match?.winner && matchComplete ? (
+        <div className="sideboard-panel">
+          <h3>Match Complete</h3>
+          <p className="status-line">The match is finished. Start a new match to sideboard again.</p>
         </div>
       ) : null}
     </section>

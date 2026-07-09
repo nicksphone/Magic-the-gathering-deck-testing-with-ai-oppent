@@ -5,7 +5,7 @@ import json
 import threading
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -73,6 +73,7 @@ class MatchController:
     current_game_recorded: bool
     match_complete: bool
     best_of: int
+    sideboarded_players: set[int] = field(default_factory=set)
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
@@ -499,6 +500,8 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
         raise HTTPException(status_code=400, detail="Invalid player_id")
     if match.state.winner is None:
         raise HTTPException(status_code=400, detail="Current game still in progress.")
+    if payload.player_id in match.sideboarded_players:
+        raise HTTPException(status_code=400, detail="Player has already sideboarded for the next game.")
     try:
         next_main, next_side = apply_sideboard_swaps(
             match.mainboards[payload.player_id],
@@ -510,6 +513,7 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     match.mainboards[payload.player_id] = _hydrate_deck_cards(repo, next_main)
     match.sideboards[payload.player_id] = next_side
+    match.sideboarded_players.add(payload.player_id)
     match.state.log.append(f"{match.state.players[payload.player_id].name} sideboarded for next game.")
     return _serialize_match_controller(match)
 
@@ -822,6 +826,7 @@ def _start_next_game_state(match: MatchController) -> None:
     match.state = new_state
     match.game_number += 1
     match.current_game_recorded = False
+    match.sideboarded_players.clear()
 
 
 def _ensure_builtin_decks(repo: Repository) -> None:

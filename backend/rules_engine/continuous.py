@@ -89,7 +89,7 @@ def _counter_pt_delta(card) -> int:
 
 def effective_keywords(state, card_id: str) -> list[str]:
     card = state.cards[card_id]
-    out = {str(k).lower() for k in (card.keywords or [])}
+    out = {str(k).lower() for k in (getattr(card, "keywords", None) or [])}
     if not _is_battlefield(card):
         return sorted(out)
     if "Creature" not in card.types:

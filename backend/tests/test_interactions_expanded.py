@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from effects.registry import resolve_effect
-from game_state.state import MatchFactory
+from game_state.state import CardInstance, MatchFactory, Zone
 
 
 def test_effect_sequence_resolves_all_clauses() -> None:
@@ -38,6 +38,32 @@ def test_discard_effect_targets_specified_player() -> None:
 
     assert len(state.players[2].hand) == p2_hand_before - 2
     assert len(state.players[2].graveyard) >= 2
+
+
+def test_search_library_returns_all_matching_cards() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    player = state.players[1]
+    player.library = []
+    for name in ["Goblin Guide", "Goblin Piledriver", "Goblin War Marshal", "Lightning Bolt"]:
+        cid = f"card-{name.lower().replace(' ', '-')}"
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.LIBRARY,
+            types=["Creature"],
+        )
+        player.library.append(cid)
+
+    hand_before = len(player.hand)
+    library_before = len(player.library)
+    resolve_effect(state, 1, "search_library", {"contains": "Goblin"})
+
+    assert len(player.hand) == hand_before + 3
+    assert len(player.library) == library_before - 3
+    assert any("searched library and found 3 card(s)" in line.lower() for line in state.log)
 
 
 def test_create_token_respects_amount_and_keywords() -> None:

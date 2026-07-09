@@ -96,10 +96,10 @@ def infer_effect_from_oracle(
     # Static-only/keyword text often has no explicit resolver-side action.
     # Treat those as no-op without warning to keep logs focused on real misses.
     if _looks_static_or_keyword_only(card.oracle_text or ""):
-        return "gain_life", {"amount": 0}
+        return "noop", {}
     # Fallback: log uninferrable oracle text instead of silent no-op.
     state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
-    return "gain_life", {"amount": 0}
+    return "noop", {}
 
 
 def _resolve_effective_card_surface(card: CardInstance, action_targets: dict[str, Any]) -> tuple[CardInstance, str, str]:

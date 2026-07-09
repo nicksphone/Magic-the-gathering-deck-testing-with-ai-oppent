@@ -8,6 +8,7 @@ from collections import Counter
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from rules_engine.mana import parse_mana_cost
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -37,6 +38,7 @@ class AnalyticsService:
         anomaly_counts: Counter = Counter()
         top_errors: Counter = Counter()
         replay_fingerprint_parts: list[str] = []
+        first_game_log: list[str] = []
 
         for i in range(matches):
             state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B")
@@ -72,6 +74,8 @@ class AnalyticsService:
             else:
                 stats["timeouts"] += 1
             self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors)
+            if i == 0:
+                first_game_log = list(state.log)
             replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
             turn_counts.append(state.turn)
             if progress_callback is not None:
@@ -112,6 +116,8 @@ class AnalyticsService:
                 "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
             },
             "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
+            "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
+            "sample_log_excerpt": first_game_log[:12],
             "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
         }
         self.repo.save_snapshot("batch_simulation", result)
@@ -156,6 +162,7 @@ class AnalyticsService:
             pair_turns: list[int] = []
             pair_games = 0
             pair_first_player_wins = 0
+            first_game_log: list[str] = []
 
             for game_idx in range(matches_per_pair):
                 state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
@@ -186,6 +193,8 @@ class AnalyticsService:
                     pair_first_player_wins += 1
 
                 self._scan_log_for_anomalies(state.log, pair_counts, top_errors)
+                if game_idx == 0:
+                    first_game_log = list(state.log)
                 pair_turns.append(state.turn)
                 pair_games += 1
                 total_games += 1
@@ -203,6 +212,7 @@ class AnalyticsService:
                     "cost_failures": int(pair_counts["cost_failures"]),
                     "repeated_error_bursts": int(pair_counts["repeated_error_bursts"]),
                     "draw_play_advantage_deck_a": round((pair_first_player_wins / max(1, pair_games // 2 or 1)) * 100, 2),
+                    "turn_summaries": self._extract_turn_summaries(first_game_log),
                 }
             )
 
@@ -233,6 +243,54 @@ class AnalyticsService:
     @staticmethod
     def decode_match_log(raw: str) -> list[str]:
         return json.loads(raw)
+
+    @staticmethod
+    def compare_replay_logs(left_log: list[str], right_log: list[str]) -> dict:
+        drift = first_log_divergence(left_log, right_log)
+        return classify_first_divergence(drift)
+
+    @staticmethod
+    def _extract_turn_summaries(log: list[str], max_turns: int = 8) -> list[dict]:
+        summaries: list[dict] = []
+        seen_turns: set[int] = set()
+        for line in log:
+            if not line.startswith("AI TRACE "):
+                continue
+            try:
+                trace = json.loads(line[len("AI TRACE ") :])
+            except Exception:
+                continue
+            turn = trace.get("turn")
+            try:
+                turn_num = int(turn)
+            except Exception:
+                continue
+            if turn_num in seen_turns:
+                continue
+            seen_turns.add(turn_num)
+            action = trace.get("action") or {}
+            life = trace.get("life") or {}
+            summaries.append(
+                {
+                    "turn": turn_num,
+                    "pid": trace.get("pid"),
+                    "step": trace.get("step"),
+                    "action_type": action.get("type"),
+                    "card_name": action.get("card_name"),
+                    "hand_size": len(trace.get("hand") or []),
+                    "battlefield_size": len(trace.get("battlefield") or []),
+                    "opp_battlefield_size": len(trace.get("opp_battlefield") or []),
+                    "life": {
+                        "self": life.get("self"),
+                        "opp": life.get("opp"),
+                    },
+                    "mana_pool": dict(trace.get("mana_pool") or {}),
+                    "reasoning": trace.get("reasoning", ""),
+                }
+            )
+            if len(summaries) >= max_turns:
+                break
+        return summaries
 
     def _opening_hand_quality(self, state, player_id: int) -> float:
         hand = [state.cards[cid] for cid in state.players[player_id].hand]
