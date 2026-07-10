@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
+from rules_engine import combat
 
 
 def test_effect_sequence_resolves_all_clauses() -> None:
@@ -179,3 +180,50 @@ def test_deal_damage_cumulative_lethal() -> None:
     resolve_effect(state, 1, "deal_damage", {"target_card_id": cid, "amount": 1})
     assert state.cards[cid].zone == Zone.GRAVEYARD
     assert cid not in state.players[2].battlefield
+
+
+def test_combat_death_replacement_exiles_creature_instead_of_graveyard() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=19)
+    replacement = CardInstance(
+        id="rep",
+        name="Rest in Peace",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a creature you control would die, exile it instead.",
+    )
+    state.cards[replacement.id] = replacement
+    state.players[2].battlefield.append(replacement.id)
+    attacker = state.players[1].hand[0]
+    state.players[1].battlefield.append(attacker)
+    state.cards[attacker].zone = Zone.BATTLEFIELD
+    state.cards[attacker].types = ["Creature"]
+    state.cards[attacker].power = 3
+    state.cards[attacker].toughness = 3
+    state.cards[attacker].summoning_sick = False
+    blocker = CardInstance(
+        id="blk",
+        name="Bear",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        power=2,
+        toughness=2,
+    )
+    state.cards[blocker.id] = blocker
+    state.players[2].battlefield.append(blocker.id)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = state.step.COMBAT_DAMAGE
+    state.attackers = [attacker]
+    state.attack_targets = {attacker: "player:2"}
+    state.blocks = {attacker: [blocker.id]}
+
+    combat.combat_damage(state)
+
+    assert blocker.zone == Zone.EXILE
+    assert blocker.id in state.players[2].exile
+    assert blocker.id not in state.players[2].graveyard

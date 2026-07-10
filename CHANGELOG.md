@@ -7,6 +7,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Rules coverage:
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.
   - The new coverage includes `destroy target artifact or enchantment` style cards and `destroy all artifacts and enchantments` sweepers.
+  - Creature death replacement now applies consistently through destroy, sacrifice, combat cleanup, and state-based actions.
 - Simulator diagnostics:
   - Batch simulation now records the first divergence between the first two games in a matchup.
   - The Testing Simulator UI now surfaces that first-divergence report directly in the results panel.

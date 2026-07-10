@@ -5,7 +5,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -235,6 +235,12 @@ def _remove_dead_creatures(state: MatchState) -> None:
         owner = state.players[card.controller]
         if cid in owner.battlefield:
             owner.battlefield.remove(cid)
+            destination = replace_die_zone(state, card.controller, cid)
+            if destination == "exile":
+                owner.exile.append(cid)
+                card.zone = Zone.EXILE
+                state.log.append(f"{card.name} is exiled instead of dying.")
+                continue
             owner.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
             state.log.append(f"{card.name} dies in combat.")

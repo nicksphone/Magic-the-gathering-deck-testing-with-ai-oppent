@@ -20,6 +20,7 @@ from rules_engine.replacement import (
     damage_cant_be_prevented,
     player_cant_gain_life,
     player_cant_lose_life,
+    replace_die_zone,
     replace_draw_cards,
     replace_gain_life,
 )
@@ -51,10 +52,16 @@ def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
     owner = state.players[card.controller]
     if card_id in owner.battlefield:
         owner.battlefield.remove(card_id)
-        owner.graveyard.append(card_id)
-        card.zone = Zone.GRAVEYARD
-        state.log.append(f"{card.name} dies.")
-        emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
+        destination = replace_die_zone(state, card.controller, card_id)
+        if destination == "exile":
+            owner.exile.append(card_id)
+            card.zone = Zone.EXILE
+            state.log.append(f"{card.name} is exiled instead of dying.")
+        else:
+            owner.graveyard.append(card_id)
+            card.zone = Zone.GRAVEYARD
+            state.log.append(f"{card.name} dies.")
+            emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
 def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
@@ -163,6 +170,13 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     owner_state = state.players[card.controller]
     if target in owner_state.battlefield:
         owner_state.battlefield.remove(target)
+        if "Creature" in card.types:
+            destination = replace_die_zone(state, card.controller, target)
+            if destination == "exile":
+                owner_state.exile.append(target)
+                card.zone = Zone.EXILE
+                state.log.append(f"{card.name} is exiled instead of dying.")
+                return
         owner_state.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
         card.counters.pop("__damage_marked", None)
@@ -182,6 +196,13 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
         owner_state = state.players[card.controller]
         if cid in owner_state.battlefield:
             owner_state.battlefield.remove(cid)
+            destination = replace_die_zone(state, card.controller, cid)
+            if destination == "exile":
+                owner_state.exile.append(cid)
+                card.zone = Zone.EXILE
+                state.log.append(f"{card.name} is exiled instead of dying.")
+                destroyed = True
+                continue
             owner_state.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
             card.counters.pop("__damage_marked", None)
@@ -367,9 +388,17 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
         state.players[controller].battlefield.remove(target)
+        card = state.cards[target]
+        if "Creature" in card.types:
+            destination = replace_die_zone(state, card.controller, target)
+            if destination == "exile":
+                state.players[controller].exile.append(target)
+                card.zone = Zone.EXILE
+                state.log.append(f"{card.name} is exiled instead of dying.")
+                return
         state.players[controller].graveyard.append(target)
-        state.cards[target].zone = Zone.GRAVEYARD
-        if "Creature" in state.cards[target].types:
+        card.zone = Zone.GRAVEYARD
+        if "Creature" in card.types:
             emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
 
 
