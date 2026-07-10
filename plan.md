@@ -26,7 +26,7 @@ The following are implemented and currently supported by the repo:
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
 - Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.
-- Compact stack and priority-stop panels improve scanability during long sessions.
+- Compact stack, mana-pool, and priority-stop panels improve scanability during long sessions.
 - Full backend test suite currently passes.
 
 ## Known Remaining Bugs and Gaps
@@ -42,7 +42,7 @@ The project is functional, but the following remain open:
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
 - The simulator diagnostics need even clearer root-cause attribution across longer runs.
-- Stack, mana, and priority presentation still need some further refinement for long sessions, especially once wider end-to-end testing exposes new layout pressure points.
+- Stack, mana, and priority presentation are improved, but wider end-to-end testing may still expose layout pressure points that need refinement.
 - README, changelog, graph exports, and plan files need to stay synchronized after future changes.
 
 ## Step-by-Step Plan To Finish
@@ -94,7 +94,7 @@ Exit criteria:
 ### 5. Finish UI and Release Hardening
 1. Improve battlefield scaling so larger boards stay readable.
 2. Keep hover zoom and card inspection usable on desktop.
-3. Make stack, mana, and priority presentation denser and easier to scan.
+3. Keep stack, mana, and priority presentation dense and readable under long-session testing.
 4. Keep README, changelog, and plan.md aligned with the implementation.
 5. Refresh graph exports and run backend/frontend verification before release checkpoints.
 

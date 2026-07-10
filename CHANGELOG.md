@@ -4,6 +4,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-10
 
+- UI readability:
+  - Battlefield zones now show compact mana-pool pips so floating mana stays visible without adding wide text blocks.
+  - The match status grid now surfaces the active priority seat directly.
+  - The compact battlefield, stack, priority, and mana presentation builds successfully after the latest layout refinement.
+
 - Rules coverage:
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.
   - The new coverage includes `destroy target artifact or enchantment` style cards and `destroy all artifacts and enchantments` sweepers.

@@ -29,6 +29,8 @@ type LandPile = {
   color: string;
 };
 
+type ManaSymbol = "W" | "U" | "B" | "R" | "G" | "C";
+
 function inferLandColor(name: string): string {
   const n = name.toLowerCase();
   if (n.includes("plains")) return "W";
@@ -71,11 +73,20 @@ function manaSummary(lands: LandPile[]): string {
     .join("  ");
 }
 
+function manaPoolPips(pool: Record<string, number>): { symbol: ManaSymbol; count: number }[] {
+  const order: ManaSymbol[] = ["W", "U", "B", "R", "G", "C"];
+  return order
+    .map((symbol) => ({ symbol, count: Number(pool[symbol] ?? 0) }))
+    .filter((entry) => entry.count > 0);
+}
+
 export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p1 = match.players["1"];
   const p2 = match.players["2"];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
+  const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool), [p1.mana_pool]);
+  const p2ManaPool = useMemo(() => manaPoolPips(p2.mana_pool), [p2.mana_pool]);
   const battlefieldCount = p1Groups.nonLands.length + p1Groups.lands.length + p2Groups.nonLands.length + p2Groups.lands.length;
   const battlefieldDensityClass =
     battlefieldCount >= 20 ? "battlefield-packed" : battlefieldCount >= 12 ? "battlefield-dense" : battlefieldCount >= 7 ? "battlefield-comfort" : "battlefield-open";
@@ -139,6 +150,21 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           <span>Exile {p2.exile_count}</span>
           <span>Hand {p2.hand_count}</span>
           <span>Untapped Mana {manaSummary(p2Groups.lands) || "-"}</span>
+          <span className="mana-pool">
+            Pool{" "}
+            {p2ManaPool.length ? (
+              <span className="mana-pips">
+                {p2ManaPool.map((entry) => (
+                  <span key={`p2-${entry.symbol}`} className={`mana-pip mana-pip-${entry.symbol.toLowerCase()}`}>
+                    {entry.symbol}
+                    <small>{entry.count}</small>
+                  </span>
+                ))}
+              </span>
+            ) : (
+              "-"
+            )}
+          </span>
         </div>
         <div className="cards">
           {p2Groups.nonLands.map((card) => (
@@ -187,6 +213,21 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           <span>Exile {p1.exile_count}</span>
           <span>Hand {p1.hand_count}</span>
           <span>Untapped Mana {manaSummary(p1Groups.lands) || "-"}</span>
+          <span className="mana-pool">
+            Pool{" "}
+            {p1ManaPool.length ? (
+              <span className="mana-pips">
+                {p1ManaPool.map((entry) => (
+                  <span key={`p1-${entry.symbol}`} className={`mana-pip mana-pip-${entry.symbol.toLowerCase()}`}>
+                    {entry.symbol}
+                    <small>{entry.count}</small>
+                  </span>
+                ))}
+              </span>
+            ) : (
+              "-"
+            )}
+          </span>
         </div>
         <div className="cards">
           {p1Groups.nonLands.map((card) => (

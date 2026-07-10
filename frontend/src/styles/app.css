@@ -141,6 +141,53 @@ button:hover {
   padding: 8px;
 }
 
+.zone-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.84rem;
+  align-items: center;
+}
+
+.mana-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mana-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.mana-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(153, 189, 200, 0.28);
+  background: rgba(15, 31, 38, 0.92);
+  color: var(--text);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.mana-pip small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.mana-pip-w { border-color: rgba(210, 190, 136, 0.4); }
+.mana-pip-u { border-color: rgba(110, 180, 215, 0.4); }
+.mana-pip-b { border-color: rgba(145, 128, 173, 0.4); }
+.mana-pip-r { border-color: rgba(220, 120, 98, 0.4); }
+.mana-pip-g { border-color: rgba(110, 180, 120, 0.4); }
+.mana-pip-c { border-color: rgba(180, 180, 180, 0.32); }
+
 .battlefield {
   --battlefield-card-width: 112px;
   --battlefield-card-image-height: 92px;
@@ -559,6 +606,10 @@ button:hover {
   gap: 4px;
 }
 
+.status-card.priority-active {
+  box-shadow: inset 0 0 0 1px rgba(243, 196, 107, 0.18);
+}
+
 .status-label {
   color: var(--muted);
   font-size: 0.72rem;
@@ -606,6 +657,9 @@ h3 {
   }
   .priority-stop-grid {
     grid-template-columns: 1fr;
+  }
+  .mana-pips {
+    max-width: 100%;
   }
   .card-hover-preview {
     right: 10px;

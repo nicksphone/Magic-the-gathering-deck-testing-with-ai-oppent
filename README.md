@@ -81,30 +81,18 @@ The application currently supports:
 - BO3 and sideboarding support with per-game swap locking
 - denser match-status and between-games controls for BO3 sessions
 - density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection
-- compact stack and priority-stop panels make long-session response windows easier to scan
+- compact stack, priority, and mana-pool displays make long-session response windows easier to scan
 - Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
 - Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
 
-Recent large areas of coverage include:
-- modal/split card face selection
-- deterministic replay stability
-- protection, prevention, and replacement edge cases
-- broader death-replacement phrase coverage for common Oracle variants
-- targeted and mass artifact/enchantment removal coverage
-- trigger ordering metadata
-- ordered continuous-effect layer traces for overlapping static effects
-- explicit no-op fallback for unresolved Oracle text
-- batch first-divergence output surfaced in the simulator results panel
-- low-impact X-spell selection is skipped instead of forcing trivial cast lines
-- control hold-up bias now yields to castable value spells when the board is stable and no urgent response is needed
-- deck import responses that include resolved cached card metadata for imported lines
-- sideboard flow now locks to one swap pass per finished game and resets on `next-game`
-- multi-match library search resolution and stale damage-counter cleanup on destroy
-- explicit regression coverage for postcombat main, end step, cleanup, and next-turn advancement
-- combat and planeswalker damage correctness
-- stronger archetype-aware AI behavior with threat-weighted removal timing and richer battlefield scoring
+Current focus:
+- expanding Oracle coverage for older and unusual cards
+- improving replacement, prevention, and layer fidelity in edge cases
+- deepening tactical AI for complex board states and matchup-specific heuristics
+- tightening simulator diagnostics and replay attribution when a run diverges
+- keeping the UI dense and readable during long sessions
 
 ## Setup
 
@@ -217,7 +205,7 @@ The app syncs and caches card data locally.
 - Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
 - Simulator diagnostics now classify common divergence buckets such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error, and anomaly clustering now detects land-drop misses correctly
 - Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups
-- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions; battlefield, stack, and priority density are improved, but there is still room for further refinement
+- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions; battlefield density, stack density, mana pooling, and priority visibility are improved, but there is still room for further refinement
 
 ## Changelog
 

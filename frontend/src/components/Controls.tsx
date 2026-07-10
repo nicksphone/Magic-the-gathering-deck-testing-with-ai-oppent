@@ -139,6 +139,10 @@ export function Controls(props: Props) {
             <span className="status-label">Sideboard</span>
             <strong>{sideboardStatus}</strong>
           </div>
+          <div className="status-card priority-active">
+            <span className="status-label">Priority</span>
+            <strong>P{props.match.priority_player}</strong>
+          </div>
         </div>
       ) : null}
       <div className="block-panel">
