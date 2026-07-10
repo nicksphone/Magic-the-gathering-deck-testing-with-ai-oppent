@@ -80,6 +80,8 @@ The application currently supports:
 - Replay divergence classification now distinguishes pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error cases
 - BO3 and sideboarding support with per-game swap locking
 - denser match-status and between-games controls for BO3 sessions
+- density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection
+- compact stack and priority-stop panels make long-session response windows easier to scan
 - Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
@@ -214,7 +216,7 @@ The app syncs and caches card data locally.
 - Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
 - Simulator diagnostics now classify common divergence buckets such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error, and anomaly clustering now detects land-drop misses correctly
 - Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups
-- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions
+- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions; battlefield, stack, and priority density are improved, but there is still room for further refinement
 
 ## Changelog
 

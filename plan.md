@@ -24,6 +24,8 @@ The following are implemented and currently supported by the repo:
 - Replay and anomaly tooling for divergence detection and debug runs, with more specific root-cause classification for common divergence patterns.
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
+- Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.
+- Compact stack and priority-stop panels improve scanability during long sessions.
 - Full backend test suite currently passes.
 
 ## Known Remaining Bugs and Gaps
@@ -39,7 +41,7 @@ The project is functional, but the following remain open:
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
 - The simulator diagnostics need even clearer root-cause attribution across longer runs.
-- Crowded battlefield UI still needs better scaling and scanability for long sessions.
+- Stack, mana, and priority presentation still need some further refinement for long sessions, especially once wider end-to-end testing exposes new layout pressure points.
 - README, changelog, graph exports, and plan files need to stay synchronized after future changes.
 
 ## Step-by-Step Plan To Finish

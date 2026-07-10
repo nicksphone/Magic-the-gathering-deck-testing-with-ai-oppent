@@ -179,25 +179,28 @@ export function Controls(props: Props) {
               <option value={2}>Player 2</option>
             </select>
           </div>
-          {stepOptions.map((step) => {
-            const current = new Set(props.match?.priority_stops?.[String(stopPlayer)] ?? []);
-            const checked = current.has(step);
-            return (
-              <label key={`stop-${stopPlayer}-${step}`} style={{ display: "block", fontSize: "0.85rem" }}>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={(e) => {
-                    const next = new Set(current);
-                    if (e.target.checked) next.add(step);
-                    else next.delete(step);
-                    props.onSetPriorityStops(stopPlayer, Array.from(next));
-                  }}
-                />
-                {" "}{step}
-              </label>
-            );
-          })}
+          <div className="priority-stop-grid">
+            {stepOptions.map((step) => {
+              const current = new Set(props.match?.priority_stops?.[String(stopPlayer)] ?? []);
+              const checked = current.has(step);
+              return (
+                <label key={`stop-${stopPlayer}-${step}`} className="priority-stop-item">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = new Set(current);
+                      if (e.target.checked) next.add(step);
+                      else next.delete(step);
+                      props.onSetPriorityStops(stopPlayer, Array.from(next));
+                    }}
+                  />
+                  {" "}
+                  {step}
+                </label>
+              );
+            })}
+          </div>
         </div>
       ) : null}
       <div className="grid-actions">

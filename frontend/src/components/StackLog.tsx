@@ -8,7 +8,7 @@ export function StackLog({ match }: Props) {
   return (
     <section className="panel stack-log">
       <h2>Stack + Match Log</h2>
-      <div className="stack-box">
+      <div className="stack-box stack-box-compact">
         {match.stack.length === 0 ? <p>Stack Empty</p> : null}
         {match.stack.map((item) => (
           <div key={item.id} className="stack-item">

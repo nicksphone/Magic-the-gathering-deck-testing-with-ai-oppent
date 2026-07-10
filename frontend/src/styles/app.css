@@ -125,6 +125,8 @@ button:hover {
 .battlefield header {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .life-counters {
@@ -139,29 +141,59 @@ button:hover {
   padding: 8px;
 }
 
+.battlefield {
+  --battlefield-card-width: 112px;
+  --battlefield-card-image-height: 92px;
+  --battlefield-card-font-size: 0.8rem;
+  --battlefield-land-width: 182px;
+  --battlefield-max-row-height: 352px;
+}
+
+.battlefield.battlefield-comfort {
+  --battlefield-card-width: 102px;
+  --battlefield-card-image-height: 84px;
+  --battlefield-land-width: 170px;
+}
+
+.battlefield.battlefield-dense {
+  --battlefield-card-width: 88px;
+  --battlefield-card-image-height: 74px;
+  --battlefield-card-font-size: 0.75rem;
+  --battlefield-land-width: 156px;
+  --battlefield-max-row-height: 302px;
+}
+
+.battlefield.battlefield-packed {
+  --battlefield-card-width: 78px;
+  --battlefield-card-image-height: 64px;
+  --battlefield-card-font-size: 0.7rem;
+  --battlefield-land-width: 144px;
+  --battlefield-max-row-height: 270px;
+}
+
 .cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--battlefield-card-width), 1fr));
   gap: 8px;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: start;
   overflow: auto;
-  max-height: 340px;
+  max-height: var(--battlefield-max-row-height);
   padding-bottom: 4px;
 }
 
 .card {
   position: relative;
-  min-width: 92px;
-  max-width: 104px;
+  width: 100%;
   border: 1px solid #5f95a6;
   border-radius: 9px;
   padding: 6px;
   background: linear-gradient(180deg, #213e49, #172b34);
   transition: transform 140ms ease, box-shadow 140ms ease, z-index 0s;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
   box-shadow: 0 12px 22px rgba(0, 0, 0, 0.35);
   z-index: 2;
 }
@@ -172,7 +204,7 @@ button:hover {
   border: 1px solid #4e7a89;
   margin-bottom: 4px;
   object-fit: cover;
-  max-height: 88px;
+  height: var(--battlefield-card-image-height);
 }
 
 .card.tapped {
@@ -182,7 +214,7 @@ button:hover {
 .land-stacks {
   margin-top: 8px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--battlefield-land-width), 1fr));
   gap: 8px;
 }
 
@@ -210,6 +242,35 @@ button:hover {
   font-size: 0.82rem;
 }
 
+.battlefield-packed .land-stack p,
+.battlefield-dense .land-stack p {
+  font-size: 0.76rem;
+}
+
+.battlefield-packed .card h4,
+.battlefield-packed .card small,
+.battlefield-dense .card h4,
+.battlefield-dense .card small {
+  font-size: var(--battlefield-card-font-size);
+  line-height: 1.15;
+}
+
+.battlefield-packed .card h4,
+.battlefield-dense .card h4 {
+  margin: 0 0 2px;
+}
+
+.battlefield-packed .card p,
+.battlefield-dense .card p {
+  margin: 0;
+  font-size: var(--battlefield-card-font-size);
+}
+
+.battlefield-packed .card img,
+.battlefield-dense .card img {
+  margin-bottom: 2px;
+}
+
 .hand-row {
   margin-top: 10px;
   display: flex;
@@ -229,8 +290,8 @@ button:hover {
   position: fixed;
   right: 18px;
   top: 92px;
-  width: 340px;
-  max-height: calc(100vh - 140px);
+  width: 360px;
+  max-height: calc(100vh - 120px);
   overflow: auto;
   border: 1px solid #5f95a6;
   border-radius: 10px;
@@ -266,6 +327,16 @@ button:hover {
   line-height: 1.35;
 }
 
+.card-hover-preview h4 {
+  margin-top: 2px;
+  font-size: 1.02rem;
+}
+
+.card-hover-preview img {
+  max-height: 390px;
+  object-fit: contain;
+}
+
 .grid-actions {
   margin-top: 10px;
   display: grid;
@@ -278,6 +349,34 @@ button:hover {
   border: 1px solid #365f6c;
   border-radius: 8px;
   padding: 8px;
+}
+
+.stack-box-compact {
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.stack-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(91, 131, 142, 0.38);
+  background: rgba(10, 27, 34, 0.72);
+}
+
+.stack-item strong {
+  font-size: 0.88rem;
+}
+
+.stack-item span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  justify-self: end;
 }
 
 .log-box {
@@ -435,6 +534,21 @@ button:hover {
   margin-top: 12px;
 }
 
+.priority-stop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+}
+
+.priority-stop-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+
 .status-card {
   border: 1px solid #3f6774;
   border-radius: 10px;
@@ -480,8 +594,18 @@ h3 {
   .layout {
     grid-template-columns: 1fr;
   }
+  .battlefield {
+    --battlefield-card-width: 82px;
+    --battlefield-card-image-height: 66px;
+    --battlefield-card-font-size: 0.68rem;
+    --battlefield-land-width: 138px;
+    --battlefield-max-row-height: 260px;
+  }
   .match-status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .priority-stop-grid {
+    grid-template-columns: 1fr;
   }
   .card-hover-preview {
     right: 10px;

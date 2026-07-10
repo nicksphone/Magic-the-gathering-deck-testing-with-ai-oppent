@@ -76,6 +76,9 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p2 = match.players["2"];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
+  const battlefieldCount = p1Groups.nonLands.length + p1Groups.lands.length + p2Groups.nonLands.length + p2Groups.lands.length;
+  const battlefieldDensityClass =
+    battlefieldCount >= 20 ? "battlefield-packed" : battlefieldCount >= 12 ? "battlefield-dense" : battlefieldCount >= 7 ? "battlefield-comfort" : "battlefield-open";
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
@@ -114,7 +117,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   }
 
   return (
-    <section className="panel battlefield">
+    <section className={`panel battlefield ${battlefieldDensityClass}`}>
       <header>
         <div>
           <h2>Battlefield</h2>
@@ -213,11 +216,11 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                 className="land-stack"
                 onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
                 onMouseLeave={() => setHoverPreview(null)}
-              >
+                >
                 {resolveCardMediaUrl(pile.imageUri) ? <img src={resolveCardMediaUrl(pile.imageUri)} alt={pile.name} loading="lazy" /> : null}
                 <div>
                   <strong>{pile.name}</strong>
-                  <p>Total {pile.total} | Ready {pile.untapped} | Tapped {pile.tapped}</p>
+                  <p>{pile.total}x | Ready {pile.untapped} | Tapped {pile.tapped}</p>
                   {canManualTapP1 && pile.untapped > 0 ? (
                     <div className="row" style={{ marginBottom: 0 }}>
                       <select

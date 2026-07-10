@@ -23,6 +23,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Diagnostics classification:
   - Replay divergence now classifies common root causes such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error.
   - Anomaly clustering now recognizes land-drop misses correctly instead of relying on a broken regex pattern.
+- UI battlefield scaling:
+  - Crowded battlefield rows now shrink density-aware card and land render sizes so large boards stay readable.
+  - Hover preview remains available for closer card inspection when the board is compressed.
+- UI density polish:
+  - The stack log and priority-stop controls now use more compact layouts for long-session scanning.
 - Regression coverage:
   - Added backend tests for the batch first-divergence report and the stricter X-spell selection floor.
   - Added regression coverage for control choosing a value draw spell over idle pass priority in a stable main phase.
