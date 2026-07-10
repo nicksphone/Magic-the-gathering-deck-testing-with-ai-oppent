@@ -21,6 +21,7 @@ The project is built for serious deck work:
 - Death replacement now also understands common `nontoken` and `another creature` Oracle variants
 - Death triggers now respect controller clauses like "a creature you control dies"
 - Additional-cost sacrifice replacement now respects exile-instead-of-dying effects
+- Planeswalker loyalty parsing now supports `-X` and `+X` style abilities with X-value propagation through AI and resolution
 - Planeswalker combat targeting
 - Loss conditions for life and decking
 
@@ -90,6 +91,7 @@ The application currently supports:
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
 - Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
+- Loyalty abilities with X costs now flow through move generation and AI materialization instead of being dropped as malformed activations
 
 Current focus:
 - expanding Oracle coverage for older and unusual cards

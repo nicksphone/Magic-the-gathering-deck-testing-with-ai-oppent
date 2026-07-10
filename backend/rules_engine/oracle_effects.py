@@ -29,7 +29,7 @@ UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
-LOYALTY_ABILITY_RE = re.compile(r"([+-]?\d+):\s*([^\n]+)")
+LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 PUT_CREATURES_FROM_TOP_RE = re.compile(
     r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+creature cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
@@ -242,9 +242,22 @@ def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
     oracle = card.oracle_text or ""
     out: list[dict[str, Any]] = []
     for match in LOYALTY_ABILITY_RE.finditer(oracle):
-        delta = int(match.group(1))
+        raw_delta = match.group(1).strip()
         text = match.group(2).strip()
-        out.append({"delta": delta, "text": text, "label": f"{delta:+d}: {text}"})
+        if raw_delta.upper().endswith("X"):
+            x_sign = -1 if raw_delta.startswith("-") else 1
+            out.append(
+                {
+                    "delta": 0,
+                    "x_cost": True,
+                    "x_sign": x_sign,
+                    "text": text,
+                    "label": f"{raw_delta.upper()}: {text}",
+                }
+            )
+        else:
+            delta = int(raw_delta)
+            out.append({"delta": delta, "x_cost": False, "x_sign": 0, "text": text, "label": f"{delta:+d}: {text}"})
     return out
 
 

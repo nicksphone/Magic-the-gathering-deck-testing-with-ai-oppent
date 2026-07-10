@@ -18,6 +18,7 @@ The following are implemented and currently supported by the repo:
 - Death replacement now also recognizes the common `nontoken` and `another creature` Oracle variants.
 - Death-trigger collection now respects controller-scoped clauses like "a creature you control dies".
 - Additional-cost sacrifice now also respects exile-instead-of-dying replacement effects.
+- Loyalty abilities now recognize `-X`/`+X` planeswalker costs and carry the selected X value through legal-move generation, AI materialization, and resolution.
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines.
 - Modal and transform-style face selection now uses the face type line for better role-sensitive valuation.
@@ -44,6 +45,7 @@ The project is functional, but the following remain open:
 - Additional-cost handling still does not model every uncommon replacement/prevention interaction.
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling, especially outside the face-type parsing cases already improved.
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
+- A few X-cost loyalty abilities are now handled correctly, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
 - The simulator diagnostics need even clearer root-cause attribution across longer runs, even though pass-window summaries are now less noisy.
 - Stack, mana, and priority presentation are improved, but wider end-to-end testing may still expose layout pressure points that need refinement.

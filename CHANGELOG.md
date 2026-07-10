@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-10
 
+- Rules coverage:
+  - Loyalty ability parsing now recognizes `-X`/`+X` style planeswalker abilities and carries X-value handling through move generation, resolution, and AI materialization.
+  - Added regression coverage for X-loyalty planeswalker abilities so they resolve with the chosen X value instead of failing like a malformed cost.
 - UI readability:
   - Battlefield zones now show compact mana-pool pips so floating mana stays visible without adding wide text blocks.
   - The match status grid now surfaces the active priority seat directly.

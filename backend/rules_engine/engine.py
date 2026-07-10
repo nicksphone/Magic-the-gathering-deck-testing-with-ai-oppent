@@ -328,7 +328,19 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             ability = abilities[ability_index]
-            next_loyalty = (pw.loyalty or 0) + int(ability["delta"])
+            current_loyalty = int(pw.loyalty or 0)
+            if ability.get("x_cost"):
+                x_value = int((action.get("targets") or {}).get("x_value", 0) or 0)
+                if x_value < 0:
+                    state.log.append(f"Invalid X value for {pw.name} loyalty ability.")
+                    apply_state_based_actions(state)
+                    return
+                if ability.get("x_sign", -1) < 0:
+                    next_loyalty = current_loyalty - x_value
+                else:
+                    next_loyalty = current_loyalty + x_value
+            else:
+                next_loyalty = current_loyalty + int(ability["delta"])
             if next_loyalty < 0:
                 state.log.append(f"{pw.name} does not have enough loyalty for that ability.")
                 apply_state_based_actions(state)
@@ -337,6 +349,9 @@ class RulesEngine:
             state.loyalty_activated_this_turn.add(cid)
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             proxy = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
+            if ability.get("x_cost") and "x_value" not in action_targets:
+                action_targets = dict(action_targets)
+                action_targets["x_value"] = max(0, min(current_loyalty, int(action_targets.get("x_value", 0) or 0)))
             ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
             if not ok_hs:
                 state.log.append(f"Invalid targets for {pw.name}: {err_hs}")

@@ -151,12 +151,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             abilities = extract_loyalty_abilities(card)
             for idx, ability in enumerate(abilities):
-                next_loyalty = (card.loyalty or 0) + int(ability["delta"])
+                if ability.get("x_cost"):
+                    next_loyalty = card.loyalty or 0
+                else:
+                    next_loyalty = (card.loyalty or 0) + int(ability["delta"])
                 if next_loyalty < 0:
                     continue
                 hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id)
-                if ability["delta"] < 0 and "x" in ability["text"].lower():
+                if ability.get("x_cost"):
                     hints["requires_x_value"] = True
                 moves.append(
                     {
@@ -166,6 +169,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         "ability_index": idx,
                         "ability_label": ability["label"],
                         "ability_delta": ability["delta"],
+                        "ability_x_cost": bool(ability.get("x_cost")),
+                        "ability_x_sign": int(ability.get("x_sign", 0) or 0),
                         "target_hints": hints,
                     }
                 )

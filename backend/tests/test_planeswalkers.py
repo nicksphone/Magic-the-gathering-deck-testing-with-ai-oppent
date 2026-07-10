@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from ai.agent import AIAgent
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine import combat
 from rules_engine.engine import RulesEngine
+from rules_engine.oracle_effects import extract_loyalty_abilities
 
 
 def test_attack_can_target_planeswalker_and_reduce_loyalty() -> None:
@@ -64,6 +66,41 @@ def test_planeswalker_loyalty_ability_appears_in_legal_moves() -> None:
     moves = engine.legal_moves(state, 1)
     loyalty_moves = [m for m in moves if m.get("type") == "activate_loyalty" and m.get("card_id") == pw]
     assert len(loyalty_moves) == 2
+
+
+def test_planeswalker_x_loyalty_ability_requires_x_value_and_materializes() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    engine = RulesEngine()
+
+    pw = state.players[1].hand.pop()
+    state.players[1].battlefield.append(pw)
+    state.cards[pw].zone = Zone.BATTLEFIELD
+    state.cards[pw].name = "X Walker"
+    state.cards[pw].types = ["Planeswalker"]
+    state.cards[pw].loyalty = 4
+    state.cards[pw].oracle_text = "-X: Deal X damage to any target.\n+1: Draw a card."
+
+    abilities = extract_loyalty_abilities(state.cards[pw])
+    assert abilities[0]["x_cost"] is True
+
+    moves = engine.legal_moves(state, 1)
+    x_moves = [m for m in moves if m.get("type") == "activate_loyalty" and m.get("card_id") == pw and m.get("ability_x_cost")]
+    assert len(x_moves) == 1
+    assert x_moves[0]["target_hints"]["requires_x_value"] is True
+
+    ai = AIAgent(difficulty="master", archetype="Control")
+    materialized = ai._materialize_action(state, x_moves[0], 1)
+    assert materialized.get("_invalid_ai_choice") is not True
+    assert int(materialized["targets"]["x_value"]) > 0
+
+    engine.take_action(state, 1, materialized)
+    assert state.cards[pw].loyalty == 4 - int(materialized["targets"]["x_value"])
 
 
 def test_unblocked_damage_to_removed_planeswalker_disappears():
