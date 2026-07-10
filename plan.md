@@ -14,7 +14,7 @@ The following are implemented and currently supported by the repo:
 - Card cache/sync flow with placeholder image fallback support.
 - Rules engine for turn structure, stack, combat, priority, mulligans, mana, state-based actions, and several layered/replacement interactions.
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
-- Batch simulator with deterministic seeding, alternating play/draw order, job progress, and per-game result output.
+- Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
 - Replay and anomaly tooling for divergence detection and debug runs.
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
@@ -27,6 +27,7 @@ The project is functional, but the following remain open:
 - Long-tail Oracle coverage is still incomplete for unusual or older cards.
 - Replacement, prevention, and layer handling still rely on heuristics in edge cases.
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling.
+- Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
 - The simulator diagnostics need even clearer root-cause attribution across longer runs.
 - Crowded battlefield UI still needs better scaling and scanability for long sessions.

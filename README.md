@@ -85,6 +85,8 @@ Recent large areas of coverage include:
 - trigger ordering metadata
 - ordered continuous-effect layer traces for overlapping static effects
 - explicit no-op fallback for unresolved Oracle text
+- batch first-divergence output surfaced in the simulator results panel
+- low-impact X-spell selection is skipped instead of forcing trivial cast lines
 - deck import responses that include resolved cached card metadata for imported lines
 - sideboard flow now locks to one swap pass per finished game and resets on `next-game`
 - multi-match library search resolution and stale damage-counter cleanup on destroy
@@ -200,7 +202,7 @@ The app syncs and caches card data locally.
 - Some static/replacement/layer interactions still rely on heuristic inference rather than full Oracle-parity modeling
 - Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
 - AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states
-- Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, and live simulator status/progress display, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
+- Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
 - Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups
 - UI is functional, but several competitive-play polish items remain before it feels complete for long sessions
 

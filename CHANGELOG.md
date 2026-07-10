@@ -2,6 +2,17 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-07-10
+
+- Simulator diagnostics:
+  - Batch simulation now records the first divergence between the first two games in a matchup.
+  - The Testing Simulator UI now surfaces that first-divergence report directly in the results panel.
+- AI X-spell policy:
+  - Low-impact X-spells now require a meaningful minimum X instead of being forced at trivial values.
+  - Token-producing X-spells such as `Secure the Wastes` are skipped early when they would only produce an insignificant board state.
+- Regression coverage:
+  - Added backend tests for the batch first-divergence report and the stricter X-spell selection floor.
+
 ## 2026-07-09
 
 - Sideboarding flow hardening:

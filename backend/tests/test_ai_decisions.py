@@ -601,6 +601,28 @@ def test_ai_avoids_low_value_secure_the_wastes_early() -> None:
     assert decision.action["type"] == "pass_priority"
 
 
+def test_ai_rejects_low_impact_x_value_for_token_spells() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["xspell-1"], "battlefield": ["l1", "l2"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+        }
+
+    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    assert x_value == 0
+
+
 def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     old = AIAgent._log_priors_cache

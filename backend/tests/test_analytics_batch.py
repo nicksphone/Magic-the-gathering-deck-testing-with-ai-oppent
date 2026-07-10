@@ -32,3 +32,20 @@ def test_batch_is_deterministic_for_same_inputs() -> None:
     assert out1["deterministic_replay_fingerprint"] == out2["deterministic_replay_fingerprint"]
     assert out1["game_results"] == out2["game_results"]
     assert [row["deck_a_on_play"] for row in out1["game_results"]] == [True, False]
+
+
+def test_batch_exposes_first_divergence_report() -> None:
+    repo = _DummyRepo()
+    service = AnalyticsService(repo)  # type: ignore[arg-type]
+    calls: list[tuple[list[str], list[str]]] = []
+
+    def compare(left_log: list[str], right_log: list[str]) -> dict:
+        calls.append((left_log, right_log))
+        return {"category": "mock", "index": 9}
+
+    service.compare_replay_logs = compare  # type: ignore[method-assign]
+    deck_a = [{"quantity": 60, "card_name": "Island"}]
+    deck_b = [{"quantity": 60, "card_name": "Swamp"}]
+    out = service.run_batch(deck_a, deck_b, matches=2, difficulty="master", max_ticks=1)
+    assert calls
+    assert out["first_divergence"] == {"category": "mock", "index": 9}

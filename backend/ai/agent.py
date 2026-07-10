@@ -887,7 +887,7 @@ class AIAgent:
         mana_cost_text = (getattr(card, "mana_cost", "") or "").upper()
         x_value = 0
         if "{X}" in mana_cost_text:
-            x_value = self._choose_x_value(state, player_id, mana_cost_text)
+            x_value = self._choose_x_value(state, player_id, mana_cost_text, card=card)
             if x_value <= 0:
                 # Avoid invalid X=0 loops for spells that need explicit positive X targeting.
                 return -8.0
@@ -1388,13 +1388,13 @@ class AIAgent:
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         if "{X}" in mana_cost.upper() and "x_value" not in targets:
-            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost)
+            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card)
         elif hints.get("requires_x_value") and "x_value" not in targets:
             if mtype == "activate_loyalty" and cid:
                 loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)
                 targets["x_value"] = max(0, min(3, loyalty_now))
             else:
-                targets["x_value"] = 1
+                targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card) or 0
 
         requires_x = bool(hints.get("requires_x_value"))
         if card:
@@ -1646,7 +1646,7 @@ class AIAgent:
             current.remove(weakest)
         return []
 
-    def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str) -> int:
+    def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str, card=None) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())
         untapped_lands = sum(
             1
@@ -1654,11 +1654,31 @@ class AIAgent:
             if "Land" in state.cards.get(cid, type("X", (), {"types": []})()).types and not state.cards[cid].tapped
         )
         upper = max(0, pool_total + untapped_lands)
+        floor = self._minimum_useful_x_value(state, player_id, card, mana_cost)
         for x in range(upper, 0, -1):
             cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
-            if can_pay_with_pool_and_lands(state, player_id, cost):
+            if x >= floor and can_pay_with_pool_and_lands(state, player_id, cost):
                 return x
         return 0
+
+    def _minimum_useful_x_value(self, state: MatchState, player_id: int, card, mana_cost: str) -> int:
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        turn = int(getattr(state, "turn", 1) or 1)
+        if "create x" in text and "token" in text:
+            return 3 if self.archetype in {"Control", "Counter-heavy"} and turn < 7 else 2
+        if "draw x" in text:
+            return 3 if turn < 6 else 2
+        if "mill x" in text or "search your library for x" in text:
+            return 2
+        if "deals x damage" in text or "deal x damage" in text or "lose x life" in text:
+            opp_id = 1 if player_id == 2 else 2
+            opp_life = int(getattr(state.players.get(opp_id), "life", 20) or 20)
+            return 1 if opp_life <= 3 else 2
+        if "{x}" in mana_cost.lower():
+            if self.archetype in {"Control", "Counter-heavy"} and turn < 5:
+                return 2
+            return 1
+        return 1
 
     def _is_unplayable_x_action(self, action: dict) -> bool:
         if action.get("type") != "cast_spell":

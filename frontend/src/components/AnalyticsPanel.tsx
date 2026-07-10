@@ -20,6 +20,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [jobStatus, setJobStatus] = useState<string>("idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
+  const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
 
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
@@ -187,6 +188,17 @@ export function AnalyticsPanel({ decks }: Props) {
                   </li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+          {firstDivergence ? (
+            <div className="analytics-sample-block">
+              <strong>First Divergence</strong>
+              <p>
+                Category: {String(firstDivergence.category ?? "unknown")} | Index: {String(firstDivergence.index ?? -1)}
+              </p>
+              <pre className="analytics-log-excerpt">
+                {JSON.stringify(firstDivergence, null, 2)}
+              </pre>
             </div>
           ) : null}
         </div>

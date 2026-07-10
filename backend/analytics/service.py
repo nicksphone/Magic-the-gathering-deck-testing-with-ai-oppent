@@ -39,6 +39,7 @@ class AnalyticsService:
         top_errors: Counter = Counter()
         replay_fingerprint_parts: list[str] = []
         first_game_log: list[str] = []
+        second_game_log: list[str] = []
         game_results: list[dict[str, object]] = []
 
         for i in range(matches):
@@ -89,6 +90,8 @@ class AnalyticsService:
             self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors)
             if i == 0:
                 first_game_log = list(state.log)
+            elif i == 1:
+                second_game_log = list(state.log)
             game_results.append(
                 {
                     "game_index": i,
@@ -140,6 +143,7 @@ class AnalyticsService:
             },
             "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
             "game_results": game_results,
+            "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
             "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
             "sample_log_excerpt": first_game_log[:12],
             "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
