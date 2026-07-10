@@ -80,6 +80,6 @@ def test_classify_first_divergence_uses_action_labels() -> None:
         "context_after_b": [],
     }
     label = classify_first_divergence(drift)
-    assert label["category"] == "action_mismatch"
+    assert label["category"] == "pass_vs_action"
     assert label["action_a"] == "cast_spell"
     assert label["action_b"] == "pass_priority"

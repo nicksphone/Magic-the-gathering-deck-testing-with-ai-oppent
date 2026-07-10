@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from analytics.service import AnalyticsService
+from analytics.replay_tools import classify_first_divergence
 from collections import Counter
 
 
@@ -71,10 +72,48 @@ def test_compare_replay_logs_reports_first_divergence() -> None:
         ],
     )
 
-    assert report["category"] == "action_mismatch"
+    assert report["category"] == "pass_vs_action"
     assert report["action_a"] == "cast_spell"
     assert report["action_b"] == "pass_priority"
     assert report["index"] == 2
+
+
+def test_compare_replay_logs_labels_pass_vs_action_root_cause() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    report = svc.compare_replay_logs(
+        [
+            "Player A passes priority.",
+            "Player A passes priority.",
+        ],
+        [
+            "Player A passes priority.",
+            "Player A casts/activates Memory Deluge.",
+        ],
+    )
+
+    assert report["category"] == "pass_vs_action"
+    assert report["action_a"] == "pass_priority"
+    assert report["action_b"] == "cast_spell"
+
+
+def test_compare_replay_logs_labels_cast_resolution_error() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    report = classify_first_divergence(
+        {
+            "index": 3,
+            "a": "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+            "b": "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+            "context_before": [],
+            "context_after_a": [],
+            "context_after_b": [],
+        }
+    )
+
+    assert report["category"] == "cast_resolution_error"
+    assert report["action_a"] == "unknown"
+    assert report["action_b"] == "unknown"
 
 
 def test_extract_turn_summaries_reads_ai_trace_snapshots() -> None:

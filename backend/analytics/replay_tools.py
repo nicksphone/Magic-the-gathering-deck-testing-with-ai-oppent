@@ -69,10 +69,7 @@ def classify_first_divergence(drift: dict) -> dict:
     right = str(drift.get("b") or "")
     left_label = classify_log_line(left)
     right_label = classify_log_line(right)
-    if left_label == right_label:
-        category = left_label if left_label != "unknown" else "unknown"
-    else:
-        category = "action_mismatch"
+    category = _classify_divergence_category(left, right, left_label, right_label)
     return {
         "category": category,
         "action_a": left_label,
@@ -84,3 +81,31 @@ def classify_first_divergence(drift: dict) -> dict:
         "context_after_a": drift.get("context_after_a", []),
         "context_after_b": drift.get("context_after_b", []),
     }
+
+
+def _classify_divergence_category(left: str, right: str, left_label: str, right_label: str) -> str:
+    if left_label != right_label:
+        if "pass_priority" in {left_label, right_label}:
+            return "pass_vs_action"
+        if {left_label, right_label} == {"play_land", "cast_spell"}:
+            return "land_vs_spell_choice"
+        return "action_mismatch"
+
+    low = f"{left} {right}".lower()
+    if left_label == "pass_priority":
+        if "main phase" in low or "stack=0" in low or "hold up" in low or "passes priority" in low:
+            return "pass_loop"
+        return "pass_priority"
+    if left_label == "play_land":
+        return "land_drop_mismatch" if left != right else "play_land"
+    if left_label == "cast_spell":
+        if "cannot pay" in low or "invalid targets" in low or "x value is required" in low or "ward tax" in low:
+            return "cast_resolution_error"
+        if left != right:
+            return "cast_choice_mismatch"
+        return "cast_spell"
+    if left_label == "unknown":
+        if "cannot pay" in low or "invalid targets" in low or "x value is required" in low:
+            return "cast_resolution_error"
+        return "unknown"
+    return left_label

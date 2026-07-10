@@ -21,7 +21,7 @@ The following are implemented and currently supported by the repo:
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines.
 - Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
-- Replay and anomaly tooling for divergence detection and debug runs.
+- Replay and anomaly tooling for divergence detection and debug runs, with more specific root-cause classification for common divergence patterns.
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
 - Full backend test suite currently passes.

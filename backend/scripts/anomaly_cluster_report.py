@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 PATTERNS = [
-    ("land_miss", re.compile(r"plays? [A-Za-z]+\\.$", re.IGNORECASE)),
+    ("land_miss", re.compile(r"plays? [A-Za-z]+\.$", re.IGNORECASE)),
     ("cannot_pay", re.compile(r"cannot pay", re.IGNORECASE)),
     ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
     ("stall_pass", re.compile(r"pass_priority", re.IGNORECASE)),
