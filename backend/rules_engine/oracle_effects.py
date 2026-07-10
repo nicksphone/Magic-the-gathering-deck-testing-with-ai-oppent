@@ -331,6 +331,38 @@ def _infer_clause_effect(
                 target_player = controller
             return "prevent_damage", {"amount": amount, "target_player": int(target_player)}
 
+    if "destroy all artifacts and enchantments" in oracle or "destroy all artifact and enchantment" in oracle:
+        return "destroy_all_artifacts_and_enchantments", {}
+    if "destroy all artifacts" in oracle:
+        return "destroy_all_artifacts", {}
+    if "destroy all enchantments" in oracle:
+        return "destroy_all_enchantments", {}
+
+    if "exile target" in oracle and "artifact" in oracle and "enchantment" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
+        if target:
+            return "exile", {"target_card_id": target}
+    if "destroy target" in oracle and "artifact" in oracle and "enchantment" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
+        if target:
+            return "destroy_permanent", {"target_card_id": target}
+    if "destroy target artifact" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact"})
+        if target:
+            return "destroy_permanent", {"target_card_id": target}
+    if "destroy target enchantment" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Enchantment"})
+        if target:
+            return "destroy_permanent", {"target_card_id": target}
+    if "exile target artifact" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact"})
+        if target:
+            return "exile", {"target_card_id": target}
+    if "exile target enchantment" in oracle:
+        target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Enchantment"})
+        if target:
+            return "exile", {"target_card_id": target}
+
     if "destroy target" in oracle:
         target = target_card_id or _first_creature(state, opponent)
         if target:
@@ -429,6 +461,38 @@ def _infer_clause_effect(
         return "discard_cards", {"target_player": target_player or opponent, "amount": amount}
 
     return None
+
+
+def _choose_noncreature_permanent_target(
+    state: MatchState,
+    controller: int,
+    action_targets: dict[str, Any],
+    allowed_types: set[str],
+) -> str | None:
+    target_card_id = action_targets.get("target_card_id")
+    if target_card_id in state.cards:
+        target_card = state.cards[target_card_id]
+        if allowed_types.intersection(set(target_card.types or [])):
+            return target_card_id
+    opponent = 1 if controller == 2 else 2
+    candidates: list[str] = []
+    for cid in state.players[opponent].battlefield:
+        card = state.cards.get(cid)
+        if not card:
+            continue
+        if allowed_types.intersection(set(card.types or [])):
+            candidates.append(cid)
+    if not candidates:
+        return None
+    return sorted(
+        candidates,
+        key=lambda cid: (
+            0 if "Artifact" in state.cards[cid].types else 1,
+            0 if "Enchantment" in state.cards[cid].types else 1,
+            str(state.cards[cid].name).lower(),
+            cid,
+        ),
+    )[0]
 
 
 def _parse_count_token(token: str) -> int:

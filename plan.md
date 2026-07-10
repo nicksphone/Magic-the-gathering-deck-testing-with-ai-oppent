@@ -13,6 +13,7 @@ The following are implemented and currently supported by the repo:
 - Built-in decks and expansion top decks.
 - Card cache/sync flow with placeholder image fallback support.
 - Rules engine for turn structure, stack, combat, priority, mulligans, mana, state-based actions, and several layered/replacement interactions.
+- Targeted and mass artifact/enchantment removal via Oracle inference and reusable effect handlers.
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
 - Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
 - Replay and anomaly tooling for divergence detection and debug runs.

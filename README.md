@@ -82,6 +82,7 @@ Recent large areas of coverage include:
 - modal/split card face selection
 - deterministic replay stability
 - protection, prevention, and replacement edge cases
+- targeted and mass artifact/enchantment removal coverage
 - trigger ordering metadata
 - ordered continuous-effect layer traces for overlapping static effects
 - explicit no-op fallback for unresolved Oracle text

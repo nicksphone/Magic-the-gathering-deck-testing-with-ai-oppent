@@ -194,6 +194,42 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
         state.log.append("All creatures are destroyed.")
 
 
+def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str) -> None:
+    destroyed = False
+    for cid, card in list(state.cards.items()):
+        if not allowed_types.intersection(set(card.types or [])):
+            continue
+        owner_state = state.players[card.controller]
+        if cid in owner_state.battlefield:
+            owner_state.battlefield.remove(cid)
+            owner_state.graveyard.append(cid)
+            card.zone = Zone.GRAVEYARD
+            card.counters.pop("__damage_marked", None)
+            card.counters.pop("__deathtouch_damaged", None)
+            card.counters.pop("__prevent_damage_shield", None)
+            destroyed = True
+            state.log.append(f"{card.name} is destroyed.")
+            if "Creature" in card.types:
+                emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+    if destroyed:
+        state.log.append(log_label)
+
+
+def destroy_all_artifacts(state: MatchState, controller: int, payload: dict) -> None:
+    del controller, payload
+    _destroy_all_permanents_of_types(state, {"Artifact"}, "All artifacts are destroyed.")
+
+
+def destroy_all_enchantments(state: MatchState, controller: int, payload: dict) -> None:
+    del controller, payload
+    _destroy_all_permanents_of_types(state, {"Enchantment"}, "All enchantments are destroyed.")
+
+
+def destroy_all_artifacts_and_enchantments(state: MatchState, controller: int, payload: dict) -> None:
+    del controller, payload
+    _destroy_all_permanents_of_types(state, {"Artifact", "Enchantment"}, "All artifacts and enchantments are destroyed.")
+
+
 def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):

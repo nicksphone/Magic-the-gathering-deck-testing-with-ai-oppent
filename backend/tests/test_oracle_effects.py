@@ -289,6 +289,97 @@ def test_oracle_destroy_all_creatures_resolution_wipes_board() -> None:
     assert creature_b.zone == Zone.GRAVEYARD
 
 
+def test_oracle_destroy_target_artifact_or_enchantment_prefers_matching_permanent() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p2 = state.players[2]
+    artifact = CardInstance(
+        id="art",
+        name="Mystic Forge",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact"],
+        oracle_text="",
+    )
+    enchantment = CardInstance(
+        id="ench",
+        name="Rest in Peace",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="",
+    )
+    state.cards[artifact.id] = artifact
+    state.cards[enchantment.id] = enchantment
+    p2.battlefield.extend([artifact.id, enchantment.id])
+
+    card = CardInstance(
+        id="remove",
+        name="Disenchant",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Destroy target artifact or enchantment.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "destroy_permanent"
+    assert payload["target_card_id"] in {artifact.id, enchantment.id}
+
+
+def test_oracle_destroy_all_artifacts_and_enchantments_wipes_both_types() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p2 = state.players[2]
+    artifact = CardInstance(
+        id="art",
+        name="Sol Ring",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact"],
+        oracle_text="",
+    )
+    enchantment = CardInstance(
+        id="ench",
+        name="Oath of Nissa",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="",
+    )
+    state.cards[artifact.id] = artifact
+    state.cards[enchantment.id] = enchantment
+    p1.battlefield.append(artifact.id)
+    p2.battlefield.append(enchantment.id)
+
+    resolve_effect(state, 1, "destroy_all_artifacts_and_enchantments", {})
+
+    assert artifact.id in p1.graveyard
+    assert enchantment.id in p2.graveyard
+
+
+def test_oracle_mass_artifact_and_enchantment_removal_is_inferred() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="wipe",
+        name="Bane of Progress",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Creature"],
+        oracle_text="Destroy all artifacts and enchantments.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "destroy_all_artifacts_and_enchantments"
+    assert payload == {}
+
+
 def test_oracle_collected_company_style_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
