@@ -7,6 +7,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Rules coverage:
   - Loyalty ability parsing now recognizes `-X`/`+X` style planeswalker abilities and carries X-value handling through move generation, resolution, and AI materialization.
   - Added regression coverage for X-loyalty planeswalker abilities so they resolve with the chosen X value instead of failing like a malformed cost.
+- AI deck analysis:
+  - Imported deck analysis now folds `card_faces` into archetype scoring so split and modal cards contribute their actual text and type data instead of being flattened to the front face only.
+  - Added regression coverage for face-aware deck analysis on synthetic modal/split imports.
+- Simulator diagnostics:
+  - Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data.
+  - Added regression coverage for the improved anomaly classifier.
 - UI readability:
   - Battlefield zones now show compact mana-pool pips so floating mana stays visible without adding wide text blocks.
   - The match status grid now surfaces the active priority seat directly.

@@ -44,6 +44,7 @@ The project is built for serious deck work:
 - Replay inspection
 - Deterministic regression checks
 - Match logs, anomaly output, and training trace export
+- Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data
 
 ## Architecture
 
@@ -78,6 +79,7 @@ The application currently supports:
 - Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
 - Local card caching with image fallback handling and token art resolution when available
 - Partial cache rows are merged with fallback metadata so common cards do not lose oracle text or type data
+- Imported deck analysis now folds `card_faces` into archetype scoring so split and modal cards are classified by their actual text and type data
 - Replay logs, batch simulations, matchup stats, anomaly diagnostics, first-divergence replay drilldown, turn-level AI trace summaries, first-game log excerpts, per-game batch results, and training trace export with board snapshots
 - Training exports preserve active-player and priority-player context for later AI analysis
 - Verbose AI traces now include active-player and priority-player context for easier replay analysis

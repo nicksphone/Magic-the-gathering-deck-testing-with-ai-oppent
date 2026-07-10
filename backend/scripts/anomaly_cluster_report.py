@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 PATTERNS = [
-    ("land_miss", re.compile(r"plays? [A-Za-z]+\.$", re.IGNORECASE)),
+    ("land_miss", re.compile(r"plays? .+\.$", re.IGNORECASE)),
     ("cannot_pay", re.compile(r"cannot pay", re.IGNORECASE)),
     ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
     ("stall_pass", re.compile(r"pass_priority", re.IGNORECASE)),
@@ -19,13 +19,41 @@ PATTERNS = [
 
 def classify(lines: list[str]) -> list[str]:
     labels: list[str] = []
+    traces = [_parse_trace(line) for line in lines]
+    traces = [t for t in traces if t is not None]
     text = "\n".join(lines)
     for name, pat in PATTERNS:
         if pat.search(text):
             labels.append(name)
+    if _looks_like_main_phase_pass_loop(traces):
+        labels.append("main_phase_pass_loop")
     if not labels:
         labels.append("other")
     return labels
+
+
+def _parse_trace(line: str) -> dict | None:
+    if not line.startswith("AI TRACE "):
+        return None
+    try:
+        payload = json.loads(line[len("AI TRACE ") :])
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
+def _looks_like_main_phase_pass_loop(traces: list[dict]) -> bool:
+    count = 0
+    for trace in traces:
+        action = trace.get("action") or {}
+        step = str(trace.get("step") or "").lower()
+        if action.get("type") == "pass_priority" and "main" in step:
+            count += 1
+            if count >= 2:
+                return True
+    return False
 
 
 def main() -> None:

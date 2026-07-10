@@ -31,10 +31,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     for item in mainboard:
         quantity = max(0, int(item.get("quantity", 0) or 0))
         meta = item.get("card_metadata") or {}
-        name = str(meta.get("name") or item.get("card_name") or "").strip()
-        type_line = str(meta.get("type_line") or item.get("type_line") or "").strip()
-        oracle_text = str(meta.get("oracle_text") or item.get("oracle_text") or "").strip()
-        mana_cost = str(meta.get("mana_cost") or item.get("mana_cost") or "").strip()
+        name, type_line, oracle_text, mana_cost, face_stats = _summarize_card_metadata(meta, item)
         for _ in range(quantity):
             expanded_cards.append(
                 {
@@ -42,6 +39,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
                     "type_line": type_line,
                     "oracle_text": oracle_text,
                     "mana_cost": mana_cost,
+                    "face_stats": face_stats,
                 }
             )
     names = " ".join(card["name"].lower() for card in expanded_cards)
@@ -58,6 +56,8 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     ramp_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["add ", "cultivate", "ramp", "search your library for a land", "treasure"]))
     token_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["create a", "create two", "token", "warrior", "soldier", "human token"]))
     graveyard_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["graveyard", "reanimate", "return target creature card", "mill", "discard"]))
+    face_card_count = sum(1 for card in expanded_cards if card.get("face_stats", {}).get("face_count", 0) > 1)
+    split_card_count = sum(1 for card in expanded_cards if card.get("face_stats", {}).get("split_like", False))
     score = Counter()
     signals: list[str] = []
 
@@ -131,6 +131,12 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     if graveyard_cards >= max(3, total_cards // 8):
         score["Reanimator"] += 2
         score["Drain"] += 1
+    if split_card_count >= max(2, total_cards // 10):
+        score["Tempo"] += 1
+        score["Control"] += 1
+    if face_card_count >= max(3, total_cards // 8):
+        score["Midrange"] += 1
+        score["Control"] += 1
     if cheap_spells >= max(8, total_cards // 3) and creature_like >= total_cards * 0.25:
         score["Aggro"] += 1
         score["Burn"] += 1
@@ -158,6 +164,8 @@ def analyze_deck(mainboard: list[dict]) -> dict:
         "land_count_estimate": int(land_count),
         "creature_density_estimate": round(creature_like / total_cards, 3),
         "avg_cmc_estimate": round(avg_cmc, 3),
+        "face_card_count_estimate": int(face_card_count),
+        "split_card_count_estimate": int(split_card_count),
     }
 
 
@@ -181,3 +189,46 @@ def _looks_like_creature_name(name: str) -> bool:
 def _card_text_matches(card: dict, keys: list[str]) -> bool:
     text = f"{card.get('name', '')} {card.get('type_line', '')} {card.get('oracle_text', '')}".lower()
     return any(key in text for key in keys)
+
+
+def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str, dict]:
+    name = str(meta.get("name") or item.get("card_name") or "").strip()
+    type_line = str(meta.get("type_line") or item.get("type_line") or "").strip()
+    oracle_text = str(meta.get("oracle_text") or item.get("oracle_text") or "").strip()
+    mana_cost = str(meta.get("mana_cost") or item.get("mana_cost") or "").strip()
+    faces = meta.get("card_faces") or []
+    face_names: list[str] = []
+    face_types: list[str] = []
+    face_oracles: list[str] = []
+    face_mana_costs: list[str] = []
+    split_like = False
+    for face in faces if isinstance(faces, list) else []:
+        if not isinstance(face, dict):
+            continue
+        face_name = str(face.get("name") or "").strip()
+        face_type = str(face.get("type_line") or "").strip()
+        face_oracle = str(face.get("oracle_text") or "").strip()
+        face_mana = str(face.get("mana_cost") or "").strip()
+        if face_name:
+            face_names.append(face_name)
+        if face_type:
+            face_types.append(face_type)
+        if face_oracle:
+            face_oracles.append(face_oracle)
+        if face_mana:
+            face_mana_costs.append(face_mana)
+    if len(face_names) > 1:
+        split_like = " // " in name or len({n.lower() for n in face_names}) > 1
+    if face_types:
+        type_line = " // ".join([part for part in [type_line, " | ".join(face_types)] if part]).strip()
+    if face_oracles:
+        oracle_text = " ".join([part for part in [oracle_text, " ".join(face_oracles)] if part]).strip()
+    if not mana_cost and face_mana_costs:
+        mana_cost = " ".join(face_mana_costs).strip()
+    if not name and face_names:
+        name = " // ".join(face_names)
+    face_stats = {
+        "face_count": len(face_names) or (1 if oracle_text or type_line or mana_cost else 0),
+        "split_like": split_like,
+    }
+    return name, type_line, oracle_text, mana_cost, face_stats

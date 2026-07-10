@@ -45,3 +45,29 @@ def test_guess_archetype_detects_tokens_from_metadata_and_text() -> None:
     out = analyze_deck(deck)
     assert guess_archetype(deck) == "Tokens"
     assert out["scores"]["Tokens"] >= 1
+
+
+def test_guess_archetype_reads_card_faces_for_modal_and_split_imports() -> None:
+    deck = [
+        {"quantity": 24, "card_name": "Island", "card_metadata": {"name": "Island", "type_line": "Basic Land - Island", "mana_cost": ""}},
+        {
+            "quantity": 4,
+            "card_name": "Mystic Modal",
+            "card_metadata": {
+                "name": "Mystic Modal",
+                "type_line": "Sorcery // Sorcery",
+                "mana_cost": "",
+                "card_faces": [
+                    {"name": "Insight", "type_line": "Sorcery", "oracle_text": "Draw two cards."},
+                    {"name": "Mob", "type_line": "Sorcery", "oracle_text": "Create two 1/1 white Soldier creature tokens."},
+                ],
+            },
+        },
+        {"quantity": 4, "card_name": "Wedding Announcement", "card_metadata": {"name": "Wedding Announcement", "type_line": "Enchantment", "mana_cost": "{2}{W}", "oracle_text": "At the beginning of your end step, create a 1/1 white Human creature token."}},
+        {"quantity": 28, "card_name": "Unknown Utility", "card_metadata": {"name": "Unknown Utility", "type_line": "Sorcery", "mana_cost": "{2}{W}", "oracle_text": ""}},
+    ]
+
+    out = analyze_deck(deck)
+    assert out["face_card_count_estimate"] == 4
+    assert out["split_card_count_estimate"] == 4
+    assert guess_archetype(deck) == "Tokens"

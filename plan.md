@@ -44,6 +44,7 @@ The project is functional, but the following remain open:
 - Some trigger parsing is still text-driven rather than a full rules parser.
 - Additional-cost handling still does not model every uncommon replacement/prevention interaction.
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling, especially outside the face-type parsing cases already improved.
+- Imported deck analysis now uses `card_faces` for split and modal cards, but broader tactical planning for dynamic-value cards still needs more matchup coverage.
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - A few X-cost loyalty abilities are now handled correctly, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
