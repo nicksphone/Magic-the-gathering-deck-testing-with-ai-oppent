@@ -18,6 +18,7 @@ The project is built for serious deck work:
 - Land drops, casting, activated abilities, and combat actions
 - Damage, prevention, protection, replacement effects, and trigger resolution
 - Death replacement now applies consistently across destroy, sacrifice, combat cleanup, and state-based actions
+- Death replacement now also understands common `nontoken` and `another creature` Oracle variants
 - Death triggers now respect controller clauses like "a creature you control dies"
 - Additional-cost sacrifice replacement now respects exile-instead-of-dying effects
 - Planeswalker combat targeting
@@ -85,6 +86,7 @@ Recent large areas of coverage include:
 - modal/split card face selection
 - deterministic replay stability
 - protection, prevention, and replacement edge cases
+- broader death-replacement phrase coverage for common Oracle variants
 - targeted and mass artifact/enchantment removal coverage
 - trigger ordering metadata
 - ordered continuous-effect layer traces for overlapping static effects

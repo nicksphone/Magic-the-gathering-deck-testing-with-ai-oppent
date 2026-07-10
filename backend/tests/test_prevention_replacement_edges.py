@@ -168,3 +168,57 @@ def test_destroy_permanent_respects_die_to_exile_replacement() -> None:
     assert card.zone == Zone.EXILE
     assert cid in state.players[1].exile
     assert cid not in state.players[1].graveyard
+
+
+def test_destroy_permanent_respects_nontoken_die_replacement_variant() -> None:
+    state = _state()
+    replacement = CardInstance(
+        id="rep",
+        name="Death Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a nontoken creature you control would die, exile it instead.",
+    )
+    state.cards[replacement.id] = replacement
+    state.players[1].battlefield.append(replacement.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+
+    resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.EXILE
+    assert cid in state.players[1].exile
+    assert cid not in state.players[1].graveyard
+
+
+def test_destroy_permanent_respects_another_creature_variant() -> None:
+    state = _state()
+    replacement = CardInstance(
+        id="rep",
+        name="Warden",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If another creature you control would die, exile it instead.",
+    )
+    state.cards[replacement.id] = replacement
+    state.players[1].battlefield.append(replacement.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+
+    resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.EXILE
+    assert cid in state.players[1].exile
+    assert cid not in state.players[1].graveyard

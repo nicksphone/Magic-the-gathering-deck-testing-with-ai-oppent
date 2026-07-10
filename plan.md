@@ -15,6 +15,7 @@ The following are implemented and currently supported by the repo:
 - Rules engine for turn structure, stack, combat, priority, mulligans, mana, state-based actions, and several layered/replacement interactions.
 - Targeted and mass artifact/enchantment removal via Oracle inference and reusable effect handlers.
 - Death replacement now applies consistently through destroy, sacrifice, combat cleanup, and state-based actions.
+- Death replacement now also recognizes the common `nontoken` and `another creature` Oracle variants.
 - Death-trigger collection now respects controller-scoped clauses like "a creature you control dies".
 - Additional-cost sacrifice now also respects exile-instead-of-dying replacement effects.
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.

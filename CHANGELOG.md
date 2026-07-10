@@ -8,6 +8,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.
   - The new coverage includes `destroy target artifact or enchantment` style cards and `destroy all artifacts and enchantments` sweepers.
   - Creature death replacement now applies consistently through destroy, sacrifice, combat cleanup, and state-based actions.
+  - Death replacement now also matches common `nontoken` and `another creature` Oracle variants instead of only one phrasing.
   - Death-trigger collection now respects controller-scoped clauses such as `a creature you control dies`.
   - Additional-cost sacrifice now also respects exile-instead-of-dying replacement effects.
 - Simulator diagnostics:
