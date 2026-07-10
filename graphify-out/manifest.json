@@ -192,8 +192,8 @@
     "hash": "39bed28bdc36abc66da20d7f22047eee"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_additional_costs.py": {
-    "mtime": 1777195184.9700375,
-    "hash": "fcce615533f840b94f35f02b9e2e1403"
+    "mtime": 1783679839.6555293,
+    "hash": "40b5400c411327db14edb55ab2fcd00a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_expansion_top_decks_catalog.py": {
     "mtime": 1777217187.3236232,
@@ -420,8 +420,8 @@
     "hash": "07dc3a93610af0345ba65545ed642a9e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/costs.py": {
-    "mtime": 1778289047.7592387,
-    "hash": "824aa66b2b91aeb35db300d7cd8bc009"
+    "mtime": 1783679817.5118563,
+    "hash": "28488c9d3707cc7af4652878effe0bab"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/__init__.py": {
     "mtime": 1777063134.7060611,

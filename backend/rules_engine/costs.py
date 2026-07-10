@@ -6,6 +6,7 @@ from typing import Any
 
 from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
+from rules_engine.replacement import replace_die_zone
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
@@ -91,9 +92,16 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         if not sac_id:
             return False
         player.battlefield.remove(sac_id)
-        player.graveyard.append(sac_id)
-        state.cards[sac_id].zone = Zone.GRAVEYARD
-        state.log.append(f"{player.name} sacrifices {state.cards[sac_id].name} for additional cost.")
+        card = state.cards[sac_id]
+        destination = replace_die_zone(state, player_id, sac_id)
+        if destination == "exile":
+            player.exile.append(sac_id)
+            card.zone = Zone.EXILE
+            state.log.append(f"{player.name} sacrifices {card.name} for additional cost, but it is exiled instead of dying.")
+        else:
+            player.graveyard.append(sac_id)
+            card.zone = Zone.GRAVEYARD
+            state.log.append(f"{player.name} sacrifices {card.name} for additional cost.")
 
     return True
 

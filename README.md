@@ -19,6 +19,7 @@ The project is built for serious deck work:
 - Damage, prevention, protection, replacement effects, and trigger resolution
 - Death replacement now applies consistently across destroy, sacrifice, combat cleanup, and state-based actions
 - Death triggers now respect controller clauses like "a creature you control dies"
+- Additional-cost sacrifice replacement now respects exile-instead-of-dying effects
 - Planeswalker combat targeting
 - Loss conditions for life and decking
 
