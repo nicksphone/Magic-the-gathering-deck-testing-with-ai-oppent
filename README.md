@@ -18,6 +18,7 @@ The project is built for serious deck work:
 - Land drops, casting, activated abilities, and combat actions
 - Damage, prevention, protection, replacement effects, and trigger resolution
 - Death replacement now applies consistently across destroy, sacrifice, combat cleanup, and state-based actions
+- Death triggers now respect controller clauses like "a creature you control dies"
 - Planeswalker combat targeting
 - Loss conditions for life and decking
 

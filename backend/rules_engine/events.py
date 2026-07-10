@@ -43,7 +43,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "life_gain" and payload.get("player_id") == card.controller and "whenever you gain life" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
-            elif event == "creature_dies" and ("whenever a creature dies" in oracle or "whenever another creature dies" in oracle):
+            elif event == "creature_dies" and _matches_creature_dies_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and payload.get("card_id") == cid and f"when {card.name.lower()} enters the battlefield" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
@@ -148,6 +148,20 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 state.trigger_once_seen_this_turn.add(trigger_key)
     out.sort(key=lambda trig: (0 if trig["controller"] == state.active_player else 1, str(trig["source_card_id"]), str(trig["label"])))
     return out
+
+
+def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if "whenever a creature dies" in oracle or "whenever another creature dies" in oracle:
+        return True
+    if "whenever a creature you control dies" in oracle or "whenever another creature you control dies" in oracle:
+        dead_id = payload.get("card_id")
+        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
+        return bool(dead_card) and dead_card.controller == card.controller
+    if "whenever a nontoken creature you control dies" in oracle:
+        dead_id = payload.get("card_id")
+        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
+        return bool(dead_card) and dead_card.controller == card.controller and "token" not in {str(t).lower() for t in (getattr(dead_card, "types", []) or [])}
+    return False
 
 
 def _order_apnap(state: MatchState, triggers: list[dict[str, Any]]) -> list[dict[str, Any]]:

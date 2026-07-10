@@ -15,6 +15,7 @@ The following are implemented and currently supported by the repo:
 - Rules engine for turn structure, stack, combat, priority, mulligans, mana, state-based actions, and several layered/replacement interactions.
 - Targeted and mass artifact/enchantment removal via Oracle inference and reusable effect handlers.
 - Death replacement now applies consistently through destroy, sacrifice, combat cleanup, and state-based actions.
+- Death-trigger collection now respects controller-scoped clauses like "a creature you control dies".
 - AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
 - Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
 - Replay and anomaly tooling for divergence detection and debug runs.
@@ -29,6 +30,7 @@ The project is functional, but the following remain open:
 - Long-tail Oracle coverage is still incomplete for unusual or older cards.
 - Replacement, prevention, and layer handling still rely on heuristics in edge cases.
 - Some remaining replacement cases still use text matching instead of a fully generic rules model.
+- Some trigger parsing is still text-driven rather than a full rules parser.
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling.
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.

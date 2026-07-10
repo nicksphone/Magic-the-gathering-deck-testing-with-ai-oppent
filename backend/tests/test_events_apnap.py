@@ -138,3 +138,64 @@ def test_trigger_stack_items_include_order_metadata() -> None:
     assert state.stack[0].payload["__trigger_order"] == 0
     assert state.stack[1].payload["__trigger_order"] == 1
     assert state.stack[0].payload["__trigger_event"] == "creature_dies"
+
+
+def test_creature_dies_trigger_matches_you_control_clause() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.players[1].battlefield = ["c1"]
+    state.cards["c1"] = CardInstance(
+        id="c1",
+        name="Grim Haruspex",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a nontoken creature you control dies, draw a card.",
+    )
+    dead = CardInstance(
+        id="dead",
+        name="Soldier",
+        owner=1,
+        controller=1,
+        zone=Zone.GRAVEYARD,
+        types=["Creature"],
+    )
+    state.cards[dead.id] = dead
+
+    emit_event(state, "creature_dies", {"card_id": dead.id})
+    assert len(state.stack) == 1
+    assert state.stack[0].controller == 1
+
+
+def test_creature_dies_trigger_does_not_match_opponent_creature() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.players[1].battlefield = ["c1"]
+    state.cards["c1"] = CardInstance(
+        id="c1",
+        name="Grim Haruspex",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a creature you control dies, draw a card.",
+    )
+    dead = CardInstance(
+        id="dead",
+        name="Soldier",
+        owner=2,
+        controller=2,
+        zone=Zone.GRAVEYARD,
+        types=["Creature"],
+    )
+    state.cards[dead.id] = dead
+
+    emit_event(state, "creature_dies", {"card_id": dead.id})
+    assert len(state.stack) == 0
