@@ -249,6 +249,46 @@ def test_oracle_token_count_and_keywords_parsing() -> None:
     assert "vigilance" in payload["keywords"]
 
 
+def test_oracle_destroy_all_creatures_resolution_wipes_board() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p2 = state.players[2]
+    creature_a = CardInstance(
+        id="crea",
+        name="Runeclaw Bear",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="",
+        power=2,
+        toughness=2,
+    )
+    creature_b = CardInstance(
+        id="creb",
+        name="Elvish Mystic",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="",
+        power=1,
+        toughness=1,
+    )
+    state.cards[creature_a.id] = creature_a
+    state.cards[creature_b.id] = creature_b
+    p1.battlefield.append(creature_a.id)
+    p2.battlefield.append(creature_b.id)
+
+    resolve_effect(state, 1, "destroy_all_creatures", {})
+
+    assert creature_a.id in p1.graveyard
+    assert creature_b.id in p2.graveyard
+    assert creature_a.zone == Zone.GRAVEYARD
+    assert creature_b.zone == Zone.GRAVEYARD
+
+
 def test_oracle_collected_company_style_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

@@ -189,7 +189,7 @@ The app syncs and caches card data locally.
 ## Simulation Notes
 
 - AI vs AI autoplay can be stepped or run continuously
-- Batch runs are used for matchup analysis and regression checks, with deterministic per-game seeding and per-game result summaries for repeatable comparisons
+- Batch runs are used for matchup analysis and regression checks, with deterministic per-game seeding, alternating play/draw order, and per-game result summaries for repeatable comparisons
 - Replay logs are normalized for deterministic comparison
 - Verbose logs can be exported into training examples with board snapshots and per-turn action summaries
 - The Testing Simulator panel shows live job status, progress, failure output, and compact first-game turn/log summaries while batch jobs run
@@ -201,6 +201,7 @@ The app syncs and caches card data locally.
 - Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
 - AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states
 - Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, and live simulator status/progress display, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
+- Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups
 - UI is functional, but several competitive-play polish items remain before it feels complete for long sessions
 
 ## Changelog

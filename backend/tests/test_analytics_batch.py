@@ -31,3 +31,4 @@ def test_batch_is_deterministic_for_same_inputs() -> None:
     out2 = service.run_batch(deck_a, deck_b, matches=2, difficulty="master", max_ticks=1)
     assert out1["deterministic_replay_fingerprint"] == out2["deterministic_replay_fingerprint"]
     assert out1["game_results"] == out2["game_results"]
+    assert [row["deck_a_on_play"] for row in out1["game_results"]] == [True, False]

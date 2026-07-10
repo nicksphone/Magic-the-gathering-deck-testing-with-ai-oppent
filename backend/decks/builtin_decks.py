@@ -85,11 +85,15 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Cultivate
 4 Migration Path
 4 Topiary Stomper
-4 Nissa, Who Shakes the World
-3 Ugin, the Spirit Dragon
-3 Hydroid Krasis
-2 Storm the Festival
-28 Forest
+4 Fatal Push
+4 Go for the Throat
+4 The Meathook Massacre
+2 Nissa, Who Shakes the World
+2 Ugin, the Spirit Dragon
+1 Hydroid Krasis
+1 Storm the Festival
+14 Forest
+8 Swamp
 """,
     "Drain Deck": """
 4 Cauldron Familiar
@@ -108,10 +112,11 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Spectral Procession
 4 Wedding Announcement
 4 Intangible Virtue
-4 March of the Multitudes
+2 March of the Multitudes
 4 Clarion Spirit
 4 Adeline, Resplendent Cathar
-4 Secure the Wastes
+2 Secure the Wastes
+4 Brutal Cathar
 28 Plains
 """,
     "Tribal": """

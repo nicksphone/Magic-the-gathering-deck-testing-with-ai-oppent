@@ -43,7 +43,11 @@ class AnalyticsService:
 
         for i in range(matches):
             seed = self._batch_seed(deck_a, deck_b, i, difficulty)
-            state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
+            deck_a_on_play = i % 2 == 0
+            if deck_a_on_play:
+                state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
+            else:
+                state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
             opener_quality_a.append(self._opening_hand_quality(state, 1))
             opener_quality_b.append(self._opening_hand_quality(state, 2))
             a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a))
@@ -55,7 +59,10 @@ class AnalyticsService:
                 else:
                     pid = state.priority_player
                 legal = self.engine.legal_moves(state, pid)
-                agent = a_agent if pid == 1 else b_agent
+                if deck_a_on_play:
+                    agent = a_agent if pid == 1 else b_agent
+                else:
+                    agent = b_agent if pid == 1 else a_agent
                 decision = agent.choose_action(state, legal, pid)
                 # Safety: if AI returns an action not in legal moves, treat as pass
                 legal_types = {m["type"] for m in legal}
@@ -68,10 +75,14 @@ class AnalyticsService:
 
             winner = state.winner
             if winner in (1, 2):
-                stats[f"wins_{winner}"] += 1
-                if i % 2 == 0:
+                deck_a_won = (winner == 1 and deck_a_on_play) or (winner == 2 and not deck_a_on_play)
+                if deck_a_won:
+                    stats["wins_1"] += 1
+                else:
+                    stats["wins_2"] += 1
+                if deck_a_on_play:
                     resolved_play_games += 1
-                    if winner == 1:
+                    if deck_a_won:
                         play_win += 1
             else:
                 stats["timeouts"] += 1
@@ -85,6 +96,7 @@ class AnalyticsService:
                     "winner": winner,
                     "turns": state.turn,
                     "timeout": winner is None,
+                    "deck_a_on_play": deck_a_on_play,
                 }
             )
             replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")

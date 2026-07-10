@@ -28,6 +28,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Batch determinism:
   - Batch simulation now seeds each game deterministically from the matchup and game index.
   - Batch responses now include per-game results with seeds, winners, turn counts, and timeout flags.
+- Rules coverage:
+  - Generic destroy-all-creatures resolution now exists for Oracle text that says to wipe the board.
+  - The resolver path is covered by regression tests using a real sweep effect.
+- Simulator UI polish:
+  - The Testing Simulator now shows per-game batch results in addition to the first-game excerpt and aggregate stats.
 - AI tactical evaluation:
   - Battlefield scoring is now keyword-aware and values evasive or protected threats more accurately.
   - Control removal decisions now weigh target threat level instead of treating all removal targets equally.

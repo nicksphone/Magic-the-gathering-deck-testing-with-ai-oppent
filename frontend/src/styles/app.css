@@ -418,6 +418,10 @@ button:hover {
   gap: 4px;
 }
 
+.analytics-sample-list li {
+  line-height: 1.35;
+}
+
 .analytics-log-excerpt {
   margin: 0;
   max-height: 180px;

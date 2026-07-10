@@ -50,7 +50,7 @@ class AIAgent:
         if forced_land is not None:
             return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
 
-        forced_stabilize = self._forced_burn_stabilization_line(state, legal_moves, player_id)
+        forced_stabilize = self._forced_sweeper_stabilization_line(state, legal_moves, player_id)
         if forced_stabilize is not None:
             return AIDecision(action=forced_stabilize, reasoning="Burn matchup stabilization: remove pressure before value lines")
 
@@ -481,9 +481,7 @@ class AIAgent:
             candidates.append(mat)
         return candidates[0] if candidates else None
 
-    def _forced_burn_stabilization_line(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
-        if not self._is_burn_matchup():
-            return None
+    def _forced_sweeper_stabilization_line(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if getattr(state, "active_player", player_id) != player_id:
             return None
         if _step_key(getattr(state, "step", "")) not in {"precombat_main", "postcombat_main"}:
@@ -491,12 +489,27 @@ class AIAgent:
         if getattr(state, "stack", []) or []:
             return None
         opp_id = 1 if player_id == 2 else 2
+        own_creatures = [
+            cid
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        ]
         opp_creatures = [
             cid
             for cid in state.players[opp_id].battlefield
             if cid in state.cards and "Creature" in state.cards[cid].types
         ]
         if not opp_creatures:
+            return None
+        opp_power = sum((state.cards[cid].power or 0) for cid in opp_creatures)
+        own_life = int(getattr(state.players[player_id], "life", 20) or 20)
+        should_force = (
+            len(opp_creatures) >= 3
+            or opp_power >= max(3, own_life // 2)
+            or len(own_creatures) <= 1
+            or self.archetype in {"Control", "Counter-heavy", "Midrange"}
+        )
+        if not should_force:
             return None
         cast_moves = [m for m in legal_moves if m.get("type") == "cast_spell"]
         best: tuple[float, dict] | None = None
@@ -514,11 +527,16 @@ class AIAgent:
             text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
             score = 0.0
             if "sweeper" in tags:
-                score += 5.0 if len(opp_creatures) >= 2 else 1.0
+                score += 6.0 if len(opp_creatures) >= 3 else 3.0
+                score += min(opp_power, 8) * 0.4
+                if own_creatures:
+                    score += 1.5
             if "removal" in tags:
-                score += 3.0
+                score += 2.0
             if any(k in text for k in ["exile", "destroy"]):
                 score += 0.8
+            if "destroy all creatures" in text or "exile all creatures" in text:
+                score += 3.0
             if best is None or score > best[0]:
                 best = (score, mat)
         return best[1] if best else None

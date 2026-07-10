@@ -173,6 +173,27 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
             emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
 
 
+def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
+    del controller, payload
+    destroyed = False
+    for cid, card in list(state.cards.items()):
+        if "Creature" not in card.types:
+            continue
+        owner_state = state.players[card.controller]
+        if cid in owner_state.battlefield:
+            owner_state.battlefield.remove(cid)
+            owner_state.graveyard.append(cid)
+            card.zone = Zone.GRAVEYARD
+            card.counters.pop("__damage_marked", None)
+            card.counters.pop("__deathtouch_damaged", None)
+            card.counters.pop("__prevent_damage_shield", None)
+            destroyed = True
+            state.log.append(f"{card.name} is destroyed.")
+            emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+    if destroyed:
+        state.log.append("All creatures are destroyed.")
+
+
 def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):

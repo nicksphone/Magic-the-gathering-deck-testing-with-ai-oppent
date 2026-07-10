@@ -831,14 +831,17 @@ def _start_next_game_state(match: MatchController) -> None:
 
 def _ensure_builtin_decks(repo: Repository) -> None:
     existing = {
-        (row.name.strip().lower(), (row.source or "").strip().lower())
+        (row.name.strip().lower(), (row.source or "").strip().lower()): row
         for row in repo.list_decks()
     }
     service = DeckService(repo)
     for name in sorted(BUILTIN_DECKS.keys()):
         key = (name.strip().lower(), "builtin")
-        if key in existing:
-            continue
+        row = existing.get(key)
+        if row is not None:
+            repo.session.delete(row)
+    repo.session.commit()
+    for name in sorted(BUILTIN_DECKS.keys()):
         service.import_deck_text(name=name, deck_text=BUILTIN_DECKS[name], source="builtin")
 
 

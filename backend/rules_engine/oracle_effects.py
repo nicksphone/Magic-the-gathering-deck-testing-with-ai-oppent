@@ -336,6 +336,9 @@ def _infer_clause_effect(
         if target:
             return "destroy_permanent", {"target_card_id": target}
 
+    if "destroy all creatures" in oracle:
+        return "destroy_all_creatures", {}
+
     if "exile target" in oracle:
         target = target_card_id or _first_creature(state, opponent)
         if target:

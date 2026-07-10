@@ -15,6 +15,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "gain_life": handlers.gain_life,
     "lose_life": handlers.lose_life,
     "destroy_permanent": handlers.destroy_permanent,
+    "destroy_all_creatures": handlers.destroy_all_creatures,
     "counter_spell": handlers.counter_spell,
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,

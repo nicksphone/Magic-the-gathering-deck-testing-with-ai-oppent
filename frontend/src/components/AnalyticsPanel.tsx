@@ -177,6 +177,18 @@ export function AnalyticsPanel({ decks }: Props) {
               </pre>
             </div>
           ) : null}
+          {Array.isArray(resultObj.game_results) ? (
+            <div className="analytics-sample-block">
+              <strong>Per-Game Results</strong>
+              <ul className="analytics-sample-list">
+                {(resultObj.game_results as Array<Record<string, unknown>>).slice(0, 12).map((game) => (
+                  <li key={`${game.game_index ?? "g"}-${game.seed ?? "s"}`}>
+                    Game {game.game_index as number | string}: winner {String(game.winner ?? "timeout")} | turns {String(game.turns ?? "-")} | deck A on play: {String(game.deck_a_on_play ?? false)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       ) : null}
       <pre>{result || "No simulation result yet."}</pre>
