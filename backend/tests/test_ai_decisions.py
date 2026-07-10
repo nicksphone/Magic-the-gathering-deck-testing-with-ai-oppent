@@ -164,6 +164,52 @@ def test_matchup_profile_pushes_tempo_to_be_more_proactive_against_control() -> 
     assert profile["risk_tolerance"] > 0.0
 
 
+def test_matchup_profile_boosts_counterspell_score_against_aggro() -> None:
+    control_vs_aggro = AIAgent(difficulty="master", archetype="Control", opponent_archetype="Aggro")
+    control_vs_control = AIAgent(difficulty="master", archetype="Control", opponent_archetype="Control")
+
+    class FakeState:
+        active_player = 1
+        step = "precombat_main"
+        stack = [type("S", (), {"id": "stack-a", "label": "Threat"})()]
+        players = {
+            1: type("P", (), {"life": 16, "hand": ["counter-1"], "battlefield": ["i1", "i2", "i3"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 16, "hand": [], "battlefield": ["b1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
+            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i3": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
+        }
+
+    move = {"type": "cast_spell", "card_id": "counter-1", "card_name": "Counterspell"}
+    score_vs_aggro = control_vs_aggro._matchup_move_adjustment(FakeState(), move, 1)
+    score_vs_control = control_vs_control._matchup_move_adjustment(FakeState(), move, 1)
+    assert score_vs_aggro > score_vs_control
+
+
+def test_matchup_profile_changes_attack_bias_for_tempo_pressure() -> None:
+    tempo_vs_control = AIAgent(difficulty="master", archetype="Tempo", opponent_archetype="Control")
+    tempo_vs_ramp = AIAgent(difficulty="master", archetype="Tempo", opponent_archetype="Ramp")
+
+    class FakeState:
+        players = {
+            1: type("P", (), {"life": 16, "battlefield": ["a1"]})(),
+            2: type("P", (), {"life": 16, "battlefield": ["b1", "b2"]})(),
+        }
+        cards = {
+            "a1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+            "b2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+        }
+
+    score_vs_control = tempo_vs_control._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
+    score_vs_ramp = tempo_vs_ramp._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
+    assert score_vs_control > score_vs_ramp
+
+
 def test_control_ai_sets_counterspell_stack_target() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
     moves = [

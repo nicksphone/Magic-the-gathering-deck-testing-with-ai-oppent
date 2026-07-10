@@ -16,6 +16,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI matchup profiling:
   - Matchup profiles now differentiate control, ramp, tempo, and token matchups more aggressively so the agent's timing heuristics have better inputs.
   - Added regression coverage for control-vs-aggro hold-up bias and tempo-vs-control proactivity bias.
+  - Move scoring now applies matchup-profile pressure directly to pass, attack, and cast choices instead of only using it in a couple of early heuristics.
+  - Added regression coverage showing matchup pressure now changes score outputs for counterspells and tempo attacks.
 - Simulator diagnostics:
   - Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data.
   - Added regression coverage for the improved anomaly classifier.

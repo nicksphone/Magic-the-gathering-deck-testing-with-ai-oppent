@@ -667,6 +667,7 @@ class AIAgent:
                 if own_main_sorcery_window and castable_creature_moves:
                     # Avoid stalling with threats stranded in hand when we can safely deploy.
                     base -= 2.6
+            base += self._matchup_move_adjustment(state, move, player_id)
             if self.difficulty in {"master", "master_plus"}:
                 base += self._simulate_delta(state, move, player_id)
             if self.difficulty == "master_plus":
@@ -736,6 +737,7 @@ class AIAgent:
         race_pressure = max(0, 20 - state.players[opp_id].life) * 0.2
         role = self._board_role(state, player_id)
         archetype_bias = 5 if self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} else 2
+        archetype_bias += float(self.matchup_profile.get("proactive_bias", 0.0)) * 1.2
         if role == "defend":
             archetype_bias -= 2.2
         elif role == "race":
@@ -751,6 +753,7 @@ class AIAgent:
                 risk_penalty += 1.6
         unblocked_bonus = 3.5 if opp_blockers == 0 else 0.0
         lethal_bonus = 20.0 if attack_power >= state.players[opp_id].life else 0.0
+        risk_penalty += max(0.0, -float(self.matchup_profile.get("risk_tolerance", 0.0))) * 0.9
         return archetype_bias + attack_power * 0.8 - opp_block_power * 0.35 + race_pressure + unblocked_bonus + lethal_bonus - risk_penalty
 
     def _pass_bias(self, state: MatchState, player_id: int) -> float:
@@ -816,6 +819,28 @@ class AIAgent:
             if cid in state.cards
         )
         return has_counter and opp_untapped >= 2 and float(self.matchup_profile.get("holdup_bias", 0.0)) >= -0.2
+
+    def _matchup_move_adjustment(self, state: MatchState, move: dict, player_id: int) -> float:
+        delta = 0.0
+        mtype = move.get("type")
+        if mtype == "cast_spell":
+            cid = move.get("card_id")
+            card = state.cards.get(cid) if cid else None
+            if card:
+                tags = self._spell_tags(card)
+                if "draw" in tags or "removal" in tags or "counter" in tags:
+                    delta += float(self.matchup_profile.get("holdup_bias", 0.0)) * 0.35
+                if "token" in tags or "ramp" in tags:
+                    delta += float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.45
+                if self.archetype in {"Control", "Counter-heavy"} and self.opponent_archetype in {"Aggro", "Burn"} and "counter" in tags:
+                    delta += 0.5
+                if self.archetype in {"Tempo"} and self.opponent_archetype in {"Control", "Counter-heavy"} and ("counter" in tags or "removal" in tags):
+                    delta += 0.4
+        elif mtype == "attack":
+            delta += float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.35
+        elif mtype == "pass_priority":
+            delta -= float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.25
+        return delta
 
     def _has_urgent_interaction(self, state: MatchState, player_id: int) -> bool:
         if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:

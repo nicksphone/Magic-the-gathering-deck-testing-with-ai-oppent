@@ -92,6 +92,8 @@ The application currently supports:
 - Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 - Matchup profiles now give control, ramp, tempo, and token decks different timing and risk biases depending on the opponent archetype
+- Matchup profiles now feed directly into move scoring for pass, attack, and cast decisions
+- Control, tempo, and ramp heuristics now weigh matchup pressure more directly when ranking the same legal move
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
 - Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
 - Loyalty abilities with X costs now flow through move generation and AI materialization instead of being dropped as malformed activations
