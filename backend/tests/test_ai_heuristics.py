@@ -44,6 +44,36 @@ def test_evaluate_board_penalizes_opponent_planeswalker_pressure() -> None:
     assert evaluate_board(pressured, 1) < evaluate_board(baseline, 1)
 
 
+def test_evaluate_board_reads_active_face_for_modal_permanents() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    face_a = MatchFactory.from_decks(deck, deck)
+    face_b = MatchFactory.from_decks(deck, deck)
+
+    card_a = face_a.players[1].library.pop()
+    face_a.players[1].battlefield.append(card_a)
+    face_a.cards[card_a].zone = Zone.BATTLEFIELD
+    face_a.cards[card_a].name = "MDFC Shell"
+    face_a.cards[card_a].types = ["Enchantment"]
+    face_a.cards[card_a].selected_face_index = 0
+    face_a.cards[card_a].card_faces = [
+        {"name": "Front", "type_line": "Sorcery", "oracle_text": "Draw a card."},
+        {"name": "Back", "type_line": "Enchantment", "oracle_text": "Creatures you control get +1/+1."},
+    ]
+
+    card_b = face_b.players[1].library.pop()
+    face_b.players[1].battlefield.append(card_b)
+    face_b.cards[card_b].zone = Zone.BATTLEFIELD
+    face_b.cards[card_b].name = "MDFC Shell"
+    face_b.cards[card_b].types = ["Enchantment"]
+    face_b.cards[card_b].selected_face_index = 1
+    face_b.cards[card_b].card_faces = [
+        {"name": "Front", "type_line": "Sorcery", "oracle_text": "Draw a card."},
+        {"name": "Back", "type_line": "Enchantment", "oracle_text": "Creatures you control get +1/+1."},
+    ]
+
+    assert evaluate_board(face_b, 1) > evaluate_board(face_a, 1)
+
+
 def test_control_ai_prefers_removal_against_evasive_threat() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     moves = [

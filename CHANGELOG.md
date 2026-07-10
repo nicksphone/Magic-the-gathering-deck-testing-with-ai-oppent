@@ -10,6 +10,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI deck analysis:
   - Imported deck analysis now folds `card_faces` into archetype scoring so split and modal cards contribute their actual text and type data instead of being flattened to the front face only.
   - Added regression coverage for face-aware deck analysis on synthetic modal/split imports.
+- AI tactical valuation:
+  - Board evaluation now reads the active face of modal/transform permanents when scoring battlefield value.
+  - Added regression coverage for active-face board valuation.
 - Simulator diagnostics:
   - Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data.
   - Added regression coverage for the improved anomaly classifier.

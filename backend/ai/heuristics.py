@@ -54,11 +54,13 @@ def _board_value(state: MatchState, player_id: int) -> float:
         card = state.cards.get(cid)
         if not card:
             continue
+        surface = _active_card_surface(card)
         types = set(getattr(card, "types", []) or [])
+        types.update(_types_from_type_line(surface["type_line"]))
         if "Creature" in types:
             total += _creature_value(state, cid)
             continue
-        total += _noncreature_value(card)
+        total += _noncreature_value(card, surface)
         if "Land" in types and not getattr(card, "tapped", False):
             total += 0.12
     return total
@@ -96,9 +98,11 @@ def _creature_value(state: MatchState, card_id: str) -> float:
     return value
 
 
-def _noncreature_value(card) -> float:
+def _noncreature_value(card, surface: dict | None = None) -> float:
+    surface = surface or _active_card_surface(card)
     types = set(getattr(card, "types", []) or [])
-    text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+    types.update(_types_from_type_line(surface["type_line"]))
+    text = f"{surface['name']} {surface['oracle_text']}".lower()
     value = 0.0
     if "Planeswalker" in types:
         value += 7.0
@@ -118,3 +122,33 @@ def _noncreature_value(card) -> float:
     if any(k in text for k in ["lifelink", "gain life", "can't lose life"]):
         value += 0.7
     return value
+
+
+def _active_card_surface(card) -> dict[str, str]:
+    faces = list(getattr(card, "card_faces", []) or [])
+    index = getattr(card, "selected_face_index", None)
+    face = {}
+    if faces:
+        try:
+            if index is not None:
+                face = faces[int(index)]
+            else:
+                face = faces[0]
+        except Exception:
+            face = faces[0]
+    return {
+        "name": str((face or {}).get("name") or getattr(card, "name", "") or ""),
+        "type_line": str((face or {}).get("type_line") or getattr(card, "type_line", "") or ""),
+        "oracle_text": str((face or {}).get("oracle_text") or getattr(card, "oracle_text", "") or ""),
+    }
+
+
+def _types_from_type_line(type_line: str) -> list[str]:
+    tl = (type_line or "").strip()
+    if not tl:
+        return []
+    parts = tl.split("—", 1)
+    primary = parts[0]
+    if "-" in primary:
+        primary = primary.split("-", 1)[0]
+    return [part.strip() for part in primary.split() if part.strip()]

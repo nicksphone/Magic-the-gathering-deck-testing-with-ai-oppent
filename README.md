@@ -94,6 +94,7 @@ The application currently supports:
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
 - Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
 - Loyalty abilities with X costs now flow through move generation and AI materialization instead of being dropped as malformed activations
+- Board evaluation now scores the active face of modal/transform permanents when they are on the battlefield
 
 Current focus:
 - expanding Oracle coverage for older and unusual cards
