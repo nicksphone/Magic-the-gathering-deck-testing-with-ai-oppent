@@ -85,6 +85,7 @@ The application currently supports:
 - Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
 - Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
+- Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
 
 Recent large areas of coverage include:
 - modal/split card face selection
@@ -212,7 +213,7 @@ The app syncs and caches card data locally.
 - The rules engine still does not cover every Oracle edge case or every older/obscure mechanic
 - Some static/replacement/layer interactions still rely on heuristic inference rather than full Oracle-parity modeling
 - Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
-- AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states
+- AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states; face-selection heuristics for modal/transform cards are improved, but broader matchup tuning still remains
 - Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
 - Simulator diagnostics now classify common divergence buckets such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error, and anomaly clustering now detects land-drop misses correctly
 - Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups

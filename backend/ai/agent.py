@@ -1277,8 +1277,18 @@ class AIAgent:
         proxy.name = str(face.get("name") or getattr(card, "name", ""))
         proxy.oracle_text = str(face.get("oracle_text") or getattr(card, "oracle_text", "") or "")
         proxy.mana_cost = str(face.get("mana_cost") or getattr(card, "mana_cost", "") or "")
-        proxy.types = list(getattr(card, "types", []) or [])
+        proxy.types = self._types_from_type_line(str(face.get("type_line") or getattr(card, "type_line", "") or ""))
         return proxy
+
+    def _types_from_type_line(self, type_line: str) -> list[str]:
+        tl = (type_line or "").strip()
+        if not tl:
+            return []
+        parts = tl.split("—", 1)
+        primary = parts[0]
+        if "-" in primary:
+            primary = primary.split("-", 1)[0]
+        return [part.strip() for part in primary.split() if part.strip()]
 
     def _score_modal_face(self, state: MatchState, card, face: dict, player_id: int) -> float:
         proxy = self._modal_face_proxy(card, face)
@@ -1287,24 +1297,37 @@ class AIAgent:
         mana_req = parse_mana_cost(getattr(proxy, "mana_cost", ""), is_land=False)
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         score = 0.0
+        types = set(getattr(proxy, "types", []) or [])
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
             if cid in state.cards and "Creature" in state.cards[cid].types
         )
+        my_creatures = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
         if "burn" in tags or "damage" in text:
             score += 1.4
         if "draw" in tags:
             score += 1.2
+            if self.archetype in {"Control", "Counter-heavy"} and opp_life > 10:
+                score += 0.8
         if "counter" in tags:
             score += 2.1 if getattr(state, "stack", []) else -1.0
         if "removal" in tags:
             score += 1.8 if opp_creatures > 0 else -1.0
         if "token" in tags:
             score += 1.0
-        if "Creature" in set(getattr(card, "types", []) or []):
+        if "Creature" in types:
             score += 0.5
+            if my_creatures == 0:
+                score += 1.0
+            elif self.archetype in {"Aggro", "Tempo", "Tribal", "Tokens"}:
+                score += 0.7
         if cmc <= 2:
             score += 0.5
         if self.archetype in {"Control", "Counter-heavy"} and any(k in tags for k in {"draw", "counter", "removal"}):
@@ -1313,10 +1336,15 @@ class AIAgent:
             score += 1.2
         if self.archetype == "Tempo" and (cmc <= 2 or "counter" in tags):
             score += 0.9
-        if self.archetype in {"Midrange", "Ramp"} and "Creature" in set(getattr(card, "types", []) or []) and cmc <= 3:
+        if self.archetype in {"Midrange", "Ramp"} and "Creature" in types and cmc <= 3:
             score += 0.7
-        if int(getattr(state, "turn", 1) or 1) <= 3 and score < 1.0:
+        turn = int(getattr(state, "turn", 1) or 1)
+        if turn <= 3 and score < 1.0:
             score -= 1.5
+        if turn >= 6 and "Creature" in types and my_creatures <= opp_creatures:
+            score += 0.6
+        if turn >= 6 and ("draw" in tags or "counter" in tags or "removal" in tags):
+            score += 0.4
         return score
 
     def _select_modal_face_index(self, state: MatchState, card, player_id: int) -> tuple[int, float]:

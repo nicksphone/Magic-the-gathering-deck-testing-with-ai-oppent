@@ -1,16 +1,16 @@
 # Graph Report - mtg-deck-testing-lab  (2026-07-10)
 
 ## Corpus Check
-- 142 files · ~373,831 words
+- 142 files · ~374,305 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1697 nodes · 4574 edges · 95 communities (94 shown, 1 thin omitted)
-- Extraction: 53% EXTRACTED · 47% INFERRED · 0% AMBIGUOUS · INFERRED: 2138 edges (avg confidence: 0.74)
+- 1703 nodes · 4585 edges · 96 communities (92 shown, 4 thin omitted)
+- Extraction: 53% EXTRACTED · 47% INFERRED · 0% AMBIGUOUS · INFERRED: 2140 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `12cbeaad`
+- Built from commit: `98a06ef9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -95,9 +95,10 @@
 - [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `AIAgent` - 185 edges
+1. `AIAgent` - 188 edges
 2. `from_decks()` - 143 edges
 3. `from_decks()` - 136 edges
 4. `RulesEngine` - 112 edges
@@ -115,296 +116,288 @@
   backend/tests/test_token_images.py → backend/effects/registry.py
 - `test_replacement_gain_life_to_draw_cards()` --calls--> `resolve_effect()`  [INFERRED]
   backend/tests/test_new_rules_batch.py → backend/effects/registry.py
-- `test_validate_cast_choice_rejects_out_of_range_face_index()` --calls--> `validate_cast_choice()`  [INFERRED]
-  backend/tests/test_cast_choice_modes.py → backend/rules_engine/cast_choice.py
 - `test_cast_only_during_your_turn_restriction_and_move_hint()` --calls--> `RulesEngine`  [INFERRED]
   backend/tests/test_restrictions.py → backend/rules_engine/engine.py
+- `test_static_you_cant_cast_spells_during_combat_enforced()` --calls--> `RulesEngine`  [INFERRED]
+  backend/tests/test_restrictions.py → backend/rules_engine/engine.py
 
-## Communities (95 total, 1 thin omitted)
+## Communities (96 total, 4 thin omitted)
 
 ### Community 0 - "Community 0"
+Cohesion: 0.06
+Nodes (52): check_cost_option_available(), RulesEngine, compute_max_land_plays_this_turn(), legal_moves(), extract_loyalty_abilities(), can_cast_in_current_timing(), RulesEngine, test_discard_additional_cost_is_paid() (+44 more)
+
+### Community 1 - "Community 1"
 Cohesion: 0.07
 Nodes (55): _batch_seed(), _extract_turn_summaries(), topdeck_put_creatures_battlefield(), apply_cost_modifiers(), CostContext, add_generic_to_cost(), _apply_generic_delta_to_cost(), auto_pay_cost() (+47 more)
 
-### Community 1 - "Community 1"
-Cohesion: 0.06
-Nodes (48): analyze_deck(), _card_text_matches(), _cmc(), guess_archetype(), _looks_like_creature_name(), _looks_like_land(), classify(), main() (+40 more)
-
 ### Community 2 - "Community 2"
-Cohesion: 0.07
-Nodes (48): AIAgent, test_aggro_ai_avoids_suicide_attack_into_larger_blocker(), test_aggro_ai_prefers_creature_development_over_burn_early(), test_aggro_cast_bias_values_stronger_modal_face_higher(), test_ai_assigns_two_blockers_against_menace_attacker(), test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board(), test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible(), test_ai_avoids_low_value_secure_the_wastes_early() (+40 more)
+Cohesion: 0.06
+Nodes (50): AIAgent, test_aggro_ai_avoids_suicide_attack_into_larger_blocker(), test_aggro_ai_prefers_creature_development_over_burn_early(), test_aggro_cast_bias_values_stronger_modal_face_higher(), test_ai_assigns_two_blockers_against_menace_attacker(), test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board(), test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible(), test_ai_avoids_low_value_secure_the_wastes_early() (+42 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.06
-Nodes (51): resolve_effect(), draw_cards(), gain_life(), resolve_effect(), test_continuous_buff_does_not_mutate_base_stats(), Sub-lethal damage should not kill the creature., Multiple damage instances should accumulate and kill., Spell damage should kill creatures — state-based lethal check after damage. (+43 more)
+Nodes (46): analyze_deck(), _card_text_matches(), _cmc(), guess_archetype(), _looks_like_creature_name(), _looks_like_land(), classify(), main() (+38 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.15
-Nodes (42): AnalyticsService, ActionRequest, ai_diagnostics(), analytics_history(), BatchSimulationJobStartResponse, BatchSimulationJobStatusResponse, BulkSyncRequest, DeckAnalyzeRequest (+34 more)
+Cohesion: 0.06
+Nodes (39): ai_diagnostics(), apply_sideboard(), _card_looks_like_land(), _default_player_for_state(), _force_ai_land_action(), get_legal_moves(), get_match(), _hydrate_deck_cards() (+31 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.06
-Nodes (36): apply_sideboard(), _card_looks_like_land(), _default_player_for_state(), _force_ai_land_action(), get_legal_moves(), get_match(), _is_full_ai_match(), next_game() (+28 more)
+Cohesion: 0.09
+Nodes (26): AIAgent, AIDecision, _card_looks_like_land(), _step_key(), AIDecision, test_aggro_ai_prefers_creature_development_over_burn_early(), test_ai_avoids_mana_tap_loop_when_no_cast_available(), test_ai_does_not_treat_mana_creature_as_land_in_forced_land_logic() (+18 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.06
 Nodes (29): api, BatchSimulationJobStart, BatchSimulationJobStatus, DeckImportResponse, ExpansionTopDeckMeta, ExpansionTopDeckPayload, resolveCardMediaUrl(), ResolvedCardMetadata (+21 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.1
-Nodes (21): AIAgent, _step_key(), test_aggro_ai_prefers_creature_development_over_burn_early(), test_ai_avoids_mana_tap_loop_when_no_cast_available(), test_ai_does_not_treat_mana_creature_as_land_in_forced_land_logic(), test_ai_forces_land_drop_even_when_legal_moves_omit_play_land(), test_ai_forces_land_drop_on_own_main_phase(), test_ai_forces_legal_land_drop_even_if_land_counter_is_desynced() (+13 more)
+Cohesion: 0.07
+Nodes (25): _ensure_builtin_decks(), _ensure_expansion_top_decks(), get_expansion_top_deck(), import_all_expansion_top_decks(), import_deck(), import_deck_file(), import_expansion_top_deck(), lifespan() (+17 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.09
-Nodes (24): check_cost_option_available(), RulesEngine, compute_max_land_plays_this_turn(), extract_loyalty_abilities(), draw_card(), test_cannot_target_creature_with_protection_from_source_color(), test_invalid_x_target_choice_does_not_spend_mana(), test_land_named_card_cannot_be_cast_as_spell() (+16 more)
+Cohesion: 0.23
+Nodes (36): ActionRequest, BatchSimulationJobStartResponse, BatchSimulationJobStatusResponse, BulkSyncRequest, DeckAnalyzeRequest, DeckImportRequest, list_cards(), MatchController (+28 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.09
-Nodes (18): _ensure_builtin_decks(), _ensure_expansion_top_decks(), get_expansion_top_deck(), import_all_expansion_top_decks(), import_deck(), import_deck_file(), import_expansion_top_deck(), lifespan() (+10 more)
+Cohesion: 0.1
+Nodes (37): 3) Frontend, Backend, Backend, Backend, Backend, Backend, Backend, Backend (+29 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.09
-Nodes (17): get_repo(), analytics_history(), get_repo(), CardCache, DeckRecord, MatchRecord, StatsSnapshot, CardCache (+9 more)
+Cohesion: 0.1
+Nodes (16): get_repo(), get_repo(), CardCache, DeckRecord, MatchRecord, StatsSnapshot, CardCache, DeckRecord (+8 more)
 
 ### Community 11 - "Community 11"
+Cohesion: 0.09
+Nodes (33): resolve_effect(), Indestructible creatures should survive lethal spell damage., Indestructible creatures should survive lethal spell damage., Sub-lethal damage should not kill the creature., Sub-lethal damage should not kill the creature., Multiple damage instances should accumulate and kill., Multiple damage instances should accumulate and kill., Spell damage should kill creatures — state-based lethal check after damage. (+25 more)
+
+### Community 12 - "Community 12"
 Cohesion: 0.07
 Nodes (11): copy_ability(), copy_spell(), _copy_stack_object(), create_token(), destroy_all_artifacts(), destroy_all_artifacts_and_enchantments(), destroy_all_enchantments(), _destroy_all_permanents_of_types() (+3 more)
 
-### Community 12 - "Community 12"
-Cohesion: 0.11
-Nodes (35): 3) Frontend, Backend, Backend, Backend, Backend, Backend, Backend, Backend (+27 more)
-
 ### Community 13 - "Community 13"
-Cohesion: 0.16
-Nodes (30): declare_attackers(), from_decks(), legal_moves(), from_decks(), test_defender_creature_cannot_attack(), test_vigilance_attacker_does_not_tap(), test_attack_is_declared_once_per_combat_step(), test_additional_land_effect_text_allows_second_land_same_turn() (+22 more)
+Cohesion: 0.1
+Nodes (31): from_decks(), MatchState, resolve_effect(), apply_state_based_actions(), Zone, Anthem-like buffs must not permanently modify card.power/toughness., test_continuous_buff_does_not_mutate_base_stats(), _put_trigger_creature() (+23 more)
 
 ### Community 14 - "Community 14"
+Cohesion: 0.11
+Nodes (33): _attacker_has_active_landwalk_with_state(), _can_block_attacker(), _combat_damage_step(), _creature_is_lethally_damaged(), _damage_prevented_by_protection(), _deal_unblocked_damage(), _defender_label(), _mark_creature_damage() (+25 more)
+
+### Community 15 - "Community 15"
+Cohesion: 0.09
+Nodes (27): apply_additional_costs(), collect_cost_options(), CostOption, _first_discardable_card(), _first_sacrificable_creature(), _join_costs(), normalize_cost_choice(), _auto_bottom_cards() (+19 more)
+
+### Community 16 - "Community 16"
 Cohesion: 0.06
 Nodes (32): 4) Open UI, Adding Cards, Adding Decks, AI Notes, API Overview, API Summary, Architecture Overview, Card Data and Images (+24 more)
 
-### Community 15 - "Community 15"
-Cohesion: 0.18
-Nodes (31): CardInstance, infer_effect_from_oracle(), infer_effect_from_oracle(), CardInstance, test_x_mode_inference_respects_selected_mode_and_x(), test_oracle_add_counters_parsing(), test_oracle_collected_company_style_parsing(), test_oracle_counterspell_parsing() (+23 more)
-
-### Community 16 - "Community 16"
-Cohesion: 0.11
-Nodes (30): _attacker_has_active_landwalk_with_state(), _can_block_attacker(), _combat_damage_step(), _creature_is_lethally_damaged(), _defender_label(), _max_attackers_blockable_by_creature(), _minimum_blockers_required(), _remaining_lethal_damage() (+22 more)
-
 ### Community 17 - "Community 17"
-Cohesion: 0.1
-Nodes (13): draw_card(), RulesEngine, test_discard_additional_cost_is_paid(), test_london_mulligan_flow_completes_pregame(), test_attack_can_target_planeswalker_and_reduce_loyalty(), test_discard_additional_cost_is_paid(), test_sacrifice_additional_cost_respects_die_replacement(), test_first_player_skips_first_draw_with_explicit_log() (+5 more)
-
-### Community 18 - "Community 18"
-Cohesion: 0.14
-Nodes (27): _setup_creature(), test_anthem_effect_allows_creature_to_survive_marked_damage(), test_anthem_effect_increases_combat_damage_output(), test_block_declaration_hands_priority_back_to_active_player(), test_block_window_closes_after_block_assignment(), test_blocker_with_additional_block_capacity_can_block_two_attackers(), test_cannot_be_blocked_except_by_three_or_more_creatures(), test_cant_be_blocked_except_by_two_or_more_oracle_text() (+19 more)
-
-### Community 19 - "Community 19"
-Cohesion: 0.19
-Nodes (27): _all_battlefield_ids(), _continuous_pt_delta(), effective_keywords(), _has_subtype(), _is_battlefield(), _iter_keyword_grants(), _iter_pt_modifiers(), _scope_controller() (+19 more)
-
-### Community 20 - "Community 20"
-Cohesion: 0.08
-Nodes (27): 1. Close Rules-Engine Gaps, 1. Expand Rules-Engine Coverage, 2. Deepen AI Decision Quality, 2. Finish BO3 and Sideboard UX, 2. Improve AI Decision Quality, 3. Broaden Training and Diagnostics, 3. Expand Diagnostics and Regression Coverage, 3. Improve AI Tactical Strength (+19 more)
-
-### Community 21 - "Community 21"
-Cohesion: 0.2
-Nodes (21): autoplay_tick(), MatchController, init_db(), autoplay_tick(), MatchController, _ensure_card_faces_column(), init_db(), main() (+13 more)
-
-### Community 22 - "Community 22"
-Cohesion: 0.19
-Nodes (26): _creature_value(), _counter_pt_delta(), effective_power(), effective_toughness(), Return PT bonus from +1/+1 and -1/-1 counters on a card., _base_pt_with_layers(), effective_power(), effective_toughness() (+18 more)
-
-### Community 23 - "Community 23"
 Cohesion: 0.15
 Nodes (3): _step_key(), should_force_closure(), should_force_inevitability_line()
 
+### Community 18 - "Community 18"
+Cohesion: 0.08
+Nodes (11): Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa (+3 more)
+
+### Community 19 - "Community 19"
+Cohesion: 0.22
+Nodes (29): combat_damage(), declare_blockers(), combat_damage(), declare_blockers(), from_decks(), MatchState, _setup_creature(), test_anthem_effect_allows_creature_to_survive_marked_damage() (+21 more)
+
+### Community 20 - "Community 20"
+Cohesion: 0.18
+Nodes (28): _all_battlefield_ids(), _continuous_pt_delta(), effective_keywords(), _has_subtype(), _is_battlefield(), _iter_keyword_grants(), _iter_pt_modifiers(), _scope_controller() (+20 more)
+
+### Community 21 - "Community 21"
+Cohesion: 0.22
+Nodes (27): CardInstance, infer_effect_from_oracle(), infer_effect_from_oracle(), CardInstance, test_non_divide_x_spell_does_not_auto_set_divide_total(), test_x_mode_inference_respects_selected_mode_and_x(), test_oracle_add_counters_parsing(), test_oracle_collected_company_style_parsing() (+19 more)
+
+### Community 22 - "Community 22"
+Cohesion: 0.14
+Nodes (27): _setup_creature(), test_anthem_effect_allows_creature_to_survive_marked_damage(), test_anthem_effect_increases_combat_damage_output(), test_block_declaration_hands_priority_back_to_active_player(), test_block_window_closes_after_block_assignment(), test_blocker_with_additional_block_capacity_can_block_two_attackers(), test_cannot_be_blocked_except_by_three_or_more_creatures(), test_cant_be_blocked_except_by_two_or_more_oracle_text() (+19 more)
+
+### Community 23 - "Community 23"
+Cohesion: 0.08
+Nodes (27): 1. Close Rules-Engine Gaps, 1. Expand Rules-Engine Coverage, 2. Deepen AI Decision Quality, 2. Finish BO3 and Sideboard UX, 2. Improve AI Decision Quality, 3. Broaden Training and Diagnostics, 3. Expand Diagnostics and Regression Coverage, 3. Improve AI Tactical Strength (+19 more)
+
 ### Community 24 - "Community 24"
-Cohesion: 0.2
-Nodes (26): combat_damage(), declare_blockers(), combat_damage(), declare_blockers(), _setup_creature(), test_anthem_effect_allows_creature_to_survive_marked_damage(), test_anthem_effect_increases_combat_damage_output(), test_blocker_with_additional_block_capacity_can_block_two_attackers() (+18 more)
+Cohesion: 0.14
+Nodes (23): build_cast_hints(), enrich_divide_total(), validate_cast_choice(), inspect_target_hints(), build_cast_hints(), enrich_divide_total(), validate_cast_choice(), _extract_modes() (+15 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.12
-Nodes (21): _deal_unblocked_damage(), _mark_creature_damage(), deal_damage(), deal_damage_multi(), _move_creature_to_graveyard(), prevent_damage(), _creature_is_lethally_damaged(), deal_damage() (+13 more)
+Cohesion: 0.11
+Nodes (22): _can_cast_spell(), _has_any_target_options(), _is_land_card(), card_cant_attack_alone(), card_cant_block(), card_must_attack_if_able(), card_must_block_if_able(), declare_attackers() (+14 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.11
-Nodes (21): build_cast_hints(), enrich_divide_total(), validate_cast_choice(), _auto_bottom_cards(), _infer_mana_from_land(), _is_land_card(), pass_priority(), build_cast_hints() (+13 more)
+Cohesion: 0.21
+Nodes (23): effective_power(), effective_toughness(), apply_state_based_actions(), _setup_creature(), _setup_permanent(), test_counters_affect_effective_stats_dynamically(), test_creatures_you_control_have_reach_allows_blocking_flyers(), test_opponent_static_minus_kills_x1_creature() (+15 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.12
-Nodes (11): Depth-limited stack planner for counter wars; only runs while stack is active., Depth-limited stack planner for counter wars; only runs while stack is active., _board_value(), evaluate_board(), evaluate_inevitability(), _noncreature_value(), _planeswalker_count(), evaluate_board() (+3 more)
-
-### Community 28 - "Community 28"
 Cohesion: 0.08
 Nodes (23): #10 — `destroy_permanent` doesn't clear damage counters (LOW), #11 — `on_event("startup")` deprecated (LOW), #12 — No rate limiting on Scryfall API (LOW), #13 — `mana_pool[color]` can go negative (FIXED), #13 — `mana_pool[color]` can go negative (MEDIUM), #14 — AI not playing lands / blocking with mana creatures (FIXED), #15 — Library search stopped after first match (FIXED), #16 — Destroyed permanents kept stale damage/prevention counters (FIXED) (+15 more)
 
+### Community 28 - "Community 28"
+Cohesion: 0.15
+Nodes (19): _classify_divergence_category(), classify_first_divergence(), classify_log_line(), first_log_divergence(), normalize_log_line(), compare_replay_logs(), get_match_replay(), classify_first_divergence() (+11 more)
+
 ### Community 29 - "Community 29"
-Cohesion: 0.13
-Nodes (21): destroy_all_creatures(), destroy_permanent(), draw_cards(), gain_life(), lose_life(), sacrifice(), replace_draw_cards(), replace_gain_life() (+13 more)
+Cohesion: 0.14
+Nodes (7): Depth-limited stack planner for counter wars; only runs while stack is active., Depth-limited stack planner for counter wars; only runs while stack is active., evaluate_board(), evaluate_board(), test_control_ai_prefers_removal_against_evasive_threat(), test_evaluate_board_penalizes_opponent_planeswalker_pressure(), test_evaluate_board_rewards_evasive_keyword_creatures()
 
 ### Community 30 - "Community 30"
-Cohesion: 0.13
-Nodes (19): Enum, _infer_keywords(), _infer_loyalty(), _infer_power(), _infer_toughness(), _infer_types(), MatchState, Zone (+11 more)
+Cohesion: 0.14
+Nodes (19): destroy_all_creatures(), destroy_permanent(), draw_cards(), gain_life(), lose_life(), sacrifice(), draw_card(), apply_damage_replacements() (+11 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.14
-Nodes (6): test_ai_assigns_two_blockers_against_menace_attacker(), test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board(), test_ai_blocks_with_stronger_creature_to_prevent_damage(), test_ai_materialize_sets_default_cost_choice_when_options_present(), test_ai_materializes_block_assignments(), test_ai_materializes_x_value_for_x_spells()
+Cohesion: 0.26
+Nodes (14): autoplay_tick(), init_db(), autoplay_tick(), _ensure_card_faces_column(), init_db(), main(), test_autoplay_advances_to_next_game_for_full_ai_match(), test_autoplay_forces_ai_land_drop_on_own_main_phase() (+6 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.15
-Nodes (7): suggest_card(), DeckParser, ParsedDeck, fuzzy_card_lookup(), FakeRepo, test_parse_minimum_deck_and_suggestions(), test_parse_unknown_card_suggests()
-
-### Community 33 - "Community 33"
-Cohesion: 0.2
-Nodes (16): attach_if_legal(), attached_to(), is_aura(), is_equipment(), StackItem, add_to_stack(), resolve_top_of_stack(), _apply_attachment_state_checks() (+8 more)
-
-### Community 34 - "Community 34"
 Cohesion: 0.11
 Nodes (18): code:python (from card_data.models import CardFace), code:python (def test_ai_holds_modal_card_until_face_is_live():), code:markdown (- Modal and split cards carry face metadata through cache, g), code:bash (git add README.md backend/tests/test_oracle_effects.py backe), code:python (# backend/card_data/models.py), code:bash (git add backend/card_data/models.py backend/card_data/sync.p), code:python (from game_state.state import CardInstance, MatchFactory, Zon), code:python (# backend/rules_engine/oracle_effects.py) (+10 more)
 
+### Community 33 - "Community 33"
+Cohesion: 0.15
+Nodes (7): suggest_card(), DeckParser, ParsedDeck, fuzzy_card_lookup(), FakeRepo, test_parse_minimum_deck_and_suggestions(), test_parse_unknown_card_suggests()
+
+### Community 34 - "Community 34"
+Cohesion: 0.16
+Nodes (16): simulate_batch_start(), Enum, _infer_keywords(), _infer_loyalty(), _infer_power(), _infer_toughness(), _infer_types(), Zone (+8 more)
+
 ### Community 35 - "Community 35"
-Cohesion: 0.14
-Nodes (10): Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa, Push control decks to convert resources instead of over-passing in developed boa (+2 more)
+Cohesion: 0.18
+Nodes (17): declare_attackers(), card_cant_attack(), test_defender_creature_cannot_attack(), test_vigilance_attacker_does_not_tap(), _setup_creature(), test_cant_attack_alone_enforced(), test_cant_attack_creature_is_filtered_from_attackers(), test_must_attack_if_able_auto_added_when_omitted() (+9 more)
 
 ### Community 36 - "Community 36"
-Cohesion: 0.14
-Nodes (6): AIDecision, _card_looks_like_land(), AIDecision, _card_looks_like_land(), test_control_ai_mulligan_counts_land_with_missing_types_from_oracle(), test_control_ai_mulligans_land_light_hand()
+Cohesion: 0.22
+Nodes (15): attach_if_legal(), attached_to(), is_aura(), is_equipment(), resolve_top_of_stack(), _apply_attachment_state_checks(), add_to_stack(), resolve_top_of_stack() (+7 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.23
-Nodes (17): emit_event(), destroy_permanent(), sacrifice(), emit_event(), _put_trigger_creature(), test_apnap_trigger_order_on_shared_event(), test_begin_end_step_triggers_only_for_active_player_when_oracle_says_your(), test_begin_upkeep_triggers_apply_apnap_for_each_upkeep_text() (+9 more)
-
-### Community 38 - "Community 38"
 Cohesion: 0.18
 Nodes (16): _extract_keywords_from_text(), _extract_modes(), _first_creature(), _infer_clause_effect(), _infer_topdeck_creature_put_effect(), _parse_count_token(), _split_clauses(), _choose_noncreature_permanent_target() (+8 more)
 
+### Community 38 - "Community 38"
+Cohesion: 0.18
+Nodes (16): _collect_triggers(), emit_event(), _first_number(), _maybe_payload(), _order_apnap(), _trigger_from_oracle(), destroy_permanent(), gain_life() (+8 more)
+
 ### Community 39 - "Community 39"
-Cohesion: 0.19
-Nodes (8): ai_diagnostics(), _ensure_builtin_decks(), _ensure_expansion_top_decks(), _hydrate_deck_cards(), list_decks(), on_startup(), sync_card(), ScryfallSyncService
+Cohesion: 0.17
+Nodes (7): ingest_tournament_json(), tournament_event_summary(), Ingest external tournament event payloads into normalized local tables.      Exp, TournamentIngestService, _sample_payload(), test_ingest_rejects_short_mainboard(), test_ingest_tournament_event_and_summary()
 
 ### Community 40 - "Community 40"
-Cohesion: 0.22
-Nodes (5): sync_card(), ScryfallSyncService, _DummyRepo, test_extract_remote_image_uri_falls_back_to_face_images(), test_extract_remote_image_uri_prefers_root_normal()
-
-### Community 41 - "Community 41"
 Cohesion: 0.21
 Nodes (14): PlayerState, validate_cast_targets(), validate_hexproof_shroud_targets(), validate_protection_targets(), validate_cast_targets(), validate_protection_targets(), test_choose_two_validator(), test_divide_validator() (+6 more)
 
+### Community 41 - "Community 41"
+Cohesion: 0.14
+Nodes (13): _creature_is_lethally_damaged(), deal_damage(), deal_damage_multi(), _move_creature_to_graveyard(), _creature_is_lethally_damaged(), deal_damage(), deal_damage_multi(), _move_creature_to_graveyard() (+5 more)
+
 ### Community 42 - "Community 42"
+Cohesion: 0.22
+Nodes (5): sync_card(), ScryfallSyncService, _DummyRepo, test_extract_remote_image_uri_falls_back_to_face_images(), test_extract_remote_image_uri_prefers_root_normal()
+
+### Community 43 - "Community 43"
 Cohesion: 0.17
 Nodes (5): _DeckRow, _FakeRecord, _FakeRepo, _FakeSession, test_builtin_refresh_reimports_updated_builtin_decks()
 
-### Community 43 - "Community 43"
-Cohesion: 0.2
-Nodes (14): apply_additional_costs(), collect_cost_options(), CostOption, _first_discardable_card(), _first_sacrificable_creature(), _join_costs(), normalize_cost_choice(), apply_additional_costs() (+6 more)
-
 ### Community 44 - "Community 44"
-Cohesion: 0.24
-Nodes (11): classify_first_divergence(), classify_log_line(), first_log_divergence(), main(), _normalize_log_line(), run_game(), _stable_seed(), test_classify_first_divergence_uses_action_labels() (+3 more)
-
-### Community 45 - "Community 45"
 Cohesion: 0.18
 Nodes (9): build_priors_from_logs(), load_log_priors(), save_log_priors(), profile_for(), get_ai_priors(), rebuild_ai_priors(), main(), _read_training_run_logs() (+1 more)
 
+### Community 45 - "Community 45"
+Cohesion: 0.24
+Nodes (9): AnalyticsService, analytics_history(), simulate_batch(), _DummyRepo, test_batch_does_not_auto_award_unresolved_games_to_deck_a(), _DummyRepo, test_batch_does_not_auto_award_unresolved_games_to_deck_a(), test_batch_exposes_first_divergence_report() (+1 more)
+
 ### Community 46 - "Community 46"
-Cohesion: 0.25
-Nodes (13): inspect_target_hints(), _extract_modes(), inspect_target_hints(), test_memory_deluge_does_not_require_x_value_for_cast(), test_mode_and_x_hints_exposed(), test_planeswalker_cast_does_not_require_x_value_from_loyalty_text(), test_shark_typhoon_does_not_require_x_value_for_cast(), test_build_cast_hints_exposes_face_selection_schema() (+5 more)
+Cohesion: 0.23
+Nodes (8): FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), test_compare_replay_logs_labels_cast_resolution_error(), test_compare_replay_logs_labels_pass_vs_action_root_cause(), test_compare_replay_logs_reports_first_divergence(), test_scan_log_tracks_stall_and_land_window_anomalies()
 
 ### Community 47 - "Community 47"
-Cohesion: 0.23
-Nodes (9): card_color_names(), _damage_prevented_by_protection(), protected_from_source(), protection_match_reason(), _protection_tokens(), _damage_prevented_by_protection(), protected_from_source(), protection_match_reason() (+1 more)
+Cohesion: 0.31
+Nodes (12): StackItem, emit_event(), add_to_stack(), _put_trigger_creature(), test_apnap_trigger_order_on_shared_event(), test_begin_end_step_triggers_only_for_active_player_when_oracle_says_your(), test_begin_upkeep_triggers_apply_apnap_for_each_upkeep_text(), test_creature_dies_trigger_does_not_match_opponent_creature() (+4 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.24
 Nodes (9): ensure_placeholder_image(), _family(), _svg_for(), _cache_remote_token_image(), _extract_image_uri(), resolve_token_image_uri(), _search_scryfall_token_image(), test_create_token_assigns_image_uri() (+1 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.24
-Nodes (7): FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), test_compare_replay_logs_labels_pass_vs_action_root_cause(), test_compare_replay_logs_reports_first_divergence(), test_scan_log_tracks_stall_and_land_window_anomalies()
-
-### Community 51 - "Community 51"
-Cohesion: 0.27
-Nodes (11): _collect_triggers(), _first_number(), _maybe_payload(), _order_apnap(), _trigger_from_oracle(), _collect_triggers(), _first_number(), _matches_creature_dies_trigger() (+3 more)
-
-### Community 52 - "Community 52"
 Cohesion: 0.17
 Nodes (11): ✅ Bug #1 — `exile_from` crashes with KeyError for exiled cards (Critical), ✅ Bug #2 — `combat_damage` crashes on tapped blockers (Critical), ✅ Bug #3 — `destroy_target` crashes with `None` on non-existent targets (Critical), ✅ Bug #4 — `resolve_effect` crashes on unknown effect type (Critical), ✅ Bug #5 — `resolve_effect` crashes on payload KeyError (Critical), ✅ Bug #6 — SBA doesn't check lethal damage on tokens (Medium), ✅ Bug #7 — `continuous_buff` permanently modifies base stats (Medium), ✅ Bug #8 — `resolve_effect` crashes on payload TypeError (Low) (+3 more)
 
-### Community 53 - "Community 53"
+### Community 51 - "Community 51"
 Cohesion: 0.24
 Nodes (4): _FakeCard, _FakeRecord, _FakeRepo, test_import_deck_text_exposes_resolved_card_metadata()
 
-### Community 54 - "Community 54"
-Cohesion: 0.24
-Nodes (3): get_match_replay(), str, test_replay_endpoint_returns_entries()
-
-### Community 55 - "Community 55"
+### Community 53 - "Community 53"
 Cohesion: 0.18
 Nodes (10): code:text (AI TRACE {"trace":true,"pid":1,"turn":2,"step":"Step.PRECOMB), code:text (AI TRACE {"trace":true,"pid":1,"turn":2,"step":"Step.PRECOMB), code:text (AI TRACE {"trace":true,"pid":2,"turn":2,"step":"Step.PRECOMB), code:text (AI TRACE {"trace":true,"pid":1,"turn":2,"step":"Step.PRECOMB), Cross-Game Strategy Signals, Dimir Control vs Ramp: Cost-Failure + Strategy Analysis (10 Games), Failure 1: Game 4, Turn 2, Actor P2, Failure 2: Game 5, Turn 2, Actor P2 (+2 more)
 
-### Community 56 - "Community 56"
+### Community 54 - "Community 54"
 Cohesion: 0.22
 Nodes (11): 1) Clone, 2) Backend, Backend, code:bash (cd backend), code:bash (cd frontend), Frontend, Open the App, Project Structure (+3 more)
 
-### Community 57 - "Community 57"
-Cohesion: 0.2
-Nodes (9): can_cast_in_current_timing(), card_cant_attack(), card_cant_attack_alone(), card_cant_block(), card_must_attack_if_able(), card_must_block_if_able(), can_cast_in_current_timing(), card_cant_block() (+1 more)
-
-### Community 58 - "Community 58"
-Cohesion: 0.31
-Nodes (9): test_static_you_cant_cast_spells_during_combat_enforced(), _setup_creature(), test_cant_attack_alone_enforced(), test_cant_attack_alone_not_treated_as_global_cant_attack(), test_cant_attack_creature_is_filtered_from_attackers(), test_cast_only_during_your_turn_restriction_and_move_hint(), test_must_attack_if_able_auto_added_when_omitted(), test_must_block_if_able_auto_assignment() (+1 more)
-
-### Community 59 - "Community 59"
+### Community 55 - "Community 55"
 Cohesion: 0.33
 Nodes (8): _board_snapshot(), _count_types(), extract_examples_from_games_jsonl(), _feature_row(), main(), parse_args(), _parse_trace_line(), test_training_example_export_preserves_trace_labels()
 
-### Community 60 - "Community 60"
-Cohesion: 0.36
-Nodes (8): _apply_legend_rule(), apply_state_based_actions(), _is_legendary(), _apply_legend_rule(), apply_state_based_actions(), _is_legendary(), test_legend_rule_is_per_controller_not_global(), test_legend_rule_moves_duplicate_legendary_to_graveyard()
+### Community 56 - "Community 56"
+Cohesion: 0.2
+Nodes (6): test_ai_assigns_two_blockers_against_menace_attacker(), test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board(), test_ai_blocks_with_stronger_creature_to_prevent_damage(), test_ai_materialize_sets_default_cost_choice_when_options_present(), test_ai_materializes_block_assignments(), test_ai_materializes_x_value_for_x_spells()
 
-### Community 61 - "Community 61"
+### Community 57 - "Community 57"
+Cohesion: 0.29
+Nodes (6): card_color_names(), protection_match_reason(), _protection_tokens(), protected_from_source(), protection_match_reason(), _protection_tokens()
+
+### Community 58 - "Community 58"
 Cohesion: 0.2
 Nodes (9): 2026-05-16, 2026-05-17, 2026-05-18, 2026-06-06, 2026-06-07, 2026-06-11, 2026-07-09, 2026-07-10 (+1 more)
 
-### Community 62 - "Community 62"
-Cohesion: 0.33
-Nodes (6): _DummyRepo, test_batch_does_not_auto_award_unresolved_games_to_deck_a(), _DummyRepo, test_batch_does_not_auto_award_unresolved_games_to_deck_a(), test_batch_exposes_first_divergence_report(), test_batch_is_deterministic_for_same_inputs()
+### Community 59 - "Community 59"
+Cohesion: 0.25
+Nodes (3): draw_cards(), replace_draw_cards(), draw_card()
 
-### Community 63 - "Community 63"
-Cohesion: 0.22
-Nodes (8): test_aura_without_target_goes_to_graveyard(), test_replacement_gain_life_to_draw_cards(), test_timing_restriction_first_main_phase_only(), test_ward_tax_blocks_underpaid_targeted_spell(), test_hexproof_blocks_opponent_targeted_spell(), test_replacement_gain_life_to_draw_cards(), test_timing_restriction_first_main_phase_only(), test_ward_tax_blocks_underpaid_targeted_spell()
+### Community 60 - "Community 60"
+Cohesion: 0.36
+Nodes (7): prevent_damage(), prevent_damage(), add_card_prevention_shield(), add_player_prevention_shield(), test_deal_damage_to_creature_marks_damage_not_toughness(), test_prevent_damage_shield_reduces_creature_damage(), test_prevent_damage_shield_reduces_player_damage()
 
-### Community 64 - "Community 64"
+### Community 61 - "Community 61"
 Cohesion: 0.22
 Nodes (8): Bug #1: AI Agent Plays Invalid Land Actions (Infinite Stall Loop), code:block1 (Before: 5/5 games timeout at 6000 ticks), Files Changed, Lessons Learned, MTG Deck Testing Lab — Known Bugs & Fixes, Root Cause, Symptoms, Verification
 
-### Community 65 - "Community 65"
-Cohesion: 0.33
-Nodes (8): _has_any_target_options(), _is_land_card(), _can_cast_spell(), _extract_equip_cost(), _has_any_target_options(), _is_land_card(), legal_moves(), extract_loyalty_abilities()
-
-### Community 66 - "Community 66"
-Cohesion: 0.36
-Nodes (6): apply_sideboard(), apply_sideboard_swaps(), _from_counter(), _to_counter(), test_sideboard_swap_moves_cards_between_zones(), test_sideboard_swap_moves_cards_between_zones()
-
-### Community 67 - "Community 67"
-Cohesion: 0.39
-Nodes (7): _classify_divergence_category(), classify_first_divergence(), classify_log_line(), first_log_divergence(), normalize_log_line(), compare_replay_logs(), test_compare_replay_logs_labels_cast_resolution_error()
-
-### Community 68 - "Community 68"
+### Community 63 - "Community 63"
 Cohesion: 0.29
 Nodes (8): code:text (4 Lightning Bolt), code:json ({), code:bash (cd backend), Deck Import Format, Diagnostics and Simulation, Quick matchup debug, Round-robin anomaly scan, Tournament Data Ingest (Training Corpus)
 
-### Community 69 - "Community 69"
+### Community 64 - "Community 64"
+Cohesion: 0.29
+Nodes (5): test_london_mulligan_flow_completes_pregame(), test_sorcery_speed_not_castable_off_main_timing(), test_first_player_skips_first_draw_with_explicit_log(), test_london_mulligan_flow_completes_pregame(), test_players_draw_on_later_turns_with_hand_count_change_log()
+
+### Community 65 - "Community 65"
 Cohesion: 0.29
 Nodes (7): AI System, Current Feature Set, Deck Workflows, Diagnostics / Simulation, Gameplay Engine, Oracle/Effect Interpretation, UI Workflows
 
-### Community 70 - "Community 70"
+### Community 66 - "Community 66"
+Cohesion: 0.43
+Nodes (5): apply_sideboard_swaps(), _from_counter(), _to_counter(), test_sideboard_swap_moves_cards_between_zones(), test_sideboard_swap_moves_cards_between_zones()
+
+### Community 67 - "Community 67"
 Cohesion: 0.53
 Nodes (5): _human_priority_pause(), _human_priority_pause(), _build_match(), test_human_priority_pause_always_stops_for_land_drop_window(), test_human_priority_pause_respects_configured_step_stops()
 
-### Community 71 - "Community 71"
+### Community 68 - "Community 68"
 Cohesion: 0.33
 Nodes (6): _counter_pt_delta(), Return PT bonus from +1/+1 and -1/-1 counters on a card., Return PT bonus from +1/+1 and -1/-1 counters on a card., Return PT bonus from +1/+1 and -1/-1 counters on a card., Return PT bonus from +1/+1 and -1/-1 counters on a card., Return PT bonus from +1/+1 and -1/-1 counters on a card.
+
+### Community 69 - "Community 69"
+Cohesion: 0.53
+Nodes (5): _board_value(), _creature_value(), evaluate_inevitability(), _noncreature_value(), _planeswalker_count()
+
+### Community 70 - "Community 70"
+Cohesion: 0.6
+Nodes (4): _apply_legend_rule(), _is_legendary(), _apply_legend_rule(), _is_legendary()
+
+### Community 71 - "Community 71"
+Cohesion: 0.7
+Nodes (4): _basic_state(), test_keyword_layer_grant_then_remove(), test_players_cant_gain_life_lock(), test_players_cant_lose_life_lock()
 
 ### Community 72 - "Community 72"
 Cohesion: 0.7
@@ -419,16 +412,16 @@ Cohesion: 0.4
 Nodes (5): code:text (4 Lightning Bolt), Deck Import, Expansion Top Deck Catalog, Frontend build check, How to Add Decks
 
 ### Community 75 - "Community 75"
-Cohesion: 0.7
-Nodes (4): _basic_state(), test_keyword_layer_grant_then_remove(), test_players_cant_gain_life_lock(), test_players_cant_lose_life_lock()
-
-### Community 77 - "Community 77"
 Cohesion: 0.83
 Nodes (3): load_json(), main(), run_cmd()
 
-### Community 78 - "Community 78"
+### Community 77 - "Community 77"
 Cohesion: 0.5
 Nodes (4): AI diagnostics, Batch simulation, Overnight verbose runs, Simulator + Diagnostics
+
+### Community 79 - "Community 79"
+Cohesion: 0.67
+Nodes (3): Bug #8: resolve_effect should gracefully handle non-dict payloads., Bug #8: resolve_effect should gracefully handle non-dict payloads., test_resolve_effect_rejects_non_dict_payload()
 
 ### Community 80 - "Community 80"
 Cohesion: 0.67
@@ -439,21 +432,21 @@ Cohesion: 0.67
 Nodes (3): Architecture, Backend Layers, Layers
 
 ## Knowledge Gaps
-- **181 isolated node(s):** `Depth-limited stack planner for counter wars; only runs while stack is active.`, `Push control decks to convert resources instead of over-passing in developed boa`, `Ingest external tournament event payloads into normalized local tables.      Exp`, `When an unblocked attacker targets a PW that leaves the battlefield,     the dam`, `Spell damage should kill creatures — state-based lethal check after damage.` (+176 more)
+- **182 isolated node(s):** `Depth-limited stack planner for counter wars; only runs while stack is active.`, `Push control decks to convert resources instead of over-passing in developed boa`, `Ingest external tournament event payloads into normalized local tables.      Exp`, `When an unblocked attacker targets a PW that leaves the battlefield,     the dam`, `Spell damage should kill creatures — state-based lethal check after damage.` (+177 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AIAgent` connect `Community 2` to `Community 0`, `Community 1`, `Community 35`, `Community 36`, `Community 4`, `Community 5`, `Community 7`, `Community 70`, `Community 44`, `Community 45`, `Community 13`, `Community 17`, `Community 21`, `Community 54`, `Community 23`, `Community 27`, `Community 30`, `Community 31`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
-- **Why does `from_decks()` connect `Community 13` to `Community 0`, `Community 1`, `Community 3`, `Community 7`, `Community 8`, `Community 15`, `Community 17`, `Community 21`, `Community 22`, `Community 24`, `Community 25`, `Community 30`, `Community 33`, `Community 37`, `Community 41`, `Community 46`, `Community 54`, `Community 58`, `Community 60`, `Community 70`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
-- **Why does `RulesEngine` connect `Community 17` to `Community 0`, `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 7`, `Community 8`, `Community 13`, `Community 18`, `Community 21`, `Community 22`, `Community 24`, `Community 26`, `Community 30`, `Community 36`, `Community 37`, `Community 44`, `Community 45`, `Community 54`, `Community 58`, `Community 63`, `Community 70`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Are the 105 inferred relationships involving `AIAgent` (e.g. with `MatchController` and `DeckImportRequest`) actually correct?**
-  _`AIAgent` has 105 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `AIAgent` connect `Community 2` to `Community 0`, `Community 1`, `Community 3`, `Community 4`, `Community 5`, `Community 67`, `Community 8`, `Community 44`, `Community 13`, `Community 45`, `Community 17`, `Community 18`, `Community 52`, `Community 56`, `Community 28`, `Community 29`, `Community 31`?**
+  _High betweenness centrality (0.118) - this node is a cross-community bridge._
+- **Why does `RulesEngine` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 8`, `Community 13`, `Community 15`, `Community 19`, `Community 22`, `Community 26`, `Community 28`, `Community 31`, `Community 34`, `Community 35`, `Community 44`, `Community 45`, `Community 47`, `Community 64`, `Community 67`?**
+  _High betweenness centrality (0.101) - this node is a cross-community bridge._
+- **Why does `from_decks()` connect `Community 13` to `Community 0`, `Community 1`, `Community 34`, `Community 67`, `Community 36`, `Community 35`, `Community 3`, `Community 64`, `Community 40`, `Community 5`, `Community 19`, `Community 21`, `Community 24`, `Community 26`, `Community 60`, `Community 30`, `Community 31`?**
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+- **Are the 107 inferred relationships involving `AIAgent` (e.g. with `MatchController` and `DeckImportRequest`) actually correct?**
+  _`AIAgent` has 107 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 132 inferred relationships involving `from_decks()` (e.g. with `_build_match()` and `test_human_priority_pause_always_stops_for_land_drop_window()`) actually correct?**
   _`from_decks()` has 132 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 125 inferred relationships involving `from_decks()` (e.g. with `_build_match()` and `test_human_priority_pause_always_stops_for_land_drop_window()`) actually correct?**

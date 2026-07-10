@@ -20,6 +20,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI control pacing:
   - Control, Counter-heavy, and Tempo agents now distinguish urgent interaction from stable value turns so they do not over-pass into draw-spell lines.
   - Stable main phases can now prefer castable value spells over idle hold-up when no real response is needed.
+- AI face selection:
+  - Modal and transform-style face selection now scores the actual face `type_line`, which improves role-sensitive choice on split/DFC-style cards.
+  - AI valuation now better separates creature, instant, and value faces when the board state changes.
 - Diagnostics classification:
   - Replay divergence now classifies common root causes such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error.
   - Anomaly clustering now recognizes land-drop misses correctly instead of relying on a broken regex pattern.
@@ -32,6 +35,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added backend tests for the batch first-divergence report and the stricter X-spell selection floor.
   - Added regression coverage for control choosing a value draw spell over idle pass priority in a stable main phase.
   - Added regression coverage for replay classification and anomaly clustering buckets.
+  - Added regression coverage for modal face scoring that reacts to face type lines and board state.
 
 ## 2026-07-09
 

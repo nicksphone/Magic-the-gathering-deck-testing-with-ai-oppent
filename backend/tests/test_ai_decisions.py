@@ -1625,3 +1625,91 @@ def test_midrange_cast_bias_values_stronger_modal_face_higher() -> None:
     weak_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "weak"}, 1)
     strong_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "strong"}, 1)
     assert strong_score > weak_score
+
+
+def test_modal_face_proxy_uses_face_type_line_for_scoring() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+
+    class FakeState:
+        turn = 7
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 14, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "modal": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dual Threat",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                        "card_faces": [
+                            {
+                            "name": "Seed Form",
+                            "oracle_text": "Create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Bloom Form",
+                            "oracle_text": "Draw a card.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Instant",
+                        },
+                    ],
+                },
+            )(),
+        }
+        stack = []
+
+    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    assert idx == 1
+    assert score > 0
+
+
+def test_modal_face_proxy_prefers_creature_face_when_board_is_empty() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class FakeState:
+        turn = 2
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "modal": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dual Threat",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Seed Form",
+                            "oracle_text": "Create a 1/1 token.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                        },
+                        {
+                            "name": "Bloom Form",
+                            "oracle_text": "Draw a card.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Instant",
+                        },
+                    ],
+                },
+            )(),
+        }
+        stack = []
+
+    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    assert idx == 0
+    assert score > 0
