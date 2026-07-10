@@ -8,6 +8,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Battlefield zones now show compact mana-pool pips so floating mana stays visible without adding wide text blocks.
   - The match status grid now surfaces the active priority seat directly.
   - The compact battlefield, stack, priority, and mana presentation builds successfully after the latest layout refinement.
+- Simulator diagnostics:
+  - Card-play analytics now separate strategic main-phase pass windows from combat-step passes so stall summaries do not over-report harmless blocker windows.
+  - The analytics summary now includes pass-window examples and richer pass accounting for later drilldown.
 
 - Rules coverage:
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.

@@ -23,6 +23,7 @@ The following are implemented and currently supported by the repo:
 - Modal and transform-style face selection now uses the face type line for better role-sensitive valuation.
 - Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
 - Replay and anomaly tooling for divergence detection and debug runs, with more specific root-cause classification for common divergence patterns.
+- Card-play analytics now separate strategic main-phase passes from harmless combat-step passes in verbose logs.
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
 - Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.
@@ -41,7 +42,7 @@ The project is functional, but the following remain open:
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling, especially outside the face-type parsing cases already improved.
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
-- The simulator diagnostics need even clearer root-cause attribution across longer runs.
+- The simulator diagnostics need even clearer root-cause attribution across longer runs, even though pass-window summaries are now less noisy.
 - Stack, mana, and priority presentation are improved, but wider end-to-end testing may still expose layout pressure points that need refinement.
 - README, changelog, graph exports, and plan files need to stay synchronized after future changes.
 
