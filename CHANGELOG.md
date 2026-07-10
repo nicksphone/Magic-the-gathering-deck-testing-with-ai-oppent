@@ -17,8 +17,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI X-spell policy:
   - Low-impact X-spells now require a meaningful minimum X instead of being forced at trivial values.
   - Token-producing X-spells such as `Secure the Wastes` are skipped early when they would only produce an insignificant board state.
+- AI control pacing:
+  - Control, Counter-heavy, and Tempo agents now distinguish urgent interaction from stable value turns so they do not over-pass into draw-spell lines.
+  - Stable main phases can now prefer castable value spells over idle hold-up when no real response is needed.
 - Regression coverage:
   - Added backend tests for the batch first-divergence report and the stricter X-spell selection floor.
+  - Added regression coverage for control choosing a value draw spell over idle pass priority in a stable main phase.
 
 ## 2026-07-09
 

@@ -780,7 +780,11 @@ class AIAgent:
                     turn = int(getattr(state, "turn", 1) or 1)
                     if turn <= 6:
                         return -1.6
+        has_urgent_interaction = self._has_urgent_interaction(state, player_id)
+        has_castable_value = self._has_castable_value_spell(state, player_id)
         if has_instant_like and self.archetype in {"Control", "Counter-heavy", "Tempo"}:
+            if has_castable_value and not has_urgent_interaction:
+                return -0.4 + float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.2
             return 1.8 + float(self.matchup_profile.get("holdup_bias", 0.0))
         if self._should_hold_up_interaction(state, player_id):
             return 1.4 + float(self.matchup_profile.get("holdup_bias", 0.0))
@@ -792,6 +796,8 @@ class AIAgent:
         if self._can_deploy_major_threat(state, player_id):
             return False
         if getattr(state, "active_player", player_id) != player_id:
+            return False
+        if self._has_castable_value_spell(state, player_id) and not self._has_urgent_interaction(state, player_id):
             return False
         opp_id = 1 if player_id == 2 else 2
         opp_untapped = sum(
@@ -810,6 +816,49 @@ class AIAgent:
             if cid in state.cards
         )
         return has_counter and opp_untapped >= 2 and float(self.matchup_profile.get("holdup_bias", 0.0)) >= -0.2
+
+    def _has_urgent_interaction(self, state: MatchState, player_id: int) -> bool:
+        if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
+            return False
+        opp_id = 1 if player_id == 2 else 2
+        opp_creatures = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        stack_live = bool(getattr(state, "stack", []) or [])
+        for cid in state.players[player_id].hand:
+            card = state.cards.get(cid)
+            if not card:
+                continue
+            if not self._can_pay_card_cost(state, player_id, card):
+                continue
+            tags = self._spell_tags(card)
+            if stack_live and "counter" in tags:
+                return True
+            if opp_creatures > 0 and "removal" in tags:
+                return True
+        return False
+
+    def _has_castable_value_spell(self, state: MatchState, player_id: int) -> bool:
+        for cid in state.players[player_id].hand:
+            card = state.cards.get(cid)
+            if not card or "Land" in (getattr(card, "types", []) or []):
+                continue
+            if not self._can_pay_card_cost(state, player_id, card):
+                continue
+            if self._is_major_threat_card(card):
+                return True
+            tags = self._spell_tags(card)
+            if any(tag in tags for tag in {"draw", "removal", "counter", "ramp", "token"}):
+                return True
+        return False
+
+    def _can_pay_card_cost(self, state: MatchState, player_id: int, card) -> bool:
+        try:
+            return bool(can_pay_with_pool_and_lands(state, player_id, getattr(card, "mana_cost", "")))
+        except Exception:
+            return False
 
     def _block_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         blocker_ids = [x["id"] for x in (move.get("blockers") or [])]

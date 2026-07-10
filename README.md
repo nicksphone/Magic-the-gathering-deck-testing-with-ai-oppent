@@ -81,6 +81,7 @@ The application currently supports:
 - denser match-status and between-games controls for BO3 sessions
 - Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
+- Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
 
 Recent large areas of coverage include:
 - modal/split card face selection
@@ -93,6 +94,7 @@ Recent large areas of coverage include:
 - explicit no-op fallback for unresolved Oracle text
 - batch first-divergence output surfaced in the simulator results panel
 - low-impact X-spell selection is skipped instead of forcing trivial cast lines
+- control hold-up bias now yields to castable value spells when the board is stable and no urgent response is needed
 - deck import responses that include resolved cached card metadata for imported lines
 - sideboard flow now locks to one swap pass per finished game and resets on `next-game`
 - multi-match library search resolution and stale damage-counter cleanup on destroy

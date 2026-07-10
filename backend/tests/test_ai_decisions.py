@@ -117,6 +117,40 @@ def test_control_ai_prefers_card_draw_over_creature_on_empty_stack() -> None:
     assert decision.action["card_id"] == "draw-1"
 
 
+def test_control_ai_prefers_value_draw_over_idle_hold_up_when_stable() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Counterspell", "card_id": "counter-1"},
+        {"type": "cast_spell", "card_name": "Memory Deluge", "card_id": "draw-1"},
+    ]
+
+    class FakeState:
+        turn = 6
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["counter-1", "draw-1"], "battlefield": ["i1", "i2", "i3", "i4"], "mana_pool": {}, "lands_played_this_turn": 1})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
+        }
+        cards = {
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
+            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i3": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "i4": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "draw-1"
+
+
 def test_control_ai_sets_counterspell_stack_target() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
     moves = [
