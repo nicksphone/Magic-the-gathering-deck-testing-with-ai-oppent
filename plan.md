@@ -46,6 +46,7 @@ The project is functional, but the following remain open:
 - Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling, especially outside the face-type parsing cases already improved.
 - Imported deck analysis now uses `card_faces` for split and modal cards, but broader tactical planning for dynamic-value cards still needs more matchup coverage.
 - Board evaluation now reads the active face of modal/transform permanents, but broader tactical planning for dynamic-value cards still needs more matchup coverage.
+- Matchup profiles are now more specific for control, ramp, tempo, and token shells, but further tuning is still needed against long-run balance data.
 - Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
 - A few X-cost loyalty abilities are now handled correctly, but broader dynamic-value tuning still needs more matchup coverage.
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.

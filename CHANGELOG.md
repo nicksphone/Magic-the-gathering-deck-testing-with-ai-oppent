@@ -13,6 +13,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI tactical valuation:
   - Board evaluation now reads the active face of modal/transform permanents when scoring battlefield value.
   - Added regression coverage for active-face board valuation.
+- AI matchup profiling:
+  - Matchup profiles now differentiate control, ramp, tempo, and token matchups more aggressively so the agent's timing heuristics have better inputs.
+  - Added regression coverage for control-vs-aggro hold-up bias and tempo-vs-control proactivity bias.
 - Simulator diagnostics:
   - Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data.
   - Added regression coverage for the improved anomaly classifier.

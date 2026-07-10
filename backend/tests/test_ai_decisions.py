@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ai.agent import AIAgent
+from ai.matchup_profiles import profile_for
 from game_state.state import MatchFactory, Step
 
 
@@ -149,6 +150,18 @@ def test_control_ai_prefers_value_draw_over_idle_hold_up_when_stable() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
+
+
+def test_matchup_profile_pushes_control_to_hold_up_against_aggro() -> None:
+    profile = profile_for("Control", "Aggro")
+    assert profile["holdup_bias"] > 1.0
+    assert profile["risk_tolerance"] < 0.0
+
+
+def test_matchup_profile_pushes_tempo_to_be_more_proactive_against_control() -> None:
+    profile = profile_for("Tempo", "Control")
+    assert profile["proactive_bias"] > 0.4
+    assert profile["risk_tolerance"] > 0.0
 
 
 def test_control_ai_sets_counterspell_stack_target() -> None:
