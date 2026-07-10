@@ -1,7 +1,7 @@
 {
   "/home/nick/mtg-deck-testing-lab/backend/main.py": {
-    "mtime": 1783605898.6086135,
-    "hash": "027f1c1957890bf5ecaddf9697cd72c2"
+    "mtime": 1783682268.9804163,
+    "hash": "14871df3fd2ac705e6f2130de609d452"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/__init__.py": {
     "mtime": 1777063134.7040613,
@@ -40,8 +40,8 @@
     "hash": "e2a72be59e93ca6d917d3571aed23710"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/debug_head_to_head.py": {
-    "mtime": 1783681988.3618388,
-    "hash": "db115b8ac458f466361c1431a43aa26b"
+    "mtime": 1783682279.7682436,
+    "hash": "267a1e30955df6d86e36f627a793df62"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/regression_matrix_replay.py": {
     "mtime": 1783596901.2493894,
@@ -336,8 +336,8 @@
     "hash": "bb685dc78baffef2998c201c7e3f1289"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_fallback_hydration.py": {
-    "mtime": 1777112837.1588717,
-    "hash": "788e722b1ce50e5bec33f1d4596011f7"
+    "mtime": 1783682308.822777,
+    "hash": "4120c070948d5bfdda86de9b52fa90b4"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cleanup_hand_size.py": {
     "mtime": 1777153440.395157,
@@ -548,16 +548,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1783682117.7508197,
-    "hash": "2ad5d1b8227494a501948fd87302f004"
+    "mtime": 1783682343.3232214,
+    "hash": "b96f706a25c85a9cebd77012a7121264"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1783682124.209718,
-    "hash": "b2c0832aead3c7c5661a0cd13f317bbe"
+    "mtime": 1783682356.989001,
+    "hash": "d3a9c91349e3652f3921d7dbe0149f2b"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1783682121.1087668,
-    "hash": "d954a3fc18f2a8702d6cdc77b20f11ee"
+    "mtime": 1783682347.8301487,
+    "hash": "699e6fdc97dc0414ab79cddfa23eda5b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -590,6 +590,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/183ef738-0559-49ca-85b4-e6836521f203.jpg": {
     "mtime": 1777081204.5919232,
     "hash": "96eabaf14acf416bed4e4d215f22ac82"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-planeswalker.svg": {
+    "mtime": 1783682315.3966713,
+    "hash": "4d0764c493085fda29cd85835839abe2"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/79c21c1f-eaa4-454d-a1c7-b41466d0a428.jpg": {
     "mtime": 1777081205.2819126,

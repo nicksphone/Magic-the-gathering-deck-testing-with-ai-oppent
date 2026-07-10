@@ -13,6 +13,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - The analytics summary now includes pass-window examples and richer pass accounting for later drilldown.
   - Verbose AI traces now include active-player and priority-player context.
   - Training exports now preserve active-player and priority-player context for downstream AI analysis.
+- Card hydration:
+  - Partial cache rows now merge with fallback metadata so common cards keep oracle text, mana cost, and type-line data instead of logging blank oracle misses.
 
 - Rules coverage:
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.

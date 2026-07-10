@@ -27,6 +27,7 @@ The following are implemented and currently supported by the repo:
 - Verbose replay traces now carry active-player and priority-player context for clearer drilldown.
 - Training exports now keep active-player and priority-player context for downstream AI tuning.
 - Training export with hands, actions, and board snapshots.
+- Partial cache rows now merge with fallback metadata so common cards do not lose oracle text during hydration.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
 - Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.
 - Compact stack, mana-pool, and priority-stop panels improve scanability during long sessions.
@@ -46,6 +47,7 @@ The project is functional, but the following remain open:
 - Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
 - The simulator diagnostics need even clearer root-cause attribution across longer runs, even though pass-window summaries are now less noisy.
 - Stack, mana, and priority presentation are improved, but wider end-to-end testing may still expose layout pressure points that need refinement.
+- A few cache rows may still need broader canonicalization, but the blank-oracle-text failure mode is now covered by fallback merging.
 - README, changelog, graph exports, and plan files need to stay synchronized after future changes.
 
 ## Step-by-Step Plan To Finish

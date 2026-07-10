@@ -83,19 +83,20 @@ def hydrate_deck(repo: Repository, deck: list[dict]) -> list[dict]:
     for item in deck:
         row = cached.get(item["card_name"].lower())
         card = dict(item)
+        fallback = fallback_card_payload(item["card_name"])
         if row:
-            card["oracle_text"] = row.oracle_text
-            card["mana_cost"] = row.mana_cost
-            card["type_line"] = row.type_line
-            card["power"] = row.power
-            card["toughness"] = row.toughness
+            card["oracle_text"] = row.oracle_text or (fallback or {}).get("oracle_text")
+            card["mana_cost"] = row.mana_cost or (fallback or {}).get("mana_cost")
+            card["type_line"] = row.type_line or (fallback or {}).get("type_line")
+            card["power"] = row.power or (fallback or {}).get("power")
+            card["toughness"] = row.toughness or (fallback or {}).get("toughness")
             if getattr(row, "loyalty", None) is not None:
                 card["loyalty"] = row.loyalty
-            card["image_uri"] = row.image_uri
-        else:
-            fallback = fallback_card_payload(item["card_name"])
-            if fallback:
-                card.update({k: v for k, v in fallback.items() if v is not None})
+            elif fallback and fallback.get("loyalty") is not None:
+                card["loyalty"] = fallback["loyalty"]
+            card["image_uri"] = row.image_uri or (fallback or {}).get("image_uri")
+        elif fallback:
+            card.update({k: v for k, v in fallback.items() if v is not None})
         out.append(card)
     return out
 

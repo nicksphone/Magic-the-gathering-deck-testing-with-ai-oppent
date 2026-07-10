@@ -774,20 +774,21 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
     for item in deck:
         row = cached.get(item["card_name"].lower())
         out = dict(item)
+        fallback = fallback_card_payload(item["card_name"])
         if row:
-            out["oracle_text"] = row.oracle_text
-            out["mana_cost"] = row.mana_cost
-            out["type_line"] = row.type_line
-            out["power"] = row.power
-            out["toughness"] = row.toughness
-            out["image_uri"] = row.image_uri
+            out["oracle_text"] = row.oracle_text or (fallback or {}).get("oracle_text")
+            out["mana_cost"] = row.mana_cost or (fallback or {}).get("mana_cost")
+            out["type_line"] = row.type_line or (fallback or {}).get("type_line")
+            out["power"] = row.power or (fallback or {}).get("power")
+            out["toughness"] = row.toughness or (fallback or {}).get("toughness")
+            out["image_uri"] = row.image_uri or (fallback or {}).get("image_uri")
             loyalty = getattr(row, "loyalty", None)
             if loyalty is not None:
                 out["loyalty"] = loyalty
-        else:
-            fallback = fallback_card_payload(item["card_name"])
-            if fallback:
-                out.update({k: v for k, v in fallback.items() if v is not None})
+            elif fallback and fallback.get("loyalty") is not None:
+                out["loyalty"] = fallback["loyalty"]
+        elif fallback:
+            out.update({k: v for k, v in fallback.items() if v is not None})
         if not out.get("image_uri"):
             out["image_uri"] = ensure_placeholder_image(
                 name=str(out.get("card_name") or item.get("card_name") or "Card"),
