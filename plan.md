@@ -24,6 +24,8 @@ The following are implemented and currently supported by the repo:
 - Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
 - Replay and anomaly tooling for divergence detection and debug runs, with more specific root-cause classification for common divergence patterns.
 - Card-play analytics now separate strategic main-phase passes from harmless combat-step passes in verbose logs.
+- Verbose replay traces now carry active-player and priority-player context for clearer drilldown.
+- Training exports now keep active-player and priority-player context for downstream AI tuning.
 - Training export with hands, actions, and board snapshots.
 - Documentation refreshes that reflect the current implementation rather than only patch notes.
 - Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.

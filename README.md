@@ -77,6 +77,8 @@ The application currently supports:
 - Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
 - Local card caching with image fallback handling and token art resolution when available
 - Replay logs, batch simulations, matchup stats, anomaly diagnostics, first-divergence replay drilldown, turn-level AI trace summaries, first-game log excerpts, per-game batch results, and training trace export with board snapshots
+- Training exports preserve active-player and priority-player context for later AI analysis
+- Verbose AI traces now include active-player and priority-player context for easier replay analysis
 - Card-play analytics that separate strategic main-phase pass windows from combat-step passes in verbose head-to-head logs
 - Replay divergence classification now distinguishes pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error cases
 - BO3 and sideboarding support with per-game swap locking
@@ -204,6 +206,7 @@ The app syncs and caches card data locally.
 - Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
 - AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states; face-selection heuristics for modal/transform cards are improved, but broader matchup tuning still remains
 - Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
+- Verbose trace payloads now carry active-player and priority-player context so later drilldowns can distinguish turn-owner decisions from stack-response decisions
 - Card-play analytics now distinguish strategic main-phase pass windows from combat-step passes so the logs do not over-report harmless blockers windows as stalls
 - Simulator diagnostics now classify common divergence buckets such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error, and anomaly clustering now detects land-drop misses correctly
 - Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups

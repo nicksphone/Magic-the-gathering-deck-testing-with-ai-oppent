@@ -11,6 +11,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Simulator diagnostics:
   - Card-play analytics now separate strategic main-phase pass windows from combat-step passes so stall summaries do not over-report harmless blocker windows.
   - The analytics summary now includes pass-window examples and richer pass accounting for later drilldown.
+  - Verbose AI traces now include active-player and priority-player context.
+  - Training exports now preserve active-player and priority-player context for downstream AI analysis.
 
 - Rules coverage:
   - Added generic Oracle inference and handlers for targeted and mass artifact/enchantment removal.

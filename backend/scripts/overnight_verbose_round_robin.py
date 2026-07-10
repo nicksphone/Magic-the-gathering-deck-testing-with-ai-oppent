@@ -152,6 +152,8 @@ def run() -> int:
                             "pid": pid,
                             "turn": state.turn,
                             "step": str(state.step),
+                            "active_player": getattr(state, "active_player", None),
+                            "priority_player": getattr(state, "priority_player", None),
                             "hand": hand_snapshot(state, pid),
                             "mana_pool": dict(state.players[pid].mana_pool),
                             "legal_non_pass": legal_non_pass,

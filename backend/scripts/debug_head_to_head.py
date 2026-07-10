@@ -147,6 +147,8 @@ def main() -> int:
                         "pid": pid,
                         "turn": state.turn,
                         "step": str(state.step),
+                        "active_player": getattr(state, "active_player", None),
+                        "priority_player": getattr(state, "priority_player", None),
                         "hand": hand_snapshot(state, pid),
                         "battlefield": battlefield_snapshot(state, pid),
                         "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),

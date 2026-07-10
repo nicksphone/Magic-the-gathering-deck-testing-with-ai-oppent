@@ -31,6 +31,8 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "pid": trace.get("pid"),
         "turn": trace.get("turn"),
         "step": trace.get("step"),
+        "active_player": trace.get("active_player"),
+        "priority_player": trace.get("priority_player"),
         "hand": list(trace.get("hand") or []),
         "hand_size": len(trace.get("hand") or []),
         "battlefield": list(trace.get("battlefield") or []),
