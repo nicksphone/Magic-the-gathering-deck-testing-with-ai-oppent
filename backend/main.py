@@ -28,6 +28,7 @@ from card_data.placeholders import ensure_placeholder_image
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
+from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
