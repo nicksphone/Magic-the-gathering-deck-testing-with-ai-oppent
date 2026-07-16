@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `433 passed`, 43 deprecation warnings.
+- Backend: `434 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -87,6 +87,7 @@ Release blockers identified by the audit:
 - Named-source attack triggers such as Goblin Guide now match the attacking permanent generically and queue a structured defending-top-card reveal effect; the event-to-stack path has focused regression coverage.
 - Card cache rows now persist Scryfall rulings alongside faces and expose a completeness report for Oracle text, costs, type lines, legalities, rulings, face metadata, and real versus placeholder art through `/cards/completeness`.
 - Fixed-cost cycling is now a first-class priority action: the engine pays the cycling cost, moves the card to its owner's graveyard, places the draw ability on the stack, and the AI can use cycling as a lower-priority hand-filtering line. Variable-cost cycling is intentionally still reported as unsupported.
+- Common activated costs now support generic tap, mana, life, discard, and creature-sacrifice combinations. These costs are checked before payment, paid before the ability is put on the stack, and are available through both AI decisions and the human hand/battlefield action path.
 
 ## Remaining Gaps
 
@@ -98,7 +99,7 @@ Release blockers identified by the audit:
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
 - The current representative corpus still has concrete fallback cards in normal games; variable-cost cycling, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
-- Additional-cost handling still needs broader coverage across uncommon card patterns.
+- Additional-cost handling still needs broader coverage across uncommon card patterns, including counter removal, energy/resource payments, returning permanents, and noncreature sacrifice requirements.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
 - Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.
 - Graveyard recursion now also resolves generic permanent-card recursion from a graveyard, which broadens coverage to lands and other permanent types.
@@ -147,7 +148,7 @@ Release blockers identified by the audit:
 - Batch analytics now reports Wilson 95% confidence intervals and flags extreme, skewed, or insufficient-sample win rates; the Testing Simulator renders those balance alerts instead of presenting small samples as settled matchup truth.
 
 ### UI and docs
-- The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable.
+- The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable. Human players can now activate fixed-cost cycling directly from the hand and see the cost alongside the action.
 - Missing art now falls back to name-specific local placeholders, which improves token and uncached-card readability.
 - Cached double-faced cards now also reuse face-level art when the root image is missing, which reduces blank Delver-style and transform-style displays.
 - Token creation now emits enter-the-battlefield events, which closes a common trigger gap for token-centric decks.

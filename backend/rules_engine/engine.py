@@ -3,7 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
-from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
+from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
@@ -367,14 +367,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             cost = ability["mana_cost"]
-            if "{T}" in cost:
-                if state.cards[cid].tapped:
-                    apply_state_based_actions(state)
-                    return
-                state.cards[cid].tapped = True
-            payment_cost = cost.replace("{T}", "")
-            if payment_cost and not auto_pay_cost(state, player_id, payment_cost, card_name=state.cards[cid].name):
-                state.cards[cid].tapped = False if "{T}" in cost else state.cards[cid].tapped
+            if not apply_activated_costs(state, player_id, cid, cost):
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return

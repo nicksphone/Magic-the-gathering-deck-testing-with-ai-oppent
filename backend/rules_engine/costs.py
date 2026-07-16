@@ -11,6 +11,9 @@ from rules_engine.replacement import replace_die_zone
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
 PAY_LIFE_RE = re.compile(r"additional cost to cast[^.]*pay\s+(\d+)\s+life", re.IGNORECASE)
+ACTIVATED_PAY_LIFE_RE = re.compile(r"pay\s+(\d+)\s+life", re.IGNORECASE)
+ACTIVATED_DISCARD_RE = re.compile(r"discard\s+(?:a|one|an|\d+)\s+cards?", re.IGNORECASE)
+ACTIVATED_SACRIFICE_RE = re.compile(r"sacrifice\s+(?:a|an|one|\d+)\s+creatures?", re.IGNORECASE)
 
 
 @dataclass
@@ -21,6 +24,144 @@ class CostOption:
     pay_life: int = 0
     discard_cards: int = 0
     sacrifice_creatures: int = 0
+
+
+@dataclass(frozen=True)
+class ActivatedCost:
+    mana_cost: str = ""
+    tap_source: bool = False
+    pay_life: int = 0
+    discard_cards: int = 0
+    sacrifice_creatures: int = 0
+    sacrifice_source: bool = False
+    supported: bool = True
+
+
+def parse_activated_cost(cost_text: str) -> ActivatedCost:
+    """Parse common activated costs without treating them as Oracle effects."""
+    mana_symbols: list[str] = []
+    tap_source = False
+    pay_life = discard_cards = sacrifice_creatures = 0
+    sacrifice_source = False
+    supported = True
+    for part in (segment.strip() for segment in (cost_text or "").split(",")):
+        if not part:
+            continue
+        upper = part.upper()
+        symbols = re.findall(r"\{[^}]+\}", part)
+        if symbols:
+            for symbol in symbols:
+                if symbol.upper() == "{T}":
+                    tap_source = True
+                else:
+                    mana_symbols.append(symbol.upper())
+            remainder = re.sub(r"\{[^}]+\}", "", part).strip(" ,")
+            if not remainder:
+                continue
+            upper = remainder.upper()
+        if upper in {"T", "TAP"}:
+            tap_source = True
+        elif "SACRIFICE" in upper and "CREATURE" in upper:
+            match = ACTIVATED_SACRIFICE_RE.search(upper)
+            if not match:
+                supported = False
+                continue
+            number = re.search(r"(\d+)", match.group(0))
+            sacrifice_creatures += int(number.group(1)) if number else 1
+            sacrifice_source = "THIS CREATURE" in upper
+        elif "DISCARD" in upper and "CARD" in upper:
+            match = ACTIVATED_DISCARD_RE.search(upper)
+            if not match:
+                supported = False
+                continue
+            number = re.search(r"(\d+)", match.group(0))
+            discard_cards += int(number.group(1)) if number else 1
+        elif "PAY" in upper and "LIFE" in upper:
+            match = ACTIVATED_PAY_LIFE_RE.search(upper)
+            if not match:
+                supported = False
+                continue
+            pay_life += int(match.group(1))
+        else:
+            supported = False
+    return ActivatedCost(
+        mana_cost="".join(mana_symbols),
+        tap_source=tap_source,
+        pay_life=pay_life,
+        discard_cards=discard_cards,
+        sacrifice_creatures=sacrifice_creatures,
+        sacrifice_source=sacrifice_source,
+        supported=supported,
+    )
+
+
+def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str) -> bool:
+    cost = parse_activated_cost(cost_text)
+    if not cost.supported:
+        return False
+    source = state.cards[source_id]
+    player = state.players[player_id]
+    if cost.tap_source and source.tapped:
+        return False
+    if player.life <= cost.pay_life or len(player.hand) < cost.discard_cards:
+        return False
+    creatures = [cid for cid in player.battlefield if "Creature" in state.cards[cid].types]
+    if cost.sacrifice_source:
+        if source_id not in creatures:
+            return False
+        creatures.remove(source_id)
+    if len(creatures) < max(0, cost.sacrifice_creatures - (1 if cost.sacrifice_source else 0)):
+        return False
+    return not cost.mana_cost or can_pay_with_pool_and_lands(state, player_id, cost.mana_cost, card_name=source.name)
+
+
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str) -> bool:
+    cost = parse_activated_cost(cost_text)
+    if not activated_cost_available(state, player_id, source_id, cost_text):
+        return False
+    player = state.players[player_id]
+    source = state.cards[source_id]
+    if cost.mana_cost and not _pay_activated_mana(state, player_id, cost.mana_cost, source.name):
+        return False
+    if cost.tap_source:
+        source.tapped = True
+    if cost.pay_life:
+        player.life -= cost.pay_life
+        state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
+    from rules_engine.events import emit_event
+    for _ in range(cost.discard_cards):
+        discard_id = next((cid for cid in player.hand if cid != source_id), None)
+        if discard_id is None:
+            return False
+        player.hand.remove(discard_id)
+        player.graveyard.append(discard_id)
+        state.cards[discard_id].zone = Zone.GRAVEYARD
+        state.log.append(f"{player.name} discards {state.cards[discard_id].name} for {source.name}.")
+        emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
+    sacrifice_ids: list[str] = []
+    if cost.sacrifice_source:
+        sacrifice_ids.append(source_id)
+    sacrifice_ids.extend(
+        cid for cid in player.battlefield
+        if cid != source_id and "Creature" in state.cards[cid].types
+    )
+    needed = cost.sacrifice_creatures
+    for sac_id in sacrifice_ids[:needed]:
+        if sac_id in player.battlefield:
+            player.battlefield.remove(sac_id)
+        card = state.cards[sac_id]
+        owner = state.players[getattr(card, "owner", player_id)]
+        owner.graveyard.append(sac_id)
+        card.zone = Zone.GRAVEYARD
+        state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
+        emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
+    return True
+
+
+def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str) -> bool:
+    from rules_engine.mana import auto_pay_cost
+
+    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name)
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:

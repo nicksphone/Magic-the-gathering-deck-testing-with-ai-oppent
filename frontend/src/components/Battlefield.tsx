@@ -91,6 +91,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const battlefieldDensityClass =
     battlefieldCount >= 16 ? "battlefield-packed" : battlefieldCount >= 9 ? "battlefield-dense" : battlefieldCount >= 5 ? "battlefield-comfort" : "battlefield-open";
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
+  const cycleMoves = useMemo(() => legalMoves.filter((m) => m.type === "cycle_card"), [legalMoves]);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
@@ -402,6 +403,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
         <div className="hand-row">
           {p1.hand.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
+            const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const landMove = playLandMoves.find((m) => m.card_id === card.id);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             const faceNames = move?.target_hints?.face_names ?? [];
@@ -417,6 +419,10 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                   {landMove ? (
                     <button onClick={() => onCardAction(1, { type: "play_land", card_id: card.id })}>
                       Play Land {card.name}
+                    </button>
+                  ) : cycleMove ? (
+                    <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id })}>
+                      Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
                     </button>
                   ) : (
                     <button disabled>
@@ -440,6 +446,11 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                 >
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
+                {cycleMove ? (
+                  <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id })}>
+                    Cycle {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
+                  </button>
+                ) : null}
                 {faceNames.length > 1 ? (
                   <select
                     value={selectedFaceIndex}

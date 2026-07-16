@@ -254,6 +254,42 @@ def test_recruitment_officer_style_activated_ability_is_legal_and_resolves() -> 
     assert top_id in p1.hand
 
 
+def test_tap_and_sacrifice_activated_cost_is_legal_and_paid() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p1.battlefield = []
+    source_id = p1.library.pop()
+    source = state.cards[source_id]
+    source.zone = Zone.BATTLEFIELD
+    source.types = ["Creature"]
+    source.name = "Sacrifice Outlet"
+    source.oracle_text = "{T}, Sacrifice a creature: Draw a card."
+    p1.battlefield.append(source_id)
+    fodder_id = p1.library.pop()
+    fodder = state.cards[fodder_id]
+    fodder.zone = Zone.BATTLEFIELD
+    fodder.types = ["Creature"]
+    fodder.name = "Fodder"
+    p1.battlefield.append(fodder_id)
+
+    moves = RulesEngine().legal_moves(state, 1)
+    ability = next(m for m in moves if m.get("type") == "activate_ability" and m.get("card_id") == source_id)
+    RulesEngine().take_action(state, 1, ability)
+
+    assert source_id in p1.battlefield
+    assert state.cards[source_id].tapped
+    assert source_id not in p1.graveyard
+    assert fodder_id not in p1.battlefield
+    assert fodder_id in p1.graveyard
+    assert state.stack and state.stack[-1].effect_key == "draw_cards"
+
+
 def test_temporary_exile_play_permission_generates_cast_and_land_actions() -> None:
     deck = [{"quantity": 60, "card_name": "Mountain"}]
     state = MatchFactory.from_decks(deck, deck)

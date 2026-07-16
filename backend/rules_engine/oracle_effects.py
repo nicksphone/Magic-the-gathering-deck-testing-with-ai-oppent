@@ -33,7 +33,9 @@ COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered abil
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
-ACTIVATED_ABILITY_RE = re.compile(r"(?m)(\{(?:[^{}]+)\}(?:\{(?:[^{}]+)\})*):\s*([^\n]+)")
+ACTIVATED_ABILITY_RE = re.compile(
+    r"(?m)((?:\{[^{}]+\})(?:\s*,\s*(?:\{[^{}]+\}|[^:\n]+))*)\s*:\s*([^\n]+)"
+)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 LOOK_CREATURE_TO_HAND_RE = re.compile(
     r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?creature card with power\s+(\d+)\s+or less.*?put it into your hand",
