@@ -8,7 +8,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 
 - Validation:
-  - Backend suite now passes `430` tests with 43 deprecation warnings.
+  - Backend suite now passes `431` tests with 43 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
 
 - Simulator diagnostics:
@@ -27,6 +27,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for complete, fallback-backed, and unresolved card metadata.
   - Deck import UI now displays the completeness summary immediately after a deck is imported.
   - Added saved-deck completeness endpoints for one deck or all distinct saved decks, including sideboard card names.
+
+- Balance diagnostics:
+  - Batch simulation now reports Wilson 95% confidence intervals and explicit extreme, skewed, and insufficient-sample alerts.
+  - Testing Simulator now renders balance alerts alongside win rates and anomaly counters.
 
 - Oracle coverage diagnostics:
   - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.

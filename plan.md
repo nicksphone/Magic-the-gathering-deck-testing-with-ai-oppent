@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `430 passed`, 43 deprecation warnings.
+- Backend: `431 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -143,6 +143,7 @@ Release blockers identified by the audit:
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
 - Saved-deck completeness is now available through `/decks/completeness` and `/decks/{deck_id}/card-completeness`, covering distinct mainboard and sideboard names for release diagnostics.
+- Batch analytics now reports Wilson 95% confidence intervals and flags extreme, skewed, or insufficient-sample win rates; the Testing Simulator renders those balance alerts instead of presenting small samples as settled matchup truth.
 
 ### UI and docs
 - The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable.

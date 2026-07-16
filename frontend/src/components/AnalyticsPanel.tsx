@@ -23,6 +23,8 @@ export function AnalyticsPanel({ decks }: Props) {
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
   const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
   const anomalyObj = (resultObj?.anomalies as Record<string, unknown> | null) ?? null;
+  const balanceAlerts = Array.isArray(resultObj?.balance_alerts) ? resultObj.balance_alerts as Array<Record<string, unknown>> : [];
+  const confidenceIntervals = (resultObj?.confidence_intervals as Record<string, Record<string, unknown>> | null) ?? null;
 
   function renderTraceContext(title: string, context: Record<string, unknown> | null | undefined) {
     if (!context || Object.keys(context).length === 0) {
@@ -176,6 +178,23 @@ export function AnalyticsPanel({ decks }: Props) {
           <p>
             Fingerprint: {(resultObj.deterministic_replay_fingerprint as string | undefined) ?? "n/a"}
           </p>
+          {confidenceIntervals ? (
+            <p>
+              95% CI: A {String(confidenceIntervals.deck_a?.low ?? "-")}%-{String(confidenceIntervals.deck_a?.high ?? "-")}% | B {String(confidenceIntervals.deck_b?.low ?? "-")}%-{String(confidenceIntervals.deck_b?.high ?? "-")}%
+            </p>
+          ) : null}
+          {balanceAlerts.length > 0 ? (
+            <div className="analytics-sample-block balance-alerts">
+              <strong>Balance Alerts</strong>
+              <ul className="analytics-sample-list">
+                {balanceAlerts.map((alert, index) => (
+                  <li key={`${String(alert.kind)}-${index}`}>
+                    {String(alert.kind)}: {String(alert.deck ?? "sample")} {String(alert.rate ?? "")} ({String(alert.games ?? "")} games) [{String(alert.severity)}]
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {anomalyObj ? (
             <div className="analytics-sample-block">
               <strong>Anomaly Counters</strong>

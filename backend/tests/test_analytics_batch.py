@@ -80,3 +80,11 @@ def test_batch_first_divergence_excerpt_includes_trace_context() -> None:
     assert excerpt["trace_context_a"]["hand_size"] == 1
     assert excerpt["trace_context_a"]["opp_hand_size"] == 1
     assert excerpt["trace_context_b"]["action_type"] == "pass_priority"
+
+
+def test_batch_reports_confidence_intervals_and_small_sample_balance_alert() -> None:
+    interval = AnalyticsService._wilson_interval(10, 10)
+    alerts = AnalyticsService._balance_alerts(10, 0, 10)
+
+    assert interval["low"] < 100.0 <= interval["high"]
+    assert any(item["kind"] == "extreme_win_rate" and item["severity"] == "high" for item in alerts)

@@ -118,6 +118,11 @@ class AnalyticsService:
             "matches": matches,
             "win_rate_deck_a": round((wins_a / total) * 100, 2),
             "win_rate_deck_b": round((wins_b / total) * 100, 2),
+            "confidence_intervals": {
+                "deck_a": self._wilson_interval(wins_a, total),
+                "deck_b": self._wilson_interval(wins_b, total),
+            },
+            "balance_alerts": self._balance_alerts(wins_a, wins_b, total),
             "timeouts": int(stats["timeouts"]),
             "draw_play_advantage_deck_a": round((play_win / max(1, resolved_play_games)) * 100, 2),
             "average_turns": round(sum(turn_counts) / max(1, len(turn_counts)), 2),
@@ -159,6 +164,33 @@ class AnalyticsService:
         }
         self.repo.save_snapshot("batch_simulation", result)
         return result
+
+    @staticmethod
+    def _wilson_interval(wins: int, total: int) -> dict[str, float | int]:
+        if total <= 0:
+            return {"wins": 0, "games": 0, "low": 0.0, "high": 0.0}
+        # 95% Wilson interval; avoids normal-approximation errors at 0%/100%.
+        n = float(total)
+        p = float(wins) / n
+        z = 1.96
+        denominator = 1.0 + (z * z / n)
+        centre = (p + (z * z / (2.0 * n))) / denominator
+        margin = z * ((p * (1.0 - p) / n + (z * z / (4.0 * n * n))) ** 0.5) / denominator
+        return {"wins": int(wins), "games": int(total), "low": round(max(0.0, centre - margin) * 100, 2), "high": round(min(1.0, centre + margin) * 100, 2)}
+
+    @staticmethod
+    def _balance_alerts(wins_a: int, wins_b: int, total: int) -> list[dict[str, object]]:
+        if total <= 0:
+            return []
+        rate_a = wins_a / total * 100.0
+        alerts: list[dict[str, object]] = []
+        if rate_a in {0.0, 100.0}:
+            alerts.append({"kind": "extreme_win_rate", "deck": "deck_a" if rate_a else "deck_b", "rate": rate_a, "games": total, "severity": "high" if total >= 10 else "review"})
+        elif rate_a > 70.0 or rate_a < 30.0:
+            alerts.append({"kind": "skewed_win_rate", "deck": "deck_a" if rate_a > 50.0 else "deck_b", "rate": round(max(rate_a, 100.0 - rate_a), 2), "games": total, "severity": "review"})
+        if total < 10:
+            alerts.append({"kind": "insufficient_sample", "games": total, "severity": "info"})
+        return alerts
 
     def aggregate_history(self) -> dict:
         rows = self.repo.list_matches()
