@@ -102,15 +102,27 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     or "whenever you cast or copy a non-creature spell" in oracle
                     or "gets +1/+1 until end of turn" in oracle
                 ):
-                    out.append(
-                        {
-                            "source_card_id": cid,
-                            "controller": card.controller,
-                            "label": f"{card.name} spell trigger",
-                            "effect_key": "temporary_pt_buff",
-                            "payload": {"target_card_id": cid, "power": 1, "toughness": 1},
-                        }
+                    ability = _trigger_from_oracle(
+                        state,
+                        cid,
+                        card.controller,
+                        oracle,
+                        default_label=f"{card.name} spell trigger",
+                        event=event,
+                        payload=payload,
                     )
+                    if ability["effect_key"] != "gain_life" or ability["payload"].get("amount") != 0:
+                        out.append(ability)
+                    elif "prowess" in oracle or "magecraft" in oracle or "gets +1/+1 until end of turn" in oracle:
+                        out.append(
+                            {
+                                "source_card_id": cid,
+                                "controller": card.controller,
+                                "label": f"{card.name} spell trigger",
+                                "effect_key": "temporary_pt_buff",
+                                "payload": {"target_card_id": cid, "power": 1, "toughness": 1},
+                            }
+                        )
             elif event == "begin_step":
                 step = str(payload.get("step", "")).lower()
                 active_player = int(payload.get("active_player", 0) or 0)

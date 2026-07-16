@@ -8,7 +8,7 @@ from rules_engine.continuous import effective_keywords, effective_toughness, has
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event
-from rules_engine.mana import parse_mana_cost
+from rules_engine.mana import mana_value, parse_mana_cost
 from rules_engine.prevention import (
     add_card_prevention_shield,
     add_player_prevention_shield,
@@ -571,6 +571,19 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     state.log.append(f"{state.players[token_controller].name} creates {amount} {p}/{t} token(s).")
 
 
+def create_shark_token(state: MatchState, controller: int, payload: dict) -> None:
+    source_id = payload.get("source_card_id")
+    source = state.cards.get(source_id) if source_id else None
+    if source is None:
+        return
+    size = mana_value(getattr(source, "mana_cost", "") or "")
+    create_token(
+        state,
+        controller,
+        {"name": "Shark", "power": size, "toughness": size, "amount": 1, "keywords": ["flying"]},
+    )
+
+
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:
     color = payload.get("color", "C")
     amount = int(payload.get("amount", 1))
@@ -778,6 +791,43 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     for cid in rest:
         state.cards[cid].zone = Zone.LIBRARY
         player.library.insert(0, cid)
+
+
+def topdeck_put_permanents_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    top_n = max(1, int(payload.get("top_n", 5)))
+    max_permanents = max(1, int(payload.get("max_permanents", 2)))
+    mv_max = max(0, int(payload.get("mv_max", 5)))
+    top_slice = player.library[-top_n:]
+    permanent_types = {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"}
+
+    def mana_value_for(cid: str) -> int:
+        req = parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")
+        return int(req["generic"] + req["C"] + sum(req[c] for c in ["W", "U", "B", "R", "G"]))
+
+    eligible = [
+        cid for cid in top_slice
+        if set(state.cards[cid].types).intersection(permanent_types) and mana_value_for(cid) <= mv_max
+    ]
+    eligible.sort(key=lambda cid: (mana_value_for(cid), state.cards[cid].name), reverse=True)
+    chosen = eligible[:max_permanents]
+    chosen_set = set(chosen)
+    player.library = [cid for cid in player.library if cid not in set(top_slice)]
+    for cid in chosen:
+        card = state.cards[cid]
+        card.zone = Zone.BATTLEFIELD
+        card.controller = controller
+        card.tapped = False
+        card.summoning_sick = "Creature" in card.types
+        card.entered_turn = state.turn
+        player.battlefield.append(cid)
+        assign_static_order_on_battlefield_entry(state, cid)
+        emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
+    for cid in top_slice:
+        if cid not in chosen_set:
+            state.cards[cid].zone = Zone.LIBRARY
+            player.library.insert(0, cid)
+    state.log.append(f"{player.name} puts {len(chosen)} permanent(s) from the top of the library onto the battlefield.")
 
     if chosen:
         names = ", ".join(state.cards[cid].name for cid in chosen)

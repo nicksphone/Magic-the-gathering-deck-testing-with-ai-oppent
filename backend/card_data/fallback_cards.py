@@ -12,7 +12,7 @@ FALLBACK_CARD_DATA: dict[str, dict[str, Any]] = {
     "supreme verdict": {"mana_cost": "{1}{W}{W}{U}", "type_line": "Sorcery", "oracle_text": "Destroy all creatures."},
     "the wandering emperor": {"mana_cost": "{2}{W}{W}", "type_line": "Legendary Planeswalker", "oracle_text": "+1: Gain 2 life.", "loyalty": "3"},
     "teferi, hero of dominaria": {"mana_cost": "{3}{W}{U}", "type_line": "Legendary Planeswalker", "oracle_text": "+1: Draw a card.", "loyalty": "4"},
-    "shark typhoon": {"mana_cost": "{5}{U}", "type_line": "Enchantment", "oracle_text": "Whenever you cast a noncreature spell, create a token."},
+    "shark typhoon": {"mana_cost": "{5}{U}", "type_line": "Enchantment", "oracle_text": "Whenever you cast a noncreature spell, create a blue X/X Shark creature token with flying, where X is that spell's mana value. Cycling {X}{1}{U}"},
     "march of otherworldly light": {"mana_cost": "{X}{W}", "type_line": "Instant", "oracle_text": "Exile target artifact, creature, or enchantment."},
     "farewell": {"mana_cost": "{4}{W}{W}", "type_line": "Sorcery", "oracle_text": "Exile all creatures."},
     "clarion spirit": {"mana_cost": "{1}{W}", "type_line": "Creature", "oracle_text": "Whenever you cast your second spell each turn, create a 1/1 white Spirit creature token with flying.", "power": "2", "toughness": "2"},
@@ -82,7 +82,7 @@ FALLBACK_CARD_DATA: dict[str, dict[str, Any]] = {
     "nissa, who shakes the world": {"mana_cost": "{3}{G}{G}", "type_line": "Legendary Planeswalker", "oracle_text": "Lands you control have '{T}: Add two mana of any one color.'\n+1: Put a +1/+1 counter on up to one target land you control. Untap it. It becomes a 0/0 Elemental creature with haste that's still a land.\n-3: You may put a green creature card from your hand onto the battlefield.", "loyalty": "5"},
     "ugin, the spirit dragon": {"mana_cost": "{8}", "type_line": "Legendary Planeswalker", "oracle_text": "+2: Deal 3 damage to target.", "loyalty": "7"},
     "hydroid krasis": {"mana_cost": "{X}{G}{U}", "type_line": "Creature", "oracle_text": "Flying, trample. When cast, draw a card and gain life.", "power": "4", "toughness": "4"},
-    "storm the festival": {"mana_cost": "{3}{G}{G}{G}", "type_line": "Sorcery", "oracle_text": "Look at the top cards of your library."},
+    "storm the festival": {"mana_cost": "{3}{G}{G}{G}", "type_line": "Sorcery", "oracle_text": "Look at the top five cards of your library. You may put up to two permanent cards with mana value 5 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."},
     "forest": {"mana_cost": "", "type_line": "Basic Land — Forest", "oracle_text": "{T}: Add {G}."},
     # Dimir / black interaction
     "fatal push": {"mana_cost": "{B}", "type_line": "Instant", "oracle_text": "Destroy target creature."},

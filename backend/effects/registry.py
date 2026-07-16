@@ -31,6 +31,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "return_permanent_from_graveyard_to_battlefield": handlers.return_permanent_from_graveyard_to_battlefield,
     "search_library": handlers.search_library,
     "create_token": handlers.create_token,
+    "create_shark_token": handlers.create_shark_token,
     "add_mana": handlers.add_mana,
     "add_counters": handlers.add_counters,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
@@ -43,6 +44,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "prevent_damage": handlers.prevent_damage,
     "discard_cards": handlers.discard_cards,
     "topdeck_put_creatures_battlefield": handlers.topdeck_put_creatures_battlefield,
+    "topdeck_put_permanents_battlefield": handlers.topdeck_put_permanents_battlefield,
     "noop": handlers.noop,
 }
 

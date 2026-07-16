@@ -1008,3 +1008,59 @@ def test_nissa_loyalty_lines_animate_land_and_put_green_creature() -> None:
     resolve_effect(state, 1, key, payload)
     assert creature_id in p1.battlefield
     assert creature.summoning_sick
+
+
+def test_storm_the_festival_style_puts_permanents_from_top() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Forest"}], [{"quantity": 60, "card_name": "Forest"}])
+    card = CardInstance(
+        id="storm",
+        name="Storm the Festival",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Look at the top five cards of your library. You may put up to two permanent cards with mana value 5 or less from among them onto the battlefield.",
+    )
+    key, payload = infer_effect_from_oracle(state, card, 1)
+
+    assert key == "topdeck_put_permanents_battlefield"
+    assert payload == {"top_n": 5, "max_permanents": 2, "mv_max": 5}
+    resolve_effect(state, 1, key, payload)
+    assert len(state.players[1].battlefield) == 2
+
+
+def test_shark_typhoon_style_effect_uses_cast_spell_mana_value() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
+    enchantment = CardInstance(
+        id="typhoon",
+        name="Shark Typhoon",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="Whenever you cast a noncreature spell, create a blue X/X Shark creature token with flying, where X is that spell's mana value.",
+    )
+    spell = CardInstance(
+        id="spell",
+        name="Memory Deluge",
+        owner=1,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Instant"],
+        mana_cost="{2}{U}{U}",
+        oracle_text="Draw two cards.",
+    )
+    state.cards[enchantment.id] = enchantment
+    state.cards[spell.id] = spell
+    state.players[1].battlefield.append(enchantment.id)
+    state.stack.append(type("Stack", (), {"source_card_id": spell.id, "controller": 1, "id": "stack"})())
+
+    from rules_engine.events import emit_event
+    emit_event(state, "spell_cast", {"source_card_id": spell.id, "controller": 1})
+
+    assert state.stack[-1].effect_key == "create_shark_token"
+    resolve_effect(state, 1, "create_shark_token", state.stack.pop().payload)
+    shark = state.cards[state.players[1].battlefield[-1]]
+    assert shark.name == "Shark"
+    assert shark.power == 4 and shark.toughness == 4
+    assert "flying" in shark.keywords

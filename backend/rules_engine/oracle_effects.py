@@ -38,8 +38,13 @@ PUT_CREATURES_FROM_TOP_RE = re.compile(
     r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+creature cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
     re.IGNORECASE,
 )
+PUT_PERMANENTS_FROM_TOP_RE = re.compile(
+    r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+permanent cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
+    re.IGNORECASE,
+)
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
+SHARK_TOKEN_RE = re.compile(r"create (?:a|an) (?:blue )?x/x shark creature token with flying", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
     r"put (?:a|one) land card from your hand onto the battlefield tapped",
     re.IGNORECASE,
@@ -92,6 +97,9 @@ def infer_effect_from_oracle(
     topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
     if topdeck_creatures is not None:
         return topdeck_creatures
+    topdeck_permanents = _infer_topdeck_permanent_put_effect(oracle, action_targets)
+    if topdeck_permanents is not None:
+        return topdeck_permanents
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
@@ -189,6 +197,18 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
         "top_n": max(1, top_n),
         "max_creatures": max(1, max_creatures),
         "mv_max": max(0, mv_max),
+    }
+
+
+def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    look_match = LOOK_TOP_RE.search(oracle)
+    put_match = PUT_PERMANENTS_FROM_TOP_RE.search(oracle)
+    if not (look_match and put_match):
+        return None
+    return "topdeck_put_permanents_battlefield", {
+        "top_n": max(1, int(action_targets.get("top_n", _parse_count_token(look_match.group(1))) or 1)),
+        "max_permanents": max(1, int(action_targets.get("max_permanents", _parse_count_token(put_match.group(1))) or 1)),
+        "mv_max": max(0, int(action_targets.get("mv_max", _parse_count_token(put_match.group(2))) or 0)),
     }
 
 
@@ -573,6 +593,9 @@ def _infer_clause_effect(
         if mv_max is not None:
             payload["mv_max"] = int(mv_max)
         return "search_library", payload
+
+    if SHARK_TOKEN_RE.search(oracle):
+        return "create_shark_token", {"source_card_id": action_targets.get("source_card_id")}
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
