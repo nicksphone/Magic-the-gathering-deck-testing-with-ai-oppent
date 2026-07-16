@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `421 passed`, 32 deprecation warnings.
+- Backend: `423 passed`, 32 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -84,6 +84,7 @@ Release blockers identified by the audit:
 - Storm the Festival-style top-five permanent deployment and Shark Typhoon-style X/X flying Shark triggers now use generic top-library and spell-cast effect paths. The post-change three-deck replay matrix completed 3 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
 - Simple mana-cost activated abilities now have a legal-move and stack-resolution path; Recruitment Officer-style top-four creature searches are covered, while tap-plus-additional-cost, discard-cost, sacrifice-cost, and temporary-play permissions remain separate gaps.
 - Temporary play permissions are now explicit per-card state with expiry, snapshot serialization, legal cast/land actions from exile, and a reusable top-card exile/play effect. Light Up the Stage-style cards no longer lose their temporary play window in the rules engine.
+- Named-source attack triggers such as Goblin Guide now match the attacking permanent generically and queue a structured defending-top-card reveal effect; the event-to-stack path has focused regression coverage.
 
 ## Remaining Gaps
 
@@ -93,6 +94,7 @@ Release blockers identified by the audit:
 - Prevention and replacement now cover broader controller/target wording plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms and controller-scoped ETB/death clauses are now covered.
+- Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
 - The current representative corpus still has concrete fallback cards in normal games; unusual modal, cycling, and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
 - Additional-cost handling still needs broader coverage across uncommon card patterns.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.

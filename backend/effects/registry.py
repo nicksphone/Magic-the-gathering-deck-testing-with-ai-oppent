@@ -33,6 +33,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "create_token": handlers.create_token,
     "create_shark_token": handlers.create_shark_token,
     "exile_top_cards_playable": handlers.exile_top_cards_playable,
+    "reveal_defending_top_land": handlers.reveal_defending_top_land,
     "add_mana": handlers.add_mana,
     "add_counters": handlers.add_counters,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,

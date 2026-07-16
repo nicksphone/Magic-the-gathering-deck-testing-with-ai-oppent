@@ -1080,3 +1080,25 @@ def test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission() 
     resolve_effect(state, 1, key, payload)
     assert top_id in state.players[1].exile
     assert state.players[1].exile_play_until[top_id] == state.turn + 1
+
+
+def test_goblin_guide_style_reveals_defending_top_land() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Mountain"}], [{"quantity": 60, "card_name": "Mountain"}])
+    target = state.players[2].library[-1]
+    state.cards[target].types = ["Land"]
+    state.cards[target].name = "Revealed Mountain"
+    source = CardInstance(
+        id="guide",
+        name="Goblin Guide",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever Goblin Guide attacks, defending player reveals the top card of their library. That player may put that card into their hand if it's a land card.",
+    )
+    state.cards[source.id] = source
+    key, payload = infer_effect_from_oracle(state, source, 1)
+
+    assert key == "reveal_defending_top_land"
+    resolve_effect(state, 1, key, payload)
+    assert target in state.players[2].hand

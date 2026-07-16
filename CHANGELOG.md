@@ -3,6 +3,14 @@
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 ## 2026-07-16
 
+- Rules coverage:
+  - Named-source attack triggers now match the attacking permanent generically, including Goblin Guide-style defending-player top-card reveals.
+  - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
+
+- Validation:
+  - Backend suite now passes `423` tests with 32 deprecation warnings.
+  - Frontend production build passes after the trigger and regression updates.
+
 - Oracle coverage diagnostics:
   - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.
   - Testing Simulator output now displays the cards that still use the fallback path, making rules-coverage work actionable instead of requiring raw-log inspection.

@@ -127,6 +127,27 @@ def test_spell_cast_trigger_from_permanent() -> None:
     assert any(x.controller == 1 and "cast trigger" in x.label.lower() for x in state.stack)
 
 
+def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+
+    guide = _put_trigger_creature(
+        state,
+        1,
+        "Whenever Goblin Guide attacks, defending player reveals the top card of their library. If it's a land card, that player puts it into their hand.",
+    )
+    state.cards[guide].name = "Goblin Guide"
+
+    emit_event(state, "attack_declared", {"card_id": guide, "defending_player": 2})
+
+    trigger = next(item for item in state.stack if item.source_card_id == guide)
+    assert trigger.effect_key == "reveal_defending_top_land"
+    assert trigger.payload["target_player"] == 2
+
+
 def test_prowess_style_noncreature_spell_trigger_grants_temporary_pump() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

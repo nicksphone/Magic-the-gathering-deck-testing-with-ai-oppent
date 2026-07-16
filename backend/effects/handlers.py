@@ -598,6 +598,21 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
         state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
 
 
+def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
+    target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
+    player = state.players[target_player]
+    if not player.library:
+        return
+    cid = player.library[-1]
+    card = state.cards[cid]
+    state.log.append(f"{player.name} reveals {card.name} from the top of their library.")
+    if "Land" in card.types:
+        player.library.pop()
+        player.hand.append(cid)
+        card.zone = Zone.HAND
+        state.log.append(f"{player.name} puts {card.name} into their hand.")
+
+
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:
     color = payload.get("color", "C")
     amount = int(payload.get("amount", 1))

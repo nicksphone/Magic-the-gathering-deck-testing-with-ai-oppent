@@ -51,6 +51,7 @@ LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
 SHARK_TOKEN_RE = re.compile(r"create (?:a|an) (?:blue )?x/x shark creature token with flying", re.IGNORECASE)
 EXILE_TOP_PLAYABLE_RE = re.compile(r"exile the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?may play those cards", re.IGNORECASE)
+REVEAL_DEFENDING_TOP_LAND_RE = re.compile(r"defending player reveals the top card of their library.*?if it's a land card", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
     r"put (?:a|one) land card from your hand onto the battlefield tapped",
     re.IGNORECASE,
@@ -115,6 +116,10 @@ def infer_effect_from_oracle(
     exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
     if exile_playable:
         return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
+    if REVEAL_DEFENDING_TOP_LAND_RE.search(oracle):
+        return "reveal_defending_top_land", {
+            "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
+        }
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
