@@ -3,6 +3,10 @@
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 ## 2026-07-16
 
+- Simulator diagnostics:
+  - Centralized legal-move taxonomy across verbose round-robin and head-to-head traces. Restricted combat placeholders and ordinary passes no longer count as actionable options, while cycling, activated abilities, and equipment are included as meaningful decisions.
+  - Added regression coverage for restricted placeholders and newly classified meaningful actions.
+
 - Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.
   - Additional cast and activated costs now share generic sacrifice eligibility for creatures, artifacts, enchantments, permanents, and artifact-or-creature requirements. The chosen permanent is moved through ownership-aware replacement handling before the ability resolves.

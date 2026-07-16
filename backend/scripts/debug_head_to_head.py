@@ -11,6 +11,7 @@ from pathlib import Path
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.decision_taxonomy import has_actionable_move
 from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
@@ -171,7 +172,7 @@ def main() -> int:
                             "opp": state.players[1 if pid == 2 else 2].life,
                         },
                         "mana_pool": dict(state.players[pid].mana_pool),
-                        "legal_non_pass": any(m.get("type") != "pass_priority" for m in legal),
+                        "legal_non_pass": has_actionable_move(legal),
                         "legal_has_land": any(m.get("type") == "play_land" for m in legal),
                         "action": compact_action(action),
                         "reasoning": reasoning,

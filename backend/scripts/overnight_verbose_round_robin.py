@@ -15,6 +15,7 @@ import re
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
 from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
@@ -161,11 +162,8 @@ def run() -> int:
                             decision = agent.choose_action(state, legal, pid)
                             action = decision.action
 
-                        legal_non_pass = any(m.get("type") != "pass_priority" for m in legal)
-                        meaningful_non_pass = any(
-                            m.get("type") in {"play_land", "cast_spell", "activate_loyalty", "attack", "block"}
-                            for m in legal
-                        )
+                        legal_non_pass = has_actionable_move(legal)
+                        meaningful_non_pass = has_meaningful_move(legal)
                         legal_has_land = any(m.get("type") == "play_land" for m in legal)
                         acted_type = action.get("type")
                         if (
