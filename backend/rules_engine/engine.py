@@ -348,6 +348,10 @@ class RulesEngine:
                 effect_key="cycle_draw",
                 payload={"amount": 1},
             )
+            # The cycle trigger is put above the cycling ability, matching
+            # activation-cost timing: the draw ability resolves first only
+            # if no triggered ability was created.
+            emit_event(state, "cycle", {"card_id": cid, "controller": player_id})
 
         elif kind == "attack":
             ids = action.get("attackers", [])

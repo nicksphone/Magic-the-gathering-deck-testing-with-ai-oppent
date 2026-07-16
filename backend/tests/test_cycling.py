@@ -46,3 +46,21 @@ def test_cycling_pays_cost_discards_then_draws_on_resolution() -> None:
     engine.take_action(state, 2, {"type": "pass_priority"})
     assert not state.stack
     assert len(state.players[1].hand) == before_hand
+
+
+def test_cycling_trigger_is_matched_by_card_name_and_put_above_ability() -> None:
+    state, cid = _state_with_cycler()
+    source_id = "cycling-payoff"
+    state.cards[source_id] = CardInstance(
+        id=source_id,
+        name="Cycling Payoff",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="When you cycle Lonely Sandbar, draw a card.",
+    )
+    state.players[1].battlefield.append(source_id)
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid})
+    assert [item.effect_key for item in state.stack] == ["cycle_draw", "draw_cards"]

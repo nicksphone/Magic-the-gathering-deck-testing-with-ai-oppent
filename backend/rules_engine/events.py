@@ -53,6 +53,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} sacrifice trigger", event=event, payload=payload))
             elif event == "discard" and _matches_discard_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} discard trigger", event=event, payload=payload))
+            elif event == "cycle" and _matches_cycle_trigger(state, card, oracle, payload):
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} cycling trigger", event=event, payload=payload))
             elif event == "combat_damage_dealt" and _matches_combat_damage_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} combat damage trigger", event=event, payload=payload))
             elif event == "attack_declared" and _matches_attack_trigger(state, card, oracle, payload):
@@ -424,6 +426,26 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
     return False
 
 
+def _matches_cycle_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    cycled_id = payload.get("card_id")
+    cycled = state.cards.get(cycled_id) if cycled_id else None
+    if cycled is None:
+        return False
+    cycling_controller = int(payload.get("controller", getattr(cycled, "controller", 0)) or 0)
+    if "an opponent cycles" in oracle or "whenever an opponent cycles" in oracle:
+        return cycling_controller != card.controller
+    if "you cycle" not in oracle and "whenever you cycle" not in oracle:
+        return False
+    if cycling_controller != card.controller:
+        return False
+    if "you cycle a card" in oracle or "you cycle one or more cards" in oracle:
+        return True
+    # Named cycling triggers (for example, "When you cycle Shark Typhoon")
+    # are matched against the actual cycled card name, not a card-specific ID.
+    cycled_name = re.sub(r"\s+\([^)]*\)", "", str(cycled.name or "")).strip().lower()
+    return bool(cycled_name and f"cycle {cycled_name}" in oracle)
+
+
 def _matches_combat_damage_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
     source_id = payload.get("source_card_id")
     if not source_id or source_id not in state.cards:
@@ -596,7 +618,13 @@ def _trigger_from_oracle(
 
         source_card = state.cards.get(source_card_id)
         if source_card is not None:
-            ability = build_ability_spec(state, source_card, controller, action_targets=payload)
+            parser_payload = dict(payload)
+            # Cycle triggers need the permanent that owns the trigger as the
+            # token/effect source. Other event payloads already use
+            # source_card_id for the spell or permanent that caused the event.
+            if event == "cycle":
+                parser_payload["source_card_id"] = source_card_id
+            ability = build_ability_spec(state, source_card, controller, action_targets=parser_payload)
             effect_key, effect_payload = ability.effect.key, ability.effect.payload
             if effect_key and effect_key != "noop":
                 return {

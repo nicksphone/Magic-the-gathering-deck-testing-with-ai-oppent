@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `434 passed`, 43 deprecation warnings.
+- Backend: `435 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -88,6 +88,7 @@ Release blockers identified by the audit:
 - Card cache rows now persist Scryfall rulings alongside faces and expose a completeness report for Oracle text, costs, type lines, legalities, rulings, face metadata, and real versus placeholder art through `/cards/completeness`.
 - Fixed-cost cycling is now a first-class priority action: the engine pays the cycling cost, moves the card to its owner's graveyard, places the draw ability on the stack, and the AI can use cycling as a lower-priority hand-filtering line. Variable-cost cycling is intentionally still reported as unsupported.
 - Common activated costs now support generic tap, mana, life, discard, and creature-sacrifice combinations. These costs are checked before payment, paid before the ability is put on the stack, and are available through both AI decisions and the human hand/battlefield action path.
+- Cycling now emits a structured cycle event after activation, so generic “you cycle a card” and named-card cycling triggers can be matched and put above the cycling ability on the stack. Variable-cost cycling and its X-dependent trigger payloads remain intentionally unsupported.
 
 ## Remaining Gaps
 
@@ -96,7 +97,7 @@ Release blockers identified by the audit:
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model, even though replacement source selection now follows timestamp-like battlefield ordering.
 - Prevention and replacement now cover broader controller/target wording plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
-- Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms and controller-scoped ETB/death clauses are now covered.
+- Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms, cycling triggers, and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
 - The current representative corpus still has concrete fallback cards in normal games; variable-cost cycling, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
 - Additional-cost handling still needs broader coverage across uncommon card patterns, including counter removal, energy/resource payments, returning permanents, and noncreature sacrifice requirements.
@@ -272,7 +273,7 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Add generic cycle-trigger matching and fixed-cost cycling integration tests for discard replacements and draw replacements.
+1. Add replacement-aware cycling tests for draw/discard triggers and optional cycling triggers.
 2. Add explicit support for variable-cost cycling choices only after the choice model can validate X against available mana and card-specific trigger payloads.
 3. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
 
