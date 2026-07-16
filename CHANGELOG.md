@@ -13,6 +13,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for optional cycling triggers and discard-trigger ordering.
   - Added fixed and variable landcycling/basic-landcycling search actions with validated X values, hand destination, and post-search shuffling.
   - Corrected Ramp fallback data for Cultivate and Migration Path, and expanded reusable search resolution for basic-land filtering, counts, shuffle instructions, and tapped battlefield placement.
+  - Added generic named self-counter trigger resolution so triggered permanents can put counters on themselves without card-specific handlers.
 
 - Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.

@@ -553,6 +553,28 @@ def _trigger_from_oracle(
     opponent = 1 if controller == 2 else 2
     gain_amount = _first_number(oracle, r"gain (\d+) life")
     lose_amount = _first_number(oracle, r"lose (\d+) life")
+    source_card = state.cards.get(source_card_id)
+    if source_card is not None:
+        source_name = re.escape((source_card.name or "").lower())
+        self_counter = re.search(
+            rf"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:this creature|this card|{source_name})",
+            oracle,
+        )
+        if self_counter:
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "add_counters",
+                "payload": _maybe_payload(
+                    oracle,
+                    {
+                        "target_card_id": source_card_id,
+                        "counter": "+1/+1",
+                        "amount": _number_token(self_counter.group(1)),
+                    },
+                ),
+            }
     if event == "draw_card":
         drawn_by = int(payload.get("player_id", 0) or 0)
         if drawn_by == controller and "whenever you draw a card" in oracle and gain_amount > 0:
@@ -651,6 +673,20 @@ def _first_number(text: str, pattern: str) -> int:
         return int(match.group(1))
     except Exception:
         return 0
+
+
+def _number_token(token: str) -> int:
+    values = {
+        "a": 1,
+        "an": 1,
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+    }
+    raw = str(token or "").lower()
+    return values.get(raw, int(raw) if raw.isdigit() else 1)
 
 
 def _maybe_payload(oracle: str, payload: dict[str, Any]) -> dict[str, Any]:

@@ -127,6 +127,37 @@ def test_spell_cast_trigger_from_permanent() -> None:
     assert any(x.controller == 1 and "cast trigger" in x.label.lower() for x in state.stack)
 
 
+def test_named_self_counter_trigger_resolves_without_card_specific_handler() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    source = _put_trigger_creature(
+        state,
+        1,
+        "Whenever you cast a noncreature spell, put a +1/+1 counter on Sprite Dragon.",
+    )
+    state.cards[source].name = "Sprite Dragon"
+    state.cards["spell-self-counter"] = CardInstance(
+        id="spell-self-counter",
+        name="Opt",
+        owner=1,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Instant"],
+    )
+    emit_event(state, "spell_cast", {"source_card_id": "spell-self-counter", "controller": 1})
+
+    trigger = next(item for item in state.stack if item.source_card_id == source)
+    assert trigger.effect_key == "add_counters"
+    assert trigger.payload["target_card_id"] == source
+    from effects.registry import resolve_effect
+
+    resolve_effect(state, 1, trigger.effect_key, trigger.payload)
+    assert state.cards[source].counters["+1/+1"] == 1
+
+
 def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
