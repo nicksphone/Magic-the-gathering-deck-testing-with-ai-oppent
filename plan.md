@@ -69,6 +69,8 @@ Release blockers identified by the audit:
 - A structured `AbilitySpec`/`EffectSpec` boundary now carries source, cost, target hints, modes, choices, resolved effects, and unsupported-text fallback status into the rules engine.
 - Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
 - AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
+- Current six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels.
+- Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
 
 ## Remaining Gaps
 
