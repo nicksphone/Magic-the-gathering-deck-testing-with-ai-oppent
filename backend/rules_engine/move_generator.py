@@ -141,6 +141,51 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
+    # Cards granted temporary play permission by effects such as Light Up the
+    # Stage remain in exile but are legal sources for the same actions.
+    for cid in list(player.exile):
+        if int(player.exile_play_until.get(cid, 0) or 0) < int(state.turn):
+            continue
+        card = state.cards[cid]
+        max_land_plays = compute_max_land_plays_this_turn(state, player_id)
+        used_land_plays = max(
+            int(getattr(player, "lands_played_this_turn", 0)),
+            int(getattr(player, "land_plays_recorded_on_turn", 0)),
+        ) if getattr(player, "last_land_play_turn", 0) == state.turn else 0
+        if (
+            _is_land_card(card)
+            and used_land_plays < max_land_plays
+            and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
+            and state.active_player == player_id
+        ):
+            moves.append({"type": "play_land", "card_id": cid, "from_exile": True})
+        elif not _is_land_card(card) and _can_cast_spell(state, card, player_id):
+            timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
+            if not timing_ok:
+                continue
+            options = collect_cost_options(state, player_id, card)
+            available_options = [o for o in options if check_cost_option_available(state, player_id, card, o)]
+            if not available_options:
+                continue
+            hints = build_cast_hints(state, card, player_id)
+            if "target" in (card.oracle_text or "").lower() and not _has_any_target_options(hints):
+                continue
+            moves.append(
+                {
+                    "type": "cast_spell",
+                    "card_id": cid,
+                    "card_name": card.name,
+                    "mana_cost": card.mana_cost,
+                    "from_exile": True,
+                    "cost_options": [
+                        {"id": o.id, "label": o.label, "mana_cost": o.mana_cost, "pay_life": o.pay_life,
+                         "discard_cards": o.discard_cards, "sacrifice_creatures": o.sacrifice_creatures}
+                        for o in available_options
+                    ],
+                    "target_hints": hints,
+                }
+            )
+
     # Planeswalker loyalty abilities: sorcery speed, once per planeswalker each turn.
     if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
         for cid in player.battlefield:

@@ -50,6 +50,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "battlefield": list(player.battlefield),
                 "graveyard": list(player.graveyard),
                 "exile": list(player.exile),
+                "exile_play_until": dict(player.exile_play_until),
                 "mana_pool": dict(player.mana_pool),
                 "prevent_damage_shield": player.prevent_damage_shield,
                 "max_land_plays_this_turn": player.max_land_plays_this_turn,
@@ -108,6 +109,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         player = PlayerState(id=int(raw["id"]), name=str(raw["name"]), life=int(raw["life"]))
         for key in ("library", "hand", "battlefield", "graveyard", "exile"):
             setattr(player, key, list(raw.get(key, [])))
+        player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
         player.mana_pool = {str(key): int(value) for key, value in raw.get("mana_pool", {}).items()}
         for key in (
             "prevent_damage_shield", "max_land_plays_this_turn", "lands_played_this_turn",

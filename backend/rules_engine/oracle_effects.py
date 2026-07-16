@@ -50,6 +50,7 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
 SHARK_TOKEN_RE = re.compile(r"create (?:a|an) (?:blue )?x/x shark creature token with flying", re.IGNORECASE)
+EXILE_TOP_PLAYABLE_RE = re.compile(r"exile the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?may play those cards", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
     r"put (?:a|one) land card from your hand onto the battlefield tapped",
     re.IGNORECASE,
@@ -111,6 +112,9 @@ def infer_effect_from_oracle(
             "top_n": _parse_count_token(creature_to_hand.group(1)),
             "power_max": int(creature_to_hand.group(2)),
         }
+    exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
+    if exile_playable:
+        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
@@ -625,6 +629,10 @@ def _infer_clause_effect(
 
     if SHARK_TOKEN_RE.search(oracle):
         return "create_shark_token", {"source_card_id": action_targets.get("source_card_id")}
+
+    exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
+    if exile_playable:
+        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:

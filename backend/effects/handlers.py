@@ -584,6 +584,20 @@ def create_shark_token(state: MatchState, controller: int, payload: dict) -> Non
     )
 
 
+def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    amount = max(1, int(payload.get("amount", 2)))
+    cards = []
+    for _ in range(min(amount, len(player.library))):
+        cid = player.library.pop()
+        player.exile.append(cid)
+        state.cards[cid].zone = Zone.EXILE
+        player.exile_play_until[cid] = state.turn + 1
+        cards.append(state.cards[cid].name)
+    if cards:
+        state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
+
+
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:
     color = payload.get("color", "C")
     amount = int(payload.get("amount", 1))

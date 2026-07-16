@@ -1064,3 +1064,19 @@ def test_shark_typhoon_style_effect_uses_cast_spell_mana_value() -> None:
     assert shark.name == "Shark"
     assert shark.power == 4 and shark.toughness == 4
     assert "flying" in shark.keywords
+
+
+def test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Mountain"}], [{"quantity": 60, "card_name": "Mountain"}])
+    top_id = state.players[1].library[-1]
+    state.cards[top_id].name = "Playable Mountain"
+    state.cards[top_id].types = ["Land"]
+    state.cards[top_id].type_line = "Basic Land - Mountain"
+    proxy = type("Proxy", (), {"name": "Light Up the Stage", "oracle_text": "Exile the top two cards of your library. Until the end of your next turn, you may play those cards.", "mana_cost": ""})()
+
+    key, payload = infer_effect_from_oracle(state, proxy, 1)
+
+    assert key == "exile_top_cards_playable"
+    resolve_effect(state, 1, key, payload)
+    assert top_id in state.players[1].exile
+    assert state.players[1].exile_play_until[top_id] == state.turn + 1

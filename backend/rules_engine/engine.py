@@ -50,6 +50,12 @@ class RulesEngine:
                 state, state.active_player
             )
             state.players[state.active_player].land_plays_recorded_on_turn = 0
+            for player_state in state.players.values():
+                player_state.exile_play_until = {
+                    cid: expiry
+                    for cid, expiry in player_state.exile_play_until.items()
+                    if expiry >= state.turn and cid in player_state.exile
+                }
         else:
             state.step = TURN_STEPS[idx + 1]
             if state.step == Step.DECLARE_ATTACKERS:
@@ -159,6 +165,8 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "play_land":
             cid = action["card_id"]
+            from_exile = bool(action.get("from_exile"))
+            allowed_source = cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn if from_exile else cid in player.hand
             if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
                 apply_state_based_actions(state)
                 return
@@ -172,8 +180,9 @@ class RulesEngine:
                 int(getattr(player, "lands_played_this_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
                 int(getattr(player, "land_plays_recorded_on_turn", 0)),
             )
-            if cid in player.hand and used_land_plays < max_land_plays and _is_land_card(state.cards[cid]):
-                player.hand.remove(cid)
+            if allowed_source and used_land_plays < max_land_plays and _is_land_card(state.cards[cid]):
+                (player.exile if from_exile else player.hand).remove(cid)
+                player.exile_play_until.pop(cid, None)
                 player.battlefield.append(cid)
                 player.lands_played_this_turn = used_land_plays + 1
                 player.land_plays_recorded_on_turn = used_land_plays + 1
@@ -231,7 +240,9 @@ class RulesEngine:
 
         elif kind == "cast_spell":
             cid = action["card_id"]
-            if cid in player.hand:
+            from_exile = bool(action.get("from_exile"))
+            allowed_source = cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn if from_exile else cid in player.hand
+            if allowed_source:
                 card = state.cards[cid]
                 timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
                 if not timing_ok:
@@ -307,7 +318,8 @@ class RulesEngine:
                 ability = build_ability_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
 
-                player.hand.remove(cid)
+                (player.exile if from_exile else player.hand).remove(cid)
+                player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
 

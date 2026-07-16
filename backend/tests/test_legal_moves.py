@@ -252,3 +252,37 @@ def test_recruitment_officer_style_activated_ability_is_legal_and_resolves() -> 
     assert state.stack and state.stack[-1].effect_key == "topdeck_reveal_creature_to_hand"
     resolve_top_of_stack(state)
     assert top_id in p1.hand
+
+
+def test_temporary_exile_play_permission_generates_cast_and_land_actions() -> None:
+    deck = [{"quantity": 60, "card_name": "Mountain"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p1.battlefield = []
+    land_id = p1.library.pop()
+    p1.battlefield.append(land_id)
+    state.cards[land_id].zone = Zone.BATTLEFIELD
+    state.cards[land_id].types = ["Land"]
+    state.cards[land_id].name = "Mountain"
+    exile_id = p1.library.pop()
+    exiled = state.cards[exile_id]
+    exiled.zone = Zone.EXILE
+    exiled.types = ["Instant"]
+    exiled.name = "Playable Shock"
+    exiled.mana_cost = "{R}"
+    exiled.oracle_text = "Playable Shock deals 2 damage to any target."
+    p1.exile.append(exile_id)
+    p1.exile_play_until[exile_id] = state.turn + 1
+
+    moves = RulesEngine().legal_moves(state, 1)
+    casts = [m for m in moves if m.get("type") == "cast_spell" and m.get("card_id") == exile_id]
+    assert len(casts) == 1
+    assert casts[0]["from_exile"] is True
+    RulesEngine().take_action(state, 1, casts[0])
+    assert exile_id not in p1.exile
+    assert state.stack and state.stack[-1].source_card_id == exile_id
