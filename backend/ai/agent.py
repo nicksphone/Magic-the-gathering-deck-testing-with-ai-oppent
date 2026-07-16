@@ -1209,6 +1209,8 @@ class AIAgent:
                     bonus += 3.0
                 if own_main_sorcery_window and is_big_threat:
                     bonus += 0.7
+                if "recursion" in tags:
+                    bonus += self._graveyard_recursion_bonus(state, player_id)
                 return bonus + bonus_face
             return 1.2 + bonus_face
 
@@ -1253,6 +1255,8 @@ class AIAgent:
                     bonus += 1.0
                 if self._is_burn_matchup() and state.turn <= 4 and opp_creatures > 0:
                     bonus -= 2.0
+            if "recursion" in tags:
+                bonus += self._graveyard_recursion_bonus(state, player_id)
             if "removal" in tags:
                 bonus += 2.0
                 # Don't fire premium removal into empty/low-pressure board states.
@@ -1414,6 +1418,17 @@ class AIAgent:
         # Log-driven priors: leverage observed tournament/simulation cast timing.
         return self._historical_cast_timing_bias(state, card, player_id) + bonus_face
 
+    def _graveyard_recursion_bonus(self, state: MatchState, player_id: int) -> float:
+        targets = sum(
+            1
+            for grave_id in getattr(state.players[player_id], "graveyard", []) or []
+            if grave_id in state.cards
+            and bool(set(getattr(state.cards[grave_id], "types", []) or []) & {"Instant", "Sorcery"})
+        )
+        # Graveyard-casting threats are premium only when a qualifying spell
+        # is available to recast; otherwise preserve mana for another line.
+        return 3.0 if targets else -1.5
+
     def _historical_cast_timing_bias(self, state: MatchState, card, player_id: int) -> float:
         priors = AIAgent._log_priors_cache or {}
         cards = priors.get("cards") if isinstance(priors, dict) else None
@@ -1566,6 +1581,8 @@ class AIAgent:
             tags.add("enchantment")
         if "return target creature card from your graveyard" in text or "reanimate" in text:
             tags.add("reanimate")
+        if "from your graveyard" in text and any(word in text for word in ["cast", "return", "play"]):
+            tags.add("recursion")
         if "discard" in text:
             tags.add("discard")
         if "mill" in text:

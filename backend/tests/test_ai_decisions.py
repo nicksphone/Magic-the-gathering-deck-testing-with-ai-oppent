@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
-from game_state.state import MatchFactory, Step
+from game_state.state import MatchFactory, Step, Zone
 
 
 def test_ai_prefers_non_pass_action_when_available() -> None:
@@ -61,6 +61,28 @@ def test_ai_avoids_mana_tap_loop_when_no_cast_available() -> None:
 
     class FakeState:
         players = {1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(), 2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})()}
+        cards = {}
+        stack = []
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"
+
+
+def test_ai_ignores_attack_restricted_placeholder_actions() -> None:
+    ai = AIAgent(difficulty="master", archetype="Tokens")
+    moves = [
+        {"type": "attack_restricted", "card_id": "token-1", "card_name": "White Human", "reason": "Tapped"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 5
+        step = type("Step", (), {"DECLARE_ATTACKERS": "declare_attackers"})().DECLARE_ATTACKERS
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
         cards = {}
         stack = []
 
@@ -210,6 +232,161 @@ def test_matchup_profile_changes_attack_bias_for_tempo_pressure() -> None:
     assert score_vs_control > score_vs_ramp
 
 
+def test_ramp_ai_prefers_ramp_spell_over_card_draw_on_early_turn() -> None:
+    ai = AIAgent(difficulty="master", archetype="Ramp")
+    moves = [
+        {"type": "cast_spell", "card_name": "Cultivate", "card_id": "ramp-1"},
+        {"type": "cast_spell", "card_name": "Consider", "card_id": "draw-1"},
+        {"type": "pass_priority"},
+    ]
+
+    deck = [
+        {"quantity": 52, "card_name": "Forest"},
+        {"quantity": 4, "card_name": "Cultivate"},
+        {"quantity": 4, "card_name": "Consider"},
+    ]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 3
+    state.step = "precombat_main"
+    state.active_player = 1
+    state.priority_player = 1
+    state.winner = None
+    state.stack = []
+    state.players[1].mana_pool = {}
+    state.players[2].mana_pool = {}
+    ramp_id = next(cid for cid in state.players[1].library if state.cards[cid].name == "Cultivate")
+    draw_id = next(cid for cid in state.players[1].library if state.cards[cid].name == "Consider")
+    state.players[1].library.remove(ramp_id)
+    state.players[1].library.remove(draw_id)
+    state.players[1].hand = [ramp_id, draw_id]
+    state.cards[ramp_id].zone = Zone.HAND
+    state.cards[draw_id].zone = Zone.HAND
+    land_ids = [cid for cid in list(state.players[1].library) if "Land" in state.cards[cid].types][:3]
+    for cid in land_ids:
+        state.players[1].library.remove(cid)
+        state.players[1].battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        state.cards[cid].tapped = False
+
+    decision = ai.choose_action(state, moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "ramp-1"
+
+
+def test_control_ai_prefers_sweeper_over_draw_when_stabilizing() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control", opponent_archetype="Aggro")
+    moves = [
+        {"type": "cast_spell", "card_name": "Supreme Verdict", "card_id": "sweeper-1"},
+        {"type": "cast_spell", "card_name": "Memory Deluge", "card_id": "draw-1"},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 7, "hand": ["sweeper-1", "draw-1"], "battlefield": ["land-1", "land-2", "land-3", "land-4"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["atk-1", "atk-2", "atk-3"], "mana_pool": {}})(),
+        }
+        cards = {
+            "sweeper-1": type("C", (), {"types": ["Sorcery"], "name": "Supreme Verdict", "oracle_text": "Destroy all creatures.", "mana_cost": "{1}{W}{W}{U}", "keywords": []})(),
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw two cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
+            "land-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "land-2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "land-3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "land-4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "atk-1": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
+            "atk-2": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
+            "atk-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
+        }
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == "sweeper-1"
+
+
+def test_matchup_profile_pushes_combo_lite_to_proactive_conversion_against_control() -> None:
+    profile = profile_for("Combo-lite", "Control")
+    assert profile["proactive_bias"] > 0.8
+    assert profile["risk_tolerance"] > 0.2
+    assert profile["holdup_bias"] >= 0.0
+
+
+def test_board_role_distinguishes_stabilize_and_convert() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class StabilizeState:
+        players = {
+            1: type("P", (), {"life": 6, "hand": [], "battlefield": ["a1"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["b1", "b2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "a1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+            "b2": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+        }
+
+    class ConvertState:
+        players = {
+            1: type("P", (), {"life": 14, "hand": [], "battlefield": ["a1", "a2"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 9, "hand": [], "battlefield": ["b1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "a1": type("C", (), {"types": ["Creature"], "power": 4, "toughness": 4, "tapped": False})(),
+            "a2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+        }
+
+    assert ai._board_role(StabilizeState(), 1) == "stabilize"
+    assert ai._board_role(ConvertState(), 1) == "convert"
+
+
+def test_board_role_adjusts_pass_bias_for_control_and_aggro_lines() -> None:
+    control_ai = AIAgent(difficulty="master", archetype="Control")
+    aggro_ai = AIAgent(difficulty="master", archetype="Aggro")
+
+    class ControlStabilizeState:
+        step = "precombat_main"
+        active_player = 1
+        stack = []
+        turn = 6
+        players = {
+            1: type("P", (), {"life": 6, "hand": ["c1"], "battlefield": ["a1"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 16, "hand": [], "battlefield": ["b1", "b2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "c1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell."})(),
+            "a1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+            "b2": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+        }
+
+    class AggroConvertState:
+        step = "precombat_main"
+        active_player = 1
+        stack = []
+        turn = 6
+        players = {
+            1: type("P", (), {"life": 14, "hand": ["t1"], "battlefield": ["a1", "a2"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 9, "hand": [], "battlefield": ["b1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "t1": type("C", (), {"types": ["Creature"], "name": "Goblin Guide", "oracle_text": "", "power": 2, "toughness": 2})(),
+            "a1": type("C", (), {"types": ["Creature"], "power": 4, "toughness": 4, "tapped": False})(),
+            "a2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
+        }
+
+    assert control_ai._pass_bias(ControlStabilizeState(), 1) > aggro_ai._pass_bias(AggroConvertState(), 1)
+
+
 def test_control_ai_sets_counterspell_stack_target() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
     moves = [
@@ -304,6 +481,41 @@ def test_late_game_forced_progress_attack_avoids_empty_attack_stall() -> None:
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "attack"
     assert decision.action.get("attackers") == ["atk-1"]
+
+
+def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_pressing() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "attack", "options": ["atk-1"]},
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 7
+        step = "declare_attackers"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 19, "hand": ["draw-1", "counter-1"], "battlefield": ["atk-1"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 19, "hand": [], "battlefield": ["blk-1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-1": type("C", (), {"types": ["Creature"], "name": "1/1", "power": 1, "toughness": 1, "keywords": [], "tapped": False})(),
+            "blk-1": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "keywords": [], "tapped": False})(),
+            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
+            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+        }
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "pass_priority"
 
 
 def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
@@ -404,6 +616,89 @@ def test_control_ai_mulligans_missing_primary_color_access() -> None:
     assert decision.action["type"] == "mulligan"
 
 
+def test_control_ai_keeps_borderline_two_land_hand_with_real_action() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+
+    class Card:
+        def __init__(self, types, mana_cost="", name="", type_line="", oracle_text=""):
+            self.types = types
+            self.mana_cost = mana_cost
+            self.name = name
+            self.type_line = type_line
+            self.oracle_text = oracle_text
+
+    class FakeState:
+        pregame_pending = True
+        mulligan_count = {1: 0}
+        players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3"]})()}
+        cards = {
+            "l1": Card(["Land"], name="Island", type_line="Basic Land — Island", oracle_text="{T}: Add {U}."),
+            "l2": Card(["Land"], name="Island", type_line="Basic Land — Island", oracle_text="{T}: Add {U}."),
+            "s1": Card(["Instant"], "{U}", name="Consider", oracle_text="Scry 1, draw a card."),
+            "s2": Card(["Instant"], "{U}{U}", name="Counterspell", oracle_text="Counter target spell."),
+            "s3": Card(["Instant"], "{1}{B}", name="Go for the Throat", oracle_text="Destroy target creature."),
+        }
+
+    decision = ai.choose_mulligan_action(FakeState(), 1)
+    assert decision.action["type"] == "keep_hand"
+
+
+def test_ramp_ai_keeps_two_land_hand_with_acceleration() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Ramp")
+
+    class Card:
+        def __init__(self, types, mana_cost="", name="", type_line="", oracle_text=""):
+            self.types = types
+            self.mana_cost = mana_cost
+            self.name = name
+            self.type_line = type_line
+            self.oracle_text = oracle_text
+
+    class FakeState:
+        pregame_pending = True
+        mulligan_count = {1: 0}
+        players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3"]})()}
+        cards = {
+            "l1": Card(["Land"], name="Forest", type_line="Basic Land — Forest", oracle_text="{T}: Add {G}."),
+            "l2": Card(["Land"], name="Forest", type_line="Basic Land — Forest", oracle_text="{T}: Add {G}."),
+            "s1": Card(["Sorcery"], "{1}{G}", name="Cultivate", oracle_text="Search your library for up to two basic land cards."),
+            "s2": Card(["Sorcery"], "{2}{G}{G}", name="Topiary Stomper", oracle_text="When Topiary Stomper enters the battlefield, search your library for a basic land card."),
+            "s3": Card(["Sorcery"], "{1}{G}", name="Explore", oracle_text="Draw a card. You may play an additional land this turn."),
+        }
+
+    decision = ai.choose_mulligan_action(FakeState(), 1)
+    assert decision.action["type"] == "keep_hand"
+
+
+def test_aggro_ai_mulligans_hand_without_early_pressure() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class Card:
+        def __init__(self, types, mana_cost="", name="", type_line="", oracle_text=""):
+            self.types = types
+            self.mana_cost = mana_cost
+            self.name = name
+            self.type_line = type_line
+            self.oracle_text = oracle_text
+
+    class FakeState:
+        pregame_pending = True
+        mulligan_count = {1: 0}
+        players = {1: type("P", (), {"hand": ["l1", "l2", "l3", "s1", "s2", "s3", "s4"]})()}
+        cards = {
+            "l1": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
+            "l2": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
+            "l3": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
+            "s1": Card(["Sorcery"], "{4}{R}", name="Divination", oracle_text="Draw two cards."),
+            "s2": Card(["Sorcery"], "{4}{R}", name="Slow Value", oracle_text="Draw a card."),
+            "s3": Card(["Instant"], "{5}{R}", name="Big Setup", oracle_text="Create a token."),
+            "s4": Card(["Enchantment"], "{4}{R}", name="Slow Engine", oracle_text="Whenever you cast a spell, draw a card."),
+        }
+
+    decision = ai.choose_mulligan_action(FakeState(), 1)
+    assert decision.action["type"] == "mulligan"
+
+
 def test_attack_bias_defensive_role_discourages_attacks() -> None:
     ai = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -457,6 +752,98 @@ def test_master_ai_casts_big_creature_when_castable() -> None:
         stack = []
         winner = None
         pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+
+
+def test_control_ai_casts_big_creature_on_clear_turn_four_board() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Dream Trawler", "card_id": "big-1"},
+    ]
+
+    class FakeState:
+        turn = 4
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["big-1"], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "big-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dream Trawler",
+                    "oracle_text": "Flying, lifelink.",
+                    "zone": "hand",
+                    "mana_cost": "{2}{W}{W}{U}{U}",
+                    "keywords": ["Flying", "Lifelink"],
+                    "power": 3,
+                    "toughness": 5,
+                },
+            )(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    decision = ai.choose_action(FakeState(), moves, 1)
+    assert decision.action["type"] == "cast_spell"
+
+
+def test_master_ai_uses_deeper_planner_on_complex_midgame_board() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = [
+        {"type": "pass_priority"},
+        {"type": "cast_spell", "card_name": "Dream Trawler", "card_id": "big-1"},
+    ]
+
+    class FakeState:
+        turn = 6
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 18, "hand": ["big-1"], "battlefield": ["a1", "a2", "a3", "a4", "a5", "a6"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["b1", "b2", "b3", "b4", "b5", "b6"], "mana_pool": {}})(),
+        }
+        cards = {
+            "big-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dream Trawler",
+                    "oracle_text": "Flying, lifelink.",
+                    "zone": "hand",
+                    "mana_cost": "{2}{W}{W}{U}{U}",
+                    "keywords": ["Flying", "Lifelink"],
+                    "power": 3,
+                    "toughness": 5,
+                },
+            )(),
+        }
+        for cid in ["a1", "a2", "a3", "a4", "a5", "a6", "b1", "b2", "b3", "b4", "b5", "b6"]:
+            cards[cid] = type("C", (), {"types": ["Creature"], "name": cid, "power": 1, "toughness": 1, "tapped": False})()
         attackers = []
         attack_targets = {}
         blocks = {}
@@ -716,6 +1103,65 @@ def test_ai_rejects_low_impact_x_value_for_token_spells() -> None:
     assert x_value == 0
 
 
+def test_ai_prefers_positive_x_for_interactive_x_removal() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 2
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["xspell-1"], "battlefield": ["l1", "l2", "l3", "l4"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["enemy-1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "xspell-1": type("C", (), {"types": ["Instant"], "name": "March of Otherworldly Light", "oracle_text": "Exile target nonland permanent with mana value X or less.", "mana_cost": "{X}{W}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "l4": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "enemy-1": type("C", (), {"types": ["Artifact"], "name": "Lockstone", "tapped": False})(),
+        }
+
+    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    assert x_value >= 1
+
+
+def test_control_ai_prefers_moderate_x_value_over_max_on_stable_board() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["xspell-1"], "battlefield": ["l1", "l2", "l3", "l4", "l5", "l6"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l4": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l5": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "l6": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    assert x_value == 3
+
+
 def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     old = AIAgent._log_priors_cache
@@ -773,6 +1219,77 @@ def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> N
     try:
         decision = ai.choose_action(FakeState(), moves, 1)
         assert decision.action["type"] == "pass_priority"
+    finally:
+        AIAgent._log_priors_cache = old
+
+
+def test_ai_uses_role_specific_log_priors_when_board_is_stable() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+    old = AIAgent._log_priors_cache
+    AIAgent._log_priors_cache = {
+        "generated_at": None,
+        "samples": {"games": 10, "logs": 1000},
+        "cards": {
+            "memory deluge": {
+                "casts": 30,
+                "seen_in_logs": 100,
+                "avg_turn": 7.9,
+                "early_turn_cast_rate": 0.08,
+                "mid_turn_cast_rate": 0.22,
+                "late_turn_cast_rate": 0.7,
+                "preferred_min_turn": 7,
+                "board_roles": {
+                    "control": {
+                        "casts": 12,
+                        "avg_turn": 4.4,
+                        "early_turn_cast_rate": 0.33,
+                        "mid_turn_cast_rate": 0.2,
+                        "late_turn_cast_rate": 0.6,
+                        "preferred_min_turn": 4,
+                    }
+                },
+            }
+        },
+    }
+    moves = [
+        {
+            "type": "cast_spell",
+            "card_id": "deluge-1",
+            "card_name": "Memory Deluge",
+            "mana_cost": "{2}{U}{U}",
+            "target_hints": {},
+        },
+        {"type": "pass_priority"},
+    ]
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 18, "hand": ["deluge-1", "f1", "f2", "f3"], "battlefield": ["l1", "l2", "l3", "l4"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 16, "hand": ["x"], "battlefield": ["o1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "deluge-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Look at the top X cards of your library.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "l4": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "o1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    try:
+        assert ai._historical_cast_timing_bias(FakeState(), FakeState.cards["deluge-1"], 1) > 0
     finally:
         AIAgent._log_priors_cache = old
 
@@ -1206,6 +1723,74 @@ def test_ai_blocks_with_stronger_creature_to_prevent_damage() -> None:
     out = ai._materialize_action(FakeState(), move, 1)
     assert out["type"] == "block"
     assert out.get("blocks") == {"atk-2-2": "blk-3-3"}
+
+
+def test_ai_prefers_preserving_mana_creature_when_other_good_block_exists() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+    move = {
+        "type": "block",
+        "attackers": [{"id": "atk-3-3", "name": "3/3"}],
+        "blockers": [
+            {"id": "mana-dork", "name": "Llanowar Elves"},
+            {"id": "safe-blocker", "name": "4/4"},
+        ],
+    }
+
+    class FakeState:
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["mana-dork", "safe-blocker"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-3-3"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-3-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": True})(),
+            "mana-dork": type(
+                "C",
+                (),
+                {"types": ["Creature"], "name": "Llanowar Elves", "power": 1, "toughness": 1, "tapped": False, "oracle_text": "{T}: Add {G}."},
+            )(),
+            "safe-blocker": type("C", (), {"types": ["Creature"], "name": "4/4", "power": 4, "toughness": 4, "tapped": False})(),
+        }
+        stack = []
+        step = Step.DECLARE_BLOCKERS
+        active_player = 2
+        turn = 5
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "block"
+    assert out.get("blocks") == {"atk-3-3": "safe-blocker"}
+
+
+def test_ai_blocks_with_mana_creature_when_it_is_the_only_profitable_assignment() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Control")
+    move = {
+        "type": "block",
+        "attackers": [{"id": "atk-6-6", "name": "6/6"}],
+        "blockers": [{"id": "mana-dork", "name": "Llanowar Elves"}],
+    }
+
+    class FakeState:
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 6, "hand": [], "battlefield": ["mana-dork"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["atk-6-6"], "mana_pool": {}})(),
+        }
+        cards = {
+            "atk-6-6": type("C", (), {"types": ["Creature"], "name": "6/6", "power": 6, "toughness": 6, "tapped": True})(),
+            "mana-dork": type(
+                "C",
+                (),
+                {"types": ["Creature"], "name": "Llanowar Elves", "power": 1, "toughness": 1, "tapped": False, "oracle_text": "{T}: Add {G}."},
+            )(),
+        }
+        stack = []
+        step = Step.DECLARE_BLOCKERS
+        active_player = 2
+        turn = 5
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["type"] == "block"
+    assert out.get("blocks") == {"atk-6-6": "mana-dork"}
 
 
 def test_ai_prefers_block_over_pass_when_good_block_exists() -> None:
@@ -1686,6 +2271,77 @@ def test_midrange_cast_bias_values_stronger_modal_face_higher() -> None:
     assert strong_score > weak_score
 
 
+def test_control_cast_bias_engine_tag_path_does_not_crash() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        stack = []
+        players = {
+            1: type("P", (), {"life": 14, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "engine": type(
+                "C",
+                (),
+                {
+                    "types": ["Enchantment"],
+                    "name": "Rhystic Study",
+                    "mana_cost": "{2}{U}",
+                    "oracle_text": "Whenever an opponent casts a spell, draw a card.",
+                    "card_faces": [],
+                },
+            )(),
+        }
+
+    score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "engine"}, 1)
+    assert score > 0
+
+
+def test_control_values_graveyard_recursion_when_a_spell_is_available() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 8
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        stack = []
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["recursion", "value"], "battlefield": [], "graveyard": ["spell"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "graveyard": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "recursion": type(
+                "C",
+                (),
+                {
+                    "name": "Graveyard Threat",
+                    "types": ["Creature"],
+                    "oracle_text": "When this enters the battlefield, you may cast target instant card from your graveyard without paying its mana cost.",
+                    "mana_cost": "{4}{U}{U}",
+                    "power": 5,
+                    "toughness": 6,
+                    "keywords": [],
+                },
+            )(),
+            "value": type(
+                "C",
+                (),
+                {"name": "Value Enchantment", "types": ["Enchantment"], "oracle_text": "Draw a card.", "mana_cost": "{5}{U}"},
+            )(),
+            "spell": type("C", (), {"name": "Draw Spell", "types": ["Instant"], "oracle_text": "Draw two cards."})(),
+        }
+
+    assert "recursion" in ai._spell_tags(FakeState.cards["recursion"])
+    recursion_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "recursion"}, 1)
+    value_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "value"}, 1)
+    assert recursion_score > value_score
+
+
 def test_modal_face_proxy_uses_face_type_line_for_scoring() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
 
@@ -1772,3 +2428,293 @@ def test_modal_face_proxy_prefers_creature_face_when_board_is_empty() -> None:
     idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
     assert idx == 0
     assert score > 0
+
+
+def test_control_modal_face_prefers_interaction_face_under_pressure() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 4
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["enemy-1", "enemy-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "modal": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dual Threat",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Board Form",
+                            "oracle_text": "Create a 2/2 token creature.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                            "power": 2,
+                            "toughness": 2,
+                        },
+                        {
+                            "name": "Answer Form",
+                            "oracle_text": "Destroy target creature with mana value 3 or less.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Instant",
+                        },
+                    ],
+                },
+            )(),
+            "enemy-1": type("C", (), {"types": ["Creature"], "name": "Threat 1", "power": 3, "toughness": 3})(),
+            "enemy-2": type("C", (), {"types": ["Creature"], "name": "Threat 2", "power": 4, "toughness": 4})(),
+        }
+        stack = []
+
+    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    assert idx == 1
+    assert score > 0
+
+
+def test_aggro_modal_face_prefers_creature_face_when_board_is_empty() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "modal": type(
+                "C",
+                (),
+                {
+                    "types": ["Creature"],
+                    "name": "Dual Threat",
+                    "mana_cost": "{2}{G}",
+                    "oracle_text": "",
+                    "card_faces": [
+                        {
+                            "name": "Board Form",
+                            "oracle_text": "Create a 2/2 token creature.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Creature - Elf",
+                            "power": 2,
+                            "toughness": 2,
+                        },
+                        {
+                            "name": "Answer Form",
+                            "oracle_text": "Destroy target creature with mana value 3 or less.",
+                            "mana_cost": "{2}{G}",
+                            "type_line": "Instant",
+                        },
+                    ],
+                },
+            )(),
+        }
+        stack = []
+
+    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    assert idx == 0
+    assert score > 0
+
+
+def test_control_selects_counter_mode_when_stack_is_live() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 18, "hand": ["spell-1"], "battlefield": ["l1", "l2", "l3"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": ["enemy-1"], "mana_pool": {}})(),
+        }
+        cards = {
+            "spell-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Instant"],
+                    "name": "Modal Interaction",
+                    "oracle_text": "Choose one — Counter target spell; Create two 1/1 white Soldier creature tokens.",
+                    "mana_cost": "{1}{W}{U}",
+                },
+            )(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "enemy-1": type("C", (), {"types": ["Creature"], "name": "Threat", "power": 4, "toughness": 4})(),
+        }
+        stack = [type("S", (), {"id": "stack-1", "label": "Lightning Bolt", "source_card_id": "bolt", "controller": 2})()]
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    move = {
+        "type": "cast_spell",
+        "card_id": "spell-1",
+        "card_name": "Modal Interaction",
+        "mana_cost": "{1}{W}{U}",
+        "target_hints": {"modes": ["Counter target spell", "Create two 1/1 white Soldier creature tokens."]},
+    }
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["targets"]["mode_text"] == "Counter target spell"
+
+
+def test_control_prefers_removal_mode_over_draw_when_opponent_has_board_pressure() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 5
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 12, "hand": [], "battlefield": ["l1", "l2", "l3"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 16, "hand": [], "battlefield": ["enemy-1", "enemy-2"], "mana_pool": {}})(),
+        }
+        cards = {
+            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "enemy-1": type("C", (), {"types": ["Creature"], "name": "Threat 1", "power": 3, "toughness": 3})(),
+            "enemy-2": type("C", (), {"types": ["Creature"], "name": "Threat 2", "power": 4, "toughness": 4})(),
+        }
+        stack = []
+
+    mode = ai._select_mode_text(FakeState(), type("C", (), {"oracle_text": "", "types": ["Instant"]})(), ["Draw two cards.", "Destroy target creature."], 1)
+    assert mode == "Destroy target creature."
+
+
+def test_aggro_prefers_token_mode_over_draw_when_board_is_empty() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {}
+        stack = []
+
+    mode = ai._select_mode_text(FakeState(), type("C", (), {"oracle_text": "", "types": ["Sorcery"]})(), ["Draw a card.", "Create two 1/1 creature tokens."], 1)
+    assert mode == "Create two 1/1 creature tokens."
+
+
+def test_strategic_planner_considers_beyond_top_four_moves_on_complex_boards() -> None:
+    ai = AIAgent(difficulty="master", archetype="Control")
+
+    class FakeState:
+        turn = 10
+        step = Step.PRECOMBAT_MAIN
+        active_player = 1
+        priority_player = 1
+        pregame_pending = False
+        winner = None
+        stack = []
+        players = {
+            1: type("P", (), {"life": 18, "hand": ["best"], "battlefield": ["a1", "a2", "a3", "a4", "a5", "a6"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["b1", "b2", "b3", "b4", "b5", "b6"], "mana_pool": {}})(),
+        }
+        cards = {
+            "best": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
+            "a1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "a2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "a3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "a4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "a5": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "a6": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "b1": type("C", (), {"types": ["Creature"], "name": "Threat 1", "power": 3, "toughness": 3})(),
+            "b2": type("C", (), {"types": ["Creature"], "name": "Threat 2", "power": 3, "toughness": 3})(),
+            "b3": type("C", (), {"types": ["Creature"], "name": "Threat 3", "power": 3, "toughness": 3})(),
+            "b4": type("C", (), {"types": ["Creature"], "name": "Threat 4", "power": 3, "toughness": 3})(),
+            "b5": type("C", (), {"types": ["Creature"], "name": "Threat 5", "power": 3, "toughness": 3})(),
+            "b6": type("C", (), {"types": ["Creature"], "name": "Threat 6", "power": 3, "toughness": 3})(),
+        }
+
+    moves = [{"type": "pass_priority"}] + [
+        {"type": "cast_spell", "card_id": f"m{i}", "card_name": f"Move {i}"} for i in range(1, 7)
+    ]
+    for idx in range(1, 7):
+        FakeState.cards[f"m{idx}"] = type("C", (), {"types": ["Instant"], "name": f"Move {idx}", "oracle_text": f"Mode {idx}.", "mana_cost": "{1}{U}"})()
+
+    ranked = [moves[1], moves[2], moves[3], moves[4], moves[5], moves[6], moves[0]]
+
+    def fake_rank_moves(state, legal_moves, player_id):  # noqa: ANN001
+        return list(ranked)
+
+    def fake_materialize(state, move, player_id):  # noqa: ANN001
+        return dict(move)
+
+    def fake_score(state, move, player_id, depth):  # noqa: ANN001
+        return 10.0 if move.get("card_id") == "m6" else float(move.get("card_id", "")[-1] if move.get("card_id") else 0)
+
+    ai._rank_moves = fake_rank_moves  # type: ignore[method-assign]
+    ai._materialize_action = fake_materialize  # type: ignore[method-assign]
+    ai._strategic_line_score = fake_score  # type: ignore[method-assign]
+
+    result = ai._strategic_plan_action(FakeState(), moves, 1)
+    assert result is not None
+    assert result["card_id"] == "m6"
+
+
+def test_aggro_selects_token_mode_when_board_is_empty() -> None:
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+
+    class FakeState:
+        turn = 3
+        step = "precombat_main"
+        active_player = 1
+        priority_player = 1
+        players = {
+            1: type("P", (), {"life": 20, "hand": ["spell-1"], "battlefield": ["l1", "l2"], "mana_pool": {}})(),
+            2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
+        }
+        cards = {
+            "spell-1": type(
+                "C",
+                (),
+                {
+                    "types": ["Sorcery"],
+                    "name": "Modal Threat",
+                    "oracle_text": "Choose one — Deal 3 damage to any target; Create a 2/2 white Knight creature token.",
+                    "mana_cost": "{2}{W}",
+                },
+            )(),
+            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+        }
+        stack = []
+        winner = None
+        pregame_pending = False
+        attackers = []
+        attack_targets = {}
+        blocks = {}
+        passed_priority = set()
+        loyalty_activated_this_turn = set()
+
+    move = {
+        "type": "cast_spell",
+        "card_id": "spell-1",
+        "card_name": "Modal Threat",
+        "mana_cost": "{2}{W}",
+        "target_hints": {"modes": ["Deal 3 damage to any target", "Create a 2/2 white Knight creature token"]},
+    }
+
+    out = ai._materialize_action(FakeState(), move, 1)
+    assert out["targets"]["mode_text"] == "Create a 2/2 white Knight creature token"

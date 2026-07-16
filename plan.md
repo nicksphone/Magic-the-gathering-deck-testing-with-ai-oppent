@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `425 passed`, 32 deprecation warnings.
+- Backend: `428 passed`, 32 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -121,12 +121,14 @@ Release blockers identified by the audit:
 - Board-role planning now distinguishes stabilize, convert, race, control, defend, and normal states so multi-phase board evaluation is less generic.
 - Engine-heavy artifacts and enchantments now carry explicit tactical weight so trigger engines are not scored like blank permanents.
 - Matchup-aware scoring now gives ramp decks stronger early acceleration and control decks stronger stabilization lines when the board demands it.
+- Control cast valuation now recognizes generic graveyard-casting recursion and rewards it only when a qualifying instant or sorcery is actually available in the graveyard, improving threat sequencing without card-name exceptions.
 - Opening-hand evaluation now uses a broader hand-profile model, so ramp/control can keep real two-land action hands while aggro still rejects slow openers that lack pressure.
 - Attack selection now uses the same hand-profile and board-role context, which reduces hopeless chip attacks from conservative decks while preserving pressure lines for racing archetypes.
 - X-spells, modal cards, split cards, and dynamic-value cards still need broader matchup-aware scoring in rare edge cases, although X-value selection, modal face scoring, split/multi-mode selection, and board-role-aware mode scoring now consider board pressure, matchup pressure, and diminishing returns.
 - The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
 - Combo-lite matchups now have explicit proactive bias against control and counter-heavy shells, but the rest of the long-run tuning work remains.
 - More board-state training data is still needed before the strongest archetypes can be treated as stable baselines.
+- A Blue Control vs Ramp smoke after the recursion valuation change completed without fallback, invalid-target, or mana-payment errors; matchup results remain diagnostic until larger samples are run.
 
 ### Simulation and diagnostics
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.

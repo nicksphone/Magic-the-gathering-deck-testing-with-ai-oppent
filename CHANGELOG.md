@@ -8,13 +8,17 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 
 - Validation:
-  - Backend suite now passes `425` tests with 32 deprecation warnings.
+  - Backend suite now passes `428` tests with 32 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
 
 - Simulator diagnostics:
   - Restored the missing battlefield snapshot helper in the overnight round-robin runner, allowing full verbose batches to execute.
   - Reworked anomaly clustering to use structured counters and termination status instead of treating every priority pass as a stall.
   - Six-deck diagnostics showed no invalid targets, cost failures, repeated error bursts, or missed land windows; a fresh three-deck run completed without anomalies.
+
+- AI quality:
+  - Added a generic graveyard-recursion tactical tag and qualifying-graveyard check so control threats that can recast spells are valued when they have real targets, without card-name-specific exceptions.
+  - Added regression coverage for recursion-aware cast valuation.
 
 - Card data reliability:
   - Card cache rows now persist Scryfall rulings and retain them through card and deck serialization.
