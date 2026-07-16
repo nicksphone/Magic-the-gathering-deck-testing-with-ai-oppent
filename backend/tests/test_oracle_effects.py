@@ -955,3 +955,56 @@ def test_torrential_gearhulk_style_casts_target_instant_from_graveyard() -> None
     assert spell.id not in state.players[1].graveyard
     resolve_top_of_stack(state)
     assert spell.id in state.players[1].graveyard
+
+
+def test_nissa_loyalty_lines_animate_land_and_put_green_creature() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    land_id = p1.hand[0]
+    p1.hand.remove(land_id)
+    p1.battlefield.append(land_id)
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Forest"
+    land.type_line = "Basic Land - Forest"
+    creature_id = p1.hand[0]
+    creature = state.cards[creature_id]
+    creature.types = ["Creature"]
+    creature.mana_cost = "{G}"
+    creature.name = "Green Creature"
+    nissa = CardInstance(
+        id="nissa-loyalty",
+        name="Nissa, Who Shakes the World",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Planeswalker"],
+        oracle_text="",
+    )
+    state.cards[nissa.id] = nissa
+    state.players[1].battlefield.append(nissa.id)
+
+    key, payload = infer_effect_from_oracle(
+        state,
+        type("Proxy", (), {"name": nissa.name, "oracle_text": "Put a +1/+1 counter on up to one target land you control. Untap it. It becomes a 0/0 Elemental creature with haste that's still a land.", "mana_cost": ""})(),
+        1,
+        {"target_card_id": land_id},
+    )
+    assert key == "add_counters"
+    assert payload["animate_land"] is True
+    resolve_effect(state, 1, key, payload)
+    assert "Creature" in land.types
+    assert "haste" in land.keywords
+    assert not land.tapped
+
+    key, payload = infer_effect_from_oracle(
+        state,
+        type("Proxy", (), {"name": nissa.name, "oracle_text": "You may put a green creature card from your hand onto the battlefield.", "mana_cost": ""})(),
+        1,
+    )
+    assert key == "put_green_creature_from_hand"
+    resolve_effect(state, 1, key, payload)
+    assert creature_id in p1.battlefield
+    assert creature.summoning_sick

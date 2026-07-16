@@ -33,6 +33,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "create_token": handlers.create_token,
     "add_mana": handlers.add_mana,
     "add_counters": handlers.add_counters,
+    "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
     "temporary_pt_buff": handlers.temporary_pt_buff,
     "sacrifice": handlers.sacrifice,
     "tap": handlers.tap_card,

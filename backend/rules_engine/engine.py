@@ -5,6 +5,7 @@ from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
+from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.oracle_effects import extract_loyalty_abilities
@@ -192,8 +193,9 @@ class RulesEngine:
                     oracle_text=getattr(state.cards[cid], "oracle_text", "") or "",
                     requested_color=action.get("color"),
                 )
-                player.mana_pool[color] += 1
-                state.log.append(f"{player.name} taps {state.cards[cid].name} for {color}.")
+                amount = land_mana_amount(state, player_id, cid)
+                player.mana_pool[color] += amount
+                state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
 
         elif kind == "tap_lands_bulk":
             land_name = str(action.get("land_name", "")).strip().lower()
@@ -201,6 +203,7 @@ class RulesEngine:
             if land_name and count > 0:
                 tapped = 0
                 produced = None
+                produced_total = 0
                 for cid in list(player.battlefield):
                     card = state.cards[cid]
                     if tapped >= count:
@@ -215,12 +218,15 @@ class RulesEngine:
                         oracle_text=getattr(card, "oracle_text", "") or "",
                         requested_color=action.get("color"),
                     )
-                    player.mana_pool[color] += 1
+                    amount = land_mana_amount(state, player_id, cid)
+                    player.mana_pool[color] += amount
                     produced = color
+                    produced_total += amount
                     tapped += 1
                 if tapped > 0 and produced:
                     state.log.append(
-                        f"{player.name} taps {tapped}x {action.get('land_name')} for {tapped} {produced}."
+                        f"{player.name} taps {tapped}x {action.get('land_name')} for "
+                        f"{produced_total} {produced}."
                     )
 
         elif kind == "cast_spell":

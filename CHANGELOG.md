@@ -9,7 +9,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for fallback counting and card-level attribution.
 
 - Validation:
-  - Backend suite now passes `414` tests.
+  - Backend suite now passes `416` tests.
   - Frontend production build passes after adding the unsupported-Oracle diagnostics panel.
   - Four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
 
@@ -19,6 +19,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - A completed Blue Control vs Ramp audit now reports card-level Oracle fallbacks; the next implementation targets are Arboreal Grazer, Torrential Gearhulk, and Nissa, Who Shakes the World.
   - Arboreal Grazer-style land-from-hand ETB resolution and Torrential Gearhulk-style graveyard instant/sorcery casting now use reusable effect handlers and the ordinary stack path.
   - Nissa's static/loyalty text is no longer reported as a false cast-time Oracle fallback; its actual layer-aware land and loyalty behavior remains tracked as unfinished work.
+  - Nissa-style land mana doubling, target-land animation, and green-creature deployment are now implemented through reusable mana and effect handlers.
 
 - AI runtime stability:
   - `_cast_bias` now initializes board-role context before evaluating engine-tagged control spells, which removes a head-to-head crash in the simulator path.

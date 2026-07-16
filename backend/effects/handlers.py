@@ -584,7 +584,41 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     if target in state.cards:
         card = state.cards[target]
         card.counters[counter] = card.counters.get(counter, 0) + amount
+        if payload.get("animate_land") and "Land" in card.types:
+            card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))
+            card.power = 0
+            card.toughness = 0
+            card.tapped = False
+            if "haste" not in {str(x).lower() for x in card.keywords}:
+                card.keywords.append("haste")
+            state.log.append(f"{card.name} becomes a 0/0 Elemental creature with haste.")
         # PT delta from counters is computed dynamically by effective_power/toughness
+
+
+def put_green_creature_from_hand(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    target = next(
+        (
+            cid
+            for cid in player.hand
+            if cid in state.cards
+            and "Creature" in state.cards[cid].types
+            and "{G}" in (state.cards[cid].mana_cost or "").upper()
+        ),
+        None,
+    )
+    if not target:
+        return
+    player.hand.remove(target)
+    player.battlefield.append(target)
+    card = state.cards[target]
+    card.zone = Zone.BATTLEFIELD
+    card.controller = controller
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    assign_static_order_on_battlefield_entry(state, target)
+    emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
+    state.log.append(f"{player.name} puts {card.name} from hand onto the battlefield.")
 
 
 def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:

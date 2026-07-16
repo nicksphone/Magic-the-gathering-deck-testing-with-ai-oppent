@@ -15,7 +15,7 @@ GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
 PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
-COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+target\s+creature")
+COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(creature|land|permanent)")
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
@@ -57,6 +57,11 @@ def infer_effect_from_oracle(
     action_targets: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     action_targets = action_targets or {}
+    # A real planeswalker card's loyalty lines are activated later, not cast as
+    # one combined spell effect. Loyalty proxies intentionally do not carry
+    # the Planeswalker type and continue through the normal parser below.
+    if "Planeswalker" in (getattr(card, "types", []) or []):
+        return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     mode_text = action_targets.get("mode_text")
     mode_texts = action_targets.get("mode_texts") or []
@@ -93,6 +98,13 @@ def infer_effect_from_oracle(
     for clause in clauses:
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
+            if (
+                inferred[0] == "add_counters"
+                and inferred[1].get("target_card_id")
+                and "becomes a 0/0" in oracle
+                and "target land" in oracle
+            ):
+                inferred[1]["animate_land"] = True
             effects.append(inferred)
     if len(effects) >= 2:
         return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
@@ -222,6 +234,12 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
             if "Creature" in state.cards[cid].types
+        ]
+    if "target land" in oracle:
+        hints["land_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[controller].battlefield
+            if "Land" in state.cards[cid].types
         ]
     if "target permanent" in oracle or "nonland permanent" in oracle:
         hints["permanent_targets"] = [
@@ -579,9 +597,24 @@ def _infer_clause_effect(
     counters_match = COUNTER_RE.search(oracle)
     if counters_match:
         amount = _parse_count_token(counters_match.group(1))
-        target = target_card_id or _first_creature(state, controller)
+        target = target_card_id
+        if target is None and counters_match.group(2).lower() == "land":
+            target = next(
+                (cid for cid in state.players[controller].battlefield if "Land" in state.cards[cid].types),
+                None,
+            )
+        if target is None:
+            target = _first_creature(state, controller)
         if target:
-            return "add_counters", {"target_card_id": target, "counter": "+1/+1", "amount": amount}
+            return "add_counters", {
+                "target_card_id": target,
+                "counter": "+1/+1",
+                "amount": amount,
+                "animate_land": counters_match.group(2).lower() == "land" and "becomes a 0/0" in oracle,
+            }
+
+    if "put a green creature card from your hand onto the battlefield" in oracle:
+        return "put_green_creature_from_hand", {}
 
     if "creatures you control get +1/+1" in oracle:
         return "continuous_buff", {"amount": 1}

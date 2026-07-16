@@ -1891,6 +1891,22 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
+
+        land_targets = hints.get("land_targets") or []
+        if land_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            # Prefer a basic land that is currently untapped so an animation
+            # loyalty line can attack or continue producing mana afterward.
+            best_land = max(
+                land_targets,
+                key=lambda t: (
+                    int(not bool(getattr(state.cards.get(t.get("id")), "tapped", False))),
+                    str(t.get("name") or ""),
+                ),
+                default=None,
+            )
+            if best_land:
+                targets["target_card_id"] = best_land["id"]
+                targets["target_card_name"] = best_land.get("name") or ""
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_creature_targets = hints.get("graveyard_creature_targets") or []

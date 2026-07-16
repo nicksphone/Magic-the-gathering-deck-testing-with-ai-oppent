@@ -3,7 +3,7 @@ from __future__ import annotations
 from game_state.state import Zone
 from game_state.state import MatchFactory, Step
 from rules_engine.engine import RulesEngine
-from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands
+from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, land_mana_amount
 
 
 def test_can_pay_known_mana_cost_with_untapped_lands() -> None:
@@ -75,12 +75,25 @@ def test_generic_cost_can_use_colored_mana_pool() -> None:
     assert sum(p1.mana_pool.values()) == 0
 
 
-def test_explicit_colorless_symbols_can_use_colored_mana_in_simulator() -> None:
+def test_colored_and_generic_cost_cannot_double_spend_same_pool_mana() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.mana_pool["U"] = 1
+
+    assert can_pay_with_pool_and_lands(state, 1, "{U}{1}") is False
+
+
+def test_explicit_colorless_symbols_require_colorless_mana() -> None:
     deck = [{"quantity": 60, "card_name": "Mountain"}]
     state = MatchFactory.from_decks(deck, deck)
     p1 = state.players[1]
     p1.mana_pool["R"] = 2
 
+    assert can_pay_with_pool_and_lands(state, 1, "{C}{C}") is False
+
+    p1.mana_pool["R"] = 0
+    p1.mana_pool["C"] = 2
     assert can_pay_with_pool_and_lands(state, 1, "{C}{C}") is True
     assert auto_pay_cost(state, 1, "{C}{C}") is True
     assert sum(p1.mana_pool.values()) == 0
@@ -267,3 +280,31 @@ def test_noncreature_mana_source_can_pay_cost() -> None:
     assert auto_pay_cost(state, 1, "{1}{U}") is True
     assert land.tapped is True
     assert rock.tapped is True
+
+
+def test_nissa_style_static_ability_doubles_land_production_and_payment() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    p1.battlefield = []
+    land_id = p1.library.pop()
+    planeswalker_id = p1.library.pop()
+    p1.battlefield.extend([land_id, planeswalker_id])
+
+    land = state.cards[land_id]
+    land.zone = Zone.BATTLEFIELD
+    land.types = ["Land"]
+    land.name = "Forest"
+    land.type_line = "Basic Land - Forest"
+    land.tapped = False
+    nissa = state.cards[planeswalker_id]
+    nissa.zone = Zone.BATTLEFIELD
+    nissa.types = ["Planeswalker"]
+    nissa.name = "Nissa, Who Shakes the World"
+    nissa.oracle_text = "Lands you control have '{T}: Add two mana of any one color.'"
+    nissa.tapped = False
+
+    assert land_mana_amount(state, 1, land_id) == 2
+    assert can_pay_with_pool_and_lands(state, 1, "{G}{G}")
+    assert auto_pay_cost(state, 1, "{G}{G}")
+    assert land.tapped
