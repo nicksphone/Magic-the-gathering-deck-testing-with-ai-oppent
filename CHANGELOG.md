@@ -6,6 +6,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Simulator diagnostics:
   - Centralized legal-move taxonomy across verbose round-robin and head-to-head traces. Restricted combat placeholders and ordinary passes no longer count as actionable options, while cycling, activated abilities, and equipment are included as meaningful decisions.
   - Added regression coverage for restricted placeholders and newly classified meaningful actions.
+  - Added stable AI `reason_code` labels, raw reasoning, and legal action-type summaries to verbose traces. Training export, card-play analytics, and anomaly clustering now preserve these labels and distinguish deliberate interaction holds from unexplained passes.
 
 - Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.

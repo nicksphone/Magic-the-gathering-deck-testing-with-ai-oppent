@@ -15,7 +15,7 @@ import re
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
-from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
+from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
@@ -152,19 +152,33 @@ def run() -> int:
                     passed_with_options = 0
                     missed_land_windows = 0
                     stalled_pass_streak = 0
+                    reason_codes: Counter = Counter()
                     while state.winner is None and ticks < args.max_ticks:
                         pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
                         legal = engine_rules.legal_moves(state, pid)
                         if not legal:
                             action = {"type": "pass_priority"}
+                            reasoning = "No legal action"
                         else:
                             agent = a_agent if pid == 1 else b_agent
                             decision = agent.choose_action(state, legal, pid)
                             action = decision.action
+                            reasoning = decision.reasoning
 
                         legal_non_pass = has_actionable_move(legal)
                         meaningful_non_pass = has_meaningful_move(legal)
                         legal_has_land = any(m.get("type") == "play_land" for m in legal)
+                        reason_code = decision_reason_code(
+                            action,
+                            reasoning,
+                            legal_non_pass=legal_non_pass,
+                            meaningful_non_pass=meaningful_non_pass,
+                            active_player=getattr(state, "active_player", None),
+                            player_id=pid,
+                            step=state.step,
+                            stack_empty=not bool(state.stack),
+                        )
+                        reason_codes[reason_code] += 1
                         acted_type = action.get("type")
                         if (
                             acted_type == "pass_priority"
@@ -198,8 +212,11 @@ def run() -> int:
                             "library_count": len(state.players[pid].library),
                             "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
                             "legal_non_pass": legal_non_pass,
+                            "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
                             "legal_has_land": legal_has_land,
                             "action": compact_action(action),
+                            "reason_code": reason_code,
+                            "reasoning": reasoning,
                         }
                         state.log.append(f"AI TRACE {json.dumps(trace_line, separators=(',', ':'))}")
 
@@ -241,6 +258,12 @@ def run() -> int:
                         "passed_with_options": passed_with_options,
                         "missed_land_windows": missed_land_windows,
                         "stall_streaks": int(stalled_pass_streak >= 3),
+                        "reason_codes": dict(reason_codes),
+                        "pass_reason_codes": {
+                            code: count
+                            for code, count in reason_codes.items()
+                            if code.startswith("pass_") or code == "hold_up_interaction"
+                        },
                     }
 
                     has_anomaly = any(k in pair_counts for k in ["invalid_targets", "cost_failures", "additional_cost_failures", "repeated_error_bursts"]) and any(
@@ -371,7 +394,13 @@ def _cluster_labels(row: dict) -> list[str]:
     if int(row.get("stall_streaks", 0) or 0) > 0:
         labels.append("stall")
     elif int(row.get("passed_with_options", 0) or 0) > 0:
-        labels.append("pass_with_legal_action")
+        pass_reasons = row.get("pass_reason_codes") or {}
+        if int(pass_reasons.get("hold_up_interaction", 0) or 0) > 0:
+            labels.append("pass_hold_up_interaction")
+        if int(pass_reasons.get("pass_with_meaningful_option", 0) or 0) > 0:
+            labels.append("pass_with_legal_action")
+        if not labels or labels[-1] not in {"pass_hold_up_interaction", "pass_with_legal_action"}:
+            labels.append("pass_with_legal_action")
     if row.get("termination_status") == "timeout_long_game":
         labels.append("long_game")
     return labels or ["other"]

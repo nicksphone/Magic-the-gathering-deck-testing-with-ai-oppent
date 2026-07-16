@@ -53,6 +53,7 @@ def _feature_row(game: dict, trace: dict) -> dict:
         },
         "mana_pool": dict(trace.get("mana_pool") or {}),
         "legal_non_pass": bool(trace.get("legal_non_pass")),
+        "legal_action_types": list(trace.get("legal_action_types") or []),
         "legal_has_land": bool(trace.get("legal_has_land")),
         "board_role_hint": _board_role_hint(trace),
         "board_snapshot": _board_snapshot(trace),
@@ -60,6 +61,7 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "action_card_name": action.get("card_name"),
         "selected_face_index": action.get("selected_face_index"),
         "reasoning": trace.get("reasoning", ""),
+        "reason_code": trace.get("reason_code", "unknown"),
     }
 
 

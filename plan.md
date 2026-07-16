@@ -11,6 +11,7 @@ Confirmed validation baseline:
 - Backend: `443 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
+- Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
 
@@ -145,6 +146,7 @@ Release blockers identified by the audit:
 - A six-deck verbose round robin completed with no hard rules errors or missed-land windows; its prior generic `pass_priority` cluster output was corrected to two pass-with-legal-action cases and one legal long-game case.
 - Decision-trace diagnostics now share a move taxonomy across overnight and head-to-head runners: pass actions and restricted combat placeholders are excluded, while cycling, activated abilities, and equipment are treated as meaningful options.
 - A fresh four-deck six-game round robin using the shared taxonomy completed with 0 invalid targets, 0 cost failures, 0 additional-cost failures, 0 missed-land windows, and 0 stall streaks. It produced two legal long-game timeouts and one control hold-up pass for follow-up reasoning labels.
+- AI verbose traces now include `reason_code`, raw `reasoning`, and `legal_action_types`; training exports and card-play analytics preserve and aggregate those fields, and anomaly clustering can identify deliberate `hold_up_interaction` passes separately from unexplained meaningful-option passes.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -280,7 +282,6 @@ Exit criteria:
 1. Add replacement-aware cycling tests for draw/discard triggers and optional cycling triggers.
 2. Expand X-cost cycling coverage to alternate costs, replacement-aware draws, and card-specific trigger payloads beyond the generic X/X token path.
 3. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
-4. Add AI decision-reason labels to the verbose trace so valid hold-up decisions can be separated from unexplained pass-with-options cases.
 
 ## Priority Order
 

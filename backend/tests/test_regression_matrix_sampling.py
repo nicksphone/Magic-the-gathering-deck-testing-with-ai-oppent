@@ -72,4 +72,7 @@ def test_round_robin_cluster_ignores_ordinary_priority_passes() -> None:
 
     assert _cluster_labels(row) == ["other"]
     assert _cluster_labels({**row, "passed_with_options": 1}) == ["pass_with_legal_action"]
+    assert _cluster_labels(
+        {**row, "passed_with_options": 1, "pass_reason_codes": {"hold_up_interaction": 1}}
+    ) == ["pass_hold_up_interaction"]
     assert _cluster_labels({**row, "termination_status": "timeout_long_game"}) == ["long_game"]

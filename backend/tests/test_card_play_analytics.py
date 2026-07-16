@@ -18,8 +18,8 @@ def test_card_play_analytics_separates_meaningful_main_phase_passes(tmp_path: Pa
             {
                 "winner": 1,
                 "log": [
-                    'AI TRACE {"pid":1,"turn":3,"step":"Step.PRECOMBAT_MAIN","hand":["Island","Memory Deluge"],"battlefield":[{"id":"c1"}],"opp_battlefield":[{"id":"c2"}],"mana_pool":{"U":1},"legal_non_pass":true,"legal_has_land":true,"action":{"type":"pass_priority"}}',
-                    'AI TRACE {"pid":2,"turn":3,"step":"Step.DECLARE_BLOCKERS","hand":[],"battlefield":[{"id":"c3"}],"opp_battlefield":[{"id":"c4"}],"mana_pool":{},"legal_non_pass":true,"legal_has_land":false,"action":{"type":"pass_priority"}}',
+                    'AI TRACE {"pid":1,"turn":3,"step":"Step.PRECOMBAT_MAIN","hand":["Island","Memory Deluge"],"battlefield":[{"id":"c1"}],"opp_battlefield":[{"id":"c2"}],"mana_pool":{"U":1},"legal_non_pass":true,"legal_has_land":true,"reason_code":"hold_up_interaction","action":{"type":"pass_priority"}}',
+                    'AI TRACE {"pid":2,"turn":3,"step":"Step.DECLARE_BLOCKERS","hand":[],"battlefield":[{"id":"c3"}],"opp_battlefield":[{"id":"c4"}],"mana_pool":{},"legal_non_pass":true,"legal_has_land":false,"reason_code":"pass_response_window","action":{"type":"pass_priority"}}',
                 ],
             }
         ],
@@ -35,3 +35,5 @@ def test_card_play_analytics_separates_meaningful_main_phase_passes(tmp_path: Pa
     assert out["pass_with_options"].get("2", 0) == 1
     assert out["pass_with_meaningful_options"].get("2", 0) == 0
     assert out["main_phase_passes"].get("2", 0) == 0
+    assert out["reason_codes"]["hold_up_interaction"] == 1
+    assert out["pass_reason_codes"]["pass_response_window"] == 1

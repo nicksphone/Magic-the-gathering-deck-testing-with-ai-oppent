@@ -11,7 +11,7 @@ from pathlib import Path
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
-from analytics.decision_taxonomy import has_actionable_move
+from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
@@ -173,8 +173,19 @@ def main() -> int:
                         },
                         "mana_pool": dict(state.players[pid].mana_pool),
                         "legal_non_pass": has_actionable_move(legal),
+                        "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
                         "legal_has_land": any(m.get("type") == "play_land" for m in legal),
                         "action": compact_action(action),
+                        "reason_code": decision_reason_code(
+                            action,
+                            reasoning,
+                            legal_non_pass=has_actionable_move(legal),
+                            meaningful_non_pass=has_meaningful_move(legal),
+                            active_player=getattr(state, "active_player", None),
+                            player_id=pid,
+                            step=state.step,
+                            stack_empty=not bool(state.stack),
+                        ),
                         "reasoning": reasoning,
                     }
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")

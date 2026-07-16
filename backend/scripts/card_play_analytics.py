@@ -42,6 +42,8 @@ def summarize_card_play_logic(path: Path) -> dict:
     pass_with_meaningful_options = Counter()
     main_phase_passes = Counter()
     missed_land_windows = Counter()
+    reason_codes = Counter()
+    pass_reason_codes = Counter()
     per_player_actions = defaultdict(Counter)
     pass_examples: list[dict] = []
 
@@ -65,6 +67,10 @@ def summarize_card_play_logic(path: Path) -> dict:
                 atype = str(act.get("type", "unknown"))
                 action_types[atype] += 1
                 per_player_actions[pid][atype] += 1
+                reason_code = str(payload.get("reason_code") or "unknown")
+                reason_codes[reason_code] += 1
+                if atype == "pass_priority":
+                    pass_reason_codes[reason_code] += 1
 
                 if atype == "cast_spell":
                     name = str(act.get("card_name") or "unknown_card")
@@ -102,6 +108,8 @@ def summarize_card_play_logic(path: Path) -> dict:
         "timeouts": timeouts,
         "winners": dict(winners),
         "actions": dict(action_types),
+        "reason_codes": dict(reason_codes),
+        "pass_reason_codes": dict(pass_reason_codes),
         "per_player_actions": {k: dict(v) for k, v in per_player_actions.items()},
         "pass_with_options": dict(pass_with_options),
         "pass_with_meaningful_options": dict(pass_with_meaningful_options),
