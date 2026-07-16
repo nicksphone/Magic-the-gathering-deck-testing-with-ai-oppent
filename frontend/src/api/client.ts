@@ -1,10 +1,19 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
-const API =
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  "/api";
+const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+const runtimeHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
+const productionApi = `http://${runtimeHost}:9999`;
+// Development keeps the Vite proxy; production builds need a real backend URL
+// unless the deployment supplies VITE_API_BASE_URL or a reverse proxy.
+const API = configuredApi || ((import.meta as any).env?.PROD ? productionApi : "/api");
 
 export const API_BASE = API;
+
+export type HealthResponse = {
+  ok: boolean;
+  service?: string;
+  version?: string;
+};
 
 export function resolveCardMediaUrl(uri?: string): string | undefined {
   if (!uri) return undefined;
@@ -111,6 +120,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  health: () => req<HealthResponse>("/health"),
   listBuiltins: () => req<string[]>("/decks/builtin"),
   getBuiltinText: (name: string) => req<{ name: string; deck_text: string }>(`/decks/builtin/${encodeURIComponent(name)}`),
   listExpansionTopDecks: () => req<ExpansionTopDeckMeta[]>("/decks/expansion-top"),

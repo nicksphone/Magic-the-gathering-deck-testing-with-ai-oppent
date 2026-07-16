@@ -4,10 +4,11 @@ from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_o
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
-from rules_engine.mana import add_generic_to_cost, auto_pay_cost
+from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
+from rules_engine.oracle_effects import extract_loyalty_abilities
+from rules_engine.ability_model import build_ability_spec
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
@@ -92,6 +93,10 @@ class RulesEngine:
                 card.counters.pop("__damage_marked", None)
             if "__deathtouch_damaged" in card.counters:
                 card.counters.pop("__deathtouch_damaged", None)
+            if "__eot_power" in card.counters:
+                card.counters.pop("__eot_power", None)
+            if "__eot_toughness" in card.counters:
+                card.counters.pop("__eot_toughness", None)
 
     def _clear_prevention_shields(self, state: MatchState) -> None:
         for player in state.players.values():
@@ -176,6 +181,7 @@ class RulesEngine:
                 state.cards[cid].summoning_sick = False
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
+                emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
 
         elif kind == "tap_land_for_mana":
             cid = action["card_id"]
@@ -292,7 +298,8 @@ class RulesEngine:
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                effect_key, payload = infer_effect_from_oracle(state, face_card, player_id, action_targets=action_targets)
+                ability = build_ability_spec(state, face_card, player_id, action_targets=action_targets)
+                effect_key, payload = ability.effect.key, ability.effect.payload
 
                 player.hand.remove(cid)
                 card.zone = Zone.STACK
@@ -362,7 +369,8 @@ class RulesEngine:
                 state.log.append(f"Invalid targets for {pw.name}: {err_prot}")
                 apply_state_based_actions(state)
                 return
-            effect_key, payload = infer_effect_from_oracle(state, proxy, player_id, action_targets=action_targets)
+            ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
+            effect_key, payload = ability.effect.key, ability.effect.payload
             add_to_stack(
                 state,
                 source_card_id=cid,
@@ -547,8 +555,7 @@ def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: s
     scored = []
     for card in hand_cards:
         land_bias = -3 if "Land" in card.types else 0
-        req = parse_mana_cost(card.mana_cost, is_land=("Land" in card.types))
-        cmc = req["generic"] + sum(req[c] for c in ["W", "U", "B", "R", "G"])
+        cmc = mana_value(card.mana_cost, is_land=("Land" in card.types))
         score = cmc + land_bias
         scored.append((score, card.id))
     scored.sort(reverse=True)

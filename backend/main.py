@@ -23,15 +23,15 @@ from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_prio
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.service import AnalyticsService
 from card_data.fallback_cards import fallback_card_payload
+from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
-from decks.builtin_decks import BUILTIN_DECKS
-from decks.expansion_top_decks import EXPANSION_TOP_DECKS
+from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
-from game_state.serializers import serialize_match
+from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
 from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
@@ -45,6 +45,8 @@ async def lifespan(app_instance: FastAPI):
         repo = Repository(session)
         _ensure_builtin_decks(repo)
         _ensure_expansion_top_decks(repo)
+        _restore_active_matches(repo)
+        _restore_simulation_jobs(repo)
     yield
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
@@ -159,6 +161,106 @@ class BatchSimulationJobStatusResponse(BaseModel):
 
 def get_repo(session: Session = Depends(get_session)) -> Repository:
     return Repository(session)
+
+
+def _controller_snapshot(match: MatchController) -> dict:
+    difficulties = {
+        str(pid): getattr(agent, "difficulty", "master")
+        for pid, agent in match.ai.items()
+    }
+    archetypes = {
+        str(pid): getattr(agent, "archetype", "Midrange")
+        for pid, agent in match.ai.items()
+    }
+    return {
+        "controllers": {str(pid): value for pid, value in match.controllers.items()},
+        "mode": match.mode,
+        "deck_ids": list(match.deck_ids),
+        "mainboards": {str(pid): deck for pid, deck in match.mainboards.items()},
+        "sideboards": {str(pid): deck for pid, deck in match.sideboards.items()},
+        "game_number": match.game_number,
+        "current_game_recorded": match.current_game_recorded,
+        "match_complete": match.match_complete,
+        "best_of": match.best_of,
+        "sideboarded_players": sorted(match.sideboarded_players),
+        "difficulties": difficulties,
+        "archetypes": archetypes,
+    }
+
+
+def _persist_active_match(repo: Repository | object, match: MatchController) -> None:
+    state_json = json.dumps(serialize_match_snapshot(match.state))
+    controller_json = json.dumps(_controller_snapshot(match))
+    if isinstance(repo, Repository):
+        repo.save_active_match(match.state.id, state_json, controller_json)
+        return
+    # Direct unit tests call endpoint functions without FastAPI dependency
+    # resolution; keep those calls equivalent to an HTTP request.
+    with Session(engine) as session:
+        Repository(session).save_active_match(match.state.id, state_json, controller_json)
+
+
+def _restore_active_matches(repo: Repository) -> None:
+    for row in repo.list_active_matches():
+        try:
+            state = deserialize_match_snapshot(json.loads(row.state_json))
+            config = json.loads(row.controller_json)
+            ai = {
+                int(pid): AIAgent(
+                    difficulty=str(config.get("difficulties", {}).get(str(pid), "master")),
+                    archetype=str(config.get("archetypes", {}).get(str(pid), "Midrange")),
+                )
+                for pid in (1, 2)
+            }
+            controller = MatchController(
+                state=state,
+                rules=RulesEngine(),
+                controllers={int(pid): value for pid, value in config.get("controllers", {}).items()},
+                ai=ai,
+                mode=str(config.get("mode", "player_vs_ai")),
+                deck_ids=tuple(config.get("deck_ids", [None, None])),
+                mainboards={int(pid): deck for pid, deck in config.get("mainboards", {}).items()},
+                sideboards={int(pid): deck for pid, deck in config.get("sideboards", {}).items()},
+                game_number=int(config.get("game_number", 1)),
+                current_game_recorded=bool(config.get("current_game_recorded", False)),
+                match_complete=bool(config.get("match_complete", False)),
+                best_of=int(config.get("best_of", state.best_of)),
+                sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
+            )
+            ACTIVE_MATCHES[state.id] = controller
+        except Exception:
+            # A corrupt or obsolete snapshot must not prevent API startup.
+            continue
+
+
+def _job_dict(row) -> dict:
+    return {
+        "job_id": row.id,
+        "status": row.status,
+        "completed_matches": row.completed_matches,
+        "total_matches": row.total_matches,
+        "started_at": row.started_at,
+        "finished_at": row.finished_at,
+        "error": row.error,
+        "result": json.loads(row.result_json) if row.result_json else None,
+    }
+
+
+def _restore_simulation_jobs(repo: Repository) -> None:
+    with SIM_JOBS_LOCK:
+        for row in repo.list_simulation_jobs():
+            job = _job_dict(row)
+            if row.status in {"queued", "running"}:
+                job["status"] = "failed"
+                job["error"] = "Backend restarted before the simulation completed."
+                job["finished_at"] = time.time()
+                repo.save_simulation_job({**job, "request": json.loads(row.request_json or "{}")})
+            SIM_JOBS[row.id] = job
+
+
+def _persist_job(job: dict) -> None:
+    with Session(engine) as session:
+        Repository(session).save_simulation_job(job)
 
 
 
@@ -369,6 +471,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         best_of=payload.best_of,
     )
     ACTIVE_MATCHES[state.id] = controller
+    _persist_active_match(repo, controller)
     return _serialize_match_controller(controller)
 
 
@@ -423,6 +526,7 @@ def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depend
         raise HTTPException(status_code=404, detail="Match not found")
     match.rules.take_action(match.state, payload.player_id, payload.action)
     _post_step_finalize(match, repo)
+    _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
@@ -472,11 +576,12 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
         if not match.state.pregame_pending and match.state.step == match.state.step.COMBAT_DAMAGE:
             match.rules.take_action(match.state, match.state.active_player, {"type": "combat_damage"})
     _post_step_finalize(match, repo)
+    _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
 @app.post("/matches/{match_id}/priority-stops")
-def set_priority_stops(match_id: str, payload: PriorityStopsRequest) -> dict:
+def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -488,6 +593,7 @@ def set_priority_stops(match_id: str, payload: PriorityStopsRequest) -> dict:
     match.state.log.append(
         f"{match.state.players[payload.player_id].name} priority stops updated: {', '.join(sorted(chosen)) or 'none'}."
     )
+    _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
@@ -515,11 +621,12 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
     match.sideboards[payload.player_id] = next_side
     match.sideboarded_players.add(payload.player_id)
     match.state.log.append(f"{match.state.players[payload.player_id].name} sideboarded for next game.")
+    _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
 @app.post("/matches/{match_id}/next-game")
-def next_game(match_id: str) -> dict:
+def next_game(match_id: str, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -529,6 +636,7 @@ def next_game(match_id: str) -> dict:
         raise HTTPException(status_code=400, detail="Current game not finished.")
 
     _start_next_game_state(match)
+    _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
@@ -555,14 +663,17 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
         "finished_at": None,
         "error": None,
         "result": None,
+        "request": payload.model_dump(),
     }
     with SIM_JOBS_LOCK:
         SIM_JOBS[job_id] = job
+    _persist_job(job)
 
     def _runner() -> None:
         with SIM_JOBS_LOCK:
             if job_id in SIM_JOBS:
                 SIM_JOBS[job_id]["status"] = "running"
+                _persist_job(SIM_JOBS[job_id])
         try:
             with Session(engine) as session:
                 thread_repo = Repository(session)
@@ -571,6 +682,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                         if job_id in SIM_JOBS:
                             SIM_JOBS[job_id]["completed_matches"] = int(done)
                             SIM_JOBS[job_id]["total_matches"] = int(total)
+                            _persist_job(SIM_JOBS[job_id])
 
                 result = AnalyticsService(thread_repo).run_batch(
                     payload.deck_a,
@@ -586,12 +698,14 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     SIM_JOBS[job_id]["completed_matches"] = int(payload.matches)
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["result"] = result
+                    _persist_job(SIM_JOBS[job_id])
         except Exception as exc:
             with SIM_JOBS_LOCK:
                 if job_id in SIM_JOBS:
                     SIM_JOBS[job_id]["status"] = "failed"
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["error"] = str(exc)
+                    _persist_job(SIM_JOBS[job_id])
 
     t = threading.Thread(target=_runner, daemon=True)
     t.start()
@@ -599,12 +713,15 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
 
 
 @app.get("/simulate/batch/{job_id}", response_model=BatchSimulationJobStatusResponse)
-def simulate_batch_status(job_id: str) -> dict:
+def simulate_batch_status(job_id: str, repo: Repository = Depends(get_repo)) -> dict:
     with SIM_JOBS_LOCK:
         job = SIM_JOBS.get(job_id)
-        if job is None:
-            raise HTTPException(status_code=404, detail="Simulation job not found")
-        return dict(job)
+        if job is not None:
+            return {key: value for key, value in job.items() if key != "request"}
+    row = repo.get_simulation_job(job_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Simulation job not found")
+    return _job_dict(row)
 
 
 @app.post("/ai/diagnostics")
@@ -781,7 +898,12 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             out["type_line"] = row.type_line or (fallback or {}).get("type_line")
             out["power"] = row.power or (fallback or {}).get("power")
             out["toughness"] = row.toughness or (fallback or {}).get("toughness")
-            out["image_uri"] = row.image_uri or (fallback or {}).get("image_uri")
+            out["image_uri"] = select_display_image_uri(
+                row,
+                name=str(out.get("card_name") or item.get("card_name") or "Card"),
+                type_line=str(out.get("type_line") or ""),
+                token=False,
+            )
             loyalty = getattr(row, "loyalty", None)
             if loyalty is not None:
                 out["loyalty"] = loyalty
@@ -831,34 +953,11 @@ def _start_next_game_state(match: MatchController) -> None:
 
 
 def _ensure_builtin_decks(repo: Repository) -> None:
-    existing = {
-        (row.name.strip().lower(), (row.source or "").strip().lower()): row
-        for row in repo.list_decks()
-    }
-    service = DeckService(repo)
-    for name in sorted(BUILTIN_DECKS.keys()):
-        key = (name.strip().lower(), "builtin")
-        row = existing.get(key)
-        if row is not None:
-            repo.session.delete(row)
-    repo.session.commit()
-    for name in sorted(BUILTIN_DECKS.keys()):
-        service.import_deck_text(name=name, deck_text=BUILTIN_DECKS[name], source="builtin")
+    ensure_builtin_decks(repo)
 
 
 def _ensure_expansion_top_decks(repo: Repository) -> None:
-    existing = {
-        (row.name.strip().lower(), (row.source or "").strip().lower())
-        for row in repo.list_decks()
-    }
-    service = DeckService(repo)
-    for item in EXPANSION_TOP_DECKS:
-        name = item["deck_name"]
-        source = f"expansion_top:{item['code']}".lower()
-        key = (name.strip().lower(), source)
-        if key in existing:
-            continue
-        service.import_deck_text(name=name, deck_text=item["deck_text"], source=source)
+    ensure_expansion_top_decks(repo)
 
 
 def _human_priority_pause(match: MatchController, player_id: int) -> bool:

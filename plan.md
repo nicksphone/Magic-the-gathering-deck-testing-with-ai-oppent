@@ -8,17 +8,17 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `399 passed`, 2 deprecation warnings.
+- Backend: `403 passed`, 10 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
 
 Release blockers identified by the audit:
 
-- Oracle interpretation still relies on text heuristics rather than a structured ability model.
+- Oracle interpretation still relies on text heuristics beneath the new structured ability boundary; broad conversion to structured card abilities remains unfinished.
 - Master AI scores actions but does not yet consistently search multi-turn tactical lines.
-- Active matches and simulator jobs are process-memory state and are lost on backend restart.
-- The production frontend needs an explicit API base URL or reverse proxy; Vite's development proxy does not exist in a static production build.
+- Active matches and simulator job metadata are now durable; interrupted simulator workers are marked failed rather than resumed automatically.
+- Production API routing is now configurable, but automated production/LAN smoke coverage remains to be added.
 - Full-game integration coverage is smaller than isolated rules-handler coverage.
 - Card art and metadata remain dependent on cache completeness and upstream Scryfall availability.
 
@@ -61,6 +61,13 @@ Release blockers identified by the audit:
 - Card sync now falls back to cached metadata if a retryable Scryfall lookup still fails.
 - Fallback card lookup now normalizes punctuation and spacing so common import-name variants can still resolve to cached metadata.
 - Fallback card lookup now also resolves double-faced import names by trying the front-face name, which improves Delver-style hydration.
+- Frontend production builds now resolve the backend from `VITE_API_BASE_URL` or the serving host on port `9999`, while development retains the Vite `/api` proxy.
+- The frontend now displays backend connectivity status, polls `/health`, and provides a retry control when the API is unavailable.
+- Active match snapshots now persist complete mutable rules state, card zones, stack objects, priority state, and RNG state in application-owned JSON.
+- Active match snapshots are restored during backend startup, including controller configuration, decks, sideboards, AI archetypes, and match progress.
+- Simulator job status, progress, errors, and results now persist in SQLite and are restored after startup; interrupted queued/running jobs are marked failed with an explicit restart reason.
+- A structured `AbilitySpec`/`EffectSpec` boundary now carries source, cost, target hints, modes, choices, resolved effects, and unsupported-text fallback status into the rules engine.
+- Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
 
 ## Remaining Gaps
 
@@ -234,11 +241,11 @@ Exit criteria:
 
 Work in this order unless a production failure requires an earlier interruption:
 
-1. Runtime/API deployment and connection diagnostics.
-2. Durable matches and simulator jobs.
-3. Structured abilities for the current deck corpus.
-4. Continuous/replacement/combat rules fidelity.
-5. Tactical AI search and sideboarding.
+1. Complete structured abilities for the current deck corpus.
+2. Continuous/replacement/combat rules fidelity.
+3. Tactical AI search and sideboarding.
+4. Runtime/API deployment follow-up, including automated production/LAN smoke coverage.
+5. Durable simulator job resume policy and multi-worker coordination.
 6. Large deterministic matchup and balance matrix.
 7. Card-data completeness and asset reporting.
 8. Frontend replay and release polish.

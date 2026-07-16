@@ -1,110 +1,79 @@
 # MTG Deck Testing Lab
 
-A professional desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run deck analysis.
+MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
 
-The project is built for serious deck work:
+It is designed for serious deck work:
 - Human vs AI playtesting
 - AI vs AI simulation
-- Batch matchup analysis
+- Batch matchup analysis and replay diagnostics
 - Custom deck import and deck library management
-- Rules-engine-first gameplay logic
+- Rules-engine-first gameplay logic with local persistence
 
-## What It Does
+## Current Features
 
 ### Gameplay
-- 2-player match flow with turn structure, priority, stack, combat, and cleanup
+- Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
 - London mulligan handling
-- Manual phase advancement and autoplay
-- Land drops, casting, activated abilities, and combat actions
-- Damage, prevention, protection, replacement effects, and trigger resolution
-- Death replacement now applies consistently across destroy, sacrifice, combat cleanup, and state-based actions
-- Death replacement now also understands common `nontoken` and `another creature` Oracle variants
-- Death triggers now respect controller clauses like "a creature you control dies"
-- Additional-cost sacrifice replacement now respects exile-instead-of-dying effects
-- Planeswalker loyalty parsing now supports `-X` and `+X` style abilities with X-value propagation through AI and resolution
-- Planeswalker combat targeting
-- Loss conditions for life and decking
+- Manual phase progression and autoplay
+- Land drops, casting, activated abilities, combat actions, and response windows
+- Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
+- Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
+- Planeswalker loyalty abilities, including X-cost loyalty abilities
+- Explicit `{C}` mana handling separate from generic mana
+- Ownership-aware zone movement for stolen permanents
+- Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
+- Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
+- Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
+- Manual and autoplay-driven best-of-three matches with sideboarding support
 
 ### Card Data
 - Local card cache synced from live card data
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
-- Double-faced, split, modal, and token-aware card handling
+- Double-faced, split, modal, adventure, and token-aware card handling
 - Fuzzy matching for deck import correction
+- Cached fallback metadata when remote lookups fail
+- Token art fallback handling and face-aware image reuse for double-faced cards
 
 ### AI
-- Deck-aware AI with archetype detection
-- Difficulty levels: `casual`, `strong`, `master`, `master_plus`
-- Mulligan and curve evaluation
-- Interaction timing, threat assessment, combat math, and counterspell selection
-- Modal/split card face selection based on board state and game stage
+- Archetype-aware AI with difficulty levels: `casual`, `strong`, `master`, `master_plus`
+- Hand-profile-aware mulligan decisions, curve evaluation, interaction timing, threat assessment, attack selection, and combat math
+- X-spell value selection that trades off board pressure, archetype pressure, and mana efficiency
+- Modal, split, and transform-face selection based on board state and matchup pressure
+- Board-role-aware planning for stabilize, convert, race, control, and related board states
+- Matchup-aware scoring for control, ramp, tempo, tokens, midrange, aggro, and attrition lines
+- Replay-prior tuning and training exports for deeper decision analysis
+- Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
 ### Simulation and Diagnostics
 - AI vs AI autoplay
-- Batch simulation
-- Replay inspection
-- Deterministic regression checks
+- Batch simulation with progress tracking
+- Replay inspection and deterministic regression checks
 - Match logs, anomaly output, and training trace export
-- Anomaly clustering now recognizes multi-word land-drop misses and repeated main-phase pass loops from AI trace data
+- First-divergence drilldown with compact trace context for both sides
+- Per-game batch results and matchup summaries
+- Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction
+
+### UI
+- Desktop-first battlefield layout with readable stack, priority, mana, and hand presentation
+- Explicit interrupt-window state in the controls panel
+- Hover inspection and card zoom for readable long-session testing
+- Density-aware battlefield scaling for crowded boards
+- Match simulator panel with progress and first-divergence reporting
 
 ## Architecture
 
 Gameplay logic lives in application code. SQL is for storage only.
 
 ### Backend Layers
-- `backend/card_data`
-  - Card sync/cache, image cache hydration, fuzzy lookup
-- `backend/rules_engine`
-  - Turn structure, priority, stack, combat, targeting, timing, state-based checks, and rules inference
-- `backend/effects`
-  - Modular effect handlers and resolver registry
-- `backend/game_state`
-  - Canonical state model and serialization
-- `backend/ai`
-  - Tactical AI, archetype detection, matchup policies, and endgame behavior
-- `backend/decks`
-  - Deck parser/import, built-ins, expansion decks, sideboarding support
-- `backend/analytics`
-  - Batch simulation, diagnostics, replay summaries, replay comparison drilldown, and anomaly analysis
-- `backend/persistence`
-  - Storage layer only
-- `frontend/src`
-  - Match UI, deck UI, controls, logs, and simulator views
-
-## Current Status
-
-The application currently supports:
-- Rules-aware 2-player testing with turn structure, priority, stack, combat, cleanup, and turn advancement
-- Human vs AI, AI vs human, and AI vs AI matches
-- Manual phase progression and autoplay-driven simulation
-- Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
-- Local card caching with image fallback handling and token art resolution when available
-- Partial cache rows are merged with fallback metadata so common cards do not lose oracle text or type data
-- Imported deck analysis now folds `card_faces` into archetype scoring so split and modal cards are classified by their actual text and type data
-- Replay logs, batch simulations, matchup stats, anomaly diagnostics, first-divergence replay drilldown, turn-level AI trace summaries, first-game log excerpts, per-game batch results, and training trace export with board snapshots
-- Training exports preserve active-player and priority-player context for later AI analysis
-- Verbose AI traces now include active-player and priority-player context for easier replay analysis
-- Card-play analytics that separate strategic main-phase pass windows from combat-step passes in verbose head-to-head logs
-- Replay divergence classification now distinguishes pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error cases
-- BO3 and sideboarding support with per-game swap locking
-- denser match-status and between-games controls for BO3 sessions
-- density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection
-- compact stack, priority, and mana-pool displays make long-session response windows easier to scan
-- Fuzzy card-name correction for deck import and cached metadata resolution for imported lines
-- AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation for tougher removal decisions
-- Matchup profiles now give control, ramp, tempo, and token decks different timing and risk biases depending on the opponent archetype
-- Matchup profiles now feed directly into move scoring for pass, attack, and cast decisions
-- Control, tempo, and ramp heuristics now weigh matchup pressure more directly when ranking the same legal move
-- Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines
-- Modal and transform-style face selection now uses the face type line, not just the parent card type, for more accurate AI valuation
-- Loyalty abilities with X costs now flow through move generation and AI materialization instead of being dropped as malformed activations
-- Board evaluation now scores the active face of modal/transform permanents when they are on the battlefield
-
-Current focus:
-- expanding Oracle coverage for older and unusual cards
-- improving replacement, prevention, and layer fidelity in edge cases
-- deepening tactical AI for complex board states and matchup-specific heuristics
-- tightening simulator diagnostics and replay attribution when a run diverges
-- keeping the UI dense and readable during long sessions
+- `backend/card_data` - card sync/cache, image cache hydration, and fuzzy lookup
+- `backend/rules_engine` - turn structure, priority, stack, combat, timing, state-based checks, and rules inference
+- `backend/effects` - modular effect handlers and resolver registry
+- `backend/game_state` - canonical state model and serialization
+- `backend/ai` - tactical AI, archetype detection, matchup policies, and endgame behavior
+- `backend/decks` - deck parser/import, built-ins, expansion decks, and sideboarding support
+- `backend/analytics` - batch simulation, replay summaries, diagnostics, and anomaly analysis
+- `backend/persistence` - storage layer only
+- `frontend/src` - match UI, deck UI, controls, logs, and simulator views
 
 ## Setup
 
@@ -124,6 +93,8 @@ npm install
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
+The Vite development server proxies `/api` and `/card-images` to the backend on port `9999`. For a separate static frontend deployment, copy `frontend/.env.example` to `.env.production` and set `VITE_API_BASE_URL` to the reachable backend origin, for example `http://192.168.1.50:9999`. If the frontend and backend are served behind one reverse proxy, keep the default `/api` routing and proxy both `/api` and `/card-images` to the backend.
+
 ### Open the App
 - Frontend: `http://<server-ip>:5173`
 - Backend: `http://<server-ip>:9999`
@@ -141,6 +112,48 @@ pytest -q
 cd frontend
 npm run build
 ```
+
+The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
+
+### Diagnostics
+```bash
+cd backend
+python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Blue Control" --matches 1
+python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2
+python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
+```
+
+The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.
+
+## Deck Import
+
+Supported text format:
+```text
+4 Lightning Bolt
+3 Counterspell
+20 Island
+
+Sideboard
+2 Negate
+2 Dispel
+```
+
+Import sources:
+- Paste deck text
+- Upload a `.txt` deck file
+- Choose built-in decks
+- Choose expansion decks
+
+The parser accepts common `Mainboard`, `Maindeck`, `Sideboard`, and `SB:` section headers, set annotations such as `[M11]`, `4x` multiplier notation, and common comment lines.
+
+## Card Data and Images
+
+The app syncs and caches card data locally.
+- Card metadata is stored for repeatable testing
+- Missing art falls back to local placeholder handling
+- Cached double-faced cards reuse face-level art when the root image is missing
+- Token art resolves when available, with a generic token fallback before blank placeholders
+- Fallback card lookups normalize punctuation, spacing, and common transform-face import names
 
 ## API Overview
 
@@ -173,54 +186,41 @@ Key endpoints:
 - `POST /ai/priors/rebuild`
 - `GET /analytics/history`
 
-## Deck Import
+## Current Status
 
-Supported text format:
-```text
-4 Lightning Bolt
-3 Counterspell
-20 Island
+The application currently supports:
+- Rules-aware 2-player testing with turn structure, priority, stack, combat, cleanup, and turn advancement
+- Human vs AI, AI vs human, and AI vs AI matches
+- Manual phase progression and autoplay-driven simulation
+- Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
+- Local card caching with image fallback handling
+- Replay logs, batch simulations, matchup stats, anomaly diagnostics, turn-level AI trace summaries, and training trace export
+- Compact first-divergence drilldown for replay drift analysis
+- Role-aware log priors derived from replay traces and training exports
+- AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation
+- AI seat control with archetype detection, hand-profile mulligan logic, curve evaluation, interaction heuristics, attack heuristics, and keyword-aware battlefield evaluation
+- Matchup profiles for control, ramp, tempo, token, and removal-heavy shells
+- Responsive desktop UI with readable stack, priority, mana, and hover inspection
 
-Sideboard
-2 Negate
-2 Dispel
-```
+Current focus:
+- expanding Oracle coverage for older and unusual cards
+- improving replacement, prevention, and layer fidelity in edge cases
+- deepening tactical AI for complex board states and matchup-specific heuristics
+- broadening deterministic replay coverage across more representative deck pairings
+- keeping the UI dense and readable during long sessions
 
-Import sources:
-- Paste deck text
-- Upload a `.txt` deck file
-- Choose built-in decks
-- Choose expansion decks
+## Known Limitations and Next Upgrades
 
-## Card Data and Images
+- Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
+- Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.
+- Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.
+- The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
+- Larger deterministic replay matrices and longer validation runs would improve confidence in balance and edge-case coverage.
+- The UI still has room for more polished long-session deck-testing ergonomics.
 
-The app syncs and caches card data locally.
-- Card metadata is stored for repeatable testing
-- Missing card art falls back to local placeholder handling
-- Token art is resolved when available
-- Split/modal face metadata is preserved for UI and AI use
+## Development Notes
 
-## Simulation Notes
-
-- AI vs AI autoplay can be stepped or run continuously
-- Batch runs are used for matchup analysis and regression checks, with deterministic per-game seeding, alternating play/draw order, and per-game result summaries for repeatable comparisons
-- Replay logs are normalized for deterministic comparison
-- Verbose logs can be exported into training examples with board snapshots and per-turn action summaries
-- The Testing Simulator panel shows live job status, progress, failure output, and compact first-game turn/log summaries while batch jobs run
-
-## Known Limitations
-
-- The rules engine still does not cover every Oracle edge case or every older/obscure mechanic
-- Some static/replacement/layer interactions still rely on heuristic inference rather than full Oracle-parity modeling
-- Sideboarding exists, but the BO3 user experience is still lighter than the core one-game testing loop
-- AI performance is strong on common archetypes, but still needs more training data and deeper tactical planning on complex board states; face-selection heuristics for modal/transform cards are improved, but broader matchup tuning still remains
-- Simulator diagnostics now include first-divergence replay comparison helpers, turn-level AI trace summaries, first-game log excerpts, deterministic per-game batch results, live simulator status/progress display, and result-panel divergence output, but the long-run root-cause workflow still needs more automated annotation and root-cause classification
-- Verbose trace payloads now carry active-player and priority-player context so later drilldowns can distinguish turn-owner decisions from stack-response decisions
-- Card-play analytics now distinguish strategic main-phase pass windows from combat-step passes so the logs do not over-report harmless blockers windows as stalls
-- Simulator diagnostics now classify common divergence buckets such as pass-vs-action, land-drop mismatch, cast-choice mismatch, and cast-resolution error, and anomaly clustering now detects land-drop misses correctly
-- Built-in deck balance is still being tuned; deterministic batch runs are the primary audit tool for outlier matchups
-- UI is functional, but several competitive-play polish items remain before it feels complete for long sessions; battlefield density, stack density, mana pooling, and priority visibility are improved, but there is still room for further refinement
-
-## Changelog
-
-Historical milestone notes now live in [CHANGELOG.md](./CHANGELOG.md).
+- Gameplay rules live in application code, not in SQL.
+- `README.md` describes the current product state.
+- `CHANGELOG.md` records milestone-level history.
+- `plan.md` tracks the remaining finish work.

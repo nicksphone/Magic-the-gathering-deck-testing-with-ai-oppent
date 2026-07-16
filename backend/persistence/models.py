@@ -43,6 +43,29 @@ class MatchRecord(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class ActiveMatchRecord(SQLModel, table=True):
+    """Durable application snapshot for an in-progress match."""
+
+    id: str = Field(primary_key=True)
+    state_json: str
+    controller_json: str
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class SimulationJobRecord(SQLModel, table=True):
+    """Durable status/result row for an asynchronous simulator job."""
+
+    id: str = Field(primary_key=True)
+    status: str = "queued"
+    completed_matches: int = 0
+    total_matches: int = 0
+    started_at: float = 0.0
+    finished_at: Optional[float] = None
+    error: Optional[str] = None
+    result_json: Optional[str] = None
+    request_json: str = "{}"
+
+
 class StatsSnapshot(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     label: str = Field(index=True)

@@ -21,9 +21,26 @@ export function App() {
   const [autoResponsePaused, setAutoResponsePaused] = useState(false);
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
   const [autoplayDelayMs, setAutoplayDelayMs] = useState<number>(1800);
+  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+
+  const checkApiHealth = useCallback(async () => {
+    try {
+      await api.health();
+      setApiStatus("online");
+    } catch (error) {
+      console.error("Backend health check failed", error);
+      setApiStatus("offline");
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkApiHealth();
+    const timer = window.setInterval(() => void checkApiHealth(), 15000);
+    return () => window.clearInterval(timer);
+  }, [checkApiHealth]);
 
   const onDecksLoaded = useCallback((records: DeckRecord[]) => {
     setDecks(records);
@@ -233,6 +250,15 @@ export function App() {
       <header className="topbar">
         <h1>MTG Deck Testing Lab</h1>
         <p>Rules-aware 2-player testing simulator for competitive deck validation</p>
+        <div className={`api-status api-status-${apiStatus}`} role="status">
+          <span aria-hidden="true" />
+          Backend {apiStatus === "checking" ? "checking..." : apiStatus}
+          {apiStatus === "offline" && (
+            <button type="button" onClick={() => void checkApiHealth()}>
+              Retry
+            </button>
+          )}
+        </div>
       </header>
 
       <section className="left-column">

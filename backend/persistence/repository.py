@@ -5,7 +5,16 @@ from typing import Any, Iterable
 
 from sqlmodel import Session, func, select
 
-from persistence.models import CardCache, DeckRecord, MatchRecord, StatsSnapshot, TournamentDeck, TournamentEvent
+from persistence.models import (
+    ActiveMatchRecord,
+    CardCache,
+    DeckRecord,
+    MatchRecord,
+    SimulationJobRecord,
+    StatsSnapshot,
+    TournamentDeck,
+    TournamentEvent,
+)
 
 
 class Repository:
@@ -88,6 +97,58 @@ class Repository:
 
     def list_matches(self) -> list[MatchRecord]:
         return list(self.session.exec(select(MatchRecord).order_by(MatchRecord.created_at.desc())).all())
+
+    def save_active_match(self, match_id: str, state_json: str, controller_json: str) -> ActiveMatchRecord:
+        row = self.session.get(ActiveMatchRecord, match_id)
+        if row is None:
+            row = ActiveMatchRecord(id=match_id, state_json=state_json, controller_json=controller_json)
+        else:
+            row.state_json = state_json
+            row.controller_json = controller_json
+        self.session.add(row)
+        self.session.commit()
+        self.session.refresh(row)
+        return row
+
+    def get_active_match(self, match_id: str) -> ActiveMatchRecord | None:
+        return self.session.get(ActiveMatchRecord, match_id)
+
+    def list_active_matches(self) -> list[ActiveMatchRecord]:
+        return list(self.session.exec(select(ActiveMatchRecord).order_by(ActiveMatchRecord.updated_at.desc())).all())
+
+    def delete_active_match(self, match_id: str) -> None:
+        row = self.session.get(ActiveMatchRecord, match_id)
+        if row is not None:
+            self.session.delete(row)
+            self.session.commit()
+
+    def save_simulation_job(self, payload: dict[str, Any]) -> SimulationJobRecord:
+        row = self.session.get(SimulationJobRecord, str(payload["job_id"]))
+        values = {
+            "status": str(payload.get("status", "queued")),
+            "completed_matches": int(payload.get("completed_matches", 0)),
+            "total_matches": int(payload.get("total_matches", 0)),
+            "started_at": float(payload.get("started_at", 0.0)),
+            "finished_at": payload.get("finished_at"),
+            "error": payload.get("error"),
+            "result_json": json.dumps(payload.get("result")) if payload.get("result") is not None else None,
+            "request_json": json.dumps(payload.get("request", {})),
+        }
+        if row is None:
+            row = SimulationJobRecord(id=str(payload["job_id"]), **values)
+        else:
+            for key, value in values.items():
+                setattr(row, key, value)
+        self.session.add(row)
+        self.session.commit()
+        self.session.refresh(row)
+        return row
+
+    def get_simulation_job(self, job_id: str) -> SimulationJobRecord | None:
+        return self.session.get(SimulationJobRecord, job_id)
+
+    def list_simulation_jobs(self) -> list[SimulationJobRecord]:
+        return list(self.session.exec(select(SimulationJobRecord).order_by(SimulationJobRecord.started_at.desc())).all())
 
     def save_snapshot(self, label: str, stats: dict[str, Any]) -> StatsSnapshot:
         record = StatsSnapshot(label=label, stats_json=json.dumps(stats))
