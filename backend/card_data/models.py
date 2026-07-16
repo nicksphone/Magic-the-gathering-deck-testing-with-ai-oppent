@@ -24,5 +24,6 @@ class CardModel(BaseModel):
     toughness: str | None = None
     keywords: list[str] = []
     legalities: dict[str, str] = {}
+    rulings: list[dict] = []
     image_uri: str | None = None
     card_faces: list[CardFace] = []

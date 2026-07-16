@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 
 import httpx
 
+from card_data.http_utils import get_with_backoff
+from card_data.fallback_cards import fallback_card_payload
 from card_data.placeholders import ensure_placeholder_image
 from persistence.repository import Repository
 
@@ -20,7 +22,7 @@ class ScryfallSyncService:
         self.repository = repository
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    def _normalize_payload(self, raw: dict[str, Any], image_uri: str | None) -> dict[str, Any]:
+    def _normalize_payload(self, raw: dict[str, Any], image_uri: str | None, rulings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
@@ -39,6 +41,7 @@ class ScryfallSyncService:
             "image_uri": image_uri,
             "legalities_json": json.dumps(raw.get("legalities", {})),
             "card_faces_json": json.dumps(self._normalize_faces(raw.get("card_faces") or [])),
+            "rulings_json": json.dumps(rulings or []),
         }
 
     def _normalize_faces(self, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -71,13 +74,19 @@ class ScryfallSyncService:
         if cached and not force and self._cached_image_available(cached.image_uri):
             return self._serialize_card(cached)
 
-        with httpx.Client(timeout=20) as client:
-            response = client.get(SCRYFALL_NAMED_URL, params={"fuzzy": name})
-            response.raise_for_status()
-            raw = response.json()
-            remote_image_uri = self._extract_remote_image_uri(raw)
-            image_uri = self._cache_image(raw["id"], remote_image_uri, client) if remote_image_uri else None
-        payload = self._normalize_payload(raw, image_uri=image_uri or remote_image_uri)
+        try:
+            with httpx.Client(timeout=20) as client:
+                response = get_with_backoff(client, SCRYFALL_NAMED_URL, params={"fuzzy": name}, timeout=20)
+                response.raise_for_status()
+                raw = response.json()
+                remote_image_uri = self._extract_remote_image_uri(raw)
+                image_uri = self._cache_image(raw["id"], remote_image_uri, client) if remote_image_uri else None
+                rulings = self._fetch_rulings(raw.get("rulings_uri"), client)
+        except httpx.HTTPError:
+            if cached is not None:
+                return self._serialize_card(cached)
+            raise
+        payload = self._normalize_payload(raw, image_uri=image_uri or remote_image_uri, rulings=rulings)
         card = self.repository.upsert_card(payload)
         return self._serialize_card(card)
 
@@ -110,6 +119,18 @@ class ScryfallSyncService:
         except Exception:
             return None
 
+    def _fetch_rulings(self, rulings_uri: str | None, client: httpx.Client) -> list[dict[str, Any]]:
+        if not rulings_uri:
+            return []
+        try:
+            response = get_with_backoff(client, rulings_uri, timeout=20)
+            response.raise_for_status()
+            payload = response.json()
+            return [item for item in payload.get("data", []) if isinstance(item, dict)]
+        except (httpx.HTTPError, ValueError, TypeError):
+            # Rulings are supplemental; a failed lookup must not block gameplay.
+            return []
+
     def _cached_image_available(self, image_uri: str | None) -> bool:
         if not image_uri:
             return False
@@ -121,17 +142,34 @@ class ScryfallSyncService:
         return (CACHE_DIR / image_name).exists()
 
     def _serialize_card(self, card) -> dict[str, Any]:
+        card_name = self._card_attr(card, "name", "")
+        fallback = fallback_card_payload(card_name)
         return {
-            "id": card.id,
-            "scryfall_id": card.scryfall_id,
-            "name": card.name,
-            "oracle_text": card.oracle_text,
-            "mana_cost": card.mana_cost,
-            "type_line": card.type_line,
-            "colors": card.colors.split(",") if card.colors else [],
-            "power": card.power,
-            "toughness": card.toughness,
-            "image_uri": card.image_uri,
-            "legalities": json.loads(card.legalities_json),
-            "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
+            "id": self._card_attr(card, "id"),
+            "scryfall_id": self._card_attr(card, "scryfall_id"),
+            "name": card_name,
+            "oracle_text": self._card_attr(card, "oracle_text") or (fallback or {}).get("oracle_text", ""),
+            "mana_cost": self._card_attr(card, "mana_cost") or (fallback or {}).get("mana_cost", ""),
+            "type_line": self._card_attr(card, "type_line") or (fallback or {}).get("type_line", ""),
+            "colors": self._parse_colors(self._card_attr(card, "colors")),
+            "power": self._card_attr(card, "power") or (fallback or {}).get("power"),
+            "toughness": self._card_attr(card, "toughness") or (fallback or {}).get("toughness"),
+            "image_uri": self._card_attr(card, "image_uri"),
+            "legalities": json.loads(self._card_attr(card, "legalities_json", "{}") or "{}"),
+            "card_faces": json.loads(self._card_attr(card, "card_faces_json", "[]") or "[]"),
+            "rulings": json.loads(self._card_attr(card, "rulings_json", "[]") or "[]"),
         }
+
+    def _card_attr(self, card, name: str, default=None):  # noqa: ANN001
+        if isinstance(card, dict):
+            return card.get(name, default)
+        return getattr(card, name, default)
+
+    def _parse_colors(self, colors: Any) -> list[str]:
+        if not colors:
+            return []
+        if isinstance(colors, list):
+            return [str(color) for color in colors if color]
+        if isinstance(colors, str):
+            return [part for part in colors.split(",") if part]
+        return [str(colors)]

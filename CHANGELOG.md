@@ -8,8 +8,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 
 - Validation:
-  - Backend suite now passes `423` tests with 32 deprecation warnings.
+  - Backend suite now passes `425` tests with 32 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
+
+- Card data reliability:
+  - Card cache rows now persist Scryfall rulings and retain them through card and deck serialization.
+  - Added `/cards/completeness` to report uncached cards, fallback-backed Oracle text, missing costs/type lines/legalities/rulings, face metadata gaps, and placeholder art.
+  - Added regression coverage for complete, fallback-backed, and unresolved card metadata.
 
 - Oracle coverage diagnostics:
   - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.

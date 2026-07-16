@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from ai.deck_analysis import analyze_deck, guess_archetype
+from card_data.display import select_display_image_uri
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
@@ -140,7 +141,8 @@ class DeckService:
             "colors": card.colors.split(",") if card.colors else [],
             "power": card.power,
             "toughness": card.toughness,
-            "image_uri": card.image_uri,
+            "image_uri": select_display_image_uri(card, name=card.name, type_line=card.type_line or ""),
             "legalities": json.loads(card.legalities_json),
             "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
+            "rulings": json.loads(getattr(card, "rulings_json", "[]") or "[]"),
         }

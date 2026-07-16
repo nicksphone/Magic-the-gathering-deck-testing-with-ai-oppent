@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import re
 from pathlib import Path
 
 CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
@@ -9,10 +11,11 @@ CACHE_ROUTE_PREFIX = "/card-images"
 def ensure_placeholder_image(name: str, type_line: str = "", token: bool = False) -> str:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     family = _family(type_line=type_line, token=token)
-    filename = f"placeholder-{family}.svg"
+    slug = _slug(name, type_line if token else type_line or family)
+    filename = f"placeholder-{family}-{slug}.svg"
     path = CACHE_DIR / filename
     if not path.exists():
-        path.write_text(_svg_for(family), encoding="utf-8")
+        path.write_text(_svg_for(family, name=name, type_line=type_line, token=token), encoding="utf-8")
     return f"{CACHE_ROUTE_PREFIX}/{filename}"
 
 
@@ -35,7 +38,14 @@ def _family(type_line: str, token: bool) -> str:
     return "card"
 
 
-def _svg_for(family: str) -> str:
+def _slug(*parts: str) -> str:
+    text = "-".join(part.strip().lower() for part in parts if part and part.strip())
+    text = re.sub(r"[^a-z0-9]+", "-", text)
+    text = re.sub(r"-{2,}", "-", text).strip("-")
+    return text[:80] or "card"
+
+
+def _svg_for(family: str, *, name: str, type_line: str, token: bool) -> str:
     palette = {
         "token": ("#1f2937", "#111827", "Token"),
         "land": ("#31403b", "#1f2a28", "Land"),
@@ -47,6 +57,8 @@ def _svg_for(family: str) -> str:
         "card": ("#25303d", "#18202a", "Card"),
     }
     c1, c2, label = palette.get(family, palette["card"])
+    title = html.escape((name or label).strip()[:48])
+    subtitle = html.escape((type_line or ("Token" if token else "")).strip()[:72])
     return (
         "<svg xmlns='http://www.w3.org/2000/svg' width='488' height='680' viewBox='0 0 488 680'>"
         "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
@@ -54,7 +66,8 @@ def _svg_for(family: str) -> str:
         "</linearGradient></defs>"
         "<rect width='488' height='680' fill='url(#g)'/>"
         "<rect x='20' y='20' width='448' height='640' rx='22' fill='none' stroke='#9ca3af' stroke-width='4'/>"
-        f"<text x='244' y='332' font-family='Georgia,serif' font-size='44' fill='#e5e7eb' text-anchor='middle'>{label}</text>"
-        "<text x='244' y='376' font-family='Georgia,serif' font-size='20' fill='#9ca3af' text-anchor='middle'>Local placeholder art</text>"
+        f"<text x='244' y='300' font-family='Georgia,serif' font-size='38' fill='#e5e7eb' text-anchor='middle'>{title}</text>"
+        f"<text x='244' y='350' font-family='Georgia,serif' font-size='22' fill='#d1d5db' text-anchor='middle'>{subtitle or label}</text>"
+        "<text x='244' y='396' font-family='Georgia,serif' font-size='18' fill='#9ca3af' text-anchor='middle'>Local placeholder art</text>"
         "</svg>"
     )

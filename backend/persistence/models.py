@@ -19,6 +19,7 @@ class CardCache(SQLModel, table=True):
     image_uri: Optional[str] = None
     legalities_json: str = "{}"
     card_faces_json: str = "[]"
+    rulings_json: str = "[]"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 

@@ -319,6 +319,12 @@ def suggest_card(name: str, repo: Repository = Depends(get_repo)) -> dict:
     return CardService(repo).suggest_name(name)
 
 
+@app.get("/cards/completeness")
+def card_completeness(names: list[str] = [], repo: Repository = Depends(get_repo)) -> dict:
+    """Report cached metadata and asset gaps for a deck's distinct card names."""
+    return CardService(repo).completeness_report(names)
+
+
 @app.get("/decks/builtin")
 def builtin_decks() -> list[str]:
     return sorted(BUILTIN_DECKS.keys())

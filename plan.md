@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `423 passed`, 32 deprecation warnings.
+- Backend: `425 passed`, 32 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -85,6 +85,7 @@ Release blockers identified by the audit:
 - Simple mana-cost activated abilities now have a legal-move and stack-resolution path; Recruitment Officer-style top-four creature searches are covered, while tap-plus-additional-cost, discard-cost, sacrifice-cost, and temporary-play permissions remain separate gaps.
 - Temporary play permissions are now explicit per-card state with expiry, snapshot serialization, legal cast/land actions from exile, and a reusable top-card exile/play effect. Light Up the Stage-style cards no longer lose their temporary play window in the rules engine.
 - Named-source attack triggers such as Goblin Guide now match the attacking permanent generically and queue a structured defending-top-card reveal effect; the event-to-stack path has focused regression coverage.
+- Card cache rows now persist Scryfall rulings alongside faces and expose a completeness report for Oracle text, costs, type lines, legalities, rulings, face metadata, and real versus placeholder art through `/cards/completeness`.
 
 ## Remaining Gaps
 
@@ -135,6 +136,7 @@ Release blockers identified by the audit:
 - The simulator should continue to separate genuine stalls from long but valid games in its reporting, although timeout classification now distinguishes long-active games from likely stalls and rules issues.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
+- Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
 
 ### UI and docs
 - The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable.
@@ -243,6 +245,9 @@ Exit criteria:
 Exit criteria:
 - Users can identify every card in a loaded deck, even when upstream services are offline.
 - Missing metadata is reported rather than silently producing weak AI behavior.
+
+Current implementation note:
+- `/cards/completeness` is available for distinct card names from an imported deck. Deck-analysis UI wiring and bulk completeness summaries remain in the release-hardening queue.
 
 ### 7. Complete the testing UI and release hardening
 1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.

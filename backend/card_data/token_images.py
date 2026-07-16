@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from card_data.http_utils import get_with_backoff
 from card_data.placeholders import ensure_placeholder_image
 from card_data.sync import CACHE_DIR, CACHE_ROUTE_PREFIX
 
@@ -25,7 +26,11 @@ def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
         _TOKEN_IMAGE_CACHE[key] = image
         return image
 
-    fallback = ensure_placeholder_image(name=name, type_line="Token Creature", token=True)
+    generic = CACHE_DIR / "generic-token-creature.svg"
+    if generic.exists():
+        fallback = f"{CACHE_ROUTE_PREFIX}/{generic.name}"
+    else:
+        fallback = ensure_placeholder_image(name=name, type_line="Token Creature", token=True)
     _TOKEN_IMAGE_CACHE[key] = fallback
     return fallback
 
@@ -45,7 +50,12 @@ def _search_scryfall_token_image(name: str, power: int, toughness: int) -> str |
     try:
         with httpx.Client(timeout=8) as client:
             for q in queries:
-                res = client.get(SCRYFALL_SEARCH_URL, params={"q": q, "order": "released", "dir": "desc"})
+                res = get_with_backoff(
+                    client,
+                    SCRYFALL_SEARCH_URL,
+                    params={"q": q, "order": "released", "dir": "desc"},
+                    timeout=8,
+                )
                 if res.status_code != 200:
                     continue
                 data = (res.json() or {}).get("data") or []
@@ -85,7 +95,7 @@ def _cache_remote_token_image(raw: dict[str, Any], remote_uri: str, client: http
     if target.exists():
         return f"{CACHE_ROUTE_PREFIX}/{target.name}"
     try:
-        res = client.get(remote_uri, timeout=12)
+        res = get_with_backoff(client, remote_uri, timeout=12)
         res.raise_for_status()
         target.write_bytes(res.content)
         return f"{CACHE_ROUTE_PREFIX}/{target.name}"
