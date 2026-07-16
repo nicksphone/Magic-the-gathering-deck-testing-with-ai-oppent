@@ -1,145 +1,263 @@
-# MTG Deck Testing Lab Completion Plan
+# MTG Deck Testing Lab Finish Plan
 
-This file describes the current state of the project and the work still required to finish it.
-It is written from the codebase as it exists now, not from older patch notes.
+This plan reflects the current codebase, the verified runtime checks, and the remaining work needed to finish the project.
 
-## Verified Current Features
+## Audit Status (2026-07-16)
 
-The following are implemented and currently supported by the repo:
+The project is a substantial, test-backed simulator, but it is not yet rules-complete or consistently capable of piloting arbitrary decks at seasoned-player level. The current implementation is best described as a deterministic rules-aware testing platform with heuristic Oracle interpretation and matchup-aware AI.
 
-- React + TypeScript frontend and FastAPI backend.
-- Local SQLite persistence with replaceable repository boundaries.
-- Deck import from pasted text and file upload.
-- Built-in decks and expansion top decks.
-- Card cache/sync flow with placeholder image fallback support.
-- Rules engine for turn structure, stack, combat, priority, mulligans, mana, state-based actions, and several layered/replacement interactions.
-- Targeted and mass artifact/enchantment removal via Oracle inference and reusable effect handlers.
-- Death replacement now applies consistently through destroy, sacrifice, combat cleanup, and state-based actions.
-- Death replacement now also recognizes the common `nontoken` and `another creature` Oracle variants.
-- Death-trigger collection now respects controller-scoped clauses like "a creature you control dies".
-- Additional-cost sacrifice now also respects exile-instead-of-dying replacement effects.
-- Loyalty abilities now recognize `-X`/`+X` planeswalker costs and carry the selected X value through legal-move generation, AI materialization, and resolution.
-- AI pilot support for human vs AI, AI vs AI, and autoplay diagnostics.
-- Control AI now distinguishes urgent interaction from stable-value turns so it does not over-pass into draw spell lines.
-- Modal and transform-style face selection now uses the face type line for better role-sensitive valuation.
-- Batch simulator with deterministic seeding, alternating play/draw order, job progress, first-divergence drilldown, and per-game result output.
-- Replay and anomaly tooling for divergence detection and debug runs, with more specific root-cause classification for common divergence patterns.
-- Card-play analytics now separate strategic main-phase passes from harmless combat-step passes in verbose logs.
-- Verbose replay traces now carry active-player and priority-player context for clearer drilldown.
-- Training exports now keep active-player and priority-player context for downstream AI tuning.
-- Training export with hands, actions, and board snapshots.
-- Partial cache rows now merge with fallback metadata so common cards do not lose oracle text during hydration.
-- Documentation refreshes that reflect the current implementation rather than only patch notes.
-- Density-aware battlefield scaling keeps crowded boards readable while preserving hover inspection.
-- Compact stack, mana-pool, and priority-stop panels improve scanability during long sessions.
-- Full backend test suite currently passes.
+Confirmed validation baseline:
 
-## Known Remaining Bugs and Gaps
+- Backend: `399 passed`, 2 deprecation warnings.
+- Frontend production build: passes.
+- Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
+- The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
 
-The project is functional, but the following remain open:
+Release blockers identified by the audit:
 
-- Long-tail Oracle coverage is still incomplete for unusual or older cards.
-- Replacement, prevention, and layer handling still rely on heuristics in edge cases.
-- Some remaining replacement cases still use text matching instead of a fully generic rules model.
-- Some trigger parsing is still text-driven rather than a full rules parser.
-- Additional-cost handling still does not model every uncommon replacement/prevention interaction.
-- Multi-modal, split, transform, and dynamic-value cards still need more robust AI handling, especially outside the face-type parsing cases already improved.
-- Imported deck analysis now uses `card_faces` for split and modal cards, but broader tactical planning for dynamic-value cards still needs more matchup coverage.
-- Board evaluation now reads the active face of modal/transform permanents, but broader tactical planning for dynamic-value cards still needs more matchup coverage.
-- Matchup profiles are now more specific for control, ramp, tempo, and token shells, but further tuning is still needed against long-run balance data.
-- Matchup profiles now affect move scoring directly, but broader long-run tuning is still needed against the full deck matrix.
-- Move scoring now shows matchup pressure in the AI layer, but the full deck matrix still needs more balance evidence.
-- Some low-impact X-spells now avoid trivial cast lines, but broader dynamic-value tuning still needs more matchup coverage.
-- A few X-cost loyalty abilities are now handled correctly, but broader dynamic-value tuning still needs more matchup coverage.
-- Matchup balance is still uneven for some builtin deck pairings, especially in long-run batch tests.
-- The simulator diagnostics need even clearer root-cause attribution across longer runs, even though pass-window summaries are now less noisy.
-- Stack, mana, and priority presentation are improved, but wider end-to-end testing may still expose layout pressure points that need refinement.
-- A few cache rows may still need broader canonicalization, but the blank-oracle-text failure mode is now covered by fallback merging.
-- README, changelog, graph exports, and plan files need to stay synchronized after future changes.
+- Oracle interpretation still relies on text heuristics rather than a structured ability model.
+- Master AI scores actions but does not yet consistently search multi-turn tactical lines.
+- Active matches and simulator jobs are process-memory state and are lost on backend restart.
+- The production frontend needs an explicit API base URL or reverse proxy; Vite's development proxy does not exist in a static production build.
+- Full-game integration coverage is smaller than isolated rules-handler coverage.
+- Card art and metadata remain dependent on cache completeness and upstream Scryfall availability.
 
-## Step-by-Step Plan To Finish
+## Verified Current State
 
-### 1. Close Rules-Engine Gaps
-1. Audit the remaining Oracle and mechanic gaps against real decks that already exist in the repo.
-2. Add explicit effect handlers for the most common missing patterns instead of broad fallback behavior.
-3. Strengthen replacement, prevention, layer, and continuous-effect ordering where replay drift still appears.
-4. Add regression tests for every newly covered mechanic and edge case.
-5. Re-run the full backend suite after each rules change.
+- React + TypeScript frontend builds successfully.
+- FastAPI backend tests pass.
+- Local SQLite persistence is working.
+- Rules engine covers turn structure, stack, combat, priority, mulligans, mana, state-based actions, triggers, replacement effects, prevention, continuous effects, and planeswalker loyalty resolution for the implemented scope.
+- Explicit `{C}` mana symbols are tracked separately from generic mana in payment, AI scoring, and analytics.
+- Generic "add one mana of any color" Oracle text now chooses a deterministic color from the controller's hand needs instead of picking an arbitrary color.
+- Mana payment previews now consume pool mana during simulation so a single mana cannot satisfy multiple parts of the same cost.
+- Common graveyard-to-battlefield reanimation text for creature cards is now supported in the oracle/effect pipeline.
+- Reanimation-style Oracle inference now targets creatures from any graveyard when the text supports it.
+- Battlefield-to-graveyard and battlefield-to-exile movement now respects card ownership for stolen permanents.
+- Common continuous PT-setting phrasing such as "become 1/1" is now parsed alongside explicit base power/toughness text.
+- Subject-specific base power/toughness setters now respect scoped Oracle text and deterministic battlefield order, and same-timestamp continuous/replacement sources now use battlefield position as the final tie-break.
+- Engine-tagged control spell scoring now initializes board-role context correctly, and the Tempo-vs-Blue Control head-to-head smoke path completes cleanly again.
+- Prowess-style noncreature-spell triggers now apply a temporary until-end-of-turn pump and clear at cleanup.
+- Magecraft-style cast-or-copy triggers now fire for copied instants and sorceries as well as original casts.
+- Additional-cost sacrifices now respect card ownership for stolen permanents.
+- Direct sacrifice resolution now also respects card ownership for stolen permanents, matching the additional-cost path.
+- Stack resolution now places instants and sorceries into their owner's graveyard, not the controller's graveyard.
+- Common "one or more" dies/discard trigger variants now match the event layer alongside the singular forms.
+- AI vs AI and head-to-head simulator paths run from the local repository layout.
+- Diagnostic scripts now bootstrap their import path correctly when run from `backend/`.
+- Diagnostic scripts refresh built-in and expansion deck corpora before simulation so they do not use stale local deck rows.
+- The deterministic regression matrix now selects representative decks across archetypes before filling remaining slots.
+- The overnight verbose round-robin diagnostics now use the same representative deck selection when capped.
+- The representative deck selector now accepts both ORM rows and script-local dicts so diagnostics stay consistent across code paths.
+- Restricted placeholder combat actions are filtered out of AI decision selection, which removes the repeated declare-attackers stall seen in simulator logs.
+- Regression gate summaries now classify long active games separately from likely stalls and rules-issue timeouts, which reduces false-positive failure noise.
+- Deck analysis now distinguishes actual split cards from other face-based imports, so combined mana costs are only used where they belong and primary-face costs are preserved for modal/adventure-style cards.
+- Deck parser imports now accept common `Mainboard`, `Maindeck`, `Sideboard`, and `SB:` section headers for pasted decklists.
+- Deck parser imports now also strip common set annotations like `[M11]` and `(XLN)` before lookup, which improves pasted decklist hydration.
+- Deck parser imports now accept `4x Card Name` multiplier notation and ignore common comment lines, which broadens pasted-list support.
+- Bounded regression gating completes successfully on a small deck sample.
+- The current bounded regression matrix on six representative decks completed with 0 timeouts, 0 determinism failures, and 0 anomaly hits.
+- Scryfall sync and token-art lookup now retry briefly on 429 responses instead of failing immediately.
+- Card sync now falls back to cached metadata if a retryable Scryfall lookup still fails.
+- Fallback card lookup now normalizes punctuation and spacing so common import-name variants can still resolve to cached metadata.
+- Fallback card lookup now also resolves double-faced import names by trying the front-face name, which improves Delver-style hydration.
+
+## Remaining Gaps
+
+### Rules coverage
+- Long-tail Oracle coverage is still incomplete for unusual older cards and fringe wordings.
+- Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model, even though replacement source selection now follows timestamp-like battlefield ordering.
+- Prevention and replacement now cover broader controller/target wording plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
+- Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
+- Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms are now covered.
+- Additional-cost handling still needs broader coverage across uncommon card patterns.
+- Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
+- Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.
+- Graveyard recursion now also resolves generic permanent-card recursion from a graveyard, which broadens coverage to lands and other permanent types.
+- Oracle target inspection now surfaces artifact and enchantment permanents for Disenchant-style removal, reducing generic fallback selection.
+- Oracle target inspection now also surfaces generic nonland permanents, broadening common Vindicate-style and tap/removal effects.
+- Oracle inference now also supports countering activated and triggered abilities, not just spells.
+- Interactive X-spells now fall back to the smallest positive legal X when a target is present, preventing zero-value retry loops.
+- Common fallback card data now covers additional archetype-defining cards so blank cached rows do not leave imported decks with no-op oracle text.
+- Type-based library search now supports artifact, enchantment, permanent, and other common tutor targets instead of only name-based fallback searches.
+- Type-based library search now also supports battlefield tutors, so search effects can move cards straight onto the battlefield instead of only into hand.
+- Battlefield-tutor search now respects count and mana-value limits, including Collected Company-style wording.
+- Death-trigger handling now also recognizes generic permanent-dies wording, not just creature-dies wording, which helps artifact and enchantment synergies fire from the same event path.
+- Legacy combat evasion keywords like `shadow`, `fear`, and `intimidate` now participate in blocking legality for older-card coverage.
+- More exotic control-changing death/exile cases still need wider corpus coverage, especially when cards are stolen and then moved between zones, but stack resolution now correctly uses card ownership for spell graveyard placement.
+- Mana-value heuristics for obscure split/alternative-cost imports are now narrowed to niche corpus verification, since split cards and other face-based imports no longer collapse to a one-size-fits-all cost string.
+
+### AI quality
+- The AI is much stronger, but it still needs deeper tactical play in complex board states.
+- Combat blocking now preserves mana creatures when better blocks exist, and still blocks with them when they are the only profitable defense.
+- Master difficulty now invokes the deeper strategic planner earlier in complex midgame boards for control, counter-heavy, midrange, ramp, and tempo shells.
+- Board-role planning now distinguishes stabilize, convert, race, control, defend, and normal states so multi-phase board evaluation is less generic.
+- Engine-heavy artifacts and enchantments now carry explicit tactical weight so trigger engines are not scored like blank permanents.
+- Matchup-aware scoring now gives ramp decks stronger early acceleration and control decks stronger stabilization lines when the board demands it.
+- Opening-hand evaluation now uses a broader hand-profile model, so ramp/control can keep real two-land action hands while aggro still rejects slow openers that lack pressure.
+- Attack selection now uses the same hand-profile and board-role context, which reduces hopeless chip attacks from conservative decks while preserving pressure lines for racing archetypes.
+- X-spells, modal cards, split cards, and dynamic-value cards still need broader matchup-aware scoring in rare edge cases, although X-value selection, modal face scoring, split/multi-mode selection, and board-role-aware mode scoring now consider board pressure, matchup pressure, and diminishing returns.
+- The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
+- Combo-lite matchups now have explicit proactive bias against control and counter-heavy shells, but the rest of the long-run tuning work remains.
+- More board-state training data is still needed before the strongest archetypes can be treated as stable baselines.
+
+### Simulation and diagnostics
+- The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.
+- Long-form replay drilldown can still be improved for faster root-cause attribution, although structured AI TRACE drift now distinguishes stack-target, mode-choice, and face-choice mismatches and anomaly clustering now splits out pass loops, X-value errors, and cost-payment failures. The API anomaly scan now counts the same main-phase pass loops and repeated X-value errors.
+- Replay comparison outputs now include a concise first-divergence excerpt so the exact divergent lines and nearby context are visible in batch and regression outputs.
+- Training exports now include a lightweight board-role hint for each AI decision, and the priors builder can consume those exports in addition to raw replay traces.
+- The simulator should continue to separate genuine stalls from long but valid games in its reporting, although timeout classification now distinguishes long-active games from likely stalls and rules issues.
+- Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
+- Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
+
+### UI and docs
+- The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable.
+- Missing art now falls back to name-specific local placeholders, which improves token and uncached-card readability.
+- Cached double-faced cards now also reuse face-level art when the root image is missing, which reduces blank Delver-style and transform-style displays.
+- Token creation now emits enter-the-battlefield events, which closes a common trigger gap for token-centric decks.
+- Token art fallback now prefers a generic token creature asset before the blank placeholder, which improves token readability even when upstream art is unavailable.
+- Enter-the-battlefield trigger matching now covers token creation and permanent-ETB wording under your control, which broadens common trigger coverage.
+- Enter-the-battlefield trigger matching now also covers artifact- and enchantment-specific ETB wording, which keeps noncreature engines on the same event path.
+- Enter-the-battlefield trigger matching now also covers combined artifact-or-enchantment wording, which broadens noncreature engine coverage further.
+- ETB matching now also recognizes the common another-permanent-under-your-control wording, which keeps token engines and permanent synergies on the same event path.
+- Sacrifice triggers now emit from normal and additional-cost sacrifices, which broadens aristocrats-style payoff coverage.
+- Sacrifice triggers now also cover artifact/enchantment wording and combined artifact-or-enchantment wording, which broadens noncreature sacrifice engines.
+- Discard triggers now emit from normal discard effects and additional-cost discards, which broadens wheel and discard-payoff coverage.
+- Combat-damage triggers now emit when attackers connect, which broadens combat-step payoff coverage.
+- Attack triggers now emit when creatures are declared as attackers, which broadens attack-step payoff coverage.
+- Block triggers now emit when creatures are assigned as blockers, which broadens block-step payoff coverage.
+- Action-bearing triggers now reuse the oracle parser as a fallback, which broadens support for create, destroy, tap, discard, and similar trigger text.
+- State-based actions now emit death/permanent-death events for lethal creatures and 0-loyalty planeswalkers, which keeps SBA-driven triggers in the same event path.
+- Board evaluation now rewards trigger-engine permanents, improving AI recognition of sacrifice, ETB, discard, and combat payoff engines.
+- Replay drift classification now recognizes attack, block, sacrifice, discard, ETB, death, and combat-damage log lines, which improves root-cause reports.
+- Land plays now emit battlefield-entry events, which enables landfall-style triggers from actual land drops.
+- Damage-prevention replacements now apply to creature-targeted damage as well as player-targeted damage, which broadens common fog/ward-style interactions.
+- Damage-prevention replacements now also catch "you or a permanent you control" wording, which broadens a common class of prevention effects.
+- Artifact- and enchantment-specific death triggers now share the same event path as creature and generic permanent death triggers.
+- Combined artifact-or-enchantment death triggers now share the same event path as the rest of the permanent-dies family.
+- README, changelog, plan, and graph exports should stay synchronized after future code changes.
+
+## Step-by-Step Finish Plan
+
+### 0. Fix runtime and deployment blockers
+1. Make the frontend API base URL explicit for development, LAN testing, and production builds.
+2. Add a health/connection indicator and actionable retry state to the frontend.
+3. Document the supported deployment modes: Vite development proxy, static frontend plus backend, and reverse-proxy deployment.
+4. Add an API smoke test that starts the backend, checks `/health`, loads built-in decks, and verifies card-image routing.
 
 Exit criteria:
-- No core gameplay path depends on silent fallback for a mechanic that already appears in test decks.
-- New rules behavior is backed by focused regression tests.
+- A production build does not silently load with a nonfunctional API.
+- LAN and local-host deployments have documented, tested configuration.
 
-### 2. Improve AI Decision Quality
-1. Expand AI evaluation for modal, split, transform, and variable-value spells.
-2. Improve mulligan decisions using curve, color access, and matchup context.
-3. Strengthen tactical play for control, ramp, tempo, tokens, and attrition board states.
-4. Add more deterministic head-to-head regressions so changes can be compared across releases.
-5. Use replay and training exports to tune decisions instead of hardcoding special-case logic.
-
-Exit criteria:
-- Built-in decks can be piloted credibly without obvious new-player errors.
-- Complex board states no longer cause repeated misplays for the same archetype.
-
-### 3. Expand Diagnostics and Regression Coverage
-1. Export richer per-game traces for hands, legal moves, chosen actions, board state, and outcomes.
-2. Surface first-divergence information more prominently in simulator output.
-3. Classify repeated anomalies by turn, action type, and rule category.
-4. Keep the long-run replay matrix as the main tool for finding regressions.
-5. Use the anomaly output to drive targeted fixes, then re-run the same matrix.
+### 1. Make match and simulator state durable
+1. Move active match records from process memory into a persistence-backed repository.
+2. Persist simulator job status, progress, errors, and result metadata.
+3. Make match and job identifiers safe across backend restarts and multiple workers.
+4. Preserve deterministic seeds and replay references for resumed or inspected jobs.
 
 Exit criteria:
-- A failed batch can be traced to a specific turn or action quickly.
-- Replay drift and anomaly patterns are visible without manual log scraping.
+- Restarting the backend does not silently destroy a saved match or completed simulator result.
+- The simulator can be monitored after a page refresh.
 
-### 4. Tune Balance and Deck Corpora
-1. Re-check builtin deck balance using the batch simulator after each meaningful rules or AI change.
-2. Keep adjusting existing builtin decks only with evidence from logs and matchup results.
-3. Expand the regression matrix to cover the most important archetype pairings already supported by the project.
-4. Keep imported card data and deck lists synchronized so tests reflect current oracle data.
-5. Avoid inventing cards or deck pieces that are not present in the cached data or deck files.
-
-Exit criteria:
-- No builtin deck pairing is winning at an obviously impossible rate in the current simulator.
-- Deck balance is supported by replay evidence rather than manual guesswork.
-
-### 5. Finish UI and Release Hardening
-1. Improve battlefield scaling so larger boards stay readable.
-2. Keep hover zoom and card inspection usable on desktop.
-3. Keep stack, mana, and priority presentation dense and readable under long-session testing.
-4. Keep README, changelog, and plan.md aligned with the implementation.
-5. Refresh graph exports and run backend/frontend verification before release checkpoints.
+### 2. Replace regex-only Oracle growth with structured abilities
+1. Define a card-ability intermediate representation for costs, choices, targets, modes, effects, conditions, and duration.
+2. Convert the highest-value mechanics in the current deck corpus first rather than attempting every historical card at once.
+3. Use the structured representation for legal targets, cast choices, stack objects, triggers, and AI card valuation.
+4. Keep text heuristics only as an explicitly logged fallback for unsupported cards.
+5. Add corpus-driven tests for modal, split, transform, adventure, X-cost, alternate-cost, additional-cost, and copied-spell behavior.
 
 Exit criteria:
-- Long-session play remains readable.
-- Docs and generated artifacts match the current codebase.
+- Mechanics present in the built-in deck corpus do not silently resolve through generic no-op or guessed behavior.
+- Unsupported Oracle text is visible in diagnostics instead of appearing to resolve successfully.
 
-## Execution Order
+### 3. Complete high-value rules fidelity
+1. Tighten continuous-effect layers, timestamps, dependency ordering, and characteristic-defining effects.
+2. Expand replacement/prevention ordering, can't-effect overrides, and multiple simultaneous replacements.
+3. Complete attachment and aura legality, control changes, ownership movement, and zone-change triggers.
+4. Add missing combat families such as banding, rampage, flanking, bushido, and landwalk where the corpus requires them.
+5. Add coverage for vehicles, sagas, battles, classes, day/night, dungeons, initiative, and other modern card structures.
+6. Validate simultaneous triggers, intervening-if conditions, optional choices, ordering choices, and “up to” choices.
 
-1. Rules-engine coverage.
-2. AI decision quality.
-3. Diagnostics and regression coverage.
-4. Balance and deck corpora.
-5. UI and release hardening.
+Exit criteria:
+- Common competitive mechanics are handled by explicit rules code.
+- Every newly supported interaction has a focused regression test and at least one full-game integration test.
+
+### 4. Raise AI from scoring to tactical planning
+1. Add bounded multi-action search for spell sequencing, combat, stack responses, and mana preservation.
+2. Search attack/block assignments using lethal, trade, crack-back, protection, and post-combat state evaluation.
+3. Improve hidden-information reasoning using known cards, revealed cards, deck composition, and opponent ranges.
+4. Add explicit plans for control, tempo, ramp, aggro, burn, tokens, aristocrats, reanimator, tribal, and combo-lite decks.
+5. Teach Master AI when to hold interaction, represent a response, spend removal, protect an engine, or preserve a finisher.
+6. Add automated sideboard plans and re-evaluate plans after games one and two.
+7. Tune weights from replay/training data and matchup samples instead of adding card-name-specific exceptions.
+
+Exit criteria:
+- AI does not repeatedly miss obvious land drops, lethal attacks, profitable blocks, available interaction, or high-value curve plays.
+- Complex positions are evaluated across at least the next meaningful decision sequence, not only the immediate action.
+
+### 5. Build a serious regression and balance matrix
+1. Run seeded best-of-three and best-of-nine samples across every built-in archetype pair.
+2. Add long-run deterministic replay checks with first-divergence output and nearby state context.
+3. Separate rules failures, AI stalls, legal long games, and expected deck-out losses.
+4. Track play/draw advantage, mulligan rates, average turns, resource use, card-activation rates, and matchup confidence intervals.
+5. Flag suspicious results such as 100% win rates, repeated no-action turns, unused mana with legal plays, and impossible zone states.
+6. Require anomaly explanations before accepting a regression run as healthy.
+
+Exit criteria:
+- Every representative deck pair completes without unexplained stalls.
+- Results are statistically meaningful enough to distinguish AI defects from matchup variance.
+
+### 6. Finish card data and asset reliability
+1. Add cache completeness reports for every imported deck, including Oracle, costs, type lines, faces, rulings, legalities, and images.
+2. Retry and cache Scryfall data without blocking gameplay when the network is unavailable.
+3. Resolve face-level art for double-faced, split, modal, and adventure cards.
+4. Add token metadata and edition-specific token art where available, with clearly labeled fallbacks.
+5. Surface unresolved or placeholder cards in deck analysis and simulator diagnostics.
+
+Exit criteria:
+- Users can identify every card in a loaded deck, even when upstream services are offline.
+- Missing metadata is reported rather than silently producing weak AI behavior.
+
+### 7. Complete the testing UI and release hardening
+1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.
+2. Add visible AI reasoning, action legality explanations, and response-window seat/controller context.
+3. Add frontend replay browsing, anomaly drilldown, and simulator progress after refresh.
+4. Add error boundaries, request timeouts, retry controls, and backend health reporting.
+5. Verify hover inspection, keyboard accessibility, mobile fallback behavior, and LAN access.
+6. Update README, changelog, plan, and generated analysis exports after every milestone.
+
+Exit criteria:
+- Long-session deck testing is understandable without reading raw backend logs.
+- The documentation matches the actual shipped behavior.
+
+## Priority Order
+
+Work in this order unless a production failure requires an earlier interruption:
+
+1. Runtime/API deployment and connection diagnostics.
+2. Durable matches and simulator jobs.
+3. Structured abilities for the current deck corpus.
+4. Continuous/replacement/combat rules fidelity.
+5. Tactical AI search and sideboarding.
+6. Large deterministic matchup and balance matrix.
+7. Card-data completeness and asset reporting.
+8. Frontend replay and release polish.
 
 ## Verification Gates
 
-After each phase:
-
-1. Run the relevant backend tests.
-2. Run the frontend build when UI files change.
-3. Run a representative simulation or replay check when rules or AI change.
-4. Refresh graph exports when code structure changes materially.
-5. Update README and changelog when user-visible behavior changes.
+A change is not done until all of the following are true:
+- Backend tests pass.
+- Frontend build passes.
+- Representative simulator runs complete without unexplained stalls.
+- AI vs AI can finish matches across representative decks.
+- Human vs AI can progress through legal response windows.
+- The README and plan match the codebase.
 
 ## Definition of Done
 
-The project is finished when all of the following are true:
-
-- Backend and frontend run successfully.
-- Full backend tests pass.
-- Main gameplay loops work without obvious broken pages or dead-end states.
-- AI can pilot the builtin archetypes credibly across common matchups.
-- The simulator can explain failures with useful per-game diagnostics.
-- The UI supports long-session deck testing without major readability issues.
-- Docs and planning files reflect the real current state of the project.
+The project is finished when:
+- The app loads and runs locally without broken pages.
+- Deck import, card cache, rules engine, AI, and simulator work together in normal use.
+- Common deck archetypes can be tested without manual intervention.
+- Remaining rules and AI gaps are niche edge cases rather than day-to-day blockers.
+- Documentation reflects the real shipped state.
