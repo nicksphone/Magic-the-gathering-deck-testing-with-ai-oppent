@@ -803,6 +803,16 @@ class AIAgent:
                         base -= 2
             elif mtype == "play_land":
                 base += 8
+            elif mtype == "cycle_card":
+                # Cycling is a card-selection action, not a spell cast. Keep
+                # it below a playable land/threat, but prefer it to passing
+                # when the card is low-impact or the hand needs filtering.
+                base += 2.0
+                card = state.cards.get(move.get("card_id"))
+                if card and "Land" in getattr(card, "types", []):
+                    base -= 2.0
+                if len(state.players[player_id].hand) <= 3:
+                    base += 1.5
             elif mtype == "tap_land_for_mana":
                 # Avoid floating mana loops: only tap proactively if it helps convert to a cast now.
                 if cast_moves:
@@ -2746,7 +2756,7 @@ class AIAgent:
         if getattr(state, "stack", []) or []:
             return chosen
 
-        meaningful = [m for m in legal_moves if m.get("type") in {"play_land", "cast_spell", "activate_loyalty", "attack"}]
+        meaningful = [m for m in legal_moves if m.get("type") in {"play_land", "cast_spell", "cycle_card", "activate_loyalty", "attack"}]
         if not meaningful:
             return chosen
 

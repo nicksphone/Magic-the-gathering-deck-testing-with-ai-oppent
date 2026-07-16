@@ -12,6 +12,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "deal_damage": handlers.deal_damage,
     "deal_damage_multi": handlers.deal_damage_multi,
     "draw_cards": handlers.draw_cards,
+    "cycle_draw": handlers.cycle_draw,
     "gain_life": handlers.gain_life,
     "lose_life": handlers.lose_life,
     "destroy_permanent": handlers.destroy_permanent,

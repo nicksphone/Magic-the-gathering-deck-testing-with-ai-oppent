@@ -4,6 +4,17 @@ This file tracks milestone-level changes. The root README stays focused on the c
 ## 2026-07-16
 
 - Rules coverage:
+  - Added a first-class `cycle_card` action for fixed-cost cycling from hand. Cycling now pays through the normal mana engine, discards to the owner's graveyard as a cost, resolves its draw through the stack, and emits the normal discard event path.
+  - Variable-cost cycling such as `Cycling {X}{1}{U}` remains explicitly unsupported until X selection and card-specific cycling triggers can be represented safely.
+
+- AI quality:
+  - Master and lower difficulty ranking now recognize cycling as a card-filtering action, while preferring land drops and meaningful spells when those options are available.
+
+- Validation:
+  - Added focused regression coverage for legal cycling moves and stack-timed cycling draws.
+  - Full backend suite passes `433` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
+
+- Rules coverage:
   - Named-source attack triggers now match the attacking permanent generically, including Goblin Guide-style defending-player top-card reveals.
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 

@@ -4,6 +4,7 @@ from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_o
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
+from rules_engine.cycling import cycling_cost
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
@@ -322,6 +323,31 @@ class RulesEngine:
                 player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
+
+        elif kind == "cycle_card":
+            cid = action.get("card_id")
+            if not cid or cid not in player.hand:
+                apply_state_based_actions(state)
+                return
+            card = state.cards[cid]
+            cycle_cost = cycling_cost(card.oracle_text)
+            if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name):
+                state.log.append(f"{player.name} cannot pay cycling cost for {card.name}.")
+                apply_state_based_actions(state)
+                return
+            player.hand.remove(cid)
+            player.graveyard.append(cid)
+            card.zone = Zone.GRAVEYARD
+            state.log.append(f"{player.name} cycles {card.name}.")
+            emit_event(state, "discard", {"card_id": cid, "controller": player_id})
+            add_to_stack(
+                state,
+                source_card_id=cid,
+                controller=player_id,
+                label=f"{card.name} cycling ability",
+                effect_key="cycle_draw",
+                payload={"amount": 1},
+            )
 
         elif kind == "attack":
             ids = action.get("attackers", [])

@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `431 passed`, 43 deprecation warnings.
+- Backend: `433 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -86,6 +86,7 @@ Release blockers identified by the audit:
 - Temporary play permissions are now explicit per-card state with expiry, snapshot serialization, legal cast/land actions from exile, and a reusable top-card exile/play effect. Light Up the Stage-style cards no longer lose their temporary play window in the rules engine.
 - Named-source attack triggers such as Goblin Guide now match the attacking permanent generically and queue a structured defending-top-card reveal effect; the event-to-stack path has focused regression coverage.
 - Card cache rows now persist Scryfall rulings alongside faces and expose a completeness report for Oracle text, costs, type lines, legalities, rulings, face metadata, and real versus placeholder art through `/cards/completeness`.
+- Fixed-cost cycling is now a first-class priority action: the engine pays the cycling cost, moves the card to its owner's graveyard, places the draw ability on the stack, and the AI can use cycling as a lower-priority hand-filtering line. Variable-cost cycling is intentionally still reported as unsupported.
 
 ## Remaining Gaps
 
@@ -96,7 +97,7 @@ Release blockers identified by the audit:
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
-- The current representative corpus still has concrete fallback cards in normal games; unusual modal, cycling, and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
+- The current representative corpus still has concrete fallback cards in normal games; variable-cost cycling, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
 - Additional-cost handling still needs broader coverage across uncommon card patterns.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
 - Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.
@@ -268,6 +269,11 @@ Current implementation note:
 Exit criteria:
 - Long-session deck testing is understandable without reading raw backend logs.
 - The documentation matches the actual shipped behavior.
+
+### Current next implementation slice
+1. Add generic cycle-trigger matching and fixed-cost cycling integration tests for discard replacements and draw replacements.
+2. Add explicit support for variable-cost cycling choices only after the choice model can validate X against available mana and card-specific trigger payloads.
+3. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
 
 ## Priority Order
 

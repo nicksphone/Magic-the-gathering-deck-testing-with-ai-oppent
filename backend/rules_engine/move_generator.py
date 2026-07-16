@@ -4,6 +4,7 @@ from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.continuous import has_keyword
 from rules_engine.costs import check_cost_option_available, collect_cost_options
+from rules_engine.cycling import cycling_cost
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
@@ -80,6 +81,16 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand):
         card = state.cards[cid]
+        cycle_cost = cycling_cost(card.oracle_text)
+        if cycle_cost and can_pay_with_pool_and_lands(state, player_id, cycle_cost, card_name=card.name):
+            moves.append(
+                {
+                    "type": "cycle_card",
+                    "card_id": cid,
+                    "card_name": card.name,
+                    "mana_cost": cycle_cost,
+                }
+            )
         max_land_plays = compute_max_land_plays_this_turn(state, player_id)
         if getattr(player, "last_land_play_turn", 0) == state.turn:
             used_land_plays = max(

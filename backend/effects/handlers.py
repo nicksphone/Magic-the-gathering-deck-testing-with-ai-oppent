@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 
-from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.colors import card_color_names
@@ -131,6 +131,11 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
         return
     draw_card(state, target_player, amount)
     state.log.append(f"{state.players[target_player].name} draws {amount}.")
+
+
+def cycle_draw(state: MatchState, controller: int, payload: dict) -> None:
+    """Resolve the draw portion of a fixed-cost cycling ability."""
+    draw_card(state, controller, int(payload.get("amount", 1) or 1))
 
 
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
