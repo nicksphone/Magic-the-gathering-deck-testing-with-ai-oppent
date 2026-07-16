@@ -27,6 +27,7 @@ It is designed for serious deck work:
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
 - Generic named self-counter triggers for common cast/combat/ETB payoff patterns
 - Resolution-time counted creature-type effects for tribal ETB payoffs
+- Structured top-card hand/exile/bottom choices with temporary play permissions
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support
 

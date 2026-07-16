@@ -38,6 +38,10 @@ ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})(?:\s*,\s*(?:\{[^{}]+\}|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+LOOK_TOP_CHOICE_RE = re.compile(
+    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?one(?: of them)? into your hand.*?one(?: of them)? on the bottom.*?one(?: of them)? into exile",
+    re.IGNORECASE,
+)
 LOOK_CREATURE_TO_HAND_RE = re.compile(
     r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?creature card with power\s+(\d+)\s+or less.*?put it into your hand",
     re.IGNORECASE,
@@ -126,6 +130,9 @@ def infer_effect_from_oracle(
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
         }
+    top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
+    if top_choice:
+        return "look_top_choose", {"top_n": _parse_count_token(top_choice.group(1)), "play_exiled_until": state.turn}
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
         return search_effect

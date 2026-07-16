@@ -662,6 +662,38 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
         state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
 
 
+def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
+    """Resolve a three-pile top-card choice using deterministic value ordering."""
+    player = state.players[controller]
+    top_n = max(1, int(payload.get("top_n", 3)))
+    top_slice = player.library[-top_n:]
+    if not top_slice:
+        return
+
+    def card_value(cid: str) -> tuple[int, str]:
+        return (mana_value(getattr(state.cards[cid], "mana_cost", "") or ""), state.cards[cid].name)
+
+    ordered = sorted(top_slice, key=card_value, reverse=True)
+    hand_card = ordered[0]
+    exile_card = ordered[1] if len(ordered) > 1 else None
+    player.library = [cid for cid in player.library if cid not in set(top_slice)]
+
+    state.cards[hand_card].zone = Zone.HAND
+    player.hand.append(hand_card)
+    if exile_card is not None:
+        player.exile.append(exile_card)
+        state.cards[exile_card].zone = Zone.EXILE
+        player.exile_play_until[exile_card] = int(payload.get("play_exiled_until", state.turn) or state.turn)
+    for cid in ordered[2:] if exile_card is not None else ordered[1:]:
+        state.cards[cid].zone = Zone.LIBRARY
+        player.library.insert(0, cid)
+    state.log.append(
+        f"{player.name} looks at the top {len(top_slice)} cards, puts {state.cards[hand_card].name} into hand"
+        + (f", exiles {state.cards[exile_card].name} with permission to play it" if exile_card else "")
+        + ", and puts the rest on the bottom of the library."
+    )
+
+
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     player = state.players[target_player]
