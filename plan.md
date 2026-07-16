@@ -67,6 +67,7 @@ Release blockers identified by the audit:
 - Active match snapshots are restored during backend startup, including controller configuration, decks, sideboards, AI archetypes, and match progress.
 - Simulator job status, progress, errors, and results now persist in SQLite and are restored after startup; interrupted queued/running jobs are marked failed with an explicit restart reason.
 - A structured `AbilitySpec`/`EffectSpec` boundary now carries source, cost, target hints, modes, choices, resolved effects, and unsupported-text fallback status into the rules engine.
+- Triggered-ability fallback resolution now uses the same structured ability boundary as spell and loyalty resolution.
 - Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
 - AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
 - Current six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels.

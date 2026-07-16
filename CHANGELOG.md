@@ -349,3 +349,4 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Revalidated the current branch with a 15-game representative matrix: zero determinism failures and no drift labels.
 - Expanded combat landwalk legality beyond the five basic types to cover nonbasic, snow, desert, wastes, and legendary landwalk variants.
 - Fixed the built-in deck API route's missing `BUILTIN_DECKS` import and added API smoke coverage for health, deck loading, and card images.
+- Routed triggered-ability fallback parsing through the structured ability boundary used by spell and loyalty resolution.
