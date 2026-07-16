@@ -12,6 +12,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Cycling draws now pass through draw-replacement effects, and discard triggers caused by cycling are placed above the cycling ability on the stack.
   - Added regression coverage for optional cycling triggers and discard-trigger ordering.
   - Added fixed and variable landcycling/basic-landcycling search actions with validated X values, hand destination, and post-search shuffling.
+  - Corrected Ramp fallback data for Cultivate and Migration Path, and expanded reusable search resolution for basic-land filtering, counts, shuffle instructions, and tapped battlefield placement.
 
 - Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.

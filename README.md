@@ -22,6 +22,7 @@ It is designed for serious deck work:
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
+- Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, and tapped battlefield placement
 - Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic

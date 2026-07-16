@@ -76,8 +76,8 @@ FALLBACK_CARD_DATA: dict[str, dict[str, Any]] = {
     # Ramp
     "arboreal grazer": {"mana_cost": "{G}", "type_line": "Creature", "oracle_text": "When Arboreal Grazer enters, you may put a land card from your hand onto the battlefield tapped.", "power": "0", "toughness": "3"},
     "growth spiral": {"mana_cost": "{G}{U}", "type_line": "Instant", "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield."},
-    "cultivate": {"mana_cost": "{2}{G}", "type_line": "Sorcery", "oracle_text": "Search your library for lands."},
-    "migration path": {"mana_cost": "{3}{G}", "type_line": "Sorcery", "oracle_text": "Search your library for lands."},
+    "cultivate": {"mana_cost": "{2}{G}", "type_line": "Sorcery", "oracle_text": "Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle."},
+    "migration path": {"mana_cost": "{3}{G}", "type_line": "Sorcery", "oracle_text": "Search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle."},
     "topiary stomper": {"mana_cost": "{2}{G}", "type_line": "Creature", "oracle_text": "Vigilance.", "power": "4", "toughness": "4"},
     "nissa, who shakes the world": {"mana_cost": "{3}{G}{G}", "type_line": "Legendary Planeswalker", "oracle_text": "Lands you control have '{T}: Add two mana of any one color.'\n+1: Put a +1/+1 counter on up to one target land you control. Untap it. It becomes a 0/0 Elemental creature with haste that's still a land.\n-3: You may put a green creature card from your hand onto the battlefield.", "loyalty": "5"},
     "ugin, the spirit dragon": {"mana_cost": "{8}", "type_line": "Legendary Planeswalker", "oracle_text": "+2: Deal 3 damage to target.", "loyalty": "7"},

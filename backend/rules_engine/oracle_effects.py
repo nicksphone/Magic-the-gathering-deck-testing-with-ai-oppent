@@ -125,6 +125,9 @@ def infer_effect_from_oracle(
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
         }
+    search_effect = _infer_search_effect(oracle, action_targets)
+    if search_effect is not None:
+        return search_effect
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
@@ -227,6 +230,52 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
         "max_creatures": max(1, max_creatures),
         "mv_max": max(0, mv_max),
     }
+
+
+def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    if "search your library for" not in oracle:
+        return None
+    contains = action_targets.get("search_contains")
+    count = action_targets.get("search_count")
+    mv_max = action_targets.get("search_mv_max")
+    if not contains:
+        if "basic land" in oracle:
+            contains = "basic_land"
+        elif "creature card" in oracle:
+            contains = "creature"
+        elif "artifact card" in oracle:
+            contains = "artifact"
+        elif "enchantment card" in oracle:
+            contains = "enchantment"
+        elif "planeswalker card" in oracle:
+            contains = "planeswalker"
+        elif "instant card" in oracle:
+            contains = "instant"
+        elif "sorcery card" in oracle:
+            contains = "sorcery"
+        elif "land card" in oracle or "lands" in oracle:
+            contains = "land"
+        elif "permanent card" in oracle:
+            contains = "permanent"
+    if count is None:
+        count_match = SEARCH_UP_TO_RE.search(oracle)
+        if count_match:
+            count = _parse_count_token(count_match.group(1))
+    if mv_max is None:
+        mv_match = SEARCH_MV_MAX_RE.search(oracle)
+        if mv_match:
+            mv_max = _parse_count_token(mv_match.group(1))
+    destination = "battlefield" if "onto the battlefield" in oracle else "hand"
+    payload: dict[str, Any] = {"contains": contains, "destination": destination}
+    if "onto the battlefield tapped" in oracle:
+        payload["tapped"] = True
+    if "shuffle" in oracle:
+        payload["shuffle"] = True
+    if count is not None:
+        payload["count"] = int(count)
+    if mv_max is not None:
+        payload["mv_max"] = int(mv_max)
+    return "search_library", payload
 
 
 def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -604,7 +653,7 @@ def _infer_clause_effect(
         mv_max = action_targets.get("search_mv_max")
         if not contains:
             if "basic land" in oracle:
-                contains = "island"
+                contains = "basic_land"
             elif "creature card" in oracle:
                 contains = "creature"
             elif "artifact card" in oracle:
@@ -631,6 +680,10 @@ def _infer_clause_effect(
                 mv_max = _parse_count_token(mv_match.group(1))
         destination = "battlefield" if "onto the battlefield" in oracle else "hand"
         payload: dict[str, Any] = {"contains": contains, "destination": destination}
+        if "onto the battlefield tapped" in oracle:
+            payload["tapped"] = True
+        if "shuffle" in oracle:
+            payload["shuffle"] = True
         if count is not None:
             payload["count"] = int(count)
         if mv_max is not None:

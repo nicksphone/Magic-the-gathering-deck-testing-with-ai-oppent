@@ -503,7 +503,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
         if needle == "basic_land" and "basic" in type_line_parts[0].split() and "land" in card_types:
             player.library.remove(cid)
-            _place_searched_card(state, controller, cid, destination)
+            _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
             found.append(card.name)
             if limit and len(found) >= limit:
                 break
@@ -512,7 +512,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             needle in subtypes or needle in type_line
         ):
             player.library.remove(cid)
-            _place_searched_card(state, controller, cid, destination)
+            _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
             found.append(card.name)
             if limit and len(found) >= limit:
                 break
@@ -525,14 +525,14 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         if needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land", "permanent"}:
             if needle == "permanent" and card_types.intersection({"artifact", "enchantment", "creature", "land", "planeswalker"}):
                 player.library.remove(cid)
-                _place_searched_card(state, controller, cid, destination)
+                _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
                 found.append(card.name)
                 if limit and len(found) >= limit:
                     break
                 continue
             if needle != "permanent" and needle.title() in {t.title() for t in card_types}:
                 player.library.remove(cid)
-                _place_searched_card(state, controller, cid, destination)
+                _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
                 found.append(card.name)
                 if limit and len(found) >= limit:
                     break
@@ -546,16 +546,26 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     if found:
         joined = ", ".join(found)
         state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s): {joined}.")
+    if payload.get("shuffle"):
+        state.rng.shuffle(player.library)
+        state.log.append(f"{player.name} shuffles their library.")
 
 
-def _place_searched_card(state: MatchState, controller: int, card_id: str, destination: str) -> None:
+def _place_searched_card(
+    state: MatchState,
+    controller: int,
+    card_id: str,
+    destination: str,
+    *,
+    tapped: bool = False,
+) -> None:
     card = state.cards[card_id]
     player = state.players[controller]
     if destination == "battlefield":
         player.battlefield.append(card_id)
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
-        card.tapped = False
+        card.tapped = tapped
         card.summoning_sick = "Creature" in card.types
         card.entered_turn = state.turn
         if "Creature" in card.types:
