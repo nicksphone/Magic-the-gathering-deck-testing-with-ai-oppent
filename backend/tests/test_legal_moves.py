@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from game_state.state import MatchFactory, Step
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def test_generates_basic_legal_moves() -> None:
@@ -214,3 +215,40 @@ def test_engine_rejects_play_land_when_player_is_not_active() -> None:
     engine.take_action(state, 2, {"type": "play_land", "card_id": cid})
     assert state.players[2].hand == before_hand
     assert cid not in state.players[2].battlefield
+
+
+def test_recruitment_officer_style_activated_ability_is_legal_and_resolves() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p1.battlefield = []
+    for _ in range(4):
+        cid = p1.library.pop()
+        p1.battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        state.cards[cid].types = ["Land"]
+        state.cards[cid].name = "Forest"
+    officer_id = p1.library.pop()
+    officer = state.cards[officer_id]
+    officer.zone = Zone.BATTLEFIELD
+    officer.types = ["Creature"]
+    officer.name = "Recruitment Officer"
+    officer.oracle_text = "{4}: Look at the top four cards of your library. You may reveal a creature card with power 2 or less from among them and put it into your hand."
+    p1.battlefield.append(officer_id)
+    top_id = p1.library[-1]
+    state.cards[top_id].types = ["Creature"]
+    state.cards[top_id].power = 2
+    state.cards[top_id].name = "Recruitable Creature"
+
+    moves = RulesEngine().legal_moves(state, 1)
+    ability_moves = [m for m in moves if m.get("type") == "activate_ability" and m.get("card_id") == officer_id]
+    assert len(ability_moves) == 1
+    RulesEngine().take_action(state, 1, ability_moves[0])
+    assert state.stack and state.stack[-1].effect_key == "topdeck_reveal_creature_to_hand"
+    resolve_top_of_stack(state)
+    assert top_id in p1.hand

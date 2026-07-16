@@ -45,6 +45,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "discard_cards": handlers.discard_cards,
     "topdeck_put_creatures_battlefield": handlers.topdeck_put_creatures_battlefield,
     "topdeck_put_permanents_battlefield": handlers.topdeck_put_permanents_battlefield,
+    "topdeck_reveal_creature_to_hand": handlers.topdeck_reveal_creature_to_hand,
     "noop": handlers.noop,
 }
 

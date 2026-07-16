@@ -829,8 +829,26 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
             player.library.insert(0, cid)
     state.log.append(f"{player.name} puts {len(chosen)} permanent(s) from the top of the library onto the battlefield.")
 
+
+def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    top_n = max(1, int(payload.get("top_n", 4)))
+    power_max = int(payload.get("power_max", 2))
+    top_slice = player.library[-top_n:]
+    eligible = [
+        cid for cid in top_slice
+        if "Creature" in state.cards[cid].types and int(state.cards[cid].power or 0) <= power_max
+    ]
+    chosen = eligible[0] if eligible else None
+    player.library = [cid for cid in player.library if cid not in set(top_slice)]
+    for cid in top_slice:
+        if cid == chosen:
+            state.cards[cid].zone = Zone.HAND
+            player.hand.append(cid)
+        else:
+            state.cards[cid].zone = Zone.LIBRARY
+            player.library.insert(0, cid)
     if chosen:
-        names = ", ".join(state.cards[cid].name for cid in chosen)
-        state.log.append(f"{player.name} puts {names} onto the battlefield from top of library.")
+        state.log.append(f"{player.name} reveals and puts {state.cards[chosen].name} into hand.")
     else:
-        state.log.append(f"{player.name} finds no eligible creature cards in top {top_n}.")
+        state.log.append(f"{player.name} reveals the top {len(top_slice)} cards and finds no qualifying creature.")

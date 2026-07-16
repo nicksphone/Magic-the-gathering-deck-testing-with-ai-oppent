@@ -79,6 +79,10 @@ def build_ability_spec(
     )
     if re.search(r"(?:^|\n)\s*[+-]\d+\s*:", oracle):
         static_only = True
+    if re.search(r"\{[^}]+\}(?:\{[^}]+\})*:\s*", oracle) and not any(
+        marker in oracle.lower() for marker in ("when ", "whenever ", "at the beginning")
+    ):
+        static_only = True
     used_fallback = effect_key == "noop" and bool(oracle) and not static_only
     return AbilitySpec(
         source_card_id=getattr(card, "id", None),

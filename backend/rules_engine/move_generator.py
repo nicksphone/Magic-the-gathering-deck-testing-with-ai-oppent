@@ -6,7 +6,7 @@ from rules_engine.continuous import has_keyword
 from rules_engine.costs import check_cost_option_available, collect_cost_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
-from rules_engine.oracle_effects import extract_loyalty_abilities
+from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timing
 
 
@@ -174,6 +174,34 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         "target_hints": hints,
                     }
                 )
+
+    # Simple non-mana activated abilities. Costs with tap symbols are exposed
+    # only when the source is untapped; sacrifice/additional-cost variants are
+    # left to their dedicated cost handlers until fully modeled.
+    for cid in player.battlefield:
+        card = state.cards[cid]
+        for ability in extract_activated_abilities(card):
+            cost = ability["mana_cost"]
+            if "SACRIFICE" in cost or "," in cost:
+                continue
+            if "{T}" in cost and card.tapped:
+                continue
+            payment_cost = cost.replace("{T}", "")
+            if payment_cost and not can_pay_with_pool_and_lands(state, player_id, payment_cost):
+                continue
+            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+            hints = build_cast_hints(state, proxy, player_id)
+            moves.append(
+                {
+                    "type": "activate_ability",
+                    "card_id": cid,
+                    "card_name": card.name,
+                    "ability_index": ability["index"],
+                    "ability_label": ability["label"],
+                    "mana_cost": cost,
+                    "target_hints": hints,
+                }
+            )
     # Equipment equip abilities (sorcery speed only).
     if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
         own_creatures = [cid for cid in player.battlefield if "Creature" in state.cards[cid].types]

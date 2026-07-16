@@ -813,6 +813,11 @@ class AIAgent:
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "block":
                 base += self._block_bias(state, move, player_id)
+            elif mtype == "activate_ability":
+                base += 2.5
+                label = str(move.get("ability_label", "")).lower()
+                if "look at the top" in label or "draw" in label or "search" in label:
+                    base += 4.0
             elif mtype == "pass_priority":
                 base += self._pass_bias(state, player_id)
                 if own_main_sorcery_window and castable_creature_moves:

@@ -8,7 +8,7 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.oracle_effects import extract_loyalty_abilities
+from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
@@ -316,6 +316,41 @@ class RulesEngine:
             attack_targets = action.get("attack_targets", {})
             combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {})
             state.attackers_declared = True
+
+        elif kind == "activate_ability":
+            cid = action.get("card_id")
+            if not cid or cid not in player.battlefield:
+                apply_state_based_actions(state)
+                return
+            abilities = extract_activated_abilities(state.cards[cid])
+            ability_index = int(action.get("ability_index", -1))
+            ability = next((item for item in abilities if item["index"] == ability_index), None)
+            if ability is None:
+                apply_state_based_actions(state)
+                return
+            cost = ability["mana_cost"]
+            if "{T}" in cost:
+                if state.cards[cid].tapped:
+                    apply_state_based_actions(state)
+                    return
+                state.cards[cid].tapped = True
+            payment_cost = cost.replace("{T}", "")
+            if payment_cost and not auto_pay_cost(state, player_id, payment_cost, card_name=state.cards[cid].name):
+                state.cards[cid].tapped = False if "{T}" in cost else state.cards[cid].tapped
+                state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
+                apply_state_based_actions(state)
+                return
+            action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
+            resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
+            add_to_stack(
+                state,
+                source_card_id=cid,
+                controller=player_id,
+                label=f"{state.cards[cid].name} ability",
+                effect_key=resolved.effect.key,
+                payload=resolved.effect.payload,
+            )
 
         elif kind == "activate_loyalty":
             if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):

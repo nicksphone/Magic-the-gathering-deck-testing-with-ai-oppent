@@ -9,7 +9,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for fallback counting and card-level attribution.
 
 - Validation:
-  - Backend suite now passes `418` tests.
+  - Backend suite now passes `419` tests.
   - Frontend production build passes after adding the unsupported-Oracle diagnostics panel.
   - Four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
 
@@ -22,6 +22,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Nissa-style land mana doubling, target-land animation, and green-creature deployment are now implemented through reusable mana and effect handlers.
   - Storm the Festival-style top-five permanent deployment and Shark Typhoon-style X/X flying Shark triggers now use reusable top-library and spell-cast effect handlers.
   - Three-deck deterministic replay smoke completed 3 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
+  - Simple mana-cost activated abilities now generate legal actions and resolve through the stack; added Recruitment Officer-style top-four creature search coverage.
 
 - AI runtime stability:
   - `_cast_bias` now initializes board-role context before evaluating engine-tagged control spells, which removes a head-to-head crash in the simulator path.

@@ -33,7 +33,12 @@ COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered abil
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
+ACTIVATED_ABILITY_RE = re.compile(r"(?m)(\{(?:[^{}]+)\}(?:\{(?:[^{}]+)\})*):\s*([^\n]+)")
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+LOOK_CREATURE_TO_HAND_RE = re.compile(
+    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?creature card with power\s+(\d+)\s+or less.*?put it into your hand",
+    re.IGNORECASE,
+)
 PUT_CREATURES_FROM_TOP_RE = re.compile(
     r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+creature cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
     re.IGNORECASE,
@@ -100,6 +105,12 @@ def infer_effect_from_oracle(
     topdeck_permanents = _infer_topdeck_permanent_put_effect(oracle, action_targets)
     if topdeck_permanents is not None:
         return topdeck_permanents
+    creature_to_hand = LOOK_CREATURE_TO_HAND_RE.search(oracle)
+    if creature_to_hand:
+        return "topdeck_reveal_creature_to_hand", {
+            "top_n": _parse_count_token(creature_to_hand.group(1)),
+            "power_max": int(creature_to_hand.group(2)),
+        }
 
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
@@ -162,6 +173,10 @@ def _looks_static_or_keyword_only(text: str) -> bool:
     # A planeswalker card's loyalty lines are not one cast-time effect. They
     # are parsed and resolved only when the player activates a loyalty action.
     if re.search(r"(?:^|\n)\s*[+-]\d+\s*:", t):
+        return True
+    if re.search(r"\{[^}]+\}(?:\{[^}]+\})*:\s*", t) and not any(
+        marker in t for marker in ("when ", "whenever ", "at the beginning")
+    ):
         return True
     action_verbs = [
         "draw", "destroy", "exile", "counter", "deals", "deal", "create", "return", "search",
@@ -376,6 +391,20 @@ def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
         else:
             delta = int(raw_delta)
             out.append({"delta": delta, "x_cost": False, "x_sign": 0, "text": text, "label": f"{delta:+d}: {text}"})
+    return out
+
+
+def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
+    """Extract simple mana-cost activated abilities from a card surface."""
+    out: list[dict[str, Any]] = []
+    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(card.oracle_text or "")):
+        cost = match.group(1).strip().upper()
+        text = match.group(2).strip()
+        # Mana abilities are handled by the mana source model and should not
+        # be duplicated as stack actions here.
+        if "add " in text.lower() and "target" not in text.lower():
+            continue
+        out.append({"index": index, "mana_cost": cost, "text": text, "label": f"{cost}: {text}"})
     return out
 
 
