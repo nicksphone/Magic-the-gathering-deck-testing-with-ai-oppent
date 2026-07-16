@@ -148,6 +148,20 @@ def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
     assert trigger.payload["target_player"] == 2
 
 
+def test_generic_controlled_creature_attack_trigger_still_matches() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+
+    source = _put_trigger_creature(state, 1, "Whenever a creature you control attacks, draw a card.")
+    attacker = _put_trigger_creature(state, 1, "")
+    emit_event(state, "attack_declared", {"card_id": attacker, "defending_player": 2})
+
+    assert any(item.source_card_id == source for item in state.stack)
+
+
 def test_prowess_style_noncreature_spell_trigger_grants_temporary_pump() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

@@ -468,7 +468,15 @@ def _matches_attack_trigger(state: MatchState, card, oracle: str, payload: dict[
     named_attack = re.search(r"whenever\s+(.+?)\s+attacks", oracle)
     if named_attack:
         named_source = re.sub(r"\s+\([^)]*\)", "", named_attack.group(1)).strip()
-        if named_source not in {"this creature", "a creature", "another creature", "one or more creatures", "you"}:
+        if named_source not in {
+            "this creature",
+            "a creature",
+            "another creature",
+            "a creature you control",
+            "another creature you control",
+            "one or more creatures",
+            "you",
+        }:
             return attacking_id == card.id and named_source == (getattr(card, "name", "") or "").lower()
     if "whenever this creature or another creature attacks" in oracle:
         return True
