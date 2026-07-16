@@ -4,6 +4,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 ## 2026-07-16
 
 - Rules coverage:
+  - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.
   - Additional cast and activated costs now share generic sacrifice eligibility for creatures, artifacts, enchantments, permanents, and artifact-or-creature requirements. The chosen permanent is moved through ownership-aware replacement handling before the ability resolves.
   - Cycling now emits a structured cycle event after the activation is on the stack. Generic and named-card cycling triggers are matched through the event layer, with the trigger ordered above the cycling draw ability.
   - Activated abilities now parse and pay common combined costs such as `{T}, Sacrifice a creature`, `{1}, Discard a card`, and life payments before putting the ability on the stack. Unsupported cost forms remain unavailable rather than partially paying.
@@ -22,6 +23,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added named cycling-trigger ordering coverage; focused cycling/event/legal-move tests pass `44` tests.
   - Added X-value and dynamic cycling-trigger coverage. Full backend suite passes `438` tests with 43 deprecation warnings; frontend production build and deterministic replay smoke remain green.
   - Added regression coverage for artifact-or-creature additional costs.
+  - Full backend suite passes `442` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
   - Added regression coverage for tap-plus-sacrifice activated costs.
   - Full backend suite passes `435` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
 

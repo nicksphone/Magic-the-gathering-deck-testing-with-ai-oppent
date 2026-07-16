@@ -70,16 +70,64 @@ def apply_permanent_damage_replacements(state, target_card_id: str, amount: int)
     return out
 
 
-def damage_cant_be_prevented(state, source_card_id: str | None = None, target_player: int | None = None, target_card_id: str | None = None) -> bool:
+def damage_cant_be_prevented(
+    state,
+    source_card_id: str | None = None,
+    target_player: int | None = None,
+    target_card_id: str | None = None,
+    combat: bool = False,
+) -> bool:
     source = state.cards[source_card_id] if source_card_id and source_card_id in state.cards else None
     for card, text in _battlefield_oracle_texts(state):
         if _matches_phrase(text, ("damage can't be prevented", "damage cannot be prevented")):
             return True
+        if combat and _matches_phrase(text, ("combat damage can't be prevented", "combat damage cannot be prevented")):
+            return True
+        if target_player == card.controller and _matches_phrase(
+            text,
+            (
+                "damage that would be dealt to you can't be prevented",
+                "damage that would be dealt to you cannot be prevented",
+                "damage dealt to you can't be prevented",
+                "damage dealt to you cannot be prevented",
+            ),
+        ):
+            return True
+        if target_player is not None and target_player != card.controller and _matches_phrase(
+            text,
+            (
+                "damage that would be dealt to your opponents can't be prevented",
+                "damage that would be dealt to your opponents cannot be prevented",
+            ),
+        ):
+            return True
+        if target_card_id and target_card_id in state.cards:
+            target = state.cards[target_card_id]
+            if target.controller == card.controller and _matches_phrase(
+                text,
+                (
+                    "damage that would be dealt to permanents you control can't be prevented",
+                    "damage that would be dealt to permanents you control cannot be prevented",
+                    "damage dealt to permanents you control can't be prevented",
+                    "damage dealt to permanents you control cannot be prevented",
+                ),
+            ):
+                return True
         if source and source.controller == card.controller and _matches_phrase(
             text,
             (
                 "damage that would be dealt by sources you control can't be prevented",
                 "damage that would be dealt by sources you control cannot be prevented",
+            ),
+        ):
+            return True
+        if source and source.id == card.id and _matches_phrase(
+            text,
+            (
+                "damage dealt by this creature can't be prevented",
+                "damage dealt by this creature cannot be prevented",
+                "damage dealt by this source can't be prevented",
+                "damage dealt by this source cannot be prevented",
             ),
         ):
             return True

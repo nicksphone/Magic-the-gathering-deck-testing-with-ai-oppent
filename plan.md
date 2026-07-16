@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `438 passed`, 43 deprecation warnings.
+- Backend: `442 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -95,7 +95,7 @@ Release blockers identified by the audit:
 ### Rules coverage
 - Long-tail Oracle coverage is still incomplete for unusual older cards and fringe wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model, even though replacement source selection now follows timestamp-like battlefield ordering.
-- Prevention and replacement now cover broader controller/target wording plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
+- Prevention and replacement now cover broader controller/target wording, combat-only and named-source “can't be prevented” scopes, plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms, cycling triggers, and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.

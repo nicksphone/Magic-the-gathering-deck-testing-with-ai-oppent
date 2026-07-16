@@ -424,6 +424,7 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         state,
         source_card_id=source_id,
         target_player=pid,
+        combat=True,
     )
     post, prevented = (amount, 0) if prevention_locked else consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
@@ -448,6 +449,7 @@ def _mark_creature_damage(
         state,
         source_card_id=source_id,
         target_card_id=card_id,
+        combat=True,
     )
     post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount)
     if prevented > 0:
