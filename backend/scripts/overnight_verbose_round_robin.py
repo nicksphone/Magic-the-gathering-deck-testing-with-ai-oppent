@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 import time
@@ -11,7 +15,10 @@ import re
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
+from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
+from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -25,6 +32,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--difficulty", type=str, default="master")
     p.add_argument("--max-ticks", type=int, default=6000)
     p.add_argument("--sources", type=str, default="builtin", help="comma list: builtin,user")
+    p.add_argument("--max-decks", type=int, default=0, help="Cap the selected deck pool after source filtering")
     p.add_argument("--output-dir", type=str, default="diagnostics")
     p.add_argument("--write-full-log-for-all-games", action="store_true")
     return p.parse_args()
@@ -52,6 +60,26 @@ def hand_snapshot(state, pid: int) -> list[str]:
     return names
 
 
+def battlefield_snapshot(state, pid: int) -> list[dict]:
+    """Keep round-robin traces compact while retaining tactical board state."""
+    out: list[dict] = []
+    for cid in state.players[pid].battlefield:
+        card = state.cards[cid]
+        out.append(
+            {
+                "id": cid,
+                "name": card.name,
+                "types": list(getattr(card, "types", []) or []),
+                "tapped": bool(getattr(card, "tapped", False)),
+                "power": getattr(card, "power", None),
+                "toughness": getattr(card, "toughness", None),
+                "loyalty": getattr(card, "loyalty", None),
+                "selected_face_index": getattr(card, "selected_face_index", None),
+            }
+        )
+    return sorted(out, key=lambda item: (item["name"], item["id"]))
+
+
 def run() -> int:
     args = parse_args()
     init_db()
@@ -69,6 +97,8 @@ def run() -> int:
 
     with Session(engine) as session:
         repo = Repository(session)
+        ensure_builtin_decks(repo)
+        ensure_expansion_top_decks(repo)
         analytics = AnalyticsService(repo)
         rows = repo.list_decks()
 
@@ -76,11 +106,17 @@ def run() -> int:
         selected = [r for r in rows if (r.source or "").strip().lower() in wanted]
         if len(selected) < 2:
             raise SystemExit(f"Need at least 2 decks from sources={sorted(wanted)}; found {len(selected)}")
+        if args.max_decks and args.max_decks > 0:
+            selected = select_representative_decks(selected, args.max_decks, guess_archetype_fn=guess_archetype)
 
         deck_pool: list[dict] = []
         for row in selected:
-            mainboard = json.loads(row.mainboard_json)
-            deck_pool.append({"id": row.id, "name": row.name, "mainboard": mainboard})
+            if isinstance(row, dict):
+                mainboard = row["mainboard"]
+                deck_pool.append({"id": row.get("id"), "name": row["name"], "mainboard": mainboard})
+            else:
+                mainboard = json.loads(row.mainboard_json)
+                deck_pool.append({"id": row.id, "name": row.name, "mainboard": mainboard})
 
         total_pairs = len(list(combinations(deck_pool, 2)))
         total_games = total_pairs * args.matches_per_pair
@@ -155,7 +191,14 @@ def run() -> int:
                             "active_player": getattr(state, "active_player", None),
                             "priority_player": getattr(state, "priority_player", None),
                             "hand": hand_snapshot(state, pid),
+                            "opp_hand": hand_snapshot(state, 1 if pid == 2 else 2),
+                            "battlefield": battlefield_snapshot(state, pid),
+                            "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),
                             "mana_pool": dict(state.players[pid].mana_pool),
+                            "graveyard_count": len(state.players[pid].graveyard),
+                            "opp_graveyard_count": len(state.players[1 if pid == 2 else 2].graveyard),
+                            "library_count": len(state.players[pid].library),
+                            "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
                             "legal_non_pass": legal_non_pass,
                             "legal_has_land": legal_has_land,
                             "action": compact_action(action),
@@ -170,8 +213,13 @@ def run() -> int:
                         _ = state.log[pre_len:]
                         ticks += 1
 
-                    if state.winner is None:
-                        pair_counts["timeouts"] += 1
+                    termination_status = classify_timeout_state(state.log, bool(state.winner is None))
+                    if termination_status != "resolved":
+                        pair_counts[termination_status] += 1
+                        if termination_status == "timeout_long_game":
+                            pair_counts["long_game_timeouts"] += 1
+                        else:
+                            pair_counts["timeouts"] += 1
                     if passed_with_options > 0:
                         pair_counts["passed_with_options"] += passed_with_options
                     if missed_land_windows > 0:
@@ -191,8 +239,10 @@ def run() -> int:
                         "turns": state.turn,
                         "ticks": ticks,
                         "timeouts": int(state.winner is None),
+                        "termination_status": termination_status,
                         "passed_with_options": passed_with_options,
                         "missed_land_windows": missed_land_windows,
+                        "stall_streaks": int(stalled_pass_streak >= 3),
                     }
 
                     has_anomaly = any(k in pair_counts for k in ["invalid_targets", "cost_failures", "additional_cost_failures", "repeated_error_bursts"]) and any(
@@ -226,6 +276,7 @@ def run() -> int:
                     "games": args.matches_per_pair,
                     "avg_turns": avg_turns,
                     "timeouts": int(pair_counts["timeouts"]),
+                    "long_game_timeouts": int(pair_counts["long_game_timeouts"]),
                     "invalid_targets": int(pair_counts["invalid_targets"]),
                     "cost_failures": int(pair_counts["cost_failures"]),
                     "additional_cost_failures": int(pair_counts["additional_cost_failures"]),
@@ -248,6 +299,7 @@ def run() -> int:
         "sources": sorted({x.strip().lower() for x in args.sources.split(",") if x.strip()}),
         "totals": {
             "timeouts": int(global_counts["timeouts"]),
+            "long_game_timeouts": int(global_counts["long_game_timeouts"]),
             "invalid_targets": int(global_counts["invalid_targets"]),
             "cost_failures": int(global_counts["cost_failures"]),
             "additional_cost_failures": int(global_counts["additional_cost_failures"]),
@@ -277,12 +329,6 @@ def run() -> int:
 
 
 def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
-    pats = [
-        ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
-        ("cannot_pay", re.compile(r"cannot pay", re.IGNORECASE)),
-        ("land_miss", re.compile(r"missed_land_windows", re.IGNORECASE)),
-        ("stall", re.compile(r"pass_priority", re.IGNORECASE)),
-    ]
     clusters: Counter = Counter()
     samples: dict[str, list[dict]] = {}
     if not anomaly_games_path.exists():
@@ -293,10 +339,7 @@ def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
             if not line.strip():
                 continue
             row = json.loads(line)
-            log_text = "\n".join(row.get("log", []) or [])
-            labels = [name for name, pat in pats if pat.search(log_text)]
-            if not labels:
-                labels = ["other"]
+            labels = _cluster_labels(row)
             key = "+".join(sorted(labels))
             clusters[key] += 1
             samples.setdefault(key, [])
@@ -315,6 +358,25 @@ def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
         "clusters": [{"label": k, "count": int(v), "samples": samples.get(k, [])} for k, v in clusters.most_common()],
     }
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _cluster_labels(row: dict) -> list[str]:
+    """Classify recorded anomalies from structured counters, not every pass log line."""
+    log_text = "\n".join(row.get("log", []) or [])
+    labels: list[str] = []
+    if re.search(r"invalid targets", log_text, re.IGNORECASE):
+        labels.append("invalid_targets")
+    if re.search(r"cannot pay|cannot satisfy chosen costs", log_text, re.IGNORECASE):
+        labels.append("cannot_pay")
+    if int(row.get("missed_land_windows", 0) or 0) > 0:
+        labels.append("land_miss")
+    if int(row.get("stall_streaks", 0) or 0) > 0:
+        labels.append("stall")
+    elif int(row.get("passed_with_options", 0) or 0) > 0:
+        labels.append("pass_with_legal_action")
+    if row.get("termination_status") == "timeout_long_game":
+        labels.append("long_game")
+    return labels or ["other"]
 
 
 if __name__ == "__main__":

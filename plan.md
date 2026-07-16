@@ -132,8 +132,10 @@ Release blockers identified by the audit:
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.
 - Long-form replay drilldown can still be improved for faster root-cause attribution, although structured AI TRACE drift now distinguishes stack-target, mode-choice, and face-choice mismatches and anomaly clustering now splits out pass loops, X-value errors, cost-payment failures, and unsupported Oracle fallbacks. The API anomaly scan now counts the same main-phase pass loops, repeated X-value errors, and card-level Oracle fallbacks.
 - Replay comparison outputs now include a concise first-divergence excerpt so the exact divergent lines and nearby context are visible in batch and regression outputs.
+- Overnight round-robin diagnostics now include the missing battlefield snapshot implementation and classify anomaly clusters from structured counters, so ordinary priority passes are not mislabeled as stalls; long games and pass-with-legal-action cases remain distinct.
 - Training exports now include a lightweight board-role hint for each AI decision, and the priors builder can consume those exports in addition to raw replay traces.
 - The simulator should continue to separate genuine stalls from long but valid games in its reporting, although timeout classification now distinguishes long-active games from likely stalls and rules issues.
+- A six-deck verbose round robin completed with no hard rules errors or missed-land windows; its prior generic `pass_priority` cluster output was corrected to two pass-with-legal-action cases and one legal long-game case.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.

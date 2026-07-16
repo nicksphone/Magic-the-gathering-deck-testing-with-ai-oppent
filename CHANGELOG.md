@@ -11,6 +11,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Backend suite now passes `425` tests with 32 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
 
+- Simulator diagnostics:
+  - Restored the missing battlefield snapshot helper in the overnight round-robin runner, allowing full verbose batches to execute.
+  - Reworked anomaly clustering to use structured counters and termination status instead of treating every priority pass as a stall.
+  - Six-deck diagnostics showed no invalid targets, cost failures, repeated error bursts, or missed land windows; a fresh three-deck run completed without anomalies.
+
 - Card data reliability:
   - Card cache rows now persist Scryfall rulings and retain them through card and deck serialization.
   - Added `/cards/completeness` to report uncached cards, fallback-backed Oracle text, missing costs/type lines/legalities/rulings, face metadata gaps, and placeholder art.
