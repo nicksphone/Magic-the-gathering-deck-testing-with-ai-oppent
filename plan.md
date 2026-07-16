@@ -77,6 +77,7 @@ Release blockers identified by the audit:
 - Analytics now counts unsupported Oracle fallbacks explicitly and attributes them to card names, with the same data rendered in the Testing Simulator UI.
 - The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
+- A one-game Blue Control vs Ramp audit completed without timeout and surfaced five actionable Oracle fallbacks: `Arboreal Grazer` (2), `Torrential Gearhulk` (2), and `Nissa, Who Shakes the World` (1). These are the next corpus targets; the result is diagnostic evidence, not a matchup-balance claim.
 
 ## Remaining Gaps
 
@@ -86,6 +87,7 @@ Release blockers identified by the audit:
 - Prevention and replacement now cover broader controller/target wording plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms and controller-scoped ETB/death clauses are now covered.
+- The current representative corpus still has concrete fallback cards in normal games, including Arboreal Grazer’s land-selection ETB, Torrential Gearhulk’s graveyard instant/sorcery recursion, and Nissa’s planeswalker/static interactions.
 - Additional-cost handling still needs broader coverage across uncommon card patterns.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
 - Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.

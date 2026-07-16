@@ -16,6 +16,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Rules correctness:
   - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now evaluated before broad Oracle prefix matches, preventing opponent-controlled events from incorrectly firing “under your control” abilities.
   - Added regression coverage for opponent-controlled ETB events and retained coverage for scoped death events.
+  - A completed Blue Control vs Ramp audit now reports card-level Oracle fallbacks; the next implementation targets are Arboreal Grazer, Torrential Gearhulk, and Nissa, Who Shakes the World.
 
 - AI runtime stability:
   - `_cast_bias` now initializes board-role context before evaluating engine-tagged control spells, which removes a head-to-head crash in the simulator path.
