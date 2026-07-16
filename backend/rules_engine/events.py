@@ -563,6 +563,7 @@ def _trigger_from_oracle(
             "return target",
             "add ",
             "counter target",
+            "cast target",
         )
     ):
         from rules_engine.ability_model import build_ability_spec

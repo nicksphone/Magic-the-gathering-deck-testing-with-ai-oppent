@@ -39,3 +39,28 @@ def test_ability_model_marks_unparsed_action_text_as_fallback() -> None:
 
     assert spec.effect.key == "noop"
     assert spec.used_fallback
+
+
+def test_planeswalker_static_and_loyalty_text_is_not_cast_time_fallback() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}],
+        [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}],
+    )
+    card = CardInstance(
+        id="nissa",
+        name="Nissa, Who Shakes the World",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Planeswalker"],
+        oracle_text=(
+            "Lands you control have '{T}: Add two mana of any one color.'\n"
+            "+1: Put a +1/+1 counter on up to one target land you control.\n"
+            "-3: You may put a green creature card from your hand onto the battlefield."
+        ),
+    )
+
+    spec = build_ability_spec(state, card, 1)
+
+    assert spec.effect.key == "noop"
+    assert not spec.used_fallback

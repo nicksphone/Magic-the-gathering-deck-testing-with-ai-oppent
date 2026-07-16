@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import re
 from typing import Any
 
 from game_state.state import CardInstance, MatchState
@@ -73,8 +74,11 @@ def build_ability_spec(
             "haste", "flying", "trample", "vigilance", "first strike", "double strike",
             "deathtouch", "lifelink", "menace", "reach", "ward", "hexproof", "indestructible",
             "can't be blocked", "can't attack", "can't block", "prowess",
+            "lands you control have", "add two mana of any one color",
         )
     )
+    if re.search(r"(?:^|\n)\s*[+-]\d+\s*:", oracle):
+        static_only = True
     used_fallback = effect_key == "noop" and bool(oracle) and not static_only
     return AbilitySpec(
         source_card_id=getattr(card, "id", None),

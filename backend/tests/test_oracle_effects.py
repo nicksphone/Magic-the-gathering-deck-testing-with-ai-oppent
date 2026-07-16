@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from game_state.state import CardInstance, MatchFactory, Zone
 from effects.registry import resolve_effect
+from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_effects import inspect_target_hints
 
@@ -76,6 +77,140 @@ def test_oracle_copy_ability_parsing() -> None:
     assert effect_key == "copy_ability"
     assert payload["target_stack_id"] == "stack-ability"
     assert payload["copy_kind"] == "activated ability"
+
+
+def test_oracle_counter_ability_parsing() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.stack.append(type("SI", (), {"id": "stack-ability"})())
+    card = CardInstance(
+        id="counter-ability",
+        name="Stifle",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Counter target activated ability.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "counter_ability"
+    assert payload["target_stack_id"] == "stack-ability"
+
+
+def test_oracle_target_hints_include_artifact_and_enchantment_targets() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="rem",
+        name="Disenchant",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Destroy target artifact or enchantment.",
+    )
+    state.cards["artifact"] = CardInstance(
+        id="artifact",
+        name="Lockstone",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact"],
+    )
+    state.cards["enchantment"] = CardInstance(
+        id="enchantment",
+        name="Curse",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+    )
+    state.players[2].battlefield.extend(["artifact", "enchantment"])
+
+    hints = inspect_target_hints(state, card, 1)
+
+    assert {entry["id"] for entry in hints.get("artifact_targets", [])} == {"artifact"}
+    assert {entry["id"] for entry in hints.get("enchantment_targets", [])} == {"enchantment"}
+    assert {entry["id"] for entry in hints.get("noncreature_permanent_targets", [])} == {"artifact", "enchantment"}
+
+
+def test_oracle_target_hints_include_nonland_permanent_targets() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="rem",
+        name="Vindicate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Destroy target nonland permanent.",
+    )
+    state.cards["artifact"] = CardInstance(
+        id="artifact",
+        name="Lockstone",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact"],
+    )
+    state.cards["enchantment"] = CardInstance(
+        id="enchantment",
+        name="Curse",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+    )
+    state.cards["land"] = CardInstance(
+        id="land",
+        name="Island",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Land"],
+    )
+    state.players[2].battlefield.extend(["artifact", "enchantment", "land"])
+
+    hints = inspect_target_hints(state, card, 1)
+
+    assert {entry["id"] for entry in hints.get("permanent_targets", [])} == {"artifact", "enchantment"}
+
+
+def test_nonland_permanent_removal_chooses_nonland_target() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="rem",
+        name="Vindicate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Destroy target nonland permanent.",
+    )
+    state.cards["artifact"] = CardInstance(
+        id="artifact",
+        name="Lockstone",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact"],
+    )
+    state.cards["land"] = CardInstance(
+        id="land",
+        name="Island",
+        owner=2,
+        controller=2,
+        zone=Zone.BATTLEFIELD,
+        types=["Land"],
+    )
+    state.players[2].battlefield.extend(["artifact", "land"])
+
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+
+    assert effect_key == "destroy_permanent"
+    assert payload["target_card_id"] == "artifact"
 
 
 def test_split_card_marks_split_hints() -> None:
@@ -166,6 +301,303 @@ def test_copy_ability_handler_replays_target_ability() -> None:
     )
     resolve_effect(state, 1, "copy_ability", {"target_stack_id": "stack-ability"})
     assert state.players[1].life == 11
+
+
+def test_counter_ability_handler_removes_stack_item() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.stack.append(type("SI", (), {"id": "stack-ability", "label": "Soul Warden trigger", "source_card_id": "warden-1", "effect_key": "gain_life", "payload": {"target_player": 1, "amount": 1}})())
+    state.cards["warden-1"] = CardInstance(
+        id="warden-1",
+        name="Soul Warden",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever another creature enters the battlefield, you gain 1 life.",
+    )
+    resolve_effect(state, 1, "counter_ability", {"target_stack_id": "stack-ability"})
+    assert state.stack == []
+
+
+def test_oracle_reanimate_parsing_and_resolution() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p1 = state.players[1]
+    creature = CardInstance(
+        id="reanimate-me",
+        name="Mulldrifter",
+        owner=1,
+        controller=1,
+        zone=Zone.GRAVEYARD,
+        types=["Creature"],
+        oracle_text="",
+        power=2,
+        toughness=2,
+    )
+    state.cards[creature.id] = creature
+    p1.graveyard.append(creature.id)
+    card = CardInstance(
+        id="reanimate-spell",
+        name="Reanimate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Return target creature card from your graveyard to the battlefield.",
+    )
+    hints = inspect_target_hints(state, card, 1)
+    assert creature.id in {entry["id"] for entry in hints.get("graveyard_creature_targets", [])}
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"target_card_id": creature.id})
+    assert effect_key == "return_creature_from_graveyard_to_battlefield"
+    assert payload["target_card_id"] == creature.id
+    resolve_effect(state, 1, effect_key, payload)
+    assert creature.id in p1.battlefield
+
+
+def test_oracle_any_color_mana_choice_uses_hand_needs() -> None:
+    deck = [
+        {"quantity": 1, "card_name": "Counterspell"},
+        {"quantity": 1, "card_name": "Lightning Bolt"},
+        {"quantity": 58, "card_name": "Island"},
+    ]
+    state = MatchFactory.from_decks(deck, deck)
+    card = CardInstance(
+        id="cobra",
+        name="Lotus Cobra",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a land enters the battlefield under your control, add one mana of any color.",
+    )
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "add_mana"
+    assert payload["amount"] == 1
+    assert payload["color"] == "U"
+    resolve_effect(state, 1, effect_key, payload)
+    assert state.players[1].mana_pool["U"] == 1
+
+
+def test_oracle_reanimate_can_target_opponent_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p2 = state.players[2]
+    creature = CardInstance(
+        id="enemy-reanimate-me",
+        name="Mulldrifter",
+        owner=2,
+        controller=2,
+        zone=Zone.GRAVEYARD,
+        types=["Creature"],
+        oracle_text="",
+        power=2,
+        toughness=2,
+    )
+    state.cards[creature.id] = creature
+    p2.graveyard.append(creature.id)
+    card = CardInstance(
+        id="reanimate-spell-2",
+        name="Reanimate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Return target creature card from a graveyard to the battlefield under your control.",
+    )
+    hints = inspect_target_hints(state, card, 1)
+    assert creature.id in {entry["id"] for entry in hints.get("graveyard_creature_targets", [])}
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"target_card_id": creature.id})
+    assert effect_key == "return_creature_from_graveyard_to_battlefield"
+    resolve_effect(state, 1, effect_key, payload)
+    assert creature.id in state.players[1].battlefield
+    assert creature.id not in p2.graveyard
+    assert state.cards[creature.id].controller == 1
+    assert state.cards[creature.id].owner == 2
+
+
+def test_oracle_can_return_graveyard_artifact_or_enchantment() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p2 = state.players[2]
+    artifact = CardInstance(
+        id="enemy-artifact",
+        name="Lockstone",
+        owner=2,
+        controller=2,
+        zone=Zone.GRAVEYARD,
+        types=["Artifact"],
+        oracle_text="",
+    )
+    enchantment = CardInstance(
+        id="enemy-enchantment",
+        name="Curse",
+        owner=2,
+        controller=2,
+        zone=Zone.GRAVEYARD,
+        types=["Enchantment"],
+        oracle_text="",
+    )
+    state.cards[artifact.id] = artifact
+    state.cards[enchantment.id] = enchantment
+    p2.graveyard.extend([artifact.id, enchantment.id])
+    card = CardInstance(
+        id="vaults",
+        name="Open the Vaults",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Return target artifact or enchantment card from a graveyard to the battlefield.",
+    )
+
+    hints = inspect_target_hints(state, card, 1)
+    assert {entry["id"] for entry in hints.get("graveyard_permanent_targets", [])} == {"enemy-artifact", "enemy-enchantment"}
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"target_card_id": artifact.id})
+    assert effect_key == "return_permanent_from_graveyard_to_battlefield"
+    resolve_effect(state, 1, effect_key, payload)
+    assert artifact.id in state.players[1].battlefield
+    assert artifact.id not in p2.graveyard
+    assert state.cards[artifact.id].controller == 1
+
+
+def test_oracle_can_return_generic_permanent_from_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    p2 = state.players[2]
+    land = CardInstance(
+        id="enemy-land",
+        name="Tropical Island",
+        owner=2,
+        controller=2,
+        zone=Zone.GRAVEYARD,
+        types=["Land"],
+        oracle_text="{T}: Add {G} or {U}.",
+    )
+    state.cards[land.id] = land
+    p2.graveyard.append(land.id)
+    card = CardInstance(
+        id="revival",
+        name="Revival of the Lost",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Return target permanent card from a graveyard to the battlefield under your control.",
+    )
+
+    hints = inspect_target_hints(state, card, 1)
+    assert {entry["id"] for entry in hints.get("graveyard_permanent_targets", [])} == {"enemy-land"}
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"target_card_id": land.id})
+    assert effect_key == "return_permanent_from_graveyard_to_battlefield"
+    resolve_effect(state, 1, effect_key, payload)
+    assert land.id in state.players[1].battlefield
+    assert land.id not in p2.graveyard
+    assert state.cards[land.id].controller == 1
+
+
+def test_oracle_search_library_for_artifact_card_uses_type_based_filtering() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    artifact_id = "artifact-library"
+    artifact = CardInstance(
+        id=artifact_id,
+        name="Sol Ring",
+        owner=1,
+        controller=1,
+        zone=Zone.LIBRARY,
+        types=["Artifact"],
+        oracle_text="",
+    )
+    state.cards[artifact.id] = artifact
+    state.players[1].library.append(artifact.id)
+    card = CardInstance(
+        id="tutor",
+        name="Fabricate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Search your library for an artifact card, reveal it, put it into your hand, then shuffle.",
+    )
+
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "search_library"
+    assert payload["contains"] == "artifact"
+    resolve_effect(state, 1, effect_key, payload)
+    assert artifact.id in state.players[1].hand
+    assert artifact.id not in state.players[1].library
+
+
+def test_oracle_search_library_can_put_creature_onto_battlefield() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    creature_id = "creature-library"
+    creature = CardInstance(
+        id=creature_id,
+        name="Elvish Mystic",
+        owner=1,
+        controller=1,
+        zone=Zone.LIBRARY,
+        types=["Creature"],
+        oracle_text="",
+    )
+    state.cards[creature.id] = creature
+    state.players[1].library.append(creature.id)
+    card = CardInstance(
+        id="tutor-battlefield",
+        name="Collected Company",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Search your library for up to two creature cards with mana value 3 or less, put them onto the battlefield, then shuffle your library.",
+    )
+
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={"search_contains": "creature"})
+    assert effect_key == "search_library"
+    assert payload["destination"] == "battlefield"
+    resolve_effect(state, 1, effect_key, payload)
+    assert creature.id in state.players[1].battlefield
+    assert creature.id not in state.players[1].library
+
+
+def test_oracle_search_library_honors_count_and_mana_value_on_battlefield_tutors() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    player = state.players[1]
+    player.library = []
+
+    low_a = CardInstance(id="low-a", name="Llanowar Elves", owner=1, controller=1, zone=Zone.LIBRARY, types=["Creature"], mana_cost="{G}")
+    low_b = CardInstance(id="low-b", name="Elvish Mystic", owner=1, controller=1, zone=Zone.LIBRARY, types=["Creature"], mana_cost="{G}")
+    high = CardInstance(id="high", name="Steel Hellkite", owner=1, controller=1, zone=Zone.LIBRARY, types=["Creature"], mana_cost="{6}")
+    state.cards[low_a.id] = low_a
+    state.cards[low_b.id] = low_b
+    state.cards[high.id] = high
+    player.library.extend([low_a.id, high.id, low_b.id])
+
+    card = CardInstance(
+        id="tutor-battlefield",
+        name="Natural Order Variant",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Search your library for up to two creature cards with mana value 1 or less, put them onto the battlefield, then shuffle.",
+    )
+
+    effect_key, payload = infer_effect_from_oracle(state, card, 1)
+    assert effect_key == "search_library"
+    assert payload["destination"] == "battlefield"
+    assert payload["count"] == 2
+    assert payload["mv_max"] == 1
+
+    resolve_effect(state, 1, effect_key, payload)
+    assert low_a.id in player.battlefield
+    assert low_b.id in player.battlefield
+    assert high.id in player.library
+    assert low_a.id not in player.library
+    assert low_b.id not in player.library
 
 
 def test_unknown_oracle_text_falls_back_to_noop() -> None:
@@ -462,3 +894,64 @@ def test_topdeck_creature_deploy_effect_puts_eligible_creatures_onto_battlefield
     assert "Elf 2" in names
     assert "Elf 3" in names
     assert "Big 5" not in names
+
+
+def test_arboreal_grazer_style_land_from_hand_enters_tapped_without_land_play() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    land_id = state.players[1].hand[0]
+    state.cards[land_id].name = "Forest"
+    state.cards[land_id].types = ["Land"]
+    state.cards[land_id].oracle_text = "{T}: Add {G}."
+    grazer = CardInstance(
+        id="grazer",
+        name="Arboreal Grazer",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="When Arboreal Grazer enters the battlefield, you may put a land card from your hand onto the battlefield tapped.",
+    )
+    state.cards[grazer.id] = grazer
+    effect_key, payload = infer_effect_from_oracle(state, grazer, 1)
+
+    assert effect_key == "put_land_from_hand"
+    resolve_effect(state, 1, effect_key, payload)
+    assert land_id in state.players[1].battlefield
+    assert land_id not in state.players[1].hand
+    assert state.cards[land_id].tapped
+
+
+def test_torrential_gearhulk_style_casts_target_instant_from_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    spell = CardInstance(
+        id="grave-spell",
+        name="Shock",
+        owner=1,
+        controller=1,
+        zone=Zone.GRAVEYARD,
+        types=["Instant"],
+        oracle_text="Shock deals 2 damage to any target.",
+    )
+    state.cards[spell.id] = spell
+    state.players[1].graveyard.append(spell.id)
+    source = CardInstance(
+        id="gearhulk",
+        name="Torrential Gearhulk",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact", "Creature"],
+        oracle_text="When Torrential Gearhulk enters the battlefield, you may cast target instant card from your graveyard without paying its mana cost.",
+    )
+    state.cards[source.id] = source
+    effect_key, payload = infer_effect_from_oracle(state, source, 1)
+
+    assert effect_key == "cast_from_graveyard"
+    assert payload["target_card_id"] == spell.id
+    resolve_effect(state, 1, effect_key, payload)
+    assert state.stack and state.stack[-1].source_card_id == spell.id
+    assert spell.id not in state.players[1].graveyard
+    resolve_top_of_stack(state)
+    assert spell.id in state.players[1].graveyard

@@ -594,6 +594,41 @@ def test_controller_scoped_etb_trigger_does_not_fire_for_opponent_creature() -> 
     assert not any(item.controller == 1 for item in state.stack)
 
 
+def test_gearhulk_etb_trigger_uses_graveyard_spell_effect() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    source = CardInstance(
+        id="gearhulk",
+        name="Torrential Gearhulk",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Artifact", "Creature"],
+        oracle_text="When Torrential Gearhulk enters the battlefield, you may cast target instant card from your graveyard without paying its mana cost.",
+    )
+    state.cards[source.id] = source
+    state.players[1].battlefield = [source.id]
+    spell = CardInstance(
+        id="grave-spell",
+        name="Opt",
+        owner=1,
+        controller=1,
+        zone=Zone.GRAVEYARD,
+        types=["Instant"],
+        oracle_text="Draw a card.",
+    )
+    state.cards[spell.id] = spell
+    state.players[1].graveyard = [spell.id]
+
+    emit_event(state, "enters_battlefield", {"card_id": source.id, "controller": 1})
+
+    assert len(state.stack) == 1
+    assert state.stack[0].effect_key == "cast_from_graveyard"
+
+
 def test_create_token_emits_enters_battlefield_for_permanent_etb_triggers() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

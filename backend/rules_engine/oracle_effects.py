@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from game_state.state import CardInstance, MatchState
+from rules_engine.mana import choose_mana_color_for_player
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -26,6 +27,8 @@ CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOT
 CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
+SEARCH_UP_TO_RE = re.compile(r"search your library for up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
+SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
 COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
@@ -37,6 +40,14 @@ PUT_CREATURES_FROM_TOP_RE = re.compile(
 )
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
+LAND_FROM_HAND_RE = re.compile(
+    r"put (?:a|one) land card from your hand onto the battlefield tapped",
+    re.IGNORECASE,
+)
+CAST_INSTANT_FROM_GRAVEYARD_RE = re.compile(
+    r"cast target (instant|sorcery) card from your graveyard without paying its mana cost",
+    re.IGNORECASE,
+)
 
 
 def infer_effect_from_oracle(
@@ -64,6 +75,9 @@ def infer_effect_from_oracle(
     if "counter target spell" in oracle and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         return "counter_spell", {"target_stack_id": target_stack_id}
+    if ("counter target activated ability" in oracle or "counter target triggered ability" in oracle) and state.stack:
+        target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
+        return "counter_ability", {"target_stack_id": target_stack_id}
     copy_match = COPY_STACK_RE.search(oracle)
     if copy_match and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
@@ -125,6 +139,10 @@ def _looks_static_or_keyword_only(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t:
         return True
+    # A planeswalker card's loyalty lines are not one cast-time effect. They
+    # are parsed and resolved only when the player activates a loyalty action.
+    if re.search(r"(?:^|\n)\s*[+-]\d+\s*:", t):
+        return True
     action_verbs = [
         "draw", "destroy", "exile", "counter", "deals", "deal", "create", "return", "search",
         "sacrifice", "tap target", "untap", "gain", "lose", "discard", "mill", "put ",
@@ -138,7 +156,7 @@ def _looks_static_or_keyword_only(text: str) -> bool:
         "haste", "flying", "trample", "vigilance", "first strike", "double strike",
         "deathtouch", "lifelink", "menace", "reach", "ward", "hexproof",
         "can't be blocked", "cannot be blocked", "can't attack", "can't block",
-        "prowess",
+        "prowess", "lands you control have", "add two mana of any one color",
     ]
     return any(m in t for m in static_markers)
 
@@ -166,6 +184,12 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
     oracle = (card.oracle_text or "").lower()
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
+    graveyard_creatures = [
+        {"id": cid, "name": state.cards[cid].name, "owner": state.cards[cid].owner, "controller": state.cards[cid].controller}
+        for pid in state.players
+        for cid in state.players[pid].graveyard
+        if cid in state.cards and "Creature" in state.cards[cid].types
+    ]
     faces = list(getattr(card, "card_faces", []) or [])
     split_match = SPLIT_NAME_RE.match((card.name or "").strip())
     if split_match:
@@ -191,13 +215,69 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
     if up_to_match:
         hints["up_to_target_count"] = int(up_to_match.group(1))
 
-    if "counter target spell" in oracle or COPY_STACK_RE.search(oracle):
+    if "counter target spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):
         hints["stack_targets"] = [{"id": x.id, "label": x.label} for x in state.stack]
     if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
             if "Creature" in state.cards[cid].types
+        ]
+    if "target permanent" in oracle or "nonland permanent" in oracle:
+        hints["permanent_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[opponent].battlefield
+            if "Land" not in state.cards[cid].types
+        ]
+    if "artifact" in oracle:
+        hints["artifact_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[opponent].battlefield
+            if "Artifact" in state.cards[cid].types
+        ]
+    if "enchantment" in oracle:
+        hints["enchantment_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[opponent].battlefield
+            if "Enchantment" in state.cards[cid].types
+        ]
+    if "artifact" in oracle and "enchantment" in oracle:
+        hints["noncreature_permanent_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[opponent].battlefield
+            if ("Artifact" in state.cards[cid].types or "Enchantment" in state.cards[cid].types)
+        ]
+    if "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
+        hints["graveyard_creature_targets"] = graveyard_creatures
+        graveyard_permanents = [
+            {"id": cid, "name": state.cards[cid].name}
+            for pid in state.players
+            for cid in state.players[pid].graveyard
+            if any(t in {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"} for t in state.cards[cid].types)
+        ]
+        graveyard_artifacts = [
+            {"id": cid, "name": state.cards[cid].name}
+            for pid in state.players
+            for cid in state.players[pid].graveyard
+            if "Artifact" in state.cards[cid].types
+        ]
+        graveyard_enchantments = [
+            {"id": cid, "name": state.cards[cid].name}
+            for pid in state.players
+            for cid in state.players[pid].graveyard
+            if "Enchantment" in state.cards[cid].types
+        ]
+        if "artifact" in oracle:
+            hints["graveyard_artifact_targets"] = graveyard_artifacts
+        if "enchantment" in oracle:
+            hints["graveyard_enchantment_targets"] = graveyard_enchantments
+        if "permanent" in oracle or ("artifact" in oracle and "enchantment" in oracle):
+            hints["graveyard_permanent_targets"] = graveyard_permanents if "permanent" in oracle else graveyard_artifacts + graveyard_enchantments
+    if "cast target" in oracle and "from your graveyard" in oracle:
+        hints["graveyard_spell_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for cid in state.players[controller].graveyard
+            if cid in state.cards and {"Instant", "Sorcery"}.intersection(state.cards[cid].types)
         ]
     if "any target" in oracle or "target player" in oracle or "deals" in oracle:
         hints["player_targets"] = [
@@ -344,6 +424,21 @@ def _infer_clause_effect(
                 target_player = controller
             return "prevent_damage", {"amount": amount, "target_player": int(target_player)}
 
+    if LAND_FROM_HAND_RE.search(oracle):
+        return "put_land_from_hand", {"tapped": True}
+
+    cast_from_graveyard = CAST_INSTANT_FROM_GRAVEYARD_RE.search(oracle)
+    if cast_from_graveyard:
+        target = action_targets.get("target_card_id")
+        if target is None:
+            for cid in state.players[controller].graveyard:
+                candidate = state.cards.get(cid)
+                if candidate and cast_from_graveyard.group(1).title() in candidate.types:
+                    target = cid
+                    break
+        if target:
+            return "cast_from_graveyard", {"target_card_id": target}
+
     if "destroy all artifacts and enchantments" in oracle or "destroy all artifact and enchantment" in oracle:
         return "destroy_all_artifacts_and_enchantments", {}
     if "destroy all artifacts" in oracle:
@@ -357,6 +452,10 @@ def _infer_clause_effect(
             return "exile", {"target_card_id": target}
     if "destroy target" in oracle and "artifact" in oracle and "enchantment" in oracle:
         target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
+        if target:
+            return "destroy_permanent", {"target_card_id": target}
+    if "destroy target" in oracle and "nonland permanent" in oracle:
+        target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
         if target:
             return "destroy_permanent", {"target_card_id": target}
     if "destroy target artifact" in oracle:
@@ -375,6 +474,10 @@ def _infer_clause_effect(
         target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Enchantment"})
         if target:
             return "exile", {"target_card_id": target}
+    if "exile target" in oracle and "nonland permanent" in oracle:
+        target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
+        if target:
+            return "exile", {"target_card_id": target}
 
     if "destroy target" in oracle:
         target = target_card_id or _first_creature(state, opponent)
@@ -390,7 +493,10 @@ def _infer_clause_effect(
             return "exile", {"target_card_id": target}
 
     if "tap target" in oracle:
-        target = target_card_id or _first_creature(state, opponent)
+        if "nonland permanent" in oracle:
+            target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
+        else:
+            target = target_card_id or _first_creature(state, opponent)
         if target:
             return "tap", {"target_card_id": target}
 
@@ -401,15 +507,54 @@ def _infer_clause_effect(
 
     if "return target" in oracle and "graveyard" in oracle and "hand" in oracle:
         return "return_from_graveyard", {}
+    if "graveyard" in oracle and "creature" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
+        target = action_targets.get("target_card_id")
+        if target:
+            return "return_creature_from_graveyard_to_battlefield", {"target_card_id": target}
+    if "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
+        if "artifact" in oracle or "enchantment" in oracle or "permanent" in oracle:
+            target = action_targets.get("target_card_id")
+            if target:
+                return "return_permanent_from_graveyard_to_battlefield", {"target_card_id": target}
 
     if "search your library for" in oracle:
         contains = action_targets.get("search_contains")
+        count = action_targets.get("search_count")
+        mv_max = action_targets.get("search_mv_max")
         if not contains:
             if "basic land" in oracle:
                 contains = "island"
             elif "creature card" in oracle:
-                contains = ""
-        return "search_library", {"contains": contains}
+                contains = "creature"
+            elif "artifact card" in oracle:
+                contains = "artifact"
+            elif "enchantment card" in oracle:
+                contains = "enchantment"
+            elif "planeswalker card" in oracle:
+                contains = "planeswalker"
+            elif "instant card" in oracle:
+                contains = "instant"
+            elif "sorcery card" in oracle:
+                contains = "sorcery"
+            elif "land card" in oracle:
+                contains = "land"
+            elif "permanent card" in oracle:
+                contains = "permanent"
+        if count is None:
+            count_match = SEARCH_UP_TO_RE.search(oracle)
+            if count_match:
+                count = _parse_count_token(count_match.group(1))
+        if mv_max is None:
+            mv_match = SEARCH_MV_MAX_RE.search(oracle)
+            if mv_match:
+                mv_max = _parse_count_token(mv_match.group(1))
+        destination = "battlefield" if "onto the battlefield" in oracle else "hand"
+        payload: dict[str, Any] = {"contains": contains, "destination": destination}
+        if count is not None:
+            payload["count"] = int(count)
+        if mv_max is not None:
+            payload["mv_max"] = int(mv_max)
+        return "search_library", payload
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
@@ -440,6 +585,10 @@ def _infer_clause_effect(
 
     if "creatures you control get +1/+1" in oracle:
         return "continuous_buff", {"amount": 1}
+
+    if "add one mana of any color" in oracle or "add mana of any color" in oracle or "add one mana of any one color" in oracle:
+        color = choose_mana_color_for_player(state, controller)
+        return "add_mana", {"color": color, "amount": 1}
 
     if "add " in oracle and "{" in oracle and "}" in oracle:
         symbols = MANA_SYMBOL_RE.findall(oracle.upper())
@@ -500,6 +649,41 @@ def _choose_noncreature_permanent_target(
     return sorted(
         candidates,
         key=lambda cid: (
+            0 if "Artifact" in state.cards[cid].types else 1,
+            0 if "Enchantment" in state.cards[cid].types else 1,
+            str(state.cards[cid].name).lower(),
+            cid,
+        ),
+    )[0]
+
+
+def _choose_any_permanent_target(
+    state: MatchState,
+    controller: int,
+    action_targets: dict[str, Any],
+    exclude_types: set[str] | None = None,
+) -> str | None:
+    exclude_types = exclude_types or set()
+    target_card_id = action_targets.get("target_card_id")
+    if target_card_id in state.cards:
+        target_card = state.cards[target_card_id]
+        if not exclude_types.intersection(set(target_card.types or [])):
+            return target_card_id
+    opponent = 1 if controller == 2 else 2
+    candidates: list[str] = []
+    for cid in state.players[opponent].battlefield:
+        card = state.cards.get(cid)
+        if not card:
+            continue
+        if exclude_types.intersection(set(card.types or [])):
+            continue
+        candidates.append(cid)
+    if not candidates:
+        return None
+    return sorted(
+        candidates,
+        key=lambda cid: (
+            0 if "Creature" in state.cards[cid].types else 1,
             0 if "Artifact" in state.cards[cid].types else 1,
             0 if "Enchantment" in state.cards[cid].types else 1,
             str(state.cards[cid].name).lower(),
