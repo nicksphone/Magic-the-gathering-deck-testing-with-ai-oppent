@@ -99,6 +99,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
+  const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
@@ -404,6 +405,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           {p1.hand.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
+            const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const landMove = playLandMoves.find((m) => m.card_id === card.id);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             const faceNames = move?.target_hints?.face_names ?? [];
@@ -421,9 +423,19 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                       Play Land {card.name}
                     </button>
                   ) : cycleMove ? (
-                    <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id })}>
+                    <>
+                    {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
+                      <select
+                        value={cycleChoices[card.id] ?? 0}
+                        onChange={(e) => setCycleChoices((prev) => ({ ...prev, [card.id]: Number(e.target.value) || 0 }))}
+                      >
+                        {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
+                      </select>
+                    ) : null}
+                    <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
                       Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
                     </button>
+                    </>
                   ) : (
                     <button disabled>
                       {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
@@ -447,7 +459,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
                 {cycleMove ? (
-                  <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id })}>
+                  <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
                     Cycle {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
                   </button>
                 ) : null}

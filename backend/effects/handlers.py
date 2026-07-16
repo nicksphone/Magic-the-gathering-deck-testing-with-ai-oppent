@@ -581,7 +581,7 @@ def create_shark_token(state: MatchState, controller: int, payload: dict) -> Non
     source = state.cards.get(source_id) if source_id else None
     if source is None:
         return
-    size = mana_value(getattr(source, "mana_cost", "") or "")
+    size = max(0, int(payload.get("x_value", 0) or 0)) if "x_value" in payload else mana_value(getattr(source, "mana_cost", "") or "")
     create_token(
         state,
         controller,

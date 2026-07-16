@@ -4,7 +4,7 @@ from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_o
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
-from rules_engine.cycling import cycling_cost
+from rules_engine.cycling import cycling_cost, cycling_is_variable
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
@@ -330,8 +330,13 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             card = state.cards[cid]
-            cycle_cost = cycling_cost(card.oracle_text)
-            if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name):
+            cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
+            x_value = int(action.get("x_value", 0) or 0)
+            if x_value < 0 or (cycle_cost and not cycling_is_variable(cycle_cost) and x_value != 0):
+                state.log.append(f"Invalid cycling X value for {card.name}.")
+                apply_state_based_actions(state)
+                return
+            if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value):
                 state.log.append(f"{player.name} cannot pay cycling cost for {card.name}.")
                 apply_state_based_actions(state)
                 return
@@ -351,7 +356,7 @@ class RulesEngine:
             # The cycle trigger is put above the cycling ability, matching
             # activation-cost timing: the draw ability resolves first only
             # if no triggered ability was created.
-            emit_event(state, "cycle", {"card_id": cid, "controller": player_id})
+            emit_event(state, "cycle", {"card_id": cid, "controller": player_id, "x_value": x_value})
 
         elif kind == "attack":
             ids = action.get("attackers", [])

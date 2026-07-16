@@ -86,9 +86,9 @@ Release blockers identified by the audit:
 - Temporary play permissions are now explicit per-card state with expiry, snapshot serialization, legal cast/land actions from exile, and a reusable top-card exile/play effect. Light Up the Stage-style cards no longer lose their temporary play window in the rules engine.
 - Named-source attack triggers such as Goblin Guide now match the attacking permanent generically and queue a structured defending-top-card reveal effect; the event-to-stack path has focused regression coverage.
 - Card cache rows now persist Scryfall rulings alongside faces and expose a completeness report for Oracle text, costs, type lines, legalities, rulings, face metadata, and real versus placeholder art through `/cards/completeness`.
-- Fixed-cost cycling is now a first-class priority action: the engine pays the cycling cost, moves the card to its owner's graveyard, places the draw ability on the stack, and the AI can use cycling as a lower-priority hand-filtering line. Variable-cost cycling is intentionally still reported as unsupported.
+- Fixed-cost and generic X-cost cycling are now first-class priority actions: the engine validates available mana, pays the cycling cost, moves the card to its owner's graveyard, places the draw ability on the stack, and the AI can use cycling as a lower-priority hand-filtering line.
 - Common activated costs now support generic tap, mana, life, discard, and creature-sacrifice combinations. These costs are checked before payment, paid before the ability is put on the stack, and are available through both AI decisions and the human hand/battlefield action path.
-- Cycling now emits a structured cycle event after activation, so generic “you cycle a card” and named-card cycling triggers can be matched and put above the cycling ability on the stack. Variable-cost cycling and its X-dependent trigger payloads remain intentionally unsupported.
+- Cycling now emits a structured cycle event after activation, so generic “you cycle a card” and named-card cycling triggers can be matched and put above the cycling ability on the stack. Supported X values are carried into generic X-dependent trigger payloads.
 
 ## Remaining Gaps
 
@@ -99,7 +99,7 @@ Release blockers identified by the audit:
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms, cycling triggers, and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
-- The current representative corpus still has concrete fallback cards in normal games; variable-cost cycling, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
+- The current representative corpus still has concrete fallback cards in normal games; alternate cycling variants, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
 - Additional-cost handling still needs broader coverage across uncommon card patterns, including counter removal, energy/resource payments, returning permanents, and noncreature sacrifice requirements.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
 - Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.
@@ -149,7 +149,7 @@ Release blockers identified by the audit:
 - Batch analytics now reports Wilson 95% confidence intervals and flags extreme, skewed, or insufficient-sample win rates; the Testing Simulator renders those balance alerts instead of presenting small samples as settled matchup truth.
 
 ### UI and docs
-- The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable. Human players can now activate fixed-cost cycling directly from the hand and see the cost alongside the action.
+- The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable. Human players can now activate available fixed or X-cost cycling directly from the hand and choose a validated X value.
 - Missing art now falls back to name-specific local placeholders, which improves token and uncached-card readability.
 - Cached double-faced cards now also reuse face-level art when the root image is missing, which reduces blank Delver-style and transform-style displays.
 - Token creation now emits enter-the-battlefield events, which closes a common trigger gap for token-centric decks.
@@ -274,7 +274,7 @@ Exit criteria:
 
 ### Current next implementation slice
 1. Add replacement-aware cycling tests for draw/discard triggers and optional cycling triggers.
-2. Add explicit support for variable-cost cycling choices only after the choice model can validate X against available mana and card-specific trigger payloads.
+2. Expand X-cost cycling coverage to alternate costs, replacement-aware draws, and card-specific trigger payloads beyond the generic X/X token path.
 3. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
 
 ## Priority Order

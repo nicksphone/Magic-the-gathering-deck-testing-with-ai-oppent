@@ -4,7 +4,7 @@ from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.continuous import has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
-from rules_engine.cycling import cycling_cost
+from rules_engine.cycling import cycling_cost, cycling_is_variable
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
@@ -81,16 +81,23 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand):
         card = state.cards[cid]
-        cycle_cost = cycling_cost(card.oracle_text)
-        if cycle_cost and can_pay_with_pool_and_lands(state, player_id, cycle_cost, card_name=card.name):
-            moves.append(
-                {
+        cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
+        if cycle_cost:
+            x_values = range(0, 21) if cycling_is_variable(cycle_cost) else range(1)
+            for x_value in x_values:
+                if not can_pay_with_pool_and_lands(
+                    state, player_id, cycle_cost, card_name=card.name, x_value=x_value
+                ):
+                    continue
+                cycle_move = {
                     "type": "cycle_card",
                     "card_id": cid,
                     "card_name": card.name,
                     "mana_cost": cycle_cost,
                 }
-            )
+                if cycling_is_variable(cycle_cost):
+                    cycle_move["x_value"] = x_value
+                moves.append(cycle_move)
         max_land_plays = compute_max_land_plays_this_turn(state, player_id)
         if getattr(player, "last_land_play_turn", 0) == state.turn:
             used_land_plays = max(

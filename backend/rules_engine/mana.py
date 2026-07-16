@@ -292,10 +292,12 @@ def _find_any_untapped_nonland_mana_source(state: MatchState, player_id: int) ->
 
 
 def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic_increase: int) -> str:
+    variable_symbols = re.findall(r"\{[XY]\}", (mana_cost or "").upper())
     req = parse_mana_cost(mana_cost)
     req["generic"] = max(0, req["generic"] + generic_increase - generic_reduction)
     return (
         ("{" + str(req["generic"]) + "}" if req["generic"] > 0 else "")
+        + ("".join(variable_symbols))
         + ("{W}" * req["W"])
         + ("{U}" * req["U"])
         + ("{B}" * req["B"])
@@ -306,10 +308,12 @@ def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic
 
 
 def add_generic_to_cost(mana_cost: str, generic_add: int) -> str:
+    variable_symbols = re.findall(r"\{[XY]\}", (mana_cost or "").upper())
     req = parse_mana_cost(mana_cost)
     req["generic"] = max(0, req["generic"] + max(0, int(generic_add)))
     return (
         ("{" + str(req["generic"]) + "}" if req["generic"] > 0 else "")
+        + ("".join(variable_symbols))
         + ("{W}" * req["W"])
         + ("{U}" * req["U"])
         + ("{B}" * req["B"])

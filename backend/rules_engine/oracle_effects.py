@@ -51,7 +51,10 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
 )
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
-SHARK_TOKEN_RE = re.compile(r"create (?:a|an) (?:blue )?x/x shark creature token with flying", re.IGNORECASE)
+SHARK_TOKEN_RE = re.compile(
+    r"create (?:a|an) (?:blue )?x/x(?: blue)? shark creature token with flying",
+    re.IGNORECASE,
+)
 EXILE_TOP_PLAYABLE_RE = re.compile(r"exile the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?may play those cards", re.IGNORECASE)
 REVEAL_DEFENDING_TOP_LAND_RE = re.compile(r"defending player reveals the top card of their library.*?if it's a land card", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
@@ -635,7 +638,10 @@ def _infer_clause_effect(
         return "search_library", payload
 
     if SHARK_TOKEN_RE.search(oracle):
-        return "create_shark_token", {"source_card_id": action_targets.get("source_card_id")}
+        payload = {"source_card_id": action_targets.get("source_card_id")}
+        if "x_value" in action_targets:
+            payload["x_value"] = max(0, int(action_targets.get("x_value", 0) or 0))
+        return "create_shark_token", payload
 
     exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
     if exile_playable:

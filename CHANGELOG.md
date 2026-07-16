@@ -7,7 +7,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Cycling now emits a structured cycle event after the activation is on the stack. Generic and named-card cycling triggers are matched through the event layer, with the trigger ordered above the cycling draw ability.
   - Activated abilities now parse and pay common combined costs such as `{T}, Sacrifice a creature`, `{1}, Discard a card`, and life payments before putting the ability on the stack. Unsupported cost forms remain unavailable rather than partially paying.
   - Added a first-class `cycle_card` action for fixed-cost cycling from hand. Cycling now pays through the normal mana engine, discards to the owner's graveyard as a cost, resolves its draw through the stack, and emits the normal discard event path.
-  - Variable-cost cycling such as `Cycling {X}{1}{U}` remains explicitly unsupported until X selection and card-specific cycling triggers can be represented safely.
+  - Generic variable-cost cycling such as `Cycling {X}{1}{U}` now exposes only mana-payable non-negative X values and carries X into supported dynamic cycling triggers; alternate cycling costs remain future coverage.
 
 - AI quality:
   - Master and lower difficulty ranking now recognize cycling as a card-filtering action, while preferring land drops and meaningful spells when those options are available.
@@ -19,6 +19,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Validation:
   - Added focused regression coverage for legal cycling moves and stack-timed cycling draws.
   - Added named cycling-trigger ordering coverage; focused cycling/event/legal-move tests pass `44` tests.
+  - Added X-value and dynamic cycling-trigger coverage. Full backend suite passes `437` tests with 43 deprecation warnings; frontend production build and deterministic replay smoke remain green.
   - Added regression coverage for tap-plus-sacrifice activated costs.
   - Full backend suite passes `435` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
 

@@ -75,6 +75,7 @@ export type LegalMove = {
   card_id?: string;
   card_name?: string;
   mana_cost?: string;
+  x_value?: number;
   cost_options?: {
     id: string;
     label: string;
