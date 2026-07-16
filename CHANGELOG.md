@@ -8,7 +8,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 
 - Validation:
-  - Backend suite now passes `428` tests with 32 deprecation warnings.
+  - Backend suite now passes `429` tests with 43 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
 
 - Simulator diagnostics:

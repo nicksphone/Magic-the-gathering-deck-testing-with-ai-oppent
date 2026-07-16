@@ -28,6 +28,24 @@ def test_players_cant_gain_life_lock() -> None:
     assert state.players[1].life == before
 
 
+def test_you_cant_gain_life_lock() -> None:
+    state = _basic_state()
+    lock_id = "lock-self-gain"
+    state.cards[lock_id] = CardInstance(
+        id=lock_id,
+        name="Platinum Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="You can't gain life.",
+    )
+    state.players[1].battlefield.append(lock_id)
+    before = state.players[1].life
+    gain_life(state, controller=1, payload={"target_player": 1, "amount": 5})
+    assert state.players[1].life == before
+
+
 def test_players_cant_lose_life_lock() -> None:
     state = _basic_state()
     lock_id = "lock-lose"

@@ -60,6 +60,66 @@ def test_controller_scoped_damage_cant_be_prevented_ignores_shield() -> None:
     assert state.players[2].life == before - 2
 
 
+def test_you_or_permanent_you_control_damage_prevention_applies_to_player_and_perm() -> None:
+    state = _state()
+    shield = CardInstance(
+        id="shield-broad",
+        name="Broad Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a source would deal damage to you or a permanent you control, prevent 1 of that damage.",
+    )
+    state.cards[shield.id] = shield
+    state.players[1].battlefield.append(shield.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+    card.power = 2
+    card.toughness = 2
+
+    before_life = state.players[1].life
+    deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
+    assert state.players[1].life == before_life - 2
+
+    deal_damage(state, controller=2, payload={"target_card_id": cid, "amount": 3})
+    assert card.counters.get("__damage_marked", 0) == 2
+
+
+def test_you_or_creature_you_control_damage_prevention_applies_to_player_and_perm() -> None:
+    state = _state()
+    shield = CardInstance(
+        id="shield-broad-2",
+        name="Broad Ward Two",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a source would deal damage to you or a creature you control, prevent 1 of that damage.",
+    )
+    state.cards[shield.id] = shield
+    state.players[1].battlefield.append(shield.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+    card.power = 2
+    card.toughness = 2
+
+    before_life = state.players[1].life
+    deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
+    assert state.players[1].life == before_life - 2
+
+    deal_damage(state, controller=2, payload={"target_card_id": cid, "amount": 3})
+    assert card.counters.get("__damage_marked", 0) == 2
+
+
 def test_replacement_effect_logs_redirection() -> None:
     state = _state()
     repl_id = "repl-draw"
@@ -77,6 +137,42 @@ def test_replacement_effect_logs_redirection() -> None:
     resolve_effect(state, 1, "gain_life", {"amount": 2})
     assert len(state.players[1].hand) == before + 2
     assert any("replacement effect applied: gain_life -> draw_cards" in line.lower() for line in state.log)
+
+
+def test_replacement_effect_prefers_latest_timestamp_source() -> None:
+    state = _state()
+    early = CardInstance(
+        id="early",
+        name="Early Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=1,
+        entered_turn=1,
+    )
+    late = CardInstance(
+        id="late",
+        name="Late Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=2,
+        entered_turn=2,
+    )
+    state.cards[early.id] = early
+    state.cards[late.id] = late
+    state.players[1].battlefield.extend([early.id, late.id])
+    before = len(state.players[1].hand)
+
+    resolve_effect(state, 1, "gain_life", {"amount": 1})
+
+    assert len(state.players[1].hand) == before + 1
+    assert any("source: late knowledge" in line.lower() for line in state.log)
+    assert not any("source: early knowledge" in line.lower() for line in state.log if "replacement effect applied" in line.lower())
 
 
 def test_optional_stack_effect_can_be_declined() -> None:
@@ -123,6 +219,34 @@ def test_combat_damage_ignores_prevention_when_source_says_cant_be_prevented() -
     assert state.players[2].life == before - 3
 
 
+def test_damage_to_permanent_respects_creature_prevention_replacement() -> None:
+    state = _state()
+    shield = CardInstance(
+        id="shield",
+        name="Protective Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a source would deal damage to a creature you control, prevent 1 of that damage.",
+    )
+    state.cards[shield.id] = shield
+    state.players[1].battlefield.append(shield.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+    card.power = 2
+    card.toughness = 2
+
+    deal_damage(state, controller=2, payload={"target_card_id": cid, "amount": 2})
+
+    assert card.counters.get("__damage_marked", 0) == 1
+    assert card.zone == Zone.BATTLEFIELD
+
+
 def test_destroy_permanent_clears_stale_damage_and_prevention_counters() -> None:
     state = _state()
     cid = state.players[1].hand[0]
@@ -141,6 +265,25 @@ def test_destroy_permanent_clears_stale_damage_and_prevention_counters() -> None
     assert "__damage_marked" not in card.counters
     assert "__deathtouch_damaged" not in card.counters
     assert "__prevent_damage_shield" not in card.counters
+
+
+def test_destroy_permanent_puts_stolen_creature_into_its_owners_graveyard() -> None:
+    state = _state()
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[2].battlefield.append(cid)
+    card = state.cards[cid]
+    card.owner = 1
+    card.controller = 2
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.GRAVEYARD
+    assert cid not in state.players[2].battlefield
+    assert cid in state.players[1].graveyard
+    assert cid not in state.players[2].graveyard
 
 
 def test_destroy_permanent_respects_die_to_exile_replacement() -> None:
@@ -197,6 +340,33 @@ def test_destroy_permanent_respects_nontoken_die_replacement_variant() -> None:
     assert cid not in state.players[1].graveyard
 
 
+def test_destroy_permanent_respects_noncreature_permanent_die_replacement_variant() -> None:
+    state = _state()
+    replacement = CardInstance(
+        id="rep",
+        name="Rest in Peace",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a permanent you control would die, exile it instead.",
+    )
+    state.cards[replacement.id] = replacement
+    state.players[1].battlefield.append(replacement.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Artifact"]
+
+    resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.EXILE
+    assert cid in state.players[1].exile
+    assert cid not in state.players[1].graveyard
+
+
 def test_destroy_permanent_respects_another_creature_variant() -> None:
     state = _state()
     replacement = CardInstance(
@@ -216,6 +386,33 @@ def test_destroy_permanent_respects_another_creature_variant() -> None:
     card = state.cards[cid]
     card.zone = Zone.BATTLEFIELD
     card.types = ["Creature"]
+
+    resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
+
+    assert card.zone == Zone.EXILE
+    assert cid in state.players[1].exile
+    assert cid not in state.players[1].graveyard
+
+
+def test_destroy_permanent_respects_artifact_or_enchantment_variant() -> None:
+    state = _state()
+    replacement = CardInstance(
+        id="rep",
+        name="Prism Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If an artifact or enchantment you control would die, exile it instead.",
+    )
+    state.cards[replacement.id] = replacement
+    state.players[1].battlefield.append(replacement.id)
+    cid = state.players[1].hand[0]
+    state.players[1].hand.remove(cid)
+    state.players[1].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Artifact"]
 
     resolve_effect(state, 1, "destroy_permanent", {"target_card_id": cid})
 

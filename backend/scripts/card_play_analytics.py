@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 from collections import Counter, defaultdict
@@ -80,8 +84,13 @@ def summarize_card_play_logic(path: Path) -> dict:
                                     "turn": payload.get("turn"),
                                     "step": payload.get("step"),
                                     "hand": payload.get("hand"),
+                                    "opp_hand": payload.get("opp_hand"),
                                     "battlefield_size": len(payload.get("battlefield") or []),
                                     "opp_battlefield_size": len(payload.get("opp_battlefield") or []),
+                                    "graveyard_count": payload.get("graveyard_count"),
+                                    "opp_graveyard_count": payload.get("opp_graveyard_count"),
+                                    "library_count": payload.get("library_count"),
+                                    "opp_library_count": payload.get("opp_library_count"),
                                 }
                             )
 

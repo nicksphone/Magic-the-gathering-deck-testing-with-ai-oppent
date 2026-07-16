@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `428 passed`, 32 deprecation warnings.
+- Backend: `429 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.

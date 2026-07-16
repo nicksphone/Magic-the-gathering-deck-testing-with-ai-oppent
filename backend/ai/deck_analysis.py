@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from rules_engine.mana import parse_mana_cost
+from rules_engine.mana import mana_value, parse_mana_cost
 
 ARCHETYPES = [
     "Aggro",
@@ -170,8 +170,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
 
 
 def _cmc(mana_cost: str) -> int:
-    cost = parse_mana_cost(mana_cost or "")
-    return int(cost["generic"] + sum(cost[c] for c in ["W", "U", "B", "R", "G"]))
+    return int(mana_value(mana_cost or ""))
 
 
 def _looks_like_land(name: str, type_line: str, oracle_text: str) -> bool:
@@ -218,13 +217,13 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
         if face_mana:
             face_mana_costs.append(face_mana)
     if len(face_names) > 1:
-        split_like = " // " in name or len({n.lower() for n in face_names}) > 1
+        split_like = " // " in name
     if face_types:
         type_line = " // ".join([part for part in [type_line, " | ".join(face_types)] if part]).strip()
     if face_oracles:
         oracle_text = " ".join([part for part in [oracle_text, " ".join(face_oracles)] if part]).strip()
     if not mana_cost and face_mana_costs:
-        mana_cost = " ".join(face_mana_costs).strip()
+        mana_cost = _derive_face_based_mana_cost(name, face_mana_costs, split_like)
     if not name and face_names:
         name = " // ".join(face_names)
     face_stats = {
@@ -232,3 +231,12 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
         "split_like": split_like,
     }
     return name, type_line, oracle_text, mana_cost, face_stats
+
+
+def _derive_face_based_mana_cost(name: str, face_mana_costs: list[str], split_like: bool) -> str:
+    costs = [cost.strip() for cost in face_mana_costs if cost.strip()]
+    if not costs:
+        return ""
+    if split_like or " // " in name:
+        return " ".join(costs).strip()
+    return costs[0]

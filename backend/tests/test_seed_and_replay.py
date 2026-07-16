@@ -5,6 +5,7 @@ from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, get_match_replay
 from rules_engine.engine import RulesEngine
 from scripts.regression_matrix_replay import _normalize_log_line, classify_first_divergence, classify_log_line
+from analytics.replay_tools import classify_timeout_state
 
 
 def test_match_factory_seed_reproducible_openers() -> None:
@@ -83,3 +84,68 @@ def test_classify_first_divergence_uses_action_labels() -> None:
     assert label["category"] == "pass_vs_action"
     assert label["action_a"] == "cast_spell"
     assert label["action_b"] == "pass_priority"
+
+
+def test_classify_first_divergence_includes_trace_context_summary() -> None:
+    drift = {
+        "index": 4,
+        "a": 'AI TRACE {"pid":1,"turn":5,"step":"precombat_main","active_player":1,"priority_player":1,"hand":["Counterspell"],"opp_hand":["Threat"],"battlefield":[{"id":"c1","types":["Land"]}],"opp_battlefield":[{"id":"c2","types":["Creature"]}],"life":{"self":16,"opp":12},"legal_non_pass":true,"legal_has_land":false,"action":{"type":"cast_spell","card_name":"Counterspell"}}',
+        "b": 'AI TRACE {"pid":1,"turn":5,"step":"precombat_main","active_player":1,"priority_player":1,"hand":["Counterspell"],"opp_hand":["Threat"],"battlefield":[{"id":"c1","types":["Land"]}],"opp_battlefield":[{"id":"c2","types":["Creature"]}],"life":{"self":16,"opp":12},"legal_non_pass":true,"legal_has_land":false,"action":{"type":"pass_priority"}}',
+        "context_before": [],
+        "context_after_a": [],
+        "context_after_b": [],
+    }
+
+    label = classify_first_divergence(drift)
+
+    assert label["trace_context_a"]["hand_size"] == 1
+    assert label["trace_context_a"]["opp_hand_size"] == 1
+    assert label["trace_context_a"]["battlefield_size"] == 1
+    assert label["trace_context_a"]["opp_battlefield_size"] == 1
+    assert label["trace_context_a"]["action_type"] == "cast_spell"
+    assert label["trace_context_b"]["action_type"] == "pass_priority"
+
+
+def test_classify_first_divergence_recognizes_attack_and_sacrifice_lines() -> None:
+    attack = classify_first_divergence(
+        {
+            "index": 3,
+            "a": "Attackers declared: Recruiter -> Player B",
+            "b": "Attackers declared: Recruiter -> Player B",
+            "context_before": [],
+            "context_after_a": [],
+            "context_after_b": [],
+        }
+    )
+    sacrifice = classify_first_divergence(
+        {
+            "index": 4,
+            "a": "Blood Artist sacrifices Bloodghast.",
+            "b": "Blood Artist sacrifices Bloodghast.",
+            "context_before": [],
+            "context_after_a": [],
+            "context_after_b": [],
+        }
+    )
+
+    assert attack["action_a"] == "attack"
+    assert attack["category"] == "attack"
+    assert sacrifice["action_a"] == "sacrifice"
+    assert sacrifice["category"] == "sacrifice"
+
+
+def test_classify_timeout_state_distinguishes_long_game_and_stall() -> None:
+    long_game_log = ["AI TRACE {\"turn\":1,\"action\":{\"type\":\"cast_spell\"}}"] * 12
+    stall_log = [
+        "Player A passes priority.",
+        "Player B passes priority.",
+        "Player A passes priority.",
+        "Player B passes priority.",
+        "Player A passes priority.",
+    ]
+    rules_log = ["Invalid targets for Secure the Wastes: X value is required and must be non-negative."]
+
+    assert classify_timeout_state(long_game_log, True) == "timeout_long_game"
+    assert classify_timeout_state(stall_log, True) == "likely_stall"
+    assert classify_timeout_state(rules_log, True) == "timeout_rules_issue"
+    assert classify_timeout_state([], False) == "resolved"

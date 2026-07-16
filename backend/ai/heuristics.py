@@ -113,6 +113,28 @@ def _noncreature_value(card, surface: dict | None = None) -> float:
         value += 2.1
     if any(k in text for k in ["draw", "search your library", "return target"]):
         value += 1.2
+    if any(
+        k in text
+        for k in [
+            "whenever this creature attacks",
+            "whenever a creature attacks",
+            "whenever you attack",
+            "whenever this creature blocks",
+            "whenever a creature blocks",
+            "whenever this creature deals combat damage",
+            "whenever a creature you control deals combat damage",
+            "whenever a permanent enters the battlefield",
+            "whenever another permanent enters the battlefield",
+            "whenever a creature enters the battlefield",
+            "whenever a token enters the battlefield",
+            "whenever a creature dies",
+            "whenever a permanent dies",
+            "whenever you sacrifice a",
+            "whenever you discard a card",
+            "whenever an opponent discards",
+        ]
+    ):
+        value += 1.1
     if any(k in text for k in ["creatures you control get", "+1/+1", "anthem"]):
         value += 2.0
     if any(k in text for k in ["counter target", "destroy target", "exile target"]):

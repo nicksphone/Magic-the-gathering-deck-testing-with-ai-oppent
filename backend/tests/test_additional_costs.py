@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from effects.handlers import sacrifice
 from rules_engine.engine import RulesEngine
 
 
@@ -80,3 +81,66 @@ def test_sacrifice_additional_cost_respects_die_replacement() -> None:
     assert state.cards[creature_id].zone == Zone.EXILE
     assert creature_id in p1.exile
     assert creature_id not in p1.graveyard
+
+
+def test_sacrifice_handler_puts_stolen_creature_into_its_owners_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    p2 = state.players[2]
+    stolen_id = state.players[1].hand[0]
+    state.players[1].hand.remove(stolen_id)
+    p2.battlefield.append(stolen_id)
+    card = state.cards[stolen_id]
+    card.owner = 1
+    card.controller = 2
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+
+    sacrifice(state, 2, {"target_card_id": stolen_id})
+
+    assert card.zone == Zone.GRAVEYARD
+    assert stolen_id not in p2.battlefield
+    assert stolen_id in state.players[1].graveyard
+    assert stolen_id not in p2.graveyard
+
+
+def test_sacrifice_additional_cost_puts_stolen_creature_into_its_owners_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 2
+    state.priority_player = 2
+    engine = RulesEngine()
+
+    p2 = state.players[2]
+    land_id = p2.library.pop()
+    p2.battlefield.append(land_id)
+    state.cards[land_id].zone = Zone.BATTLEFIELD
+    state.cards[land_id].types = ["Land"]
+    state.cards[land_id].name = "Island"
+    stolen = state.players[1].hand[0]
+    state.players[1].hand.remove(stolen)
+    p2.battlefield.append(stolen)
+    card = state.cards[stolen]
+    card.owner = 1
+    card.controller = 2
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+
+    spell_id = p2.hand[0]
+    state.cards[spell_id].name = "Test Additional Cost Spell"
+    state.cards[spell_id].types = ["Sorcery"]
+    state.cards[spell_id].mana_cost = "{U}"
+    state.cards[spell_id].oracle_text = "As an additional cost to cast this spell, sacrifice a creature. Draw a card."
+
+    engine.take_action(state, 2, {"type": "cast_spell", "card_id": spell_id})
+
+    assert card.zone == Zone.GRAVEYARD
+    assert stolen not in p2.battlefield
+    assert stolen in state.players[1].graveyard
+    assert stolen not in p2.graveyard

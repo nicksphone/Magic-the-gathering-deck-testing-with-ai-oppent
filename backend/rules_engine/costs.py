@@ -86,6 +86,9 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         player.graveyard.append(discard_id)
         state.cards[discard_id].zone = Zone.GRAVEYARD
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for additional cost.")
+        from rules_engine.events import emit_event
+
+        emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
 
     for _ in range(option.sacrifice_creatures):
         sac_id = _first_sacrificable_creature(state, player_id)
@@ -93,15 +96,19 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
             return False
         player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
+        zone_owner = state.players[getattr(card, "owner", player_id)]
         destination = replace_die_zone(state, player_id, sac_id)
         if destination == "exile":
-            player.exile.append(sac_id)
+            zone_owner.exile.append(sac_id)
             card.zone = Zone.EXILE
             state.log.append(f"{player.name} sacrifices {card.name} for additional cost, but it is exiled instead of dying.")
         else:
-            player.graveyard.append(sac_id)
+            zone_owner.graveyard.append(sac_id)
             card.zone = Zone.GRAVEYARD
             state.log.append(f"{player.name} sacrifices {card.name} for additional cost.")
+        from rules_engine.events import emit_event
+
+        emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
 
     return True
 

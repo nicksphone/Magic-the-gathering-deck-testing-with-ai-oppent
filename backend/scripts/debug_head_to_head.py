@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 from datetime import datetime, timezone
@@ -7,7 +11,9 @@ from pathlib import Path
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
+from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from game_state.state import MatchFactory
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -94,7 +100,7 @@ def hydrate_deck(repo: Repository, deck: list[dict]) -> list[dict]:
                 card["loyalty"] = row.loyalty
             elif fallback and fallback.get("loyalty") is not None:
                 card["loyalty"] = fallback["loyalty"]
-            card["image_uri"] = row.image_uri or (fallback or {}).get("image_uri")
+            card["image_uri"] = select_display_image_uri(row, name=card["card_name"], type_line=card.get("type_line") or "")
         elif fallback:
             card.update({k: v for k, v in fallback.items() if v is not None})
         out.append(card)
@@ -119,6 +125,8 @@ def main() -> int:
 
     with Session(engine) as session:
         repo = Repository(session)
+        ensure_builtin_decks(repo)
+        ensure_expansion_top_decks(repo)
         deck_a = hydrate_deck(repo, load_named_deck(repo, args.deck_a))
         deck_b = hydrate_deck(repo, load_named_deck(repo, args.deck_b))
         a_arch = guess_archetype(deck_a)
@@ -151,8 +159,13 @@ def main() -> int:
                         "active_player": getattr(state, "active_player", None),
                         "priority_player": getattr(state, "priority_player", None),
                         "hand": hand_snapshot(state, pid),
+                        "opp_hand": hand_snapshot(state, 1 if pid == 2 else 2),
                         "battlefield": battlefield_snapshot(state, pid),
                         "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),
+                        "graveyard_count": len(state.players[pid].graveyard),
+                        "opp_graveyard_count": len(state.players[1 if pid == 2 else 2].graveyard),
+                        "library_count": len(state.players[pid].library),
+                        "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
                         "life": {
                             "self": state.players[pid].life,
                             "opp": state.players[1 if pid == 2 else 2].life,

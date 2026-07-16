@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 import re
@@ -9,11 +13,13 @@ from pathlib import Path
 
 PATTERNS = [
     ("land_miss", re.compile(r"plays? .+\.$", re.IGNORECASE)),
-    ("cannot_pay", re.compile(r"cannot pay", re.IGNORECASE)),
+    ("cannot_pay", re.compile(r"cannot pay|cannot satisfy chosen costs|failed additional costs", re.IGNORECASE)),
     ("invalid_targets", re.compile(r"invalid targets", re.IGNORECASE)),
     ("stall_pass", re.compile(r"pass_priority", re.IGNORECASE)),
     ("ward_tax", re.compile(r"ward tax", re.IGNORECASE)),
     ("legend_rule", re.compile(r"legend rule", re.IGNORECASE)),
+    ("x_value_error", re.compile(r"x value is required|x value must be non-negative", re.IGNORECASE)),
+    ("stack_target", re.compile(r"target_stack_id|stack target", re.IGNORECASE)),
 ]
 
 
@@ -27,6 +33,8 @@ def classify(lines: list[str]) -> list[str]:
             labels.append(name)
     if _looks_like_main_phase_pass_loop(traces):
         labels.append("main_phase_pass_loop")
+    if _looks_like_repeated_x_spell_error(lines):
+        labels.append("x_spell_error_loop")
     if not labels:
         labels.append("other")
     return labels
@@ -53,6 +61,19 @@ def _looks_like_main_phase_pass_loop(traces: list[dict]) -> bool:
             count += 1
             if count >= 2:
                 return True
+    return False
+
+
+def _looks_like_repeated_x_spell_error(lines: list[str]) -> bool:
+    streak = 0
+    for line in lines:
+        low = line.lower()
+        if "x value is required" in low or "x value must be non-negative" in low:
+            streak += 1
+            if streak >= 2:
+                return True
+        else:
+            streak = 0
     return False
 
 

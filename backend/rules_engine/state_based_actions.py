@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, Zone
 from rules_engine.attachments import attached_to, is_aura, is_equipment
+from rules_engine.events import emit_event
 from rules_engine.continuous import effective_toughness, has_keyword
 from rules_engine.replacement import replace_die_zone
 
@@ -21,25 +22,30 @@ def apply_state_based_actions(state: MatchState) -> None:
             lethal_from_damage = int(card.counters.get(DMG_MARK_KEY, 0)) >= int(effective_toughness(state, cid))
             lethal_from_deathtouch = int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0
             if lethal_from_zero_toughness or (not indestructible and (lethal_from_damage or lethal_from_deathtouch)):
-                pstate = state.players[card.controller]
-                if cid in pstate.battlefield:
-                    pstate.battlefield.remove(cid)
+                battlefield_owner = state.players[card.controller]
+                zone_owner = state.players[getattr(card, "owner", card.controller)]
+                if cid in battlefield_owner.battlefield:
+                    battlefield_owner.battlefield.remove(cid)
                     destination = replace_die_zone(state, card.controller, cid)
                     if destination == "exile":
-                        pstate.exile.append(cid)
+                        zone_owner.exile.append(cid)
                         card.zone = Zone.EXILE
                         state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
                     else:
-                        pstate.graveyard.append(cid)
+                        zone_owner.graveyard.append(cid)
                         card.zone = Zone.GRAVEYARD
                         state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
+                        emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
+                        emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
         if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
-            pstate = state.players[card.controller]
-            if cid in pstate.battlefield:
-                pstate.battlefield.remove(cid)
-                pstate.graveyard.append(cid)
+            battlefield_owner = state.players[card.controller]
+            zone_owner = state.players[getattr(card, "owner", card.controller)]
+            if cid in battlefield_owner.battlefield:
+                battlefield_owner.battlefield.remove(cid)
+                zone_owner.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD
                 state.log.append(f"State-based action: {card.name} is put into graveyard due to 0 loyalty.")
+                emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
 
     _apply_legend_rule(state)
     _apply_attachment_state_checks(state)
@@ -65,9 +71,10 @@ def _apply_legend_rule(state: MatchState) -> None:
                 if cid == keep:
                     continue
                 card = state.cards[cid]
+                zone_owner = state.players[getattr(card, "owner", card.controller)]
                 if cid in player.battlefield:
                     player.battlefield.remove(cid)
-                player.graveyard.append(cid)
+                zone_owner.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD
                 state.log.append(
                     f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is put into graveyard (legend rule)."

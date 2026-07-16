@@ -71,6 +71,37 @@ def test_tribal_static_buff_applies_to_subtype() -> None:
     assert effective_toughness(state, beast) == 2
 
 
+def test_become_base_power_toughness_static_sets_are_parsed() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    _setup_permanent(state, 1, "Humility Field", "Enchantment", "Creatures you control become 1/1.")
+    creature = _setup_creature(state, 1, "Hill Giant", 4, 4, [])
+
+    assert effective_power(state, creature) == 1
+    assert effective_toughness(state, creature) == 1
+
+
+def test_subject_specific_base_pt_set_only_applies_to_matching_creatures() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    _setup_permanent(state, 1, "Elf Ward", "Enchantment", "Elves you control become 1/1.")
+    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1, [])
+    state.cards[elf].type_line = "Creature - Elf Druid"
+    human = _setup_creature(state, 1, "Knight", 3, 3, [])
+    state.cards[human].type_line = "Creature - Human Knight"
+
+    assert effective_power(state, elf) == 1
+    assert effective_toughness(state, elf) == 1
+    assert effective_power(state, human) == 3
+    assert effective_toughness(state, human) == 3
+
+
 def test_creatures_you_control_have_reach_allows_blocking_flyers() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck)

@@ -77,6 +77,28 @@ export function Controls(props: Props) {
   const p2Score = props.match?.score?.["2"] ?? 0;
   const scoreText = props.match ? `${p1Score}-${p2Score}` : "0-0";
   const sideboardStatus = betweenGames ? "Sideboarding open" : matchComplete ? "Match complete" : "Sideboarding locked";
+  const stackSize = props.match?.stack?.length ?? 0;
+  const currentController = props.match?.controllers?.[String(props.match?.priority_player ?? 1)] ?? "human";
+  const interruptWindowLive = props.responseCountdown !== null;
+  const interruptWindowLabel = interruptWindowLive
+    ? "Response window open"
+    : props.autoResponsePaused
+      ? "Response timer paused"
+      : stackSize > 0 && currentController === "human"
+        ? "Priority held for human response"
+        : stackSize > 0
+          ? "Stack open"
+          : "No pending response window";
+  const interruptWindowSeat = props.match ? `P${props.match.priority_player} • ${currentController.toUpperCase()}` : "";
+  const interruptWindowDetail = interruptWindowLive
+    ? `Auto-pass in ${props.responseCountdown}s unless you respond.`
+    : props.autoResponsePaused
+      ? "Auto-response is paused on a human interrupt window."
+      : stackSize > 0 && currentController !== "human"
+        ? `Priority is with ${props.match ? `P${props.match.priority_player}` : "the active player"} and the current controller is AI.`
+        : stackSize > 0
+          ? "A response window exists, but auto-response is not currently counting down."
+          : "No stack item or interruptible window is currently waiting.";
 
   return (
     <section className="panel controls">
@@ -157,21 +179,23 @@ export function Controls(props: Props) {
           onChange={(e) => props.setAutoplayDelayMs(Number(e.target.value))}
         />
       </div>
-      {props.responseCountdown !== null ? (
-        <div className="block-panel">
+      {props.match ? (
+        <div className={`block-panel interrupt-window ${interruptWindowLive ? "interrupt-window-live" : ""}`}>
           <h3>Interrupt Window</h3>
-          <p>
-            Auto-pass in {props.responseCountdown}s unless you respond.
-          </p>
+          <div className="status-card interrupt-status-card">
+            <span className="status-label">State</span>
+            <strong>{interruptWindowLabel}</strong>
+          </div>
+          {interruptWindowSeat ? <p className="interrupt-seat-note">{interruptWindowSeat}</p> : null}
+          <p>{interruptWindowDetail}</p>
+          {stackSize > 0 ? (
+            <p className="interrupt-stack-note">
+              Stack objects: {stackSize} | Priority: P{props.match.priority_player}
+            </p>
+          ) : null}
           <button onClick={props.onToggleAutoResponsePause}>
             {props.autoResponsePaused ? "Resume Auto Response Timer" : "Hold Priority Timer"}
           </button>
-        </div>
-      ) : props.match && props.autoResponsePaused ? (
-        <div className="block-panel">
-          <h3>Interrupt Window</h3>
-          <p>Priority timer is paused.</p>
-          <button onClick={props.onToggleAutoResponsePause}>Resume Auto Response Timer</button>
         </div>
       ) : null}
       {props.match ? (

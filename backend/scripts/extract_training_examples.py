@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 from collections import Counter
@@ -35,8 +39,14 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "priority_player": trace.get("priority_player"),
         "hand": list(trace.get("hand") or []),
         "hand_size": len(trace.get("hand") or []),
+        "opp_hand": list(trace.get("opp_hand") or []),
+        "opp_hand_size": len(trace.get("opp_hand") or []),
         "battlefield": list(trace.get("battlefield") or []),
         "opp_battlefield": list(trace.get("opp_battlefield") or []),
+        "graveyard_count": int(trace.get("graveyard_count") or 0),
+        "opp_graveyard_count": int(trace.get("opp_graveyard_count") or 0),
+        "library_count": int(trace.get("library_count") or 0),
+        "opp_library_count": int(trace.get("opp_library_count") or 0),
         "life": {
             "self": life.get("self"),
             "opp": life.get("opp"),
@@ -44,6 +54,7 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "mana_pool": dict(trace.get("mana_pool") or {}),
         "legal_non_pass": bool(trace.get("legal_non_pass")),
         "legal_has_land": bool(trace.get("legal_has_land")),
+        "board_role_hint": _board_role_hint(trace),
         "board_snapshot": _board_snapshot(trace),
         "action_type": action.get("type"),
         "action_card_name": action.get("card_name"),
@@ -58,11 +69,40 @@ def _board_snapshot(trace: dict) -> dict:
     return {
         "battlefield_count": len(battlefield),
         "opp_battlefield_count": len(opp_battlefield),
+        "hand_count": len(trace.get("hand") or []),
+        "opp_hand_count": len(trace.get("opp_hand") or []),
         "battlefield_tapped": sum(1 for card in battlefield if card.get("tapped")),
         "opp_battlefield_tapped": sum(1 for card in opp_battlefield if card.get("tapped")),
+        "graveyard_count": int(trace.get("graveyard_count") or 0),
+        "opp_graveyard_count": int(trace.get("opp_graveyard_count") or 0),
+        "library_count": int(trace.get("library_count") or 0),
+        "opp_library_count": int(trace.get("opp_library_count") or 0),
         "battlefield_types": dict(_count_types(battlefield)),
         "opp_battlefield_types": dict(_count_types(opp_battlefield)),
     }
+
+
+def _board_role_hint(trace: dict) -> str:
+    life = trace.get("life") or {}
+    self_life = int(life.get("self", 20) or 20)
+    opp_life = int(life.get("opp", 20) or 20)
+    battlefield = list(trace.get("battlefield") or [])
+    opp_battlefield = list(trace.get("opp_battlefield") or [])
+    self_creatures = sum(1 for card in battlefield if "Creature" in (card.get("types") or []))
+    opp_creatures = sum(1 for card in opp_battlefield if "Creature" in (card.get("types") or []))
+    hand_size = len(trace.get("hand") or [])
+    step = str(trace.get("step") or "").lower()
+    if opp_life <= 7 or (self_creatures > 0 and self_creatures * 2 >= opp_life):
+        return "race"
+    if self_creatures > opp_creatures and self_life > 10:
+        return "convert"
+    if self_life <= 8 and opp_creatures > self_creatures:
+        return "stabilize"
+    if hand_size >= 4 and opp_creatures >= self_creatures and self_life > 10:
+        return "control"
+    if step in {"beginning_of_combat", "declare_attackers", "declare_blockers", "combat_damage", "end_combat"} and self_creatures >= opp_creatures:
+        return "race"
+    return "normal"
 
 
 def _count_types(cards: list[dict]) -> Counter:

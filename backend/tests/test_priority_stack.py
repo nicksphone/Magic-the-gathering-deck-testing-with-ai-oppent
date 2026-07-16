@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from game_state.state import MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def test_stack_resolves_after_priority_passes() -> None:
@@ -61,3 +62,29 @@ def test_casting_player_retains_priority_for_additional_spell() -> None:
     engine.take_action(state, 1, {"type": "cast_spell", "card_id": bolts[1]})
     assert state.priority_player == 1
     assert len(state.stack) == 2
+
+
+def test_stack_resolution_puts_instant_into_owners_graveyard() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    spell_id = "spell-owner-test"
+    state.cards[spell_id] = CardInstance(
+        id=spell_id,
+        name="Borrowed Bolt",
+        owner=2,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Instant"],
+        oracle_text="Deal 3 damage to any target.",
+    )
+    state.stack.append(
+        type("S", (), {"id": "stack-1", "source_card_id": spell_id, "controller": 1, "label": "Borrowed Bolt", "effect_key": "deal_damage", "payload": {"target_player": 2, "amount": 3}})()
+    )
+
+    resolve_top_of_stack(state)
+
+    assert spell_id in state.players[2].graveyard
+    assert spell_id not in state.players[1].graveyard
+    assert state.cards[spell_id].zone == Zone.GRAVEYARD

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import hashlib
 import json
@@ -9,7 +13,9 @@ from pathlib import Path
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
-from analytics.replay_tools import classify_first_divergence, classify_log_line, first_log_divergence, normalize_log_line
+from analytics.replay_tools import classify_first_divergence, classify_log_line, classify_timeout_state, first_log_divergence, normalize_log_line
+from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
+from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
 from persistence.db import engine
 from persistence.repository import Repository
@@ -23,6 +29,18 @@ def _stable_seed(left_name: str, right_name: str, index: int) -> int:
 
 
 _normalize_log_line = normalize_log_line
+_select_regression_matrix_decks = select_representative_decks
+
+
+def _drift_excerpt(drift: dict, drift_label: dict | None) -> dict:
+    return {
+        "index": drift.get("index", -1),
+        "category": (drift_label or {}).get("category", "unknown"),
+        "line_a": drift.get("a", ""),
+        "line_b": drift.get("b", ""),
+        "context_before": drift.get("context_before", []),
+    }
+
 
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int) -> dict:
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
@@ -67,18 +85,11 @@ def main() -> None:
 
     with Session(engine) as session:
         repo = Repository(session)
+        ensure_builtin_decks(repo)
+        ensure_expansion_top_decks(repo)
         rows = repo.list_decks()
 
-    decks = []
-    seen: set[str] = set()
-    for row in rows:
-        key = (row.name or "").strip().lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        decks.append({"name": row.name, "mainboard": json.loads(row.mainboard_json)})
-        if len(decks) >= max(2, args.max_decks):
-            break
+    decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
 
     summary = {
         "decks": len(decks),
@@ -113,9 +124,11 @@ def main() -> None:
                 "winner": a["winner"],
                 "turn": a["turn"],
                 "timeout": a["timeout"],
+                "termination_status": classify_timeout_state(a.get("log", []), bool(a["timeout"])),
                 "deterministic": deterministic_ok,
                 "drift": drift,
                 "drift_label": drift_label,
+                "drift_excerpt": _drift_excerpt(drift, drift_label) if drift else None,
             })
             summary["games"] += 1
         summary["pair_results"].append(pair)

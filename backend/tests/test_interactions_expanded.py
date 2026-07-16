@@ -227,3 +227,64 @@ def test_combat_death_replacement_exiles_creature_instead_of_graveyard() -> None
     assert blocker.zone == Zone.EXILE
     assert blocker.id in state.players[2].exile
     assert blocker.id not in state.players[2].graveyard
+
+
+def test_state_based_action_lethal_creature_emits_permanent_and_creature_death_triggers() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=21)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    creature_id = state.players[1].hand[0]
+    state.players[1].hand.remove(creature_id)
+    state.players[1].battlefield.append(creature_id)
+    state.cards[creature_id].zone = Zone.BATTLEFIELD
+    state.cards[creature_id].types = ["Creature"]
+    state.cards[creature_id].power = 2
+    state.cards[creature_id].toughness = 2
+    state.cards[creature_id].counters["__damage_marked"] = 2
+    state.cards["trigger"] = CardInstance(
+        id="trigger",
+        name="Blood Artist",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+        oracle_text="Whenever a creature dies, draw a card.",
+    )
+    state.players[1].battlefield.append("trigger")
+
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    apply_state_based_actions(state)
+
+    assert any(item.controller == 1 for item in state.stack)
+
+
+def test_state_based_action_zero_loyalty_planeswalker_emits_permanent_death_trigger() -> None:
+    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=22)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    pw_id = state.players[1].hand[0]
+    state.players[1].hand.remove(pw_id)
+    state.players[1].battlefield.append(pw_id)
+    state.cards[pw_id].zone = Zone.BATTLEFIELD
+    state.cards[pw_id].types = ["Planeswalker"]
+    state.cards[pw_id].loyalty = 0
+    state.cards[pw_id].name = "The Wandering Emperor"
+    state.cards["trigger"] = CardInstance(
+        id="trigger",
+        name="Afterlife Archive",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="Whenever a permanent you control dies, draw a card.",
+    )
+    state.players[1].battlefield.append("trigger")
+
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    apply_state_based_actions(state)
+
+    assert any(item.controller == 1 for item in state.stack)

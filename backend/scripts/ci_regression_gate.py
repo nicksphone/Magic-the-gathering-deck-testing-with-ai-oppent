@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+try:  # pragma: no cover - import path bootstrap for CLI execution
+    from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
+except ImportError:  # pragma: no cover - direct script execution
+    import _bootstrap  # noqa: F401
 import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
+from persistence.db import engine, init_db
+from persistence.repository import Repository
+from sqlmodel import Session
 
 
 def run_cmd(cmd: list[str]) -> dict:
@@ -33,6 +42,12 @@ def main() -> int:
     rr_out = out_dir / "overnight_summary.json"
     replay_out = out_dir / "regression_matrix_replay.json"
 
+    init_db()
+    with Session(engine) as session:
+        repo = Repository(session)
+        ensure_builtin_decks(repo)
+        ensure_expansion_top_decks(repo)
+
     rr = run_cmd(
         [
             sys.executable,
@@ -43,6 +58,8 @@ def main() -> int:
             args.difficulty,
             "--max-ticks",
             str(args.max_ticks),
+            "--max-decks",
+            str(args.max_decks),
             "--sources",
             "builtin,user",
             "--output-dir",
@@ -86,6 +103,7 @@ def main() -> int:
 
     totals = rr_summary.get("totals", {})
     timeouts = int(totals.get("timeouts", 0))
+    long_game_timeouts = int(totals.get("long_game_timeouts", 0))
     passed = int(totals.get("passed_with_options", 0))
     det_fail = int(replay_summary.get("determinism_failures", 0))
 
@@ -102,10 +120,11 @@ def main() -> int:
 
     print(
         json.dumps(
-            {
-                "timeouts": timeouts,
-                "passed_with_options": passed,
-                "determinism_failures": det_fail,
+                {
+                    "timeouts": timeouts,
+                    "long_game_timeouts": long_game_timeouts,
+                    "passed_with_options": passed,
+                    "determinism_failures": det_fail,
                 "overnight_summary": str(rr_out),
                 "replay_summary": str(replay_out),
                 "status": "fail" if failed else "pass",
@@ -118,4 +137,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

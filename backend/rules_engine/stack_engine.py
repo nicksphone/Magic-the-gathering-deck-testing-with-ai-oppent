@@ -47,7 +47,7 @@ def resolve_top_of_stack(state: MatchState) -> None:
     resolve_effect(state, item.controller, item.effect_key, payload)
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK:
-        owner = state.players[card.controller]
+        owner = state.players[getattr(card, "owner", card.controller)]
         if "Instant" in card.types or "Sorcery" in card.types:
             owner.graveyard.append(card.id)
             card.zone = Zone.GRAVEYARD

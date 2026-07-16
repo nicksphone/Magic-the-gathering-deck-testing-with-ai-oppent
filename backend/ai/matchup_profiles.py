@@ -33,4 +33,12 @@ def profile_for(own_archetype: str, opp_archetype: str | None) -> dict[str, floa
     if own in {"tempo"} and opp in {"control", "counter-heavy"}:
         profile["proactive_bias"] += 0.5
         profile["risk_tolerance"] += 0.2
+    if own in {"combo-lite"}:
+        profile["proactive_bias"] += 0.6
+        profile["risk_tolerance"] += 0.15
+        if opp in {"control", "counter-heavy", "tempo"}:
+            profile["proactive_bias"] += 0.4
+            profile["risk_tolerance"] += 0.1
+        if opp in {"aggro", "burn"}:
+            profile["holdup_bias"] += 0.2
     return profile

@@ -49,3 +49,34 @@ def test_batch_exposes_first_divergence_report() -> None:
     out = service.run_batch(deck_a, deck_b, matches=2, difficulty="master", max_ticks=1)
     assert calls
     assert out["first_divergence"] == {"category": "mock", "index": 9}
+
+
+def test_batch_exposes_first_divergence_excerpt() -> None:
+    repo = _DummyRepo()
+    service = AnalyticsService(repo)  # type: ignore[arg-type]
+    excerpt = service._first_divergence_excerpt(
+        ["Turn 1.", "Player A plays Island.", "Player A passes priority."],
+        ["Turn 1.", "Player A plays Island.", "Player A casts Lightning Bolt."],
+    )
+
+    assert excerpt["index"] == 2
+    assert excerpt["category"] == "pass_vs_action"
+    assert excerpt["line_a"] == "Player A passes priority."
+    assert excerpt["line_b"] == "Player A casts Lightning Bolt."
+
+
+def test_batch_first_divergence_excerpt_includes_trace_context() -> None:
+    repo = _DummyRepo()
+    service = AnalyticsService(repo)  # type: ignore[arg-type]
+    excerpt = service._first_divergence_excerpt(
+        [
+            'AI TRACE {"pid":1,"turn":4,"step":"precombat_main","hand":["Counterspell"],"opp_hand":["Threat"],"battlefield":[{"id":"c1","types":["Land"]}],"opp_battlefield":[{"id":"c2","types":["Creature"]}],"life":{"self":16,"opp":12},"legal_non_pass":true,"legal_has_land":false,"action":{"type":"cast_spell","card_name":"Counterspell"}}'
+        ],
+        [
+            'AI TRACE {"pid":1,"turn":4,"step":"precombat_main","hand":["Counterspell"],"opp_hand":["Threat"],"battlefield":[{"id":"c1","types":["Land"]}],"opp_battlefield":[{"id":"c2","types":["Creature"]}],"life":{"self":16,"opp":12},"legal_non_pass":true,"legal_has_land":false,"action":{"type":"pass_priority"}}'
+        ],
+    )
+
+    assert excerpt["trace_context_a"]["hand_size"] == 1
+    assert excerpt["trace_context_a"]["opp_hand_size"] == 1
+    assert excerpt["trace_context_b"]["action_type"] == "pass_priority"

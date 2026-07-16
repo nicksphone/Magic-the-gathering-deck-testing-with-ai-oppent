@@ -89,7 +89,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const p2ManaPool = useMemo(() => manaPoolPips(p2.mana_pool), [p2.mana_pool]);
   const battlefieldCount = p1Groups.nonLands.length + p1Groups.lands.length + p2Groups.nonLands.length + p2Groups.lands.length;
   const battlefieldDensityClass =
-    battlefieldCount >= 20 ? "battlefield-packed" : battlefieldCount >= 12 ? "battlefield-dense" : battlefieldCount >= 7 ? "battlefield-comfort" : "battlefield-open";
+    battlefieldCount >= 16 ? "battlefield-packed" : battlefieldCount >= 9 ? "battlefield-dense" : battlefieldCount >= 5 ? "battlefield-comfort" : "battlefield-open";
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);

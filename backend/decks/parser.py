@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from card_data.search import normalize_card_lookup_name
 from persistence.repository import Repository
 
 
@@ -15,7 +16,9 @@ class ParsedDeck:
     suggestions: list[dict[str, Any]]
 
 
-DECK_LINE = re.compile(r"^\s*(\d+)\s+(.+?)\s*$")
+DECK_LINE = re.compile(r"^\s*(\d+)\s*x?\s+(.+?)\s*$", re.IGNORECASE)
+SECTION_HEADER = re.compile(r"^\s*(mainboard|maindeck|deck|sideboard|sb|commander|companion)\s*:?\s*$", re.IGNORECASE)
+COMMENT_LINE = re.compile(r"^\s*(?:#|;|//)\s*")
 
 
 class DeckParser:
@@ -29,14 +32,18 @@ class DeckParser:
         errors: list[str] = []
         suggestions: list[dict[str, Any]] = []
         cards = self.repo.list_cards()
-        known_names = {c.name.lower(): c.name for c in cards}
+        known_names = {normalize_card_lookup_name(c.name).lower(): c.name for c in cards}
 
         for idx, raw in enumerate(deck_text.splitlines(), start=1):
             line = raw.strip()
             if not line:
                 continue
-            if line.lower().startswith("sideboard"):
-                section = "sideboard"
+            if COMMENT_LINE.match(line):
+                continue
+            header = SECTION_HEADER.match(line)
+            if header:
+                token = header.group(1).lower()
+                section = "sideboard" if token in {"sideboard", "sb"} else "mainboard"
                 continue
             match = DECK_LINE.match(line)
             if not match:
@@ -44,11 +51,12 @@ class DeckParser:
                 continue
             qty = int(match.group(1))
             name = match.group(2).strip()
-            canonical = known_names.get(name.lower())
+            normalized_name = normalize_card_lookup_name(name)
+            canonical = known_names.get(normalized_name.lower())
             if canonical is None:
                 from card_data.search import fuzzy_card_lookup
 
-                suggestion, score = fuzzy_card_lookup(name, cards)
+                suggestion, score = fuzzy_card_lookup(normalized_name, cards)
                 suggestions.append({"line": idx, "input": name, "suggestion": suggestion, "score": score})
                 canonical = suggestion or name
             item = {"quantity": qty, "card_name": canonical}
