@@ -174,7 +174,10 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
 
 def lose_life(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", controller))
-    amount = int(payload.get("amount", 0))
+    if payload.get("count_type"):
+        amount = _count_controlled_type(state, int(payload.get("count_controller", controller)), str(payload["count_type"]))
+    else:
+        amount = int(payload.get("amount", 0))
     if amount <= 0:
         return
     if player_cant_lose_life(state, target_player):
@@ -182,6 +185,24 @@ def lose_life(state: MatchState, controller: int, payload: dict) -> None:
         return
     state.players[target_player].life -= amount
     state.log.append(f"{state.players[target_player].name} loses {amount} life.")
+
+
+def _count_controlled_type(state: MatchState, controller: int, type_name: str) -> int:
+    needle = str(type_name or "").lower()
+    if needle.endswith("ves"):
+        needle = needle[:-3] + "f"
+    elif needle.endswith("ies"):
+        needle = needle[:-3] + "y"
+    else:
+        needle = needle.rstrip("s")
+    count = 0
+    for cid in state.players[controller].battlefield:
+        card = state.cards[cid]
+        types = {str(value).lower().rstrip("s") for value in (getattr(card, "types", []) or [])}
+        type_line = str(getattr(card, "type_line", "") or "").lower()
+        if needle in types or needle in type_line.split():
+            count += 1
+    return count
 
 
 def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None:

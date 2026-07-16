@@ -13,6 +13,7 @@ DRAW_RE = re.compile(r"draw\s+(a|\d+)\s+card")
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
+LOSE_COUNT_RE = re.compile(r"loses?\s+life\s+equal\s+to\s+the\s+number\s+of\s+([a-z-]+)\s+you\s+control", re.IGNORECASE)
 PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(creature|land|permanent)")
@@ -534,6 +535,13 @@ def _infer_clause_effect(
         return "gain_life", {"amount": amount}
 
     lose_match = LOSE_RE.search(oracle)
+    lose_count_match = LOSE_COUNT_RE.search(oracle)
+    if lose_count_match:
+        return "lose_life", {
+            "target_player": target_player if target_player is not None else opponent,
+            "count_type": lose_count_match.group(1).lower(),
+            "count_controller": controller,
+        }
     if lose_match:
         amount = int(lose_match.group(1))
         if "you lose" in oracle:

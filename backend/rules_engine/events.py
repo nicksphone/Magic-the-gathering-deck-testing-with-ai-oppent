@@ -631,6 +631,8 @@ def _trigger_from_oracle(
             "sacrifice",
             "return target",
             "add ",
+            "lose ",
+            "loses ",
             "counter target",
             "cast target",
             "reveals the top card",

@@ -158,6 +158,30 @@ def test_named_self_counter_trigger_resolves_without_card_specific_handler() -> 
     assert state.cards[source].counters["+1/+1"] == 1
 
 
+def test_counted_creature_type_trigger_uses_resolution_time_board_state() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    source = _put_trigger_creature(
+        state,
+        1,
+        "When Shaman of the Pack enters the battlefield, target opponent loses life equal to the number of Elves you control.",
+    )
+    state.cards[source].name = "Shaman of the Pack"
+    elf = _put_trigger_creature(state, 1, "")
+    state.cards[elf].type_line = "Creature — Elf Warrior"
+    emit_event(state, "enters_battlefield", {"card_id": source, "controller": 1})
+
+    trigger = next(item for item in state.stack if item.source_card_id == source)
+    from effects.registry import resolve_effect
+
+    before = state.players[2].life
+    resolve_effect(state, 1, trigger.effect_key, trigger.payload)
+    assert state.players[2].life == before - 1
+
+
 def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
