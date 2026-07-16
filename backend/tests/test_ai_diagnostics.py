@@ -3,6 +3,7 @@ from __future__ import annotations
 from analytics.service import AnalyticsService
 from analytics.replay_tools import classify_first_divergence
 from collections import Counter
+from scripts.anomaly_cluster_report import classify
 
 
 class FakeRepo:
@@ -33,6 +34,7 @@ def test_ai_diagnostics_reports_matchup_metrics() -> None:
     assert "global_anomalies" in result
     assert "suspicious_matchups" in result
     assert len(result["suspicious_matchups"]) == 1
+    assert "first_divergence" in result["suspicious_matchups"][0]
     assert repo.saved and repo.saved[0][0] == "ai_diagnostics"
 
 
@@ -54,6 +56,27 @@ def test_scan_log_tracks_stall_and_land_window_anomalies() -> None:
     )
     assert out["stall_pass_streaks"] == 1
     assert out["missed_land_windows"] == 1
+
+
+def test_scan_log_attributes_unhandled_oracle_effects_to_cards() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    out = Counter()
+    top = Counter()
+    cards = Counter()
+    svc._scan_log_for_anomalies(
+        [
+            "Oracle effect not inferred for Mystic Card (controller=1). Text: Whenever you cast a spell, do something unusual.",
+            "Oracle effect not inferred for Mystic Card (controller=1). Text: Whenever you cast a spell, do something unusual.",
+            "Oracle effect not inferred for Other Card (controller=2). Text: Choose a result.",
+        ],
+        out,
+        top,
+        cards,
+    )
+
+    assert out["oracle_fallbacks"] == 3
+    assert cards.most_common(2) == [("Mystic Card", 2), ("Other Card", 1)]
 
 
 def test_compare_replay_logs_reports_first_divergence() -> None:
@@ -116,6 +139,53 @@ def test_compare_replay_logs_labels_cast_resolution_error() -> None:
     assert report["action_b"] == "unknown"
 
 
+def test_compare_replay_logs_labels_stack_target_mismatch() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    report = svc.compare_replay_logs(
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Counterspell","targets":{"target_stack_id":"stack-big"}}}',
+        ],
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Counterspell","targets":{"target_stack_id":"stack-small"}}}',
+        ],
+    )
+
+    assert report["category"] == "stack_target_mismatch"
+    assert report["action_a"] == "cast_spell"
+    assert report["action_b"] == "cast_spell"
+
+
+def test_compare_replay_logs_labels_mode_choice_mismatch() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    report = svc.compare_replay_logs(
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Modal Spell","targets":{"mode_text":"Counter target spell"}}}',
+        ],
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Modal Spell","targets":{"mode_text":"Create two tokens"}}}',
+        ],
+    )
+
+    assert report["category"] == "mode_choice_mismatch"
+
+
+def test_compare_replay_logs_labels_face_choice_mismatch() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    report = svc.compare_replay_logs(
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Dual Threat","selected_face_index":0}}',
+        ],
+        [
+            'AI TRACE {"action":{"type":"cast_spell","card_name":"Dual Threat","selected_face_index":1}}',
+        ],
+    )
+
+    assert report["category"] == "face_choice_mismatch"
+
+
 def test_extract_turn_summaries_reads_ai_trace_snapshots() -> None:
     summaries = AnalyticsService._extract_turn_summaries(
         [
@@ -131,3 +201,43 @@ def test_extract_turn_summaries_reads_ai_trace_snapshots() -> None:
     assert summaries[0]["battlefield_size"] == 1
     assert summaries[1]["turn"] == 3
     assert summaries[1]["opp_battlefield_size"] == 1
+
+
+def test_anomaly_cluster_labels_x_value_and_stack_signals() -> None:
+    labels = classify(
+        [
+            "Player A casts/activates Secure the Wastes.",
+            "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+            "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+            'AI TRACE {"action":{"type":"cast_spell","targets":{"target_stack_id":"stack-1"}}}',
+            'AI TRACE {"action":{"type":"cast_spell","targets":{"target_stack_id":"stack-2"}}}',
+            'AI TRACE {"action":{"type":"pass_priority"}}',
+            'AI TRACE {"action":{"type":"pass_priority"}}',
+            'AI TRACE {"action":{"type":"pass_priority"}}',
+        ]
+    )
+
+    assert "x_value_error" in labels
+    assert "x_spell_error_loop" in labels
+    assert "stack_target" in labels
+    assert "stall_pass" in labels
+
+
+def test_scan_log_for_anomalies_counts_x_spell_and_main_phase_loops() -> None:
+    repo = FakeRepo()
+    svc = AnalyticsService(repo)
+    out = Counter()
+    top = Counter()
+    svc._scan_log_for_anomalies(
+        [
+            'AI TRACE {"step":"precombat_main","action":{"type":"pass_priority"}}',
+            'AI TRACE {"step":"precombat_main","action":{"type":"pass_priority"}}',
+            "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+            "Invalid targets for Secure the Wastes: X value is required and must be non-negative.",
+        ],
+        out,
+        top,
+    )
+
+    assert out["main_phase_pass_loops"] >= 2
+    assert out["x_spell_error_loops"] == 1

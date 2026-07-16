@@ -9,9 +9,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for fallback counting and card-level attribution.
 
 - Validation:
-  - Backend suite now passes `409` tests.
+  - Backend suite now passes `410` tests.
   - Frontend production build passes after adding the unsupported-Oracle diagnostics panel.
   - Four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
+
+- Rules correctness:
+  - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now evaluated before broad Oracle prefix matches, preventing opponent-controlled events from incorrectly firing “under your control” abilities.
+  - Added regression coverage for opponent-controlled ETB events and retained coverage for scoped death events.
 
 - AI runtime stability:
   - `_cast_bias` now initializes board-role context before evaluating engine-tagged control spells, which removes a head-to-head crash in the simulator path.

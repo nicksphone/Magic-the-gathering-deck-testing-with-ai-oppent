@@ -9,7 +9,7 @@ from collections import Counter
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
-from rules_engine.mana import parse_mana_cost
+from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from game_state.state import MatchFactory
@@ -37,6 +37,7 @@ class AnalyticsService:
         opener_quality_b: list[float] = []
         anomaly_counts: Counter = Counter()
         top_errors: Counter = Counter()
+        oracle_fallback_cards: Counter = Counter()
         replay_fingerprint_parts: list[str] = []
         first_game_log: list[str] = []
         second_game_log: list[str] = []
@@ -87,7 +88,7 @@ class AnalyticsService:
                         play_win += 1
             else:
                 stats["timeouts"] += 1
-            self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors)
+            self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors, oracle_fallback_cards)
             if i == 0:
                 first_game_log = list(state.log)
             elif i == 1:
@@ -140,10 +141,18 @@ class AnalyticsService:
                 "repeated_error_bursts": int(anomaly_counts["repeated_error_bursts"]),
                 "stall_pass_streaks": int(anomaly_counts["stall_pass_streaks"]),
                 "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
+                "main_phase_pass_loops": int(anomaly_counts["main_phase_pass_loops"]),
+                "x_spell_error_loops": int(anomaly_counts["x_spell_error_loops"]),
+                "oracle_fallbacks": int(anomaly_counts["oracle_fallbacks"]),
             },
+            "oracle_fallback_cards": [
+                {"card_name": name, "count": count}
+                for name, count in oracle_fallback_cards.most_common(20)
+            ],
             "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
             "game_results": game_results,
             "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
+            "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
             "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
             "sample_log_excerpt": first_game_log[:12],
             "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
@@ -182,6 +191,7 @@ class AnalyticsService:
 
         global_counts: Counter = Counter()
         top_errors: Counter = Counter()
+        oracle_fallback_cards: Counter = Counter()
         suspicious: list[dict] = []
         total_games = 0
 
@@ -191,6 +201,7 @@ class AnalyticsService:
             pair_games = 0
             pair_first_player_wins = 0
             first_game_log: list[str] = []
+            second_game_log: list[str] = []
 
             for game_idx in range(matches_per_pair):
                 state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
@@ -220,9 +231,11 @@ class AnalyticsService:
                 elif state.winner == 1 and game_idx % 2 == 0:
                     pair_first_player_wins += 1
 
-                self._scan_log_for_anomalies(state.log, pair_counts, top_errors)
+                self._scan_log_for_anomalies(state.log, pair_counts, top_errors, oracle_fallback_cards)
                 if game_idx == 0:
                     first_game_log = list(state.log)
+                elif game_idx == 1:
+                    second_game_log = list(state.log)
                 pair_turns.append(state.turn)
                 pair_games += 1
                 total_games += 1
@@ -238,14 +251,23 @@ class AnalyticsService:
                     "timeouts": int(pair_counts["timeouts"]),
                     "invalid_targets": int(pair_counts["invalid_targets"]),
                     "cost_failures": int(pair_counts["cost_failures"]),
+                    "oracle_fallbacks": int(pair_counts["oracle_fallbacks"]),
                     "repeated_error_bursts": int(pair_counts["repeated_error_bursts"]),
                     "draw_play_advantage_deck_a": round((pair_first_player_wins / max(1, pair_games // 2 or 1)) * 100, 2),
                     "turn_summaries": self._extract_turn_summaries(first_game_log),
+                    "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
+                    "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
                 }
             )
 
         suspicious.sort(
-            key=lambda x: (x["timeouts"] * 5 + x["invalid_targets"] * 3 + x["cost_failures"] * 2 + x["repeated_error_bursts"]),
+            key=lambda x: (
+                x["timeouts"] * 5
+                + x["invalid_targets"] * 3
+                + x["cost_failures"] * 2
+                + x["oracle_fallbacks"] * 2
+                + x["repeated_error_bursts"]
+            ),
             reverse=True,
         )
         result = {
@@ -261,7 +283,14 @@ class AnalyticsService:
                 "repeated_error_bursts": int(global_counts["repeated_error_bursts"]),
                 "stall_pass_streaks": int(global_counts["stall_pass_streaks"]),
                 "missed_land_windows": int(global_counts["missed_land_windows"]),
+                "main_phase_pass_loops": int(global_counts["main_phase_pass_loops"]),
+                "x_spell_error_loops": int(global_counts["x_spell_error_loops"]),
+                "oracle_fallbacks": int(global_counts["oracle_fallbacks"]),
             },
+            "oracle_fallback_cards": [
+                {"card_name": name, "count": count}
+                for name, count in oracle_fallback_cards.most_common(20)
+            ],
             "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
             "suspicious_matchups": suspicious[:20],
         }
@@ -276,6 +305,29 @@ class AnalyticsService:
     def compare_replay_logs(left_log: list[str], right_log: list[str]) -> dict:
         drift = first_log_divergence(left_log, right_log)
         return classify_first_divergence(drift)
+
+    @staticmethod
+    def _first_divergence_excerpt(left_log: list[str], right_log: list[str]) -> dict:
+        drift = first_log_divergence(left_log, right_log)
+        if drift.get("index", -1) < 0:
+            return {
+                "index": -1,
+                "line_a": "",
+                "line_b": "",
+                "category": "identical",
+                "trace_context_a": {},
+                "trace_context_b": {},
+            }
+        classified = classify_first_divergence(drift)
+        return {
+            "index": drift.get("index", -1),
+            "category": classified.get("category", "unknown"),
+            "line_a": drift.get("a", ""),
+            "line_b": drift.get("b", ""),
+            "context_before": drift.get("context_before", []),
+            "trace_context_a": classified.get("trace_context_a", {}),
+            "trace_context_b": classified.get("trace_context_b", {}),
+        }
 
     @staticmethod
     def _extract_turn_summaries(log: list[str], max_turns: int = 8) -> list[dict]:
@@ -328,7 +380,7 @@ class AnalyticsService:
             if "Land" in c.types:
                 continue
             cost = parse_mana_cost(c.mana_cost)
-            cmc = cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"])
+            cmc = mana_value(c.mana_cost)
             if cmc <= 2:
                 cheap_spells += 1
         land_score = 1.0 - min(abs(lands - 3), 3) / 3
@@ -347,7 +399,7 @@ class AnalyticsService:
             cmcs = []
             for item in hand:
                 cost = parse_mana_cost(item.get("mana_cost", ""))
-                cmcs.append(cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"]))
+                cmcs.append(mana_value(item.get("mana_cost", "")))
             if not cmcs:
                 sample_scores.append(0.0)
                 continue
@@ -370,9 +422,16 @@ class AnalyticsService:
         )
         return int(hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16], 16)
 
-    def _scan_log_for_anomalies(self, log: list[str], out: Counter, top_errors: Counter) -> None:
+    def _scan_log_for_anomalies(
+        self,
+        log: list[str],
+        out: Counter,
+        top_errors: Counter,
+        oracle_fallback_cards: Counter | None = None,
+    ) -> None:
         error_lines: list[str] = []
         consecutive_passes = 0
+        x_error_streak = 0
         for line in log:
             low = line.lower()
             if "passes priority" in low:
@@ -382,8 +441,21 @@ class AnalyticsService:
                     consecutive_passes = 0
             else:
                 consecutive_passes = 0
+            if "x value is required" in low or "x value must be non-negative" in low:
+                x_error_streak += 1
+                if x_error_streak >= 2:
+                    out["x_spell_error_loops"] += 1
+                    x_error_streak = 0
+            else:
+                x_error_streak = 0
             if "invalid targets for" in low:
                 out["invalid_targets"] += 1
+                error_lines.append(line.strip())
+            if "oracle effect not inferred for " in low:
+                out["oracle_fallbacks"] += 1
+                card_name = line.split("Oracle effect not inferred for ", 1)[-1].split(" (controller=", 1)[0].strip()
+                if oracle_fallback_cards is not None and card_name:
+                    oracle_fallback_cards[card_name] += 1
                 error_lines.append(line.strip())
             if "cannot satisfy chosen costs for" in low or "cannot pay mana cost for" in low:
                 out["cost_failures"] += 1
@@ -394,6 +466,8 @@ class AnalyticsService:
             if "missed land-play window" in low or "land in hand but no land play available" in low:
                 out["missed_land_windows"] += 1
                 error_lines.append(line.strip())
+            if "pass_priority" in low and "main" in low:
+                out["main_phase_pass_loops"] += 1
         for e in error_lines:
             top_errors[e] += 1
         # Detect repeated consecutive error bursts, which usually indicate AI stall loops.

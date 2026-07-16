@@ -182,42 +182,58 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
 
 
 def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    dead_id = payload.get("card_id")
+    dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
+    dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
+    if "whenever another creature you control dies" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and dead_id != card.id and "Creature" in dead_types
+    if "whenever a creature you control dies" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types
+    if "whenever another nontoken creature you control dies" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and dead_id != card.id and "Creature" in dead_types and "Token" not in dead_types
+    if "whenever a nontoken creature you control dies" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types and "Token" not in dead_types
+    if "whenever one or more nontoken creatures you control die" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types and "Token" not in dead_types
+    if "whenever one or more creatures you control die" in oracle:
+        return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types
     if "whenever a creature dies" in oracle or "whenever another creature dies" in oracle:
         return True
     if "whenever one or more creatures die" in oracle:
         return True
     if "whenever a creature you control dies" in oracle or "whenever another creature you control dies" in oracle:
-        dead_id = payload.get("card_id")
-        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
         return bool(dead_card) and dead_card.controller == card.controller
     if "whenever one or more creatures you control die" in oracle:
-        dead_id = payload.get("card_id")
-        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
         return bool(dead_card) and dead_card.controller == card.controller
     if "whenever a nontoken creature you control dies" in oracle:
-        dead_id = payload.get("card_id")
-        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
         return bool(dead_card) and dead_card.controller == card.controller and "token" not in {str(t).lower() for t in (getattr(dead_card, "types", []) or [])}
     if "whenever one or more nontoken creatures you control die" in oracle:
-        dead_id = payload.get("card_id")
-        dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
         return bool(dead_card) and dead_card.controller == card.controller and "token" not in {str(t).lower() for t in (getattr(dead_card, "types", []) or [])}
     return False
 
 
 def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
-    if "whenever a permanent dies" in oracle or "whenever another permanent dies" in oracle:
-        return True
-    if "whenever one or more permanents die" in oracle:
-        return True
     dead_id = payload.get("card_id")
     dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
     if not dead_card:
         return False
-    if "whenever a permanent you control dies" in oracle or "whenever another permanent you control dies" in oracle:
+    dead_types = set(getattr(dead_card, "types", []) or [])
+    if "whenever another permanent you control dies" in oracle:
+        return dead_card.controller == card.controller and dead_id != card.id
+    if "whenever a permanent you control dies" in oracle:
         return dead_card.controller == card.controller
+    if "whenever another nontoken permanent you control dies" in oracle:
+        return dead_card.controller == card.controller and dead_id != card.id and "Token" not in dead_types
+    if "whenever a nontoken permanent you control dies" in oracle:
+        return dead_card.controller == card.controller and "Token" not in dead_types
+    if "whenever one or more nontoken permanents you control die" in oracle:
+        return dead_card.controller == card.controller and "Token" not in dead_types
     if "whenever one or more permanents you control die" in oracle:
         return dead_card.controller == card.controller
+    if "whenever a permanent dies" in oracle or "whenever another permanent dies" in oracle:
+        return True
+    if "whenever one or more permanents die" in oracle:
+        return True
     if "whenever a nontoken permanent you control dies" in oracle:
         return dead_card.controller == card.controller and "token" not in {str(t).lower() for t in (getattr(dead_card, "types", []) or [])}
     if "whenever one or more nontoken permanents you control die" in oracle:
@@ -248,6 +264,30 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if not entering_id or entering_id not in state.cards:
         return False
     entering_card = state.cards[entering_id]
+    # Check controller-scoped clauses before their broader prefixes. Without
+    # this ordering, "a creature enters" also matches "under your control".
+    entering_types = set(getattr(entering_card, "types", []) or [])
+    enters_for_controller = entering_card.controller == card.controller
+    if "another creature enters the battlefield under your control" in oracle:
+        return "Creature" in entering_types and enters_for_controller and entering_id != card.id
+    if "a creature enters the battlefield under your control" in oracle:
+        return "Creature" in entering_types and enters_for_controller
+    if "another permanent enters the battlefield under your control" in oracle:
+        return enters_for_controller and entering_id != card.id
+    if "a permanent enters the battlefield under your control" in oracle:
+        return enters_for_controller
+    if "another artifact enters the battlefield under your control" in oracle:
+        return "Artifact" in entering_types and enters_for_controller and entering_id != card.id
+    if "an artifact enters the battlefield under your control" in oracle:
+        return "Artifact" in entering_types and enters_for_controller
+    if "another enchantment enters the battlefield under your control" in oracle:
+        return "Enchantment" in entering_types and enters_for_controller and entering_id != card.id
+    if "an enchantment enters the battlefield under your control" in oracle:
+        return "Enchantment" in entering_types and enters_for_controller
+    if "another artifact or enchantment enters the battlefield under your control" in oracle:
+        return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller and entering_id != card.id
+    if "an artifact or enchantment enters the battlefield under your control" in oracle:
+        return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller
     if f"when {card.name.lower()} enters the battlefield" in oracle:
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:

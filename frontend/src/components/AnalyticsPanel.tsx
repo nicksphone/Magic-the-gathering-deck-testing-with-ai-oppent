@@ -21,6 +21,30 @@ export function AnalyticsPanel({ decks }: Props) {
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
+  const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
+  const anomalyObj = (resultObj?.anomalies as Record<string, unknown> | null) ?? null;
+
+  function renderTraceContext(title: string, context: Record<string, unknown> | null | undefined) {
+    if (!context || Object.keys(context).length === 0) {
+      return <p>{title}: n/a</p>;
+    }
+    return (
+      <div>
+        <strong>{title}</strong>
+        <ul className="analytics-sample-list">
+          <li>pid: {String(context.pid ?? "-")}</li>
+          <li>turn: {String(context.turn ?? "-")}</li>
+          <li>step: {String(context.step ?? "-")}</li>
+          <li>active / priority: {String(context.active_player ?? "-")} / {String(context.priority_player ?? "-")}</li>
+          <li>hand: {String(context.hand_size ?? "-")} | opp hand: {String(context.opp_hand_size ?? "-")}</li>
+          <li>field: {String(context.battlefield_size ?? "-")} | opp field: {String(context.opp_battlefield_size ?? "-")}</li>
+          <li>life: {String(context.life_self ?? "-")} / {String(context.life_opp ?? "-")}</li>
+          <li>legal: non-pass {String(context.legal_non_pass ?? "-")} | land {String(context.legal_has_land ?? "-")}</li>
+          <li>action: {String(context.action_type ?? "-")}</li>
+        </ul>
+      </div>
+    );
+  }
 
   async function runBatch() {
     const a = decks.find((d) => d.id === deckA);
@@ -152,12 +176,34 @@ export function AnalyticsPanel({ decks }: Props) {
           <p>
             Fingerprint: {(resultObj.deterministic_replay_fingerprint as string | undefined) ?? "n/a"}
           </p>
+          {anomalyObj ? (
+            <div className="analytics-sample-block">
+              <strong>Anomaly Counters</strong>
+              <ul className="analytics-sample-list">
+                {Object.entries(anomalyObj).map(([key, value]) => (
+                  <li key={key}>
+                    {key}: {String(value)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <p>
             Anomalies: {JSON.stringify(resultObj.anomalies ?? {}, null, 0)}
           </p>
           <p>
             Top Errors: {JSON.stringify(resultObj.top_errors ?? [], null, 0)}
           </p>
+          {Array.isArray(resultObj.oracle_fallback_cards) && (resultObj.oracle_fallback_cards as unknown[]).length > 0 ? (
+            <div className="analytics-sample-block">
+              <strong>Unsupported Oracle Effects</strong>
+              <ul className="analytics-sample-list">
+                {(resultObj.oracle_fallback_cards as Array<Record<string, unknown>>).map((item) => (
+                  <li key={String(item.card_name)}>{String(item.card_name)}: {String(item.count)} fallback(s)</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {Array.isArray(resultObj.sample_turn_summaries) ? (
             <div className="analytics-sample-block">
               <strong>First Game Turn Summary</strong>
@@ -198,6 +244,16 @@ export function AnalyticsPanel({ decks }: Props) {
               </p>
               <pre className="analytics-log-excerpt">
                 {JSON.stringify(firstDivergence, null, 2)}
+              </pre>
+            </div>
+          ) : null}
+          {firstDivergenceExcerpt ? (
+            <div className="analytics-sample-block">
+              <strong>First Divergence Trace Context</strong>
+              {renderTraceContext("Trace Context A", firstDivergenceExcerpt.trace_context_a as Record<string, unknown> | null | undefined)}
+              {renderTraceContext("Trace Context B", firstDivergenceExcerpt.trace_context_b as Record<string, unknown> | null | undefined)}
+              <pre className="analytics-log-excerpt">
+                {JSON.stringify(firstDivergenceExcerpt, null, 2)}
               </pre>
             </div>
           ) : null}
