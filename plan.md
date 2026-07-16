@@ -141,6 +141,7 @@ Release blockers identified by the audit:
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
+- Saved-deck completeness is now available through `/decks/completeness` and `/decks/{deck_id}/card-completeness`, covering distinct mainboard and sideboard names for release diagnostics.
 
 ### UI and docs
 - The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable.
@@ -252,6 +253,7 @@ Exit criteria:
 
 Current implementation note:
 - `/cards/completeness` is available for distinct card names from an imported deck, and the deck import panel displays cache, fallback Oracle, placeholder-art, and ruling status after imports. Bulk completeness summaries remain in the release-hardening queue.
+- Bulk saved-deck reports are now exposed by the backend; a dedicated multi-deck completeness dashboard remains optional release-polish work.
 
 ### 7. Complete the testing UI and release hardening
 1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.

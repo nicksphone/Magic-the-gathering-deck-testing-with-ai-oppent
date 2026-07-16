@@ -25,6 +25,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added `/cards/completeness` to report uncached cards, fallback-backed Oracle text, missing costs/type lines/legalities/rulings, face metadata gaps, and placeholder art.
   - Added regression coverage for complete, fallback-backed, and unresolved card metadata.
   - Deck import UI now displays the completeness summary immediately after a deck is imported.
+  - Added saved-deck completeness endpoints for one deck or all distinct saved decks, including sideboard card names.
 
 - Oracle coverage diagnostics:
   - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.

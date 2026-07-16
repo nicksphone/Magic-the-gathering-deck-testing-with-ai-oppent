@@ -325,6 +325,38 @@ def card_completeness(names: list[str] = [], repo: Repository = Depends(get_repo
     return CardService(repo).completeness_report(names)
 
 
+@app.get("/decks/completeness")
+def saved_deck_completeness(repo: Repository = Depends(get_repo)) -> list[dict]:
+    service = CardService(repo)
+    reports: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for row in repo.list_decks():
+        key = ((row.name or "").strip().lower(), (row.source or "").strip().lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        names = [
+            item["card_name"]
+            for item in json.loads(row.mainboard_json) + json.loads(row.sideboard_json)
+            if item.get("card_name")
+        ]
+        reports.append({"deck_id": row.id, "name": row.name, "source": row.source, "report": service.completeness_report(names)})
+    return reports
+
+
+@app.get("/decks/{deck_id}/card-completeness")
+def saved_deck_card_completeness(deck_id: int, repo: Repository = Depends(get_repo)) -> dict:
+    row = next((item for item in repo.list_decks() if item.id == deck_id), None)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    names = [
+        item["card_name"]
+        for item in json.loads(row.mainboard_json) + json.loads(row.sideboard_json)
+        if item.get("card_name")
+    ]
+    return {"deck_id": row.id, "name": row.name, "source": row.source, "report": CardService(repo).completeness_report(names)}
+
+
 @app.get("/decks/builtin")
 def builtin_decks() -> list[str]:
     return sorted(BUILTIN_DECKS.keys())

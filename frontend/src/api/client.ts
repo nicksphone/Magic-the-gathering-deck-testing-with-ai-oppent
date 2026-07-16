@@ -148,6 +148,10 @@ export const api = {
     const query = names.map((name) => `names=${encodeURIComponent(name)}`).join("&");
     return req<CardCompletenessReport>(`/cards/completeness${query ? `?${query}` : ""}`);
   },
+  savedDeckCompleteness: () =>
+    req<{ deck_id: number; name: string; source: string; report: CardCompletenessReport }[]>("/decks/completeness"),
+  deckCompleteness: (deckId: number) =>
+    req<{ deck_id: number; name: string; source: string; report: CardCompletenessReport }>(`/decks/${deckId}/card-completeness`),
   startMatch: (payload: {
     deck_a: DeckItem[];
     deck_b: DeckItem[];
