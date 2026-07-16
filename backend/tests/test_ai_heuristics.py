@@ -29,6 +29,48 @@ def test_evaluate_board_rewards_evasive_keyword_creatures() -> None:
     assert evaluate_board(upgraded, 1) > evaluate_board(baseline, 1)
 
 
+def test_ai_combat_uses_granted_keywords_from_static_effects() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=11)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    attacker_id = state.players[1].hand.pop()
+    attacker = state.cards[attacker_id]
+    attacker.name = "Small Deathtouch Creature"
+    attacker.types = ["Creature"]
+    attacker.zone = Zone.BATTLEFIELD
+    attacker.type_line = "Creature — Insect"
+    attacker.power = 1
+    attacker.toughness = 1
+    attacker.summoning_sick = False
+    state.players[1].battlefield.append(attacker_id)
+
+    grant_id = state.players[1].hand.pop()
+    grant = state.cards[grant_id]
+    grant.name = "Deathtouch Anthem"
+    grant.types = ["Enchantment"]
+    grant.zone = Zone.BATTLEFIELD
+    grant.oracle_text = "Creatures you control have deathtouch."
+    state.players[1].battlefield.append(grant_id)
+
+    blocker_id = state.players[2].hand.pop()
+    blocker = state.cards[blocker_id]
+    blocker.name = "Large Blocker"
+    blocker.types = ["Creature"]
+    blocker.zone = Zone.BATTLEFIELD
+    blocker.power = 3
+    blocker.toughness = 3
+    blocker.summoning_sick = False
+    state.players[2].battlefield.append(blocker_id)
+
+    chosen = AIAgent(difficulty="master", archetype="Midrange")._choose_attackers(
+        state, [attacker_id], 1
+    )
+
+    assert attacker_id in chosen
+
+
 def test_evaluate_board_penalizes_opponent_planeswalker_pressure() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     baseline = MatchFactory.from_decks(deck, deck)
@@ -72,6 +114,50 @@ def test_evaluate_board_reads_active_face_for_modal_permanents() -> None:
     ]
 
     assert evaluate_board(face_b, 1) > evaluate_board(face_a, 1)
+
+
+def test_evaluate_board_rewards_trigger_engine_permanents() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    baseline = MatchFactory.from_decks(deck, deck)
+    engine = MatchFactory.from_decks(deck, deck)
+
+    base_id = baseline.players[1].library.pop()
+    baseline.players[1].battlefield.append(base_id)
+    baseline.cards[base_id].zone = Zone.BATTLEFIELD
+    baseline.cards[base_id].types = ["Enchantment"]
+    baseline.cards[base_id].name = "Vanilla Enchantment"
+    baseline.cards[base_id].oracle_text = ""
+
+    engine_id = engine.players[1].library.pop()
+    engine.players[1].battlefield.append(engine_id)
+    engine.cards[engine_id].zone = Zone.BATTLEFIELD
+    engine.cards[engine_id].types = ["Enchantment"]
+    engine.cards[engine_id].name = "Anointed Procession"
+    engine.cards[engine_id].oracle_text = "Whenever a permanent enters the battlefield under your control, draw a card."
+
+    assert evaluate_board(engine, 1) > evaluate_board(baseline, 1)
+
+
+def test_evaluate_board_rewards_artifact_or_enchantment_engine_permanents() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    baseline = MatchFactory.from_decks(deck, deck)
+    engine = MatchFactory.from_decks(deck, deck)
+
+    base_id = baseline.players[1].library.pop()
+    baseline.players[1].battlefield.append(base_id)
+    baseline.cards[base_id].zone = Zone.BATTLEFIELD
+    baseline.cards[base_id].types = ["Artifact"]
+    baseline.cards[base_id].name = "Vanilla Artifact"
+    baseline.cards[base_id].oracle_text = ""
+
+    engine_id = engine.players[1].library.pop()
+    engine.players[1].battlefield.append(engine_id)
+    engine.cards[engine_id].zone = Zone.BATTLEFIELD
+    engine.cards[engine_id].types = ["Artifact"]
+    engine.cards[engine_id].name = "Engine Artifact"
+    engine.cards[engine_id].oracle_text = "Whenever an artifact or enchantment enters the battlefield under your control, draw a card."
+
+    assert evaluate_board(engine, 1) > evaluate_board(baseline, 1)
 
 
 def test_control_ai_prefers_removal_against_evasive_threat() -> None:

@@ -8,10 +8,11 @@ from ai.endgame_policy import should_force_closure, should_force_inevitability_l
 from ai.heuristics import evaluate_board
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
-from game_state.state import MatchState
+from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.continuous import effective_keywords
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.mana import can_pay_with_pool_and_lands, parse_mana_cost
+from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
 
 @dataclass
@@ -34,6 +35,7 @@ class AIAgent:
             AIAgent._log_priors_cache = load_log_priors()
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
+        legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
         if getattr(state, "pregame_pending", False):
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:
@@ -111,9 +113,12 @@ class AIAgent:
     def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.difficulty not in {"master", "master_plus"}:
             return None
-        if int(getattr(state, "turn", 1) or 1) < 8:
-            return None
+        turn = int(getattr(state, "turn", 1) or 1)
         if not self._is_complex_board_state(state, player_id):
+            return None
+        if turn < 8 and self.archetype not in {"Control", "Counter-heavy", "Midrange", "Ramp", "Tempo"}:
+            return None
+        if turn < 6 and len(state.players[player_id].battlefield) + len(state.players[1 if player_id == 2 else 2].battlefield) < 12:
             return None
         proactive_legal = [
             mv for mv in legal_moves if mv.get("type") in {"cast_spell", "activate_loyalty", "attack"}
@@ -121,7 +126,8 @@ class AIAgent:
         if not proactive_legal:
             return None
         candidates = []
-        for mv in self._rank_moves(state, legal_moves, player_id)[:4]:
+        beam_limit = 8 if self.difficulty in {"master", "master_plus"} else 4
+        for mv in self._rank_moves(state, legal_moves, player_id)[:beam_limit]:
             mat = self._materialize_action(state, mv, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
@@ -352,7 +358,7 @@ class AIAgent:
             t = _eff_tgh(state, cid)
             if p <= 0:
                 continue
-            kws = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+            kws = set(effective_keywords(state, cid))
             evasive = bool(kws.intersection({"flying", "trample", "deathtouch", "menace"}))
             dies_to_any = any(_eff_pow(state, b) >= t for b in opp_blockers)
             trades_up = any(_eff_tgh(state, b) <= p for b in opp_blockers)
@@ -571,41 +577,186 @@ class AIAgent:
     def choose_mulligan_action(self, state: MatchState, player_id: int) -> AIDecision:
         player = state.players[player_id]
         hand = [state.cards[cid] for cid in player.hand]
-        lands = sum(1 for c in hand if _card_looks_like_land(c))
-        early_spells = 0
-        cheap_interaction = 0
-        colored_pips = {c: 0 for c in ["W", "U", "B", "R", "G"]}
-        for c in hand:
-            if _card_looks_like_land(c):
-                continue
-            cost = parse_mana_cost(c.mana_cost)
-            cmc = cost["generic"] + sum(cost[x] for x in ["W", "U", "B", "R", "G"])
-            if cmc <= 2:
-                early_spells += 1
-            text = f"{(getattr(c, 'name', '') or '').lower()} {(getattr(c, 'oracle_text', '') or '').lower()}"
-            if cmc <= 2 and any(k in text for k in ["counter target spell", "destroy target", "exile target", "deals"]):
-                cheap_interaction += 1
-            for sym in ["W", "U", "B", "R", "G"]:
-                colored_pips[sym] += int(cost[sym] or 0)
-        likely_sources = self._opening_color_sources_from_hand(hand)
-        missing_primary_color = any(v >= 2 and likely_sources.get(k, 0) == 0 for k, v in colored_pips.items())
+        profile = self._opening_hand_profile(hand)
+        lands = int(profile["lands"])
+        cheap_interaction = int(profile["cheap_interaction"])
+        likely_sources = profile["sources"]
+        missing_primary_color = bool(profile["missing_primary_color"])
         mulligans = state.mulligan_count.get(player_id, 0)
         min_lands, max_lands = self._preferred_land_window()
         too_land_light = lands < min_lands
         too_land_heavy = lands > max_lands
-        quality = (1.0 - min(abs(lands - 3), 3) / 3) * 0.65 + min(early_spells / 2, 1.0) * 0.25 + (0.1 if not missing_primary_color else 0.0)
-        if mulligans < 2 and (too_land_light or too_land_heavy):
+        quality = float(profile["quality"])
+        critical_miss = bool(profile["critical_miss"])
+        if critical_miss and mulligans < 2:
+            return AIDecision(action={"type": "mulligan"}, reasoning=profile["critical_reason"])
+        if mulligans < 2 and too_land_light:
+            # Keep a few borderline 2-land action hands when the deck can actually
+            # convert them into development, draw, or acceleration.
+            if not (
+                lands >= 2
+                and (
+                    (self.archetype == "Ramp" and int(profile.get("ramp_spells", 0)) + int(profile.get("draw_spells", 0)) >= 1)
+                    or (
+                        self.archetype in {"Control", "Counter-heavy"}
+                        and int(profile.get("draw_spells", 0)) + int(profile.get("counter_spells", 0)) + int(profile.get("removal_spells", 0)) >= 2
+                    )
+                )
+            ):
+                return AIDecision(
+                    action={"type": "mulligan"},
+                    reasoning=f"Opening hand outside {min_lands}-{max_lands} land window for {self.archetype}",
+                )
+        if mulligans < 2 and too_land_heavy:
             return AIDecision(
                 action={"type": "mulligan"},
                 reasoning=f"Opening hand outside {min_lands}-{max_lands} land window for {self.archetype}",
             )
         if mulligans < 2 and missing_primary_color and lands <= 3:
             return AIDecision(action={"type": "mulligan"}, reasoning="Missing key color access in opening hand")
-        if mulligans < 2 and quality < 0.45:
+        arche_quality_floor = 0.42
+        if self.archetype in {"Control", "Counter-heavy", "Ramp"}:
+            arche_quality_floor = 0.46
+        elif self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"}:
+            arche_quality_floor = 0.44
+        if mulligans < 2 and quality < arche_quality_floor:
             return AIDecision(action={"type": "mulligan"}, reasoning="Opening hand quality too low")
         if mulligans < 2 and self._is_burn_matchup() and (lands < 2 or cheap_interaction == 0):
             return AIDecision(action={"type": "mulligan"}, reasoning="Burn matchup requires stable mana and early interaction")
         return AIDecision(action={"type": "keep_hand", "bottom_card_ids": []}, reasoning="Keep acceptable hand")
+
+    def _opening_hand_profile(self, hand: list) -> dict[str, object]:
+        lands = 0
+        early_spells = 0
+        early_pressure = 0
+        cheap_interaction = 0
+        draw_spells = 0
+        counter_spells = 0
+        removal_spells = 0
+        ramp_spells = 0
+        token_spells = 0
+        engine_spells = 0
+        threats = 0
+        creatures = 0
+        colored_pips = {c: 0 for c in ["W", "U", "B", "R", "G"]}
+        for c in hand:
+            if _card_looks_like_land(c):
+                lands += 1
+                for sym in self._land_colors(c):
+                    if sym in colored_pips:
+                        colored_pips[sym] += 1
+                continue
+            mana_cost = getattr(c, "mana_cost", "") or ""
+            cost = parse_mana_cost(mana_cost, is_land=False)
+            cmc = mana_value(mana_cost, is_land=False)
+            text = f"{(getattr(c, 'name', '') or '').lower()} {(getattr(c, 'oracle_text', '') or '').lower()}"
+            types = set(getattr(c, "types", []) or [])
+            if cmc <= 2:
+                early_spells += 1
+            if cmc <= 3 and (
+                "Creature" in types
+                or "counter target spell" in text
+                or "destroy target" in text
+                or "exile target" in text
+                or "deal" in text
+                or ("create" in text and "token" in text)
+            ):
+                early_pressure += 1
+            if cmc <= 2 and any(k in text for k in ["counter target spell", "destroy target", "exile target", "deals", "deal", "remove target"]):
+                cheap_interaction += 1
+            if "draw" in text or "scry" in text or "consider" in text or "memory deluge" in text:
+                draw_spells += 1
+            if "counter target spell" in text or "counterspell" in text:
+                counter_spells += 1
+            if "destroy target" in text or "exile target" in text or "deals" in text:
+                removal_spells += 1
+            if "cultivate" in text or "ramp" in text or "add {" in text or "search your library for a land" in text:
+                ramp_spells += 1
+            if "create" in text and "token" in text:
+                token_spells += 1
+            if any(k in text for k in ["whenever", "at the beginning", "landfall", "magecraft", "prowess", "artifact or enchantment", "another permanent enters the battlefield", "another permanent dies"]):
+                engine_spells += 1
+            if "Creature" in types:
+                creatures += 1
+                if cmc <= 3 or int(getattr(c, "power", 0) or 0) >= 3:
+                    threats += 1
+            for sym in ["W", "U", "B", "R", "G"]:
+                colored_pips[sym] += int(cost[sym] or 0)
+
+        likely_sources = self._opening_color_sources_from_hand(hand)
+        missing_primary_color = any(v >= 2 and likely_sources.get(k, 0) == 0 for k, v in colored_pips.items())
+        arche = self.archetype
+        opp = (self.opponent_archetype or "").strip().lower()
+        curve_fit = 1.0 - min(abs(lands - (3 if arche in {"Control", "Counter-heavy", "Ramp"} else 2 if arche in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} else 3)), 3) / 3
+        action_density = min((early_spells + draw_spells + counter_spells + removal_spells + ramp_spells + token_spells + engine_spells) / 5.0, 1.6)
+        quality = curve_fit * 0.55 + action_density * 0.3 + (0.15 if not missing_primary_color else 0.0)
+        quality += min(0.2, threats * 0.05)
+
+        critical_miss = False
+        critical_reason = "Opening hand quality too low"
+        if arche in {"Control", "Counter-heavy"}:
+            quality += min(0.2, (draw_spells + counter_spells + removal_spells) * 0.04)
+            if opp in {"aggro", "burn", "tempo"} and lands <= 3 and cheap_interaction == 0:
+                critical_miss = True
+                critical_reason = "Control hand lacks early interaction against pressure"
+            elif lands <= 2 and draw_spells + counter_spells == 0:
+                critical_miss = True
+                critical_reason = "Control hand is too land-light without card selection"
+            elif lands >= 6 and draw_spells + counter_spells == 0:
+                critical_miss = True
+                critical_reason = "Control hand is too land-heavy without action"
+        elif arche == "Ramp":
+            quality += min(0.2, (ramp_spells + draw_spells) * 0.05)
+            if lands <= 2 and ramp_spells == 0:
+                critical_miss = True
+                critical_reason = "Ramp hand needs either stable lands or an accelerator"
+            elif lands >= 6 and ramp_spells + draw_spells == 0:
+                critical_miss = True
+                critical_reason = "Ramp hand is too land-heavy without ramp or draw"
+        elif arche in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"}:
+            quality += min(0.2, (creatures + early_spells + cheap_interaction) * 0.04)
+            if lands <= 1:
+                critical_miss = True
+                critical_reason = "Aggro hand is too land-light"
+            elif early_pressure == 0:
+                critical_miss = True
+                critical_reason = "Aggro hand lacks early pressure"
+        else:
+            quality += min(0.15, (threats + draw_spells + removal_spells + ramp_spells) * 0.03)
+            if lands <= 2 and threats + draw_spells + removal_spells == 0:
+                critical_miss = True
+                critical_reason = "Midrange hand lacks playable early action"
+
+        return {
+            "lands": lands,
+            "cheap_interaction": cheap_interaction,
+            "sources": likely_sources,
+            "missing_primary_color": missing_primary_color,
+            "quality": round(quality, 3),
+            "draw_spells": draw_spells,
+            "counter_spells": counter_spells,
+            "removal_spells": removal_spells,
+            "ramp_spells": ramp_spells,
+            "token_spells": token_spells,
+            "engine_spells": engine_spells,
+            "creatures": creatures,
+            "threats": threats,
+            "early_spells": early_spells,
+            "early_pressure": early_pressure,
+            "critical_miss": critical_miss,
+            "critical_reason": critical_reason,
+        }
+
+    def _current_hand_profile(self, state: MatchState, player_id: int) -> dict[str, object]:
+        hand = [state.cards[cid] for cid in getattr(state.players[player_id], "hand", []) if cid in state.cards]
+        profile = self._opening_hand_profile(hand)
+        action_density = int(
+            int(profile["cheap_interaction"])
+            + min(3, int(profile["lands"]))
+            + min(2, int(float(profile["quality"]) * 2))
+        )
+        profile["action_density"] = action_density
+        return profile
 
     def _preferred_land_window(self) -> tuple[int, int]:
         arche = self.archetype
@@ -690,6 +841,7 @@ class AIAgent:
             sim_state = copy.deepcopy(state)
             self.engine.take_action(sim_state, player_id, move)
             self._approximate_resolution_for_creature_cast(sim_state, move, player_id)
+            self._approximate_resolution_for_ramp_spell(sim_state, move, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = sorted(
@@ -738,20 +890,25 @@ class AIAgent:
         role = self._board_role(state, player_id)
         archetype_bias = 5 if self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} else 2
         archetype_bias += float(self.matchup_profile.get("proactive_bias", 0.0)) * 1.2
-        if role == "defend":
+        risk_penalty = 0.0
+        if role in {"defend", "stabilize"}:
             archetype_bias -= 2.2
+            risk_penalty += 1.2
         elif role == "race":
             archetype_bias += 1.4
+        elif role == "convert":
+            archetype_bias += 1.2
         # Safer aggression: avoid low-output swings into clearly superior blockers.
-        risk_penalty = 0.0
         if opp_blockers > 0 and attack_power > 0:
             if attack_power < (opp_block_power * 0.6):
                 risk_penalty += 2.2
-            if role == "defend":
+            if role in {"defend", "stabilize"}:
                 risk_penalty += 1.8
             if self.archetype in {"Aggro", "Tempo"} and attack_power <= 2 and opp_block_power >= 4:
                 risk_penalty += 1.6
         unblocked_bonus = 3.5 if opp_blockers == 0 else 0.0
+        if role == "convert" and opp_blockers > 0:
+            unblocked_bonus += 0.8
         lethal_bonus = 20.0 if attack_power >= state.players[opp_id].life else 0.0
         risk_penalty += max(0.0, -float(self.matchup_profile.get("risk_tolerance", 0.0))) * 0.9
         return archetype_bias + attack_power * 0.8 - opp_block_power * 0.35 + race_pressure + unblocked_bonus + lethal_bonus - risk_penalty
@@ -776,6 +933,14 @@ class AIAgent:
             return -2.1
         if self._is_burn_matchup() and getattr(state, "active_player", player_id) == player_id and _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}:
             return -1.0
+        hand_profile = self._current_hand_profile(state, player_id)
+        role = self._board_role(state, player_id)
+        if int(hand_profile["action_density"]) >= 3 and role in {"normal", "convert", "race"}:
+            return -0.2 - float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.2
+        if role in {"stabilize", "defend"} and self.archetype in {"Control", "Counter-heavy", "Tempo", "Midrange"}:
+            return 1.7 + float(self.matchup_profile.get("holdup_bias", 0.0))
+        if role == "convert" and self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"}:
+            return -0.8 + float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.2
         if self.archetype == "Tempo":
             opp = (self.opponent_archetype or "").strip()
             if opp in {"Burn", "Aggro", "Midrange", "Ramp", "Drain", "Aristocrats", "Tokens", "Tribal"}:
@@ -823,6 +988,24 @@ class AIAgent:
     def _matchup_move_adjustment(self, state: MatchState, move: dict, player_id: int) -> float:
         delta = 0.0
         mtype = move.get("type")
+        role = self._board_role(state, player_id)
+        turn = int(getattr(state, "turn", 1) or 1)
+        opp_id = 1 if player_id == 2 else 2
+        opp_board_creatures = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        opp_board_power = sum(
+            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        my_board_creatures = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
         if mtype == "cast_spell":
             cid = move.get("card_id")
             card = state.cards.get(cid) if cid else None
@@ -836,6 +1019,26 @@ class AIAgent:
                     delta += 0.5
                 if self.archetype in {"Tempo"} and self.opponent_archetype in {"Control", "Counter-heavy"} and ("counter" in tags or "removal" in tags):
                     delta += 0.4
+                if role in {"stabilize", "defend"} and any(tag in tags for tag in {"removal", "counter", "draw", "sweeper"}):
+                    delta += 1.2
+                    if opp_board_creatures > 0:
+                        delta += min(opp_board_power, 6) * 0.15
+                if role in {"race", "convert"} and any(tag in tags for tag in {"token", "burn", "attack", "anthem"}):
+                    delta += 1.0
+                    if my_board_creatures >= opp_board_creatures:
+                        delta += 0.3
+                if self.archetype == "Ramp" and "ramp" in tags:
+                    delta += 3.0
+                    if turn <= 5:
+                        delta += 1.2
+                    if role in {"normal", "stabilize"}:
+                        delta += 0.3
+                if self.archetype == "Ramp" and "draw" in tags and turn >= 5:
+                    delta += 0.3
+                if self.archetype in {"Control", "Counter-heavy"} and "sweeper" in tags and opp_board_creatures >= 2:
+                    delta += 1.5
+                if self.archetype in {"Aggro", "Burn", "Tempo"} and "burn" in tags and opp_board_power > 0:
+                    delta += min(opp_board_power, 6) * 0.12
         elif mtype == "attack":
             delta += float(self.matchup_profile.get("proactive_bias", 0.0)) * 0.35
         elif mtype == "pass_priority":
@@ -935,6 +1138,7 @@ class AIAgent:
         card = state.cards.get(cid) if cid else None
         if not card:
             return 0.0
+        role = self._board_role(state, player_id)
         if self._modal_face_options(card):
             _, face_score = self._select_modal_face_index(state, card, player_id)
         else:
@@ -1064,13 +1268,20 @@ class AIAgent:
                         default=0.0,
                     )
                     bonus += min(3.5, max(0.0, target_threat) * 0.35)
-            if self._is_burn_matchup() and "counter" in tags and state.turn <= 3 and not (getattr(state, "stack", []) or []):
-                bonus -= 0.8
-            if self._is_burn_matchup() and "sweeper" in f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}":
-                if opp_creatures >= 2:
-                    bonus += 2.8
-                else:
-                    bonus -= 1.2
+                if self._is_burn_matchup() and "counter" in tags and state.turn <= 3 and not (getattr(state, "stack", []) or []):
+                    bonus -= 0.8
+                if self._is_burn_matchup() and "sweeper" in f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}":
+                    if opp_creatures >= 2:
+                        bonus += 2.8
+                    else:
+                        bonus -= 1.2
+            if "engine" in tags:
+                if self.archetype in {"Control", "Counter-heavy", "Midrange", "Tokens", "Aristocrats", "Drain"}:
+                    bonus += 1.7
+                if self.archetype in {"Tempo", "Aggro", "Burn"} and own_main_sorcery_window:
+                    bonus += 0.4
+                if role in {"stabilize", "convert"}:
+                    bonus += 0.8
             if ("Planeswalker" in set(getattr(card, "types", []) or []) or is_big_threat) and own_main_sorcery_window:
                 if self._should_force_proactive_control_line(state, player_id):
                     bonus += 2.3
@@ -1106,6 +1317,8 @@ class AIAgent:
                 bonus += 1.2
             if "burn" in tags and state.players[1 if player_id == 2 else 2].life <= 6:
                 bonus += 1.5
+            if "engine" in tags:
+                bonus += 1.0
             return bonus + bonus_face
 
         if arche in {"Ramp"}:
@@ -1127,6 +1340,8 @@ class AIAgent:
                 bonus += 1.8
             if "draw" in tags:
                 bonus += 1.5
+            if "engine" in tags:
+                bonus += 0.8
             return bonus + bonus_face
 
         if arche in {"Tokens"}:
@@ -1139,6 +1354,8 @@ class AIAgent:
                 bonus += 3.2
                 if state.turn <= 4:
                     bonus += 1.2
+            if "engine" in tags:
+                bonus += 1.6
             if "{X}" in mana_cost_text:
                 bonus += self._x_spell_timing_penalty(state, card, player_id, x_value)
             return bonus + bonus_face
@@ -1157,6 +1374,8 @@ class AIAgent:
                 bonus += 3.2
             if "sacrifice" in tags:
                 bonus += 2.4
+            if "engine" in tags:
+                bonus += 1.6
             # Deploy engine pieces before pure payoff where possible.
             text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
             if any(k in text for k in ["blood artist", "zulaport", "cauldron familiar", "witch's oven", "priest of forgotten gods"]):
@@ -1171,6 +1390,8 @@ class AIAgent:
                 bonus += 3.6 if getattr(state, "stack", []) else -1.4
             if "removal" in tags:
                 bonus += 1.8
+            if "engine" in tags:
+                bonus += 0.9
             # Tempo: prefer threat+protection lines when threat already on board.
             my_creatures_now = sum(
                 1
@@ -1186,9 +1407,9 @@ class AIAgent:
         if arche in {"Aggro", "Tribal", "Tokens", "Tempo"} and my_creatures == 0 and early_turn and in_main:
             return -1.8 + bonus_face
         # Log-driven priors: leverage observed tournament/simulation cast timing.
-        return self._historical_cast_timing_bias(state, card) + bonus_face
+        return self._historical_cast_timing_bias(state, card, player_id) + bonus_face
 
-    def _historical_cast_timing_bias(self, state: MatchState, card) -> float:
+    def _historical_cast_timing_bias(self, state: MatchState, card, player_id: int) -> float:
         priors = AIAgent._log_priors_cache or {}
         cards = priors.get("cards") if isinstance(priors, dict) else None
         if not isinstance(cards, dict):
@@ -1201,6 +1422,16 @@ class AIAgent:
         if casts < 6:
             return 0.0
         turn = int(getattr(state, "turn", 1) or 1)
+        role = self._board_role(state, player_id)
+        role_rows = row.get("board_roles")
+        if isinstance(role_rows, dict):
+            role_row = role_rows.get(role)
+            if not isinstance(role_row, dict) and role in {"stabilize", "defend"}:
+                role_row = role_rows.get("control")
+            if isinstance(role_row, dict):
+                role_casts = int(role_row.get("casts", 0) or 0)
+                if role_casts >= 3:
+                    row = role_row
         preferred_min = int(row.get("preferred_min_turn", 1) or 1)
         early_rate = float(row.get("early_turn_cast_rate", 0.0) or 0.0)
         late_rate = float(row.get("late_turn_cast_rate", 0.0) or 0.0)
@@ -1259,6 +1490,48 @@ class AIAgent:
         self.engine.take_action(sim_state, player_id, {"type": "pass_priority"})
         self.engine.take_action(sim_state, opp_id, {"type": "pass_priority"})
 
+    def _approximate_resolution_for_ramp_spell(self, sim_state: MatchState, move: dict, player_id: int) -> None:
+        if move.get("type") != "cast_spell":
+            return
+        cid = move.get("card_id")
+        if not cid:
+            return
+        card = sim_state.cards.get(cid)
+        if not card:
+            return
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        if "land" not in text and "cultivate" not in text and "ramp" not in text and "search your library" not in text:
+            return
+        if "put a land card from your hand onto the battlefield" not in text and "search your library for" not in text:
+            return
+        land_ids = [
+            lid
+            for lid in list(sim_state.players[player_id].library)
+            if lid in sim_state.cards and "Land" in sim_state.cards[lid].types
+        ]
+        if not land_ids:
+            return
+
+        first = land_ids[0]
+        if first in sim_state.players[player_id].library:
+            sim_state.players[player_id].library.remove(first)
+            sim_state.players[player_id].battlefield.append(first)
+            land = sim_state.cards[first]
+            land.zone = Zone.BATTLEFIELD
+            land.controller = player_id
+            land.tapped = True
+            land.summoning_sick = False
+
+        if "put it into your hand" in text or "put that card into your hand" in text or "put it into your hand" in text:
+            if len(land_ids) > 1:
+                second = land_ids[1]
+                if second in sim_state.players[player_id].library:
+                    sim_state.players[player_id].library.remove(second)
+                    sim_state.players[player_id].hand.append(second)
+                    land2 = sim_state.cards[second]
+                    land2.zone = Zone.HAND
+                    land2.controller = player_id
+
     def _spell_tags(self, card) -> set[str]:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
         tags: set[str] = set()
@@ -1276,6 +1549,10 @@ class AIAgent:
             tags.add("ramp")
         if "create" in text and "token" in text:
             tags.add("token")
+        if "attack" in text:
+            tags.add("attack")
+        if "block" in text:
+            tags.add("block")
         if "look at the top" in text and "creature cards" in text and "onto the battlefield" in text:
             tags.add("creature_deploy_topdeck")
         if "creatures you control get" in text or "+1/+1" in text:
@@ -1290,8 +1567,12 @@ class AIAgent:
             tags.add("mill")
         if "sacrifice" in text:
             tags.add("sacrifice")
+        if "dies" in text:
+            tags.add("death")
         if "lose" in text and "gain" in text:
             tags.add("drain")
+        if any(k in text for k in ["whenever", "at the beginning", "landfall", "magecraft", "prowess", "artifact or enchantment", "another permanent enters the battlefield", "another permanent dies"]):
+            tags.add("engine")
         return tags
 
     def _modal_face_options(self, card) -> list[dict]:
@@ -1335,28 +1616,66 @@ class AIAgent:
             if cid in state.cards and "Creature" in state.cards[cid].types
         )
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
+        early_turn = int(getattr(state, "turn", 1) or 1) <= 4
+        board_pressure = max(0, opp_creatures - my_creatures)
         if "burn" in tags or "damage" in text:
             score += 1.4
         if "draw" in tags:
             score += 1.2
             if self.archetype in {"Control", "Counter-heavy"} and opp_life > 10:
                 score += 0.8
+            if self.archetype == "Tempo" and my_creatures > 0:
+                score += 0.3
         if "counter" in tags:
             score += 2.1 if getattr(state, "stack", []) else -1.0
+            if self.archetype in {"Control", "Counter-heavy", "Tempo"} and getattr(state, "stack", []):
+                score += 0.8
         if "removal" in tags:
             score += 1.8 if opp_creatures > 0 else -1.0
+            if opp_creatures >= 2:
+                score += 0.5
         if "token" in tags:
             score += 1.0
+        if "attack" in tags:
+            score += 0.6
+            if self.archetype in {"Aggro", "Tempo", "Tokens", "Tribal"}:
+                score += 0.7
+        if "block" in tags:
+            score += 0.5
+            if self.archetype in {"Control", "Counter-heavy", "Midrange"}:
+                score += 0.5
         if "Creature" in types:
             score += 0.5
-            if my_creatures == 0:
-                score += 1.0
-            elif self.archetype in {"Aggro", "Tempo", "Tribal", "Tokens"}:
-                score += 0.7
+            if self.archetype in {"Aggro", "Tempo", "Tribal", "Tokens"}:
+                score += 1.3 if cmc <= 3 else 0.7
+                if my_creatures == 0:
+                    score += 0.9
+                if early_turn:
+                    score += 0.5
+                if "flash" in text or "haste" in text:
+                    score += 0.4
+            elif self.archetype in {"Midrange", "Ramp"}:
+                if cmc <= 4 or (getattr(proxy, "power", None) or 0) + (getattr(proxy, "toughness", None) or 0) >= 4:
+                    score += 1.0
+                if early_turn and cmc >= 4:
+                    score -= 0.3
+            else:
+                # Control and counter-heavy decks should only value the creature face
+                # when it meaningfully stabilizes the board or carries immediate utility.
+                if my_creatures == 0 and opp_creatures == 0 and cmc <= 3:
+                    score += 0.4
+                else:
+                    score -= 0.2
+                if early_turn and cmc >= 4:
+                    score -= 0.8
+                if "flash" in text or "lifelink" in text or "flying" in text:
+                    score += 0.3
         if cmc <= 2:
             score += 0.5
         if self.archetype in {"Control", "Counter-heavy"} and any(k in tags for k in {"draw", "counter", "removal"}):
             score += 1.3
+            if board_pressure > 0:
+                score += min(0.9, board_pressure * 0.35)
         if self.archetype in {"Burn", "Aggro"} and ("damage" in text or "burn" in tags):
             score += 1.2
         if self.archetype == "Tempo" and (cmc <= 2 or "counter" in tags):
@@ -1370,6 +1689,10 @@ class AIAgent:
             score += 0.6
         if turn >= 6 and ("draw" in tags or "counter" in tags or "removal" in tags):
             score += 0.4
+        if cmc >= 5 and early_turn:
+            score -= 0.5
+        if self.archetype in {"Control", "Counter-heavy"} and "Creature" in types and not any(k in tags for k in {"draw", "counter", "removal"}):
+            score -= 0.1
         return score
 
     def _select_modal_face_index(self, state: MatchState, card, player_id: int) -> tuple[int, float]:
@@ -1384,6 +1707,130 @@ class AIAgent:
         if best_score <= 0.0:
             return 0, best_score
         return best_idx, best_score
+
+    def _score_mode_text(self, state: MatchState, card, mode_text: str, player_id: int) -> float:
+        text = (mode_text or "").lower()
+        tags = self._spell_tags(card)
+        opp_id = 1 if player_id == 2 else 2
+        opp_creatures = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        my_creatures = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
+        turn = int(getattr(state, "turn", 1) or 1)
+        role = self._board_role(state, player_id)
+        board_pressure = opp_creatures - my_creatures
+        score = 0.0
+        if "counter" in text:
+            score += 3.2 if getattr(state, "stack", []) else 0.2
+            if self.archetype in {"Control", "Counter-heavy", "Tempo"}:
+                score += 1.4
+            if role in {"stabilize", "defend"} and getattr(state, "stack", []):
+                score += 0.8
+        if "destroy" in text or "exile" in text or "bounce" in text:
+            score += 2.2 if opp_creatures > 0 else -0.6
+            if opp_creatures >= 2:
+                score += 0.4
+            if self.archetype in {"Control", "Counter-heavy", "Tempo", "Midrange"}:
+                score += 0.6
+            if role in {"stabilize", "defend"}:
+                score += 0.6
+            if board_pressure > 0:
+                score += min(1.0, board_pressure * 0.25)
+        if "draw" in text:
+            score += 1.6
+            if self.archetype in {"Control", "Counter-heavy"} and opp_life > 10:
+                score += 0.8
+            if self.archetype in {"Tempo", "Aggro"} and my_creatures > 0:
+                score += 0.2
+            if role in {"normal", "control"} and board_pressure <= 0:
+                score += 0.2
+        if "create" in text and "token" in text:
+            score += 1.7
+            if self.archetype in {"Aggro", "Tokens", "Tribal", "Tempo"}:
+                score += 1.0
+                if my_creatures == 0:
+                    score += 0.7
+            elif self.archetype in {"Control", "Counter-heavy"}:
+                score += 0.25 if opp_creatures > my_creatures else -0.4
+            if role in {"race", "convert"}:
+                score += 0.7
+        if "damage" in text or "burn" in tags:
+            score += 1.3
+            if self.archetype in {"Burn", "Aggro", "Tempo"}:
+                score += 0.8
+            elif opp_life <= 6:
+                score += 0.6
+            if role == "race":
+                score += 0.5
+        if "gain" in text or "life" in text:
+            score += 0.7
+            if self.archetype in {"Control", "Counter-heavy"} and state.players[player_id].life <= 10:
+                score += 0.5
+            if role in {"stabilize", "defend"} and state.players[player_id].life <= 12:
+                score += 0.4
+        if "attack" in text:
+            score += 0.7
+            if role == "convert":
+                score += 0.5
+        if "block" in text:
+            score += 0.5
+            if role in {"stabilize", "defend"}:
+                score += 0.3
+        if "dies" in text or "sacrifice" in text:
+            score += 0.8
+            if self.archetype in {"Aristocrats", "Drain"}:
+                score += 0.9
+            if role in {"stabilize", "convert"}:
+                score += 0.2
+        if "ramp" in tags or "add mana" in text:
+            score += 1.0
+            if self.archetype in {"Ramp", "Midrange"}:
+                score += 1.4
+            if role in {"normal", "convert"} and turn <= 5:
+                score += 0.4
+        if "discard" in text or "mill" in text:
+            score += 1.1
+            if self.archetype in {"Control", "Counter-heavy"}:
+                score += 0.5
+            if role in {"stabilize", "defend"}:
+                score += 0.3
+        if turn <= 3 and score < 1.0:
+            score -= 1.0
+        if turn >= 6 and ("draw" in text or "counter" in text or "destroy" in text or "exile" in text):
+            score += 0.4
+        return score
+
+    def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int) -> str:
+        if not modes:
+            return ""
+        scored = [(self._score_mode_text(state, card, mode, player_id), idx, mode) for idx, mode in enumerate(modes)]
+        scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)
+        best_score, _, best_mode = scored[0]
+        if best_score <= 0.0:
+            return modes[0]
+        return best_mode
+
+    def _select_mode_texts(self, state: MatchState, card, modes: list[str], player_id: int) -> list[str]:
+        if len(modes) <= 2:
+            scored = sorted(
+                [(self._score_mode_text(state, card, mode, player_id), idx, mode) for idx, mode in enumerate(modes)],
+                key=lambda item: (item[0], -item[1]),
+                reverse=True,
+            )
+            return [mode for _, _, mode in scored]
+        scored = sorted(
+            [(self._score_mode_text(state, card, mode, player_id), idx, mode) for idx, mode in enumerate(modes)],
+            key=lambda item: (item[0], -item[1]),
+            reverse=True,
+        )
+        return [scored[0][2], scored[1][2]]
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
         mtype = move.get("type")
@@ -1446,6 +1893,34 @@ class AIAgent:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
+        graveyard_creature_targets = hints.get("graveyard_creature_targets") or []
+        if graveyard_creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                graveyard_creature_targets,
+                key=lambda t: (
+                    self._graveyard_creature_reanimation_score(state, t.get("id"), player_id),
+                    str(t.get("name") or t.get("label") or ""),
+                ),
+                default=None,
+            )
+            if best:
+                targets["target_card_id"] = best["id"]
+                targets["target_card_name"] = best.get("name") or best.get("label") or ""
+
+        graveyard_permanent_targets = hints.get("graveyard_permanent_targets") or []
+        if graveyard_permanent_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                graveyard_permanent_targets,
+                key=lambda t: (
+                    self._noncreature_permanent_threat_score(state, t.get("id"), player_id),
+                    str(t.get("name") or t.get("label") or ""),
+                ),
+                default=None,
+            )
+            if best:
+                targets["target_card_id"] = best["id"]
+                targets["target_card_name"] = best.get("name") or best.get("label") or ""
+
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             targets["target_card_id"] = planeswalker_targets[0]["id"]
@@ -1484,9 +1959,9 @@ class AIAgent:
 
         if hints.get("modes") and not targets.get("mode_text") and not targets.get("mode_texts"):
             if hints.get("choose_two_modes"):
-                targets["mode_texts"] = list(hints["modes"][:2])
+                targets["mode_texts"] = self._select_mode_texts(state, card, list(hints["modes"]), player_id)
             else:
-                targets["mode_text"] = hints["modes"][0]
+                targets["mode_text"] = self._select_mode_text(state, card, list(hints["modes"]), player_id)
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         if "{X}" in mana_cost.upper() and "x_value" not in targets:
@@ -1538,6 +2013,7 @@ class AIAgent:
             if a.get("id") in state.cards
         )
         life = state.players[player_id].life if player_id in state.players else 20
+        role = self._board_role(state, player_id)
         lethal_pressure = incoming_total >= life
         prevented = 0
         sorted_attackers = sorted(
@@ -1552,9 +2028,9 @@ class AIAgent:
                 continue
             atk_pow = atk.power or 0
             atk_tgh = atk.toughness or 0
-            atk_has_trample = "trample" in {str(k).lower() for k in (getattr(atk, "keywords", []) or [])}
-            atk_has_deathtouch = "deathtouch" in {str(k).lower() for k in (getattr(atk, "keywords", []) or [])}
-            required_blockers = 2 if self._requires_two_or_more_blockers(atk) else 1
+            atk_has_trample = "trample" in set(effective_keywords(state, aid))
+            atk_has_deathtouch = "deathtouch" in set(effective_keywords(state, aid))
+            required_blockers = 2 if self._requires_two_or_more_blockers(state, atk) else 1
             best_bid = None
             best_score = -999.0
             scored: list[tuple[float, str]] = []
@@ -1571,6 +2047,8 @@ class AIAgent:
                     score += 2.2
                 if blk_tgh > atk_pow:
                     score += 1.0
+                if blk_pow < atk_tgh and blk_tgh <= atk_pow:
+                    score -= 0.9
                 if atk_has_trample and blk_tgh <= atk_pow:
                     score -= 0.7
                 if atk_has_deathtouch:
@@ -1584,11 +2062,28 @@ class AIAgent:
                 blk_text = (getattr(blk, "oracle_text", "") or "").lower()
                 if ("{t}" in blk_text or "(t)" in blk_text) and ("add " in blk_text or "adds " in blk_text):
                     score -= 3.5
+                    if lethal_pressure or role in {"stabilize", "defend"}:
+                        score += 1.8
+                if role in {"stabilize", "defend"}:
+                    score += 0.35
+                elif role == "convert" and not lethal_pressure:
+                    score -= 0.2
+                if atk_pow >= life:
+                    score += 1.4
+                elif atk_pow >= max(3, life // 2):
+                    score += 0.6
+                if atk_has_trample and blk_tgh > atk_pow:
+                    score += 0.7
                 scored.append((score, bid))
                 if score > best_score:
                     best_score = score
                     best_bid = bid
-            threshold = -0.8 if lethal_pressure else 0.45
+            if role in {"stabilize", "defend"}:
+                threshold = -0.5 if lethal_pressure else 0.15
+            elif role == "convert":
+                threshold = -0.4 if lethal_pressure else 0.65
+            else:
+                threshold = -0.6 if lethal_pressure else 0.4
             if required_blockers == 2:
                 scored.sort(reverse=True)
                 if len(scored) < 2:
@@ -1620,8 +2115,13 @@ class AIAgent:
                     lethal_pressure = False
         return assignments
 
-    def _requires_two_or_more_blockers(self, attacker) -> bool:
-        keywords = {str(k).lower() for k in (getattr(attacker, "keywords", []) or [])}
+    def _requires_two_or_more_blockers(self, state, attacker) -> bool:
+        attacker_id = getattr(attacker, "id", None)
+        keywords = (
+            set(effective_keywords(state, attacker_id))
+            if attacker_id and attacker_id in getattr(state, "cards", {})
+            else {str(k).lower() for k in (getattr(attacker, "keywords", []) or [])}
+        )
         if "menace" in keywords:
             return True
         text = (getattr(attacker, "oracle_text", "") or "").lower()
@@ -1643,14 +2143,30 @@ class AIAgent:
         opp_life = state.players[opp_id].life
         chosen: list[str] = []
         my_life = state.players[player_id].life
+        hand_profile = self._current_hand_profile(state, player_id)
+        role = self._board_role(state, player_id)
         race_mode = my_life <= 7 or opp_life <= 6
+        board_pressure = sum(
+            max(0, _eff_pow(state, cid))
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        ) - sum(
+            max(0, _eff_pow(state, cid))
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        )
+        commit_attack = (
+            role in {"race", "convert"}
+            or (role == "normal" and int(hand_profile["action_density"]) >= 3 and board_pressure <= 0)
+            or (self.archetype in {"Aggro", "Burn", "Tempo", "Tokens", "Tribal"} and int(hand_profile["action_density"]) >= 2)
+        )
         for cid in candidates:
             card = state.cards.get(cid)
             if not card:
                 continue
             atk_pow = _eff_pow(state, cid)
             atk_tgh = _eff_tgh(state, cid)
-            atk_kw = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+            atk_kw = set(effective_keywords(state, cid))
             has_trample = "trample" in atk_kw
             has_deathtouch = "deathtouch" in atk_kw
             if atk_pow <= 0:
@@ -1660,7 +2176,15 @@ class AIAgent:
             kills_some = any(_eff_tgh(state, b) <= atk_pow for b in opp_blockers)
             favorable_trade = kills_some and (not dies_to_some or atk_pow >= 2)
             # Avoid obvious bad attacks with small bodies into larger blockers.
-            if atk_pow <= 1 and dies_to_some and not kills_some and opp_life > 1 and not has_trample:
+            if (
+                atk_pow <= 1
+                and opp_blockers
+                and not has_trample
+                and not has_deathtouch
+                and opp_life > 1
+                and not race_mode
+                and not commit_attack
+            ):
                 continue
             # General anti-suicide rule for all archetypes.
             # Aggro can still pressure in race/lethal setups, but should not throw creatures away for no value.
@@ -1671,6 +2195,7 @@ class AIAgent:
                 and not has_trample
                 and opp_life > atk_pow
                 and not race_mode
+                and not commit_attack
             ):
                 continue
 
@@ -1700,7 +2225,7 @@ class AIAgent:
 
         power = max(0, _eff_pow(state, creature_id))
         toughness = max(0, _eff_tgh(state, creature_id))
-        kws = {str(k).lower() for k in (getattr(card, "keywords", []) or [])}
+        kws = set(effective_keywords(state, creature_id))
         score = power * 1.2 + toughness * 0.35
         if "flying" in kws or "trample" in kws or "menace" in kws:
             score += 1.8
@@ -1757,11 +2282,90 @@ class AIAgent:
         )
         upper = max(0, pool_total + untapped_lands)
         floor = self._minimum_useful_x_value(state, player_id, card, mana_cost)
+        scored: list[tuple[float, int]] = []
         for x in range(upper, 0, -1):
             cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
             if x >= floor and can_pay_with_pool_and_lands(state, player_id, cost):
-                return x
-        return 0
+                scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
+        if not scored:
+            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+            interactive_x = any(k in text for k in ["target", "destroy", "exile", "counter", "tap"])
+            if interactive_x:
+                for x in range(1, upper + 1):
+                    cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
+                    if can_pay_with_pool_and_lands(state, player_id, cost):
+                        return x
+            for x in range(max(1, floor), upper + 1):
+                cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
+                if can_pay_with_pool_and_lands(state, player_id, cost):
+                    return x
+            return 0
+        scored.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        return scored[0][1]
+
+    def _score_x_value(self, state: MatchState, player_id: int, card, mana_cost: str, x_value: int, upper: int, floor: int) -> float:
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        turn = int(getattr(state, "turn", 1) or 1)
+        opp_id = 1 if player_id == 2 else 2
+        opp = state.players[opp_id]
+        me = state.players[player_id]
+        opp_creatures = sum(
+            1
+            for cid in opp.battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        my_creatures = sum(
+            1
+            for cid in me.battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types
+        )
+        score = 0.0
+        if "create x" in text and "token" in text:
+            # Token makers should scale with pressure, but seasoned pilots avoid
+            # dumping the entire mana pool into low-value early boards.
+            score += x_value * 0.75
+            if self.archetype in {"Control", "Counter-heavy"}:
+                score += 0.35 if x_value >= 2 else -0.5
+                if turn < 6:
+                    score -= max(0.0, (x_value - 2) * 0.45)
+                    if x_value >= 4 and opp_creatures == 0 and my_creatures == 0:
+                        score -= (x_value - 3) * 0.8
+                if opp_creatures == 0 and my_creatures == 0:
+                    score -= 0.8 if x_value > 2 else 0.0
+            elif self.archetype in {"Aggro", "Tokens", "Tribal", "Tempo"}:
+                score += 0.45 if x_value >= 2 else -0.25
+                if opp_creatures > my_creatures:
+                    score += 0.4
+            if opp_life := int(getattr(opp, "life", 20) or 20):
+                if opp_life <= 6:
+                    score += min(1.4, x_value * 0.25)
+                elif turn < 6 and opp_life > 10:
+                    score -= max(0.0, (x_value - 2) * 0.3)
+        elif "draw x" in text:
+            score += x_value * 0.55
+            if self.archetype in {"Control", "Counter-heavy"}:
+                score += 0.7 if x_value >= 2 else -0.5
+                if turn < 6:
+                    score -= max(0.0, (x_value - 1) * 0.35)
+            if len(getattr(me, "hand", []) or []) <= 2 and turn >= 6:
+                score += min(1.0, x_value * 0.2)
+        elif "deal x damage" in text or "deals x damage" in text or "lose x life" in text:
+            opp_life = int(getattr(opp, "life", 20) or 20)
+            score += x_value * 0.85
+            if opp_life <= x_value:
+                score += 2.0
+            if self.archetype in {"Burn", "Aggro", "Tempo"}:
+                score += 0.35 if x_value >= 2 else -0.2
+            elif self.archetype in {"Control", "Counter-heavy"}:
+                score += 0.15 if x_value >= 2 else -0.1
+        else:
+            score += x_value * 0.4
+
+        if x_value == upper:
+            score -= 0.2 if upper > 2 else 0.0
+        if x_value <= floor + 1:
+            score += 0.15
+        return score
 
     def _minimum_useful_x_value(self, state: MatchState, player_id: int, card, mana_cost: str) -> int:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
@@ -2197,7 +2801,7 @@ class AIAgent:
             if "{X}" in mana_text.upper():
                 continue
             mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
-            cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
+            cmc = mana_value(getattr(card, "mana_cost", ""), is_land=False)
             if cmc > 2:
                 continue
             tags = self._spell_tags(card)
@@ -2329,8 +2933,7 @@ class AIAgent:
             return True
         if "Creature" in types:
             power = int(getattr(card, "power", 0) or 0)
-            mana_cost = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
-            cmc = mana_cost["generic"] + sum(mana_cost[c] for c in ["W", "U", "B", "R", "G"])
+            cmc = mana_value(getattr(card, "mana_cost", ""), is_land=False)
             return power >= 4 or cmc >= 5
         return False
 
@@ -2347,8 +2950,17 @@ class AIAgent:
             if not card or not self._is_major_threat_card(card):
                 continue
             if can_pay_with_pool_and_lands(state, player_id, getattr(card, "mana_cost", "")):
-                # Preserve early-game hold-up discipline; deploy in developed states.
-                return turn >= 5
+                opp_id = 1 if player_id == 2 else 2
+                opp_creatures = sum(
+                    1
+                    for oid in getattr(state.players[opp_id], "battlefield", [])
+                    if oid in state.cards and "Creature" in state.cards[oid].types
+                )
+                # Preserve early-game hold-up discipline, but deploy sooner when the board is clear.
+                if turn >= 5:
+                    return True
+                if turn >= 4 and opp_creatures <= 1:
+                    return True
         return False
 
     def _color_demand(self, state: MatchState, player_id: int) -> dict[str, int]:
@@ -2358,7 +2970,7 @@ class AIAgent:
             if not card or "Land" in card.types:
                 continue
             cost = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
-            cmc = cost["generic"] + sum(cost[c] for c in ["W", "U", "B", "R", "G"])
+            cmc = mana_value(getattr(card, "mana_cost", ""), is_land=False)
             weight = 2 if cmc <= 2 else (1 if cmc <= 4 else 0)
             for c in ["W", "U", "B", "R", "G"]:
                 if cost[c] > 0:
@@ -2385,15 +2997,34 @@ class AIAgent:
         my_power = sum(
             max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
         )
         opp_power = sum(
             max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
         )
+        my_creatures = sum(
+            1
+            for cid in state.players[player_id].battlefield
+            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+        )
+        opp_creatures = sum(
+            1
+            for cid in state.players[opp_id].battlefield
+            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+        )
+        hand_delta = len(getattr(state.players[player_id], "hand", []) or []) - len(getattr(state.players[opp_id], "hand", []) or [])
         if opp_life <= 7 or (my_power >= opp_life and opp_life <= 10):
             return "race"
+        if my_life <= 8 and opp_power > my_power + 1:
+            return "stabilize"
+        if opp_power >= my_power + 3 and opp_creatures >= my_creatures and my_life <= 12:
+            return "stabilize"
+        if my_power >= opp_power + 2 and my_creatures >= opp_creatures and my_life > 8:
+            return "convert"
+        if hand_delta >= 2 and opp_power <= my_power and my_life > 10:
+            return "control"
         if my_life <= 8 and opp_power > my_power:
             return "defend"
         return "normal"
@@ -2465,6 +3096,18 @@ class AIAgent:
             score += 0.8
         return score
 
+    def _graveyard_creature_reanimation_score(self, state: MatchState, card_id: str | None, player_id: int) -> float:
+        if not card_id or card_id not in state.cards:
+            return 0.0
+        card = state.cards[card_id]
+        score = float(getattr(card, "power", 0) or 0) * 0.9 + float(getattr(card, "toughness", 0) or 0) * 0.3
+        if "legendary" in " ".join(getattr(card, "types", [])).lower():
+            score += 0.5
+        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        if any(k in text for k in ["draw", "counter", "remove", "destroy", "exile", "return"]):
+            score += 0.4
+        return score
+
     def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict]) -> str | None:
         best_id = None
         best_score = -999.0
@@ -2507,7 +3150,7 @@ class AIAgent:
             t = int(getattr(source, "toughness", 0) or 0)
             score += min(7.0, p * 0.9 + t * 0.3)
         mana_cost = parse_mana_cost(getattr(source, "mana_cost", ""), is_land=False)
-        cmc = mana_cost["generic"] + sum(mana_cost[c] for c in ["W", "U", "B", "R", "G"])
+        cmc = mana_value(getattr(source, "mana_cost", ""), is_land=False)
         score += min(5.0, cmc * 0.45)
         text = f"{getattr(source, 'name', '')} {getattr(source, 'oracle_text', '')}".lower()
         if any(k in text for k in ["destroy all", "exile all", "sweeper", "wrath", "damnation"]):

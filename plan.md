@@ -68,6 +68,7 @@ Release blockers identified by the audit:
 - Simulator job status, progress, errors, and results now persist in SQLite and are restored after startup; interrupted queued/running jobs are marked failed with an explicit restart reason.
 - A structured `AbilitySpec`/`EffectSpec` boundary now carries source, cost, target hints, modes, choices, resolved effects, and unsupported-text fallback status into the rules engine.
 - Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
+- AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
 
 ## Remaining Gaps
 
