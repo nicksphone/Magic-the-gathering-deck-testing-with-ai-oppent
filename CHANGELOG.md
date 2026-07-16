@@ -12,6 +12,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Generic variable-cost cycling such as `Cycling {X}{1}{U}` now exposes only mana-payable non-negative X values and carries X into supported dynamic cycling triggers; alternate cycling costs remain future coverage.
 
 - AI quality:
+  - Master lookahead now resolves unanswered activated-ability and cycling stacks during simulation, while preserving branches where the opponent has a legal response.
   - Master and lower difficulty ranking now recognize cycling as a card-filtering action, while preferring land drops and meaningful spells when those options are available.
   - Activated sacrifice/discard outlets are now exposed to the same legal-move and tactical ranking paths as simple mana abilities.
 
@@ -24,6 +25,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added X-value and dynamic cycling-trigger coverage. Full backend suite passes `438` tests with 43 deprecation warnings; frontend production build and deterministic replay smoke remain green.
   - Added regression coverage for artifact-or-creature additional costs.
   - Full backend suite passes `442` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
+  - Full backend suite now passes `443` tests after AI lookahead regression coverage.
   - Added regression coverage for tap-plus-sacrifice activated costs.
   - Full backend suite passes `435` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
 

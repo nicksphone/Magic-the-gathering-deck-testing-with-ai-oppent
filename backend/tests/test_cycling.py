@@ -111,3 +111,15 @@ def test_variable_cycle_x_value_reaches_dynamic_cycle_trigger() -> None:
     token = state.cards[p1.battlefield[-1]]
     assert token.name == "Shark"
     assert token.power == 2 and token.toughness == 2
+
+
+def test_master_lookahead_resolves_unanswered_cycle_stack() -> None:
+    state, cid = _state_with_cycler()
+    from ai.agent import AIAgent
+
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid})
+    AIAgent(difficulty="master")._approximate_resolution_for_activated_action(
+        state, {"type": "cycle_card", "card_id": cid}, 1
+    )
+    assert not state.stack

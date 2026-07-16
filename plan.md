@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `442 passed`, 43 deprecation warnings.
+- Backend: `443 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -119,6 +119,7 @@ Release blockers identified by the audit:
 
 ### AI quality
 - The AI is much stronger, but it still needs deeper tactical play in complex board states.
+- Master lookahead now resolves unanswered activated/cycling stacks during simulation, but stops the approximation when the opponent has a legal non-pass response; this improves card-filtering and engine valuation without suppressing interaction.
 - Combat blocking now preserves mana creatures when better blocks exist, and still blocks with them when they are the only profitable defense.
 - Master difficulty now invokes the deeper strategic planner earlier in complex midgame boards for control, counter-heavy, midrange, ramp, and tempo shells.
 - Board-role planning now distinguishes stabilize, convert, race, control, defend, and normal states so multi-phase board evaluation is less generic.

@@ -857,6 +857,7 @@ class AIAgent:
             self.engine.take_action(sim_state, player_id, move)
             self._approximate_resolution_for_creature_cast(sim_state, move, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, move, player_id)
+            self._approximate_resolution_for_activated_action(sim_state, move, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = sorted(
@@ -2465,6 +2466,20 @@ class AIAgent:
             total += self._rollout_playout(branch, player_id, plies)
         return total / samples
 
+    def _approximate_resolution_for_activated_action(self, state: MatchState, move: dict, player_id: int) -> None:
+        """Resolve simulated abilities only when the opponent has no response."""
+        if move.get("type") not in {"activate_ability", "cycle_card"}:
+            return
+        for _ in range(8):
+            if not getattr(state, "stack", []):
+                return
+            priority_pid = state.priority_player
+            legal = self.engine.legal_moves(state, priority_pid)
+            non_pass = [m for m in legal if m.get("type") != "pass_priority"]
+            if priority_pid != player_id and non_pass:
+                return
+            self.engine.take_action(state, priority_pid, {"type": "pass_priority"})
+
     def _rollout_playout(self, state: MatchState, eval_for_player: int, plies: int) -> float:
         for _ in range(max(0, plies)):
             if state.winner is not None:
@@ -2510,6 +2525,8 @@ class AIAgent:
                 base += 0.2 if has_cast else -2.5
             elif mtype == "activate_loyalty":
                 base += 2.5
+            elif mtype == "cycle_card":
+                base += 1.5 + min(2.0, float(move.get("x_value", 0) or 0) * 0.15)
             elif mtype == "pass_priority":
                 base -= 0.2
             return base
