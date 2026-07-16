@@ -17,6 +17,8 @@ def test_batch_does_not_auto_award_unresolved_games_to_deck_a() -> None:
     assert out["win_rate_deck_a"] == 0
     assert out["win_rate_deck_b"] == 0
     assert out["timeouts"] == 5
+    assert out["resolved_games"] == 0
+    assert all(item["kind"] == "insufficient_sample" for item in out["balance_alerts"])
     assert isinstance(out["sample_turn_summaries"], list)
     assert isinstance(out["sample_log_excerpt"], list)
     assert isinstance(out["game_results"], list)
@@ -88,3 +90,4 @@ def test_batch_reports_confidence_intervals_and_small_sample_balance_alert() -> 
 
     assert interval["low"] < 100.0 <= interval["high"]
     assert any(item["kind"] == "extreme_win_rate" and item["severity"] == "high" for item in alerts)
+    assert AnalyticsService._balance_alerts(0, 0, 0, 5)[0]["kind"] == "insufficient_sample"

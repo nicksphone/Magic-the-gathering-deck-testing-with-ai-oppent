@@ -114,15 +114,17 @@ class AnalyticsService:
         total = matches
         wins_a = stats["wins_1"]
         wins_b = stats["wins_2"]
+        resolved_games = wins_a + wins_b
         result = {
             "matches": matches,
-            "win_rate_deck_a": round((wins_a / total) * 100, 2),
-            "win_rate_deck_b": round((wins_b / total) * 100, 2),
+            "resolved_games": resolved_games,
+            "win_rate_deck_a": round((wins_a / max(1, resolved_games)) * 100, 2),
+            "win_rate_deck_b": round((wins_b / max(1, resolved_games)) * 100, 2),
             "confidence_intervals": {
-                "deck_a": self._wilson_interval(wins_a, total),
-                "deck_b": self._wilson_interval(wins_b, total),
+                "deck_a": self._wilson_interval(wins_a, resolved_games),
+                "deck_b": self._wilson_interval(wins_b, resolved_games),
             },
-            "balance_alerts": self._balance_alerts(wins_a, wins_b, total),
+            "balance_alerts": self._balance_alerts(wins_a, wins_b, resolved_games, total),
             "timeouts": int(stats["timeouts"]),
             "draw_play_advantage_deck_a": round((play_win / max(1, resolved_play_games)) * 100, 2),
             "average_turns": round(sum(turn_counts) / max(1, len(turn_counts)), 2),
@@ -179,17 +181,18 @@ class AnalyticsService:
         return {"wins": int(wins), "games": int(total), "low": round(max(0.0, centre - margin) * 100, 2), "high": round(min(1.0, centre + margin) * 100, 2)}
 
     @staticmethod
-    def _balance_alerts(wins_a: int, wins_b: int, total: int) -> list[dict[str, object]]:
-        if total <= 0:
-            return []
-        rate_a = wins_a / total * 100.0
+    def _balance_alerts(wins_a: int, wins_b: int, resolved_games: int, total_games: int | None = None) -> list[dict[str, object]]:
+        total_games = resolved_games if total_games is None else total_games
+        if resolved_games <= 0:
+            return [{"kind": "insufficient_sample", "games": 0, "total_games": total_games, "severity": "info"}]
+        rate_a = wins_a / resolved_games * 100.0
         alerts: list[dict[str, object]] = []
         if rate_a in {0.0, 100.0}:
-            alerts.append({"kind": "extreme_win_rate", "deck": "deck_a" if rate_a else "deck_b", "rate": rate_a, "games": total, "severity": "high" if total >= 10 else "review"})
+            alerts.append({"kind": "extreme_win_rate", "deck": "deck_a" if rate_a else "deck_b", "rate": rate_a, "games": resolved_games, "severity": "high" if resolved_games >= 10 else "review"})
         elif rate_a > 70.0 or rate_a < 30.0:
-            alerts.append({"kind": "skewed_win_rate", "deck": "deck_a" if rate_a > 50.0 else "deck_b", "rate": round(max(rate_a, 100.0 - rate_a), 2), "games": total, "severity": "review"})
-        if total < 10:
-            alerts.append({"kind": "insufficient_sample", "games": total, "severity": "info"})
+            alerts.append({"kind": "skewed_win_rate", "deck": "deck_a" if rate_a > 50.0 else "deck_b", "rate": round(max(rate_a, 100.0 - rate_a), 2), "games": resolved_games, "severity": "review"})
+        if resolved_games < 10:
+            alerts.append({"kind": "insufficient_sample", "games": resolved_games, "total_games": total_games, "severity": "info"})
         return alerts
 
     def aggregate_history(self) -> dict:

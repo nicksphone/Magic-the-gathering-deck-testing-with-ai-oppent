@@ -31,6 +31,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Balance diagnostics:
   - Batch simulation now reports Wilson 95% confidence intervals and explicit extreme, skewed, and insufficient-sample alerts.
   - Testing Simulator now renders balance alerts alongside win rates and anomaly counters.
+  - Win rates and confidence intervals now use resolved games only; timeout-only samples are reported as insufficient data instead of false 0%/100% matchups.
 
 - Oracle coverage diagnostics:
   - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.
