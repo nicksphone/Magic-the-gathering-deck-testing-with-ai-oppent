@@ -4,6 +4,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 ## 2026-07-16
 
 - Rules coverage:
+  - Additional cast and activated costs now share generic sacrifice eligibility for creatures, artifacts, enchantments, permanents, and artifact-or-creature requirements. The chosen permanent is moved through ownership-aware replacement handling before the ability resolves.
   - Cycling now emits a structured cycle event after the activation is on the stack. Generic and named-card cycling triggers are matched through the event layer, with the trigger ordered above the cycling draw ability.
   - Activated abilities now parse and pay common combined costs such as `{T}, Sacrifice a creature`, `{1}, Discard a card`, and life payments before putting the ability on the stack. Unsupported cost forms remain unavailable rather than partially paying.
   - Added a first-class `cycle_card` action for fixed-cost cycling from hand. Cycling now pays through the normal mana engine, discards to the owner's graveyard as a cost, resolves its draw through the stack, and emits the normal discard event path.
@@ -19,7 +20,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Validation:
   - Added focused regression coverage for legal cycling moves and stack-timed cycling draws.
   - Added named cycling-trigger ordering coverage; focused cycling/event/legal-move tests pass `44` tests.
-  - Added X-value and dynamic cycling-trigger coverage. Full backend suite passes `437` tests with 43 deprecation warnings; frontend production build and deterministic replay smoke remain green.
+  - Added X-value and dynamic cycling-trigger coverage. Full backend suite passes `438` tests with 43 deprecation warnings; frontend production build and deterministic replay smoke remain green.
+  - Added regression coverage for artifact-or-creature additional costs.
   - Added regression coverage for tap-plus-sacrifice activated costs.
   - Full backend suite passes `435` tests with 43 deprecation warnings; frontend production build passes; a three-deck deterministic replay smoke completed 3 games with 0 determinism failures.
 

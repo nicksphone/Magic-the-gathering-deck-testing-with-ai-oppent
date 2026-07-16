@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `435 passed`, 43 deprecation warnings.
+- Backend: `438 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -100,7 +100,7 @@ Release blockers identified by the audit:
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms, cycling triggers, and controller-scoped ETB/death clauses are now covered.
 - Named-source trigger wording is covered for attack triggers, but other named-source, intervening-if, and conditional trigger variants still need broader corpus coverage.
 - The current representative corpus still has concrete fallback cards in normal games; alternate cycling variants, unusual modal and multi-part permanent effects remain outside the generic resolver even where common Storm/Shark and temporary-exile patterns are covered.
-- Additional-cost handling still needs broader coverage across uncommon card patterns, including counter removal, energy/resource payments, returning permanents, and noncreature sacrifice requirements.
+- Additional-cost handling now covers common creature, artifact, enchantment, permanent, and artifact-or-creature sacrifices; uncommon patterns such as counter removal, energy/resource payments, and returning permanents still need explicit cost modeling.
 - Some unusual graveyard-target and battlefield-recursion variants still need broader corpus coverage.
 - Graveyard recursion now supports artifact and enchantment permanents in addition to creature recursion.
 - Graveyard recursion now also resolves generic permanent-card recursion from a graveyard, which broadens coverage to lands and other permanent types.

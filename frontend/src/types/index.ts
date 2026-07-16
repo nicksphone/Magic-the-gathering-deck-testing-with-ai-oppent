@@ -83,6 +83,7 @@ export type LegalMove = {
     pay_life: number;
     discard_cards: number;
     sacrifice_creatures: number;
+    sacrifice_kind?: string;
   }[];
   options?: string[];
   attackers?: { id: string; name: string }[];

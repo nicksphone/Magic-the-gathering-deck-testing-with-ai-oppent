@@ -13,7 +13,7 @@ KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
 PAY_LIFE_RE = re.compile(r"additional cost to cast[^.]*pay\s+(\d+)\s+life", re.IGNORECASE)
 ACTIVATED_PAY_LIFE_RE = re.compile(r"pay\s+(\d+)\s+life", re.IGNORECASE)
 ACTIVATED_DISCARD_RE = re.compile(r"discard\s+(?:a|one|an|\d+)\s+cards?", re.IGNORECASE)
-ACTIVATED_SACRIFICE_RE = re.compile(r"sacrifice\s+(?:a|an|one|\d+)\s+creatures?", re.IGNORECASE)
+ACTIVATED_SACRIFICE_RE = re.compile(r"sacrifice\s+(?:a|an|this|one|\d+)\s+", re.IGNORECASE)
 
 
 @dataclass
@@ -24,6 +24,7 @@ class CostOption:
     pay_life: int = 0
     discard_cards: int = 0
     sacrifice_creatures: int = 0
+    sacrifice_kind: str = "creature"
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ class ActivatedCost:
     pay_life: int = 0
     discard_cards: int = 0
     sacrifice_creatures: int = 0
+    sacrifice_kind: str = "creature"
     sacrifice_source: bool = False
     supported: bool = True
 
@@ -42,6 +44,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
     mana_symbols: list[str] = []
     tap_source = False
     pay_life = discard_cards = sacrifice_creatures = 0
+    sacrifice_kind = "creature"
     sacrifice_source = False
     supported = True
     for part in (segment.strip() for segment in (cost_text or "").split(",")):
@@ -61,7 +64,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             upper = remainder.upper()
         if upper in {"T", "TAP"}:
             tap_source = True
-        elif "SACRIFICE" in upper and "CREATURE" in upper:
+        elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT")):
             match = ACTIVATED_SACRIFICE_RE.search(upper)
             if not match:
                 supported = False
@@ -69,6 +72,14 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             number = re.search(r"(\d+)", match.group(0))
             sacrifice_creatures += int(number.group(1)) if number else 1
             sacrifice_source = "THIS CREATURE" in upper
+            if "ARTIFACT OR CREATURE" in upper:
+                sacrifice_kind = "artifact_or_creature"
+            elif "PERMANENT" in upper:
+                sacrifice_kind = "permanent"
+            elif "ARTIFACT" in upper:
+                sacrifice_kind = "artifact"
+            elif "ENCHANTMENT" in upper:
+                sacrifice_kind = "enchantment"
         elif "DISCARD" in upper and "CARD" in upper:
             match = ACTIVATED_DISCARD_RE.search(upper)
             if not match:
@@ -90,6 +101,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
         pay_life=pay_life,
         discard_cards=discard_cards,
         sacrifice_creatures=sacrifice_creatures,
+        sacrifice_kind=sacrifice_kind,
         sacrifice_source=sacrifice_source,
         supported=supported,
     )
@@ -105,7 +117,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     if player.life <= cost.pay_life or len(player.hand) < cost.discard_cards:
         return False
-    creatures = [cid for cid in player.battlefield if "Creature" in state.cards[cid].types]
+    creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind)
     if cost.sacrifice_source:
         if source_id not in creatures:
             return False
@@ -141,10 +153,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     sacrifice_ids: list[str] = []
     if cost.sacrifice_source:
         sacrifice_ids.append(source_id)
-    sacrifice_ids.extend(
-        cid for cid in player.battlefield
-        if cid != source_id and "Creature" in state.cards[cid].types
-    )
+    sacrifice_ids.extend(cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind) if cid != source_id)
     needed = cost.sacrifice_creatures
     for sac_id in sacrifice_ids[:needed]:
         if sac_id in player.battlefield:
@@ -186,9 +195,19 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
     if "as an additional cost to cast" in oracle and "discard" in oracle and "card" in oracle:
         for opt in options:
             opt.discard_cards += 1
-    if "as an additional cost to cast" in oracle and "sacrifice" in oracle and "creature" in oracle:
+    if "as an additional cost to cast" in oracle and "sacrifice" in oracle:
+        sacrifice_kind = "creature"
+        if "artifact or creature" in oracle:
+            sacrifice_kind = "artifact_or_creature"
+        elif "permanent" in oracle:
+            sacrifice_kind = "permanent"
+        elif "artifact" in oracle:
+            sacrifice_kind = "artifact"
+        elif "enchantment" in oracle:
+            sacrifice_kind = "enchantment"
         for opt in options:
             opt.sacrifice_creatures += 1
+            opt.sacrifice_kind = sacrifice_kind
 
     return options
 
@@ -199,7 +218,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if len(player.hand) <= option.discard_cards:
         return False
-    if sum(1 for cid in player.battlefield if "Creature" in state.cards[cid].types) < option.sacrifice_creatures:
+    if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
     return can_pay_with_pool_and_lands(state, player_id, option.mana_cost, is_land=("Land" in card.types), card_name=card.name, x_value=x_value)
 
@@ -232,7 +251,7 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
 
     for _ in range(option.sacrifice_creatures):
-        sac_id = _first_sacrificable_creature(state, player_id)
+        sac_id = _first_sacrificable_creature(state, player_id, option.sacrifice_kind)
         if not sac_id:
             return False
         player.battlefield.remove(sac_id)
@@ -265,8 +284,21 @@ def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]
     return None
 
 
-def _first_sacrificable_creature(state: MatchState, player_id: int) -> str | None:
+def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature") -> list[str]:
+    eligible: list[str] = []
     for cid in state.players[player_id].battlefield:
-        if "Creature" in state.cards[cid].types:
-            return cid
-    return None
+        types = set(state.cards[cid].types or [])
+        if (
+            kind == "permanent"
+            or (kind == "artifact_or_creature" and ("Artifact" in types or "Creature" in types))
+            or (kind == "artifact" and "Artifact" in types)
+            or (kind == "enchantment" and "Enchantment" in types)
+            or (kind == "creature" and "Creature" in types)
+        ):
+            eligible.append(cid)
+    return eligible
+
+
+def _first_sacrificable_creature(state: MatchState, player_id: int, kind: str = "creature") -> str | None:
+    eligible = _eligible_sacrifice_ids(state, player_id, kind)
+    return eligible[0] if eligible else None

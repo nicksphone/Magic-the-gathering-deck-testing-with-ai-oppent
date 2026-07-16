@@ -152,6 +152,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                             "pay_life": o.pay_life,
                             "discard_cards": o.discard_cards,
                             "sacrifice_creatures": o.sacrifice_creatures,
+                            "sacrifice_kind": o.sacrifice_kind,
                         }
                         for o in available_options
                     ],
@@ -197,7 +198,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "from_exile": True,
                     "cost_options": [
                         {"id": o.id, "label": o.label, "mana_cost": o.mana_cost, "pay_life": o.pay_life,
-                         "discard_cards": o.discard_cards, "sacrifice_creatures": o.sacrifice_creatures}
+                         "discard_cards": o.discard_cards, "sacrifice_creatures": o.sacrifice_creatures, "sacrifice_kind": o.sacrifice_kind}
                         for o in available_options
                     ],
                     "target_hints": hints,

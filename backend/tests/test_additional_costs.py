@@ -83,6 +83,41 @@ def test_sacrifice_additional_cost_respects_die_replacement() -> None:
     assert creature_id not in p1.graveyard
 
 
+def test_artifact_or_creature_additional_cost_can_sacrifice_an_artifact() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    engine = RulesEngine()
+    p1 = state.players[1]
+
+    land_id = p1.library.pop()
+    p1.battlefield.append(land_id)
+    state.cards[land_id].zone = Zone.BATTLEFIELD
+    state.cards[land_id].types = ["Land"]
+    state.cards[land_id].name = "Island"
+
+    artifact_id = p1.library.pop()
+    p1.battlefield.append(artifact_id)
+    state.cards[artifact_id].zone = Zone.BATTLEFIELD
+    state.cards[artifact_id].types = ["Artifact"]
+    state.cards[artifact_id].name = "Treasure Artifact"
+
+    spell_id = p1.hand[0]
+    state.cards[spell_id].name = "Artifact Sacrifice Spell"
+    state.cards[spell_id].types = ["Instant"]
+    state.cards[spell_id].mana_cost = "{U}"
+    state.cards[spell_id].oracle_text = "As an additional cost to cast this spell, sacrifice an artifact or creature. Draw a card."
+
+    engine.take_action(state, 1, {"type": "cast_spell", "card_id": spell_id})
+    assert artifact_id not in p1.battlefield
+    assert artifact_id in p1.graveyard
+    assert state.stack
+
+
 def test_sacrifice_handler_puts_stolen_creature_into_its_owners_graveyard() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
