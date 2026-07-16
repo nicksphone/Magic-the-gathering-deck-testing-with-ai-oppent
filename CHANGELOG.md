@@ -8,13 +8,14 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added event-to-stack regression coverage so the trigger resolves through the structured Oracle effect path instead of being silently skipped.
 
 - Validation:
-  - Backend suite now passes `429` tests with 43 deprecation warnings.
+  - Backend suite now passes `430` tests with 43 deprecation warnings.
   - Frontend production build passes after the trigger and regression updates.
 
 - Simulator diagnostics:
   - Restored the missing battlefield snapshot helper in the overnight round-robin runner, allowing full verbose batches to execute.
   - Reworked anomaly clustering to use structured counters and termination status instead of treating every priority pass as a stall.
   - Six-deck diagnostics showed no invalid targets, cost failures, repeated error bursts, or missed land windows; a fresh three-deck run completed without anomalies.
+  - Deterministic replay matrix now supports seeded best-of-1/3/5/7/9 match aggregation and validates the full match hash; best-of-three regression coverage was added.
 
 - AI quality:
   - Added a generic graveyard-recursion tactical tag and qualifying-graveyard check so control threats that can recast spells are valued when they have real targets, without card-name-specific exceptions.

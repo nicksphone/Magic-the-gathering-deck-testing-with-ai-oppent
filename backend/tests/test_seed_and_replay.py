@@ -4,7 +4,7 @@ from ai.agent import AIAgent
 from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, get_match_replay
 from rules_engine.engine import RulesEngine
-from scripts.regression_matrix_replay import _normalize_log_line, classify_first_divergence, classify_log_line
+from scripts.regression_matrix_replay import _normalize_log_line, classify_first_divergence, classify_log_line, run_match
 from analytics.replay_tools import classify_timeout_state
 
 
@@ -30,6 +30,18 @@ def test_seeded_mulligans_are_reproducible_even_after_prior_random_use() -> None
 
     assert [a.cards[cid].name for cid in a.players[1].hand] == [b.cards[cid].name for cid in b.players[1].hand]
     assert [a.cards[cid].name for cid in a.players[1].library[:10]] == [b.cards[cid].name for cid in b.players[1].library[:10]]
+
+
+def test_best_of_replay_aggregates_games_deterministically() -> None:
+    deck = [{"quantity": 4, "card_name": "Lightning Bolt"}, {"quantity": 56, "card_name": "Mountain"}]
+
+    first = run_match(deck, deck, seed=77, difficulty="master", max_ticks=500, best_of=3)
+    second = run_match(deck, deck, seed=77, difficulty="master", max_ticks=500, best_of=3)
+
+    assert 1 <= first["games_played"] <= 3
+    assert first["winner"] == second["winner"]
+    assert first["wins"] == second["wins"]
+    assert first["log_hash"] == second["log_hash"]
 
 
 def test_replay_endpoint_returns_entries() -> None:

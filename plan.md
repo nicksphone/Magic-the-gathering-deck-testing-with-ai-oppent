@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `429 passed`, 43 deprecation warnings.
+- Backend: `430 passed`, 43 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -138,6 +138,7 @@ Release blockers identified by the audit:
 - Training exports now include a lightweight board-role hint for each AI decision, and the priors builder can consume those exports in addition to raw replay traces.
 - The simulator should continue to separate genuine stalls from long but valid games in its reporting, although timeout classification now distinguishes long-active games from likely stalls and rules issues.
 - A six-deck verbose round robin completed with no hard rules errors or missed-land windows; its prior generic `pass_priority` cluster output was corrected to two pass-with-legal-action cases and one legal long-game case.
+- The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
@@ -229,7 +230,7 @@ Exit criteria:
 - Complex positions are evaluated across at least the next meaningful decision sequence, not only the immediate action.
 
 ### 5. Build a serious regression and balance matrix
-1. Run seeded best-of-three and best-of-nine samples across every built-in archetype pair.
+1. Run seeded best-of-three and best-of-nine samples across every built-in archetype pair; the replay runner now supports these match lengths.
 2. Add long-run deterministic replay checks with first-divergence output and nearby state context.
 3. Separate rules failures, AI stalls, legal long games, and expected deck-out losses.
 4. Track play/draw advantage, mulligan rates, average turns, resource use, card-activation rates, and matchup confidence intervals.

@@ -74,6 +74,34 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
         "log": normalized_log,
         "timeout": state.winner is None,
     }
+
+
+def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, best_of: int) -> dict:
+    """Run a seeded match while preserving each game's independent replay seed."""
+    wins = {1: 0, 2: 0}
+    games: list[dict] = []
+    needed = best_of // 2 + 1
+    for game_index in range(best_of):
+        game = run_game(deck_a, deck_b, seed + game_index, difficulty, max_ticks)
+        games.append(game)
+        if game["winner"] in wins:
+            wins[game["winner"]] += 1
+        if max(wins.values()) >= needed:
+            break
+    winner = 1 if wins[1] >= needed else (2 if wins[2] >= needed else None)
+    match_hash = hashlib.sha256(
+        "\n".join(game["log_hash"] for game in games).encode("utf-8")
+    ).hexdigest()
+    return {
+        "winner": winner,
+        "wins": {"deck_a": wins[1], "deck_b": wins[2]},
+        "games_played": len(games),
+        "timeout": any(game["timeout"] for game in games),
+        "turns": sum(int(game["turn"] or 0) for game in games),
+        "log_hash": match_hash,
+        "log": [line for game in games for line in game["log"]],
+        "games": games,
+    }
 def main() -> None:
     p = argparse.ArgumentParser(description="Deterministic replay regression matrix")
     p.add_argument("--matches-per-pair", type=int, default=3)
@@ -81,6 +109,7 @@ def main() -> None:
     p.add_argument("--max-ticks", type=int, default=6000)
     p.add_argument("--output", default="training_runs/regression_matrix_replay.json")
     p.add_argument("--max-decks", type=int, default=12)
+    p.add_argument("--best-of", type=int, choices=(1, 3, 5, 7, 9), default=1)
     args = p.parse_args()
 
     with Session(engine) as session:
@@ -95,6 +124,8 @@ def main() -> None:
         "decks": len(decks),
         "pairs": 0,
         "games": 0,
+        "matches": 0,
+        "best_of": args.best_of,
         "determinism_failures": 0,
         "drift_labels": {},
         "pair_results": [],
@@ -107,9 +138,9 @@ def main() -> None:
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
         for i in range(max(1, args.matches_per_pair)):
             seed = _stable_seed(left["name"], right["name"], i)
-            a = run_game(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks)
-            b = run_game(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks)
-            deterministic_ok = a["winner"] == b["winner"] and a["turn"] == b["turn"] and a["log_hash"] == b["log_hash"]
+            a = run_match(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            b = run_match(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            deterministic_ok = a["winner"] == b["winner"] and a["turns"] == b["turns"] and a["log_hash"] == b["log_hash"]
             if not deterministic_ok:
                 summary["determinism_failures"] += 1
                 drift = first_log_divergence(a.get("log", []), b.get("log", []))
@@ -122,7 +153,9 @@ def main() -> None:
             pair["games"].append({
                 "seed": seed,
                 "winner": a["winner"],
-                "turn": a["turn"],
+                "turns": a["turns"],
+                "games_played": a["games_played"],
+                "wins": a["wins"],
                 "timeout": a["timeout"],
                 "termination_status": classify_timeout_state(a.get("log", []), bool(a["timeout"])),
                 "deterministic": deterministic_ok,
@@ -130,7 +163,8 @@ def main() -> None:
                 "drift_label": drift_label,
                 "drift_excerpt": _drift_excerpt(drift, drift_label) if drift else None,
             })
-            summary["games"] += 1
+            summary["matches"] += 1
+            summary["games"] += a["games_played"]
         summary["pair_results"].append(pair)
 
     summary["drift_labels"] = dict(drift_labels)
@@ -141,7 +175,9 @@ def main() -> None:
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps({
         "output": str(out),
+        "matches": summary["matches"],
         "games": summary["games"],
+        "best_of": summary["best_of"],
         "determinism_failures": summary["determinism_failures"],
         "drift_labels": summary["drift_labels"],
     }))
