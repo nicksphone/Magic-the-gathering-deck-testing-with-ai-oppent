@@ -8,7 +8,7 @@ The project is a substantial, test-backed simulator, but it is not yet rules-com
 
 Confirmed validation baseline:
 
-- Backend: `408 passed`, 32 deprecation warnings.
+- Backend: `409 passed`, 32 deprecation warnings.
 - Frontend production build: passes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
@@ -74,6 +74,8 @@ Release blockers identified by the audit:
 - Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
 - Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
 - API smoke coverage now exercises `/health`, built-in deck loading, and local card-image serving; it also fixed the missing `BUILTIN_DECKS` import that caused built-in deck requests to fail at runtime.
+- Analytics now counts unsupported Oracle fallbacks explicitly and attributes them to card names, with the same data rendered in the Testing Simulator UI.
+- The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 
 ## Remaining Gaps
 
@@ -116,7 +118,7 @@ Release blockers identified by the audit:
 
 ### Simulation and diagnostics
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.
-- Long-form replay drilldown can still be improved for faster root-cause attribution, although structured AI TRACE drift now distinguishes stack-target, mode-choice, and face-choice mismatches and anomaly clustering now splits out pass loops, X-value errors, and cost-payment failures. The API anomaly scan now counts the same main-phase pass loops and repeated X-value errors.
+- Long-form replay drilldown can still be improved for faster root-cause attribution, although structured AI TRACE drift now distinguishes stack-target, mode-choice, and face-choice mismatches and anomaly clustering now splits out pass loops, X-value errors, cost-payment failures, and unsupported Oracle fallbacks. The API anomaly scan now counts the same main-phase pass loops, repeated X-value errors, and card-level Oracle fallbacks.
 - Replay comparison outputs now include a concise first-divergence excerpt so the exact divergent lines and nearby context are visible in batch and regression outputs.
 - Training exports now include a lightweight board-role hint for each AI decision, and the priors builder can consume those exports in addition to raw replay traces.
 - The simulator should continue to separate genuine stalls from long but valid games in its reporting, although timeout classification now distinguishes long-active games from likely stalls and rules issues.
@@ -247,7 +249,7 @@ Exit criteria:
 
 Work in this order unless a production failure requires an earlier interruption:
 
-1. Complete structured abilities for the current deck corpus.
+1. Complete structured abilities for the current deck corpus, using the new fallback-card report to prioritize implementation.
 2. Continuous/replacement/combat rules fidelity.
 3. Tactical AI search and sideboarding.
 4. Runtime/API deployment follow-up, including automated production/LAN smoke coverage.

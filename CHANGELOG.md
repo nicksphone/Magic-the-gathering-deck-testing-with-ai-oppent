@@ -3,6 +3,16 @@
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 ## 2026-07-16
 
+- Oracle coverage diagnostics:
+  - Simulator analytics now counts unhandled Oracle-effect fallbacks separately from generic errors and attributes each fallback to the affected card.
+  - Testing Simulator output now displays the cards that still use the fallback path, making rules-coverage work actionable instead of requiring raw-log inspection.
+  - Added regression coverage for fallback counting and card-level attribution.
+
+- Validation:
+  - Backend suite now passes `409` tests.
+  - Frontend production build passes after adding the unsupported-Oracle diagnostics panel.
+  - Four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and 0 anomaly hits.
+
 - AI runtime stability:
   - `_cast_bias` now initializes board-role context before evaluating engine-tagged control spells, which removes a head-to-head crash in the simulator path.
   - Added regression coverage for the engine-tagged control cast-bias path.
