@@ -158,6 +158,23 @@ button:hover {
   gap: 8px;
 }
 
+.data-report {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+  margin: 0.65rem 0;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 0.6rem;
+  background: rgba(15, 23, 42, 0.45);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.data-report strong {
+  color: #f8fafc;
+}
+
 .battlefield header {
   display: flex;
   justify-content: space-between;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
 import type { ExpansionTopDeckMeta } from "../api/client";
+import type { CardCompletenessReport } from "../api/client";
 
 type Props = {
   decks: DeckRecord[];
@@ -16,6 +17,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [deckText, setDeckText] = useState("");
   const [deckName, setDeckName] = useState("");
   const [status, setStatus] = useState("");
+  const [completeness, setCompleteness] = useState<CardCompletenessReport | null>(null);
 
   useEffect(() => {
     void refreshDeckData();
@@ -59,6 +61,15 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(data.deck_text.trim());
   }
 
+  async function showCompleteness(names: string[]) {
+    try {
+      setCompleteness(await api.cardCompleteness([...new Set(names)]));
+    } catch (error) {
+      setCompleteness(null);
+      setStatus((prev) => `${prev}${prev ? " | " : ""}Card completeness unavailable: ${String(error)}`);
+    }
+  }
+
   async function importSelectedBuiltin() {
     if (!selectedBuiltin) return;
     const data = await api.getBuiltinText(selectedBuiltin);
@@ -71,6 +82,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(data.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
+    await showCompleteness(imported.mainboard.map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -94,6 +106,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(loaded.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
+    await showCompleteness(imported.mainboard.map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -111,6 +124,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     }
     const resolved = data.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - resolved ${resolved}/${data.mainboard.length} card entries`);
+    await showCompleteness(data.mainboard.map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -152,6 +166,15 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       />
       <button onClick={importDeck}>Save Deck</button>
       <p className="status">{status}</p>
+      {completeness && (
+        <div className="data-report" role="status">
+          <strong>Card data: {completeness.complete}/{completeness.requested} complete</strong>
+          <span>Oracle fallback: {completeness.cards.filter((card) => card.oracle_source === "fallback").length}</span>
+          <span>Uncached: {completeness.missing.cached}</span>
+          <span>Placeholder art: {completeness.missing.real_image}</span>
+          <span>Missing rulings: {completeness.missing.rulings}</span>
+        </div>
+      )}
       <div className="deck-list">
         {decks.map((d) => (
           <div className="deck-chip" key={d.id}>

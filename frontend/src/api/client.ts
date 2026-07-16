@@ -74,6 +74,18 @@ export type ResolvedDeckCard = {
   card_metadata?: ResolvedCardMetadata | null;
 };
 
+export type CardCompletenessReport = {
+  requested: number;
+  complete: number;
+  missing: Record<string, number>;
+  cards: {
+    name: string;
+    cached: boolean;
+    oracle_source: "cache" | "fallback" | "missing";
+    placeholder_image: boolean;
+  }[];
+};
+
 export type ExpansionTopDeckMeta = {
   code: string;
   expansion: string;
@@ -132,6 +144,10 @@ export const api = {
   importDeck: (name: string, deck_text: string, source = "user") =>
     req<DeckImportResponse>("/decks/import", { method: "POST", body: JSON.stringify({ name, deck_text, source }) }),
   listDecks: () => req<DeckRecord[]>("/decks"),
+  cardCompleteness: (names: string[]) => {
+    const query = names.map((name) => `names=${encodeURIComponent(name)}`).join("&");
+    return req<CardCompletenessReport>(`/cards/completeness${query ? `?${query}` : ""}`);
+  },
   startMatch: (payload: {
     deck_a: DeckItem[];
     deck_b: DeckItem[];

@@ -247,7 +247,7 @@ Exit criteria:
 - Missing metadata is reported rather than silently producing weak AI behavior.
 
 Current implementation note:
-- `/cards/completeness` is available for distinct card names from an imported deck. Deck-analysis UI wiring and bulk completeness summaries remain in the release-hardening queue.
+- `/cards/completeness` is available for distinct card names from an imported deck, and the deck import panel displays cache, fallback Oracle, placeholder-art, and ruling status after imports. Bulk completeness summaries remain in the release-hardening queue.
 
 ### 7. Complete the testing UI and release hardening
 1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.
