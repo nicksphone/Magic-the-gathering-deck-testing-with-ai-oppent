@@ -71,6 +71,7 @@ Release blockers identified by the audit:
 - AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
 - Current six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels.
 - Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
+- Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
 
 ## Remaining Gaps
 

@@ -387,11 +387,19 @@ def _infer_keywords(oracle_text: str) -> list[str]:
         "indestructible",
         "hexproof",
         "shroud",
+        "shadow",
+        "fear",
+        "intimidate",
         "islandwalk",
         "swampwalk",
         "mountainwalk",
         "forestwalk",
         "plainswalk",
+        "nonbasic landwalk",
+        "snow landwalk",
+        "desertwalk",
+        "wasteswalk",
+        "legendary landwalk",
     ]:
         if kw in text:
             out.append(kw)

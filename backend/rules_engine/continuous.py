@@ -10,7 +10,13 @@ PT_STATIC_RE = re.compile(
     r"(you control|your opponents control)\s+get\s+([+-]\d+)\/([+-]\d+)"
 )
 PT_SET_RE = re.compile(
-    r"\bbase power and toughness\s+(\d+)\/(\d+)\b"
+    r"\b(?:base power and toughness\s+(\d+)\/(\d+)|(?:are|become|becomes|is)\s+(\d+)\/(\d+)|set(?:s)?(?:\s+their)?\s+base power and toughness\s+(\d+)\/(\d+))\b"
+)
+PT_SET_SCOPE_RE = re.compile(
+    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"(you control|your opponents control)\s+"
+    r"(?:base power and toughness\s+(\d+)\/(\d+)|(?:are|become|becomes|is)\s+(\d+)\/(\d+)|"
+    r"set(?:s)?(?:\s+their)?\s+base power and toughness\s+(\d+)\/(\d+))\b"
 )
 SELF_SCALE_GRAVE_RE = re.compile(
     r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+([a-z\s]+?)\s+card[s]?\s+in\s+(your|all)\s+graveyard[s]?\b"
@@ -50,11 +56,19 @@ KNOWN_KEYWORDS = [
     "indestructible",
     "hexproof",
     "shroud",
+    "shadow",
+    "fear",
+    "intimidate",
     "islandwalk",
     "swampwalk",
     "mountainwalk",
     "forestwalk",
     "plainswalk",
+    "nonbasic landwalk",
+    "snow landwalk",
+    "desertwalk",
+    "wasteswalk",
+    "legendary landwalk",
 ]
 
 
@@ -64,7 +78,8 @@ def effective_power(state, card_id: str) -> int:
     base = int(base_p or 0)
     p_bonus, _ = _continuous_pt_delta(state, card_id)
     counter_bonus = _counter_pt_delta(card)
-    return base + p_bonus + counter_bonus
+    temp_bonus = int((getattr(card, "counters", {}) or {}).get("__eot_power", 0))
+    return base + p_bonus + counter_bonus + temp_bonus
 
 
 def effective_toughness(state, card_id: str) -> int:
@@ -73,7 +88,8 @@ def effective_toughness(state, card_id: str) -> int:
     base = int(base_t or 0)
     _, t_bonus = _continuous_pt_delta(state, card_id)
     counter_bonus = _counter_pt_delta(card)
-    return base + t_bonus + counter_bonus
+    temp_bonus = int((getattr(card, "counters", {}) or {}).get("__eot_toughness", 0))
+    return base + t_bonus + counter_bonus + temp_bonus
 
 
 def _counter_pt_delta(card) -> int:
@@ -130,19 +146,14 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         src = state.cards.get(src_id)
         if not src:
             continue
-        text = (getattr(src, "oracle_text", "") or "").lower()
-        if "creatures you control have base power and toughness" in text:
-            if src.controller != card.controller or "Creature" not in card.types:
+        for scope, other_only, subject, p_set, t_set in _iter_pt_setters(src):
+            if src_id == card_id and other_only:
                 continue
-            m = PT_SET_RE.search(text)
-            if m:
-                base_p = int(m.group(1))
-                base_t = int(m.group(2))
-        elif src_id == card_id:
-            m = PT_SET_RE.search(text)
-            if m:
-                base_p = int(m.group(1))
-                base_t = int(m.group(2))
+            if not _scope_controller(src.controller, scope, card.controller):
+                continue
+            if not _subject_matches(state, card_id, subject):
+                continue
+            base_p, base_t = p_set, t_set
     return base_p, base_t
 
 
@@ -222,6 +233,24 @@ def _iter_pt_modifiers(source_card):
         p_delta = int(match.group(4))
         t_delta = int(match.group(5))
         yield (scope, other_only, subject, p_delta, t_delta)
+
+
+def _iter_pt_setters(source_card):
+    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    scoped_matches = False
+    for match in PT_SET_SCOPE_RE.finditer(text):
+        scoped_matches = True
+        other_only = bool(match.group(1))
+        subject = match.group(2).strip()
+        scope = match.group(3).strip()
+        p_set, t_set = _extract_pt_set_groups(match)
+        if p_set is not None and t_set is not None:
+            yield (scope, other_only, subject, p_set, t_set)
+    if not scoped_matches:
+        for match in PT_SET_RE.finditer(text):
+            p_set, t_set = _extract_pt_set_groups(match)
+            if p_set is not None and t_set is not None:
+                yield ("you control", False, "creatures", p_set, t_set)
 
 
 def _iter_keyword_grants(source_card):
@@ -366,16 +395,28 @@ def _battlefield_card_matches_selector(card, selector: str) -> bool:
 
 def _all_battlefield_ids(state) -> list[str]:
     ids: list[str] = []
+    battlefield_index = _battlefield_position_map(state)
     for pid in state.players:
         ids.extend(list(state.players[pid].battlefield))
     ids.sort(
         key=lambda cid: (
             int(getattr(state.cards.get(cid), "static_order", 0) or 0),
             int(getattr(state.cards.get(cid), "entered_turn", 0) or 0),
+            int(battlefield_index.get(cid, 0) or 0),
             str(cid),
         )
     )
     return ids
+
+
+def _battlefield_position_map(state) -> dict[str, int]:
+    positions: dict[str, int] = {}
+    position = 0
+    for pid in sorted(state.players):
+        for cid in state.players[pid].battlefield:
+            positions[cid] = position
+            position += 1
+    return positions
 
 
 def _is_battlefield(card) -> bool:
@@ -434,9 +475,10 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
             entries.append({"layer": f"pt-mod:{p_delta}/{t_delta}"})
             break
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
-    if source_card.id == target_card_id and PT_SET_RE.search(text):
-        entries.append({"layer": "pt-set"})
+    for scope, other_only, subject, _p_set, _t_set in _iter_pt_setters(source_card):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+            entries.append({"layer": "pt-set"})
+            break
     for scope, other_only, subject, granted in _iter_keyword_grants(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
             entries.append({"layer": f"keyword-grant:{','.join(granted)}"})
@@ -451,3 +493,16 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
 
 def _source_continuous_layers(state, source_card, target_card_id: str) -> list[str]:
     return [entry["layer"] for entry in _source_continuous_layer_entries(state, source_card, target_card_id)]
+
+
+def _extract_pt_set_groups(match: re.Match) -> tuple[int | None, int | None]:
+    if match.re is PT_SET_SCOPE_RE:
+        pairs = ((4, 5), (6, 7), (8, 9))
+    else:
+        pairs = ((1, 2), (3, 4), (5, 6))
+    for p_idx, t_idx in pairs:
+        p = match.group(p_idx)
+        t = match.group(t_idx)
+        if p is not None and t is not None:
+            return int(p), int(t)
+    return None, None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.colors import card_color_names
 from rules_engine.continuous import effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
@@ -78,6 +79,16 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             for c in legal
         )
         state.log.append(f"Attackers declared: {names}")
+        for cid in legal:
+            emit_event(
+                state,
+                "attack_declared",
+                {
+                    "card_id": cid,
+                    "controller": state.cards[cid].controller,
+                    "attack_target": state.attack_targets.get(cid, f"player:{defender}"),
+                },
+            )
 
 
 def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> None:
@@ -142,6 +153,17 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
             blocker_assignments[blocker_id] = blocker_assignments.get(blocker_id, 0) + 1
             break
     state.blocks = legal
+    for attacker_id, blocker_ids in legal.items():
+        for blocker_id in blocker_ids:
+            emit_event(
+                state,
+                "block_declared",
+                {
+                    "attacker_id": attacker_id,
+                    "blocker_id": blocker_id,
+                    "controller": state.cards[blocker_id].controller,
+                },
+            )
 
 
 def combat_damage(state: MatchState) -> None:
@@ -177,6 +199,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             dealt = _deal_unblocked_damage(state, defender_key, effective_power(state, attacker), source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
+            if dealt > 0:
+                emit_event(
+                    state,
+                    "combat_damage_dealt",
+                    {"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt},
+                )
             continue
 
         atk_power = effective_power(state, attacker)
@@ -195,6 +223,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
+            if dealt > 0:
+                emit_event(
+                    state,
+                    "combat_damage_dealt",
+                    {"source_card_id": attacker, "target_card_id": blocker_id, "amount": dealt},
+                )
             remaining -= dealt
 
         if has_keyword(state, attacker, "trample") and remaining > 0:
@@ -232,18 +266,20 @@ def _remove_dead_creatures(state: MatchState) -> None:
             dead.append(cid)
     for cid in dead:
         card = state.cards[cid]
-        owner = state.players[card.controller]
-        if cid in owner.battlefield:
-            owner.battlefield.remove(cid)
+        battlefield_owner = state.players[card.controller]
+        zone_owner = state.players[getattr(card, "owner", card.controller)]
+        if cid in battlefield_owner.battlefield:
+            battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
             if destination == "exile":
-                owner.exile.append(cid)
+                zone_owner.exile.append(cid)
                 card.zone = Zone.EXILE
                 state.log.append(f"{card.name} is exiled instead of dying.")
                 continue
-            owner.graveyard.append(cid)
+            zone_owner.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
             state.log.append(f"{card.name} dies in combat.")
+            emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
             emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
 
 
@@ -251,6 +287,23 @@ def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
     # Flying can only be blocked by flying or reach.
     if has_keyword(state, attacker.id, "flying"):
         if not (has_keyword(state, blocker.id, "flying") or has_keyword(state, blocker.id, "reach")):
+            return False
+    # Shadow creatures can only block or be blocked by other shadow creatures.
+    attacker_has_shadow = has_keyword(state, attacker.id, "shadow")
+    blocker_has_shadow = has_keyword(state, blocker.id, "shadow")
+    if attacker_has_shadow != blocker_has_shadow:
+        return False
+    # Fear: blocked only by artifact creatures and/or black creatures.
+    if has_keyword(state, attacker.id, "fear"):
+        blocker_colors = card_color_names(state.cards.get(blocker.id))
+        if "Artifact" not in (getattr(blocker, "types", []) or []) and "black" not in blocker_colors:
+            return False
+    # Intimidate: blocked only by artifact creatures and/or creatures sharing a color.
+    if has_keyword(state, attacker.id, "intimidate"):
+        blocker_colors = card_color_names(state.cards.get(blocker.id))
+        attacker_colors = card_color_names(state.cards.get(attacker.id))
+        shares_color = bool(attacker_colors & blocker_colors)
+        if "Artifact" not in (getattr(blocker, "types", []) or []) and not shares_color:
             return False
     # Landwalk: unblockable if defending player controls relevant land type.
     if _attacker_has_active_landwalk_with_state(state, attacker, blocker.controller):
@@ -305,7 +358,10 @@ _NUMBER_WORDS = {
 
 
 def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defending_player_id: int) -> bool:
-    walks = ["islandwalk", "swampwalk", "mountainwalk", "forestwalk", "plainswalk"]
+    walks = [
+        "islandwalk", "swampwalk", "mountainwalk", "forestwalk", "plainswalk",
+        "nonbasic landwalk", "snow landwalk", "desertwalk", "wasteswalk", "legendary landwalk",
+    ]
     active_walks = [w for w in walks if has_keyword(state, attacker.id, w)]
     if not active_walks:
         return False
@@ -315,7 +371,13 @@ def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defend
         tl = (card.type_line or "").lower()
         nm = (card.name or "").lower()
         for walk in active_walks:
-            subtype = walk.replace("walk", "")
+            if walk == "nonbasic landwalk" and "land" in tl and "basic" not in tl:
+                return True
+            if walk == "snow landwalk" and "snow" in tl and "land" in tl:
+                return True
+            if walk == "legendary landwalk" and "legendary" in tl and "land" in tl:
+                return True
+            subtype = walk.replace(" landwalk", "").replace("walk", "")
             if subtype in tl or subtype in nm:
                 return True
     return False

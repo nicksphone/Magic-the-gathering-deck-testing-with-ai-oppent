@@ -21,6 +21,19 @@ def _setup_creature(state, player_id: int, name: str, power: int, toughness: int
     return cid
 
 
+def _setup_permanent(state, player_id: int, name: str, type_name: str, oracle_text: str) -> str:
+    p = state.players[player_id]
+    cid = p.hand[0]
+    p.hand.remove(cid)
+    p.battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.name = name
+    card.types = [type_name]
+    card.oracle_text = oracle_text
+    return cid
+
+
 def test_trample_spills_over_to_player() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
@@ -216,6 +229,74 @@ def test_combat_damage_marks_clear_on_cleanup() -> None:
     engine.take_action(state, 2, {"type": "pass_priority"})
     assert state.step == Step.CLEANUP
     assert int(state.cards[blk].counters.get("__damage_marked", 0)) == 0
+
+
+def test_combat_damage_triggers_player_hit_trigger() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    atk = _setup_creature(state, 1, "Sabertooth", 2, 2, [])
+    state.cards[atk].oracle_text = "Whenever this creature deals combat damage to a player, draw a card."
+    state.attackers = [atk]
+    state.attack_targets = {atk: "player:2"}
+
+    combat.combat_damage(state)
+
+    assert any(item.controller == 1 for item in state.stack)
+
+
+def test_attack_declared_triggers_attack_payoff() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+
+    atk = _setup_creature(state, 1, "Combat Celebrant", 2, 2, [])
+    state.cards[atk].oracle_text = "Whenever this creature attacks, draw a card."
+
+    combat.declare_attackers(state, [atk], {atk: "player:2"})
+
+    assert any(item.controller == 1 for item in state.stack)
+
+
+def test_attack_declared_can_create_token_payoff() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+
+    atk = _setup_creature(state, 1, "Recruiter", 2, 2, [])
+    state.cards[atk].oracle_text = "Whenever this creature attacks, create a 1/1 white Soldier creature token."
+
+    combat.declare_attackers(state, [atk], {atk: "player:2"})
+
+    assert any(item.effect_key == "create_token" for item in state.stack)
+
+
+def test_block_declared_triggers_block_payoff() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Attacker", 2, 2, [])
+    blk = _setup_creature(state, 2, "Guard", 2, 2, [])
+    state.cards[blk].oracle_text = "Whenever this creature blocks, draw a card."
+    state.attackers = [atk]
+
+    combat.declare_blockers(state, {atk: [blk]})
+
+    assert any(item.controller == 2 for item in state.stack)
 
 
 def test_flying_attacker_cannot_be_blocked_by_ground_creature() -> None:
@@ -505,3 +586,100 @@ def test_protection_from_multicolored_blocks_multicolored_source_damage() -> Non
     state.blocks = {atk: [blk]}
     combat.combat_damage(state)
     assert state.cards[blk].zone == Zone.BATTLEFIELD
+
+
+def test_shadow_creatures_only_block_and_are_blocked_by_shadow() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    atk = _setup_creature(state, 1, "Shade", 2, 2, ["shadow"])
+    blk = _setup_creature(state, 2, "Bear", 2, 2, [])
+    shadow_blk = _setup_creature(state, 2, "Shadow Bear", 2, 2, ["shadow"])
+    state.attackers = [atk]
+
+    combat.declare_blockers(state, {atk: [blk]})
+    assert state.blocks == {}
+
+    combat.declare_blockers(state, {atk: [shadow_blk]})
+    assert state.blocks.get(atk) == [shadow_blk]
+
+
+def test_fear_and_intimidate_blocking_restrictions_work() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    fear_atk = _setup_creature(state, 1, "Nightstalker", 2, 2, ["fear"])
+    state.cards[fear_atk].mana_cost = "{B}"
+    black_blk = _setup_creature(state, 2, "Dread Knight", 2, 2, [])
+    state.cards[black_blk].mana_cost = "{B}"
+    white_blk = _setup_creature(state, 2, "Soldier", 2, 2, [])
+    state.cards[white_blk].mana_cost = "{W}"
+    state.attackers = [fear_atk]
+
+    combat.declare_blockers(state, {fear_atk: [white_blk]})
+    assert state.blocks == {}
+    combat.declare_blockers(state, {fear_atk: [black_blk]})
+    assert state.blocks.get(fear_atk) == [black_blk]
+
+    state.blocks = {}
+    intimidate_atk = _setup_creature(state, 1, "Warband", 2, 2, ["intimidate"])
+    state.cards[intimidate_atk].mana_cost = "{R}"
+    red_blk = _setup_creature(state, 2, "Goblin", 2, 2, [])
+    state.cards[red_blk].mana_cost = "{R}"
+    green_blk = _setup_creature(state, 2, "Elf", 2, 2, [])
+    state.cards[green_blk].mana_cost = "{G}"
+    artifact_blk = _setup_creature(state, 2, "Myr", 2, 2, [])
+    state.cards[artifact_blk].types = ["Artifact", "Creature"]
+    state.cards[artifact_blk].mana_cost = "{2}"
+    state.attackers = [intimidate_atk]
+
+    combat.declare_blockers(state, {intimidate_atk: [green_blk]})
+    assert state.blocks == {}
+    combat.declare_blockers(state, {intimidate_atk: [red_blk]})
+    assert state.blocks.get(intimidate_atk) == [red_blk]
+    combat.declare_blockers(state, {intimidate_atk: [artifact_blk]})
+    assert state.blocks.get(intimidate_atk) == [artifact_blk]
+def test_nonbasic_landwalk_prevents_blocking() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=21)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    attacker = _setup_creature(state, 1, "Nonbasic Walker", 2, 2, ["nonbasic landwalk"])
+    blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
+    land = _setup_permanent(state, 2, "Hallowed Fountain", "Land", "")
+    state.cards[land].type_line = "Land — Plains Island"
+    state.attackers = [attacker]
+
+    combat.declare_blockers(state, {attacker: [blocker]})
+
+    assert state.blocks == {}
+
+
+def test_snow_landwalk_prevents_blocking_when_snow_land_is_controlled() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=22)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+
+    attacker = _setup_creature(state, 1, "Snow Walker", 2, 2, ["snow landwalk"])
+    blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
+    land = _setup_permanent(state, 2, "Snow-Covered Forest", "Land", "")
+    state.cards[land].type_line = "Basic Snow Land — Forest"
+    state.attackers = [attacker]
+
+    combat.declare_blockers(state, {attacker: [blocker]})
+
+    assert state.blocks == {}

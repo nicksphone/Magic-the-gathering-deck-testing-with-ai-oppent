@@ -347,3 +347,4 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Added a structured `AbilitySpec`/`EffectSpec` boundary around Oracle inference and regression coverage for unsupported action text.
 - Corrected AI combat evaluation to use effective granted keywords instead of only printed card keywords.
 - Revalidated the current branch with a 15-game representative matrix: zero determinism failures and no drift labels.
+- Expanded combat landwalk legality beyond the five basic types to cover nonbasic, snow, desert, wastes, and legendary landwalk variants.
