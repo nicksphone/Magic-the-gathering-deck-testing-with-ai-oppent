@@ -9,6 +9,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added stable AI `reason_code` labels, raw reasoning, and legal action-type summaries to verbose traces. Training export, card-play analytics, and anomaly clustering now preserve these labels and distinguish deliberate interaction holds from unexplained passes.
 
 - Rules coverage:
+  - Cycling draws now pass through draw-replacement effects, and discard triggers caused by cycling are placed above the cycling ability on the stack.
+  - Added regression coverage for optional cycling triggers and discard-trigger ordering.
+  - Added fixed and variable landcycling/basic-landcycling search actions with validated X values, hand destination, and post-search shuffling.
+
+- Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.
   - Additional cast and activated costs now share generic sacrifice eligibility for creatures, artifacts, enchantments, permanents, and artifact-or-creature requirements. The chosen permanent is moved through ownership-aware replacement handling before the ability resolves.
   - Cycling now emits a structured cycle event after the activation is on the stack. Generic and named-card cycling triggers are matched through the event layer, with the trigger ordered above the cycling draw ability.

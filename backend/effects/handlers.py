@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import re
 
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card
 from card_data.token_images import resolve_token_image_uri
@@ -135,7 +136,15 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 
 def cycle_draw(state: MatchState, controller: int, payload: dict) -> None:
     """Resolve the draw portion of a fixed-cost cycling ability."""
-    draw_card(state, controller, int(payload.get("amount", 1) or 1))
+    # Cycling's draw is still a normal draw event, so replacement effects and
+    # draw triggers must use the same path as every other draw effect.
+    draw_cards(state, controller, {"target_player": controller, "amount": int(payload.get("amount", 1) or 1)})
+
+
+def cycle_search(state: MatchState, controller: int, payload: dict) -> None:
+    """Resolve an alternate-cycling search and shuffle the remaining library."""
+    search_library(state, controller, {**payload, "destination": "hand"})
+    state.rng.shuffle(state.players[controller].library)
 
 
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
@@ -489,6 +498,25 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     for cid in list(player.library):
         card = state.cards[cid]
         card_types = {str(t).lower() for t in (getattr(card, "types", []) or [])}
+        type_line = str(getattr(card, "type_line", "") or "").lower()
+        type_line_parts = [part.strip() for part in re.split(r"\s*[—-]\s*", type_line, maxsplit=1)]
+        subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
+        if needle == "basic_land" and "basic" in type_line_parts[0].split() and "land" in card_types:
+            player.library.remove(cid)
+            _place_searched_card(state, controller, cid, destination)
+            found.append(card.name)
+            if limit and len(found) >= limit:
+                break
+            continue
+        if needle not in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land", "permanent"} and (
+            needle in subtypes or needle in type_line
+        ):
+            player.library.remove(cid)
+            _place_searched_card(state, controller, cid, destination)
+            found.append(card.name)
+            if limit and len(found) >= limit:
+                break
+            continue
         if mv_max is not None:
             req = parse_mana_cost(getattr(card, "mana_cost", "") or "")
             mv = int(req["generic"] + req["W"] + req["U"] + req["B"] + req["R"] + req["G"])

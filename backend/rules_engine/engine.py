@@ -4,7 +4,7 @@ from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_o
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
-from rules_engine.cycling import cycling_cost, cycling_is_variable
+from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
@@ -344,15 +344,21 @@ class RulesEngine:
             player.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
             state.log.append(f"{player.name} cycles {card.name}.")
-            emit_event(state, "discard", {"card_id": cid, "controller": player_id})
             add_to_stack(
                 state,
                 source_card_id=cid,
                 controller=player_id,
                 label=f"{card.name} cycling ability",
-                effect_key="cycle_draw",
-                payload={"amount": 1},
+                effect_key="cycle_search" if cycling_variant(card.oracle_text) else "cycle_draw",
+                payload=(
+                    {"contains": cycling_variant(card.oracle_text), "count": 1, "shuffle": True}
+                    if cycling_variant(card.oracle_text)
+                    else {"amount": 1}
+                ),
             )
+            # Discard is a cost event, but its triggered abilities are put on
+            # the stack after the cycling ability and therefore above it.
+            emit_event(state, "discard", {"card_id": cid, "controller": player_id})
             # The cycle trigger is put above the cycling ability, matching
             # activation-cost timing: the draw ability resolves first only
             # if no triggered ability was created.

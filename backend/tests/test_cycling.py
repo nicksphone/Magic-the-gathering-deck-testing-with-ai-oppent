@@ -1,5 +1,6 @@
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.cycling import cycling_variant
 
 
 def _state_with_cycler() -> tuple[object, str]:
@@ -66,6 +67,81 @@ def test_cycling_trigger_is_matched_by_card_name_and_put_above_ability() -> None
     assert [item.effect_key for item in state.stack] == ["cycle_draw", "draw_cards"]
 
 
+def test_cycling_draw_uses_draw_replacement_effects() -> None:
+    state, cid = _state_with_cycler()
+    replacement_id = "cycle-draw-replacement"
+    state.cards[replacement_id] = CardInstance(
+        id=replacement_id,
+        name="Cycle Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would draw a card, gain 1 life instead.",
+    )
+    state.players[1].battlefield.append(replacement_id)
+    before_life = state.players[1].life
+    before_hand = len(state.players[1].hand)
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid})
+    from rules_engine.stack_engine import resolve_top_of_stack
+
+    resolve_top_of_stack(state)
+
+    assert state.players[1].life == before_life + 1
+    assert len(state.players[1].hand) == before_hand - 1
+    assert any("replacement effect applied: draw_cards -> gain_life" in line.lower() for line in state.log)
+
+
+def test_cycling_discard_cost_emits_discard_trigger_before_cycle_draw() -> None:
+    state, cid = _state_with_cycler()
+    payoff_id = "cycle-discard-payoff"
+    state.cards[payoff_id] = CardInstance(
+        id=payoff_id,
+        name="Discard Payoff",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="Whenever you discard a card, draw a card.",
+    )
+    state.players[1].battlefield.append(payoff_id)
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid})
+
+    assert [item.effect_key for item in state.stack] == ["cycle_draw", "draw_cards"]
+    assert any("discard" in line.lower() for line in state.log)
+
+
+def test_optional_cycling_trigger_can_be_declined() -> None:
+    state, cid = _state_with_cycler()
+    payoff_id = "optional-cycle-payoff"
+    state.cards[payoff_id] = CardInstance(
+        id=payoff_id,
+        name="Optional Cycle Payoff",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="Whenever you cycle a card, you may gain 1 life.",
+    )
+    state.players[1].battlefield.append(payoff_id)
+    before_life = state.players[1].life
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid})
+    optional = next(item for item in state.stack if item.effect_key == "gain_life")
+    optional.payload["__may_choose"] = False
+    from rules_engine.stack_engine import resolve_top_of_stack
+
+    resolve_top_of_stack(state)
+
+    assert state.players[1].life == before_life
+    assert any("declines optional effect" in line.lower() for line in state.log)
+
+
 def test_variable_cycling_exposes_only_mana_payable_x_values() -> None:
     state, cid = _state_with_cycler()
     state.cards[cid].oracle_text = "Cycling {X}{1}"
@@ -78,6 +154,35 @@ def test_variable_cycling_exposes_only_mana_payable_x_values() -> None:
         state.cards[land_id].name = "Island"
     moves = [m for m in RulesEngine().legal_moves(state, 1) if m.get("type") == "cycle_card"]
     assert [m.get("x_value") for m in moves] == [0, 1, 2]
+
+
+def test_alternate_cycling_variant_is_detected() -> None:
+    assert cycling_variant("Landcycling {2}") == "land"
+    assert cycling_variant("Basic landcycling {1}") == "basic_land"
+    assert cycling_variant("Wizardcycling {X}") == "wizard"
+
+
+def test_x_basic_landcycling_searches_for_a_basic_land() -> None:
+    state, cid = _state_with_cycler()
+    state.cards[cid].name = "Ash Barrens"
+    state.cards[cid].oracle_text = "Basic landcycling {X}"
+    p1 = state.players[1]
+    land_id = p1.library[-1]
+    state.cards[land_id].types = ["Land"]
+    state.cards[land_id].type_line = "Basic Land — Island"
+    first_land = p1.library[-2]
+    state.cards[first_land].types = ["Land"]
+    state.cards[first_land].type_line = "Land — Island"
+    moves = [m for m in RulesEngine().legal_moves(state, 1) if m.get("type") == "cycle_card"]
+    assert [m.get("x_value") for m in moves] == [0, 1]
+
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "cycle_card", "card_id": cid, "x_value": 1})
+    from rules_engine.stack_engine import resolve_top_of_stack
+
+    resolve_top_of_stack(state)
+    assert land_id in p1.hand
+    assert land_id not in p1.library
 
 
 def test_variable_cycle_x_value_reaches_dynamic_cycle_trigger() -> None:

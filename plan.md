@@ -147,6 +147,8 @@ Release blockers identified by the audit:
 - Decision-trace diagnostics now share a move taxonomy across overnight and head-to-head runners: pass actions and restricted combat placeholders are excluded, while cycling, activated abilities, and equipment are treated as meaningful options.
 - A fresh four-deck six-game round robin using the shared taxonomy completed with 0 invalid targets, 0 cost failures, 0 additional-cost failures, 0 missed-land windows, and 0 stall streaks. It produced two legal long-game timeouts and one control hold-up pass for follow-up reasoning labels.
 - AI verbose traces now include `reason_code`, raw `reasoning`, and `legal_action_types`; training exports and card-play analytics preserve and aggregate those fields, and anomaly clustering can identify deliberate `hold_up_interaction` passes separately from unexplained meaningful-option passes.
+- Cycling draw resolution now uses the ordinary replacement-aware draw path, and cycling discard triggers are ordered above the cycling ability. Optional cycling triggers can be declined through the existing stack choice path.
+- Alternate cycling variants now support fixed and variable landcycling/basic-landcycling costs, validated X choices, library search to hand, and deterministic post-search shuffling. The focused cycling/rules/AI regression set passes `158` tests; the three-game deterministic replay smoke remains at 0 failures.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -279,9 +281,8 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Add replacement-aware cycling tests for draw/discard triggers and optional cycling triggers.
-2. Expand X-cost cycling coverage to alternate costs, replacement-aware draws, and card-specific trigger payloads beyond the generic X/X token path.
-3. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
+1. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
+2. Expand alternate cycling to the remaining typecycling variants and explicit player-choice search selection.
 
 ## Priority Order
 

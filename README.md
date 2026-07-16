@@ -22,6 +22,7 @@ It is designed for serious deck work:
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
+- Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support
@@ -49,6 +50,7 @@ It is designed for serious deck work:
 - Batch simulation with progress tracking
 - Replay inspection and deterministic regression checks
 - Match logs, anomaly output, and training trace export
+- Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
 - First-divergence drilldown with compact trace context for both sides
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction
