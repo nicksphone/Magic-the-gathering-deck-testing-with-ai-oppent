@@ -252,3 +252,23 @@ def test_self_scales_from_other_creatures_you_control() -> None:
 
     assert effective_power(state, scaler) == 3
     assert effective_toughness(state, scaler) == 3
+
+
+def test_characteristic_defined_pt_counts_distinct_graveyard_card_types() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    scaler = _setup_creature(state, 1, "Tarmogoyf", 0, 1, [])
+    state.cards[scaler].power = "*"
+    state.cards[scaler].oracle_text = "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1."
+    p1 = state.players[1]
+    for card_type in ("Artifact", "Instant"):
+        cid = p1.library.pop()
+        p1.graveyard.append(cid)
+        state.cards[cid].zone = Zone.GRAVEYARD
+        state.cards[cid].types = [card_type]
+
+    assert effective_power(state, scaler) == 2
+    assert effective_toughness(state, scaler) == 3

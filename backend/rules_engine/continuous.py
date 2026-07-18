@@ -24,6 +24,7 @@ SELF_SCALE_GRAVE_RE = re.compile(
 SELF_SCALE_BF_RE = re.compile(
     r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+(other\s+)?([a-z\s]+?)\s+you control\b"
 )
+CARD_TYPE_COUNT_RE = re.compile(r"number of card types among cards in all graveyards", re.IGNORECASE)
 KW_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
@@ -141,6 +142,11 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     card = state.cards[card_id]
     base_p = card.power
     base_t = card.toughness
+    dynamic_p, dynamic_t = _self_defined_card_type_pt(state, card)
+    if dynamic_p is not None:
+        base_p = dynamic_p
+    if dynamic_t is not None:
+        base_t = dynamic_t
     # Minimal layer support: base PT setters from static text.
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
@@ -155,6 +161,23 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
                 continue
             base_p, base_t = p_set, t_set
     return base_p, base_t
+
+
+def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
+    """Resolve characteristic-defining PT from distinct graveyard card types."""
+    text = (getattr(card, "oracle_text", "") or "").lower()
+    if not CARD_TYPE_COUNT_RE.search(text):
+        return (None, None)
+    types: set[str] = set()
+    for player in state.players.values():
+        for cid in player.graveyard:
+            grave_card = state.cards.get(cid)
+            if grave_card is not None:
+                types.update(str(value).lower() for value in (getattr(grave_card, "types", []) or []))
+    count = len(types)
+    power = count if "power is equal" in text or "power and toughness" in text else None
+    toughness = count + 1 if "toughness is equal to that number plus 1" in text else None
+    return power, toughness
 
 
 def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
