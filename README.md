@@ -35,6 +35,7 @@ It is designed for serious deck work:
 - Local card cache synced from live card data
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
 - Double-faced, split, modal, adventure, and token-aware card handling
+- Generic upkeep top-card transform handling for double-faced cards
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail
 - Token art fallback handling and face-aware image reuse for double-faced cards

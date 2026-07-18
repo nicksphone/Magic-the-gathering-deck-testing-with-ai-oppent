@@ -17,6 +17,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added resolution-time counted creature-type life-loss effects for common tribal ETB triggers, including plural subtype normalization.
   - Added a reusable top-N hand/exile/bottom choice effect with temporary play permission for the exiled card, covering Expressive Iteration-style selection.
   - Master AI now uses an adaptive bounded two-ply strategic search on developed late-game boards and includes activated abilities, cycling, equipment, and attacks in proactive planning candidates.
+  - Added generic upkeep top-card transform resolution for double-faced cards, preserving the revealed card and applying back-face metadata only when the type condition passes.
 
 - Rules coverage:
   - Damage-prevention overrides now distinguish global, target-player, target-permanent, combat-only, controller-scoped, and named-source “can't be prevented” text. Combat callers now pass explicit combat context.

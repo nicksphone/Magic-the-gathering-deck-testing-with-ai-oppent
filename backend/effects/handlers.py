@@ -694,6 +694,36 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
     )
 
 
+def transform_if_top_matches(state: MatchState, controller: int, payload: dict) -> None:
+    """Reveal the top card and transform the source when its type condition passes."""
+    target_id = payload.get("target_card_id")
+    player = state.players[controller]
+    if not target_id or target_id not in state.cards or not player.library:
+        return
+    top_id = player.library[-1]
+    top_card = state.cards[top_id]
+    required = {str(value).lower() for value in (payload.get("required_types") or [])}
+    state.log.append(f"{player.name} reveals {top_card.name} for {state.cards[target_id].name}.")
+    if not required.intersection({str(value).lower() for value in (top_card.types or [])}):
+        return
+    card = state.cards[target_id]
+    faces = list(getattr(card, "card_faces", []) or [])
+    index = int(payload.get("face_index", 1) or 1)
+    if index < 0 or index >= len(faces):
+        return
+    face = faces[index] or {}
+    card.selected_face_index = index
+    card.name = str(face.get("name") or card.name)
+    card.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
+    card.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
+    card.type_line = str(face.get("type_line") or card.type_line or "")
+    card.types = [part for part in card.type_line.replace("—", " ").split() if part in {"Artifact", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery", "Battle"}]
+    card.power = face.get("power") if face.get("power") is not None else card.power
+    card.toughness = face.get("toughness") if face.get("toughness") is not None else card.toughness
+    card.image_uri = face.get("image_uri") or card.image_uri
+    state.log.append(f"{card.name} transforms.")
+
+
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     player = state.players[target_player]

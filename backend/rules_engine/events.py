@@ -555,6 +555,14 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event == "begin_step" and "transform" in oracle and "top card" in oracle and "instant or sorcery" in oracle:
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "transform_if_top_matches",
+                "payload": {"target_card_id": source_card_id, "required_types": ["Instant", "Sorcery"], "face_index": 1},
+            }
         source_name = re.escape((source_card.name or "").lower())
         self_counter = re.search(
             rf"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:this creature|this card|{source_name})",

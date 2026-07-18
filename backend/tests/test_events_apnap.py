@@ -182,6 +182,35 @@ def test_counted_creature_type_trigger_uses_resolution_time_board_state() -> Non
     assert state.players[2].life == before - 1
 
 
+def test_upkeep_transform_trigger_reveals_top_type_and_applies_back_face() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    source = _put_trigger_creature(
+        state,
+        1,
+        "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform Delver of Secrets.",
+    )
+    state.cards[source].name = "Delver of Secrets"
+    state.cards[source].card_faces = [
+        {"name": "Delver of Secrets", "type_line": "Creature — Human Wizard", "power": "1", "toughness": "1"},
+        {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "power": "3", "toughness": "2"},
+    ]
+    top_id = state.players[1].library[-1]
+    state.cards[top_id].types = ["Instant"]
+    emit_event(state, "begin_step", {"step": "upkeep", "active_player": 1})
+
+    trigger = next(item for item in state.stack if item.source_card_id == source)
+    from effects.registry import resolve_effect
+
+    resolve_effect(state, 1, trigger.effect_key, trigger.payload)
+    assert state.cards[source].selected_face_index == 1
+    assert state.cards[source].name == "Insectile Aberration"
+    assert top_id in state.players[1].library
+
+
 def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
