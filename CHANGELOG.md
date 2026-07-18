@@ -9,6 +9,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Explicit search selections are carried onto the stack and revalidated when they resolve, while older AI/replay callers retain deterministic first-match behavior.
   - Added frontend multi-select controls for human tutor choices.
   - Added regression coverage for legal non-first selections and rejected nonmatching cards; the consolidated rules/AI gate passes 225 tests and the three-game replay smoke has zero determinism failures.
+- Modern rules state:
+  - Added persistent game-wide day/night state with the zero-spell and two-or-more-spell upkeep transitions.
+  - Spell casts are counted at the point a spell is placed on the stack; the count and day/night state survive match snapshots.
+  - Daybound and nightbound double-faced permanents transform through a reusable effect handler, and the current state is visible in the battlefield header.
 
 ## 2026-07-16
 

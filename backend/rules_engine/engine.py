@@ -19,6 +19,7 @@ from rules_engine.events import emit_event
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.attachments import attach_if_legal
+from effects.registry import resolve_effect
 
 
 class RulesEngine:
@@ -36,8 +37,10 @@ class RulesEngine:
         self._clear_mana_pools(state)
         idx = TURN_STEPS.index(state.step)
         if idx == len(TURN_STEPS) - 1:
+            state.spells_cast_last_turn = int(state.spells_cast_this_turn.get(state.active_player, 0) or 0)
             state.turn += 1
             state.active_player = 1 if state.active_player == 2 else 2
+            state.spells_cast_this_turn[state.active_player] = 0
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
             state.trigger_once_seen_this_turn = set()
@@ -75,6 +78,7 @@ class RulesEngine:
                 state.cards[cid].tapped = False
             state.log.append(f"{player.name} untaps.")
         elif state.step == Step.UPKEEP:
+            self._update_day_night(state)
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
         elif state.step == Step.DRAW and state.turn > 1:
             before = len(player.hand)
@@ -89,6 +93,46 @@ class RulesEngine:
             self._clear_marked_damage(state)
             self._clear_prevention_shields(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
+
+    def _update_day_night(self, state: MatchState) -> None:
+        """Apply the core day/night turn-count rule at the beginning of upkeep."""
+        if state.turn <= 1:
+            return
+        cast_count = int(getattr(state, "spells_cast_last_turn", 0) or 0)
+        previous = str(getattr(state, "day_night", "none") or "none")
+        next_state = previous
+        if previous == "none":
+            if cast_count == 0:
+                next_state = "night"
+            elif cast_count >= 2:
+                next_state = "day"
+        elif previous == "day" and cast_count == 0:
+            next_state = "night"
+        elif previous == "night" and cast_count >= 2:
+            next_state = "day"
+        if next_state == previous:
+            return
+        state.day_night = next_state
+        state.log.append(f"The game becomes {next_state}.")
+        emit_event(state, "day_night_changed", {"from": previous, "to": next_state, "spell_count": cast_count})
+        self._transform_day_night_permanents(state, next_state)
+
+    def _transform_day_night_permanents(self, state: MatchState, current: str) -> None:
+        target_marker = "daybound" if current == "night" else "nightbound"
+        target_face = 1 if current == "night" else 0
+        for player in state.players.values():
+            for cid in list(player.battlefield):
+                card = state.cards[cid]
+                if not card.card_faces or target_marker not in (card.oracle_text or "").lower():
+                    continue
+                if target_face >= len(card.card_faces):
+                    continue
+                resolve_effect(
+                    state,
+                    card.controller,
+                    "transform_card",
+                    {"target_card_id": cid, "face_index": target_face},
+                )
 
     def _clear_mana_pools(self, state: MatchState) -> None:
         for p in state.players.values():
@@ -322,6 +366,7 @@ class RulesEngine:
                 (player.exile if from_exile else player.hand).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
+                state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
 
         elif kind == "cycle_card":

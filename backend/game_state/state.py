@@ -137,6 +137,11 @@ class MatchState:
     )
     log: list[str] = field(default_factory=list)
     next_static_order: int = 1
+    # Day/night is a game-wide state. Keep the previous turn's spell count so
+    # the upkeep transition is deterministic and survives snapshot restore.
+    day_night: str = "none"
+    spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    spells_cast_last_turn: int = 0
 
 
 class MatchFactory:

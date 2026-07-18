@@ -39,6 +39,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         },
         "log": list(state.log),
         "next_static_order": state.next_static_order,
+        "day_night": state.day_night,
+        "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
+        "spells_cast_last_turn": state.spells_cast_last_turn,
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -165,6 +168,11 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.log = list(payload.get("log", []))
     state.next_static_order = int(payload.get("next_static_order", 1))
+    state.day_night = str(payload.get("day_night", "none") or "none")
+    state.spells_cast_this_turn = {
+        int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()
+    }
+    state.spells_cast_last_turn = int(payload.get("spells_cast_last_turn", 0) or 0)
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
@@ -187,6 +195,8 @@ def serialize_match(state: MatchState) -> dict:
         "pregame_pending": state.pregame_pending,
         "mulligan_count": state.mulligan_count,
         "kept_hands": sorted(list(state.kept_hands)),
+        "day_night": state.day_night,
+        "spells_cast_this_turn": state.spells_cast_this_turn,
         "priority_stops": {
             str(pid): _sort_steps(steps)
             for pid, steps in state.priority_stops.items()

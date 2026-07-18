@@ -172,12 +172,12 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/handlers.py": {
-    "mtime": 1784412712.9090111,
-    "hash": "259ec055abdc5327238c1c64cecb099e"
+    "mtime": 1784413372.4451904,
+    "hash": "8a7f5b4e246a641d9922f1409e5aab88"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/registry.py": {
-    "mtime": 1784412143.4911401,
-    "hash": "495b6bf6008451a2a6067de11f282459"
+    "mtime": 1784413372.5761883,
+    "hash": "8b02671f586151d7a3de46a26af5356f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_priority_stops.py": {
     "mtime": 1777159492.176964,
@@ -254,6 +254,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_restrictions.py": {
     "mtime": 1778926770.408371,
     "hash": "2bace3aec2f706fc9f62afd4d3523796"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_day_night.py": {
+    "mtime": 1784413385.5889666,
+    "hash": "5cffca408e9cc04056b1bb7b07a38f54"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_combat_progression.py": {
     "mtime": 1777152161.9847982,
@@ -460,12 +464,12 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/game_state/serializers.py": {
-    "mtime": 1784208250.114362,
-    "hash": "44d3bc0ce2b10c4bbd245c78c00d0083"
+    "mtime": 1784413248.9763088,
+    "hash": "f7ba7aa4cc97c1d75a3f029f2039b8be"
   },
   "/home/nick/mtg-deck-testing-lab/backend/game_state/state.py": {
-    "mtime": 1784208249.9743643,
-    "hash": "c3c9df0cc565baaa88bbb915448d09c0"
+    "mtime": 1784413248.7183132,
+    "hash": "af2fdadee114d5c67e4a6e3c35303bf9"
   },
   "/home/nick/mtg-deck-testing-lab/backend/analytics/__init__.py": {
     "mtime": 1777063134.7040613,
@@ -548,8 +552,8 @@
     "hash": "c656a3f7909148c35da241c194f0b891"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/engine.py": {
-    "mtime": 1784216546.5442374,
-    "hash": "b2f80422e52fe0df4b1e1bbbd749d9ff"
+    "mtime": 1784413372.718186,
+    "hash": "10466181337bb9bbb09d2251ce1ffc8e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/attachments.py": {
     "mtime": 1778137478.6637685,
@@ -600,8 +604,8 @@
     "hash": "68b42ff0047815f665bd5c1a0b8c68b7"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/Battlefield.tsx": {
-    "mtime": 1784412800.7173414,
-    "hash": "b72e3346d27b6432612e6da7e5c38831"
+    "mtime": 1784413257.7931566,
+    "hash": "f7a220c153cbc53dc365be89f5fc86a4"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/DeckPanel.tsx": {
     "mtime": 1784209508.3533792,
@@ -620,8 +624,8 @@
     "hash": "b88c013125330a782d94b4cd8ab241e4"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/types/index.ts": {
-    "mtime": 1784412800.575344,
-    "hash": "0fbea946142999a0ebd6a21fc0ac3820"
+    "mtime": 1784413249.1153064,
+    "hash": "2132b57405b9a0629c967a18705e1e6b"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/client.ts": {
     "mtime": 1784210205.7257364,
@@ -636,16 +640,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1784413158.55088,
-    "hash": "64136ee2407ad0c70b3b88d73c98ab63"
+    "mtime": 1784413442.8019953,
+    "hash": "52fc4beed2ceb2f8a76f195bfac28139"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1784413168.2297108,
-    "hash": "c9a53f124d62c697fcdba1bb03f4bd7b"
+    "mtime": 1784413449.2928853,
+    "hash": "c87f7645c44b5a7c7ec84cece2838194"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1784413158.6858776,
-    "hash": "9801fadb929e0895bfaaa1e8054b4546"
+    "mtime": 1784413442.9269931,
+    "hash": "992d151816c244860dde0fdd32826b7a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -691,6 +695,10 @@
     "mtime": 1777202583.685629,
     "hash": "6f070682e4aa896d74724d9d7bd7765b"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-realmwalker-creature.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "759ab7deae0bdab741fd8dc383e6827e"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land-hallowed-fountain-land-plains-island.svg": {
     "mtime": 1784156199.788411,
     "hash": "b303f781869f2ac82b164ee8349ab2c4"
@@ -702,6 +710,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/6c7c8527-55f6-494d-b4f7-c427a5735053.jpg": {
     "mtime": 1778973537.9964628,
     "hash": "ee24cf2aea1d13165578f734ac155512"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-elvish-warmaster-creature.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "32a3e861d3f599e0169741228584a01a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/a8003786-6e2a-4e2d-a915-f23293c7273a.jpg": {
     "mtime": 1777081209.9328403,
@@ -727,9 +739,17 @@
     "mtime": 1777202051.9874554,
     "hash": "114c5809b4eb0b4a1faecb381a03238d"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-thoughtseize-sorcery.svg": {
+    "mtime": 1784413321.8990543,
+    "hash": "0ea20040626c1adb30f1407166c1dacb"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg": {
     "mtime": 1777081205.516909,
     "hash": "fd609ff0adcaa00374ab7e8c7947f7d3"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-lightning-bolt-card.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "f484ff4fac06cf1f2ee17df87b2355d7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-clarion-spirit-creature.svg": {
     "mtime": 1784164883.9543638,
@@ -738,6 +758,14 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/553fb946-2706-475b-89f9-e4355ec9ea2b.jpg": {
     "mtime": 1777082233.3170545,
     "hash": "b9b026e744976ec98f25806b8febd37c"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-brazen-borrower-creature.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "ab937a84e34952ad953f9466fe915a50"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-mountain-card.svg": {
+    "mtime": 1784413321.8950543,
+    "hash": "494a627f517ad2b7c9bffe0d630501c9"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-unknown-card-card.svg": {
     "mtime": 1784209195.4106743,
@@ -751,25 +779,53 @@
     "mtime": 1777113601.0309525,
     "hash": "c5d4fa6624507dc60af5db98136edd3b"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-fable-of-the-mirror-breaker-enchantment.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "49a14d0ecfee6c1e4ee6400bc7aed54c"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/9eb7b2ae-a364-485b-ae75-10dbb0af5541.jpg": {
     "mtime": 1777082550.3587961,
     "hash": "d1eb333fbb791a7317f35404aeb7f3e5"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-cauldron-familiar-creature.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "634c23834e65f49fd3149f0c4dd5c54d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/1de30c12-2011-495a-be25-f7a46b23e142.jpg": {
     "mtime": 1778954390.3364859,
     "hash": "f047636ba56ef216ce7077cd71c74740"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-fatal-push-instant.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "ecad84236b0ae9b633430207ec6e4c87"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-shaman-of-the-pack-creature.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "4a17ba77aa2e9a87f6e2be36610f4dc3"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/457bc402-4c31-465c-95e1-694f686e257e.jpg": {
     "mtime": 1777202050.745476,
     "hash": "442ab4348234f575da960deff43333e8"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-hydroid-krasis-creature.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "afb30cbaf180f70f231b727486706c76"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-memory-deluge-instant.svg": {
     "mtime": 1784156199.788411,
     "hash": "3eb2963410d4089cff34af29348a419a"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-lava-spike-card.svg": {
+    "mtime": 1784413321.8980544,
+    "hash": "19b79063af3c38749682a4812c99ece1"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/6a0b230b-d391-4998-a3f7-7b158a0ec2cd.jpg": {
     "mtime": 1777202048.1435192,
     "hash": "b7a07686cf38958b586db6f839019afd"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-raise-the-alarm-instant.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "fd5eae75251aab5bece20f8366433af5"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/5446e1ba-c745-45b2-ad05-b22abf04daec.jpg": {
     "mtime": 1777111334.212603,
@@ -783,6 +839,10 @@
     "mtime": 1777202582.8276432,
     "hash": "91d5a8e58a9bf56e9e286436880fc2e3"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-artifact-witch-s-oven-artifact.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "37e1a829de0739bcfe90064aa55c0335"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/eb7b9762-740b-4c1c-a411-20dbf023aea5.jpg": {
     "mtime": 1777111333.532614,
     "hash": "3eb945c7176e53fb8a1b7535872892fe"
@@ -791,21 +851,41 @@
     "mtime": 1777111334.0116062,
     "hash": "5948056892fab42f0eccbdfa777341f7"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-planeswalker-ugin-the-spirit-dragon-legendary-planeswalker.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "75283c3ac714a0e8fcc128312e95ca7f"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/f857bbe4-5619-4733-a0c7-69700f2ef4f3.jpg": {
     "mtime": 1777082552.681758,
     "hash": "6489e94483123e73b929bc8a97103055"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-shark-typhoon-enchantment.svg": {
+    "mtime": 1784413321.905054,
+    "hash": "d81ffbb74b430da88cb47d0a420626fb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/28d92cad-45b0-479d-97fc-c175f3a3f259.jpg": {
     "mtime": 1777081208.742859,
     "hash": "b9f7bd645cb38e7ac81c47ea87967c59"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-skullcrack-instant.svg": {
+    "mtime": 1784413321.8990543,
+    "hash": "d569b12594ac5f4fd22de4c377d97c59"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/912b94c9-7200-452d-940f-df0a7cceb377.jpg": {
     "mtime": 1777081209.2698507,
     "hash": "81c561f5c9961129f3f321f8fc45afd3"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-hopeful-initiate-creature.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "1f6e6764dcc100543bdaa428374dec32"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/f169dfb2-e4c8-46e9-8591-e51bb82da082.jpg": {
     "mtime": 1777082550.7007906,
     "hash": "a84af47f2977a871830bf0a8954b4747"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-ossification-enchantment.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "8faa6d6fc407c4f7bb491378c3c68343"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/1e10e2b4-9639-41ae-8b8e-253224d3d513.jpg": {
     "mtime": 1777082551.2527814,
@@ -815,6 +895,10 @@
     "mtime": 1778973536.2904913,
     "hash": "6b342a86ed4ac8a0bfc77584e7983ce6"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-abrupt-decay-instant.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "61ce5bc8e12036663e90bfd454260f79"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/0da03224-c1af-438f-96c2-b0e41e1070b7.jpg": {
     "mtime": 1778954391.5364652,
     "hash": "fdfc23807ecbe94f1feccd2a564f357d"
@@ -823,13 +907,29 @@
     "mtime": 1777081206.0799003,
     "hash": "71f2cd0e6df078fa534fbf6aa7f42a28"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-priest-of-forgotten-gods-creature.svg": {
+    "mtime": 1784413321.9020543,
+    "hash": "c32c0856c16d235737040b606ef8b06a"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/32cf273e-b8f7-434b-9d5d-883dfd6f7423.jpg": {
     "mtime": 1777202049.5134964,
     "hash": "6ea00b7dec06e9290751895ebf64b09c"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-elvish-archdruid-creature.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "9deaac35f38c0a98d0798a2966cf38a8"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-tarmogoyf-creature.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "18edac2da0a2bfbab8bd1b503e43015a"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/f659d464-13dd-49e2-a842-098dcba49659.jpg": {
     "mtime": 1777081207.7428744,
     "hash": "f44d6f926badb9f98a3ebdb57e4c369f"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-kumano-faces-kakkazan-enchantment.svg": {
+    "mtime": 1784413321.8980544,
+    "hash": "deb0bf6aa3643c2d614d6abc03b156bb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-fire-ice-instant.svg": {
     "mtime": 1784158847.6480045,
@@ -838,6 +938,14 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/21e3dfad-69b6-416c-966b-0d9c876d22fe.jpg": {
     "mtime": 1777082552.199766,
     "hash": "3eeae3bebfe818d7716cf701fa4ee422"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-migration-path-sorcery.svg": {
+    "mtime": 1784413321.8950543,
+    "hash": "ee3b5330e12a309b4fc45a492bd022e7"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land-plains-basic-land-plains.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "9326118d247f06d0dc93e5c629a6f002"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/b5b71cd2-de35-451f-b16e-2e3936169407.jpg": {
     "mtime": 1777202047.4115312,
@@ -851,6 +959,42 @@
     "mtime": 1777081205.0739157,
     "hash": "d14e335c783e5c44abc9400f454cc77d"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-deadly-dispute-instant.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "256670e132e2db5d9651f9cec09e1106"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-drown-in-the-loch-instant.svg": {
+    "mtime": 1784413321.9030542,
+    "hash": "2205afec3163ffcc00a596ef8c5ca47a"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-spectral-procession-sorcery.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "9573331dbea2c50bcac98d2fa9dbeba0"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-consider-instant.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "05e4a18c7e71074cd1a1964891d319ce"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-march-of-the-multitudes-instant.svg": {
+    "mtime": 1784413321.8930545,
+    "hash": "e32e96f593b6374fe5d510718b1ea75c"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-topiary-stomper-creature.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "e4bb82fdf98632d21e0f625da3daaa83"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-secure-the-wastes-instant.svg": {
+    "mtime": 1784413321.8930545,
+    "hash": "b12b0ba23950af3777da51115a2cac18"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-soul-scar-mage-creature.svg": {
+    "mtime": 1784413321.8970544,
+    "hash": "985f0b57436974a284639aeda917af48"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-intangible-virtue-enchantment.svg": {
+    "mtime": 1784413321.8930545,
+    "hash": "ecd2cb6703a5ea3bd361af8fc47bb98f"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/8dd4374f-0301-4b2e-bc99-2cd19568cb3b.jpg": {
     "mtime": 1777113601.5159447,
     "hash": "a1e5ed3132f47771f3d5e8e2f327e9b3"
@@ -859,9 +1003,25 @@
     "mtime": 1777202051.2294679,
     "hash": "89d41a8f4851850efe0ed8b0c7834d67"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-searing-blaze-instant.svg": {
+    "mtime": 1784413321.8980544,
+    "hash": "a20565c821cd207b7f7fe73e509f4935"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-rift-bolt-card.svg": {
+    "mtime": 1784413321.8980544,
+    "hash": "e55396805ad1f2166ab94cb392a405bb"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/c43609fb-3cee-44e0-98d0-3ecaba1d5767.jpg": {
     "mtime": 1777202052.192452,
     "hash": "9e159e7d50d7588488950788a4d9d29e"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-planeswalker-nissa-who-shakes-the-world-legendary-planeswalker.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "d2590eb5cb10fe24efc3e4b02c20b2c7"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-light-up-the-stage-sorcery.svg": {
+    "mtime": 1784413321.8990543,
+    "hash": "020445055873c79c1d98b4ea1a207ad3"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/b4f1f69c-122d-472a-b82d-fed7c253a4cd.jpg": {
     "mtime": 1777082553.1547503,
@@ -879,6 +1039,18 @@
     "mtime": 1777202049.0165045,
     "hash": "e243b34f0fc8c9165c538e1115f35e29"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-bonecrusher-giant-creature.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "660cb0553efa6f764549c250e6ffd060"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-elvish-clancaller-creature.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "8a1789090f69071e85b82bd884fc147e"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-wedding-announcement-enchantment.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "21981133e5adfdeaefc5d3c67346ec1a"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card.svg": {
     "mtime": 1783593929.5267162,
     "hash": "588ade48a0e573fa09351a9caec82980"
@@ -895,6 +1067,14 @@
     "mtime": 1784156199.7894108,
     "hash": "a9d2107116bef1c83cc5a9dc846f11ff"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land-forest-basic-land-forest.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "b9a6ecb3b3838f8045a28f27ea853005"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-recruitment-officer-creature.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "2b5ebb27cf66b226dd8a92f5b660ab8d"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/5649ee5a-4485-40a2-96d1-2e061905a71e.jpg": {
     "mtime": 1778954391.320469,
     "hash": "78ebdcfc5e481bf24daf7bf0bbef81f5"
@@ -902,6 +1082,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land.svg": {
     "mtime": 1778975448.690317,
     "hash": "b0aacbde103b1b7ce046c667ff474093"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-arboreal-grazer-creature.svg": {
+    "mtime": 1784413321.8950543,
+    "hash": "f4523a678a6cfbc986b2e02168ca043d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/77b88bb8-6bd9-4632-b937-89468fcb5e6a.jpg": {
     "mtime": 1777082232.2990716,
@@ -919,6 +1103,10 @@
     "mtime": 1778954390.8204775,
     "hash": "1f610055fa914c49d1c71ad37981399e"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-counterspell-instant.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "15f2a5082e4a0eea0aad66435c713901"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/43ca8f80-e9ed-483f-a8a7-ad6149811df9.jpg": {
     "mtime": 1777081209.4548478,
     "hash": "a6348fcbd3365929e7cb7e41565e81a0"
@@ -935,6 +1123,14 @@
     "mtime": 1777111334.5335977,
     "hash": "47e86733d024f36e8105c572e59ed63b"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-growth-spiral-instant.svg": {
+    "mtime": 1784413321.8950543,
+    "hash": "4848c2c705d6c004bf8a26c2f74f5195"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-sprite-dragon-creature.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "287fd7f698e3b60e582597a542c13bc5"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/e8b92271-4412-4165-a4a6-e8653e755107.jpg": {
     "mtime": 1777082553.6367424,
     "hash": "19a4a4c07ff8f02e073c25e8c96b06a6"
@@ -947,9 +1143,17 @@
     "mtime": 1777202047.9045231,
     "hash": "1f8914ec958ddc92a9f1b5b41206a54e"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-village-rites-instant.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "27a9375cc4036bdca0bb6602e0ab6f11"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/c655f9e8-ff99-48d0-83a9-ea6a853f17c6.jpg": {
     "mtime": 1778954391.0324738,
     "hash": "48d7dd7147327f70b85050e5efd26a62"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-bloodtithe-harvester-creature.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "baab27766d534808a260b4ff363edaf3"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/4e6f365d-c5c4-4fd6-94cb-833b89239d73.jpg": {
     "mtime": 1778954392.8674421,
@@ -959,9 +1163,21 @@
     "mtime": 1777113599.9379694,
     "hash": "a6c6f2a5b6a46ea47b6f38a8c7e7b7ed"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-cultivate-sorcery.svg": {
+    "mtime": 1784413321.8950543,
+    "hash": "bbc962af21e9a517e99bf8e5b7d91979"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/b281a308-ab6b-47b6-bec7-632c9aaecede.jpg": {
     "mtime": 1777202048.8305078,
     "hash": "0f48edce19d5b8ded9f4e41c3d641ce7"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-storm-the-festival-sorcery.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "f569970828fe2a440ba8392b893029be"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-goblin-guide-creature.svg": {
+    "mtime": 1784413321.9030542,
+    "hash": "2411ee590e1d83105e1961f880712743"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell.svg": {
     "mtime": 1778975448.690317,
@@ -971,6 +1187,10 @@
     "mtime": 1777082230.1881073,
     "hash": "ffb757571509f4fd9d75631d274372f2"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-monastery-swiftspear-creature.svg": {
+    "mtime": 1784413321.8970544,
+    "hash": "160013afc0d93ef42abacad88aca7107"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/4da3b0bc-84da-4b85-992b-d0700c97157c.jpg": {
     "mtime": 1777202582.3076518,
     "hash": "f6d253459a2acc0b4114cda0106285fb"
@@ -979,13 +1199,37 @@
     "mtime": 1777202048.6105113,
     "hash": "d2945719b0da2c553599b3dc43cea92d"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-expressive-iteration-sorcery.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "760409a5295617eaa99c68e89b66c92a"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-sacred-foundry-card.svg": {
+    "mtime": 1784413321.9040542,
+    "hash": "ad8ee1228b68e9f587da179d155819ad"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-spell-pierce-instant.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "3c3a39ab0254f0ccfdf363ce82c34fab"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/8b4e2642-3c87-4708-b9b4-2e7f7359ac7d.jpg": {
     "mtime": 1777081207.2718818,
     "hash": "bdfee21bfbb2a0bc2ea2d6a6686807b4"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-dreadhorde-butcher-creature.svg": {
+    "mtime": 1784413321.9020543,
+    "hash": "10fae9bcf96e16c656c7f01128239528"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/51fe930f-2b5a-4b1e-9007-6ee74fb44715.jpg": {
     "mtime": 1777111334.7235947,
     "hash": "d6151c30682d08e0122ad9e9c65151e5"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-sheoldred-the-apocalypse-legendary-creature.svg": {
+    "mtime": 1784413321.9000542,
+    "hash": "103289aad58bb0d62b3181fc3a311b9b"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-blood-artist-creature.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "1ecf41a7343129302af9813b6177349f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/4ccd0ada-92b2-48f3-b5ae-96346fc138b6.jpg": {
     "mtime": 1777081206.807889,
@@ -994,6 +1238,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/24dc369c-020a-4115-a4bb-d60a44de64e3.jpg": {
     "mtime": 1778954391.7204618,
     "hash": "1edbd751ea484d06ae2a891b9e6a7507"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-brutal-cathar-creature.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "bc3e6796fa977efd8ccff13cbe507a32"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/70d0540f-93c6-4af5-ab2d-65e6c03001c7.jpg": {
     "mtime": 1777111335.2095869,
@@ -1007,6 +1255,10 @@
     "mtime": 1777082237.1439903,
     "hash": "e0fc44de34b7120eec307b0bc742e3bb"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land-island-basic-land-island.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "07f8267a28517fb0e32880abc4fe52c0"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/edcd3802-ddb3-4eb6-9b6e-a26d76557662.jpg": {
     "mtime": 1777082234.1410408,
     "hash": "ab1db1ef1f6778c06443dc5c4a8da868"
@@ -1019,13 +1271,45 @@
     "mtime": 1777111335.6775792,
     "hash": "4a810f12d6324cd68e197f37288dae62"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-boros-charm-instant.svg": {
+    "mtime": 1784413321.9040542,
+    "hash": "b2f7ff45e8eaeb537e11c23573b1ae32"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-card-skewer-the-critics-card.svg": {
+    "mtime": 1784413321.8980544,
+    "hash": "7365523f9ecf6a211174462a018d0d3f"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/2b2accb1-d77b-4633-9d0c-b972d9c014bb.jpg": {
     "mtime": 1777082234.7030313,
     "hash": "e3f54157c4120364d1c7653cb0301e33"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-go-for-the-throat-instant.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "3710f665b7b77cf4749bc6f7932836fa"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-eidolon-of-the-great-revel-creature.svg": {
+    "mtime": 1784413321.9040542,
+    "hash": "b60fb93cb31f1c000241d3e45aaf35f9"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/c226656b-68d5-4df2-b313-a323a728c520.jpg": {
     "mtime": 1778954392.1984537,
     "hash": "ceea32f32d77c845f81911a99551f064"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-llanowar-elves-creature.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "c3a8ab955184a7999475f8b58c15b288"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-claim-the-firstborn-sorcery.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "77c3bd266ede88a32928472eafe6dd9e"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-torrential-gearhulk-artifact-creature.svg": {
+    "mtime": 1784413321.9030542,
+    "hash": "067886aebd7477d5ce529f5c56e045b1"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-lay-down-arms-sorcery.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "b281d31bf7ba6565074596e890b66550"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/65c7067d-61ec-4558-b0d4-0048d2d86743.jpg": {
     "mtime": 1778973537.506471,
@@ -1035,6 +1319,18 @@
     "mtime": 1777082554.1047347,
     "hash": "ed3835fb59fec2c3d5e468fc74fa10cb"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-unholy-heat-instant.svg": {
+    "mtime": 1784413321.8940544,
+    "hash": "1ebd9173fea199be28da6f278c7e85b2"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-enchantment-the-meathook-massacre-legendary-enchantment.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "4500519f1041debbde6221dab0f2fbb7"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-thalia-guardian-of-thraben-legendary-creature.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "4ecefd8bb07c81d7bd6d3dd0bdeada8e"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/c9f8b8fb-1cd8-450e-a1fe-892e7a323479.jpg": {
     "mtime": 1778954392.3954504,
     "hash": "7d81b41a47a0f05360500d220e3d3308"
@@ -1043,9 +1339,25 @@
     "mtime": 1777081206.2608974,
     "hash": "260a433c9726fec71c25d9a547da47ba"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-adeline-resplendent-cathar-legendary-creature.svg": {
+    "mtime": 1784413321.8900545,
+    "hash": "6d44e359f8acee55e72bd625e78330cf"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-zulaport-cutthroat-creature.svg": {
+    "mtime": 1784413321.9010541,
+    "hash": "06004592181858d556ac435bdd73c7f8"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec.jpg": {
     "mtime": 1777202050.073487,
     "hash": "b906dc0a34e1bcca6ddab7801692ba02"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-creature-elvish-mystic-creature.svg": {
+    "mtime": 1784413321.8910544,
+    "hash": "73630e976fd71a1e70646055f65336b6"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-collected-company-instant.svg": {
+    "mtime": 1784413321.8920543,
+    "hash": "e80fe33cce316e5617af41b8f2839e3b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/4e879386-b1f8-4f2a-9820-6e1291746f88.jpg": {
     "mtime": 1777113602.6379273,
@@ -1054,5 +1366,9 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/ae4aec0d-c853-44e6-9f51-cbecf413ea14.jpg": {
     "mtime": 1777202047.0875366,
     "hash": "76c5a03c110bed9b1184b0a8362eacf6"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-land-swamp-basic-land-swamp.svg": {
+    "mtime": 1784413321.8960543,
+    "hash": "f47e90926edf0262814e628f0fa34f10"
   }
 }

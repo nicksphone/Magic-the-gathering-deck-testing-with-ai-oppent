@@ -137,6 +137,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           <p>
             Turn {match.turn} | Step {match.step} | Priority: P{match.priority_player}
             {match.game_number ? ` | Game ${match.game_number}` : ""}
+            {match.day_night && match.day_night !== "none" ? ` | ${match.day_night}` : ""}
           </p>
         </div>
         <div className="life-counters">

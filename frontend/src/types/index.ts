@@ -66,6 +66,7 @@ export type MatchState = {
   best_of?: number;
   games_needed?: number;
   match_complete?: boolean;
+  day_night?: "none" | "day" | "night";
   sideboard_sizes?: Record<string, number>;
   log: string[];
 };

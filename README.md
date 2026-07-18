@@ -38,6 +38,7 @@ It is designed for serious deck work:
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
 - Double-faced, split, modal, adventure, and token-aware card handling
 - Generic upkeep top-card transform handling for double-faced cards
+- Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail

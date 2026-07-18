@@ -703,6 +703,35 @@ def transform_if_top_matches(state: MatchState, controller: int, payload: dict) 
     state.log.append(f"{card.name} transforms.")
 
 
+def transform_card(state: MatchState, controller: int, payload: dict) -> None:
+    """Apply a selected face to a battlefield double-faced permanent."""
+    target_id = payload.get("target_card_id")
+    card = state.cards.get(target_id) if target_id else None
+    if card is None or target_id not in state.players[card.controller].battlefield:
+        return
+    faces = list(getattr(card, "card_faces", []) or [])
+    try:
+        index = int(payload.get("face_index", 0) or 0)
+    except (TypeError, ValueError):
+        return
+    if index < 0 or index >= len(faces) or index == getattr(card, "selected_face_index", None):
+        return
+    face = faces[index] or {}
+    card.selected_face_index = index
+    card.name = str(face.get("name") or card.name)
+    card.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
+    card.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
+    card.type_line = str(face.get("type_line") or card.type_line or "")
+    card.types = [
+        part for part in card.type_line.replace("—", " ").split()
+        if part in {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery"}
+    ]
+    card.power = face.get("power") if face.get("power") is not None else card.power
+    card.toughness = face.get("toughness") if face.get("toughness") is not None else card.toughness
+    card.image_uri = face.get("image_uri") or card.image_uri
+    state.log.append(f"{card.name} transforms.")
+
+
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     player = state.players[target_player]
