@@ -113,6 +113,7 @@ Release blockers identified by the audit:
 - Oracle target inspection now surfaces artifact and enchantment permanents for Disenchant-style removal, reducing generic fallback selection.
 - Oracle target inspection now also surfaces generic nonland permanents, broadening common Vindicate-style and tap/removal effects.
 - Aura and Equipment detection is now case-insensitive, Aura restrictions cover common permanent/player target classes, and state-based actions recheck invalid attachments.
+- Common temporary control-change effects now move permanents by controller, restore them at cleanup, and persist their duration metadata without changing ownership.
 - Oracle inference now also supports countering activated and triggered abilities, not just spells.
 - Interactive X-spells now fall back to the smallest positive legal X when a target is present, preventing zero-value retry loops.
 - Common fallback card data now covers additional archetype-defining cards so blank cached rows do not leave imported decks with no-op oracle text.
@@ -299,7 +300,7 @@ Exit criteria:
 ### Current next implementation slice
 1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
 2. Extend explicit choice plumbing to top-N ordering, modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search selection is now implemented for the supported search family.
-3. Add the next high-value rules slice: control changes, zone-change triggers, and stronger replacement/layer ordering; core day/night state and common Aura/Equipment legality are now implemented.
+3. Add the next high-value rules slice: zone-change triggers and stronger replacement/layer ordering; core day/night, common Aura/Equipment legality, and common temporary control changes are now implemented.
 4. Extend Master tactical search through combat and stack decisions, including exhaustive bounded attack/block assignments, lethal prevention, crack-back evaluation, and interaction preservation.
 5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
 6. Finish bulk card/token asset completeness reporting and frontend replay/anomaly drilldown before release hardening.

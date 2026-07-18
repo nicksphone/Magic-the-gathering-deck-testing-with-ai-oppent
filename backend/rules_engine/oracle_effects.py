@@ -14,6 +14,7 @@ X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
 LOSE_COUNT_RE = re.compile(r"loses?\s+life\s+equal\s+to\s+the\s+number\s+of\s+([a-z-]+)\s+you\s+control", re.IGNORECASE)
+GAIN_CONTROL_RE = re.compile(r"gain control of\s+target\s+(creature|artifact|enchantment|permanent|planeswalker|land)", re.IGNORECASE)
 PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(creature|land|permanent)")
@@ -560,6 +561,16 @@ def _infer_clause_effect(
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
+
+    control_match = GAIN_CONTROL_RE.search(oracle)
+    if control_match:
+        target = target_card_id or _choose_any_permanent_target(state, controller, action_targets, exclude_types=set())
+        if target:
+            return "change_control", {
+                "target_card_id": target,
+                "new_controller": controller,
+                "until_end_of_turn": "until end of turn" in oracle,
+            }
 
     damage_match = DAMAGE_RE.search(oracle)
     if damage_match:

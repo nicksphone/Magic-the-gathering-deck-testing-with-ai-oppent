@@ -17,6 +17,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Corrected case-insensitive Aura and Equipment detection.
   - Added reusable Aura restrictions for creature, artifact, enchantment, land, planeswalker, permanent, and player targets.
   - Human/AI cast hints now expose Aura candidates, and state-based actions recheck attachment legality before detaching Equipment or putting invalid Auras into their owner's graveyard.
+- Control changes:
+  - Added reusable Oracle inference and effect resolution for common “gain control of target ...” effects.
+  - Temporary control changes move the permanent between battlefield controllers and return it at cleanup without changing ownership; duration state is persisted in match snapshots.
 
 ## 2026-07-16
 

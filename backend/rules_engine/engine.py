@@ -92,7 +92,23 @@ class RulesEngine:
         elif state.step == Step.CLEANUP:
             self._clear_marked_damage(state)
             self._clear_prevention_shields(state)
+            self._revert_expired_control_changes(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
+
+    def _revert_expired_control_changes(self, state: MatchState) -> None:
+        for cid, data in list(state.temporary_control_changes.items()):
+            if int(data.get("expires_turn", state.turn)) != int(state.turn):
+                continue
+            card = state.cards.get(cid)
+            original = int(data.get("controller", 0) or 0)
+            if card and card.zone == Zone.BATTLEFIELD and original in state.players and card.controller != original:
+                current = state.players[card.controller].battlefield
+                if cid in current:
+                    current.remove(cid)
+                state.players[original].battlefield.append(cid)
+                card.controller = original
+                state.log.append(f"Control of {card.name} returns to {state.players[original].name}.")
+            state.temporary_control_changes.pop(cid, None)
 
     def _update_day_night(self, state: MatchState) -> None:
         """Apply the core day/night turn-count rule at the beginning of upkeep."""

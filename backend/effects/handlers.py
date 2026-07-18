@@ -231,6 +231,27 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
             emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
 
 
+def change_control(state: MatchState, controller: int, payload: dict) -> None:
+    target_id = payload.get("target_card_id")
+    card = state.cards.get(target_id) if target_id else None
+    if card is None or card.zone != Zone.BATTLEFIELD:
+        return
+    new_controller = int(payload.get("new_controller", controller) or controller)
+    if new_controller not in state.players:
+        return
+    old_controller = int(card.controller)
+    if old_controller != new_controller:
+        old_battlefield = state.players[old_controller].battlefield
+        if target_id in old_battlefield:
+            old_battlefield.remove(target_id)
+        state.players[new_controller].battlefield.append(target_id)
+        card.controller = new_controller
+    if payload.get("until_end_of_turn"):
+        state.temporary_control_changes[target_id] = {
+            "controller": old_controller,
+            "expires_turn": int(state.turn),
+        }
+    state.log.append(f"{state.players[new_controller].name} gains control of {card.name}.")
 def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
     destroyed = False

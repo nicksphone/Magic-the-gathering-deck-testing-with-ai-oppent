@@ -42,6 +42,10 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
+        "temporary_control_changes": {
+            str(cid): {str(key): int(value) for key, value in data.items()}
+            for cid, data in state.temporary_control_changes.items()
+        },
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -173,6 +177,10 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()
     }
     state.spells_cast_last_turn = int(payload.get("spells_cast_last_turn", 0) or 0)
+    state.temporary_control_changes = {
+        str(cid): {str(key): int(value) for key, value in data.items()}
+        for cid, data in payload.get("temporary_control_changes", {}).items()
+    }
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
