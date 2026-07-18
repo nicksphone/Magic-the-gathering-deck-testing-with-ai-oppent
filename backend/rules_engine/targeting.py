@@ -76,6 +76,13 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if target_hints.get("graveyard_permanent_targets") and ("graveyard" in mode_oracle or "reanimate" in mode_oracle):
         if not action_targets.get("target_card_id"):
             return False, "A graveyard permanent target is required."
+    if target_hints.get("aura_targets"):
+        target_id = action_targets.get("target_card_id")
+        allowed = {str(item.get("id")) for item in target_hints["aura_targets"]}
+        if not target_id:
+            return False, "An Aura target is required."
+        if str(target_id) not in allowed:
+            return False, "The selected Aura target is not legal."
     if target_hints.get("player_targets") and ("target player" in mode_oracle or "any target" in mode_oracle):
         if action_targets.get("target_player") is None and not action_targets.get("target_card_id"):
             return False, "A player or permanent target is required."

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from game_state.state import CardInstance, MatchState
+from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.mana import choose_mana_color_for_player
 
 
@@ -379,6 +379,28 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
             for cid in state.players[controller].battlefield
             if "Land" in state.cards[cid].types
         ]
+    aura_restrictions = {
+        "creature": "creature" in oracle,
+        "artifact": "artifact" in oracle,
+        "enchantment": "enchantment" in oracle,
+        "land": "land" in oracle,
+        "planeswalker": "planeswalker" in oracle,
+        "permanent": "permanent" in oracle,
+    }
+    if "enchant " in oracle and any(aura_restrictions.values()):
+        allowed_players = [controller] if "you control" in oracle else [1, 2]
+        aura_targets = []
+        for pid in allowed_players:
+            for cid in state.players[pid].battlefield:
+                target = state.cards[cid]
+                target_types = {str(value).lower() for value in (target.types or [])}
+                if (
+                    (aura_restrictions["permanent"] and target.zone == Zone.BATTLEFIELD)
+                    or any(aura_restrictions[kind] and kind in target_types for kind in aura_restrictions if kind != "permanent")
+                ):
+                    aura_targets.append({"id": cid, "name": target.name})
+        hints["aura_targets"] = aura_targets
+        hints["creature_targets"] = aura_targets
     if "target permanent" in oracle or "nonland permanent" in oracle:
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}

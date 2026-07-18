@@ -40,6 +40,12 @@ def build_cast_hints(state: MatchState, card: CardInstance, controller: int) -> 
         hints["choice_schema"]["target_card_id"] = {"type": "string", "required": False}
     if hints.get("graveyard_creature_targets"):
         hints["choice_schema"]["target_card_id"] = {"type": "string", "required": False}
+    if hints.get("aura_targets"):
+        hints["choice_schema"]["target_card_id"] = {
+            "type": "string",
+            "required": True,
+            "enum": [item["id"] for item in hints["aura_targets"]],
+        }
     if hints.get("stack_targets"):
         hints["choice_schema"]["target_stack_id"] = {"type": "string", "required": False}
     if hints.get("up_to_target_count"):

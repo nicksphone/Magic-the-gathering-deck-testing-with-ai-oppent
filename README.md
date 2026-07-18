@@ -39,6 +39,7 @@ It is designed for serious deck work:
 - Double-faced, split, modal, adventure, and token-aware card handling
 - Generic upkeep top-card transform handling for double-faced cards
 - Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations
+- Reusable Aura and Equipment attachment legality, target-choice exposure, and state-based cleanup for invalid Auras
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail

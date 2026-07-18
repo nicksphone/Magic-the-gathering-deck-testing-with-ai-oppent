@@ -57,6 +57,7 @@ def build_ability_spec(
             "selected_face_index", "mode_text", "mode_texts", "x_value",
             "target_card_id", "target_card_ids", "target_stack_id",
             "target_player", "search_contains", "top_n", "max_creatures", "mv_max",
+            "search_card_ids",
         )
         if key in action_targets
     }
@@ -84,6 +85,9 @@ def build_ability_spec(
     ):
         static_only = True
     used_fallback = effect_key == "noop" and bool(oracle) and not static_only
+    for key in ("target_card_id", "target_card_ids", "target_player", "search_card_ids"):
+        if key in action_targets and key not in payload:
+            payload[key] = action_targets[key]
     return AbilitySpec(
         source_card_id=getattr(card, "id", None),
         source_name=card.name,

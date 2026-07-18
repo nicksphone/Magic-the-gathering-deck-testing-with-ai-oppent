@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
-from rules_engine.attachments import attached_to, is_aura, is_equipment
+from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
 from rules_engine.events import emit_event
 from rules_engine.continuous import effective_toughness, has_keyword
 from rules_engine.replacement import replace_die_zone
@@ -113,7 +113,7 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
                     state.log.append(f"State-based action: {card.name} has no legal attachment and is put into graveyard.")
             continue
         target = state.cards.get(target_id)
-        if not target or target.zone != Zone.BATTLEFIELD:
+        if not attachment_target_is_legal(state, card, target_id):
             if is_aura(card):
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
