@@ -56,6 +56,7 @@ It is designed for serious deck work:
 - Matchup-aware scoring for control, ramp, tempo, tokens, midrange, aggro, and attrition lines
 - Replay-prior tuning and training exports for deeper decision analysis
 - Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
+- Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
 ### Simulation and Diagnostics

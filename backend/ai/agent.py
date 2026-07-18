@@ -10,6 +10,7 @@ from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine import combat
 from rules_engine.continuous import effective_keywords
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
@@ -2062,6 +2063,9 @@ class AIAgent:
         available = [b["id"] for b in blockers if b.get("id") in state.cards]
         if not available:
             return {}
+        searched = self._search_block_assignments(state, attackers, blockers)
+        if searched is not None:
+            return searched
         assignments: dict[str, str | list[str]] = {}
         player_id = getattr(state, "priority_player", None)
         if player_id not in getattr(state, "players", {}):
@@ -2181,6 +2185,84 @@ class AIAgent:
                 if lethal_pressure and incoming_total - prevented < life:
                     lethal_pressure = False
         return assignments
+
+    def _search_block_assignments(
+        self,
+        state: MatchState,
+        attackers: list[dict],
+        blockers: list[dict],
+    ) -> dict[str, str | list[str]] | None:
+        """Evaluate small-board blocker assignments by resolving cloned combat."""
+        if self.difficulty not in {"master", "master_plus"}:
+            return None
+        attacker_ids = [item["id"] for item in attackers if item.get("id") in state.cards]
+        blocker_ids = [item["id"] for item in blockers if item.get("id") in state.cards]
+        if not attacker_ids or not blocker_ids or len(attacker_ids) > 4 or len(blocker_ids) > 5:
+            return None
+        defender = getattr(state, "priority_player", None)
+        if defender not in getattr(state, "players", {}):
+            defender = state.cards[blocker_ids[0]].controller
+        choices: dict[str, list[str | None]] = {}
+        for bid in blocker_ids:
+            blocker = state.cards[bid]
+            legal_targets = [
+                aid
+                for aid in attacker_ids
+                if combat._can_block_attacker(state, state.cards[aid], blocker)
+            ]
+            choices[bid] = [None, *legal_targets]
+
+        assignments: list[dict[str, str]] = []
+
+        def visit(index: int, current: dict[str, str]) -> None:
+            if index >= len(blocker_ids):
+                counts: dict[str, int] = {}
+                for aid in current.values():
+                    counts[aid] = counts.get(aid, 0) + 1
+                if any(
+                    self._requires_two_or_more_blockers(state, state.cards[aid]) and counts.get(aid, 0) < 2
+                    for aid in attacker_ids
+                ):
+                    return
+                assignments.append(dict(current))
+                return
+            bid = blocker_ids[index]
+            for aid in choices[bid]:
+                if aid is None:
+                    visit(index + 1, current)
+                else:
+                    current[bid] = aid
+                    visit(index + 1, current)
+                    current.pop(bid, None)
+
+        visit(0, {})
+        if not assignments or len(assignments) > 4096:
+            return None
+        best: tuple[float, tuple[tuple[str, str], ...], dict[str, str | list[str]]] | None = None
+        initial_life = state.players[defender].life
+        for assignment in assignments:
+            try:
+                sim = copy.deepcopy(state)
+                self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
+                self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
+            except Exception:
+                continue
+            score = evaluate_board(sim, defender)
+            score += (sim.players[defender].life - initial_life) * 4.0
+            if sim.winner == defender:
+                score += 1000.0
+            elif sim.winner is not None:
+                score -= 1000.0
+            normalized: dict[str, str | list[str]] = {}
+            for aid in attacker_ids:
+                assigned = sorted(bid for bid, target in assignment.items() if target == aid)
+                if assigned:
+                    normalized[aid] = assigned if len(assigned) > 1 else assigned[0]
+            key = tuple(sorted(assignment.items()))
+            candidate = (score, key, normalized)
+            if best is None or candidate[:2] > best[:2]:
+                best = candidate
+        return best[2] if best is not None else None
 
     def _requires_two_or_more_blockers(self, state, attacker) -> bool:
         attacker_id = getattr(attacker, "id", None)

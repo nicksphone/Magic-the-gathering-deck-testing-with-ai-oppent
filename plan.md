@@ -163,6 +163,7 @@ Release blockers identified by the audit:
 - Counted creature-type life-loss triggers now resolve from the controller's battlefield at resolution time, including token/type-line subtypes and plural type names; the broader cycling/search/trigger/rules/AI suite passes `201` tests and the three-game deterministic replay smoke has 0 failures.
 - Top-N hand/exile/bottom selection now has a reusable structured effect for Expressive Iteration-style Oracle text, including temporary play permission for the exiled choice; focused top-choice/Oracle/event/legal-move/AI coverage passes `162` tests.
 - Master AI strategic planning now uses an adaptive two-ply horizon on developed late-game boards, while keeping early turns at one ply; activated abilities, cycling, equipment, and attacks are eligible proactive candidates. The AI/replay suite passes `93` tests and the three-game replay completed with 0 determinism failures and 0 drift labels.
+- Master combat planning now enumerates bounded legal blocker assignments on small boards, resolves cloned combat states, and compares lethal prevention, trades, and post-combat value before using the heuristic assignment path.
 - Transform upkeep triggers now use a generic top-card type check and apply the selected back-face metadata without moving the revealed card; Delver-style transform regression coverage passes `155` tests.
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
@@ -302,7 +303,7 @@ Exit criteria:
 1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
 2. Extend explicit choice plumbing to top-N ordering, modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search selection is now implemented for the supported search family.
 3. Add the next high-value rules slice: stronger replacement/layer ordering and broader zone-change trigger variants; core day/night, common Aura/Equipment legality, temporary control changes, and common battlefield-leave triggers are now implemented.
-4. Extend Master tactical search through combat and stack decisions, including exhaustive bounded attack/block assignments, lethal prevention, crack-back evaluation, and interaction preservation.
+4. Extend Master tactical search through combat and stack decisions, including bounded attack assignments, stronger crack-back evaluation, and interaction preservation; bounded blocker-assignment search is now implemented for small boards.
 5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
 6. Finish bulk card/token asset completeness reporting and frontend replay/anomaly drilldown before release hardening.
 

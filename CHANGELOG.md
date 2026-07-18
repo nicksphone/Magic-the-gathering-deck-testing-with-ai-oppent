@@ -23,6 +23,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Zone-change triggers:
   - Added a shared `leaves_battlefield` event for common destruction, exile, sacrifice, lethal combat, and state-based movement paths.
   - Added controller-scoped creature/permanent/artifact/enchantment leave-trigger matching through the normal APNAP stack path.
+- AI combat planning:
+  - Master and Master Plus now enumerate bounded legal blocker assignments on small boards and evaluate cloned combat resolutions for lethal prevention, trades, and post-combat value before falling back to heuristic blocking.
+  - Added regression coverage for choosing a profitable lethal-prevention block.
 
 ## 2026-07-16
 
