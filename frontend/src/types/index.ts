@@ -105,5 +105,12 @@ export type LegalMove = {
     requires_x_value?: boolean;
     up_to_target_count?: number;
     supports_divide?: boolean;
+    library_search?: {
+      contains?: string;
+      destination?: string;
+      max_count?: number;
+      allow_zero?: boolean;
+      candidates?: { id: string; name: string }[];
+    };
   };
 };

@@ -560,6 +560,34 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                     }
                   />
                 ) : null}
+                {hints?.library_search?.candidates?.length ? (
+                  <label className="choice-field">
+                    Search ({hints.library_search.max_count || "any"})
+                    <select
+                      multiple
+                      size={Math.min(6, Math.max(2, hints.library_search.candidates.length))}
+                      value={(targets[card.id]?.search_card_ids as string[] | undefined) ?? []}
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          [card.id]: {
+                            ...prev[card.id],
+                            search_card_ids: Array.from(e.target.selectedOptions).map((o) => o.value),
+                          },
+                        }))
+                      }
+                    >
+                      {hints.library_search.candidates.map((candidate) => (
+                        <option key={`${card.id}-search-${candidate.id}`} value={candidate.id}>
+                          {candidate.name}
+                        </option>
+                      ))}
+                    </select>
+                    <small>
+                      {hints.library_search.allow_zero ? "Optional selection" : "Select a card"}; Ctrl/Cmd-click for multiple
+                    </small>
+                  </label>
+                ) : null}
                 {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
                   hints.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select

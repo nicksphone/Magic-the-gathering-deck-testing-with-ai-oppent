@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `223 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `225 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -117,6 +117,7 @@ Release blockers identified by the audit:
 - Common fallback card data now covers additional archetype-defining cards so blank cached rows do not leave imported decks with no-op oracle text.
 - Type-based library search now supports artifact, enchantment, permanent, and other common tutor targets instead of only name-based fallback searches.
 - Type-based library search now also supports battlefield tutors, so search effects can move cards straight onto the battlefield instead of only into hand.
+- Library-search choices are now explicit and shared across human and AI actions: legal moves expose matching candidates, cast-choice validation rejects nonmatching IDs, and resolution revalidates selected cards against the live library.
 - Battlefield-tutor search now respects count and mana-value limits, including Collected Company-style wording.
 - Death-trigger handling now also recognizes generic permanent-dies wording, not just creature-dies wording, which helps artifact and enchantment synergies fire from the same event path.
 - Legacy combat evasion keywords like `shadow`, `fear`, and `intimidate` now participate in blocking legality for older-card coverage.
@@ -153,7 +154,7 @@ Release blockers identified by the audit:
 - A fresh four-deck six-game round robin using the shared taxonomy completed with 0 invalid targets, 0 cost failures, 0 additional-cost failures, 0 missed-land windows, and 0 stall streaks. It produced two legal long-game timeouts and one control hold-up pass for follow-up reasoning labels.
 - AI verbose traces now include `reason_code`, raw `reasoning`, and `legal_action_types`; training exports and card-play analytics preserve and aggregate those fields, and anomaly clustering can identify deliberate `hold_up_interaction` passes separately from unexplained meaningful-option passes.
 - Cycling draw resolution now uses the ordinary replacement-aware draw path, and cycling discard triggers are ordered above the cycling ability. Optional cycling triggers can be declined through the existing stack choice path.
-- Alternate cycling variants now support fixed and variable landcycling/basic-landcycling costs, validated X choices, library search to hand, and deterministic post-search shuffling. The focused cycling/rules/AI regression set passes `158` tests; the three-game deterministic replay smoke remains at 0 failures.
+- Alternate cycling variants now support fixed and variable landcycling/basic-landcycling costs, validated X choices, explicit library-search candidates, selected-card resolution, and deterministic post-search shuffling. The focused cycling/rules/AI regression set passes `225` tests; the three-game deterministic replay smoke remains at 0 failures.
 - Ramp fallback data now uses canonical Cultivate and Migration Path basic-land search text. Search inference supports basic-land filters, counts, shuffle instructions, and tapped battlefield placement; the combined cycling/search/rules/AI suite passes `199` tests and the three-game deterministic replay smoke has 0 determinism failures.
 - Triggered self-counter wording now resolves generically against the permanent that owns the trigger, covering named patterns such as “put a +1/+1 counter on [this creature]” without card-name handlers; event/oracle/search regression coverage passes `71` tests.
 - Counted creature-type life-loss triggers now resolve from the controller's battlefield at resolution time, including token/type-line subtypes and plural type names; the broader cycling/search/trigger/rules/AI suite passes `201` tests and the three-game deterministic replay smoke has 0 failures.
@@ -295,7 +296,7 @@ Exit criteria:
 
 ### Current next implementation slice
 1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
-2. Complete explicit choice plumbing for library search, modal spells, X values, targets, and ordering so human and AI decisions use the same legal-action model.
+2. Extend explicit choice plumbing to top-N ordering, modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search selection is now implemented for the supported search family.
 3. Add the next high-value rules slice: day/night, attachment legality, control changes, zone-change triggers, and stronger replacement/layer ordering.
 4. Extend Master tactical search through combat and stack decisions, including exhaustive bounded attack/block assignments, lethal prevention, crack-back evaluation, and interaction preservation.
 5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
@@ -307,7 +308,7 @@ The following are the remaining gaps that can still make a deck appear to play b
 
 - Unsupported or partially supported Oracle text can still resolve through a logged fallback, especially for rare modal, multipart, attachment, replacement, and modern permanent structures.
 - Layer dependencies, timestamps, prevention ordering, and "can't" overrides are not yet a complete general model.
-- Choice selection is not uniformly interactive or AI-searchable for all tutors, modes, targets, X values, and ordering decisions.
+- Library-search choices are now explicit for the supported tutor/search family; top-N ordering, modal multi-effects, simultaneous trigger ordering, and some battlefield-tutor choices still need the same treatment.
 - Combat search is bounded and heuristic; it still needs stronger assignment search and post-combat evaluation for complex boards.
 - Hidden-information inference, sideboarding, matchup plans, and long-run archetype tuning are not complete.
 - Simulator diagnostics are strong for deterministic drift and common anomalies, but full-corpus attribution and statistically meaningful balance samples remain unfinished.

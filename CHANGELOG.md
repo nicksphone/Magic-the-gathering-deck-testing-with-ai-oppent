@@ -1,6 +1,15 @@
 # Changelog
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
+## 2026-07-18
+
+- Choice and search resolution:
+  - Added a shared library-search matcher for type, subtype, basic-land, permanent, and mana-value restrictions.
+  - Tutor and landcycling moves now expose candidate cards and a validated selection schema to callers.
+  - Explicit search selections are carried onto the stack and revalidated when they resolve, while older AI/replay callers retain deterministic first-match behavior.
+  - Added frontend multi-select controls for human tutor choices.
+  - Added regression coverage for legal non-first selections and rejected nonmatching cards; the consolidated rules/AI gate passes 225 tests and the three-game replay smoke has zero determinism failures.
+
 ## 2026-07-16
 
 - Simulator diagnostics:

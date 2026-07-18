@@ -1,6 +1,7 @@
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
+from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
 
 
 def _state_with_searcher() -> object:
@@ -60,3 +61,54 @@ def test_migration_path_puts_basic_lands_onto_battlefield_tapped() -> None:
     found = [cid for cid in state.players[1].battlefield if cid != spell.id]
     assert len(found) == 2
     assert all(state.cards[cid].tapped for cid in found)
+
+
+def test_library_search_exposes_candidates_and_honors_explicit_selection() -> None:
+    state = _state_with_searcher()
+    state.players[1].library[-1], state.players[1].library[-2] = (
+        state.players[1].library[-2],
+        state.players[1].library[-1],
+    )
+    spell = CardInstance(
+        id="cultivate-choice",
+        name="Cultivate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle.",
+    )
+    state.cards[spell.id] = spell
+    hints = build_cast_hints(state, spell, 1)
+    candidates = hints["library_search"]["candidates"]
+    assert len(candidates) == len(state.players[1].library)
+    chosen = [candidates[-1]["id"]]
+    ok, error = validate_cast_choice(hints, {"search_card_ids": chosen})
+    assert ok is True, error
+
+    spec = build_ability_spec(state, spell, 1, action_targets={"search_card_ids": chosen})
+    assert spec.effect.payload["selected_card_ids"] == chosen
+    resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
+    assert chosen[0] in state.players[1].hand
+    assert state.cards[chosen[0]].type_line.startswith("Basic Land")
+
+
+def test_library_search_rejects_nonmatching_explicit_selection() -> None:
+    state = _state_with_searcher()
+    nonbasic = state.players[1].library[-1]
+    state.cards[nonbasic].type_line = "Creature — Elf"
+    state.cards[nonbasic].types = ["Creature"]
+    spell = CardInstance(
+        id="cultivate-invalid",
+        name="Cultivate",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle.",
+    )
+    state.cards[spell.id] = spell
+    hints = build_cast_hints(state, spell, 1)
+    ok, error = validate_cast_choice(hints, {"search_card_ids": [nonbasic]})
+    assert ok is False
+    assert "search restriction" in error.lower()

@@ -506,6 +506,8 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
 
 
 def search_library(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.oracle_effects import search_card_matches
+
     subtype = payload.get("contains")
     destination = str(payload.get("destination", "hand") or "hand").strip().lower()
     limit = int(payload.get("count", 0) or 0)
@@ -514,53 +516,30 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     if not subtype:
         return
-    needle = str(subtype).strip().lower()
     found: list[str] = []
-    for cid in list(player.library):
-        card = state.cards[cid]
-        card_types = {str(t).lower() for t in (getattr(card, "types", []) or [])}
-        type_line = str(getattr(card, "type_line", "") or "").lower()
-        type_line_parts = [part.strip() for part in re.split(r"\s*[—-]\s*", type_line, maxsplit=1)]
-        subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
-        if needle == "basic_land" and "basic" in type_line_parts[0].split() and "land" in card_types:
+    selected = payload.get("selected_card_ids")
+    selected_ids = list(selected) if isinstance(selected, list) else None
+
+    if selected_ids is not None:
+        # The cast-choice validator checks the selection before the spell is
+        # put on the stack. Re-check it here because the library may change
+        # before the search resolves.
+        for cid in selected_ids[:limit or None]:
+            if cid not in player.library or cid not in state.cards:
+                continue
+            card = state.cards[cid]
+            if not search_card_matches(card, subtype, mv_max):
+                continue
             player.library.remove(cid)
             _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
             found.append(card.name)
-            if limit and len(found) >= limit:
-                break
-            continue
-        if needle not in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land", "permanent"} and (
-            needle in subtypes or needle in type_line
-        ):
+    else:
+        for cid in list(player.library):
+            card = state.cards[cid]
+            if not search_card_matches(card, subtype, mv_max):
+                continue
             player.library.remove(cid)
             _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
-            found.append(card.name)
-            if limit and len(found) >= limit:
-                break
-            continue
-        if mv_max is not None:
-            req = parse_mana_cost(getattr(card, "mana_cost", "") or "")
-            mv = int(req["generic"] + req["W"] + req["U"] + req["B"] + req["R"] + req["G"])
-            if mv > mv_max:
-                continue
-        if needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land", "permanent"}:
-            if needle == "permanent" and card_types.intersection({"artifact", "enchantment", "creature", "land", "planeswalker"}):
-                player.library.remove(cid)
-                _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
-                found.append(card.name)
-                if limit and len(found) >= limit:
-                    break
-                continue
-            if needle != "permanent" and needle.title() in {t.title() for t in card_types}:
-                player.library.remove(cid)
-                _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
-                found.append(card.name)
-                if limit and len(found) >= limit:
-                    break
-                continue
-        if needle in card.name.lower():
-            player.library.remove(cid)
-            _place_searched_card(state, controller, cid, destination)
             found.append(card.name)
             if limit and len(found) >= limit:
                 break

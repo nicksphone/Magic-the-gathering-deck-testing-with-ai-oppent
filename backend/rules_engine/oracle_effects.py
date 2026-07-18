@@ -283,7 +283,39 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
         payload["count"] = int(count)
     if mv_max is not None:
         payload["mv_max"] = int(mv_max)
+    selected = action_targets.get("search_card_ids")
+    if selected is not None:
+        payload["selected_card_ids"] = list(selected or [])
     return "search_library", payload
+
+
+def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | None = None) -> bool:
+    """Return whether a card satisfies a structured library-search filter."""
+    if not contains:
+        return False
+    needle = str(contains).strip().lower()
+    card_types = {str(t).lower() for t in (getattr(card, "types", []) or [])}
+    type_line = str(getattr(card, "type_line", "") or "").lower()
+    type_line_parts = [part.strip() for part in re.split(r"\s*[—-]\s*", type_line, maxsplit=1)]
+    subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
+    if needle == "basic_land":
+        matched = "basic" in type_line_parts[0].split() and "land" in card_types
+    elif needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land"}:
+        matched = needle in card_types
+    elif needle == "permanent":
+        matched = bool(card_types.intersection({"artifact", "enchantment", "creature", "land", "planeswalker", "battle"}))
+    else:
+        matched = needle in subtypes or needle in type_line or needle in str(getattr(card, "name", "")).lower()
+    if not matched:
+        return False
+    if mv_max is not None:
+        from rules_engine.mana import parse_mana_cost
+
+        req = parse_mana_cost(getattr(card, "mana_cost", "") or "")
+        value = int(req["generic"] + req["W"] + req["U"] + req["B"] + req["R"] + req["G"])
+        if value > int(mv_max):
+            return False
+    return True
 
 
 def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -403,6 +435,22 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
             for cid in state.players[controller].graveyard
             if cid in state.cards and {"Instant", "Sorcery"}.intersection(state.cards[cid].types)
         ]
+    search_effect = _infer_search_effect(oracle, {})
+    if search_effect is not None:
+        _, search_payload = search_effect
+        contains = search_payload.get("contains")
+        mv_max = search_payload.get("mv_max")
+        hints["library_search"] = {
+            "contains": contains,
+            "destination": search_payload.get("destination", "hand"),
+            "max_count": int(search_payload.get("count", 0) or 0),
+            "allow_zero": bool("up to" in oracle),
+            "candidates": [
+                {"id": cid, "name": state.cards[cid].name}
+                for cid in state.players[controller].library
+                if cid in state.cards and search_card_matches(state.cards[cid], contains, mv_max)
+            ],
+        }
     if "any target" in oracle or "target player" in oracle or "deals" in oracle:
         hints["player_targets"] = [
             {"id": 1, "name": state.players[1].name},

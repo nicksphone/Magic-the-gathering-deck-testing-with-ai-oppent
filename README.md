@@ -22,12 +22,14 @@ It is designed for serious deck work:
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
+- Explicit library-search candidates and validated player-selected tutor choices, with deterministic fallback selection for AI/replay callers
 - Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, and tapped battlefield placement
 - Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
 - Generic named self-counter triggers for common cast/combat/ETB payoff patterns
 - Resolution-time counted creature-type effects for tribal ETB payoffs
 - Structured top-card hand/exile/bottom choices with temporary play permissions
+- Shared cast-choice plumbing for modes, faces, X values, targets, and library-search selections across human and AI actions
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support
 
