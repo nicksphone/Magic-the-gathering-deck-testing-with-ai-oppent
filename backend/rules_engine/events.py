@@ -47,6 +47,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "permanent_dies" and _matches_permanent_dies_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
@@ -270,6 +272,41 @@ def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payloa
         return dead_card.controller == card.controller and _has_artifact_or_enchantment_type(dead_card)
     if "whenever one or more artifacts or enchantments you control die" in oracle:
         return dead_card.controller == card.controller and _has_artifact_or_enchantment_type(dead_card)
+    return False
+
+
+def _matches_leaves_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    leaving_id = payload.get("card_id")
+    leaving = state.cards.get(leaving_id) if leaving_id else None
+    if leaving is None:
+        return False
+    leaving_types = {str(value).lower() for value in (getattr(leaving, "types", []) or [])}
+    controlled = leaving.controller == card.controller
+    other = leaving_id != card.id
+    if "whenever another creature you control leaves the battlefield" in oracle:
+        return controlled and other and "creature" in leaving_types
+    if "whenever a creature you control leaves the battlefield" in oracle:
+        return controlled and "creature" in leaving_types
+    if "whenever another permanent you control leaves the battlefield" in oracle:
+        return controlled and other
+    if "whenever a permanent you control leaves the battlefield" in oracle:
+        return controlled
+    if "whenever another artifact you control leaves the battlefield" in oracle:
+        return controlled and other and "artifact" in leaving_types
+    if "whenever an artifact you control leaves the battlefield" in oracle:
+        return controlled and "artifact" in leaving_types
+    if "whenever another enchantment you control leaves the battlefield" in oracle:
+        return controlled and other and "enchantment" in leaving_types
+    if "whenever an enchantment you control leaves the battlefield" in oracle:
+        return controlled and "enchantment" in leaving_types
+    if "whenever another permanent leaves the battlefield" in oracle:
+        return other
+    if "whenever a permanent leaves the battlefield" in oracle:
+        return True
+    if "whenever another creature leaves the battlefield" in oracle:
+        return other and "creature" in leaving_types
+    if "whenever a creature leaves the battlefield" in oracle:
+        return "creature" in leaving_types
     return False
 
 

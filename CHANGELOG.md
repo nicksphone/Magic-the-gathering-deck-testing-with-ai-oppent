@@ -20,6 +20,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Control changes:
   - Added reusable Oracle inference and effect resolution for common “gain control of target ...” effects.
   - Temporary control changes move the permanent between battlefield controllers and return it at cleanup without changing ownership; duration state is persisted in match snapshots.
+- Zone-change triggers:
+  - Added a shared `leaves_battlefield` event for common destruction, exile, sacrifice, lethal combat, and state-based movement paths.
+  - Added controller-scoped creature/permanent/artifact/enchantment leave-trigger matching through the normal APNAP stack path.
 
 ## 2026-07-16
 

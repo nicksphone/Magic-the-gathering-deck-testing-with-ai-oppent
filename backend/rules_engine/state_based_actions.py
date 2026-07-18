@@ -25,6 +25,7 @@ def apply_state_based_actions(state: MatchState) -> None:
                 battlefield_owner = state.players[card.controller]
                 zone_owner = state.players[getattr(card, "owner", card.controller)]
                 if cid in battlefield_owner.battlefield:
+                    emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
                     battlefield_owner.battlefield.remove(cid)
                     destination = replace_die_zone(state, card.controller, cid)
                     if destination == "exile":
@@ -41,6 +42,7 @@ def apply_state_based_actions(state: MatchState) -> None:
             battlefield_owner = state.players[card.controller]
             zone_owner = state.players[getattr(card, "owner", card.controller)]
             if cid in battlefield_owner.battlefield:
+                emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
                 battlefield_owner.battlefield.remove(cid)
                 zone_owner.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD

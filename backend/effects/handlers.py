@@ -213,6 +213,7 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
         destination = replace_die_zone(state, card.controller, target)
         if destination == "exile":
@@ -401,6 +402,7 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
         zone_owner.exile.append(target)
         card.zone = Zone.EXILE
@@ -834,6 +836,7 @@ def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None
 def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
+        emit_event(state, "leaves_battlefield", {"card_id": target, "controller": controller})
         state.players[controller].battlefield.remove(target)
         card = state.cards[target]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
