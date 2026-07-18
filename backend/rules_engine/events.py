@@ -49,6 +49,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "day_night_changed" and _matches_day_night_trigger(oracle, payload):
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
@@ -308,6 +310,15 @@ def _matches_leaves_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if "whenever a creature leaves the battlefield" in oracle:
         return "creature" in leaving_types
     return False
+
+
+def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
+    destination = str(payload.get("to", "") or "").lower()
+    if destination not in {"day", "night"}:
+        return False
+    if destination == "day":
+        return "becomes day" in oracle or "becomes day" in oracle.replace("the game ", "")
+    return "becomes night" in oracle or "becomes night" in oracle.replace("the game ", "")
 
 
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:

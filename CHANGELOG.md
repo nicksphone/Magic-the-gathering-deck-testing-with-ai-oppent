@@ -13,6 +13,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added persistent game-wide day/night state with the zero-spell and two-or-more-spell upkeep transitions.
   - Spell casts are counted at the point a spell is placed on the stack; the count and day/night state survive match snapshots.
   - Daybound and nightbound double-faced permanents transform through a reusable effect handler, and the current state is visible in the battlefield header.
+  - Day/night transition triggers now enter and resolve from the normal stack/APNAP event path.
 - Attachment rules:
   - Corrected case-insensitive Aura and Equipment detection.
   - Added reusable Aura restrictions for creature, artifact, enchantment, land, planeswalker, permanent, and player targets.

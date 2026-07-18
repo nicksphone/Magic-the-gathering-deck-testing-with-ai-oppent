@@ -166,6 +166,7 @@ Release blockers identified by the audit:
 - Master combat planning now enumerates bounded legal blocker assignments on small boards, resolves cloned combat states, and compares lethal prevention, trades, and post-combat value before using the heuristic assignment path.
 - Transform upkeep triggers now use a generic top-card type check and apply the selected back-face metadata without moving the revealed card; Delver-style transform regression coverage passes `155` tests.
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
+- Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
 - Current focused implementation gate combines cycling, search, top-card choices, Oracle, event, replacement, continuous-effect, and AI tests: `223 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.

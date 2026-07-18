@@ -1,6 +1,7 @@
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _state() -> object:
@@ -70,6 +71,34 @@ def test_day_night_transforms_matching_double_faced_permanents() -> None:
     assert state.day_night == "night"
     assert state.cards[card.id].name == "Nightbound Werewolf"
     assert state.cards[card.id].selected_face_index == 1
+
+
+def test_day_night_change_triggers_use_the_stack() -> None:
+    state = _state()
+    state.turn = 3
+    state.step = Step.UPKEEP
+    state.day_night = "day"
+    state.spells_cast_last_turn = 0
+    trigger_source = CardInstance(
+        id="night-trigger",
+        name="Night Watch",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="Whenever it becomes night, draw a card.",
+        type_line="Enchantment",
+    )
+    state.cards[trigger_source.id] = trigger_source
+    state.players[1].battlefield.append(trigger_source.id)
+    before = len(state.players[1].hand)
+
+    RulesEngine()._apply_step_start_actions(state)
+
+    assert state.day_night == "night"
+    assert state.stack
+    resolve_top_of_stack(state)
+    assert len(state.players[1].hand) == before + 1
 
 
 def test_spell_cast_count_and_day_night_state_survive_snapshot_restore() -> None:
