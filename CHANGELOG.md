@@ -27,6 +27,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI combat planning:
   - Master and Master Plus now enumerate bounded legal blocker assignments on small boards and evaluate cloned combat resolutions for lethal prevention, trades, and post-combat value before falling back to heuristic blocking.
   - Added regression coverage for choosing a profitable lethal-prevention block.
+- Replacement fidelity:
+  - Nontoken/non-token death replacements now inspect the dying permanent's token status, preventing token creatures from being incorrectly exiled.
 
 ## 2026-07-16
 

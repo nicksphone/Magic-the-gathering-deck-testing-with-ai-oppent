@@ -5,6 +5,7 @@ from effects.handlers import deal_damage
 from rules_engine import combat
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
+from rules_engine.replacement import replace_die_zone
 
 
 def _state() -> object:
@@ -419,3 +420,39 @@ def test_destroy_permanent_respects_artifact_or_enchantment_variant() -> None:
     assert card.zone == Zone.EXILE
     assert cid in state.players[1].exile
     assert cid not in state.players[1].graveyard
+
+
+def test_nontoken_death_replacement_does_not_exile_tokens() -> None:
+    state = _state()
+    replacement = CardInstance(
+        id="nontoken-rep",
+        name="Nontoken Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a nontoken creature you control would die, exile it instead.",
+    )
+    token = CardInstance(
+        id="token",
+        name="Soldier Token",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature", "Token"],
+    )
+    creature = CardInstance(
+        id="real-creature",
+        name="Bear",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Creature"],
+    )
+    state.cards[replacement.id] = replacement
+    state.cards[token.id] = token
+    state.cards[creature.id] = creature
+    state.players[1].battlefield.extend([replacement.id, token.id, creature.id])
+
+    assert replace_die_zone(state, 1, token.id) == "graveyard"
+    assert replace_die_zone(state, 1, creature.id) == "exile"

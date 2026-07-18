@@ -43,6 +43,7 @@ It is designed for serious deck work:
 - Reusable Aura and Equipment attachment legality, target-choice exposure, and state-based cleanup for invalid Auras
 - Generic temporary control-change effects with ownership-safe battlefield movement, cleanup restoration, and snapshot persistence
 - Shared battlefield-leave events for destruction, exile, sacrifice, lethal combat, and state-based actions, including common leave-trigger resolution
+- Token-aware death replacements that distinguish nontoken clauses from token permanents
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail

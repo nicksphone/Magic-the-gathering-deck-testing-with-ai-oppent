@@ -100,6 +100,7 @@ Release blockers identified by the audit:
 ### Rules coverage
 - Long-tail Oracle coverage is still incomplete for unusual older cards and fringe wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model, even though replacement source selection now follows timestamp-like battlefield ordering.
+- Nontoken death replacement clauses now enforce the token/non-token distinction; multiple simultaneous replacement choices and deeper dependency ordering remain open.
 - Prevention and replacement now cover broader controller/target wording, combat-only and named-source “can't be prevented” scopes, plus artifact-or-enchantment die replacement, but the overall rules model still has heuristic seams for fringe Oracle text.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects, but scoped base-PT setters now follow the same deterministic battlefield ordering as other continuous sources.
 - Trigger parsing still depends on text inference in a few cases, especially unusual Oracle variants outside the current corpus, but common one-or-more dies/discard forms, cycling triggers, and controller-scoped ETB/death clauses are now covered.

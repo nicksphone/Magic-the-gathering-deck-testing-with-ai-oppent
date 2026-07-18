@@ -156,7 +156,11 @@ def replace_draw_cards(state, target_player: int, amount: int) -> tuple[str, dic
 
 def replace_die_zone(state, controller: int, card_id: str) -> str:
     """Return destination zone for a dying permanent: 'graveyard' or 'exile'."""
+    target = state.cards.get(card_id)
+    is_token = bool(target and (getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])}))
     for card, text in _battlefield_oracle_texts(state, controller=controller):
+        if is_token and ("nontoken" in text or "non-token" in text):
+            continue
         if _matches_phrase(
             text,
             (
