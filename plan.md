@@ -2,7 +2,7 @@
 
 This plan reflects the current codebase, the verified runtime checks, and the remaining work needed to finish the project.
 
-## Audit Status (2026-07-16)
+## Audit Status (2026-07-18)
 
 The project is a substantial, test-backed simulator, but it is not yet rules-complete or consistently capable of piloting arbitrary decks at seasoned-player level. The current implementation is best described as a deterministic rules-aware testing platform with heuristic Oracle interpretation and matchup-aware AI.
 
@@ -12,8 +12,9 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
+- Current consolidated rules/AI validation: `223 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
-- The working tree contains ongoing implementation changes; do not discard unrelated local work while completing this plan.
+- Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
 Release blockers identified by the audit:
 
@@ -158,6 +159,7 @@ Release blockers identified by the audit:
 - Master AI strategic planning now uses an adaptive two-ply horizon on developed late-game boards, while keeping early turns at one ply; activated abilities, cycling, equipment, and attacks are eligible proactive candidates. The AI/replay suite passes `93` tests and the three-game replay completed with 0 determinism failures and 0 drift labels.
 - Transform upkeep triggers now use a generic top-card type check and apply the selected back-face metadata without moving the revealed card; Delver-style transform regression coverage passes `155` tests.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
+- Current focused implementation gate combines cycling, search, top-card choices, Oracle, event, replacement, continuous-effect, and AI tests: `223 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
