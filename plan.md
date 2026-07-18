@@ -16,6 +16,8 @@ Confirmed validation baseline:
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
+This is an engineering-completeness audit, not a claim that the simulator is rules-complete. The application is usable for deterministic deck testing and common archetypes, but it should not yet be described as a pro-level Magic rules implementation or as an AI trained to optimal play across arbitrary cards.
+
 Release blockers identified by the audit:
 
 - Oracle interpretation still relies on text heuristics beneath the new structured ability boundary; broad conversion to structured card abilities remains unfinished.
@@ -292,8 +294,26 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Continue converting the highest-frequency fallback cards from simulator diagnostics into structured effects, starting with the current built-in deck corpus.
-2. Expand alternate cycling to the remaining typecycling variants and explicit player-choice search selection.
+1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
+2. Complete explicit choice plumbing for library search, modal spells, X values, targets, and ordering so human and AI decisions use the same legal-action model.
+3. Add the next high-value rules slice: day/night, attachment legality, control changes, zone-change triggers, and stronger replacement/layer ordering.
+4. Extend Master tactical search through combat and stack decisions, including exhaustive bounded attack/block assignments, lethal prevention, crack-back evaluation, and interaction preservation.
+5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
+6. Finish bulk card/token asset completeness reporting and frontend replay/anomaly drilldown before release hardening.
+
+### Audit findings and acceptance criteria
+
+The following are the remaining gaps that can still make a deck appear to play below seasoned-player level:
+
+- Unsupported or partially supported Oracle text can still resolve through a logged fallback, especially for rare modal, multipart, attachment, replacement, and modern permanent structures.
+- Layer dependencies, timestamps, prevention ordering, and "can't" overrides are not yet a complete general model.
+- Choice selection is not uniformly interactive or AI-searchable for all tutors, modes, targets, X values, and ordering decisions.
+- Combat search is bounded and heuristic; it still needs stronger assignment search and post-combat evaluation for complex boards.
+- Hidden-information inference, sideboarding, matchup plans, and long-run archetype tuning are not complete.
+- Simulator diagnostics are strong for deterministic drift and common anomalies, but full-corpus attribution and statistically meaningful balance samples remain unfinished.
+- Card/token completeness and frontend replay inspection need release-level verification, especially offline and LAN deployments.
+
+Each item is complete only when it has application-code coverage, focused regression tests, at least one full-game or replay validation, and synchronized README/changelog/Graphify output where applicable.
 
 ## Priority Order
 
