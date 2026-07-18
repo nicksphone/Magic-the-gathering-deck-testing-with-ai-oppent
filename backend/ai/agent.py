@@ -121,12 +121,15 @@ class AIAgent:
         if turn < 6 and len(state.players[player_id].battlefield) + len(state.players[1 if player_id == 2 else 2].battlefield) < 12:
             return None
         proactive_legal = [
-            mv for mv in legal_moves if mv.get("type") in {"cast_spell", "activate_loyalty", "attack"}
+            mv
+            for mv in legal_moves
+            if mv.get("type") in {"cast_spell", "activate_ability", "activate_loyalty", "cycle_card", "equip", "attack"}
         ]
         if not proactive_legal:
             return None
         candidates = []
-        beam_limit = 8 if self.difficulty in {"master", "master_plus"} else 4
+        search_depth = self._strategic_search_depth(state, player_id)
+        beam_limit = 6 if search_depth > 1 else 8
         for mv in self._rank_moves(state, legal_moves, player_id)[:beam_limit]:
             mat = self._materialize_action(state, mv, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
@@ -138,7 +141,7 @@ class AIAgent:
             return None
         scored: list[tuple[float, dict]] = []
         for mv in candidates:
-            score = self._strategic_line_score(state, mv, player_id, depth=1)
+            score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
             scored.append((score, mv))
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top = scored[0][1]
@@ -148,6 +151,21 @@ class AIAgent:
                     return mv
             return None
         return top
+
+    def _strategic_search_depth(self, state: MatchState, player_id: int) -> int:
+        """Choose a bounded tactical horizon without making every turn expensive."""
+        if self.difficulty == "master_plus":
+            return 2
+        if self.difficulty != "master":
+            return 1
+        turn = int(getattr(state, "turn", 1) or 1)
+        opp_id = 1 if player_id == 2 else 2
+        board_size = len(getattr(state.players[player_id], "battlefield", []) or []) + len(
+            getattr(state.players[opp_id], "battlefield", []) or []
+        )
+        if turn >= 10 and board_size >= 14:
+            return 2
+        return 1
 
     def _is_complex_board_state(self, state: MatchState, player_id: int) -> bool:
         if getattr(state, "pregame_pending", False):

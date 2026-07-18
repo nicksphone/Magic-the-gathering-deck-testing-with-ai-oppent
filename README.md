@@ -47,6 +47,7 @@ It is designed for serious deck work:
 - Board-role-aware planning for stabilize, convert, race, control, and related board states
 - Matchup-aware scoring for control, ramp, tempo, tokens, midrange, aggro, and attrition lines
 - Replay-prior tuning and training exports for deeper decision analysis
+- Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
 ### Simulation and Diagnostics

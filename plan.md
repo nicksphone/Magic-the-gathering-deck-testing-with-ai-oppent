@@ -122,6 +122,7 @@ Release blockers identified by the audit:
 ### AI quality
 - The AI is much stronger, but it still needs deeper tactical play in complex board states.
 - Master lookahead now resolves unanswered activated/cycling stacks during simulation, but stops the approximation when the opponent has a legal non-pass response; this improves card-filtering and engine valuation without suppressing interaction.
+- Master strategic planning now expands to a bounded two-ply search when the board is developed, so spell sequencing and response preservation are evaluated beyond the immediate action without imposing the cost on early turns.
 - Combat blocking now preserves mana creatures when better blocks exist, and still blocks with them when they are the only profitable defense.
 - Master difficulty now invokes the deeper strategic planner earlier in complex midgame boards for control, counter-heavy, midrange, ramp, and tempo shells.
 - Board-role planning now distinguishes stabilize, convert, race, control, defend, and normal states so multi-phase board evaluation is less generic.
@@ -153,6 +154,7 @@ Release blockers identified by the audit:
 - Triggered self-counter wording now resolves generically against the permanent that owns the trigger, covering named patterns such as “put a +1/+1 counter on [this creature]” without card-name handlers; event/oracle/search regression coverage passes `71` tests.
 - Counted creature-type life-loss triggers now resolve from the controller's battlefield at resolution time, including token/type-line subtypes and plural type names; the broader cycling/search/trigger/rules/AI suite passes `201` tests and the three-game deterministic replay smoke has 0 failures.
 - Top-N hand/exile/bottom selection now has a reusable structured effect for Expressive Iteration-style Oracle text, including temporary play permission for the exiled choice; focused top-choice/Oracle/event/legal-move/AI coverage passes `162` tests.
+- Master AI strategic planning now uses an adaptive two-ply horizon on developed late-game boards, while keeping early turns at one ply; activated abilities, cycling, equipment, and attacks are eligible proactive candidates. The AI/replay suite passes `93` tests and the three-game replay completed with 0 determinism failures and 0 drift labels.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
