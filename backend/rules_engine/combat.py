@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from game_state.state import MatchState, Zone
 from rules_engine.colors import card_color_names
 from rules_engine.continuous import effective_power, effective_toughness, has_keyword
@@ -153,6 +155,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
             blocker_assignments[blocker_id] = blocker_assignments.get(blocker_id, 0) + 1
             break
     state.blocks = legal
+    _apply_block_combat_abilities(state)
     for attacker_id, blocker_ids in legal.items():
         for blocker_id in blocker_ids:
             emit_event(
@@ -164,6 +167,50 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
                     "controller": state.cards[blocker_id].controller,
                 },
             )
+
+
+def _apply_block_combat_abilities(state: MatchState) -> None:
+    """Apply Bushido, Rampage, and Flanking as blockers become declared."""
+    for attacker_id, blocker_ids in state.blocks.items():
+        attacker = state.cards.get(attacker_id)
+        if attacker is None:
+            continue
+        bushido = _combat_keyword_value(attacker, "bushido")
+        if bushido:
+            _add_combat_modifier(attacker, bushido, bushido)
+        rampage = _combat_keyword_value(attacker, "rampage")
+        if rampage and len(blocker_ids) > 1:
+            amount = rampage * (len(blocker_ids) - 1)
+            _add_combat_modifier(attacker, amount, amount)
+        if _has_combat_keyword(attacker, "flanking"):
+            for blocker_id in blocker_ids:
+                blocker = state.cards.get(blocker_id)
+                if blocker is not None and not _has_combat_keyword(blocker, "flanking"):
+                    _add_combat_modifier(blocker, -1, -1)
+        for blocker_id in blocker_ids:
+            blocker = state.cards.get(blocker_id)
+            if blocker is None:
+                continue
+            blocker_bushido = _combat_keyword_value(blocker, "bushido")
+            if blocker_bushido:
+                _add_combat_modifier(blocker, blocker_bushido, blocker_bushido)
+
+
+def _combat_keyword_value(card, keyword: str) -> int:
+    text = (getattr(card, "oracle_text", "") or "").lower()
+    match = re.search(rf"\b{re.escape(keyword)}\s+(\d+)\b", text)
+    return int(match.group(1)) if match else 0
+
+
+def _has_combat_keyword(card, keyword: str) -> bool:
+    text = (getattr(card, "oracle_text", "") or "").lower()
+    return keyword in text or keyword in {str(item).lower() for item in (getattr(card, "keywords", []) or [])}
+
+
+def _add_combat_modifier(card, power: int, toughness: int) -> None:
+    counters = getattr(card, "counters", {})
+    counters["__eot_power"] = int(counters.get("__eot_power", 0) or 0) + int(power)
+    counters["__eot_toughness"] = int(counters.get("__eot_toughness", 0) or 0) + int(toughness)
 
 
 def combat_damage(state: MatchState) -> None:

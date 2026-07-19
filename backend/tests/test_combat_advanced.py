@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
+from rules_engine.continuous import effective_power, effective_toughness
 
 
 def _setup_creature(state, player_id: int, name: str, power: int, toughness: int, keywords: list[str] | None = None) -> str:
@@ -683,3 +684,61 @@ def test_snow_landwalk_prevents_blocking_when_snow_land_is_controlled() -> None:
     combat.declare_blockers(state, {attacker: [blocker]})
 
     assert state.blocks == {}
+
+
+def test_bushido_boosts_attacker_when_blocked() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=23)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+    attacker = _setup_creature(state, 1, "Bushido Bear", 2, 2, [])
+    state.cards[attacker].oracle_text = "Bushido 1"
+    blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
+    state.attackers = [attacker]
+
+    combat.declare_blockers(state, {attacker: [blocker]})
+
+    assert effective_power(state, attacker) == 3
+    assert effective_toughness(state, attacker) == 3
+    combat.combat_damage(state)
+    assert state.cards[attacker].zone == Zone.BATTLEFIELD
+    assert state.cards[blocker].zone == Zone.GRAVEYARD
+
+
+def test_rampage_scales_with_each_blocker_beyond_the_first() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=24)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+    attacker = _setup_creature(state, 1, "Rampaging Bear", 3, 3, [])
+    state.cards[attacker].oracle_text = "Rampage 2"
+    blocker_a = _setup_creature(state, 2, "Bear A", 1, 1, [])
+    blocker_b = _setup_creature(state, 2, "Bear B", 1, 1, [])
+    state.attackers = [attacker]
+
+    combat.declare_blockers(state, {attacker: [blocker_a, blocker_b]})
+
+    assert effective_power(state, attacker) == 5
+    assert effective_toughness(state, attacker) == 5
+
+
+def test_flanking_reduces_nonflanking_blocker_before_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=25)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.DECLARE_BLOCKERS
+    attacker = _setup_creature(state, 1, "Flanking Bear", 2, 2, ["flanking"])
+    blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
+    state.attackers = [attacker]
+
+    combat.declare_blockers(state, {attacker: [blocker]})
+
+    assert effective_toughness(state, blocker) == 1
+    combat.combat_damage(state)
+    assert state.cards[blocker].zone == Zone.GRAVEYARD

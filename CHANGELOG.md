@@ -64,7 +64,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Stack countering now honors source-level `can't be countered`/`cannot be countered` text and uses spell ownership for the countered card's graveyard.
   - Spell-created “this turn” restrictions now persist through the active turn, survive snapshots, block later life gain or damage prevention, and expire at cleanup.
   - Legend-rule state actions now use ownership-correct death replacement and emit leave/death events when the duplicate actually dies.
-  - The consolidated rules/AI gate now passes 282 tests and the replay smoke remains deterministic.
+  - Combat now handles generic Bushido, Rampage, and Flanking modifiers at blocker declaration with temporary stat cleanup and lethal-damage coverage.
+  - The consolidated rules/AI gate now passes 319 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 

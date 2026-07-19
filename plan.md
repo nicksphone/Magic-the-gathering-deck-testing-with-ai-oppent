@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `282 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `319 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -182,13 +182,14 @@ Release blockers identified by the audit:
 - Stack countering now honors source-level `can't be countered`/`cannot be countered` text and moves countered spells to their owners' graveyards rather than their controllers' zones.
 - Spell-created “this turn” restrictions now persist through the active turn, survive snapshots, block later life gain or damage prevention, and expire at cleanup.
 - Legend-rule state actions now use ownership-correct death replacement and emit battlefield-leave, permanent-death, and creature-death events when the duplicate actually dies.
+- Combat now handles generic Bushido, Rampage, and Flanking modifiers at blocker declaration, including temporary cleanup-scoped stat changes and lethal-damage interaction.
 - AI action materialization now supplies validated library-search selections for tutor casts; the reproduced Topiary Stomper invalid-target loop is fixed, while legal no-threat control endgames remain a separate closure-tuning item.
 - Graveyard spell-target hints now participate in legal-move generation and Master action materialization, restoring common recursion finishers such as Torrential Gearhulk-style cards.
 - Transform upkeep triggers now use a generic top-card type check and apply the selected back-face metadata without moving the revealed card; Delver-style transform regression coverage passes `155` tests.
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, and AI tests: `282 passed`.
+- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, and AI tests: `319 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -335,7 +336,7 @@ The following are the remaining gaps that can still make a deck appear to play b
 - Unsupported or partially supported Oracle text can still resolve through a logged fallback, especially for rare modal, multipart, attachment, replacement, and modern permanent structures.
 - Layer dependencies, timestamps, prevention ordering, and "can't" overrides are not yet a complete general model.
 - Library-search, top-library, common modal modes, and topdeck battlefield-tutor choices are now explicit for their supported families; complex modal multi-effects, complete simultaneous trigger ordering, and additional battlefield-tutor restrictions still need the same treatment.
-- Combat search is bounded and heuristic; it still needs stronger assignment search and post-combat evaluation for complex boards.
+- Combat search is bounded and heuristic; it still needs stronger assignment search and post-combat evaluation for complex boards. Bushido, Rampage, and Flanking are now explicit; banding and other assignment-changing families remain open.
 - Hidden-information inference, sideboarding, matchup plans, and long-run archetype tuning are not complete.
 - Simulator diagnostics are strong for deterministic drift and common anomalies, but full-corpus attribution and statistically meaningful balance samples remain unfinished.
 - Card/token completeness and frontend replay inspection need release-level verification, especially offline and LAN deployments.
