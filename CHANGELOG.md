@@ -61,7 +61,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Simultaneous mass leave/death events now batch trigger collection and deduplicate `one or more` abilities without collapsing ordinary per-object triggers.
   - Modal choice extraction now supports Scryfall bullet-formatted modes and `Choose two` schemas while preserving readable labels for frontend and AI choices.
   - Battlefield topdeck tutors now expose validated candidate selections to humans and AI, and Collected Company-style deployment honors explicit selected cards.
-  - The consolidated rules/AI gate now passes 271 tests and the replay smoke remains deterministic.
+  - Stack countering now honors source-level `can't be countered`/`cannot be countered` text and uses spell ownership for the countered card's graveyard.
+  - The consolidated rules/AI gate now passes 276 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 

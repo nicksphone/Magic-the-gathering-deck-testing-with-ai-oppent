@@ -368,10 +368,15 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
+            source = state.cards.get(item.source_card_id)
+            source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
+            if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+                state.log.append(f"{item.label} can't be countered.")
+                return
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
             if card:
-                owner_state = state.players[card.controller]
+                owner_state = state.players[getattr(card, "owner", card.controller)]
                 if card.id not in owner_state.graveyard:
                     owner_state.graveyard.append(card.id)
                 card.zone = Zone.GRAVEYARD
@@ -384,6 +389,11 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
+            source = state.cards.get(item.source_card_id)
+            source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
+            if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+                state.log.append(f"{item.label} can't be countered.")
+                return
             state.stack.pop(i)
             state.log.append(f"{item.label} was countered.")
             return
