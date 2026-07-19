@@ -147,6 +147,8 @@ Vehicles expose explicit crew actions. The engine validates creature power and t
 
 Targeted actions are validated against the current candidate set before entering the stack. Stale, cross-zone, or restricted-card IDs are rejected, while broad “any target” effects continue through protection and hexproof checks.
 
+Farewell-style mass exile of creatures is handled separately from destruction: ownership is preserved, battlefield-leave triggers are emitted, and creatures move to their owners' exile zones.
+
 ### Diagnostics
 ```bash
 cd backend

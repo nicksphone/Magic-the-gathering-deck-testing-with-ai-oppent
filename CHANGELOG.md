@@ -54,6 +54,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Target legality:
   - Shared target validation now rejects stale or cross-zone IDs for restricted target categories while preserving unrestricted “any target” protection/hexproof checks.
   - The consolidated rules/AI gate now passes 263 tests.
+- Mass exile rules:
+  - Added a reusable ownership-correct `exile_all_creatures` effect for Farewell-style Oracle text.
+  - Mass exile emits battlefield-leave events and moves each creature to its owner's exile zone instead of using destroy/death semantics.
+  - The consolidated rules/AI gate now passes 265 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 

@@ -19,6 +19,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "destroy_permanent": handlers.destroy_permanent,
     "change_control": handlers.change_control,
     "destroy_all_creatures": handlers.destroy_all_creatures,
+    "exile_all_creatures": handlers.exile_all_creatures,
     "destroy_all_artifacts": handlers.destroy_all_artifacts,
     "destroy_all_enchantments": handlers.destroy_all_enchantments,
     "destroy_all_artifacts_and_enchantments": handlers.destroy_all_artifacts_and_enchantments,
