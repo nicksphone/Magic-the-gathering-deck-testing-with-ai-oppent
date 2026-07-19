@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from sqlmodel import Session, SQLModel, create_engine
 
-DATABASE_URL = "sqlite:///./mtg_lab.db"
+# Resolve the local cache from the backend package, not the process cwd. This
+# keeps the API, sync jobs, and diagnostics on the same SQLite database.
+DATABASE_PATH = Path(__file__).resolve().parents[1] / "mtg_lab.db"
+DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 engine = create_engine(DATABASE_URL, echo=False)
 
 

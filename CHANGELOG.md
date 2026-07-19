@@ -18,7 +18,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Replacement candidate selection:
   - Multiple mutually exclusive static damage-prevention effects no longer all apply to the same event.
   - Replacement candidates use latest deterministic timestamp ordering by default and accept an explicit source ID for API/replay callers across damage, draw, and life-gain paths.
-  - Added regression coverage; the consolidated rules/AI gate now passes 327 tests. Human replacement-choice pause/resume remains planned.
+  - Added regression coverage; the consolidated rules/AI gate now passes 328 tests. Human replacement-choice pause/resume remains planned.
 - AI decision-quality diagnostics:
   - Verbose card-play analytics now reports pass-with-unused-mana and main-phase land-not-first counters separately from ordinary response-window passes and land availability windows.
   - Added regression coverage for the new metrics; attack/lethal/block quality and engine-protection metrics remain the next AI diagnostics slice.
@@ -532,3 +532,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Expanded combat landwalk legality beyond the five basic types to cover nonbasic, snow, desert, wastes, and legendary landwalk variants.
 - Fixed the built-in deck API route's missing `BUILTIN_DECKS` import and added API smoke coverage for health, deck loading, and card images.
 - Routed triggered-ability fallback parsing through the structured ability boundary used by spell and loyalty resolution.
+## 2026-07-19 - Stable Card Cache Resolution
+
+- Fixed cwd-dependent SQLite selection in `backend/persistence/db.py`; the API, card sync, and diagnostics now resolve the canonical `backend/mtg_lab.db` file from the module path.
+- Added a regression test covering launches from arbitrary working directories.
+- Re-ran the Oracle corpus audit against the corrected cache: 81 unique cards, 3,780 copies, 3,361 structured copies, 275 parser-fallback copies, and 144 static/no-op classifications. The prior missing-Oracle count was caused by reading a stale root-level database and is no longer used.

@@ -77,6 +77,7 @@ It is designed for serious deck work:
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction
 - Corpus audit script for ranking parser fallbacks and missing Oracle metadata across built-in and expansion decks
+- SQLite cache resolution is stable across launch directories; API, sync jobs, and diagnostics use `backend/mtg_lab.db`
 
 ### UI
 - Desktop-first battlefield layout with readable stack, priority, mana, and hand presentation
