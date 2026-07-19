@@ -157,6 +157,7 @@ def infer_effect_from_oracle(
             ):
                 inferred[1]["animate_land"] = True
             effects.append(inferred)
+    effects.extend(_infer_turn_restriction_effects(oracle, controller))
     if len(effects) >= 2:
         return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
     if len(effects) == 1:
@@ -177,6 +178,21 @@ def infer_effect_from_oracle(
     # Fallback: log uninferrable oracle text instead of silent no-op.
     state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
     return "noop", {}
+
+
+def _infer_turn_restriction_effects(oracle: str, controller: int) -> list[tuple[str, dict[str, Any]]]:
+    """Parse restrictions that apply after a resolving spell for this turn."""
+    effects: list[tuple[str, dict[str, Any]]] = []
+    opponent = 1 if controller == 2 else 2
+    if re.search(r"players? (?:can't|cannot) gain life this turn", oracle):
+        effects.append(("set_turn_restriction", {"kind": "cant_gain_life", "all_players": True}))
+    elif re.search(r"you (?:can't|cannot) gain life this turn", oracle):
+        effects.append(("set_turn_restriction", {"kind": "cant_gain_life", "players": [controller]}))
+    elif re.search(r"your opponents? (?:can't|cannot) gain life this turn", oracle):
+        effects.append(("set_turn_restriction", {"kind": "cant_gain_life", "players": [opponent]}))
+    if re.search(r"(?:damage|combat damage) (?:can't|cannot) be prevented this turn", oracle):
+        effects.append(("set_turn_restriction", {"kind": "damage_cant_be_prevented"}))
+    return effects
 
 
 def _resolve_effective_card_surface(card: CardInstance, action_targets: dict[str, Any]) -> tuple[CardInstance, str, str]:

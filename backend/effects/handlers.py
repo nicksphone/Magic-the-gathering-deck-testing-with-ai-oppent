@@ -35,6 +35,21 @@ def noop(state: MatchState, controller: int, payload: dict) -> None:
     del state, controller, payload
 
 
+def set_turn_restriction(state: MatchState, controller: int, payload: dict) -> None:
+    """Apply a spell-created restriction until the active turn's cleanup."""
+    kind = str(payload.get("kind", "") or "").lower()
+    if kind == "cant_gain_life":
+        if payload.get("all_players"):
+            state.turn_cant_gain_life.update(state.players.keys())
+        else:
+            players = payload.get("players") or [controller]
+            state.turn_cant_gain_life.update(int(pid) for pid in players if int(pid) in state.players)
+        state.log.append("Players cannot gain life for the rest of this turn." if payload.get("all_players") else "Life gain is prohibited for the affected players this turn.")
+    elif kind == "damage_cant_be_prevented":
+        state.turn_damage_cant_be_prevented = True
+        state.log.append("Damage cannot be prevented for the rest of this turn.")
+
+
 def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
     if card.toughness is None:

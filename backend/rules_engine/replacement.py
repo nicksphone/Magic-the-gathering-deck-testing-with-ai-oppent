@@ -77,6 +77,8 @@ def damage_cant_be_prevented(
     target_card_id: str | None = None,
     combat: bool = False,
 ) -> bool:
+    if bool(getattr(state, "turn_damage_cant_be_prevented", False)):
+        return True
     source = state.cards[source_card_id] if source_card_id and source_card_id in state.cards else None
     for card, text in _battlefield_oracle_texts(state):
         if _matches_phrase(text, ("damage can't be prevented", "damage cannot be prevented")):
@@ -181,6 +183,8 @@ def replace_die_zone(state, controller: int, card_id: str) -> str:
 
 
 def player_cant_gain_life(state, target_player: int) -> bool:
+    if int(target_player) in set(getattr(state, "turn_cant_gain_life", set()) or set()):
+        return True
     for pid in state.players:
         for cid in state.players[pid].battlefield:
             card = state.cards[cid]

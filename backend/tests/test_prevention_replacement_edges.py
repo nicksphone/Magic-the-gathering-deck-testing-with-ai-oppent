@@ -3,7 +3,10 @@ from __future__ import annotations
 from effects.registry import resolve_effect
 from effects.handlers import deal_damage
 from rules_engine import combat
+from rules_engine.ability_model import build_ability_spec
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.replacement import replace_die_zone
 
@@ -30,6 +33,49 @@ def test_global_damage_cant_be_prevented_ignores_player_shield() -> None:
     before = state.players[2].life
     deal_damage(state, controller=1, payload={"target_player": 2, "amount": 3})
     assert state.players[2].life == before - 3
+
+
+def test_skullcrack_style_turn_restrictions_apply_and_expire_at_cleanup() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    spell = CardInstance(
+        id="skullcrack-style",
+        name="Skullcrack",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Skullcrack deals 3 damage to target player. Players can't gain life this turn. Damage can't be prevented this turn.",
+    )
+    state.cards[spell.id] = spell
+    spec = build_ability_spec(state, spell, 1, {"target_player": 2})
+    assert spec.effect.key == "effect_sequence"
+    resolve_effect(state, 1, spec.effect.key, {**spec.effect.payload, "target_player": 2})
+
+    assert state.turn_cant_gain_life == {1, 2}
+    assert state.turn_damage_cant_be_prevented is True
+    life_before = state.players[2].life
+    resolve_effect(state, 2, "gain_life", {"target_player": 2, "amount": 5})
+    assert state.players[2].life == life_before
+    state.players[2].prevent_damage_shield = 5
+    deal_damage(state, 1, {"target_player": 2, "amount": 2})
+    assert state.players[2].life == life_before - 2
+
+    state.step = Step.END_STEP
+    RulesEngine().next_step(state)
+    assert state.turn_cant_gain_life == set()
+    assert state.turn_damage_cant_be_prevented is False
+
+
+def test_turn_restrictions_survive_snapshot_restore() -> None:
+    state = _state()
+    state.turn_cant_gain_life = {2}
+    state.turn_damage_cant_be_prevented = True
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+
+    assert restored.turn_cant_gain_life == {2}
+    assert restored.turn_damage_cant_be_prevented is True
 
 
 def test_controller_scoped_damage_cant_be_prevented_ignores_shield() -> None:

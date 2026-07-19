@@ -99,6 +99,8 @@ class RulesEngine:
             self._revert_expired_control_changes(state)
             self._revert_crew_vehicles(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
+            state.turn_cant_gain_life = set()
+            state.turn_damage_cant_be_prevented = False
 
     def _revert_crew_vehicles(self, state: MatchState) -> None:
         for card in state.cards.values():

@@ -9,6 +9,7 @@ from game_state.state import MatchState
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    "set_turn_restriction": handlers.set_turn_restriction,
     "deal_damage": handlers.deal_damage,
     "deal_damage_multi": handlers.deal_damage_multi,
     "draw_cards": handlers.draw_cards,

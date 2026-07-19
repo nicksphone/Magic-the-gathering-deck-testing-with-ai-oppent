@@ -46,6 +46,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
         },
+        "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
+        "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -181,6 +183,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()
     }
+    state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
+    state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
@@ -205,6 +209,8 @@ def serialize_match(state: MatchState) -> dict:
         "kept_hands": sorted(list(state.kept_hands)),
         "day_night": state.day_night,
         "spells_cast_this_turn": state.spells_cast_this_turn,
+        "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
+        "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "priority_stops": {
             str(pid): _sort_steps(steps)
             for pid, steps in state.priority_stops.items()

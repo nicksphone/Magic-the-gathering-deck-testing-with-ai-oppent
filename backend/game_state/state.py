@@ -143,6 +143,9 @@ class MatchState:
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
+    # Restrictions created by resolving spells that last through cleanup.
+    turn_cant_gain_life: set[int] = field(default_factory=set)
+    turn_damage_cant_be_prevented: bool = False
 
 
 class MatchFactory:
