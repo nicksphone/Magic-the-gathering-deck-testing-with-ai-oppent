@@ -63,7 +63,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Battlefield topdeck tutors now expose validated candidate selections to humans and AI, and Collected Company-style deployment honors explicit selected cards.
   - Stack countering now honors source-level `can't be countered`/`cannot be countered` text and uses spell ownership for the countered card's graveyard.
   - Spell-created “this turn” restrictions now persist through the active turn, survive snapshots, block later life gain or damage prevention, and expire at cleanup.
-  - The consolidated rules/AI gate now passes 278 tests and the replay smoke remains deterministic.
+  - Legend-rule state actions now use ownership-correct death replacement and emit leave/death events when the duplicate actually dies.
+  - The consolidated rules/AI gate now passes 282 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 

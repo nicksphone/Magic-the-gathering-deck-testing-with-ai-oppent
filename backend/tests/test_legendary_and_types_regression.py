@@ -4,6 +4,7 @@ from ai.agent import AIAgent
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.state_based_actions import apply_state_based_actions
+from game_state.state import CardInstance
 
 
 def test_legend_rule_applies_for_offline_named_legendary_permanents() -> None:
@@ -28,6 +29,36 @@ def test_legend_rule_applies_for_offline_named_legendary_permanents() -> None:
     in_grave = [cid for cid in state.players[1].graveyard if state.cards[cid].name == "Sheoldred, the Apocalypse"]
     assert len(on_field) == 1
     assert len(in_grave) == 1
+
+
+def test_legend_rule_emits_leave_and_death_triggers() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    engine = CardInstance(
+        "legend-engine", "Death Engine", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
+        oracle_text="Whenever another permanent you control leaves the battlefield, draw a card.",
+        type_line="Enchantment",
+    )
+    state.cards[engine.id] = engine
+    state.players[1].battlefield.append(engine.id)
+    first = state.players[1].hand.pop()
+    second = state.players[1].hand.pop()
+    for cid in (first, second):
+        state.players[1].battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        state.cards[cid].name = "Legendary Bear"
+        state.cards[cid].types = ["Creature", "Legendary"]
+        state.cards[cid].type_line = "Legendary Creature — Bear"
+
+    before_hand = len(state.players[1].hand)
+    apply_state_based_actions(state)
+
+    assert len(state.stack) == 1
+    from rules_engine.stack_engine import resolve_top_of_stack
+    resolve_top_of_stack(state)
+    assert len(state.players[1].hand) == before_hand + 1
 
 
 def test_ossification_is_inferred_as_enchantment_not_sorcery() -> None:

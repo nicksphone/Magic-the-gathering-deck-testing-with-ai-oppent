@@ -102,12 +102,24 @@ def _apply_legend_rule(state: MatchState) -> None:
                 card = state.cards[cid]
                 zone_owner = state.players[getattr(card, "owner", card.controller)]
                 if cid in player.battlefield:
+                    emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
                     player.battlefield.remove(cid)
+                destination = replace_die_zone(state, card.controller, cid)
+                if destination == "exile":
+                    zone_owner.exile.append(cid)
+                    card.zone = Zone.EXILE
+                    state.log.append(
+                        f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is exiled by a replacement effect (legend rule)."
+                    )
+                    continue
                 zone_owner.graveyard.append(cid)
                 card.zone = Zone.GRAVEYARD
                 state.log.append(
                     f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
                 )
+                emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
+                if "Creature" in card.types:
+                    emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
 
 
 def _is_legendary(card) -> bool:
