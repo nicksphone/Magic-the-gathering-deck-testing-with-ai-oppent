@@ -8,7 +8,7 @@ from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
-from rules_engine.events import emit_event
+from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.mana import mana_value, parse_mana_cost
 from rules_engine.prevention import (
     add_card_prevention_shield,
@@ -256,13 +256,17 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
 def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
     destroyed = False
+    leaves: list[dict] = []
+    permanent_deaths: list[dict] = []
+    creature_deaths: list[dict] = []
     for cid, card in list(state.cards.items()):
         if "Creature" not in card.types:
             continue
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
         if cid in battlefield_owner.battlefield:
-            emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
+            event_payload = {"card_id": cid, "controller": card.controller}
+            leaves.append(event_payload)
             battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
             if destination == "exile":
@@ -278,21 +282,28 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
             card.counters.pop("__prevent_damage_shield", None)
             destroyed = True
             state.log.append(f"{card.name} is destroyed.")
-            emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
-            emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+            permanent_deaths.append(event_payload)
+            creature_deaths.append(event_payload)
+    emit_event_batch(state, "leaves_battlefield", leaves)
+    emit_event_batch(state, "permanent_dies", permanent_deaths)
+    emit_event_batch(state, "creature_dies", creature_deaths)
     if destroyed:
         state.log.append("All creatures are destroyed.")
 
 
 def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str) -> None:
     destroyed = False
+    leaves: list[dict] = []
+    permanent_deaths: list[dict] = []
+    creature_deaths: list[dict] = []
     for cid, card in list(state.cards.items()):
         if not allowed_types.intersection(set(card.types or [])):
             continue
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
         if cid in battlefield_owner.battlefield:
-            emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
+            event_payload = {"card_id": cid, "controller": card.controller}
+            leaves.append(event_payload)
             battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
             if destination == "exile":
@@ -308,9 +319,12 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
             card.counters.pop("__prevent_damage_shield", None)
             destroyed = True
             state.log.append(f"{card.name} is destroyed.")
-            emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
-        if "Creature" in card.types:
-            emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+            permanent_deaths.append(event_payload)
+            if "Creature" in card.types:
+                creature_deaths.append(event_payload)
+    emit_event_batch(state, "leaves_battlefield", leaves)
+    emit_event_batch(state, "permanent_dies", permanent_deaths)
+    emit_event_batch(state, "creature_dies", creature_deaths)
     if destroyed:
         state.log.append(log_label)
 
@@ -318,6 +332,7 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
 def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     """Exile every creature, preserving ownership and leave events."""
     moved = 0
+    leaves: list[dict] = []
     for cid, card in list(state.cards.items()):
         if card.zone != Zone.BATTLEFIELD or "Creature" not in card.types:
             continue
@@ -325,11 +340,12 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> No
         owner = state.players[getattr(card, "owner", card.controller)]
         if cid not in battlefield.battlefield:
             continue
-        emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
+        leaves.append({"card_id": cid, "controller": card.controller})
         battlefield.battlefield.remove(cid)
         owner.exile.append(cid)
         card.zone = Zone.EXILE
         moved += 1
+    emit_event_batch(state, "leaves_battlefield", leaves)
     state.log.append(f"Exile all creatures resolves: {moved} creature(s) exiled.")
 
 

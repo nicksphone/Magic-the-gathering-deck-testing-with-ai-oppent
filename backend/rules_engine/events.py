@@ -9,6 +9,27 @@ from game_state.state import MatchState, StackItem
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     triggers = _collect_triggers(state, event, payload)
+    _push_triggers(state, event, triggers)
+
+
+def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
+    """Collect simultaneous events before putting their triggers on the stack."""
+    triggers: list[dict[str, Any]] = []
+    one_or_more_sources: set[str] = set()
+    for payload in payloads:
+        for trigger in _collect_triggers(state, event, payload):
+            source_id = str(trigger.get("source_card_id", ""))
+            source = state.cards.get(source_id)
+            oracle = (getattr(source, "oracle_text", "") or "").lower() if source else ""
+            if "one or more" in oracle:
+                if source_id in one_or_more_sources:
+                    continue
+                one_or_more_sources.add(source_id)
+            triggers.append(trigger)
+    _push_triggers(state, event, triggers)
+
+
+def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
     ordered = _order_apnap(state, triggers)
@@ -289,10 +310,18 @@ def _matches_leaves_battlefield_trigger(state: MatchState, card, oracle: str, pa
         return controlled and other and "creature" in leaving_types
     if "whenever a creature you control leaves the battlefield" in oracle:
         return controlled and "creature" in leaving_types
+    if "whenever one or more creatures you control leave the battlefield" in oracle:
+        return controlled and "creature" in leaving_types
+    if "whenever one or more creatures leave the battlefield" in oracle:
+        return "creature" in leaving_types
     if "whenever another permanent you control leaves the battlefield" in oracle:
         return controlled and other
     if "whenever a permanent you control leaves the battlefield" in oracle:
         return controlled
+    if "whenever one or more permanents you control leave the battlefield" in oracle:
+        return controlled
+    if "whenever one or more permanents leave the battlefield" in oracle:
+        return True
     if "whenever another artifact you control leaves the battlefield" in oracle:
         return controlled and other and "artifact" in leaving_types
     if "whenever an artifact you control leaves the battlefield" in oracle:
