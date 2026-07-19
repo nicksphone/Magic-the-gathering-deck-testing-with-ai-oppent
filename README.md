@@ -69,6 +69,7 @@ It is designed for serious deck work:
 - Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
 - Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
 - Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
+- Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
 ### Simulation and Diagnostics
@@ -78,6 +79,7 @@ It is designed for serious deck work:
 - Match logs, anomaly output, and training trace export
 - Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
 - Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context
+- Tactical analytics record effective keywords, attacker/blocker assignments, evasion-aware bad attacks, lethal misses, block trades, and resource-preservation decisions
 - First-divergence drilldown with compact trace context for both sides
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction

@@ -44,6 +44,7 @@ def battlefield_snapshot(state, pid: int) -> list[dict]:
                 "tapped": bool(getattr(card, "tapped", False)),
                 "power": getattr(card, "power", None),
                 "toughness": getattr(card, "toughness", None),
+                "keywords": list(getattr(card, "keywords", []) or []),
                 "loyalty": getattr(card, "loyalty", None),
                 "selected_face_index": getattr(card, "selected_face_index", None),
             }
@@ -53,9 +54,13 @@ def battlefield_snapshot(state, pid: int) -> list[dict]:
 
 def compact_action(action: dict) -> dict:
     out = {"type": action.get("type")}
-    for k in ["card_id", "card_name", "ability_index", "selected_face_index"]:
+    for k in ["card_id", "card_name", "ability_index", "selected_face_index", "x_value"]:
         if k in action:
             out[k] = action[k]
+    if isinstance(action.get("attackers"), list):
+        out["attackers"] = list(action["attackers"])
+    if isinstance(action.get("blocks"), dict):
+        out["blocks"] = {str(key): value for key, value in action["blocks"].items()}
     if isinstance(action.get("targets"), dict) and action.get("targets"):
         out["targets"] = action["targets"]
     if isinstance(action.get("cost_choice"), dict) and action.get("cost_choice"):
@@ -173,6 +178,7 @@ def main() -> int:
                         },
                         "mana_pool": dict(state.players[pid].mana_pool),
                         "legal_non_pass": has_actionable_move(legal),
+                        "legal_non_pass_count": sum(1 for move in legal if is_actionable_move(move)),
                         "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
                         "legal_has_land": any(m.get("type") == "play_land" for m in legal),
                         "action": compact_action(action),

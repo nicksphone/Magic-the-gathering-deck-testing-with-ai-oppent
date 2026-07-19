@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `341 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `344 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -102,6 +102,8 @@ Release blockers identified by the audit:
 - Common tempo bounce now has a reusable ownership-correct battlefield-to-owner-hand effect for nonland permanents and creatures, with target hints, leave events, stolen-permanent coverage, and no Oracle fallback.
 - Master/Master Plus now run bounded small-board attack-subset search through legal blocker assignments and combat resolution, reducing hopeless chip attacks while retaining lethal and mandatory attack behavior.
 - Master/Master Plus deep-copy search is now complexity-bounded by battlefield size and legal-action count; dense token boards use deterministic heuristic/combat evaluation instead of monopolizing simulator runs. Tokens vs Ramp completed three games at the 1,200-tick cap with 0 timeouts after this guard.
+- AI diagnostic traces now preserve effective keyword snapshots, attacker assignments, blocker assignments, X values, and legal-action counts. Analytics now reports evasion-aware bad attacks, lethal attack opportunities/misses, profitable versus losing blocks, engine-protection passes, and resource-preservation passes.
+- Master blocker search now rejects non-lethal pure chump assignments when no attacker is lost, while retaining lethal prevention and profitable trades. A post-change Tokens vs Ramp diagnostic completed without obvious bad attacks or losing-block classifications.
 - Attack search is gated to late-game positions with at most three attackers and two blockers after matrix profiling showed larger clone-search bounds could monopolize long simulations.
 - Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
 - Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
@@ -180,7 +182,7 @@ Release blockers identified by the audit:
 - A Blue Control vs Ramp smoke after the recursion valuation change completed without fallback, invalid-target, or mana-payment errors; matchup results remain diagnostic until larger samples are run.
 - AI training artifacts currently provide timing/board-role priors and labeled traces, not a learned policy. They must be treated as evidence for weight tuning and regression analysis, not as proof of expert play.
 - The next AI milestone must measure decision quality, not only match completion: missed land drops, unused legal mana, premature attacks, lethal misses, bad blocks, unprotected engines, and interaction held through the wrong window need per-decision metrics.
-- The first decision-quality metrics are now available in `backend/scripts/card_play_analytics.py`; attack/lethal/block quality and engine-protection metrics remain to be added from richer combat traces.
+- Decision-quality metrics now include attack/lethal/block quality and resource-preservation signals from richer combat traces. Longer matchup samples are still needed before using the metrics as balance or expert-play proof.
 
 ### Simulation and diagnostics
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.

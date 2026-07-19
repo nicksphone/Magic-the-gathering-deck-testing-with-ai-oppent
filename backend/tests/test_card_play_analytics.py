@@ -39,3 +39,28 @@ def test_card_play_analytics_separates_meaningful_main_phase_passes(tmp_path: Pa
     assert out["main_phase_passes"].get("2", 0) == 0
     assert out["reason_codes"]["hold_up_interaction"] == 1
     assert out["pass_reason_codes"]["pass_response_window"] == 1
+
+
+def test_card_play_analytics_reports_combat_quality(tmp_path: Path) -> None:
+    games = tmp_path / "games.jsonl"
+    _games_jsonl(
+        games,
+        [
+            {
+                "winner": 1,
+                "log": [
+                    'AI TRACE {"pid":1,"turn":5,"step":"Step.DECLARE_ATTACKERS","life":{"self":12,"opp":4},"battlefield":[{"id":"a","types":["Creature"],"power":4,"toughness":4,"tapped":false}],"opp_battlefield":[],"action":{"type":"attack","attackers":["a"]}}',
+                    'AI TRACE {"pid":2,"turn":6,"step":"Step.DECLARE_BLOCKERS","life":{"self":8,"opp":10},"battlefield":[{"id":"b","types":["Creature"],"power":3,"toughness":3,"tapped":false}],"opp_battlefield":[{"id":"c","types":["Creature"],"power":2,"toughness":2,"tapped":false}],"action":{"type":"block","blocks":{"c":["b"]}}}',
+                    'AI TRACE {"pid":1,"turn":7,"step":"Step.DECLARE_ATTACKERS","life":{"self":12,"opp":2},"battlefield":[{"id":"a","types":["Creature"],"power":4,"toughness":4,"tapped":false}],"opp_battlefield":[],"legal_action_types":["attack"],"action":{"type":"pass_priority"},"legal_non_pass":true}',
+                ],
+            }
+        ],
+    )
+
+    out = summarize_card_play_logic(games)
+
+    assert out["combat_quality"]["attack_actions"]["1"] == 1
+    assert out["combat_quality"]["lethal_attack_opportunities"]["1"] == 1
+    assert out["combat_quality"]["lethal_attack_misses"]["1"] == 1
+    assert out["combat_quality"]["block_actions"]["2"] == 1
+    assert out["combat_quality"]["profitable_blocks"]["2"] == 1

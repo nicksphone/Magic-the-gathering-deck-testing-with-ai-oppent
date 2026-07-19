@@ -2334,7 +2334,30 @@ class AIAgent:
             return None
         best: tuple[float, tuple[tuple[str, str], ...], dict[str, str | list[str]]] | None = None
         initial_life = state.players[defender].life
+        opponent = 1 if defender == 2 else 2
+        incoming_power = sum(
+            max(0, int(getattr(state.cards[aid], "power", 0) or 0))
+            for aid in attacker_ids
+        )
         for assignment in assignments:
+            if initial_life > incoming_power and assignment:
+                chump_only = True
+                for aid in set(assignment.values()):
+                    attacker = state.cards[aid]
+                    assigned_blockers = [
+                        state.cards[bid]
+                        for bid, target in assignment.items()
+                        if target == aid and bid in state.cards
+                    ]
+                    blocking_power = sum(
+                        max(0, int(getattr(blocker, "power", 0) or 0))
+                        for blocker in assigned_blockers
+                    )
+                    if blocking_power >= max(0, int(getattr(attacker, "toughness", 0) or 0)):
+                        chump_only = False
+                        break
+                if chump_only:
+                    continue
             try:
                 sim = copy.deepcopy(state)
                 self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
@@ -2343,6 +2366,20 @@ class AIAgent:
                 continue
             score = evaluate_board(sim, defender)
             score += (sim.players[defender].life - initial_life) * 4.0
+            before_blockers = set(state.players[defender].battlefield)
+            after_blockers = set(sim.players[defender].battlefield)
+            before_attackers = set(state.players[opponent].battlefield)
+            after_attackers = set(sim.players[opponent].battlefield)
+            blockers_lost = len(before_blockers - after_blockers)
+            attackers_lost = len(before_attackers - after_attackers)
+            # Preserve creatures when the incoming combat is not lethal and
+            # the proposed assignment only chumps. This is a general combat
+            # value rule, not an archetype/card exception; lethal prevention
+            # and profitable trades remain preferred.
+            if initial_life > incoming_power and blockers_lost > attackers_lost:
+                if attackers_lost == 0:
+                    continue
+                score -= (blockers_lost - attackers_lost) * (12.0 + incoming_power)
             if sim.winner == defender:
                 score += 1000.0
             elif sim.winner is not None:

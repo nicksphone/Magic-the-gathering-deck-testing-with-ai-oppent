@@ -10,6 +10,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Tokens vs Ramp completed a three-game diagnostic at the 1,200-tick cap with 0 timeouts after the guard; its 3-0 result is diagnostic evidence only, not a balance conclusion.
   - Added regression coverage; the consolidated rules/AI gate now passes 341 tests.
 
+- Tactical decision-quality milestone:
+  - Verbose head-to-head traces now retain effective keywords, attacker/blocker assignments, X values, and legal-action counts.
+  - Card-play analytics now reports evasion-aware attack quality, lethal attack opportunities/misses, profitable versus losing blocks, and resource-preservation signals.
+  - Master blocker search now avoids non-lethal pure chump assignments that remove no attacker, with focused coverage for both safe-life chumps and lethal prevention.
+  - Post-change Tokens vs Ramp diagnostic completed without timeouts, obvious bad attacks, or losing-block classifications.
+  - The consolidated rules/AI gate now passes 344 tests.
+
 - Rules corpus milestone:
   - Added conditional noncreature counterspell targets with explicit `unless` payment choices and deterministic automated resolution.
   - Added generic noncombat-damage replacement to `-1/-1` counters, power-based death-trigger damage, Hydroid Krasis-style self-cast X triggers, and X-counter entry handling.
