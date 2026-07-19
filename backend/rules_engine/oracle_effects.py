@@ -35,6 +35,7 @@ COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered abil
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
+SAGA_CHAPTER_RE = re.compile(r"^\s*(I{1,3}|IV|V|VI|VII|VIII|IX|X)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})(?:\s*,\s*(?:\{[^{}]+\}|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
@@ -551,6 +552,19 @@ def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
             delta = int(raw_delta)
             out.append({"delta": delta, "x_cost": False, "x_sign": 0, "text": text, "label": f"{delta:+d}: {text}"})
     return out
+
+
+def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
+    """Parse chapter lines into ordered lore-counter triggers."""
+    values = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10}
+    chapters: list[dict[str, Any]] = []
+    for line in (oracle_text or "").splitlines():
+        match = SAGA_CHAPTER_RE.match(line)
+        if not match:
+            continue
+        roman = match.group(1).upper()
+        chapters.append({"number": values[roman], "text": match.group(2).strip(), "label": f"{roman} — {match.group(2).strip()}"})
+    return sorted(chapters, key=lambda item: int(item["number"]))
 
 
 def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:

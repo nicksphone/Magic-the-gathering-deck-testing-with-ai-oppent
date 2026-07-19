@@ -50,7 +50,34 @@ def apply_state_based_actions(state: MatchState) -> None:
                 emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
 
     _apply_legend_rule(state)
+    _apply_saga_state_actions(state)
     _apply_attachment_state_checks(state)
+
+
+def _apply_saga_state_actions(state: MatchState) -> None:
+    for cid, card in list(state.cards.items()):
+        if card.zone != Zone.BATTLEFIELD or "Saga" not in (card.type_line or ""):
+            continue
+        chapters = [int(item) for item in _saga_chapter_numbers(card.oracle_text)]
+        if not chapters or int(card.counters.get("__lore", 0) or 0) < max(chapters):
+            continue
+        if any(item.source_card_id == cid for item in state.stack):
+            continue
+        battlefield = state.players[card.controller]
+        owner = state.players[getattr(card, "owner", card.controller)]
+        if cid not in battlefield.battlefield:
+            continue
+        emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
+        battlefield.battlefield.remove(cid)
+        owner.graveyard.append(cid)
+        card.zone = Zone.GRAVEYARD
+        state.log.append(f"State-based action: {card.name} is sacrificed after its final chapter.")
+
+
+def _saga_chapter_numbers(oracle_text: str) -> list[int]:
+    from rules_engine.oracle_effects import extract_saga_chapters
+
+    return [int(item["number"]) for item in extract_saga_chapters(oracle_text)]
 
 
 def _apply_legend_rule(state: MatchState) -> None:

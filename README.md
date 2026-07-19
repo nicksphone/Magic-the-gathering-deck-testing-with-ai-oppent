@@ -141,6 +141,8 @@ Common tempo bounce is also handled through the rules engine: nonland-permanent 
 
 Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
 
+Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
+
 ### Diagnostics
 ```bash
 cd backend

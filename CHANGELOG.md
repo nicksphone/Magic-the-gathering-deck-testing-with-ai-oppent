@@ -43,6 +43,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Master/Master Plus now search small-board attack subsets through legal blocker assignments and combat resolution, avoiding hopeless chip attacks while preserving lethal and mandatory attacks.
   - The consolidated rules/AI gate passes 246 tests; frontend build and three-game deterministic replay smoke pass with zero drift or determinism failures.
   - Attack-subset search is limited to late-game boards with at most three attackers and two blockers so it cannot monopolize long simulator matrices.
+- Saga rules:
+  - Added lore-counter progression at precombat main, chapter parsing, stack-backed chapter abilities, and final-chapter state-based sacrifice.
+  - Added Fable of the Mirror-Breaker fallback metadata with Saga type information and chapter text.
+  - Added regression coverage; the consolidated rules/AI gate now passes 248 tests and the three-game replay smoke has zero determinism failures.
 
 ## 2026-07-16
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from game_state.state import MatchState, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
+import uuid
+
+from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
@@ -9,7 +11,7 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
+from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities, extract_saga_chapters
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
@@ -87,6 +89,8 @@ class RulesEngine:
             state.log.append(f"{player.name} draws a card. Hand {before}->{after}.")
         elif state.step == Step.DRAW and state.turn == 1:
             state.log.append(f"{player.name} skips draw on turn 1 (on the play rule).")
+        elif state.step == Step.PRECOMBAT_MAIN:
+            self._advance_sagas(state)
         elif state.step == Step.END_STEP:
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:
@@ -94,6 +98,36 @@ class RulesEngine:
             self._clear_prevention_shields(state)
             self._revert_expired_control_changes(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
+
+    def _advance_sagas(self, state: MatchState) -> None:
+        for cid in list(state.players[state.active_player].battlefield):
+            card = state.cards.get(cid)
+            if card is None or "Saga" not in (card.type_line or ""):
+                continue
+            chapters = extract_saga_chapters(card.oracle_text)
+            if not chapters:
+                continue
+            lore = int(card.counters.get("__lore", 0) or 0) + 1
+            card.counters["__lore"] = lore
+            chapter = next((item for item in chapters if int(item["number"]) == lore), None)
+            state.log.append(f"{card.name} gets a lore counter ({lore}).")
+            if chapter is None:
+                continue
+            proxy = type("SagaChapterProxy", (), {"oracle_text": chapter["text"], "name": card.name, "mana_cost": "", "types": ["Enchantment"]})()
+            ability = build_ability_spec(state, proxy, card.controller)
+            state.stack.append(
+                StackItem(
+                    id=str(uuid.uuid4()),
+                    source_card_id=cid,
+                    controller=card.controller,
+                    label=f"{card.name} chapter {chapter['number']}",
+                    effect_key=ability.effect.key,
+                    payload=ability.effect.payload,
+                )
+            )
+            state.priority_player = state.active_player
+            state.passed_priority = set()
+            state.log.append(f"{card.name} chapter {chapter['number']} triggers.")
 
     def _revert_expired_control_changes(self, state: MatchState) -> None:
         for cid, data in list(state.temporary_control_changes.items()):
