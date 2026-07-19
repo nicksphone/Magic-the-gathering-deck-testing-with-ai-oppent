@@ -51,6 +51,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added explicit crew moves with candidate creature power, duplicate/untapped validation, and temporary Vehicle creature status.
   - Crew taps the selected creatures, lets the Vehicle attack or block during the turn, and reverts the type at cleanup; AI materializes the smallest high-power legal crew group.
   - Added regression coverage; the consolidated rules/AI gate now passes 250 tests and the three-game replay smoke has zero determinism failures.
+- Target legality:
+  - Shared target validation now rejects stale or cross-zone IDs for restricted target categories while preserving unrestricted “any target” protection/hexproof checks.
+  - The consolidated rules/AI gate now passes 263 tests.
 
 ## 2026-07-16
 

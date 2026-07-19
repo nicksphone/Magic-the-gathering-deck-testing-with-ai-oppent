@@ -78,3 +78,21 @@ def test_bounce_ability_spec_is_not_marked_as_oracle_fallback() -> None:
     spec = build_ability_spec(state, spell, 1, {"target_card_id": target_id})
     assert spec.effect.key == "return_permanent_to_hand"
     assert spec.used_fallback is False
+
+
+def test_bounce_rejects_card_outside_current_target_candidates() -> None:
+    state, _ = _state_with_target()
+    spell = CardInstance(
+        id="petty-theft-invalid",
+        name="Petty Theft",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Return target nonland permanent an opponent controls to its owner's hand.",
+    )
+    state.cards[spell.id] = spell
+    hints = build_cast_hints(state, spell, 1)
+    ok, error = validate_cast_choice(hints, {"target_card_id": state.players[1].battlefield[0]})
+    assert ok is False
+    assert "legal target" in error.lower()

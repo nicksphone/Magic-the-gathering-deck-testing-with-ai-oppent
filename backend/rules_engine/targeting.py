@@ -87,6 +87,21 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         if action_targets.get("target_player") is None and not action_targets.get("target_card_id"):
             return False, "A player or permanent target is required."
 
+    selected_card_id = action_targets.get("target_card_id")
+    if selected_card_id:
+        candidate_ids: set[str] = set()
+        for key in (
+            "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+            "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
+        ):
+            candidate_ids.update(str(item.get("id")) for item in (target_hints.get(key) or []) if item.get("id") is not None)
+        candidate_surface_present = bool(candidate_ids) or any(key in target_hints for key in (
+            "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
+            "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
+        )) or ("planeswalker_targets" in target_hints and "player_targets" not in target_hints)
+        if candidate_surface_present and str(selected_card_id) not in candidate_ids:
+            return False, "The selected card is not a legal target for this effect."
+
     return True, ""
 
 

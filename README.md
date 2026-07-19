@@ -145,6 +145,8 @@ Common Sagas now receive lore counters during precombat main, put matching chapt
 
 Vehicles expose explicit crew actions. The engine validates creature power and tap costs, makes a crewed Vehicle a creature until cleanup, and lets the AI choose a legal minimal crew group.
 
+Targeted actions are validated against the current candidate set before entering the stack. Stale, cross-zone, or restricted-card IDs are rejected, while broad “any target” effects continue through protection and hexproof checks.
+
 ### Diagnostics
 ```bash
 cd backend
