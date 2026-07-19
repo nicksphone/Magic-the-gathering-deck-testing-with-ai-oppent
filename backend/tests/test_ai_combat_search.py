@@ -95,6 +95,7 @@ def test_master_attack_search_avoids_throwing_small_creature_into_large_blocker(
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.DECLARE_ATTACKERS
+    state.turn = 5
     state.active_player = 1
     state.priority_player = 1
     attacker_large = CardInstance("attacker-large", "Large", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=3, toughness=3)

@@ -79,6 +79,7 @@ Release blockers identified by the audit:
 - Explicit top-library choices now support hand/exile/ordered-bottom placement for Expressive Iteration-style effects. Human selections are validated for exact one-time placement, while AI callers retain a deterministic fallback; the focused gate passes 61 tests and the latest three-game replay smoke has 0 determinism failures and 0 drift labels.
 - Common tempo bounce now has a reusable ownership-correct battlefield-to-owner-hand effect for nonland permanents and creatures, with target hints, leave events, stolen-permanent coverage, and no Oracle fallback.
 - Master/Master Plus now run bounded small-board attack-subset search through legal blocker assignments and combat resolution, reducing hopeless chip attacks while retaining lethal and mandatory attack behavior.
+- Attack search is gated to late-game positions with at most three attackers and two blockers after matrix profiling showed larger clone-search bounds could monopolize long simulations.
 - Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
 - Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
 - API smoke coverage now exercises `/health`, built-in deck loading, and local card-image serving; it also fixed the missing `BUILTIN_DECKS` import that caused built-in deck requests to fail at runtime.

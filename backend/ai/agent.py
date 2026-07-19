@@ -2413,10 +2413,21 @@ class AIAgent:
         """Search small-board attack subsets through the defender's best legal blocks."""
         if self.difficulty not in {"master", "master_plus"}:
             return None
+        if int(getattr(state, "turn", 1) or 1) < 5:
+            return None
         candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in state.cards[cid].types]
-        if not candidate_ids or len(candidate_ids) > 6:
+        if not candidate_ids or len(candidate_ids) > 3:
             return None
         opponent = 1 if player_id == 2 else 2
+        available_blockers = [
+            cid
+            for cid in state.players[opponent].battlefield
+            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+        ]
+        # Block search already has its own combinatorial bound. Keep attack
+        # search below that bound as well so full matchup matrices stay usable.
+        if len(available_blockers) > 2:
+            return None
         subsets: list[tuple[str, ...]] = [()]
         for size in range(1, len(candidate_ids) + 1):
             subsets.extend(combinations(candidate_ids, size))

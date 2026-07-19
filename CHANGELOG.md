@@ -42,6 +42,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Bounce targets are exposed to human/AI choice validation, emit battlefield-leave events, and return stolen permanents to the owner's hand.
   - Master/Master Plus now search small-board attack subsets through legal blocker assignments and combat resolution, avoiding hopeless chip attacks while preserving lethal and mandatory attacks.
   - The consolidated rules/AI gate passes 246 tests; frontend build and three-game deterministic replay smoke pass with zero drift or determinism failures.
+  - Attack-subset search is limited to late-game boards with at most three attackers and two blockers so it cannot monopolize long simulator matrices.
 
 ## 2026-07-16
 
