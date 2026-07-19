@@ -45,6 +45,39 @@ def resume_state_based_die_replacement(state: MatchState, card_id: str, replacem
     """Resume a paused lethal-creature zone change after a human choice."""
     _move_lethal_creature(state, card_id, replacement_source_id)
 
+
+def resume_legend_rule_replacement(
+    state: MatchState,
+    player_id: int,
+    card_id: str,
+    replacement_source_id: str,
+) -> None:
+    """Resume the zone change for the legendary permanent the player chose to keep out."""
+    card = state.cards.get(card_id)
+    if not card or card.zone != Zone.BATTLEFIELD:
+        return
+    player = state.players[player_id]
+    owner = state.players[getattr(card, "owner", card.controller)]
+    if card_id in player.battlefield:
+        emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
+        player.battlefield.remove(card_id)
+    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
+    if destination == "exile":
+        owner.exile.append(card_id)
+        card.zone = Zone.EXILE
+        state.log.append(
+            f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is exiled by a replacement effect (legend rule)."
+        )
+        return
+    owner.graveyard.append(card_id)
+    card.zone = Zone.GRAVEYARD
+    state.log.append(
+        f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
+    )
+    emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
+    if "Creature" in card.types:
+        emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
+
 def apply_state_based_actions(state: MatchState) -> None:
     for pid, player in state.players.items():
         if player.life <= 0:
@@ -136,26 +169,27 @@ def _apply_legend_rule(state: MatchState) -> None:
                 if cid == keep:
                     continue
                 card = state.cards[cid]
-                zone_owner = state.players[getattr(card, "owner", card.controller)]
-                if cid in player.battlefield:
-                    emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
-                    player.battlefield.remove(cid)
-                destination = replace_die_zone(state, card.controller, cid)
-                if destination == "exile":
-                    zone_owner.exile.append(cid)
-                    card.zone = Zone.EXILE
-                    state.log.append(
-                        f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is exiled by a replacement effect (legend rule)."
-                    )
-                    continue
-                zone_owner.graveyard.append(cid)
-                card.zone = Zone.GRAVEYARD
-                state.log.append(
-                    f"State-based action: {state.players[pid].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
+                options = replacement_options(state, "die_zone", target_card_id=cid)
+                choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
+                human_choice = getattr(state, "replacement_choice_required", False) and (
+                    not choice_players or card.controller in choice_players
                 )
-                emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
-                if "Creature" in card.types:
-                    emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+                if human_choice and len(options) > 1:
+                    state.pending_replacement_choice = {
+                        "resume_kind": "legend_die",
+                        "player_id": card.controller,
+                        "event": "die_zone",
+                        "target_card_id": cid,
+                        "legend_player_id": pid,
+                        "options": options,
+                    }
+                    state.priority_player = card.controller
+                    state.passed_priority = set()
+                    state.log.append(
+                        f"Replacement choice required for legend rule; {state.players[card.controller].name} must choose one of {len(options)} effects."
+                    )
+                    return
+                resume_legend_rule_replacement(state, pid, cid, "")
 
 
 def _is_legendary(card) -> bool:

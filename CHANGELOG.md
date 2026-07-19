@@ -7,7 +7,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Nested lethal replacement milestone:
   - State-based lethal deaths and combat cleanup now pause for human die-replacement choices before moving the card.
   - Continuations preserve ownership, exile/graveyard semantics, and subsequent death triggers; AI/replay remains deterministic.
-  - The focused rules/AI gate now passes 358 tests. Legend-rule continuation and combat prevention choices remain open.
+  - Legend-rule duplicate permanents now use the same continuation path.
+  - The focused rules/AI gate now passes 359 tests. Simultaneous SBA batching and chained combat prevention choices remain open.
 
 - Simultaneous trigger ordering milestone:
   - Human-controlled trigger groups can be ordered before they are placed on the stack, with APNAP controller grouping preserved.

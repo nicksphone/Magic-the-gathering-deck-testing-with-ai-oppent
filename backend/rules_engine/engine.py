@@ -299,6 +299,24 @@ class RulesEngine:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
+            if pending.get("resume_kind") == "legend_die":
+                from rules_engine.state_based_actions import resume_legend_rule_replacement
+
+                state.pending_replacement_choice = None
+                state.log.append(
+                    f"{state.players[player_id].name} chooses replacement source {chosen_id}."
+                )
+                resume_legend_rule_replacement(
+                    state,
+                    int(pending.get("legend_player_id", player_id)),
+                    str(pending.get("target_card_id", "")),
+                    chosen_id,
+                )
+                apply_state_based_actions(state)
+                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                    state.priority_player = state.active_player
+                    state.passed_priority = set()
+                return
             if not state.stack or state.stack[-1].id != pending.get("stack_id"):
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return

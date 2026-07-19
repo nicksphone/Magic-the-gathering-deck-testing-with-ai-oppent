@@ -364,8 +364,8 @@
     "hash": "91ce49ccd57304552ea3b1a5239efe26"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_prevention_replacement_edges.py": {
-    "mtime": 1784505014.9909031,
-    "hash": "46e509f01b2e2632b2662771c812bee7"
+    "mtime": 1784505143.267855,
+    "hash": "f94168ecbe7242e6188b96119f8aec25"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_mana_system.py": {
     "mtime": 1784207195.1953418,
@@ -620,16 +620,16 @@
     "hash": "2eae77c6738728a090c0203ac3e6cb18"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/engine.py": {
-    "mtime": 1784505001.0551255,
-    "hash": "ef975c10cf09e9478671993491b52195"
+    "mtime": 1784505126.1551282,
+    "hash": "e6bfd37120599a78d210669b08533a72"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/attachments.py": {
     "mtime": 1784413564.1209502,
     "hash": "2b2d18d534b76ed273bad113429e5e0b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/state_based_actions.py": {
-    "mtime": 1784504921.8413882,
-    "hash": "1d354ecd2d0856489da89a5067f4e884"
+    "mtime": 1784505118.8602448,
+    "hash": "e76444c6d4629f07e1c8ac149c4e1c4b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/cast_choice.py": {
     "mtime": 1784503650.3667183,
@@ -708,16 +708,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1784505039.315515,
-    "hash": "6ead5c38f1b202b81d80de8bc5d5b878"
+    "mtime": 1784505198.0219798,
+    "hash": "4511f63be89b76c1956412a3807531f4"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1784505039.1805172,
-    "hash": "1af91dc90404c76b26349d5d51dc0b1d"
+    "mtime": 1784505197.9009817,
+    "hash": "2a4a2a2b48b066b04cd832ba03a4d604"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1784505039.4495127,
-    "hash": "4f4fb6d74d65acea5d0baad117874420"
+    "mtime": 1784505198.1479776,
+    "hash": "68e56e65d391e8cec107d74d787e423c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

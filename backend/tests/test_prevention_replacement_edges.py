@@ -423,6 +423,50 @@ def test_human_replacement_choice_pauses_combat_death_zone_change() -> None:
     assert creature_id in state.players[1].exile
 
 
+def test_human_replacement_choice_pauses_legend_rule_zone_change() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name in (("legend-rep-a", "First Ward"), ("legend-rep-b", "Second Ward")):
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a permanent you control would die, exile it instead.",
+        )
+        state.players[1].battlefield.append(cid)
+    legends = []
+    for index in (1, 2):
+        cid = f"legendary-copy-{index}"
+        card = CardInstance(
+            id=cid,
+            name="Twin Sage",
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Legendary", "Creature"],
+            type_line="Legendary Creature — Wizard",
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+        legends.append(cid)
+
+    apply_state_based_actions(state)
+
+    assert state.pending_replacement_choice is not None
+    move = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, move)
+
+    assert state.pending_replacement_choice is None
+    assert state.cards[legends[1]].zone == Zone.EXILE
+    assert legends[1] in state.players[1].exile
+
+
 def test_optional_stack_effect_can_be_declined() -> None:
     state = _state()
     source = state.players[1].hand[0]
