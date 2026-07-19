@@ -135,6 +135,8 @@ npm run build
 
 The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
 
+The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects accept one selected card for hand, one for exile, and an ordered list for the bottom of the library; invalid, duplicate, or incomplete selections are rejected before the spell reaches the stack. AI callers use deterministic value-based choices when no explicit choice is provided.
+
 ### Diagnostics
 ```bash
 cd backend

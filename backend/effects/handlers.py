@@ -665,19 +665,36 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
 
 
 def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
-    """Resolve a three-pile top-card choice using deterministic value ordering."""
+    """Resolve a top-card hand/exile/bottom choice, with a legacy AI fallback."""
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 3)))
     top_slice = player.library[-top_n:]
     if not top_slice:
         return
 
+    explicit_hand = payload.get("top_choice_hand_id")
+    explicit_exile = payload.get("top_choice_exile_id")
+    explicit_bottom = payload.get("top_choice_bottom_ids")
+    top_set = set(top_slice)
+    explicit_valid = (
+        explicit_hand in top_set
+        and explicit_exile in top_set
+        and isinstance(explicit_bottom, list)
+        and len({explicit_hand, explicit_exile, *explicit_bottom}) == len(top_slice)
+        and {explicit_hand, explicit_exile, *explicit_bottom} == top_set
+    )
+
     def card_value(cid: str) -> tuple[int, str]:
         return (mana_value(getattr(state.cards[cid], "mana_cost", "") or ""), state.cards[cid].name)
 
-    ordered = sorted(top_slice, key=card_value, reverse=True)
-    hand_card = ordered[0]
-    exile_card = ordered[1] if len(ordered) > 1 else None
+    if explicit_valid:
+        hand_card = explicit_hand
+        exile_card = explicit_exile
+        ordered = [hand_card, exile_card, *explicit_bottom]
+    else:
+        ordered = sorted(top_slice, key=card_value, reverse=True)
+        hand_card = ordered[0]
+        exile_card = ordered[1] if len(ordered) > 1 else None
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
 
     state.cards[hand_card].zone = Zone.HAND

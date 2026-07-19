@@ -88,6 +88,17 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
             return False, f"Too many library cards selected (max {max_count})."
         if not search.get("allow_zero") and not selected and candidate_ids:
             return False, "A library card must be selected."
+    top_choice = hints.get("top_choice") or {}
+    if top_choice:
+        candidate_ids = {str(item.get("id")) for item in (top_choice.get("candidates") or [])}
+        hand_id = action_targets.get("top_choice_hand_id")
+        exile_id = action_targets.get("top_choice_exile_id")
+        bottom_ids = action_targets.get("top_choice_bottom_ids") or []
+        if not hand_id or not exile_id or not isinstance(bottom_ids, list):
+            return False, "Top-card choices require one hand card, one exile card, and an ordered bottom list."
+        chosen = [str(hand_id), str(exile_id), *[str(cid) for cid in bottom_ids]]
+        if len(chosen) != len(candidate_ids) or len(set(chosen)) != len(chosen) or set(chosen) != candidate_ids:
+            return False, "Top-card choices must place every inspected card exactly once."
     return True, ""
 
 

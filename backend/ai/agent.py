@@ -2036,6 +2036,22 @@ class AIAgent:
             ordered = sorted(search_candidates, key=lambda item: (str(item.get("name") or ""), str(item.get("id") or "")))
             targets["search_card_ids"] = [item["id"] for item in ordered[:selected_count]]
 
+        top_choice = hints.get("top_choice") or {}
+        top_candidates = [item for item in top_choice.get("candidates") or [] if item.get("id") in state.cards]
+        if top_candidates and not targets.get("top_choice_hand_id"):
+            ordered = sorted(
+                top_candidates,
+                key=lambda item: (
+                    mana_value(getattr(state.cards[item["id"]], "mana_cost", "") or ""),
+                    str(item.get("name") or ""),
+                ),
+                reverse=True,
+            )
+            targets["top_choice_hand_id"] = ordered[0]["id"]
+            if len(ordered) > 1:
+                targets["top_choice_exile_id"] = ordered[1]["id"]
+                targets["top_choice_bottom_ids"] = [item["id"] for item in ordered[2:]]
+
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
                 # Put first point on highest-threat creature by default.

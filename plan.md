@@ -76,6 +76,7 @@ Release blockers identified by the audit:
 - Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
 - AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
 - Current six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels.
+- Explicit top-library choices now support hand/exile/ordered-bottom placement for Expressive Iteration-style effects. Human selections are validated for exact one-time placement, while AI callers retain a deterministic fallback; the focused gate passes 61 tests and the latest three-game replay smoke has 0 determinism failures and 0 drift labels.
 - Current Tokens vs Ramp three-game smoke completed with 0 timeouts; its 3-0 result is retained as diagnostic evidence only, not as a balance conclusion.
 - Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
 - API smoke coverage now exercises `/health`, built-in deck loading, and local card-image serving; it also fixed the missing `BUILTIN_DECKS` import that caused built-in deck requests to fail at runtime.
@@ -306,7 +307,7 @@ Exit criteria:
 
 ### Current next implementation slice
 1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
-2. Extend explicit choice plumbing to top-N ordering, modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search selection is now implemented for the supported search family.
+2. Extend explicit choice plumbing to modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search and top-library selection are now implemented for their supported families.
 3. Add the next high-value rules slice: stronger replacement/layer ordering and broader zone-change trigger variants; core day/night, common Aura/Equipment legality, temporary control changes, and common battlefield-leave triggers are now implemented.
 4. Extend Master tactical search through combat and stack decisions, including bounded attack assignments, stronger crack-back evaluation, and interaction preservation; bounded blocker-assignment search is now implemented for small boards.
 5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
@@ -318,7 +319,7 @@ The following are the remaining gaps that can still make a deck appear to play b
 
 - Unsupported or partially supported Oracle text can still resolve through a logged fallback, especially for rare modal, multipart, attachment, replacement, and modern permanent structures.
 - Layer dependencies, timestamps, prevention ordering, and "can't" overrides are not yet a complete general model.
-- Library-search choices are now explicit for the supported tutor/search family; top-N ordering, modal multi-effects, simultaneous trigger ordering, and some battlefield-tutor choices still need the same treatment.
+- Library-search and top-library choices are now explicit for their supported families; modal multi-effects, simultaneous trigger ordering, and some battlefield-tutor choices still need the same treatment.
 - Combat search is bounded and heuristic; it still needs stronger assignment search and post-combat evaluation for complex boards.
 - Hidden-information inference, sideboarding, matchup plans, and long-run archetype tuning are not complete.
 - Simulator diagnostics are strong for deterministic drift and common anomalies, but full-corpus attribution and statistically meaningful balance samples remain unfinished.

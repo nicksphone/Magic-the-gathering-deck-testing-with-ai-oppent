@@ -33,6 +33,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Fixed Master/Ramp tutor decisions that omitted required library-search card IDs after explicit search validation was enabled.
   - The reproduced Dimir Control vs Ramp trace no longer emits invalid-search errors; its remaining long-game timeout is classified as a legal closure/balance case.
   - Fixed graveyard-spell target discovery and AI materialization so recursion finishers are not filtered out as having no legal targets.
+- Top-library choice resolution:
+  - Added explicit hand/exile/ordered-bottom choices for Expressive Iteration-style effects.
+  - Human choices are validated so every inspected card is placed exactly once; AI chooses a deterministic value-ranked order when no choice is supplied.
+  - Added regression coverage; the focused gate passes 61 tests and the three-game replay smoke has zero determinism failures.
 
 ## 2026-07-16
 
