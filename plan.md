@@ -18,6 +18,27 @@ Confirmed validation baseline:
 
 This is an engineering-completeness audit, not a claim that the simulator is rules-complete. The application is usable for deterministic deck testing and common archetypes, but it should not yet be described as a pro-level Magic rules implementation or as an AI trained to optimal play across arbitrary cards.
 
+### Current release assessment
+
+The repository is in a functional engine-hardening stage, not a feature-discovery stage. The core loop works, but "works" currently means that supported cards and common interactions can be simulated deterministically; it does not mean that every imported Oracle text is interpreted correctly or that Master AI always finds the seasoned-player line.
+
+Verified strengths:
+
+- Common turn, priority, stack, mana, combat, zone, trigger, replacement, prevention, attachment, Saga, Vehicle, day/night, cycling, tutor, X-value, and temporary-permission paths have application-code coverage.
+- AI has archetype detection, mulligan and land-drop logic, interaction timing, bounded spell/stack/combat lookahead, legal tutor-choice materialization, and structured decision traces.
+- The simulator has persistent job state, deterministic seeds, replay hashes, first-divergence reporting, anomaly classification, and confidence-interval reporting.
+- The frontend has a working production build, configurable LAN API routing, health/retry state, response windows, card inspection, density-aware battlefield rendering, and simulator progress reporting.
+
+Verified limitations:
+
+- The ability model is a boundary around the existing resolver; it is not yet a complete structured representation for all costs, modes, conditions, continuous effects, replacement effects, and choices.
+- The engine still has heuristic seams for unusual Oracle text, dependencies between continuous effects, timestamp/layer edge cases, multiple replacement choices, and modern permanent structures.
+- Master AI is bounded and heuristic. It can still miss multi-turn resource plans, hidden-information inferences, sideboard plans, complex combat assignments, and matchup-specific “hold versus deploy” decisions.
+- Small replay samples are useful for finding deterministic bugs but cannot establish balance. A result such as 100% win rate is an anomaly signal until a larger seeded matrix explains it.
+- Missing or placeholder card data/art can still reduce both player readability and AI quality when a deck is imported offline.
+
+The abandoned token-compression experiment is not part of this project plan, runtime, or release criteria. Do not add it back as a gameplay, diagnostics, or documentation dependency.
+
 Release blockers identified by the audit:
 
 - Oracle interpretation still relies on text heuristics beneath the new structured ability boundary; broad conversion to structured card abilities remains unfinished.
@@ -132,6 +153,7 @@ Release blockers identified by the audit:
 - Legacy combat evasion keywords like `shadow`, `fear`, and `intimidate` now participate in blocking legality for older-card coverage.
 - More exotic control-changing death/exile cases still need wider corpus coverage, especially when cards are stolen and then moved between zones, but stack resolution now correctly uses card ownership for spell graveyard placement.
 - Mana-value heuristics for obscure split/alternative-cost imports are now narrowed to niche corpus verification, since split cards and other face-based imports no longer collapse to a one-size-fits-all cost string.
+- The next rules work must be corpus-driven: collect fallback and invalid-resolution counts from representative decks, then convert the highest-impact families into reusable structured effects. Do not add isolated card-name branches merely to make one fixture pass.
 
 ### AI quality
 - The AI is much stronger, but it still needs deeper tactical play in complex board states.
@@ -150,6 +172,8 @@ Release blockers identified by the audit:
 - Combo-lite matchups now have explicit proactive bias against control and counter-heavy shells, but the rest of the long-run tuning work remains.
 - More board-state training data is still needed before the strongest archetypes can be treated as stable baselines.
 - A Blue Control vs Ramp smoke after the recursion valuation change completed without fallback, invalid-target, or mana-payment errors; matchup results remain diagnostic until larger samples are run.
+- AI training artifacts currently provide timing/board-role priors and labeled traces, not a learned policy. They must be treated as evidence for weight tuning and regression analysis, not as proof of expert play.
+- The next AI milestone must measure decision quality, not only match completion: missed land drops, unused legal mana, premature attacks, lethal misses, bad blocks, unprotected engines, and interaction held through the wrong window need per-decision metrics.
 
 ### Simulation and diagnostics
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.
@@ -196,6 +220,7 @@ Release blockers identified by the audit:
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
 - Saved-deck completeness is now available through `/decks/completeness` and `/decks/{deck_id}/card-completeness`, covering distinct mainboard and sideboard names for release diagnostics.
 - Batch analytics now reports Wilson 95% confidence intervals and flags extreme, skewed, or insufficient-sample win rates; the Testing Simulator renders those balance alerts instead of presenting small samples as settled matchup truth.
+- A complete balance pass still requires seeded best-of-3/best-of-9 round-robin coverage across the built-in corpus, with full card-play and hand/board snapshots for anomalous games. One-off smoke matches are not sufficient acceptance evidence.
 
 ### UI and docs
 - The battlefield is usable, and density-aware sizing now engages earlier to keep moderate boards readable. Human players can now activate available fixed or X-cost cycling directly from the hand and choose a validated X value.
@@ -322,12 +347,12 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Use fallback diagnostics to convert the next highest-frequency cards from the built-in corpus into reusable structured effects, with no card-name-only special cases.
-2. Extend explicit choice plumbing to modal multi-effects, simultaneous trigger ordering, and battlefield tutor selection; library-search and top-library selection are now implemented for their supported families.
-3. Add the next high-value rules slice: stronger replacement/layer ordering and broader zone-change trigger variants; core day/night, common Aura/Equipment legality, temporary control changes, and common battlefield-leave triggers are now implemented.
-4. Extend Master tactical search through combat and stack decisions, including bounded attack assignments, stronger crack-back evaluation, and interaction preservation; bounded blocker-assignment search is now implemented for small boards.
-5. Run the full representative best-of-3/best-of-9 matrix with card-play analytics, then fix the highest-confidence anomalies before expanding the card corpus.
-6. Finish bulk card/token asset completeness reporting and frontend replay/anomaly drilldown before release hardening.
+1. Build a fallback corpus report from the current built-in and expansion decks, rank unsupported behavior by frequency and gameplay impact, and select the next reusable effect families.
+2. Expand structured choices and effects for modal multi-effects, simultaneous trigger ordering, replacement selection, and modern permanent structures before adding more card-specific fallback data.
+3. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
+4. Extend Master tactical search with decision-quality metrics, stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
+5. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
+6. Finish bulk card/token completeness reporting plus frontend replay/anomaly drilldown, then validate LAN deployment and long-session UX.
 
 ### Audit findings and acceptance criteria
 
@@ -355,6 +380,13 @@ Work in this order unless a production failure requires an earlier interruption:
 6. Large deterministic matchup and balance matrix.
 7. Card-data completeness and asset reporting.
 8. Frontend replay and release polish.
+
+## Audit Decision Rules
+
+- A card is not considered supported because it imports, displays, or resolves without an exception. It must produce the correct zones, choices, targets, timing, triggers, and state-based consequences for its covered wording.
+- An AI matchup is not considered healthy because it finishes. It must avoid repeated illegal or obviously dominated actions and expose enough trace context to explain unusual decisions.
+- A win-rate result is not a balance conclusion below the configured confidence/sample threshold. Extreme results are regression candidates, not automatic deck nerfs.
+- Every milestone must update this plan, the README’s current-state sections, the changelog, and Graphify output, then pass the focused backend gate, frontend build, and deterministic replay smoke.
 
 ## Verification Gates
 
