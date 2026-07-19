@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from main import app
+from main import ACTIVE_MATCHES, app
 
 
 def test_api_health_and_builtin_deck_routes() -> None:
@@ -37,3 +37,33 @@ def test_api_saved_deck_completeness_routes_return_structured_reports() -> None:
     if one_report is not None:
         assert one_report.status_code == 200
         assert "report" in one_report.json()
+
+
+def test_api_replacement_options_route_returns_choice_contract() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    with TestClient(app) as client:
+        started = client.post(
+            "/matches/start",
+            json={
+                "deck_a": deck,
+                "deck_b": deck,
+                "controller_a": "human",
+                "controller_b": "human",
+                "mode": "human_vs_human",
+                "best_of": 3,
+                "seed": 901,
+            },
+        )
+        assert started.status_code == 200
+        match_id = started.json()["id"]
+        options = client.get(
+            f"/matches/{match_id}/replacement-options",
+            params={"event": "damage_to_player", "target_player": 1},
+        )
+        ACTIVE_MATCHES.pop(match_id, None)
+
+    assert options.status_code == 200
+    body = options.json()
+    assert body["selection_key"] == "targets.replacement_source_id"
+    assert body["default_policy"] == "latest_static_order"
+    assert body["options"] == []

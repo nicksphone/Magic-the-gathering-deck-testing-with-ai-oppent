@@ -55,6 +55,11 @@ def build_cast_hints(
         hints["choice_schema"]["target_stack_id"] = {"type": "string", "required": False}
     if hints.get("unless_payment"):
         hints["choice_schema"]["pay_unless_counter"] = {"type": "boolean", "required": False}
+    hints["choice_schema"]["replacement_source_id"] = {
+        "type": "string",
+        "required": False,
+        "description": "Optional replacement-effect source ID returned by the replacement-options API.",
+    }
     if hints.get("up_to_target_count"):
         hints["choice_schema"]["target_card_ids"] = {"type": "array", "required": False, "max_items": hints["up_to_target_count"]}
     if hints.get("library_search"):

@@ -59,6 +59,7 @@ def build_ability_spec(
             "target_card_id", "target_card_ids", "target_stack_id",
             "target_player", "search_contains", "top_n", "max_creatures", "mv_max",
             "search_card_ids", "topdeck_card_ids", "chosen_creature_type",
+            "replacement_source_id",
         )
         if key in action_targets
     }
@@ -106,6 +107,8 @@ def build_ability_spec(
     for key in ("target_card_id", "target_card_ids", "target_player", "search_card_ids"):
         if key in action_targets and key not in payload:
             payload[key] = action_targets[key]
+    if "replacement_source_id" in action_targets:
+        payload.setdefault("__replacement_source_id", str(action_targets["replacement_source_id"]))
     if "chosen_creature_type" in action_targets:
         payload.setdefault("chosen_creature_type", str(action_targets["chosen_creature_type"]))
     return AbilitySpec(

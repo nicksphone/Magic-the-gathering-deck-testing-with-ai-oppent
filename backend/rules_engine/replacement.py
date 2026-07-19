@@ -49,6 +49,68 @@ _DIE_EXILE_RE = re.compile(
 )
 
 
+def replacement_options(
+    state,
+    event: str,
+    target_player: int | None = None,
+    target_card_id: str | None = None,
+) -> list[dict]:
+    """Return applicable replacement sources in deterministic choice order.
+
+    The rules engine still chooses the newest source by default for AI/replay
+    callers, but API and human callers can inspect the exact source IDs before
+    supplying __replacement_source_id on the affected action.
+    """
+    event_key = str(event or "").strip().lower()
+    candidates: list[tuple[object, str]] = []
+    if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
+        candidates = [
+            (card, text)
+            for card, text in _battlefield_oracle_texts(state, controller=target_player)
+            if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
+        ]
+    elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
+        target = state.cards[target_card_id]
+        candidates = [
+            (card, text)
+            for card, text in _battlefield_oracle_texts(state, controller=target.controller)
+            if _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
+        ]
+    elif event_key in {"life_gain", "gain_life"} and target_player in state.players:
+        candidates = [
+            (card, text)
+            for card, text in _battlefield_oracle_texts(state, controller=target_player)
+            if "if you would gain life, draw that many cards instead" in text
+        ]
+    elif event_key in {"card_draw", "draw"} and target_player in state.players:
+        candidates = [
+            (card, text)
+            for card, text in _battlefield_oracle_texts(state, controller=target_player)
+            if "if you would draw a card, gain 1 life instead" in text
+        ]
+    elif event_key in {"die_zone", "dies"} and target_card_id in state.cards:
+        target = state.cards[target_card_id]
+        is_token = bool(
+            getattr(target, "is_token", False)
+            or "token" in {str(t).lower() for t in (target.types or [])}
+        )
+        candidates = [
+            (card, text)
+            for card, text in _battlefield_oracle_texts(state, controller=target.controller)
+            if not (is_token and ("nontoken" in text or "non-token" in text))
+            and _DIE_EXILE_RE.search(text)
+        ]
+    return [
+        {
+            "source_id": str(card.id),
+            "name": card.name,
+            "controller": int(card.controller),
+            "static_order": int(getattr(card, "static_order", 0) or 0),
+        }
+        for card, _ in candidates
+    ]
+
+
 def apply_damage_replacements(
     state,
     target_player: int | None,

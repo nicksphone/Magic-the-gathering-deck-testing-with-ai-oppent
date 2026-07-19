@@ -8,7 +8,7 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
-from rules_engine.replacement import replace_die_zone
+from rules_engine.replacement import replacement_options, replace_die_zone
 
 
 def _state() -> object:
@@ -220,6 +220,63 @@ def test_replacement_effect_prefers_latest_timestamp_source() -> None:
     assert len(state.players[1].hand) == before + 1
     assert any("source: late knowledge" in line.lower() for line in state.log)
     assert not any("source: early knowledge" in line.lower() for line in state.log if "replacement effect applied" in line.lower())
+
+
+def test_replacement_options_expose_timestamp_ordered_sources() -> None:
+    state = _state()
+    early = CardInstance(
+        id="choice-early",
+        name="Early Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=1,
+    )
+    late = CardInstance(
+        id="choice-late",
+        name="Late Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=2,
+    )
+    state.cards.update({early.id: early, late.id: late})
+    state.players[1].battlefield.extend([early.id, late.id])
+
+    options = replacement_options(state, "life_gain", target_player=1)
+
+    assert [item["source_id"] for item in options] == [late.id, early.id]
+    assert options[0]["name"] == late.name
+    assert options[0]["static_order"] == 2
+
+
+def test_ability_spec_carries_explicit_replacement_source_choice() -> None:
+    state = _state()
+    spell = CardInstance(
+        id="replacement-spell",
+        name="Life Spell",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        mana_cost="{1}{W}",
+        oracle_text="Target player gains 3 life.",
+    )
+    state.cards[spell.id] = spell
+
+    spec = build_ability_spec(
+        state,
+        spell,
+        1,
+        {"target_player": 1, "replacement_source_id": "choice-late"},
+    )
+
+    assert spec.choices["replacement_source_id"] == "choice-late"
+    assert spec.effect.payload["__replacement_source_id"] == "choice-late"
 
 
 def test_optional_stack_effect_can_be_declined() -> None:

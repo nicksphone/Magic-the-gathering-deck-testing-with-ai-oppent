@@ -17,6 +17,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Post-change Tokens vs Ramp diagnostic completed without timeouts, obvious bad attacks, or losing-block classifications.
   - The consolidated rules/AI gate now passes 344 tests.
 
+- Replacement-choice contract milestone:
+  - Added reusable timestamp-ordered replacement candidate discovery for player damage, permanent damage, life gain, card draw, and die-to-exile events.
+  - Added `/matches/{match_id}/replacement-options` with source metadata and a stable selection contract.
+  - Explicit `targets.replacement_source_id` choices now flow through AbilitySpec and effect payloads; AI/replay callers retain deterministic latest-source fallback.
+  - Added replacement, ability-model, and API regression coverage; the consolidated gate now passes 353 tests.
+  - Mid-resolution pause/resume and simultaneous trigger ordering choices remain the next fidelity slice.
+
 - Rules corpus milestone:
   - Added conditional noncreature counterspell targets with explicit `unless` payment choices and deterministic automated resolution.
   - Added generic noncombat-damage replacement to `-1/-1` counters, power-based death-trigger damage, Hydroid Krasis-style self-cast X triggers, and X-counter entry handling.

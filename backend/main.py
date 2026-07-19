@@ -38,6 +38,7 @@ from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from rules_engine.land_rules import compute_max_land_plays_this_turn
+from rules_engine.replacement import replacement_options
 
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI):
@@ -556,6 +557,35 @@ def get_legal_moves(match_id: str, player_id: int | None = None) -> dict:
         raise HTTPException(status_code=404, detail="Match not found")
     pid = player_id or _default_player_for_state(match)
     return {"player_id": pid, "moves": match.rules.legal_moves(match.state, pid)}
+
+
+@app.get("/matches/{match_id}/replacement-options")
+def get_replacement_options(
+    match_id: str,
+    event: str = "damage_to_player",
+    target_player: int | None = None,
+    target_card_id: str | None = None,
+) -> dict:
+    match = ACTIVE_MATCHES.get(match_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    if target_player is not None and target_player not in match.state.players:
+        raise HTTPException(status_code=400, detail="Invalid target_player")
+    options = replacement_options(
+        match.state,
+        event=event,
+        target_player=target_player,
+        target_card_id=target_card_id,
+    )
+    return {
+        "match_id": match_id,
+        "event": event,
+        "target_player": target_player,
+        "target_card_id": target_card_id,
+        "options": options,
+        "selection_key": "targets.replacement_source_id",
+        "default_policy": "latest_static_order",
+    }
 
 
 @app.post("/matches/{match_id}/action")
