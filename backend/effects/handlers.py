@@ -262,6 +262,7 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
         if cid in battlefield_owner.battlefield:
+            emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
             battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
             if destination == "exile":
@@ -291,6 +292,7 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
         if cid in battlefield_owner.battlefield:
+            emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
             battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
             if destination == "exile":

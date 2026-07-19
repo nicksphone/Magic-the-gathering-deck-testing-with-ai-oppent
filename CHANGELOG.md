@@ -57,7 +57,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Mass exile rules:
   - Added a reusable ownership-correct `exile_all_creatures` effect for Farewell-style Oracle text.
   - Mass exile emits battlefield-leave events and moves each creature to its owner's exile zone instead of using destroy/death semantics.
-  - The consolidated rules/AI gate now passes 265 tests and the replay smoke remains deterministic.
+  - Mass creature destruction now emits the same battlefield-leave event before moving cards to graveyards, keeping leave-trigger ordering consistent across mass zone changes.
+  - The consolidated rules/AI gate now passes 266 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 
