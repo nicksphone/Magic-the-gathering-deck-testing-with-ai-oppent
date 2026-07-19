@@ -88,6 +88,17 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
             return False, f"Too many library cards selected (max {max_count})."
         if not search.get("allow_zero") and not selected and candidate_ids:
             return False, "A library card must be selected."
+    topdeck = hints.get("topdeck_choice") or {}
+    if topdeck:
+        selected = action_targets.get("topdeck_card_ids") or []
+        if not isinstance(selected, list):
+            return False, "Topdeck choices must be a list of card IDs."
+        candidate_ids = {str(item.get("id")) for item in (topdeck.get("candidates") or [])}
+        if any(str(cid) not in candidate_ids for cid in selected):
+            return False, "A selected topdeck card does not match the effect restriction."
+        max_count = int(topdeck.get("max_count", 0) or 0)
+        if max_count and len(selected) > max_count:
+            return False, f"Too many topdeck cards selected (max {max_count})."
     top_choice = hints.get("top_choice") or {}
     if top_choice:
         candidate_ids = {str(item.get("id")) for item in (top_choice.get("candidates") or [])}

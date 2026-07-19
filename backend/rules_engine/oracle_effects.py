@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone
-from rules_engine.mana import choose_mana_color_for_player
+from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -240,11 +240,14 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
     top_n = int(action_targets.get("top_n", top_n) or top_n)
     max_creatures = int(action_targets.get("max_creatures", max_creatures) or max_creatures)
     mv_max = int(action_targets.get("mv_max", mv_max) or mv_max)
-    return "topdeck_put_creatures_battlefield", {
+    payload = {
         "top_n": max(1, top_n),
         "max_creatures": max(1, max_creatures),
         "mv_max": max(0, mv_max),
     }
+    if action_targets.get("topdeck_card_ids") is not None:
+        payload["selected_card_ids"] = list(action_targets.get("topdeck_card_ids") or [])
+    return "topdeck_put_creatures_battlefield", payload
 
 
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -330,11 +333,14 @@ def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, A
     put_match = PUT_PERMANENTS_FROM_TOP_RE.search(oracle)
     if not (look_match and put_match):
         return None
-    return "topdeck_put_permanents_battlefield", {
+    payload = {
         "top_n": max(1, int(action_targets.get("top_n", _parse_count_token(look_match.group(1))) or 1)),
         "max_permanents": max(1, int(action_targets.get("max_permanents", _parse_count_token(put_match.group(1))) or 1)),
         "mv_max": max(0, int(action_targets.get("mv_max", _parse_count_token(put_match.group(2))) or 0)),
     }
+    if action_targets.get("topdeck_card_ids") is not None:
+        payload["selected_card_ids"] = list(action_targets.get("topdeck_card_ids") or [])
+    return "topdeck_put_permanents_battlefield", payload
 
 
 def inspect_target_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
@@ -384,6 +390,34 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
                 for cid in top_cards
                 if cid in state.cards
             ],
+        }
+
+    topdeck_effect = _infer_topdeck_creature_put_effect(oracle, {}) or _infer_topdeck_permanent_put_effect(oracle, {})
+    if topdeck_effect is not None:
+        _, topdeck_payload = topdeck_effect
+        top_n = int(topdeck_payload.get("top_n", 1) or 1)
+        max_count = int(topdeck_payload.get("max_creatures", topdeck_payload.get("max_permanents", 1)) or 1)
+        mv_max = int(topdeck_payload.get("mv_max", 0) or 0)
+        top_cards = list(reversed(state.players[controller].library[-top_n:]))
+        candidates = []
+        for cid in top_cards:
+            candidate = state.cards.get(cid)
+            if candidate is None:
+                continue
+            types = set(candidate.types or [])
+            if topdeck_effect[0] == "topdeck_put_creatures_battlefield" and "Creature" not in types:
+                continue
+            if topdeck_effect[0] == "topdeck_put_permanents_battlefield" and not types.intersection({"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"}):
+                continue
+            req = parse_mana_cost(candidate.mana_cost or "")
+            value = int(req["generic"] + req["C"] + sum(req[color] for color in "WUBRG"))
+            if value <= mv_max:
+                candidates.append({"id": cid, "name": candidate.name, "mana_value": value})
+        hints["topdeck_choice"] = {
+            "top_n": top_n,
+            "max_count": max_count,
+            "allow_zero": True,
+            "candidates": candidates,
         }
 
     if "counter target spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):

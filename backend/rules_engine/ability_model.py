@@ -57,7 +57,7 @@ def build_ability_spec(
             "selected_face_index", "mode_text", "mode_texts", "x_value",
             "target_card_id", "target_card_ids", "target_stack_id",
             "target_player", "search_contains", "top_n", "max_creatures", "mv_max",
-            "search_card_ids",
+            "search_card_ids", "topdeck_card_ids",
         )
         if key in action_targets
     }

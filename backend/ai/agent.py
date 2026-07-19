@@ -12,7 +12,7 @@ from ai.matchup_profiles import profile_for
 from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
-from rules_engine.continuous import effective_keywords
+from rules_engine.continuous import effective_keywords, effective_power
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
@@ -2050,6 +2050,21 @@ class AIAgent:
             selected_count = min(selected_count, len(search_candidates))
             ordered = sorted(search_candidates, key=lambda item: (str(item.get("name") or ""), str(item.get("id") or "")))
             targets["search_card_ids"] = [item["id"] for item in ordered[:selected_count]]
+
+        topdeck_choice = hints.get("topdeck_choice") or {}
+        topdeck_candidates = [item for item in topdeck_choice.get("candidates") or [] if item.get("id") in state.cards]
+        if topdeck_candidates and "topdeck_card_ids" not in targets:
+            ordered = sorted(
+                topdeck_candidates,
+                key=lambda item: (
+                    effective_power(state, item["id"]) if "Creature" in state.cards[item["id"]].types else 0,
+                    int(item.get("mana_value", 0) or 0),
+                    str(item.get("name") or ""),
+                ),
+                reverse=True,
+            )
+            max_count = int(topdeck_choice.get("max_count", 0) or 0)
+            targets["topdeck_card_ids"] = [item["id"] for item in ordered[:max_count]]
 
         top_choice = hints.get("top_choice") or {}
         top_candidates = [item for item in top_choice.get("candidates") or [] if item.get("id") in state.cards]

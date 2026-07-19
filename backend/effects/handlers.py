@@ -1053,7 +1053,12 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         ),
         reverse=True,
     )
-    chosen = eligibles[:max_creatures]
+    explicit = payload.get("selected_card_ids")
+    if explicit is not None:
+        eligible_set = set(eligibles)
+        chosen = [cid for cid in explicit if cid in eligible_set][:max_creatures]
+    else:
+        chosen = eligibles[:max_creatures]
 
     # Remove inspected cards from library in top-to-bottom order.
     inspected_set = set(top_slice)
@@ -1094,7 +1099,12 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         if set(state.cards[cid].types).intersection(permanent_types) and mana_value_for(cid) <= mv_max
     ]
     eligible.sort(key=lambda cid: (mana_value_for(cid), state.cards[cid].name), reverse=True)
-    chosen = eligible[:max_permanents]
+    explicit = payload.get("selected_card_ids")
+    if explicit is not None:
+        eligible_set = set(eligible)
+        chosen = [cid for cid in explicit if cid in eligible_set][:max_permanents]
+    else:
+        chosen = eligible[:max_permanents]
     chosen_set = set(chosen)
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
     for cid in chosen:

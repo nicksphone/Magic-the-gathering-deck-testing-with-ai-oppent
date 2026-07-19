@@ -112,3 +112,65 @@ def test_library_search_rejects_nonmatching_explicit_selection() -> None:
     ok, error = validate_cast_choice(hints, {"search_card_ids": [nonbasic]})
     assert ok is False
     assert "search restriction" in error.lower()
+
+
+def test_topdeck_battlefield_tutor_exposes_and_resolves_explicit_selection() -> None:
+    state = _state_with_searcher()
+    top_ids = state.players[1].library[-6:]
+    for index, cid in enumerate(top_ids):
+        card = state.cards[cid]
+        if index in {0, 2, 4}:
+            card.types = ["Creature"]
+            card.type_line = "Creature — Elf"
+            card.power = 2 + index
+            card.toughness = 2
+            card.mana_cost = "{2}{G}"
+        else:
+            card.types = ["Land"]
+            card.type_line = "Basic Land — Forest"
+            card.mana_cost = ""
+    spell = CardInstance(
+        id="company-choice",
+        name="Collected Company",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield.",
+    )
+    state.cards[spell.id] = spell
+
+    hints = build_cast_hints(state, spell, 1)
+    candidates = hints["topdeck_choice"]["candidates"]
+    assert {item["id"] for item in candidates} == {top_ids[0], top_ids[2], top_ids[4]}
+    chosen = [top_ids[0], top_ids[4]]
+    ok, error = validate_cast_choice(hints, {"topdeck_card_ids": chosen})
+    assert ok is True, error
+
+    spec = build_ability_spec(state, spell, 1, {"topdeck_card_ids": chosen})
+    assert spec.effect.payload["selected_card_ids"] == chosen
+    resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
+    assert all(cid in state.players[1].battlefield for cid in chosen)
+    assert top_ids[2] in state.players[1].library
+
+
+def test_topdeck_battlefield_tutor_rejects_nonmatching_selection() -> None:
+    state = _state_with_searcher()
+    top_ids = state.players[1].library[-6:]
+    for cid in top_ids:
+        state.cards[cid].types = ["Land"]
+        state.cards[cid].type_line = "Basic Land — Forest"
+    spell = CardInstance(
+        id="company-invalid-choice",
+        name="Collected Company",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield.",
+    )
+    state.cards[spell.id] = spell
+    hints = build_cast_hints(state, spell, 1)
+    ok, error = validate_cast_choice(hints, {"topdeck_card_ids": [top_ids[0]]})
+    assert ok is False
+    assert "topdeck card" in error.lower()

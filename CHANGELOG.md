@@ -60,7 +60,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Mass creature destruction now emits the same battlefield-leave event before moving cards to graveyards, keeping leave-trigger ordering consistent across mass zone changes.
   - Simultaneous mass leave/death events now batch trigger collection and deduplicate `one or more` abilities without collapsing ordinary per-object triggers.
   - Modal choice extraction now supports Scryfall bullet-formatted modes and `Choose two` schemas while preserving readable labels for frontend and AI choices.
-  - The consolidated rules/AI gate now passes 269 tests and the replay smoke remains deterministic.
+  - Battlefield topdeck tutors now expose validated candidate selections to humans and AI, and Collected Company-style deployment honors explicit selected cards.
+  - The consolidated rules/AI gate now passes 271 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 
