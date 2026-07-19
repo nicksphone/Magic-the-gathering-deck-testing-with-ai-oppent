@@ -15,6 +15,19 @@ from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timi
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.winner is not None:
         return []
+    pending = getattr(state, "pending_replacement_choice", None)
+    if pending:
+        if int(pending.get("player_id", -1)) != player_id:
+            return []
+        return [
+            {
+                "type": "choose_replacement",
+                "event": pending.get("event"),
+                "replacement_source_id": option.get("source_id"),
+                "replacement_name": option.get("name"),
+            }
+            for option in (pending.get("options") or [])
+        ]
     if state.pregame_pending:
         if player_id in state.kept_hands:
             return []

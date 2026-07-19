@@ -69,6 +69,11 @@ export type MatchState = {
   day_night?: "none" | "day" | "night";
   sideboard_sizes?: Record<string, number>;
   log: string[];
+  pending_replacement_choice?: {
+    event: string;
+    player_id: number;
+    options: { source_id: string; name: string; controller: number; static_order: number }[];
+  } | null;
 };
 
 export type LegalMove = {
@@ -95,6 +100,9 @@ export type LegalMove = {
   ability_label?: string;
   ability_delta?: number;
   reason?: string;
+  event?: string;
+  replacement_source_id?: string;
+  replacement_name?: string;
   target_hints?: {
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];

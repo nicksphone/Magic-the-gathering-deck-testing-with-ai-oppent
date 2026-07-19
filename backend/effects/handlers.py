@@ -255,7 +255,7 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     if target in battlefield_owner.battlefield:
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
-        destination = replace_die_zone(state, card.controller, target)
+        destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
         if destination == "exile":
             zone_owner.exile.append(target)
             card.zone = Zone.EXILE

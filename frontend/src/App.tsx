@@ -117,6 +117,16 @@ export function App() {
     await syncMoves(nextMatch);
   }
 
+  async function onChooseReplacement(sourceId: string) {
+    if (!match || !sourceId) return;
+    const nextMatch = await api.act(match.id, legalPlayerId, {
+      type: "choose_replacement",
+      replacement_source_id: sourceId,
+    });
+    setMatch(nextMatch);
+    await syncMoves(nextMatch);
+  }
+
   async function onSubmitBlocks(blocks: Record<string, string[]>) {
     if (!match) return;
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
@@ -288,6 +298,7 @@ export function App() {
           onApplySideboard={onApplySideboard}
           onNextGame={onNextGame}
           onSetPriorityStops={onSetPriorityStops}
+          onChooseReplacement={onChooseReplacement}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}

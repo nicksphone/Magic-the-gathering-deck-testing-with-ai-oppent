@@ -7,6 +7,7 @@ from game_state.state import MatchState, StackItem, Zone, assign_static_order_on
 from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 from rules_engine.library_permissions import choose_type_for_realmwalker
+from rules_engine.replacement import replacement_options
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None) -> StackItem:
@@ -37,15 +38,71 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
     return item
 
 
-def resolve_top_of_stack(state: MatchState) -> None:
+def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int | None, str | None] | None:
+    payload = item.payload or {}
+    key = str(item.effect_key or "").lower()
+    if key == "deal_damage":
+        target_player = payload.get("target_player")
+        target_card_id = payload.get("target_card_id")
+        if target_player is not None:
+            return ("damage_to_player", int(target_player), None)
+        if target_card_id:
+            target = state.cards.get(str(target_card_id))
+            return ("damage_to_permanent", int(target.controller) if target else None, str(target_card_id))
+    if key == "draw_cards":
+        return ("card_draw", int(payload.get("target_player", item.controller)), None)
+    if key == "gain_life":
+        return ("life_gain", int(payload.get("target_player", item.controller)), None)
+    if key in {"destroy_permanent", "destroy"} and payload.get("target_card_id"):
+        target_id = str(payload["target_card_id"])
+        target = state.cards.get(target_id)
+        return ("die_zone", int(target.controller) if target else None, target_id)
+    return None
+
+
+def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
-        return
-    item = state.stack.pop()
+        return False
+    item = state.stack[-1]
+    context = _replacement_context(state, item)
+    choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
+    requires_human_choice = (
+        getattr(state, "replacement_choice_required", False)
+        and (not choice_players or (context is not None and context[1] in choice_players))
+    )
+    if (
+        requires_human_choice
+        and not (item.payload or {}).get("__replacement_source_id")
+        and context is not None
+    ):
+        event, target_player, target_card_id = context
+        options = replacement_options(
+            state,
+            event,
+            target_player=target_player,
+            target_card_id=target_card_id,
+        )
+        if len(options) > 1 and target_player is not None:
+            state.pending_replacement_choice = {
+                "stack_id": item.id,
+                "player_id": target_player,
+                "event": event,
+                "target_card_id": target_card_id,
+                "options": options,
+            }
+            state.priority_player = target_player
+            state.passed_priority = set()
+            state.log.append(
+                f"Replacement choice required for {event}; "
+                f"{state.players[target_player].name} must choose one of {len(options)} effects."
+            )
+            return False
+    state.stack.pop()
     payload = dict(item.payload or {})
     is_trigger = bool(payload.get("__trigger_event"))
     if bool(payload.get("__may")) and not bool(payload.get("__may_choose", True)):
         state.log.append(f"{state.players[item.controller].name} declines optional effect: {item.label}.")
-        return
+        return True
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
     card = state.cards.get(item.source_card_id)
@@ -76,6 +133,7 @@ def resolve_top_of_stack(state: MatchState) -> None:
                     card.zone = Zone.GRAVEYARD
                     state.log.append(f"{card.name} has no legal attachment target and is put into graveyard.")
                     state.log.append(f"{item.label} resolves.")
-                    return
+                    return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller})
     state.log.append(f"{item.label} resolves.")
+    return True

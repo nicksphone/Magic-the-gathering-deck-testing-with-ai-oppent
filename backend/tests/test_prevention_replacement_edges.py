@@ -279,6 +279,73 @@ def test_ability_spec_carries_explicit_replacement_source_choice() -> None:
     assert spec.effect.payload["__replacement_source_id"] == "choice-late"
 
 
+def test_human_replacement_choice_pauses_and_resumes_stack_resolution() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    early = CardInstance(
+        id="pause-early",
+        name="Early Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=1,
+    )
+    late = CardInstance(
+        id="pause-late",
+        name="Late Knowledge",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+        static_order=2,
+    )
+    source = CardInstance(
+        id="pause-source",
+        name="Life Spell",
+        owner=1,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Sorcery"],
+    )
+    state.cards.update({early.id: early, late.id: late, source.id: source})
+    state.players[1].battlefield.extend([early.id, late.id])
+    add_to_stack(
+        state,
+        source_card_id=source.id,
+        controller=1,
+        label=source.name,
+        effect_key="gain_life",
+        payload={"target_player": 1, "amount": 1},
+    )
+
+    assert resolve_top_of_stack(state) is False
+    assert state.pending_replacement_choice is not None
+    assert len(state.stack) == 1
+    choices = RulesEngine().legal_moves(state, 1)
+    assert {choice["replacement_source_id"] for choice in choices} == {early.id, late.id}
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.pending_replacement_choice == state.pending_replacement_choice
+    assert len(restored.stack) == 1
+
+    RulesEngine().take_action(
+        state,
+        1,
+        {"type": "choose_replacement", "replacement_source_id": early.id},
+    )
+
+    assert state.pending_replacement_choice is None
+    assert state.stack == []
+    assert state.players[1].life == 20
+    assert len(state.players[1].hand) == 8
+    assert source.id in state.players[1].graveyard
+    assert any("chooses replacement source" in line.lower() for line in state.log)
+
+
 def test_optional_stack_effect_can_be_declined() -> None:
     state = _state()
     source = state.players[1].hand[0]
@@ -613,3 +680,37 @@ def test_nontoken_death_replacement_does_not_exile_tokens() -> None:
 
     assert replace_die_zone(state, 1, token.id) == "graveyard"
     assert replace_die_zone(state, 1, creature.id) == "exile"
+
+
+def test_explicit_die_replacement_source_is_honored() -> None:
+    state = _state()
+    first = CardInstance(
+        id="die-rep-a",
+        name="First Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a permanent you control would die, exile it instead.",
+    )
+    second = CardInstance(
+        id="die-rep-b",
+        name="Second Ward",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If a permanent you control would die, exile it instead.",
+    )
+    state.cards[first.id] = first
+    state.cards[second.id] = second
+    state.players[1].battlefield.extend([first.id, second.id])
+    creature_id = state.players[1].hand[0]
+    creature = state.cards[creature_id]
+    creature.types = ["Creature"]
+    state.players[1].hand.remove(creature_id)
+    state.players[1].battlefield.append(creature_id)
+    creature.zone = Zone.BATTLEFIELD
+
+    assert replace_die_zone(state, 1, creature_id, first.id) == "exile"
+    assert any(first.name in line for line in state.log)

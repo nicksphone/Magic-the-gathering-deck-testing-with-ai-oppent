@@ -34,7 +34,8 @@ class RulesEngine:
         if state.stack:
             resolve_top_of_stack(state)
             apply_state_based_actions(state)
-            state.priority_player = state.active_player
+            if not state.pending_replacement_choice:
+                state.priority_player = state.active_player
             return
 
         self._clear_mana_pools(state)
@@ -251,6 +252,27 @@ class RulesEngine:
             self._handle_pregame_action(state, player_id, action)
             return
 
+        pending = getattr(state, "pending_replacement_choice", None)
+        if pending:
+            if kind != "choose_replacement" or int(pending.get("player_id", -1)) != player_id:
+                return
+            chosen_id = str(action.get("replacement_source_id") or "")
+            allowed = {str(option.get("source_id")) for option in (pending.get("options") or [])}
+            if chosen_id not in allowed or not state.stack or state.stack[-1].id != pending.get("stack_id"):
+                state.log.append("Invalid replacement choice; resolution remains paused.")
+                return
+            state.stack[-1].payload["__replacement_source_id"] = chosen_id
+            state.pending_replacement_choice = None
+            state.log.append(
+                f"{state.players[player_id].name} chooses replacement source {chosen_id}."
+            )
+            resolve_top_of_stack(state)
+            if not state.pending_replacement_choice:
+                state.priority_player = state.active_player
+                state.passed_priority = set()
+            apply_state_based_actions(state)
+            return
+
         if kind == "pass_priority":
             actor = state.players.get(player_id)
             if actor:
@@ -261,7 +283,8 @@ class RulesEngine:
             if both_passed:
                 if state.stack:
                     resolve_top_of_stack(state)
-                    state.priority_player = state.active_player
+                    if not state.pending_replacement_choice:
+                        state.priority_player = state.active_player
                 else:
                     self.next_step(state)
             apply_state_based_actions(state)

@@ -329,10 +329,16 @@ def replace_draw_cards(
     return None
 
 
-def replace_die_zone(state, controller: int, card_id: str) -> str:
+def replace_die_zone(
+    state,
+    controller: int,
+    card_id: str,
+    replacement_source_id: str | None = None,
+) -> str:
     """Return destination zone for a dying permanent: 'graveyard' or 'exile'."""
     target = state.cards.get(card_id)
     is_token = bool(target and (getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])}))
+    candidates: list[tuple[object, str]] = []
     for card, text in _battlefield_oracle_texts(state, controller=controller):
         if is_token and ("nontoken" in text or "non-token" in text):
             continue
@@ -349,9 +355,12 @@ def replace_die_zone(state, controller: int, card_id: str) -> str:
                 "if a non-token creature you control would die, exile it instead",
             ),
         ):
-            return "exile"
+            candidates.append((card, text))
+            continue
         if _DIE_EXILE_RE.search(text):
-            return "exile"
+            candidates.append((card, text))
+    if _choose_replacement_candidate(state, candidates, replacement_source_id, "die zone") is not None:
+        return "exile"
     return "graveyard"
 
 

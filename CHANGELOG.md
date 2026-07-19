@@ -4,6 +4,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- Replacement pause/resume milestone:
+  - Human-controlled top-level damage, life-gain, draw, and die-zone stack events now pause when multiple replacement effects apply.
+  - The frontend renders source-specific replacement choices and blocks pass, step, and autoplay actions until the choice is resolved.
+  - Pending choices and the original stack item survive snapshots; AI/replay retains deterministic timestamp selection.
+  - The focused rules/AI gate now passes 355 tests, including explicit source selection for die-to-exile replacements. Nested combat/SBA prompts and simultaneous trigger ordering remain open.
+
 - AI search-budget milestone:
   - Bounded Master/Master Plus deep-copy search by total battlefield size and legal-action count.
   - Dense token boards now retain deterministic heuristic/combat evaluation instead of allowing two-ply/rollout branches to monopolize simulator runs.

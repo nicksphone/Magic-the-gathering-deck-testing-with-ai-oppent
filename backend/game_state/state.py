@@ -147,6 +147,11 @@ class MatchState:
     # Restrictions created by resolving spells that last through cleanup.
     turn_cant_gain_life: set[int] = field(default_factory=set)
     turn_damage_cant_be_prevented: bool = False
+    # Human-controlled matches can pause resolution when multiple replacement
+    # effects apply. AI/replay runs keep deterministic automatic selection.
+    replacement_choice_required: bool = False
+    replacement_choice_players: set[int] = field(default_factory=set)
+    pending_replacement_choice: dict | None = None
 
 
 class MatchFactory:

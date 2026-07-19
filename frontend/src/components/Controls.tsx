@@ -26,6 +26,7 @@ type Props = {
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: () => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
+  onChooseReplacement: (sourceId: string) => void;
   responseCountdown: number | null;
   autoResponsePaused: boolean;
   onToggleAutoResponsePause: () => void;
@@ -64,6 +65,10 @@ export function Controls(props: Props) {
   const blockMove = useMemo(() => props.legalMoves.find((m) => m.type === "block"), [props.legalMoves]);
   const attackMove = useMemo(() => props.legalMoves.find((m) => m.type === "attack"), [props.legalMoves]);
   const attackRestrictions = useMemo(() => props.legalMoves.filter((m) => m.type === "attack_restricted"), [props.legalMoves]);
+  const replacementMoves = useMemo(
+    () => props.legalMoves.filter((m) => m.type === "choose_replacement"),
+    [props.legalMoves],
+  );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
   const [sbPlayer, setSbPlayer] = useState(1);
@@ -80,6 +85,7 @@ export function Controls(props: Props) {
   const stackSize = props.match?.stack?.length ?? 0;
   const currentController = props.match?.controllers?.[String(props.match?.priority_player ?? 1)] ?? "human";
   const interruptWindowLive = props.responseCountdown !== null;
+  const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const interruptWindowLabel = interruptWindowLive
     ? "Response window open"
     : props.autoResponsePaused
@@ -167,6 +173,27 @@ export function Controls(props: Props) {
           </div>
         </div>
       ) : null}
+      {replacementPaused ? (
+        <div className="block-panel replacement-choice-panel">
+          <h3>Replacement Choice Required</h3>
+          <p>
+            Choose which replacement effect applies to the pending event
+            {props.match?.pending_replacement_choice?.event
+              ? ` (${props.match.pending_replacement_choice.event.replace(/_/g, " ")})`
+              : ""}.
+          </p>
+          <div className="row">
+            {replacementMoves.map((move) => (
+              <button
+                key={move.replacement_source_id}
+                onClick={() => props.onChooseReplacement(move.replacement_source_id ?? "")}
+              >
+                {move.replacement_name ?? move.replacement_source_id ?? "Choose replacement"}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="block-panel">
         <h3>AI Playback Speed</h3>
         <p>{(props.autoplayDelayMs / 1000).toFixed(1)}s per AI beat</p>
@@ -232,16 +259,16 @@ export function Controls(props: Props) {
         </div>
       ) : null}
       <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match}>
+        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused}>
           Pass Priority
         </button>
-        <button onClick={props.onNextStep} disabled={!props.match}>
+        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused}>
           AI Step x30
         </button>
       </div>

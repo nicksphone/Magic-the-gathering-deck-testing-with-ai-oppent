@@ -493,6 +493,13 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
     deck_b = _hydrate_deck_cards(repo, payload.deck_b)
     state = MatchFactory.from_decks(deck_a, deck_b, seed=payload.seed)
     state.best_of = payload.best_of
+    state.replacement_choice_required = (
+        payload.controller_a == "human" or payload.controller_b == "human"
+    )
+    state.replacement_choice_players = {
+        pid for pid, controller in ((1, payload.controller_a), (2, payload.controller_b))
+        if controller == "human"
+    }
     rules = RulesEngine()
     a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_a))
     b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_b))
@@ -1011,6 +1018,12 @@ def _start_next_game_state(match: MatchController) -> None:
     new_state.id = prior_id
     new_state.score = dict(match.state.score)
     new_state.best_of = match.best_of
+    new_state.replacement_choice_required = any(
+        controller == "human" for controller in match.controllers.values()
+    )
+    new_state.replacement_choice_players = {
+        pid for pid, controller in match.controllers.items() if controller == "human"
+    }
     new_state.active_player = 1 if match.game_number % 2 == 1 else 2
     new_state.priority_player = new_state.active_player
     transition = f"--- Starting game {match.game_number + 1} ---"

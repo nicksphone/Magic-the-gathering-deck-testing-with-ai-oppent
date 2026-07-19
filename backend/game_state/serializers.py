@@ -48,6 +48,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         },
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
+        "replacement_choice_required": state.replacement_choice_required,
+        "replacement_choice_players": sorted(state.replacement_choice_players),
+        "pending_replacement_choice": state.pending_replacement_choice,
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -187,6 +190,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
+    state.replacement_choice_required = bool(payload.get("replacement_choice_required", False))
+    state.replacement_choice_players = {int(value) for value in payload.get("replacement_choice_players", [])}
+    state.pending_replacement_choice = payload.get("pending_replacement_choice")
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
@@ -213,6 +219,7 @@ def serialize_match(state: MatchState) -> dict:
         "spells_cast_this_turn": state.spells_cast_this_turn,
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
+        "pending_replacement_choice": state.pending_replacement_choice,
         "priority_stops": {
             str(pid): _sort_steps(steps)
             for pid, steps in state.priority_stops.items()

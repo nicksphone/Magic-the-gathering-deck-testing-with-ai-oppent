@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `353 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `355 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -223,7 +223,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, and API smoke tests: `353 passed`.
+- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, and API smoke tests: `355 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -357,12 +357,20 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Implement mid-resolution replacement pause/resume and simultaneous trigger ordering as explicit human/API choices, re-evaluating the modified event after each selected replacement.
+1. Extend the implemented top-level replacement pause/resume path to nested combat/state-based events, then add simultaneous trigger ordering as explicit human/API choices with full event re-evaluation.
 2. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
 3. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 4. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 5. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
 6. Finish bulk card/token completeness reporting plus frontend replay/anomaly drilldown, then validate LAN deployment and long-session UX.
+
+### Replacement pause/resume milestone
+
+- Human-controlled matches now pause supported top-level damage, life-gain, draw, and die-zone stack effects when multiple replacement sources apply.
+- Legal `choose_replacement` moves expose the source name and ID in the frontend, and pass/step/autoplay controls are disabled until the choice is made.
+- Pending choices and the untouched stack item survive match snapshots; selecting a source resumes the same event with the selected replacement metadata.
+- AI and deterministic replay seats continue using timestamp-ordered fallback selection; mixed human/AI matches pause only for the human-controlled affected player.
+- Nested combat/SBA replacement prompts and simultaneous trigger ordering are intentionally still open and remain the next fidelity slice.
 
 ### Latest audit correction
 
