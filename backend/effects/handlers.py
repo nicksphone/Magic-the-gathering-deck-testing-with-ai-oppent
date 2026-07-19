@@ -912,6 +912,30 @@ def untap_card(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[target].tapped = False
 
 
+def crew_vehicle(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.continuous import effective_power
+    from rules_engine.oracle_effects import crew_value
+
+    vehicle_id = payload.get("card_id")
+    vehicle = state.cards.get(vehicle_id) if vehicle_id else None
+    if vehicle is None or vehicle_id not in state.players[controller].battlefield or "Artifact" not in vehicle.types or "Creature" in vehicle.types:
+        return
+    required = crew_value(vehicle)
+    selected = list(payload.get("crew_card_ids") or [])
+    if required is None or len(selected) != len(set(selected)) or vehicle_id in selected:
+        return
+    if any(cid not in state.players[controller].battlefield or state.cards[cid].tapped or "Creature" not in state.cards[cid].types for cid in selected):
+        return
+    if sum(max(0, effective_power(state, cid)) for cid in selected) < required:
+        state.log.append(f"{state.players[controller].name} cannot crew {vehicle.name}: insufficient crew power.")
+        return
+    for cid in selected:
+        state.cards[cid].tapped = True
+    vehicle.types = list(dict.fromkeys([*vehicle.types, "Creature"]))
+    vehicle.counters["__crew_until_turn"] = int(state.turn)
+    state.log.append(f"{state.players[controller].name} crews {vehicle.name} with {len(selected)} creature(s).")
+
+
 def continuous_buff(state: MatchState, controller: int, payload: dict) -> None:
     # No-op — continuous PT bonuses are computed dynamically by
     # effective_power() / effective_toughness() which scan all battlefield

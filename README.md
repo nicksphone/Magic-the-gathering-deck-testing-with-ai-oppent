@@ -143,6 +143,8 @@ Master attack search is intentionally bounded to late-game positions with no mor
 
 Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
 
+Vehicles expose explicit crew actions. The engine validates creature power and tap costs, makes a crewed Vehicle a creature until cleanup, and lets the AI choose a legal minimal crew group.
+
 ### Diagnostics
 ```bash
 cd backend

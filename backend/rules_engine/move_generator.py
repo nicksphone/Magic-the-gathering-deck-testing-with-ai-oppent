@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
-from rules_engine.continuous import has_keyword
+from rules_engine.continuous import effective_power, has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -285,6 +285,36 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         "targets": [{"id": c, "name": state.cards[c].name} for c in own_creatures],
                     }
                 )
+
+    # Vehicle crew is a tap cost that turns the artifact into a creature until
+    # end of turn. The creature selection is explicit so human and AI actions
+    # use the same legality contract.
+    from rules_engine.oracle_effects import crew_value
+    for vehicle_id in player.battlefield:
+        vehicle = state.cards[vehicle_id]
+        crew = crew_value(vehicle)
+        if crew is None or "Artifact" not in vehicle.types or "Creature" in vehicle.types:
+            continue
+        candidates = [
+            cid
+            for cid in player.battlefield
+            if cid != vehicle_id
+            and "Creature" in state.cards[cid].types
+            and not state.cards[cid].tapped
+        ]
+        if candidates and sum(max(0, effective_power(state, cid)) for cid in candidates) >= crew:
+            moves.append(
+                {
+                    "type": "crew",
+                    "card_id": vehicle_id,
+                    "card_name": vehicle.name,
+                    "crew_value": crew,
+                    "crew_candidates": [
+                        {"id": cid, "name": state.cards[cid].name, "power": effective_power(state, cid)}
+                        for cid in candidates
+                    ],
+                }
+            )
 
     return moves
 

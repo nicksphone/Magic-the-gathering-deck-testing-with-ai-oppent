@@ -39,6 +39,7 @@ SAGA_CHAPTER_RE = re.compile(r"^\s*(I{1,3}|IV|V|VI|VII|VIII|IX|X)\s*[—-]\s*(.+
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})(?:\s*,\s*(?:\{[^{}]+\}|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
+CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 LOOK_TOP_CHOICE_RE = re.compile(
     r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?one(?: of them)? into your hand.*?one(?: of them)? on the bottom.*?one(?: of them)? into exile",
@@ -579,6 +580,11 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
             continue
         out.append({"index": index, "mana_cost": cost, "text": text, "label": f"{cost}: {text}"})
     return out
+
+
+def crew_value(card: CardInstance) -> int | None:
+    match = CREW_RE.search(card.oracle_text or "")
+    return int(match.group(1)) if match else None
 
 
 def _infer_clause_effect(

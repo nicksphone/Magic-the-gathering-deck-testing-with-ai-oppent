@@ -11,7 +11,7 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities, extract_saga_chapters
+from rules_engine.oracle_effects import crew_value, extract_activated_abilities, extract_loyalty_abilities, extract_saga_chapters
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
@@ -97,7 +97,17 @@ class RulesEngine:
             self._clear_marked_damage(state)
             self._clear_prevention_shields(state)
             self._revert_expired_control_changes(state)
+            self._revert_crew_vehicles(state)
             self._enforce_cleanup_hand_size(state, state.active_player)
+
+    def _revert_crew_vehicles(self, state: MatchState) -> None:
+        for card in state.cards.values():
+            if int(card.counters.get("__crew_until_turn", -1)) != int(state.turn):
+                continue
+            card.counters.pop("__crew_until_turn", None)
+            if "Creature" in card.types:
+                card.types.remove("Creature")
+            state.log.append(f"{card.name} is no longer a creature after cleanup.")
 
     def _advance_sagas(self, state: MatchState) -> None:
         for cid in list(state.players[state.active_player].battlefield):
@@ -561,6 +571,35 @@ class RulesEngine:
                 effect_key=effect_key,
                 payload=payload,
             )
+
+        elif kind == "crew":
+            vehicle_id = action.get("card_id")
+            vehicle = state.cards.get(vehicle_id) if vehicle_id else None
+            selected = list(action.get("crew_card_ids") or [])
+            required = crew_value(vehicle) if vehicle is not None else None
+            from rules_engine.continuous import effective_power
+            valid = (
+                vehicle is not None
+                and vehicle_id in player.battlefield
+                and "Artifact" in vehicle.types
+                and "Creature" not in vehicle.types
+                and required is not None
+                and len(selected) == len(set(selected))
+                and all(
+                    cid in player.battlefield
+                    and cid != vehicle_id
+                    and "Creature" in state.cards[cid].types
+                    and not state.cards[cid].tapped
+                    for cid in selected
+                )
+                and sum(max(0, effective_power(state, cid)) for cid in selected) >= required
+            )
+            if valid:
+                for cid in selected:
+                    state.cards[cid].tapped = True
+                vehicle.types = list(dict.fromkeys([*vehicle.types, "Creature"]))
+                vehicle.counters["__crew_until_turn"] = int(state.turn)
+                state.log.append(f"{player.name} crews {vehicle.name} with {len(selected)} creature(s).")
 
         elif kind == "equip":
             cid = action.get("card_id")

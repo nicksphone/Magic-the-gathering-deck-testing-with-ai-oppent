@@ -47,6 +47,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added lore-counter progression at precombat main, chapter parsing, stack-backed chapter abilities, and final-chapter state-based sacrifice.
   - Added Fable of the Mirror-Breaker fallback metadata with Saga type information and chapter text.
   - Added regression coverage; the consolidated rules/AI gate now passes 248 tests and the three-game replay smoke has zero determinism failures.
+- Vehicle rules:
+  - Added explicit crew moves with candidate creature power, duplicate/untapped validation, and temporary Vehicle creature status.
+  - Crew taps the selected creatures, lets the Vehicle attack or block during the turn, and reverts the type at cleanup; AI materializes the smallest high-power legal crew group.
+  - Added regression coverage; the consolidated rules/AI gate now passes 250 tests and the three-game replay smoke has zero determinism failures.
 
 ## 2026-07-16
 

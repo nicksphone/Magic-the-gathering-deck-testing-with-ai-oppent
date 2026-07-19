@@ -1900,6 +1900,20 @@ class AIAgent:
             if attackers and blockers and not out.get("blocks"):
                 out["blocks"] = self._choose_blocks(state, attackers, blockers)
             return out
+        if mtype == "crew":
+            out = dict(move)
+            options = list(move.get("crew_candidates") or [])
+            required = int(move.get("crew_value", 0) or 0)
+            selected: list[str] = []
+            power = 0
+            for option in sorted(options, key=lambda item: (int(item.get("power", 0) or 0), str(item.get("name") or "")), reverse=True):
+                selected.append(option["id"])
+                power += max(0, int(option.get("power", 0) or 0))
+                if power >= required:
+                    break
+            if power >= required:
+                out["crew_card_ids"] = selected
+            return out
         if mtype not in {"cast_spell", "activate_loyalty"}:
             return move
         out = dict(move)
