@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `328 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `340 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -36,7 +36,7 @@ Verified limitations:
 - Master AI is bounded and heuristic. It can still miss multi-turn resource plans, hidden-information inferences, sideboard plans, complex combat assignments, and matchup-specific “hold versus deploy” decisions.
 - Small replay samples are useful for finding deterministic bugs but cannot establish balance. A result such as 100% win rate is an anomaly signal until a larger seeded matrix explains it.
 - Missing or placeholder card data/art can still reduce both player readability and AI quality when a deck is imported offline.
-- A reproducible `oracle_corpus_report.py` now ranks the shipped corpus by weighted copies and unresolved Oracle family. The current report covers 81 unique cards / 3,780 copies across 11 built-ins and 52 expansion entries; 3,361 weighted copies are structured, 275 remain parser-fallback, and 144 are static/no-op classifications. The report now uses the same stable backend SQLite cache regardless of launch directory, so the previous false 450-copy missing-Oracle result is retired.
+- A reproducible `oracle_corpus_report.py` now ranks the shipped corpus by weighted copies and unresolved Oracle family. The current report covers 81 unique cards / 3,780 copies across 11 built-ins and 52 expansion entries; 3,441 weighted copies are structured effects, 155 are structured event/replacement paths, 184 are static/no-op classifications, and 0 remain parser-fallback or missing-Oracle. The report uses the same stable backend SQLite cache regardless of launch directory, so the previous false 450-copy missing-Oracle result is retired.
 
 The abandoned token-compression experiment is not part of this project plan, runtime, or release criteria. Do not add it back as a gameplay, diagnostics, or documentation dependency.
 
@@ -219,7 +219,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, and AI tests: `328 passed`.
+- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, and AI tests: `340 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -355,7 +355,7 @@ Exit criteria:
 ### Current next implementation slice
 1. Expose replacement candidates and simultaneous trigger ordering as explicit human/API choices, with a pause/resume path that re-evaluates the modified event after each selected replacement.
 2. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
-3. Convert the highest-impact remaining corpus families from `oracle_corpus_report.py`, prioritizing missing Oracle metadata separately from parser gaps and never filling cache gaps with guessed card text.
+3. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 4. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 5. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
 6. Finish bulk card/token completeness reporting plus frontend replay/anomaly drilldown, then validate LAN deployment and long-session UX.
@@ -364,7 +364,15 @@ Exit criteria:
 
 - Fixed cwd-dependent SQLite resolution in `backend/persistence/db.py`; API servers, sync jobs, and corpus diagnostics now share the canonical backend cache when launched from either the repository root or `backend/`.
 - Added `backend/tests/test_database_path.py` to lock this behavior down.
-- Re-ran the corpus audit from the repository root after the fix. The authoritative result is 81 unique cards / 3,780 copies, with 275 parser-fallback copies and 0 missing-Oracle copies in the shipped corpus. The remaining fallback cards are real rules-coverage work, not cache-path artifacts.
+- Re-ran the corpus audit from the repository root after the fix. The authoritative result is 81 unique cards / 3,780 copies, with 0 parser-fallback copies and 0 missing-Oracle copies in the shipped corpus; remaining work is adversarial rules fidelity, not cache-path repair.
+
+### Rules corpus milestone
+
+- Added generic conditional stack targeting and payment choices for `counter target noncreature spell unless its controller pays {N}`.
+- Added generic noncombat-damage replacement to `-1/-1` counters, power-based death-trigger damage, self-cast X triggers, X-counter entry handling, and ETB graveyard instant casting.
+- Added Realmwalker-style chosen-creature-type persistence and legal casting of the matching creature from the top of the library, including snapshot support.
+- Broadened top-card choice wording and plural number parsing, and classified supported triggered/event surfaces separately from true parser fallbacks.
+- The current corpus audit is now 3,441 structured-effect copies, 155 structured-event copies, 184 static/no-op copies, and zero parser-fallback or missing-Oracle copies.
 
 ### Audit findings and acceptance criteria
 

@@ -118,6 +118,8 @@ def analyze_corpus() -> dict[str, Any]:
                 status = "missing_oracle"
             elif spec.effect.key == "noop" and spec.modes:
                 status = "choice_pending"
+            elif spec.event_supported:
+                status = "structured_event"
             elif spec.used_fallback:
                 status = "parser_fallback"
             elif spec.effect.key == "noop":

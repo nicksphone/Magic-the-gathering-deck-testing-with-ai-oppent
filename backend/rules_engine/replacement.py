@@ -90,6 +90,41 @@ def apply_permanent_damage_replacements(
     return out
 
 
+def replace_noncombat_damage_to_creature(
+    state,
+    source_card_id: str | None,
+    target_card_id: str | None,
+    amount: int,
+) -> object | None:
+    """Apply source-controlled noncombat damage replacement to a creature.
+
+    Effects such as Soul-Scar Mage replace the event rather than reducing its
+    amount. The replacement is applied once, and the resulting counters are
+    checked by the normal state-based action path in the caller.
+    """
+    if not source_card_id or source_card_id not in state.cards or not target_card_id or target_card_id not in state.cards:
+        return None
+    source = state.cards[source_card_id]
+    target = state.cards[target_card_id]
+    if "Creature" not in (getattr(target, "types", []) or []) or source.controller == target.controller or amount <= 0:
+        return None
+    candidates = [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state, controller=source.controller)
+        if (
+            "would deal noncombat damage to a creature an opponent controls" in text
+            or "would deal noncombat damage to a creature your opponent controls" in text
+            or "would deal noncombat damage to target creature an opponent controls" in text
+        )
+    ]
+    chosen = _choose_replacement_candidate(state, candidates, None, f"noncombat damage to {target.name}")
+    if chosen is None:
+        return None
+    target.counters["-1/-1"] = int(target.counters.get("-1/-1", 0)) + int(amount)
+    state.log.append(f"{chosen.name} replaces {amount} noncombat damage to {target.name} with -1/-1 counters.")
+    return chosen
+
+
 def _choose_replacement_candidate(
     state,
     candidates: list[tuple[object, str]],

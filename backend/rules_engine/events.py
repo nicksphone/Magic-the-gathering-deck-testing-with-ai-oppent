@@ -49,6 +49,23 @@ def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
+    if event in {"spell_cast", "spell_copy"}:
+        source_card_id = str(payload.get("source_card_id", "") or "")
+        source_card = state.cards.get(source_card_id) if source_card_id else None
+        cast_controller = int(payload.get("controller", 0) or 0)
+        source_oracle = (getattr(source_card, "oracle_text", "") or "").lower() if source_card else ""
+        if source_card is not None and cast_controller == source_card.controller and "when you cast this spell" in source_oracle:
+            out.append(
+                _trigger_from_oracle(
+                    state,
+                    source_card_id,
+                    cast_controller,
+                    source_oracle,
+                    default_label=f"{source_card.name} cast trigger",
+                    event=event,
+                    payload=payload,
+                )
+            )
     for pid, pstate in state.players.items():
         for cid in list(pstate.battlefield):
             card = state.cards[cid]
@@ -224,6 +241,8 @@ def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload
     dead_id = payload.get("card_id")
     dead_card = state.cards.get(dead_id) if dead_id in state.cards else None
     dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
+    if "when this creature dies" in oracle:
+        return bool(dead_card) and dead_id == card.id and "Creature" in dead_types
     if "whenever another creature you control dies" in oracle:
         return bool(dead_card) and dead_card.controller == card.controller and dead_id != card.id and "Creature" in dead_types
     if "whenever a creature you control dies" in oracle:
@@ -380,6 +399,8 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if "an artifact or enchantment enters the battlefield under your control" in oracle:
         return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller
     if f"when {card.name.lower()} enters the battlefield" in oracle:
+        return entering_id == card.id
+    if "when this creature enters the battlefield" in oracle or "when this creature enters," in oracle:
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:
         return "Creature" in (getattr(entering_card, "types", []) or []) and entering_id != card.id
@@ -632,6 +653,56 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event in {"spell_cast", "spell_copy"} and "when you cast this spell" in oracle and "gain half x life" in oracle and "draw half x cards" in oracle:
+            raw_x = payload.get("x_value", payload.get("stack_payload", {}).get("x_value", 0))
+            try:
+                half_x = max(0, int(raw_x or 0)) // 2
+            except (TypeError, ValueError):
+                half_x = 0
+            effects = []
+            if half_x:
+                effects.extend(
+                    [
+                        {"effect_key": "gain_life", "payload": {"target_player": controller, "amount": half_x}},
+                        {"effect_key": "draw_cards", "payload": {"target_player": controller, "amount": half_x}},
+                    ]
+                )
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "effect_sequence",
+                "payload": {"effects": effects},
+            }
+        if event == "enters_battlefield" and ("when this creature enters the battlefield" in oracle or "when this creature enters," in oracle) and "cast target instant card from your graveyard" in oracle:
+            target = next(
+                (
+                    cid
+                    for cid in state.players[controller].graveyard
+                    if cid in state.cards and "Instant" in (state.cards[cid].types or [])
+                ),
+                None,
+            )
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "cast_from_graveyard",
+                "payload": {"target_card_id": target},
+            }
+        if (
+            event == "creature_dies"
+            and "when this creature dies" in oracle
+            and "deals damage equal to its power" in oracle
+        ):
+            amount = int(payload.get("power", 0) or getattr(source_card, "power", 0) or 0)
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "deal_damage",
+                "payload": {"target_player": opponent, "amount": max(0, amount)},
+            }
         if event == "begin_step" and "transform" in oracle and "top card" in oracle and "instant or sorcery" in oracle:
             return {
                 "source_card_id": source_card_id,

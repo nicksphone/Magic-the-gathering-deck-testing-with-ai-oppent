@@ -9,7 +9,7 @@ from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
 X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
-DRAW_RE = re.compile(r"draw\s+(a|\d+)\s+card")
+DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
@@ -51,7 +51,10 @@ ACTIVATED_ABILITY_RE = re.compile(
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 LOOK_TOP_CHOICE_RE = re.compile(
-    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?one(?: of them)? into your hand.*?one(?: of them)? on the bottom.*?one(?: of them)? into exile",
+    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?"
+    r"(?:put\s+)?one(?: of them)? into your hand.*?"
+    r"(?:put\s+)?one(?: of them)? on the bottom.*?"
+    r"(?:put\s+)?(?:exile\s+)?one(?: of them)?(?: into exile)?",
     re.IGNORECASE,
 )
 LOOK_CREATURE_TO_HAND_RE = re.compile(
@@ -80,6 +83,10 @@ LAND_FROM_HAND_RE = re.compile(
 )
 CAST_INSTANT_FROM_GRAVEYARD_RE = re.compile(
     r"cast target (instant|sorcery) card from your graveyard without paying its mana cost",
+    re.IGNORECASE,
+)
+COUNTER_UNLESS_PAY_RE = re.compile(
+    r"counter target (?P<kind>noncreature )?spell unless its controller pays\s+(?P<cost>\{[^}]+\}(?:\{[^}]+\})*)",
     re.IGNORECASE,
 )
 
@@ -111,6 +118,15 @@ def infer_effect_from_oracle(
         # signal for downstream consumers that need to render or validate them specially.
         pass
 
+    unless_match = COUNTER_UNLESS_PAY_RE.search(oracle)
+    if unless_match:
+        target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
+        return "counter_spell_unless_pay", {
+            "target_stack_id": target_stack_id,
+            "unless_cost": unless_match.group("cost").upper(),
+            "target_kind": "noncreature" if unless_match.group("kind") else "any",
+            "pay_unless_counter": action_targets.get("pay_unless_counter"),
+        }
     if "counter target spell" in oracle:
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
         return "counter_spell", {"target_stack_id": target_stack_id}
@@ -453,8 +469,23 @@ def inspect_target_hints(
             "candidates": candidates,
         }
 
-    if "counter target spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):
-        hints["stack_targets"] = [{"id": x.id, "label": x.label} for x in state.stack]
+    if "counter target spell" in oracle or "counter target noncreature spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):
+        stack_targets = []
+        for item in state.stack:
+            source = state.cards.get(item.source_card_id)
+            if source is None:
+                continue
+            if "counter target noncreature spell" in oracle and "Creature" in (source.types or []):
+                continue
+            stack_targets.append({"id": item.id, "label": item.label})
+        hints["stack_targets"] = stack_targets
+        if COUNTER_UNLESS_PAY_RE.search(oracle):
+            match = COUNTER_UNLESS_PAY_RE.search(oracle)
+            hints["unless_payment"] = {
+                "cost": match.group("cost").upper(),
+                "choice_key": "pay_unless_counter",
+                "default": "pay_if_legal",
+            }
     if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
@@ -822,7 +853,7 @@ def _infer_clause_effect(
         }
     if draw_match:
         raw = draw_match.group(1)
-        amount = 1 if raw == "a" else int(raw)
+        amount = _parse_count_token(raw)
         return "draw_cards", {"amount": amount}
     if X_DRAW_RE.search(oracle):
         return "draw_cards", {"amount": max(0, x_value)}
@@ -874,8 +905,10 @@ def _infer_clause_effect(
                 if candidate and cast_from_graveyard.group(1).title() in candidate.types:
                     target = cid
                     break
-        if target:
-            return "cast_from_graveyard", {"target_card_id": target}
+        # Keep the effect structured even when no qualifying graveyard card
+        # exists yet. Move generation and target validation decide whether the
+        # action is currently legal; parsing should not depend on board state.
+        return "cast_from_graveyard", {"target_card_id": target}
 
     if "destroy all artifacts and enchantments" in oracle or "destroy all artifact and enchantment" in oracle:
         return "destroy_all_artifacts_and_enchantments", {}

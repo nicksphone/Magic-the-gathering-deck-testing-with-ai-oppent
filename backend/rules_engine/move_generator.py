@@ -8,6 +8,7 @@ from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_vari
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
+from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timing
 
 
@@ -205,6 +206,38 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         for o in available_options
                     ],
                     "target_hints": hints,
+                }
+            )
+
+    # Realmwalker-style permissions allow only the revealed top creature of
+    # the chosen type to be cast from the library. It is not a normal hand or
+    # land-play permission and therefore gets its own explicit source flag.
+    top_card = top_library_creature_for_type(state, player_id)
+    if top_card is not None and _can_cast_spell(state, top_card, player_id):
+        timing_ok, _ = can_cast_in_current_timing(state, top_card, player_id)
+        options = collect_cost_options(state, player_id, top_card)
+        available_options = [o for o in options if check_cost_option_available(state, player_id, top_card, o)]
+        if timing_ok and available_options:
+            moves.append(
+                {
+                    "type": "cast_spell",
+                    "card_id": top_card.id,
+                    "card_name": top_card.name,
+                    "mana_cost": top_card.mana_cost,
+                    "from_library": True,
+                    "cost_options": [
+                        {
+                            "id": o.id,
+                            "label": o.label,
+                            "mana_cost": o.mana_cost,
+                            "pay_life": o.pay_life,
+                            "discard_cards": o.discard_cards,
+                            "sacrifice_creatures": o.sacrifice_creatures,
+                            "sacrifice_kind": o.sacrifice_kind,
+                        }
+                        for o in available_options
+                    ],
+                    "target_hints": build_cast_hints(state, top_card, player_id),
                 }
             )
 

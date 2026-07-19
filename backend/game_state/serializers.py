@@ -94,6 +94,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "instance_order": card.instance_order,
                 "card_faces": list(card.card_faces),
                 "selected_face_index": card.selected_face_index,
+                "chosen_creature_type": card.chosen_creature_type,
             }
             for cid, card in state.cards.items()
         },
@@ -141,6 +142,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             attached_to=raw.get("attached_to"), static_order=int(raw.get("static_order", 0)),
             instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
             selected_face_index=raw.get("selected_face_index"),
+            chosen_creature_type=raw.get("chosen_creature_type"),
         )
 
     state = MatchState(
@@ -235,6 +237,7 @@ def serialize_match(state: MatchState) -> dict:
                         "oracle_text": state.cards[cid].oracle_text,
                         "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
+                        "chosen_creature_type": state.cards[cid].chosen_creature_type,
                     }
                     for cid in p.battlefield
                 ],
@@ -246,6 +249,7 @@ def serialize_match(state: MatchState) -> dict:
                         "oracle_text": state.cards[cid].oracle_text,
                         "image_uri": state.cards[cid].image_uri,
                         "types": state.cards[cid].types,
+                        "chosen_creature_type": state.cards[cid].chosen_creature_type,
                     }
                     for cid in p.hand
                 ],

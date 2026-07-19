@@ -25,6 +25,7 @@ from rules_engine.replacement import (
     replace_die_zone,
     replace_draw_cards,
     replace_gain_life,
+    replace_noncombat_damage_to_creature,
 )
 
 DMG_MARK_KEY = "__damage_marked"
@@ -106,6 +107,10 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return
         if card.toughness is not None and amount > 0:
+            if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount) is not None:
+                if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+                    _move_creature_to_graveyard(state, target_card_id)
+                return
             replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
                 state,
                 target_card_id,
@@ -417,6 +422,40 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
                 card.zone = Zone.GRAVEYARD
             state.log.append(f"{item.label} was countered.")
             return
+
+
+def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) -> None:
+    """Counter a spell unless its controller chooses and can pay the tax.
+
+    Automated games use the conservative default of paying when legal. API
+    callers can provide ``pay_unless_counter`` to model the target player's
+    actual choice; the spell still cannot be countered if its target is
+    uncounterable.
+    """
+    target_stack_id = payload.get("target_stack_id")
+    item = next((entry for entry in state.stack if entry.id == target_stack_id), None)
+    if item is None:
+        return
+    source = state.cards.get(item.source_card_id)
+    source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
+    if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+        state.log.append(f"{item.label} can't be countered.")
+        return
+
+    pay_choice = payload.get("pay_unless_counter")
+    if pay_choice is None:
+        pay_choice = True
+    if bool(pay_choice):
+        from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands
+
+        cost = str(payload.get("unless_cost") or "{2}")
+        if can_pay_with_pool_and_lands(state, item.controller, cost, card_name=item.label) and auto_pay_cost(
+            state, item.controller, cost, card_name=item.label
+        ):
+            state.log.append(f"{state.players[item.controller].name} pays {cost} for {item.label}.")
+            return
+        state.log.append(f"{state.players[item.controller].name} cannot pay {cost} for {item.label}.")
+    counter_spell(state, controller, {"target_stack_id": target_stack_id})
 
 
 def counter_ability(state: MatchState, controller: int, payload: dict) -> None:

@@ -72,6 +72,7 @@ class CardInstance:
     instance_order: int = 0
     card_faces: list[dict] = field(default_factory=list)
     selected_face_index: int | None = None
+    chosen_creature_type: str | None = None
 
 
 @dataclass

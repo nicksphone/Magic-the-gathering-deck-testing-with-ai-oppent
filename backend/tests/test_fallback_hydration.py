@@ -31,7 +31,7 @@ def test_control_ramp_fallback_catalog_contains_core_fields() -> None:
 
     fable = fallback_card_payload("Fable of the Mirror Breaker")
     assert fable is not None
-    assert "Goblin Shaman token" in fable["oracle_text"]
+    assert "Goblin Shaman creature token" in fable["oracle_text"]
 
     delver = fallback_card_payload("Delver of Secrets // Insectile Aberration")
     assert delver is not None

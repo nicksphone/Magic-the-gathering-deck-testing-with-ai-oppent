@@ -25,6 +25,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "destroy_all_enchantments": handlers.destroy_all_enchantments,
     "destroy_all_artifacts_and_enchantments": handlers.destroy_all_artifacts_and_enchantments,
     "counter_spell": handlers.counter_spell,
+    "counter_spell_unless_pay": handlers.counter_spell_unless_pay,
     "counter_ability": handlers.counter_ability,
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,

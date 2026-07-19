@@ -17,6 +17,11 @@ from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
 
+def _has_counter_spell_text(text: str) -> bool:
+    normalized = str(text or "").lower()
+    return "counter target spell" in normalized or "counter target noncreature spell" in normalized or "counterspell" in normalized
+
+
 @dataclass
 class AIDecision:
     action: dict
@@ -410,7 +415,7 @@ class AIAgent:
                 continue
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
             # Do not force pure stack-dependent counters when stack is empty.
-            if "counter target spell" in text and not (getattr(state, "stack", []) or []):
+            if _has_counter_spell_text(text) and not (getattr(state, "stack", []) or []):
                 continue
             materialized = self._materialize_action(state, m, player_id)
             if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
@@ -440,7 +445,7 @@ class AIAgent:
             score += 1.5
         if "shark typhoon" in text:
             score += 2.2
-        if "counter target spell" in text:
+        if _has_counter_spell_text(text):
             score -= 2.5
         return score
 
@@ -464,7 +469,7 @@ class AIAgent:
                 continue
             text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
             score = 0.0
-            if "counter target spell" in text:
+            if _has_counter_spell_text(text):
                 score += 7.0
             elif any(k in text for k in ["destroy target", "exile target", "deals"]):
                 score += 2.5
@@ -675,7 +680,7 @@ class AIAgent:
                 early_spells += 1
             if cmc <= 3 and (
                 "Creature" in types
-                or "counter target spell" in text
+                or _has_counter_spell_text(text)
                 or "destroy target" in text
                 or "exile target" in text
                 or "deal" in text
@@ -686,7 +691,7 @@ class AIAgent:
                 cheap_interaction += 1
             if "draw" in text or "scry" in text or "consider" in text or "memory deluge" in text:
                 draw_spells += 1
-            if "counter target spell" in text or "counterspell" in text:
+            if _has_counter_spell_text(text):
                 counter_spells += 1
             if "destroy target" in text or "exile target" in text or "deals" in text:
                 removal_spells += 1
@@ -1015,7 +1020,7 @@ class AIAgent:
         if self._should_force_proactive_control_line(state, player_id):
             return False
         has_counter = any(
-            "counter target spell" in f"{(state.cards[cid].name or '').lower()} {(state.cards[cid].oracle_text or '').lower()}"
+            _has_counter_spell_text(f"{(state.cards[cid].name or '').lower()} {(state.cards[cid].oracle_text or '').lower()}")
             for cid in state.players[player_id].hand
             if cid in state.cards
         )
@@ -1491,7 +1496,7 @@ class AIAgent:
         # Slow-play/control heuristics from logs: punish premature timing on low-early cards.
         if turn < preferred_min and early_rate <= 0.2 and non_creature:
             severity = min(3.5, max(0.6, (preferred_min - turn) * 0.8))
-            if "counter target spell" in text and not (getattr(state, "stack", []) or []):
+            if _has_counter_spell_text(text) and not (getattr(state, "stack", []) or []):
                 severity += 0.8
             return -severity
         # Reward cards historically skewed late once the game is developed.
@@ -1586,7 +1591,7 @@ class AIAgent:
     def _spell_tags(self, card) -> set[str]:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
         tags: set[str] = set()
-        if "counter target spell" in text or "counterspell" in text:
+        if _has_counter_spell_text(text):
             tags.add("counter")
         if any(k in text for k in ["destroy all creatures", "wrath", "damnation", "supreme verdict"]):
             tags.add("sweeper")
@@ -3006,7 +3011,7 @@ class AIAgent:
             cid = move.get("card_id")
             card = state.cards.get(cid) if cid else None
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower() if card else ""
-            if "counter target spell" in text:
+            if _has_counter_spell_text(text):
                 continue
             return move
         return non_pass[0]
@@ -3289,7 +3294,7 @@ class AIAgent:
                 if cost[c] > 0:
                     demand[c] += weight * cost[c]
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
-            if "counter target spell" in text:
+            if _has_counter_spell_text(text):
                 demand["U"] += 2
         return demand
 
@@ -3368,7 +3373,7 @@ class AIAgent:
 
     def _is_counter_card(self, card) -> bool:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
-        return "counter target spell" in text or "counterspell" in text
+        return _has_counter_spell_text(text)
 
     def _noncreature_permanent_threat_score(self, state: MatchState, card_id: str | None, player_id: int) -> float:
         if not card_id or card_id not in state.cards:

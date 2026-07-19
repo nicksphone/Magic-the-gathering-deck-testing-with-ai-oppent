@@ -32,6 +32,9 @@ It is designed for serious deck work:
 - Structured top-card hand/exile/bottom choices with temporary play permissions
 - Shared cast-choice plumbing for modes, faces, X values, targets, and library-search selections across human and AI actions
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
+- Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
+- Generic noncombat-damage replacement to -1/-1 counters, power-based death triggers, self-cast X triggers, and X-counter entry handling
+- Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
 - Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
 - AI tutor decisions now materialize validated library-search selections instead of retrying malformed search casts
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
@@ -50,6 +53,7 @@ It is designed for serious deck work:
 - Shared battlefield-leave events for destruction, exile, sacrifice, lethal combat, and state-based actions, including common leave-trigger resolution
 - Token-aware death replacements that distinguish nontoken clauses from token permanents
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
+- Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; the shipped 81-card corpus currently has zero parser-fallback or missing-Oracle classifications
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail
 - Token art fallback handling and face-aware image reuse for double-faced cards

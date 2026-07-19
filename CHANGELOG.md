@@ -4,6 +4,14 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- Rules corpus milestone:
+  - Added conditional noncreature counterspell targets with explicit `unless` payment choices and deterministic automated resolution.
+  - Added generic noncombat-damage replacement to `-1/-1` counters, power-based death-trigger damage, Hydroid Krasis-style self-cast X triggers, and X-counter entry handling.
+  - Added Realmwalker-style chosen creature type persistence and top-library creature casting with snapshot support.
+  - Broadened Expressive Iteration wording and plural number parsing, and separated structured event paths from true parser fallbacks in the corpus report.
+  - The current corpus report classifies 3,441 copies as structured effects, 155 as structured events, 184 as static/no-op, and 0 as parser fallbacks or missing Oracle.
+  - The consolidated rules/AI regression gate now passes 340 tests.
+
 - Oracle corpus audit:
   - Added `backend/scripts/oracle_corpus_report.py`, which scans all built-in and expansion deck entries, uses cached metadata when available, and ranks unresolved Oracle behavior by weighted copies and reusable family.
   - The current corpus report covers 81 unique cards and 3,780 copies across 11 built-in and 52 expansion entries. It reports parser fallbacks separately from missing Oracle metadata so cache gaps are not replaced with guessed card text.
@@ -536,4 +544,4 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 - Fixed cwd-dependent SQLite selection in `backend/persistence/db.py`; the API, card sync, and diagnostics now resolve the canonical `backend/mtg_lab.db` file from the module path.
 - Added a regression test covering launches from arbitrary working directories.
-- Re-ran the Oracle corpus audit against the corrected cache: 81 unique cards, 3,780 copies, 3,361 structured copies, 275 parser-fallback copies, and 144 static/no-op classifications. The prior missing-Oracle count was caused by reading a stale root-level database and is no longer used.
+- Re-ran the Oracle corpus audit against the corrected cache: 81 unique cards, 3,780 copies, 3,441 structured-effect copies, 155 structured-event copies, and 184 static/no-op classifications. The prior missing-Oracle count was caused by reading a stale root-level database and is no longer used.

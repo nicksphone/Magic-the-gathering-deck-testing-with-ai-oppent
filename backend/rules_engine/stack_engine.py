@@ -6,6 +6,7 @@ from effects.registry import resolve_effect
 from game_state.state import MatchState, StackItem, Zone, assign_static_order_on_battlefield_entry
 from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
+from rules_engine.library_permissions import choose_type_for_realmwalker
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None) -> StackItem:
@@ -27,6 +28,7 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
             "source_card_id": source_card_id,
             "controller": controller,
             "label": label,
+            "stack_payload": dict(payload or {}),
         },
     )
     # MTG priority rule: after casting/activating, the same player receives priority first.
@@ -40,13 +42,14 @@ def resolve_top_of_stack(state: MatchState) -> None:
         return
     item = state.stack.pop()
     payload = dict(item.payload or {})
+    is_trigger = bool(payload.get("__trigger_event"))
     if bool(payload.get("__may")) and not bool(payload.get("__may_choose", True)):
         state.log.append(f"{state.players[item.controller].name} declines optional effect: {item.label}.")
         return
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
     card = state.cards.get(item.source_card_id)
-    if card and card.zone == Zone.STACK:
+    if card and card.zone == Zone.STACK and not is_trigger:
         owner = state.players[getattr(card, "owner", card.controller)]
         if "Instant" in card.types or "Sorcery" in card.types:
             owner.graveyard.append(card.id)
@@ -57,6 +60,14 @@ def resolve_top_of_stack(state: MatchState) -> None:
             card.summoning_sick = "Creature" in card.types
             card.entered_turn = state.turn
             assign_static_order_on_battlefield_entry(state, card.id)
+            if "as this creature enters, choose a creature type" in (card.oracle_text or "").lower():
+                selected = str(payload.get("chosen_creature_type") or "").strip().lower()
+                card.chosen_creature_type = selected or choose_type_for_realmwalker(state, card.controller)
+                state.log.append(f"{card.name} chooses creature type {card.chosen_creature_type}.")
+            if "enters with x +1/+1 counters" in (card.oracle_text or "").lower():
+                x_value = max(0, int(payload.get("x_value", 0) or 0))
+                if x_value:
+                    card.counters["+1/+1"] = int(card.counters.get("+1/+1", 0)) + x_value
             if is_aura(card):
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):

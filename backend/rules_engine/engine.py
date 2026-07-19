@@ -10,6 +10,7 @@ from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_vari
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_mana_amount
 from rules_engine.move_generator import legal_moves
+from rules_engine.library_permissions import choose_type_for_realmwalker, top_library_creature_for_type
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.oracle_effects import crew_value, extract_activated_abilities, extract_loyalty_abilities, extract_saga_chapters
 from rules_engine.ability_model import build_ability_spec
@@ -348,7 +349,12 @@ class RulesEngine:
         elif kind == "cast_spell":
             cid = action["card_id"]
             from_exile = bool(action.get("from_exile"))
-            allowed_source = cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn if from_exile else cid in player.hand
+            from_library = bool(action.get("from_library"))
+            allowed_source = (
+                (cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn)
+                if from_exile
+                else (cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
+            )
             if allowed_source:
                 card = state.cards[cid]
                 timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
@@ -424,8 +430,10 @@ class RulesEngine:
                     return
                 ability = build_ability_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
+                if x_value > 0:
+                    payload.setdefault("x_value", x_value)
 
-                (player.exile if from_exile else player.hand).remove(cid)
+                (player.exile if from_exile else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1

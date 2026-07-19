@@ -77,6 +77,35 @@ def test_top_three_choice_accepts_explicit_human_order() -> None:
     assert player.library[0] == ids[1]
 
 
+def test_expressive_iteration_wording_with_exile_verb_is_structured() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=24,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    spell = CardInstance(
+        id="iteration-modern-wording",
+        name="Expressive Iteration",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text=(
+            "Look at the top three cards of your library. Put one of them into your hand, "
+            "put one of them on the bottom of your library, and exile one of them. "
+            "You may play the exiled card this turn."
+        ),
+    )
+    state.cards[spell.id] = spell
+
+    spec = build_ability_spec(state, spell, 1)
+
+    assert spec.effect.key == "look_top_choose"
+    assert spec.used_fallback is False
+
+
 def test_top_three_choice_rejects_duplicate_or_missing_cards() -> None:
     state = MatchFactory.from_decks(
         [{"quantity": 60, "card_name": "Forest"}],
