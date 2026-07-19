@@ -138,6 +138,27 @@ def test_you_or_permanent_you_control_damage_prevention_applies_to_player_and_pe
     assert card.counters.get("__damage_marked", 0) == 2
 
 
+def test_damage_replacement_re_evaluates_remaining_sources() -> None:
+    state = _state()
+    for cid, name in (("chain-ward-a", "Chain Ward A"), ("chain-ward-b", "Chain Ward B")):
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+        )
+        state.players[1].battlefield.append(cid)
+
+    before = state.players[1].life
+    deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
+
+    assert state.players[1].life == before - 1
+    assert sum("selected from 2" in line for line in state.log) == 1
+
+
 def test_you_or_creature_you_control_damage_prevention_applies_to_player_and_perm() -> None:
     state = _state()
     shield = CardInstance(
@@ -539,7 +560,7 @@ def test_damage_to_permanent_respects_creature_prevention_replacement() -> None:
     assert card.zone == Zone.BATTLEFIELD
 
 
-def test_multiple_static_prevention_replacements_choose_one_not_all() -> None:
+def test_multiple_static_prevention_replacements_re_evaluate_remaining_effects() -> None:
     state = _state()
     for index, name in enumerate(("Early Ward", "Late Ward"), start=1):
         shield = CardInstance(
@@ -558,7 +579,7 @@ def test_multiple_static_prevention_replacements_choose_one_not_all() -> None:
     before = state.players[1].life
     deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
 
-    assert state.players[1].life == before - 2
+    assert state.players[1].life == before - 1
     assert any("late ward selected from 2" in line.lower() for line in state.log)
 
 
@@ -589,7 +610,7 @@ def test_damage_prevention_accepts_explicit_replacement_source_choice() -> None:
         },
     )
 
-    assert state.players[1].life == before - 2
+    assert state.players[1].life == before - 1
     assert any("early ward selected from 2" in line.lower() for line in state.log)
 
 

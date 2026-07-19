@@ -10,6 +10,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Legend-rule duplicate permanents now use the same continuation path.
   - The focused rules/AI gate now passes 359 tests. Simultaneous SBA batching and chained combat prevention choices remain open.
 
+- Chained prevention milestone:
+  - Damage replacement events now re-evaluate remaining prevention sources and apply each source at most once per event.
+  - The focused rules/AI gate now passes 360 tests; human follow-up prompts for multi-step replacement chains remain open.
+
 - Simultaneous trigger ordering milestone:
   - Human-controlled trigger groups can be ordered before they are placed on the stack, with APNAP controller grouping preserved.
   - Choices are exposed through legal API moves, snapshot-persisted, and rendered in the frontend; AI/replay retains deterministic fallback ordering.

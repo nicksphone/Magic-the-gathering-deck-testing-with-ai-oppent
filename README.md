@@ -23,6 +23,7 @@ It is designed for serious deck work:
 - Human-controlled simultaneous trigger groups pause before stack insertion and expose validated `choose_trigger_order` moves; APNAP grouping and AI/replay fallback remain deterministic.
 - Human-controlled lethal creature deaths in state-based actions and combat cleanup pause for multiple die replacements and resume through the same ownership-correct zone-change path.
 - Human-controlled legend-rule zone changes use the same resumable die-replacement choice contract; chained prevention choices and simultaneous SBA batching remain under active rules hardening.
+- Damage prevention re-evaluates the modified event and applies remaining applicable sources once each; AI/replay uses deterministic timestamp ordering while human second-choice prompts remain in progress.
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents

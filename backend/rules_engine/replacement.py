@@ -125,9 +125,16 @@ def apply_damage_replacements(
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
         if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
     ]
-    chosen = _choose_replacement_candidate(state, candidates, replacement_source_id, "damage to player")
-    if chosen is not None:
+    used: set[str] = set()
+    requested = replacement_source_id
+    while out > 0:
+        available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
+        chosen = _choose_replacement_candidate(state, available, requested, "damage to player")
+        if chosen is None:
+            break
+        used.add(str(getattr(chosen, "id", "")))
         out = max(0, out - 1)
+        requested = None
     return out
 
 
@@ -146,9 +153,16 @@ def apply_permanent_damage_replacements(
         for card, text in _battlefield_oracle_texts(state, controller=target.controller)
         if _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
     ]
-    chosen = _choose_replacement_candidate(state, candidates, replacement_source_id, f"damage to {target.name}")
-    if chosen is not None:
+    used: set[str] = set()
+    requested = replacement_source_id
+    while out > 0:
+        available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
+        chosen = _choose_replacement_candidate(state, available, requested, f"damage to {target.name}")
+        if chosen is None:
+            break
+        used.add(str(getattr(chosen, "id", "")))
         out = max(0, out - 1)
+        requested = None
     return out
 
 
