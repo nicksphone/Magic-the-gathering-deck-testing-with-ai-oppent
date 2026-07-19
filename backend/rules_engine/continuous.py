@@ -37,6 +37,10 @@ KW_REMOVE_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+(?:lose|loses)\s+([^.]*)"
 )
+KW_CANT_HAVE_RE = re.compile(
+    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"(you control|your opponents control)\s+can't have\s+([^.]*)"
+)
 PT_AND_KW_REMOVE_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
@@ -317,6 +321,14 @@ def _iter_keyword_removals(source_card):
         if "all abilities" in removed_text:
             yield (scope, other_only, subject, {"all abilities"})
             continue
+        removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
+        if removed:
+            yield (scope, other_only, subject, set(removed))
+    for match in KW_CANT_HAVE_RE.finditer(text):
+        other_only = bool(match.group(1))
+        subject = match.group(2).strip()
+        scope = match.group(3).strip()
+        removed_text = match.group(4).strip()
         removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
         if removed:
             yield (scope, other_only, subject, set(removed))

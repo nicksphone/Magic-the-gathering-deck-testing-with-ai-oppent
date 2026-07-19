@@ -14,6 +14,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Damage replacement events now re-evaluate remaining prevention sources and apply each source at most once per event.
   - The focused rules/AI gate now passes 360 tests; human follow-up prompts for multi-step replacement chains remain open.
 
+- Layer override milestone:
+  - Added common `can't have` continuous keyword removals to the layer-6 static-effect path.
+  - The focused rules/AI gate now passes 361 tests; full dependency ordering and chained human replacement prompts remain open.
+
 - Simultaneous trigger ordering milestone:
   - Human-controlled trigger groups can be ordered before they are placed on the stack, with APNAP controller grouping preserved.
   - Choices are exposed through legal API moves, snapshot-persisted, and rendered in the frontend; AI/replay retains deterministic fallback ordering.
