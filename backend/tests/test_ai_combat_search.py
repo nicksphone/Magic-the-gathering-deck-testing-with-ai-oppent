@@ -28,3 +28,29 @@ def test_master_block_search_prevents_lethal_damage_when_trade_is_available() ->
     )
 
     assert action == {attacker.id: blocker.id}
+
+
+def test_ai_materializes_required_library_search_choice() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=67,
+    )
+    state.pregame_pending = False
+    move = {
+        "type": "cast_spell",
+        "card_id": state.players[1].hand[0],
+        "card_name": "Cultivate",
+        "target_hints": {
+            "library_search": {
+                "max_count": 2,
+                "allow_zero": True,
+                "candidates": [
+                    {"id": state.players[1].library[0], "name": "Forest"},
+                    {"id": state.players[1].library[1], "name": "Forest"},
+                ],
+            }
+        },
+    }
+    materialized = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
+    assert materialized["targets"]["search_card_ids"] == [state.players[1].library[0], state.players[1].library[1]]

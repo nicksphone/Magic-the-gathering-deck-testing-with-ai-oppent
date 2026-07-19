@@ -29,6 +29,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added regression coverage for choosing a profitable lethal-prevention block.
 - Replacement fidelity:
   - Nontoken/non-token death replacements now inspect the dying permanent's token status, preventing token creatures from being incorrectly exiled.
+- AI diagnostics follow-up:
+  - Fixed Master/Ramp tutor decisions that omitted required library-search card IDs after explicit search validation was enabled.
+  - The reproduced Dimir Control vs Ramp trace no longer emits invalid-search errors; its remaining long-game timeout is classified as a legal closure/balance case.
 
 ## 2026-07-16
 

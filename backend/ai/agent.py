@@ -2011,6 +2011,17 @@ class AIAgent:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
+        library_search = hints.get("library_search") or {}
+        search_candidates = list(library_search.get("candidates") or [])
+        if search_candidates and not targets.get("search_card_ids"):
+            # Search choices are now validated by the rules engine. Select the
+            # strongest legal count rather than retrying the same invalid cast.
+            max_count = int(library_search.get("max_count", 0) or 0)
+            selected_count = max_count if max_count > 0 else 1
+            selected_count = min(selected_count, len(search_candidates))
+            ordered = sorted(search_candidates, key=lambda item: (str(item.get("name") or ""), str(item.get("id") or "")))
+            targets["search_card_ids"] = [item["id"] for item in ordered[:selected_count]]
+
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
                 # Put first point on highest-threat creature by default.

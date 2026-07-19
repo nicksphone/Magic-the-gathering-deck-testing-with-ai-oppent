@@ -30,6 +30,7 @@ It is designed for serious deck work:
 - Resolution-time counted creature-type effects for tribal ETB payoffs
 - Structured top-card hand/exile/bottom choices with temporary play permissions
 - Shared cast-choice plumbing for modes, faces, X values, targets, and library-search selections across human and AI actions
+- AI tutor decisions now materialize validated library-search selections instead of retrying malformed search casts
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support
 
