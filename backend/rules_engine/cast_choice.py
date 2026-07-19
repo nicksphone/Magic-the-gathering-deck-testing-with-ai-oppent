@@ -7,7 +7,7 @@ from game_state.state import CardInstance, MatchState
 from rules_engine.oracle_effects import inspect_target_hints
 from rules_engine.targeting import validate_cast_targets
 
-CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
+CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-])?", re.IGNORECASE)
 FIXED_DAMAGE_RE = re.compile(r"deals?\\s+(\\d+)\\s+damage", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 

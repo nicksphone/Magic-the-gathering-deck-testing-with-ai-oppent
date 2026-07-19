@@ -59,7 +59,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Mass exile emits battlefield-leave events and moves each creature to its owner's exile zone instead of using destroy/death semantics.
   - Mass creature destruction now emits the same battlefield-leave event before moving cards to graveyards, keeping leave-trigger ordering consistent across mass zone changes.
   - Simultaneous mass leave/death events now batch trigger collection and deduplicate `one or more` abilities without collapsing ordinary per-object triggers.
-  - The consolidated rules/AI gate now passes 267 tests and the replay smoke remains deterministic.
+  - Modal choice extraction now supports Scryfall bullet-formatted modes and `Choose two` schemas while preserving readable labels for frontend and AI choices.
+  - The consolidated rules/AI gate now passes 269 tests and the replay smoke remains deterministic.
 
 ## 2026-07-16
 

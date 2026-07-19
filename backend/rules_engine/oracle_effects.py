@@ -26,7 +26,7 @@ TOKEN_NAME_RE = re.compile(
     re.IGNORECASE,
 )
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
-CHOOSE_TWO_RE = re.compile(r"choose two", re.IGNORECASE)
+CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-]\s*(.+))?", re.IGNORECASE | re.DOTALL)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 SEARCH_UP_TO_RE = re.compile(r"search your library for up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
@@ -338,7 +338,8 @@ def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, A
 
 
 def inspect_target_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
-    oracle = (card.oracle_text or "").lower()
+    raw_oracle = card.oracle_text or ""
+    oracle = raw_oracle.lower()
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
     graveyard_creatures = [
@@ -358,7 +359,7 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
         if len(face_names) > 1:
             hints["split_card"] = True
             hints["face_names"] = face_names
-    modes = _extract_modes(oracle)
+    modes = _extract_modes(raw_oracle)
     if modes:
         hints["modes"] = modes
     if CHOOSE_TWO_RE.search(oracle):
@@ -517,13 +518,26 @@ def _first_creature(state: MatchState, player_id: int) -> str | None:
 
 
 def _extract_modes(oracle: str) -> list[str]:
-    match = CHOOSE_ONE_RE.search(oracle)
+    match = CHOOSE_ONE_RE.search(oracle) or CHOOSE_TWO_RE.search(oracle)
     if not match:
         return []
-    body = match.group(1).strip()
-    body = body.replace("\n", " ")
-    candidates = [x.strip(" ;:.") for x in body.split(";")]
-    return [c for c in candidates if c]
+    body = str(match.group(1) or "").strip()
+    # Scryfall uses bullet lines for current Oracle text, while older imports
+    # often use semicolons. Support both without changing the mode text itself.
+    body = body.replace("\r", "")
+    if "•" in body:
+        candidates = re.split(r"\s*•\s*", body)
+    elif "\n" in body:
+        candidates = re.split(r"\n+", body)
+    else:
+        candidates = re.split(r"\s*;\s*", body)
+    out: list[str] = []
+    for candidate in candidates:
+        cleaned = re.sub(r"^\s*(?:[-*]|\(?[a-z]\)|\d+[.)])\s*", "", candidate, flags=re.IGNORECASE)
+        cleaned = cleaned.strip(" ;:.")
+        if cleaned:
+            out.append(cleaned)
+    return out
 
 
 def _split_clauses(oracle: str) -> list[str]:

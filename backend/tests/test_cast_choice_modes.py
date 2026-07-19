@@ -7,6 +7,11 @@ from rules_engine.cast_choice import enrich_divide_total
 from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
 
 
+def _state() -> object:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    return MatchFactory.from_decks(deck, deck)
+
+
 def test_mode_and_x_hints_exposed() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
@@ -23,6 +28,34 @@ def test_mode_and_x_hints_exposed() -> None:
     hints = inspect_target_hints(state, card, 1)
     assert hints.get("modes")
     assert hints.get("requires_x_value") is True
+
+
+def test_bullet_and_choose_two_modes_are_exposed_as_explicit_choices() -> None:
+    state = _state()
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Modal Charm"
+    card.oracle_text = "Choose two —\n• Draw a card.\n• Gain 3 life.\n• Create a 1/1 white Soldier creature token."
+    hints = build_cast_hints(state, card, 1)
+
+    assert hints["modes"] == [
+        "Draw a card",
+        "Gain 3 life",
+        "Create a 1/1 white Soldier creature token",
+    ]
+    assert hints["choose_two_modes"] is True
+    assert hints["choice_schema"]["mode_texts"]["min_items"] == 2
+
+
+def test_selected_bullet_modes_resolve_as_an_effect_sequence() -> None:
+    state = _state()
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Modal Charm"
+    card.oracle_text = "Choose one —\n• Draw a card.\n• Gain 3 life."
+    mode = "Gain 3 life"
+    effect_key, payload = infer_effect_from_oracle(state, card, 1, {"mode_text": mode})
+
+    assert effect_key == "gain_life"
+    assert payload["amount"] == 3
 
 
 def test_x_mode_inference_respects_selected_mode_and_x() -> None:
