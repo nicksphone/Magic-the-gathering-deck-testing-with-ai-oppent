@@ -167,6 +167,7 @@ Release blockers identified by the audit:
 - Master AI strategic planning now uses an adaptive two-ply horizon on developed late-game boards, while keeping early turns at one ply; activated abilities, cycling, equipment, and attacks are eligible proactive candidates. The AI/replay suite passes `93` tests and the three-game replay completed with 0 determinism failures and 0 drift labels.
 - Master combat planning now enumerates bounded legal blocker assignments on small boards, resolves cloned combat states, and compares lethal prevention, trades, and post-combat value before using the heuristic assignment path.
 - AI action materialization now supplies validated library-search selections for tutor casts; the reproduced Topiary Stomper invalid-target loop is fixed, while legal no-threat control endgames remain a separate closure-tuning item.
+- Graveyard spell-target hints now participate in legal-move generation and Master action materialization, restoring common recursion finishers such as Torrential Gearhulk-style cards.
 - Transform upkeep triggers now use a generic top-card type check and apply the selected back-face metadata without moving the revealed card; Delver-style transform regression coverage passes `155` tests.
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.

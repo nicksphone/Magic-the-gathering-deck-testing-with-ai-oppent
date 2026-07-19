@@ -54,3 +54,33 @@ def test_ai_materializes_required_library_search_choice() -> None:
     }
     materialized = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
     assert materialized["targets"]["search_card_ids"] == [state.players[1].library[0], state.players[1].library[1]]
+
+
+def test_ai_materializes_graveyard_spell_target_for_recursion() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=68,
+    )
+    state.pregame_pending = False
+    spell_id = "impulse"
+    state.cards[spell_id] = CardInstance(
+        spell_id,
+        "Impulse",
+        1,
+        1,
+        Zone.GRAVEYARD,
+        ["Instant"],
+        mana_cost="{2}{U}",
+    )
+    state.players[1].graveyard.append(spell_id)
+    move = {
+        "type": "cast_spell",
+        "card_id": state.players[1].hand[0],
+        "card_name": "Torrential Gearhulk",
+        "target_hints": {
+            "graveyard_spell_targets": [{"id": spell_id, "name": "Impulse"}],
+        },
+    }
+    materialized = AIAgent(difficulty="master", archetype="Control")._materialize_action(state, move, 1)
+    assert materialized["targets"]["target_card_id"] == spell_id

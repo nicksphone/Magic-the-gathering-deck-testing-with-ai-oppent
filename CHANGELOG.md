@@ -32,6 +32,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - AI diagnostics follow-up:
   - Fixed Master/Ramp tutor decisions that omitted required library-search card IDs after explicit search validation was enabled.
   - The reproduced Dimir Control vs Ramp trace no longer emits invalid-search errors; its remaining long-game timeout is classified as a legal closure/balance case.
+  - Fixed graveyard-spell target discovery and AI materialization so recursion finishers are not filtered out as having no legal targets.
 
 ## 2026-07-16
 

@@ -1989,6 +1989,20 @@ class AIAgent:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
+        graveyard_spell_targets = hints.get("graveyard_spell_targets") or []
+        if graveyard_spell_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                graveyard_spell_targets,
+                key=lambda t: (
+                    mana_value(getattr(state.cards.get(t.get("id")), "mana_cost", "") or ""),
+                    str(t.get("name") or t.get("label") or ""),
+                ),
+                default=None,
+            )
+            if best:
+                targets["target_card_id"] = best["id"]
+                targets["target_card_name"] = best.get("name") or best.get("label") or ""
+
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             targets["target_card_id"] = planeswalker_targets[0]["id"]

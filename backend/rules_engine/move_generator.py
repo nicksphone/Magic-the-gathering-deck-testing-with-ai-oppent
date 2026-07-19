@@ -302,7 +302,11 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
 def _has_any_target_options(hints: dict) -> bool:
     return any(
         bool(hints.get(key))
-        for key in ["player_targets", "creature_targets", "planeswalker_targets", "stack_targets"]
+        for key in [
+            "player_targets", "creature_targets", "planeswalker_targets", "stack_targets",
+            "graveyard_spell_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "aura_targets",
+        ]
     )
 
 
