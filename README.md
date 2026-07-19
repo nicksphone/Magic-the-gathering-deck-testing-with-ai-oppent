@@ -18,6 +18,7 @@ It is designed for serious deck work:
 - Land drops, casting, activated abilities, combat actions, and response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
+- Multiple prevention/replacement candidates use one explicit or deterministic timestamp-ordered choice per event, with source metadata preserved for replay diagnostics
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents

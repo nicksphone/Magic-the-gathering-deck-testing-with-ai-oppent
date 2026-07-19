@@ -15,6 +15,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 - Modal choice ordering:
   - Mode selection now occurs before target generation in AI materialization, and the engine rebuilds mode-specific target hints before validating a cast.
   - `Choose two` selections resolve through an ordered `effect_sequence` path with regression coverage; the consolidated gate now passes 325 tests.
+- Replacement candidate selection:
+  - Multiple mutually exclusive static damage-prevention effects no longer all apply to the same event.
+  - Replacement candidates use latest deterministic timestamp ordering by default and accept an explicit source ID for API/replay callers across damage, draw, and life-gain paths.
+  - Added regression coverage; the consolidated rules/AI gate now passes 327 tests. Human replacement-choice pause/resume remains planned.
 ## 2026-07-18
 
 - Choice and search resolution:

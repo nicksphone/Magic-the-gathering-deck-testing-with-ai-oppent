@@ -106,7 +106,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return
         if card.toughness is not None and amount > 0:
-            replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(state, target_card_id, amount)
+            replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
+                state,
+                target_card_id,
+                amount,
+                replacement_source_id=payload.get("__replacement_source_id"),
+            )
             post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
@@ -119,7 +124,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 _move_creature_to_graveyard(state, target_card_id)
             return
     if target_player is not None:
-        replaced_amount = amount if prevention_locked else apply_damage_replacements(state, int(target_player), amount)
+        replaced_amount = amount if prevention_locked else apply_damage_replacements(
+            state,
+            int(target_player),
+            amount,
+            replacement_source_id=payload.get("__replacement_source_id"),
+        )
         post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
@@ -134,7 +144,12 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
-    replaced = replace_draw_cards(state, target_player, amount)
+    replaced = replace_draw_cards(
+        state,
+        target_player,
+        amount,
+        replacement_source_id=payload.get("__replacement_source_id"),
+    )
     if replaced is not None:
         key, repl_payload = replaced
         source = repl_payload.pop("__replacement_source", None)
@@ -170,7 +185,12 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     if player_cant_gain_life(state, target_player):
         state.log.append(f"{state.players[target_player].name} can't gain life.")
         return
-    replaced = replace_gain_life(state, target_player, amount)
+    replaced = replace_gain_life(
+        state,
+        target_player,
+        amount,
+        replacement_source_id=payload.get("__replacement_source_id"),
+    )
     if replaced is not None:
         key, repl_payload = replaced
         source = repl_payload.pop("__replacement_source", None)

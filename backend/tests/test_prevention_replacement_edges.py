@@ -294,6 +294,60 @@ def test_damage_to_permanent_respects_creature_prevention_replacement() -> None:
     assert card.zone == Zone.BATTLEFIELD
 
 
+def test_multiple_static_prevention_replacements_choose_one_not_all() -> None:
+    state = _state()
+    for index, name in enumerate(("Early Ward", "Late Ward"), start=1):
+        shield = CardInstance(
+            id=f"shield-{index}",
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            static_order=index,
+            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+        )
+        state.cards[shield.id] = shield
+        state.players[1].battlefield.append(shield.id)
+
+    before = state.players[1].life
+    deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
+
+    assert state.players[1].life == before - 2
+    assert any("late ward selected from 2" in line.lower() for line in state.log)
+
+
+def test_damage_prevention_accepts_explicit_replacement_source_choice() -> None:
+    state = _state()
+    for index, name in enumerate(("Early Ward", "Late Ward"), start=1):
+        shield = CardInstance(
+            id=f"choice-shield-{index}",
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            static_order=index,
+            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+        )
+        state.cards[shield.id] = shield
+        state.players[1].battlefield.append(shield.id)
+
+    before = state.players[1].life
+    deal_damage(
+        state,
+        controller=2,
+        payload={
+            "target_player": 1,
+            "amount": 3,
+            "__replacement_source_id": "choice-shield-1",
+        },
+    )
+
+    assert state.players[1].life == before - 2
+    assert any("early ward selected from 2" in line.lower() for line in state.log)
+
+
 def test_destroy_permanent_clears_stale_damage_and_prevention_counters() -> None:
     state = _state()
     cid = state.players[1].hand[0]

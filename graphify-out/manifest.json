@@ -176,8 +176,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/handlers.py": {
-    "mtime": 1784458699.143549,
-    "hash": "b6099f89961b4dfdc882ada18382a148"
+    "mtime": 1784460613.508054,
+    "hash": "05458a67197f439303d16cb1b6a52bb1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/registry.py": {
     "mtime": 1784458699.269547,
@@ -352,8 +352,8 @@
     "hash": "91ce49ccd57304552ea3b1a5239efe26"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_prevention_replacement_edges.py": {
-    "mtime": 1784458831.9143019,
-    "hash": "3644562ff0b2df0a163bb06daa2143de"
+    "mtime": 1784460584.565531,
+    "hash": "09bce4c2587f97e14d2e436cf8688e32"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_mana_system.py": {
     "mtime": 1784207195.1953418,
@@ -548,8 +548,8 @@
     "hash": "9bffc4e7eef0c6ac281f4acd0debf62f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/replacement.py": {
-    "mtime": 1784458699.4075446,
-    "hash": "61af3e8324e2dd07774be5057206514e"
+    "mtime": 1784460613.3780563,
+    "hash": "06939f1697926dc43be0dbc2d0fa08b3"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/priority.py": {
     "mtime": 1777063134.7070613,
@@ -680,16 +680,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1784460469.350428,
-    "hash": "fa550cdc2a14ebb222be3e0b45d420cf"
+    "mtime": 1784460700.054628,
+    "hash": "894f89b84b7aa0bb12f365d05b8f5ea7"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1784460469.2134304,
-    "hash": "bc41391c9f3e8e94ba143bfaf63a7bb5"
+    "mtime": 1784460699.91963,
+    "hash": "f479350c42641113ef5db6dbd5118d2f"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1784460469.488426,
-    "hash": "42823b748f36888cbc22f9ed57a50ce3"
+    "mtime": 1784460700.2026253,
+    "hash": "124fb21d3f8dbecd91d19e12f834509c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

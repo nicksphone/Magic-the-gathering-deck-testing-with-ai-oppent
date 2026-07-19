@@ -49,25 +49,71 @@ _DIE_EXILE_RE = re.compile(
 )
 
 
-def apply_damage_replacements(state, target_player: int | None, amount: int) -> int:
+def apply_damage_replacements(
+    state,
+    target_player: int | None,
+    amount: int,
+    replacement_source_id: str | None = None,
+) -> int:
     out = int(amount)
     if target_player is None:
         return out
-    for card, text in _battlefield_oracle_texts(state, controller=target_player):
-        if _PLAYER_DAMAGE_PREVENTION_RE.search(text):
-            out = max(0, out - 1)
+    candidates = [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state, controller=target_player)
+        if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
+    ]
+    chosen = _choose_replacement_candidate(state, candidates, replacement_source_id, "damage to player")
+    if chosen is not None:
+        out = max(0, out - 1)
     return out
 
 
-def apply_permanent_damage_replacements(state, target_card_id: str, amount: int) -> int:
+def apply_permanent_damage_replacements(
+    state,
+    target_card_id: str,
+    amount: int,
+    replacement_source_id: str | None = None,
+) -> int:
     out = int(amount)
     if target_card_id not in state.cards:
         return out
     target = state.cards[target_card_id]
-    for card, text in _battlefield_oracle_texts(state, controller=target.controller):
-        if _PERMANENT_DAMAGE_PREVENTION_RE.search(text):
-            out = max(0, out - 1)
+    candidates = [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state, controller=target.controller)
+        if _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
+    ]
+    chosen = _choose_replacement_candidate(state, candidates, replacement_source_id, f"damage to {target.name}")
+    if chosen is not None:
+        out = max(0, out - 1)
     return out
+
+
+def _choose_replacement_candidate(
+    state,
+    candidates: list[tuple[object, str]],
+    requested_source_id: str | None,
+    event_label: str,
+) -> object | None:
+    """Choose one applicable replacement; later timestamp wins by default.
+
+    A caller can provide the affected player's explicit source choice. The
+    deterministic fallback is intentional for AI and replay callers; unlike
+    the old loop, it never applies multiple mutually exclusive replacements
+    to the same event without re-evaluation.
+    """
+    if not candidates:
+        return None
+    chosen = next(
+        (card for card, _ in candidates if requested_source_id and str(getattr(card, "id", "")) == str(requested_source_id)),
+        candidates[0][0],
+    )
+    if len(candidates) > 1:
+        state.log.append(
+            f"Replacement choice for {event_label}: {getattr(chosen, 'name', 'replacement')} selected from {len(candidates)} applicable effect(s)."
+        )
+    return chosen
 
 
 def damage_cant_be_prevented(
@@ -136,23 +182,53 @@ def damage_cant_be_prevented(
     return False
 
 
-def replace_gain_life(state, target_player: int, amount: int) -> tuple[str, dict] | None:
-    for card, text in _battlefield_oracle_texts(state, controller=target_player):
-        if "if you would gain life, draw that many cards instead" in text:
-            return (
-                "draw_cards",
-                {"target_player": target_player, "amount": int(amount), "__replacement_source": card.name},
-            )
+def replace_gain_life(
+    state,
+    target_player: int,
+    amount: int,
+    replacement_source_id: str | None = None,
+) -> tuple[str, dict] | None:
+    candidates = [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state, controller=target_player)
+        if "if you would gain life, draw that many cards instead" in text
+    ]
+    card = _choose_replacement_candidate(state, candidates, replacement_source_id, "life gain")
+    if card is not None:
+        return (
+            "draw_cards",
+            {
+                "target_player": target_player,
+                "amount": int(amount),
+                "__replacement_source": card.name,
+                "__replacement_source_id": card.id,
+            },
+        )
     return None
 
 
-def replace_draw_cards(state, target_player: int, amount: int) -> tuple[str, dict] | None:
-    for card, text in _battlefield_oracle_texts(state, controller=target_player):
-        if "if you would draw a card, gain 1 life instead" in text:
-            return (
-                "gain_life",
-                {"target_player": target_player, "amount": int(amount), "__replacement_source": card.name},
-            )
+def replace_draw_cards(
+    state,
+    target_player: int,
+    amount: int,
+    replacement_source_id: str | None = None,
+) -> tuple[str, dict] | None:
+    candidates = [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state, controller=target_player)
+        if "if you would draw a card, gain 1 life instead" in text
+    ]
+    card = _choose_replacement_candidate(state, candidates, replacement_source_id, "card draw")
+    if card is not None:
+        return (
+            "gain_life",
+            {
+                "target_player": target_player,
+                "amount": int(amount),
+                "__replacement_source": card.name,
+                "__replacement_source_id": card.id,
+            },
+        )
     return None
 
 
