@@ -7,6 +7,7 @@ from rules_engine.ability_model import build_ability_spec
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.engine import RulesEngine
+from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.replacement import replacement_options, replace_die_zone
 
@@ -344,6 +345,82 @@ def test_human_replacement_choice_pauses_and_resumes_stack_resolution() -> None:
     assert len(state.players[1].hand) == 8
     assert source.id in state.players[1].graveyard
     assert any("chooses replacement source" in line.lower() for line in state.log)
+
+
+def test_human_replacement_choice_pauses_lethal_state_based_zone_change() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name in (("sba-rep-a", "First Ward"), ("sba-rep-b", "Second Ward")):
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a permanent you control would die, exile it instead.",
+        )
+        state.players[1].battlefield.append(cid)
+    creature_id = state.players[1].hand[0]
+    creature = state.cards[creature_id]
+    creature.zone = Zone.BATTLEFIELD
+    creature.types = ["Creature"]
+    creature.power = 2
+    creature.toughness = 2
+    creature.counters["__damage_marked"] = 2
+    state.players[1].hand.remove(creature_id)
+    state.players[1].battlefield.append(creature_id)
+
+    apply_state_based_actions(state)
+
+    assert state.pending_replacement_choice is not None
+    assert creature.zone == Zone.BATTLEFIELD
+    move = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, move)
+
+    assert state.pending_replacement_choice is None
+    assert creature.zone == Zone.EXILE
+    assert creature_id in state.players[1].exile
+
+
+def test_human_replacement_choice_pauses_combat_death_zone_change() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name in (("combat-rep-a", "First Ward"), ("combat-rep-b", "Second Ward")):
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a permanent you control would die, exile it instead.",
+        )
+        state.players[1].battlefield.append(cid)
+    creature_id = state.players[1].hand[0]
+    creature = state.cards[creature_id]
+    creature.zone = Zone.BATTLEFIELD
+    creature.types = ["Creature"]
+    creature.toughness = 2
+    creature.counters["__damage_marked"] = 2
+    state.players[1].hand.remove(creature_id)
+    state.players[1].battlefield.append(creature_id)
+
+    combat._remove_dead_creatures(state)
+
+    assert state.pending_replacement_choice is not None
+    move = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, move)
+
+    assert state.pending_replacement_choice is None
+    assert creature.zone == Zone.EXILE
+    assert creature_id in state.players[1].exile
 
 
 def test_optional_stack_effect_can_be_declined() -> None:

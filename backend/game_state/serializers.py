@@ -51,6 +51,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "replacement_choice_required": state.replacement_choice_required,
         "replacement_choice_players": sorted(state.replacement_choice_players),
         "pending_replacement_choice": state.pending_replacement_choice,
+        "trigger_order_choice_required": state.trigger_order_choice_required,
+        "trigger_order_choice_players": sorted(state.trigger_order_choice_players),
+        "pending_trigger_order": state.pending_trigger_order,
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
@@ -193,6 +196,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.replacement_choice_required = bool(payload.get("replacement_choice_required", False))
     state.replacement_choice_players = {int(value) for value in payload.get("replacement_choice_players", [])}
     state.pending_replacement_choice = payload.get("pending_replacement_choice")
+    state.trigger_order_choice_required = bool(payload.get("trigger_order_choice_required", False))
+    state.trigger_order_choice_players = {int(value) for value in payload.get("trigger_order_choice_players", [])}
+    state.pending_trigger_order = payload.get("pending_trigger_order")
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
@@ -220,6 +226,7 @@ def serialize_match(state: MatchState) -> dict:
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "pending_replacement_choice": state.pending_replacement_choice,
+        "pending_trigger_order": state.pending_trigger_order,
         "priority_stops": {
             str(pid): _sort_steps(steps)
             for pid, steps in state.priority_stops.items()

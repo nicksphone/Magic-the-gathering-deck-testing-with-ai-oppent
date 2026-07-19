@@ -32,8 +32,55 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
-    ordered = _order_apnap(state, triggers)
+    active = state.active_player
+    controller_order = [active, 1 if active == 2 else 2]
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for controller in controller_order:
+        group = [dict(trigger) for trigger in triggers if int(trigger["controller"]) == controller]
+        for index, trigger in enumerate(group):
+            trigger["_choice_id"] = f"{trigger['source_card_id']}:{index}"
+        if group:
+            groups[str(controller)] = group
+
+    choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
+    if getattr(state, "trigger_order_choice_required", False):
+        for controller in controller_order:
+            group = groups.get(str(controller), [])
+            if len(group) > 1 and (not choice_players or controller in choice_players):
+                state.pending_trigger_order = {
+                    "event": event,
+                    "groups": groups,
+                    "controller_order": controller_order,
+                    "selected_orders": {},
+                    "current_controller": controller,
+                }
+                state.priority_player = controller
+                state.passed_priority = set()
+                state.log.append(
+                    f"Trigger order required for {event}; {state.players[controller].name} must order {len(group)} triggered abilities."
+                )
+                return
+
+    _append_trigger_groups(state, event, groups, controller_order, {})
+
+
+def _append_trigger_groups(
+    state: MatchState,
+    event: str,
+    groups: dict[str, list[dict[str, Any]]],
+    controller_order: list[int],
+    selected_orders: dict[str, list[str]],
+) -> None:
+    ordered: list[dict[str, Any]] = []
+    for controller in controller_order:
+        group = list(groups.get(str(controller), []))
+        requested = selected_orders.get(str(controller))
+        if requested:
+            by_id = {str(trigger.get("_choice_id")): trigger for trigger in group}
+            group = [by_id[choice_id] for choice_id in requested if choice_id in by_id]
+        ordered.extend(group)
     for order_index, trig in enumerate(ordered):
+        payload = dict(trig["payload"])
         state.stack.append(
             StackItem(
                 id=str(uuid.uuid4()),
@@ -41,10 +88,55 @@ def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]
                 controller=trig["controller"],
                 label=trig["label"],
                 effect_key=trig["effect_key"],
-                payload={**trig["payload"], "__trigger_order": order_index, "__trigger_event": event},
+                payload={**payload, "__trigger_order": order_index, "__trigger_event": event},
             )
         )
     state.log.append(f"{len(ordered)} triggered ability(s) added to stack ({event}).")
+
+
+def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
+    pending = getattr(state, "pending_trigger_order", None)
+    if not pending:
+        return False
+    controller = int(pending.get("current_controller", -1))
+    group = list((pending.get("groups") or {}).get(str(controller), []))
+    valid_ids = [str(trigger.get("_choice_id")) for trigger in group]
+    requested = [str(value) for value in requested_order]
+    if len(requested) != len(valid_ids) or set(requested) != set(valid_ids):
+        state.log.append("Invalid trigger order; simultaneous trigger resolution remains paused.")
+        return False
+    selected = dict(pending.get("selected_orders") or {})
+    selected[str(controller)] = requested
+    controller_order = [int(value) for value in pending.get("controller_order", [])]
+    choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
+    next_controller = None
+    for candidate in controller_order:
+        candidate_group = list((pending.get("groups") or {}).get(str(candidate), []))
+        if len(candidate_group) > 1 and str(candidate) not in selected and (
+            not choice_players or candidate in choice_players
+        ):
+            next_controller = candidate
+            break
+    if next_controller is not None:
+        pending["selected_orders"] = selected
+        pending["current_controller"] = next_controller
+        state.pending_trigger_order = pending
+        state.priority_player = next_controller
+        state.passed_priority = set()
+        state.log.append(
+            f"{state.players[controller].name} ordered simultaneous triggers; awaiting Player {next_controller}."
+        )
+        return True
+    _append_trigger_groups(
+        state,
+        str(pending.get("event", "trigger")),
+        pending.get("groups") or {},
+        controller_order,
+        selected,
+    )
+    state.pending_trigger_order = None
+    state.log.append(f"{state.players[controller].name} finalized simultaneous trigger order.")
+    return True
 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:

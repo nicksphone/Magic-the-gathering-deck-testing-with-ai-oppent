@@ -27,6 +27,7 @@ type Props = {
   onNextGame: () => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
   onChooseReplacement: (sourceId: string) => void;
+  onChooseTriggerOrder: (order: string[]) => void;
   responseCountdown: number | null;
   autoResponsePaused: boolean;
   onToggleAutoResponsePause: () => void;
@@ -69,6 +70,10 @@ export function Controls(props: Props) {
     () => props.legalMoves.filter((m) => m.type === "choose_replacement"),
     [props.legalMoves],
   );
+  const triggerOrderMoves = useMemo(
+    () => props.legalMoves.filter((m) => m.type === "choose_trigger_order"),
+    [props.legalMoves],
+  );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
   const [sbPlayer, setSbPlayer] = useState(1);
@@ -86,6 +91,7 @@ export function Controls(props: Props) {
   const currentController = props.match?.controllers?.[String(props.match?.priority_player ?? 1)] ?? "human";
   const interruptWindowLive = props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
+  const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
   const interruptWindowLabel = interruptWindowLive
     ? "Response window open"
     : props.autoResponsePaused
@@ -194,6 +200,27 @@ export function Controls(props: Props) {
           </div>
         </div>
       ) : null}
+      {triggerOrderPaused ? (
+        <div className="block-panel trigger-order-panel">
+          <h3>Order Simultaneous Triggers</h3>
+          <p>
+            Choose the order for the simultaneous triggered abilities
+            {props.match?.pending_trigger_order?.event
+              ? ` (${props.match.pending_trigger_order.event.replace(/_/g, " ")})`
+              : ""}.
+          </p>
+          <div className="row">
+            {triggerOrderMoves.map((move, index) => (
+              <button
+                key={`trigger-order-${index}-${(move.trigger_order ?? []).join("-")}`}
+                onClick={() => props.onChooseTriggerOrder(move.trigger_order ?? [])}
+              >
+                {(move.trigger_labels ?? move.trigger_order ?? []).join(" -> ") || "Use trigger order"}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="block-panel">
         <h3>AI Playback Speed</h3>
         <p>{(props.autoplayDelayMs / 1000).toFixed(1)}s per AI beat</p>
@@ -259,16 +286,16 @@ export function Controls(props: Props) {
         </div>
       ) : null}
       <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused}>
+        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused || triggerOrderPaused}>
           Pass Priority
         </button>
-        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused}>
+        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused || triggerOrderPaused}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused || triggerOrderPaused}>
           AI Step x30
         </button>
       </div>

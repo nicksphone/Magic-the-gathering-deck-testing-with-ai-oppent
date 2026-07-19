@@ -18,7 +18,7 @@ from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
-from rules_engine.events import emit_event
+from rules_engine.events import emit_event, resume_trigger_order
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.attachments import attach_if_legal
@@ -34,7 +34,7 @@ class RulesEngine:
         if state.stack:
             resolve_top_of_stack(state)
             apply_state_based_actions(state)
-            if not state.pending_replacement_choice:
+            if not state.pending_replacement_choice and not state.pending_trigger_order:
                 state.priority_player = state.active_player
             return
 
@@ -253,12 +253,53 @@ class RulesEngine:
             return
 
         pending = getattr(state, "pending_replacement_choice", None)
+        pending_order = getattr(state, "pending_trigger_order", None)
+        if pending_order:
+            if kind != "choose_trigger_order" or int(pending_order.get("current_controller", -1)) != player_id:
+                return
+            requested = action.get("trigger_order") or []
+            if not isinstance(requested, list) or not resume_trigger_order(state, requested):
+                return
+            if not state.pending_trigger_order:
+                state.priority_player = state.active_player
+                state.passed_priority = set()
+            apply_state_based_actions(state)
+            return
         if pending:
             if kind != "choose_replacement" or int(pending.get("player_id", -1)) != player_id:
                 return
             chosen_id = str(action.get("replacement_source_id") or "")
             allowed = {str(option.get("source_id")) for option in (pending.get("options") or [])}
-            if chosen_id not in allowed or not state.stack or state.stack[-1].id != pending.get("stack_id"):
+            if chosen_id not in allowed:
+                state.log.append("Invalid replacement choice; resolution remains paused.")
+                return
+            if pending.get("resume_kind") == "state_based_die":
+                from rules_engine.state_based_actions import resume_state_based_die_replacement
+
+                state.pending_replacement_choice = None
+                state.log.append(
+                    f"{state.players[player_id].name} chooses replacement source {chosen_id}."
+                )
+                resume_state_based_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
+                apply_state_based_actions(state)
+                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                    state.priority_player = state.active_player
+                    state.passed_priority = set()
+                return
+            if pending.get("resume_kind") == "combat_die":
+                from rules_engine.combat import resume_combat_die_replacement
+
+                state.pending_replacement_choice = None
+                state.log.append(
+                    f"{state.players[player_id].name} chooses replacement source {chosen_id}."
+                )
+                resume_combat_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
+                apply_state_based_actions(state)
+                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                    state.priority_player = state.active_player
+                    state.passed_priority = set()
+                return
+            if not state.stack or state.stack[-1].id != pending.get("stack_id"):
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
             state.stack[-1].payload["__replacement_source_id"] = chosen_id
@@ -267,7 +308,7 @@ class RulesEngine:
                 f"{state.players[player_id].name} chooses replacement source {chosen_id}."
             )
             resolve_top_of_stack(state)
-            if not state.pending_replacement_choice:
+            if not state.pending_replacement_choice and not state.pending_trigger_order:
                 state.priority_player = state.active_player
                 state.passed_priority = set()
             apply_state_based_actions(state)
@@ -283,7 +324,7 @@ class RulesEngine:
             if both_passed:
                 if state.stack:
                     resolve_top_of_stack(state)
-                    if not state.pending_replacement_choice:
+                    if not state.pending_replacement_choice and not state.pending_trigger_order:
                         state.priority_player = state.active_player
                 else:
                     self.next_step(state)

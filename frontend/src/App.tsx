@@ -127,6 +127,16 @@ export function App() {
     await syncMoves(nextMatch);
   }
 
+  async function onChooseTriggerOrder(order: string[]) {
+    if (!match || order.length === 0) return;
+    const nextMatch = await api.act(match.id, legalPlayerId, {
+      type: "choose_trigger_order",
+      trigger_order: order,
+    });
+    setMatch(nextMatch);
+    await syncMoves(nextMatch);
+  }
+
   async function onSubmitBlocks(blocks: Record<string, string[]>) {
     if (!match) return;
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
@@ -299,6 +309,7 @@ export function App() {
           onNextGame={onNextGame}
           onSetPriorityStops={onSetPriorityStops}
           onChooseReplacement={onChooseReplacement}
+          onChooseTriggerOrder={onChooseTriggerOrder}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}

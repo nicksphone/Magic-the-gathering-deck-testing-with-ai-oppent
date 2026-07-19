@@ -11,6 +11,7 @@ from effects.handlers import create_token
 from effects.handlers import sacrifice
 from effects.handlers import discard_cards
 from game_state.state import Step
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 
 
 def _put_trigger_creature(state, player_id: int, oracle: str) -> str:
@@ -346,6 +347,32 @@ def test_trigger_stack_items_include_order_metadata() -> None:
     assert state.stack[0].payload["__trigger_order"] == 0
     assert state.stack[1].payload["__trigger_order"] == 1
     assert state.stack[0].payload["__trigger_event"] == "creature_dies"
+
+
+def test_human_can_order_simultaneous_triggers_and_resume_stack() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=22)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+    first = _put_trigger_creature(state, 1, "Whenever a creature dies, draw a card.")
+    second = _put_trigger_creature(state, 1, "Whenever a creature dies, gain 1 life.")
+
+    emit_event(state, "creature_dies", {"card_id": "x"})
+
+    assert state.pending_trigger_order is not None
+    assert state.stack == []
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.pending_trigger_order == state.pending_trigger_order
+    moves = RulesEngine().legal_moves(state, 1)
+    assert len(moves) == 2
+    chosen = next(move for move in moves if move["trigger_order"][0].startswith(second))
+    RulesEngine().take_action(state, 1, chosen)
+
+    assert state.pending_trigger_order is None
+    assert [item.source_card_id for item in state.stack] == [second, first]
 
 
 def test_creature_dies_trigger_matches_you_control_clause() -> None:

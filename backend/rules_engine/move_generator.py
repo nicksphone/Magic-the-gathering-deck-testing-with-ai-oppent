@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from itertools import permutations
+
 from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.continuous import effective_power, has_keyword
@@ -15,6 +17,23 @@ from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timi
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.winner is not None:
         return []
+    pending_order = getattr(state, "pending_trigger_order", None)
+    if pending_order:
+        if int(pending_order.get("current_controller", -1)) != player_id:
+            return []
+        group = list((pending_order.get("groups") or {}).get(str(player_id), []))
+        ids = [str(trigger.get("_choice_id")) for trigger in group]
+        labels = {str(trigger.get("_choice_id")): str(trigger.get("label", "Triggered ability")) for trigger in group}
+        orders = list(permutations(ids)) if len(ids) <= 6 else [tuple(ids)]
+        return [
+            {
+                "type": "choose_trigger_order",
+                "trigger_order": list(order),
+                "trigger_labels": [labels.get(choice_id, choice_id) for choice_id in order],
+                "event": pending_order.get("event"),
+            }
+            for order in orders
+        ]
     pending = getattr(state, "pending_replacement_choice", None)
     if pending:
         if int(pending.get("player_id", -1)) != player_id:

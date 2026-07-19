@@ -152,6 +152,9 @@ class MatchState:
     replacement_choice_required: bool = False
     replacement_choice_players: set[int] = field(default_factory=set)
     pending_replacement_choice: dict | None = None
+    trigger_order_choice_required: bool = False
+    trigger_order_choice_players: set[int] = field(default_factory=set)
+    pending_trigger_order: dict | None = None
 
 
 class MatchFactory:

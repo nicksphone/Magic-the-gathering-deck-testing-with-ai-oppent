@@ -8,7 +8,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, replacement_options
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -316,6 +316,25 @@ def _remove_dead_creatures(state: MatchState) -> None:
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
         if cid in battlefield_owner.battlefield:
+            choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
+            human_choice = getattr(state, "replacement_choice_required", False) and (
+                not choice_players or card.controller in choice_players
+            )
+            options = replacement_options(state, "die_zone", target_card_id=cid)
+            if human_choice and len(options) > 1:
+                state.pending_replacement_choice = {
+                    "resume_kind": "combat_die",
+                    "player_id": card.controller,
+                    "event": "die_zone",
+                    "target_card_id": cid,
+                    "options": options,
+                }
+                state.priority_player = card.controller
+                state.passed_priority = set()
+                state.log.append(
+                    f"Replacement choice required for combat death; {state.players[card.controller].name} must choose one of {len(options)} effects."
+                )
+                return
             emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
             battlefield_owner.battlefield.remove(cid)
             destination = replace_die_zone(state, card.controller, cid)
@@ -329,6 +348,30 @@ def _remove_dead_creatures(state: MatchState) -> None:
             state.log.append(f"{card.name} dies in combat.")
             emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
             emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+
+
+def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_source_id: str) -> None:
+    """Resume a combat death after a human replacement choice."""
+    card = state.cards.get(card_id)
+    if not card or card.zone != Zone.BATTLEFIELD:
+        return
+    battlefield_owner = state.players[card.controller]
+    zone_owner = state.players[getattr(card, "owner", card.controller)]
+    if card_id not in battlefield_owner.battlefield:
+        return
+    emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
+    battlefield_owner.battlefield.remove(card_id)
+    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
+    if destination == "exile":
+        zone_owner.exile.append(card_id)
+        card.zone = Zone.EXILE
+        state.log.append(f"{card.name} is exiled instead of dying in combat.")
+        return
+    zone_owner.graveyard.append(card_id)
+    card.zone = Zone.GRAVEYARD
+    state.log.append(f"{card.name} dies in combat.")
+    emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
+    emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
 def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
