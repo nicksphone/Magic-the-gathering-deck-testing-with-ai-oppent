@@ -1,6 +1,17 @@
 # Changelog
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
+
+## 2026-07-19
+
+- Oracle corpus audit:
+  - Added `backend/scripts/oracle_corpus_report.py`, which scans all built-in and expansion deck entries, uses cached metadata when available, and ranks unresolved Oracle behavior by weighted copies and reusable family.
+  - The current corpus report covers 81 unique cards and 3,780 copies across 11 built-in and 52 expansion entries. It reports parser fallbacks separately from missing Oracle metadata so cache gaps are not replaced with guessed card text.
+- Conditional target legality:
+  - Added reusable target restriction metadata and filtering for common nonartifact, nonland, noncreature, creature-or-planeswalker, artifact-or-enchantment, and mana-value limits.
+  - Dynamic limits based on controlled basic lands and a target controller's graveyard are evaluated from the current game state.
+  - Human validation, AI target materialization, and structured effect payloads share the same restriction surface.
+  - Added regression coverage; the consolidated rules/AI gate now passes 323 tests.
 ## 2026-07-18
 
 - Choice and search resolution:

@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from game_state.state import CardInstance, MatchState
-from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
+from rules_engine.oracle_effects import infer_effect_from_oracle, infer_target_restrictions, inspect_target_hints
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ def build_ability_spec(
     action_targets: dict[str, Any] | None = None,
 ) -> AbilitySpec:
     action_targets = dict(action_targets or {})
-    target_hints = inspect_target_hints(state, card, controller)
+    target_hints = inspect_target_hints(state, card, controller, action_targets)
     effect_key, payload = infer_effect_from_oracle(
         state,
         card,
@@ -84,7 +84,12 @@ def build_ability_spec(
         marker in oracle.lower() for marker in ("when ", "whenever ", "at the beginning")
     ):
         static_only = True
-    used_fallback = effect_key == "noop" and bool(oracle) and not static_only
+    # A modal spell with no selected mode is waiting for a choice, not an
+    # unsupported Oracle parse. The selected mode is parsed when materialized.
+    used_fallback = effect_key == "noop" and bool(oracle) and not static_only and not modes
+    restrictions = infer_target_restrictions(state, oracle, controller)
+    if restrictions:
+        payload.setdefault("target_restrictions", restrictions)
     for key in ("target_card_id", "target_card_ids", "target_player", "search_card_ids"):
         if key in action_targets and key not in payload:
             payload[key] = action_targets[key]

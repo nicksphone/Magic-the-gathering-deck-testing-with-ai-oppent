@@ -31,6 +31,15 @@ DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 SEARCH_UP_TO_RE = re.compile(r"search your library for up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
 SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
+TARGET_MV_MAX_RE = re.compile(r"mana value\s+(?:less than or equal to\s+)?(\d+)\s+or less", re.IGNORECASE)
+TARGET_MV_GRAVEYARD_RE = re.compile(
+    r"mana value\s+(?:less than or equal to\s+)?the number of cards in (?:its controller's|your) graveyard",
+    re.IGNORECASE,
+)
+TARGET_MV_CONTROLLED_TYPE_RE = re.compile(
+    r"mana value\s+(?:less than or equal to\s+)?the number of\s+([a-z]+)s?\s+you control",
+    re.IGNORECASE,
+)
 COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
@@ -102,11 +111,11 @@ def infer_effect_from_oracle(
         # signal for downstream consumers that need to render or validate them specially.
         pass
 
-    if "counter target spell" in oracle and state.stack:
-        target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
+    if "counter target spell" in oracle:
+        target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
         return "counter_spell", {"target_stack_id": target_stack_id}
-    if ("counter target activated ability" in oracle or "counter target triggered ability" in oracle) and state.stack:
-        target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
+    if "counter target activated ability" in oracle or "counter target triggered ability" in oracle:
+        target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
         return "counter_ability", {"target_stack_id": target_stack_id}
     copy_match = COPY_STACK_RE.search(oracle)
     if copy_match and state.stack:
@@ -359,9 +368,17 @@ def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, A
     return "topdeck_put_permanents_battlefield", payload
 
 
-def inspect_target_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
+def inspect_target_hints(
+    state: MatchState,
+    card: CardInstance,
+    controller: int,
+    action_targets: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     raw_oracle = card.oracle_text or ""
-    oracle = raw_oracle.lower()
+    action_targets = action_targets or {}
+    selected_modes = action_targets.get("mode_texts") or []
+    selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
+    oracle = str(selected_mode or raw_oracle).lower()
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
     graveyard_creatures = [
@@ -557,7 +574,102 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
             for cid in state.players[opponent].battlefield
             if "Planeswalker" in state.cards[cid].types
         ]
+    restrictions = infer_target_restrictions(state, oracle, controller)
+    if restrictions:
+        hints["target_restrictions"] = restrictions
+        for key in (
+            "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+            "artifact_targets", "enchantment_targets", "noncreature_permanent_targets",
+            "aura_targets",
+        ):
+            if key in hints:
+                hints[key] = [
+                    item for item in hints[key]
+                    if _target_id_matches_restrictions(state, str(item.get("id")), restrictions, controller)
+                ]
     return hints
+
+
+def infer_target_restrictions(state: MatchState, oracle_text: str, controller: int) -> dict[str, Any]:
+    """Extract reusable restrictions for targeted permanent choices.
+
+    This intentionally describes legality rather than naming cards. The same
+    metadata supports target hints, human validation, AI materialization, and
+    future stack-resolution rechecks.
+    """
+    oracle = (oracle_text or "").lower()
+    restrictions: dict[str, Any] = {}
+    if "nonartifact" in oracle:
+        restrictions.setdefault("exclude_types", []).append("Artifact")
+    if "nonland" in oracle:
+        restrictions.setdefault("exclude_types", []).append("Land")
+    if "noncreature" in oracle:
+        restrictions.setdefault("exclude_types", []).append("Creature")
+    if "nonenchantment" in oracle:
+        restrictions.setdefault("exclude_types", []).append("Enchantment")
+
+    if "target creature or planeswalker" in oracle:
+        restrictions["allowed_types"] = ["Creature", "Planeswalker"]
+    elif "target artifact or enchantment" in oracle:
+        restrictions["allowed_types"] = ["Artifact", "Enchantment"]
+    elif "target creature" in oracle:
+        restrictions["allowed_types"] = ["Creature"]
+    elif "target planeswalker" in oracle:
+        restrictions["allowed_types"] = ["Planeswalker"]
+    elif "target artifact" in oracle:
+        restrictions["allowed_types"] = ["Artifact"]
+    elif "target enchantment" in oracle:
+        restrictions["allowed_types"] = ["Enchantment"]
+    elif "target land" in oracle:
+        restrictions["allowed_types"] = ["Land"]
+
+    max_match = TARGET_MV_MAX_RE.search(oracle)
+    if max_match:
+        restrictions["mana_value_max"] = int(max_match.group(1))
+    elif TARGET_MV_GRAVEYARD_RE.search(oracle):
+        restrictions["mana_value_max_source"] = "controller_graveyard"
+    else:
+        controlled_match = TARGET_MV_CONTROLLED_TYPE_RE.search(oracle)
+        if controlled_match:
+            restrictions["mana_value_max_source"] = f"controlled_{controlled_match.group(1).lower()}"
+    return restrictions
+
+
+def _target_id_matches_restrictions(
+    state: MatchState,
+    card_id: str,
+    restrictions: dict[str, Any],
+    controller: int,
+) -> bool:
+    card = state.cards.get(card_id)
+    if card is None:
+        return False
+    types = set(card.types or [])
+    excluded = set(restrictions.get("exclude_types") or [])
+    if types.intersection(excluded):
+        return False
+    allowed = set(restrictions.get("allowed_types") or [])
+    if allowed and not types.intersection(allowed):
+        return False
+    max_value = restrictions.get("mana_value_max")
+    source = restrictions.get("mana_value_max_source")
+    if source == "controller_graveyard":
+        max_value = len(state.players.get(card.controller, state.players[controller]).graveyard)
+    elif isinstance(source, str) and source.startswith("controlled_"):
+        subtype = source.removeprefix("controlled_")
+        max_value = sum(
+            1
+            for cid in state.players[controller].battlefield
+            if subtype in {str(t).lower() for t in state.cards[cid].types}
+            or subtype in str(state.cards[cid].type_line or "").lower().split()
+        )
+    if max_value is not None:
+        cost = parse_mana_cost(card.mana_cost or "")
+        mana_value = int(cost.get("generic", 0) or 0) + int(cost.get("C", 0) or 0)
+        mana_value += sum(int(cost.get(color, 0) or 0) for color in "WUBRG")
+        if mana_value > int(max_value):
+            return False
+    return True
 
 
 def _first_creature(state: MatchState, player_id: int) -> str | None:
@@ -666,12 +778,11 @@ def _infer_clause_effect(
     control_match = GAIN_CONTROL_RE.search(oracle)
     if control_match:
         target = target_card_id or _choose_any_permanent_target(state, controller, action_targets, exclude_types=set())
-        if target:
-            return "change_control", {
-                "target_card_id": target,
-                "new_controller": controller,
-                "until_end_of_turn": "until end of turn" in oracle,
-            }
+        return "change_control", {
+            "target_card_id": target,
+            "new_controller": controller,
+            "until_end_of_turn": "until end of turn" in oracle,
+        }
 
     damage_match = DAMAGE_RE.search(oracle)
     if damage_match:
@@ -819,16 +930,14 @@ def _infer_clause_effect(
 
     if "destroy target" in oracle:
         target = target_card_id or _first_creature(state, opponent)
-        if target:
-            return "destroy_permanent", {"target_card_id": target}
+        return "destroy_permanent", {"target_card_id": target}
 
     if "destroy all creatures" in oracle:
         return "destroy_all_creatures", {}
 
     if "exile target" in oracle:
         target = target_card_id or _first_creature(state, opponent)
-        if target:
-            return "exile", {"target_card_id": target}
+        return "exile", {"target_card_id": target}
 
     if "tap target" in oracle:
         if "nonland permanent" in oracle:
