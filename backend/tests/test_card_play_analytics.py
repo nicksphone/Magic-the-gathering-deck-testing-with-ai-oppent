@@ -32,6 +32,8 @@ def test_card_play_analytics_separates_meaningful_main_phase_passes(tmp_path: Pa
     assert out["pass_with_meaningful_options"]["1"] == 1
     assert out["main_phase_passes"]["1"] == 1
     assert out["missed_land_windows"]["1"] == 1
+    assert out["unused_mana_with_options"]["1"] == 1
+    assert out["main_phase_land_not_first"].get("1", 0) == 0
     assert out["pass_with_options"].get("2", 0) == 1
     assert out["pass_with_meaningful_options"].get("2", 0) == 0
     assert out["main_phase_passes"].get("2", 0) == 0

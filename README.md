@@ -72,6 +72,7 @@ It is designed for serious deck work:
 - Replay inspection and deterministic regression checks
 - Match logs, anomaly output, and training trace export
 - Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
+- Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context
 - First-divergence drilldown with compact trace context for both sides
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction

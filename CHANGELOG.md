@@ -19,6 +19,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Multiple mutually exclusive static damage-prevention effects no longer all apply to the same event.
   - Replacement candidates use latest deterministic timestamp ordering by default and accept an explicit source ID for API/replay callers across damage, draw, and life-gain paths.
   - Added regression coverage; the consolidated rules/AI gate now passes 327 tests. Human replacement-choice pause/resume remains planned.
+- AI decision-quality diagnostics:
+  - Verbose card-play analytics now reports pass-with-unused-mana and main-phase land-not-first counters separately from ordinary response-window passes and land availability windows.
+  - Added regression coverage for the new metrics; attack/lethal/block quality and engine-protection metrics remain the next AI diagnostics slice.
 ## 2026-07-18
 
 - Choice and search resolution:

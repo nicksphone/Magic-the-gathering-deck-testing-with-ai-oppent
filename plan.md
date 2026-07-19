@@ -158,6 +158,7 @@ Release blockers identified by the audit:
 - Conditional target metadata now filters and validates common type exclusions and mana-value ceilings, including nonartifact, nonland, noncreature, creature-or-planeswalker, static mana-value, controlled-basic-land, and controller-graveyard limits. Revolt-style state conditions and conditional payment branches remain separate work.
 - Modal casting now selects modes before target materialization and rebuilds mode-specific target hints, so counter, removal, and other mutually exclusive modes do not share stale target classes. `Choose two` selections resolve through an ordered structured effect sequence.
 - Replacement candidate handling now applies one mutually exclusive prevention/replacement effect per event, chooses the latest deterministic source when no explicit source ID is supplied, and carries source metadata through gain-life, draw, and damage replacement paths. A human-facing replacement-choice prompt and full re-evaluation loop remain open.
+- Verbose card-play analytics now reports pass-with-unused-mana and main-phase land-not-first decisions separately, preserving hand, board, mana, legal-action, and reasoning context for later AI tuning.
 
 ### AI quality
 - The AI is much stronger, but it still needs deeper tactical play in complex board states.
@@ -178,6 +179,7 @@ Release blockers identified by the audit:
 - A Blue Control vs Ramp smoke after the recursion valuation change completed without fallback, invalid-target, or mana-payment errors; matchup results remain diagnostic until larger samples are run.
 - AI training artifacts currently provide timing/board-role priors and labeled traces, not a learned policy. They must be treated as evidence for weight tuning and regression analysis, not as proof of expert play.
 - The next AI milestone must measure decision quality, not only match completion: missed land drops, unused legal mana, premature attacks, lethal misses, bad blocks, unprotected engines, and interaction held through the wrong window need per-decision metrics.
+- The first decision-quality metrics are now available in `backend/scripts/card_play_analytics.py`; attack/lethal/block quality and engine-protection metrics remain to be added from richer combat traces.
 
 ### Simulation and diagnostics
 - The regression matrix and overnight round-robin now cover representative archetype spread, but they can still be expanded to larger samples and higher tick budgets.
@@ -354,7 +356,7 @@ Exit criteria:
 1. Expose replacement candidates and simultaneous trigger ordering as explicit human/API choices, with a pause/resume path that re-evaluates the modified event after each selected replacement.
 2. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
 3. Convert the highest-impact remaining corpus families from `oracle_corpus_report.py`, prioritizing missing Oracle metadata separately from parser gaps and never filling cache gaps with guessed card text.
-4. Extend Master tactical search with decision-quality metrics, stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
+4. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 5. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
 6. Finish bulk card/token completeness reporting plus frontend replay/anomaly drilldown, then validate LAN deployment and long-session UX.
 

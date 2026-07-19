@@ -42,6 +42,8 @@ def summarize_card_play_logic(path: Path) -> dict:
     pass_with_meaningful_options = Counter()
     main_phase_passes = Counter()
     missed_land_windows = Counter()
+    unused_mana_with_options = Counter()
+    main_phase_land_not_first = Counter()
     reason_codes = Counter()
     pass_reason_codes = Counter()
     per_player_actions = defaultdict(Counter)
@@ -78,6 +80,10 @@ def summarize_card_play_logic(path: Path) -> dict:
                 elif atype == "play_land":
                     play_land_count[pid] += 1
                 elif atype == "pass_priority" and bool(payload.get("legal_non_pass")):
+                    mana_pool = payload.get("mana_pool") or {}
+                    pool_total = sum(max(0, int(value or 0)) for value in mana_pool.values())
+                    if pool_total > 0:
+                        unused_mana_with_options[pid] += 1
                     pass_with_options[pid] += 1
                     if _is_main_phase_window(payload):
                         pass_with_meaningful_options[pid] += 1
@@ -102,6 +108,8 @@ def summarize_card_play_logic(path: Path) -> dict:
 
                 if bool(payload.get("legal_has_land")) and atype != "play_land" and _is_main_phase_window(payload):
                     missed_land_windows[pid] += 1
+                    if atype != "pass_priority":
+                        main_phase_land_not_first[pid] += 1
 
     return {
         "games": total_games,
@@ -115,6 +123,8 @@ def summarize_card_play_logic(path: Path) -> dict:
         "pass_with_meaningful_options": dict(pass_with_meaningful_options),
         "main_phase_passes": dict(main_phase_passes),
         "missed_land_windows": dict(missed_land_windows),
+        "unused_mana_with_options": dict(unused_mana_with_options),
+        "main_phase_land_not_first": dict(main_phase_land_not_first),
         "top_cast_cards": [{"card": c, "count": n} for c, n in cast_by_card.most_common(50)],
         "land_plays": dict(play_land_count),
         "pass_examples": pass_examples,
