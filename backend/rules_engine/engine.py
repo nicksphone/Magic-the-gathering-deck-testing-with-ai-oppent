@@ -388,7 +388,7 @@ class RulesEngine:
                 if face_card is not card:
                     action_targets = dict(action_targets)
                     action_targets.setdefault("selected_face_index", selected_face_index if selected_face_index is not None else 0)
-                hints = build_cast_hints(state, face_card, player_id)
+                hints = build_cast_hints(state, face_card, player_id, action_targets)
                 ok, error = validate_cast_choice(hints, action_targets)
                 if not ok:
                     state.log.append(f"Invalid targets for {card.name}: {error}")

@@ -31,6 +31,7 @@ It is designed for serious deck work:
 - Structured top-card hand/exile/bottom choices with temporary play permissions
 - Shared cast-choice plumbing for modes, faces, X values, targets, and library-search selections across human and AI actions
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
+- Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
 - AI tutor decisions now materialize validated library-search selections instead of retrying malformed search casts
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic

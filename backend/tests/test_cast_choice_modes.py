@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
+from rules_engine.ability_model import build_ability_spec
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.cast_choice import enrich_divide_total
 from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
+from effects.registry import resolve_effect
 
 
 def _state() -> object:
@@ -56,6 +58,67 @@ def test_selected_bullet_modes_resolve_as_an_effect_sequence() -> None:
 
     assert effect_key == "gain_life"
     assert payload["amount"] == 3
+
+
+def test_mode_specific_hints_only_expose_targets_for_selected_mode() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    creature_id = state.players[2].hand[0]
+    state.players[2].hand.remove(creature_id)
+    state.players[2].battlefield.append(creature_id)
+    creature = state.cards[creature_id]
+    creature.zone = Zone.BATTLEFIELD
+    creature.types = ["Creature"]
+    spell = CardInstance(
+        id="drown",
+        name="Drown in the Loch",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        mana_cost="{U}{B}",
+        oracle_text=(
+            "Choose one —\n"
+            "• Counter target spell.\n"
+            "• Destroy target creature."
+        ),
+    )
+
+    counter_hints = build_cast_hints(state, spell, 1, {"mode_text": "Counter target spell"})
+    destroy_hints = build_cast_hints(state, spell, 1, {"mode_text": "Destroy target creature"})
+    assert not counter_hints.get("stack_targets")
+    assert "creature_targets" not in counter_hints
+    assert {item["id"] for item in destroy_hints["creature_targets"]} == {creature_id}
+
+
+def test_choose_two_modes_resolve_as_ordered_effect_sequence() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    card = CardInstance(
+        id="charm",
+        name="Two Mode Charm",
+        owner=1,
+        controller=1,
+        zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Choose two —\n• Draw a card.\n• Gain 3 life.\n• Create a 1/1 white Soldier creature token.",
+    )
+    spec = build_ability_spec(
+        state,
+        card,
+        1,
+        {"mode_texts": ["Draw a card", "Gain 3 life"]},
+    )
+    assert spec.effect.key == "effect_sequence"
+    assert [item["effect_key"] for item in spec.effect.payload["effects"]] == ["draw_cards", "gain_life"]
+    before_hand = len(state.players[1].hand)
+    before_life = state.players[1].life
+    resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
+    assert len(state.players[1].hand) == before_hand + 1
+    assert state.players[1].life == before_life + 3
 
 
 def test_x_mode_inference_respects_selected_mode_and_x() -> None:

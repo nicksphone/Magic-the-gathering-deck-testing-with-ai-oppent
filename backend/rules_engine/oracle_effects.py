@@ -384,7 +384,7 @@ def inspect_target_hints(
     graveyard_creatures = [
         {"id": cid, "name": state.cards[cid].name, "owner": state.cards[cid].owner, "controller": state.cards[cid].controller}
         for pid in state.players
-        for cid in state.players[pid].graveyard
+        for cid in getattr(state.players[pid], "graveyard", [])
         if cid in state.cards and "Creature" in state.cards[cid].types
     ]
     faces = list(getattr(card, "card_faces", []) or [])

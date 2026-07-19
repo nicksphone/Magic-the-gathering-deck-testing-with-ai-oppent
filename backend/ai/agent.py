@@ -1932,6 +1932,20 @@ class AIAgent:
                 out["selected_face_index"] = selected_face_index
         opponent = 1 if player_id == 2 else 2
 
+        # Choose the mode before deriving target candidates. Modal spells can
+        # expose different target classes per mode (for example, counter
+        # versus destroy), so selecting targets from the unselected union can
+        # create invalid or strategically incoherent actions.
+        if hints.get("modes") and not targets.get("mode_text") and not targets.get("mode_texts"):
+            if hints.get("choose_two_modes"):
+                targets["mode_texts"] = self._select_mode_texts(state, card, list(hints["modes"]), player_id)
+            else:
+                targets["mode_text"] = self._select_mode_text(state, card, list(hints["modes"]), player_id)
+        if targets.get("mode_text") or targets.get("mode_texts"):
+            from rules_engine.cast_choice import build_cast_hints
+
+            hints = build_cast_hints(state, card, player_id, targets)
+
         stack_targets = hints.get("stack_targets") or []
         if stack_targets and not targets.get("target_stack_id"):
             # For counters/interaction, target the most threatening spell on stack.
@@ -2095,12 +2109,6 @@ class AIAgent:
             elif player_targets:
                 targets["target_distribution"] = {str(opponent): 1}
             targets.setdefault("divide_total", 1)
-
-        if hints.get("modes") and not targets.get("mode_text") and not targets.get("mode_texts"):
-            if hints.get("choose_two_modes"):
-                targets["mode_texts"] = self._select_mode_texts(state, card, list(hints["modes"]), player_id)
-            else:
-                targets["mode_text"] = self._select_mode_text(state, card, list(hints["modes"]), player_id)
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         if "{X}" in mana_cost.upper() and "x_value" not in targets:

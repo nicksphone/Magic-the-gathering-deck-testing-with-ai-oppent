@@ -12,6 +12,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Dynamic limits based on controlled basic lands and a target controller's graveyard are evaluated from the current game state.
   - Human validation, AI target materialization, and structured effect payloads share the same restriction surface.
   - Added regression coverage; the consolidated rules/AI gate now passes 323 tests.
+- Modal choice ordering:
+  - Mode selection now occurs before target generation in AI materialization, and the engine rebuilds mode-specific target hints before validating a cast.
+  - `Choose two` selections resolve through an ordered `effect_sequence` path with regression coverage; the consolidated gate now passes 325 tests.
 ## 2026-07-18
 
 - Choice and search resolution:

@@ -12,8 +12,13 @@ FIXED_DAMAGE_RE = re.compile(r"deals?\\s+(\\d+)\\s+damage", re.IGNORECASE)
 DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
 
 
-def build_cast_hints(state: MatchState, card: CardInstance, controller: int) -> dict[str, Any]:
-    hints = inspect_target_hints(state, card, controller)
+def build_cast_hints(
+    state: MatchState,
+    card: CardInstance,
+    controller: int,
+    action_targets: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    hints = inspect_target_hints(state, card, controller, action_targets)
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
     if face_names:
