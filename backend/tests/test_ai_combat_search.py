@@ -84,3 +84,28 @@ def test_ai_materializes_graveyard_spell_target_for_recursion() -> None:
     }
     materialized = AIAgent(difficulty="master", archetype="Control")._materialize_action(state, move, 1)
     assert materialized["targets"]["target_card_id"] == spell_id
+
+
+def test_master_attack_search_avoids_throwing_small_creature_into_large_blocker() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=69,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_ATTACKERS
+    state.active_player = 1
+    state.priority_player = 1
+    attacker_large = CardInstance("attacker-large", "Large", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=3, toughness=3)
+    attacker_small = CardInstance("attacker-small", "Small", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1)
+    blocker_large = CardInstance("blocker-large", "Blocker", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=4, toughness=4)
+    state.cards.update({c.id: c for c in [attacker_large, attacker_small, blocker_large]})
+    state.players[1].battlefield.extend([attacker_large.id, attacker_small.id])
+    state.players[2].battlefield.append(blocker_large.id)
+    for card in [attacker_large, attacker_small, blocker_large]:
+        card.entered_turn = 0
+    chosen = AIAgent(difficulty="master", archetype="Midrange")._choose_attackers(
+        state, [attacker_large.id, attacker_small.id], 1
+    )
+    assert attacker_small.id not in chosen

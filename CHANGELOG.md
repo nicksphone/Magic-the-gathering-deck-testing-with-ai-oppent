@@ -37,6 +37,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added explicit hand/exile/ordered-bottom choices for Expressive Iteration-style effects.
   - Human choices are validated so every inspected card is placed exactly once; AI chooses a deterministic value-ranked order when no choice is supplied.
   - Added regression coverage; the focused gate passes 61 tests and the three-game replay smoke has zero determinism failures.
+- Tempo and combat rules:
+  - Added reusable ownership-correct battlefield bounce for common “return target nonland permanent to its owner's hand” and creature variants.
+  - Bounce targets are exposed to human/AI choice validation, emit battlefield-leave events, and return stolen permanents to the owner's hand.
+  - Master/Master Plus now search small-board attack subsets through legal blocker assignments and combat resolution, avoiding hopeless chip attacks while preserving lethal and mandatory attacks.
+  - The consolidated rules/AI gate passes 246 tests; frontend build and three-game deterministic replay smoke pass with zero drift or determinism failures.
 
 ## 2026-07-16
 

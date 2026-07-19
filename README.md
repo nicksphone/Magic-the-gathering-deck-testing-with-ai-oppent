@@ -137,6 +137,8 @@ The production frontend shows a backend health indicator and polls `GET /health`
 
 The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects accept one selected card for hand, one for exile, and an ordered list for the bottom of the library; invalid, duplicate, or incomplete selections are rejected before the spell reaches the stack. AI callers use deterministic value-based choices when no explicit choice is provided.
 
+Common tempo bounce is also handled through the rules engine: nonland-permanent and creature returns use legal target hints, preserve ownership for stolen cards, emit battlefield-leave events, and return the permanent to its owner's hand. Master AI additionally evaluates small-board attack subsets through blocker search and combat resolution before committing attackers.
+
 ### Diagnostics
 ```bash
 cd backend

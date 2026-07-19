@@ -64,10 +64,10 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if target_hints.get("stack_targets") and ("target spell" in mode_oracle or "target activated ability" in mode_oracle or "target triggered ability" in mode_oracle or "copy target" in mode_oracle or not mode_oracle):
         if not action_targets.get("target_stack_id"):
             return False, "A stack target is required."
-    if target_hints.get("creature_targets") and ("target creature" in mode_oracle):
+    if target_hints.get("creature_targets") and ("target creature" in mode_oracle or "return target" in mode_oracle):
         if not action_targets.get("target_card_id") and not (action_targets.get("target_card_ids") or []):
             return False, "A creature target is required."
-    if target_hints.get("permanent_targets") and ("target permanent" in mode_oracle or "nonland permanent" in mode_oracle):
+    if target_hints.get("permanent_targets") and ("target permanent" in mode_oracle or "nonland permanent" in mode_oracle or "return target" in mode_oracle):
         if not action_targets.get("target_card_id") and not (action_targets.get("target_card_ids") or []):
             return False, "A permanent target is required."
     if target_hints.get("graveyard_creature_targets") and ("graveyard" in mode_oracle or "reanimate" in mode_oracle):

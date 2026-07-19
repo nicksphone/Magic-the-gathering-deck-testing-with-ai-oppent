@@ -385,7 +385,7 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
 
     if "counter target spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):
         hints["stack_targets"] = [{"id": x.id, "label": x.label} for x in state.stack]
-    if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle:
+    if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
@@ -419,7 +419,7 @@ def inspect_target_hints(state: MatchState, card: CardInstance, controller: int)
                     aura_targets.append({"id": cid, "name": target.name})
         hints["aura_targets"] = aura_targets
         hints["creature_targets"] = aura_targets
-    if "target permanent" in oracle or "nonland permanent" in oracle:
+    if "target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle:
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
@@ -721,6 +721,15 @@ def _infer_clause_effect(
         target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
         if target:
             return "exile", {"target_card_id": target}
+
+    if "return target" in oracle and "to its owner's hand" in oracle and "nonland permanent" in oracle:
+        target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
+        if target:
+            return "return_permanent_to_hand", {"target_card_id": target}
+    if "return target" in oracle and "to its owner's hand" in oracle and "creature" in oracle:
+        target = action_targets.get("target_card_id") or _first_creature(state, opponent)
+        if target:
+            return "return_permanent_to_hand", {"target_card_id": target}
 
     if "destroy target" in oracle:
         target = target_card_id or _first_creature(state, opponent)

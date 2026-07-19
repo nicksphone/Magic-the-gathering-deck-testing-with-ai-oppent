@@ -27,6 +27,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,
     "exile": handlers.exile_permanent,
+    "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,
     "put_land_from_hand": handlers.put_land_from_hand,
     "cast_from_graveyard": handlers.cast_from_graveyard,

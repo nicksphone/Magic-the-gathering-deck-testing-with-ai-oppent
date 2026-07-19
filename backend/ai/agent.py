@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import re
+from itertools import combinations
 from dataclasses import dataclass
 
 from ai.endgame_policy import should_force_closure, should_force_inevitability_line
@@ -2327,6 +2328,10 @@ class AIAgent:
         if not opp_blockers:
             return list(candidates)
 
+        searched = self._search_attack_assignments(state, candidates, player_id)
+        if searched is not None:
+            return searched
+
         from rules_engine.continuous import effective_power as _eff_pow
         from rules_engine.continuous import effective_toughness as _eff_tgh
 
@@ -2403,6 +2408,60 @@ class AIAgent:
             if total_power >= opp_life:
                 return list(candidates)
         return chosen
+
+    def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int) -> list[str] | None:
+        """Search small-board attack subsets through the defender's best legal blocks."""
+        if self.difficulty not in {"master", "master_plus"}:
+            return None
+        candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in state.cards[cid].types]
+        if not candidate_ids or len(candidate_ids) > 6:
+            return None
+        opponent = 1 if player_id == 2 else 2
+        subsets: list[tuple[str, ...]] = [()]
+        for size in range(1, len(candidate_ids) + 1):
+            subsets.extend(combinations(candidate_ids, size))
+        if len(subsets) > 128:
+            return None
+
+        best: tuple[float, tuple[str, ...], list[str]] | None = None
+        for subset in subsets:
+            sim = copy.deepcopy(state)
+            actual_attackers: list[str] = []
+            try:
+                self.engine.take_action(sim, player_id, {"type": "attack", "attackers": list(subset)})
+                actual_attackers = list(getattr(sim, "attackers", []) or [])
+                if actual_attackers:
+                    self.engine.next_step(sim)
+                    blocker_ids = [
+                        cid
+                        for cid in sim.players[opponent].battlefield
+                        if cid in sim.cards
+                        and "Creature" in sim.cards[cid].types
+                        and not sim.cards[cid].tapped
+                    ]
+                    if blocker_ids:
+                        attacker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in actual_attackers]
+                        blocker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in blocker_ids]
+                        blocks = self._search_block_assignments(sim, attacker_options, blocker_options)
+                        if blocks:
+                            self.engine.take_action(sim, opponent, {"type": "block", "blocks": blocks})
+                    self.engine.next_step(sim)
+                    self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
+            except Exception:
+                continue
+
+            score = evaluate_board(sim, player_id)
+            score += (sim.players[opponent].life - state.players[opponent].life) * -2.0
+            score += (sim.players[player_id].life - state.players[player_id].life) * 1.5
+            if sim.winner == player_id:
+                score += 1000.0
+            elif sim.winner is not None:
+                score -= 1000.0
+            score += sum(max(0, getattr(sim.cards[cid], "power", 0) or 0) for cid in actual_attackers) * 0.05
+            candidate = (score, tuple(subset), actual_attackers)
+            if best is None or candidate[:2] > best[:2]:
+                best = candidate
+        return best[2] if best is not None else None
 
     def _creature_threat_score(self, state: MatchState, creature_id: str | None, player_id: int) -> float:
         if not creature_id or creature_id not in state.cards:

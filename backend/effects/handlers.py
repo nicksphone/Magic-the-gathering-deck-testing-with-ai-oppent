@@ -409,6 +409,26 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
         state.log.append(f"{card.name} is exiled.")
 
 
+def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) -> None:
+    """Return a battlefield permanent to its owner's hand without changing ownership."""
+    target = payload.get("target_card_id")
+    if not target or target not in state.cards:
+        return
+    card = state.cards[target]
+    battlefield_controller = state.players.get(card.controller)
+    owner = state.players.get(getattr(card, "owner", card.controller))
+    if battlefield_controller is None or owner is None or target not in battlefield_controller.battlefield:
+        return
+    emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
+    battlefield_controller.battlefield.remove(target)
+    owner.hand.append(target)
+    card.zone = Zone.HAND
+    card.controller = getattr(card, "owner", card.controller)
+    card.tapped = False
+    card.summoning_sick = False
+    state.log.append(f"{card.name} returns to its owner's hand.")
+
+
 def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     if not player.graveyard:
