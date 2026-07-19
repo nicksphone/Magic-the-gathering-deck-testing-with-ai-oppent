@@ -68,6 +68,7 @@ It is designed for serious deck work:
 - Replay-prior tuning and training exports for deeper decision analysis
 - Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
 - Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
+- Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
 ### Simulation and Diagnostics
@@ -150,6 +151,8 @@ The rules engine exposes explicit choice contracts for supported tutor and top-l
 Common tempo bounce is also handled through the rules engine: nonland-permanent and creature returns use legal target hints, preserve ownership for stolen cards, emit battlefield-leave events, and return the permanent to its owner's hand. Master AI additionally evaluates small-board attack subsets through blocker search and combat resolution before committing attackers.
 
 Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
+
+Master two-ply and rollout search is also bounded by total battlefield permanents and legal-action count. This keeps token-heavy matchups responsive; it is a performance guard, not a claim of exhaustive search or pro-level optimal play on large boards.
 
 Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
 

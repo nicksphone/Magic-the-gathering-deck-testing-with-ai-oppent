@@ -808,6 +808,16 @@ class AIAgent:
             card = state.cards.get(cid) if cid else None
             if card and "Creature" in card.types:
                 castable_creature_moves.append(m)
+        # Deep-copy two-ply search is valuable on ordinary boards but scales
+        # poorly with token armies and large action surfaces. Preserve the
+        # deterministic heuristic/combat paths on dense boards instead of
+        # allowing Master simulations to monopolize a match run.
+        battlefield_size = sum(len(getattr(player, "battlefield", []) or []) for player in state.players.values())
+        use_deep_search = (
+            self.difficulty in {"master", "master_plus"}
+            and battlefield_size <= 10
+            and len(moves) <= 24
+        )
 
         def score(move: dict) -> float:
             mtype = move.get("type")
@@ -859,9 +869,9 @@ class AIAgent:
                     # Avoid stalling with threats stranded in hand when we can safely deploy.
                     base -= 2.6
             base += self._matchup_move_adjustment(state, move, player_id)
-            if self.difficulty in {"master", "master_plus"}:
+            if use_deep_search:
                 base += self._simulate_delta(state, move, player_id)
-            if self.difficulty == "master_plus":
+            if self.difficulty == "master_plus" and use_deep_search:
                 base += self._rollout_delta(state, move, player_id)
             return base
 

@@ -4,6 +4,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- AI search-budget milestone:
+  - Bounded Master/Master Plus deep-copy search by total battlefield size and legal-action count.
+  - Dense token boards now retain deterministic heuristic/combat evaluation instead of allowing two-ply/rollout branches to monopolize simulator runs.
+  - Tokens vs Ramp completed a three-game diagnostic at the 1,200-tick cap with 0 timeouts after the guard; its 3-0 result is diagnostic evidence only, not a balance conclusion.
+  - Added regression coverage; the consolidated rules/AI gate now passes 341 tests.
+
 - Rules corpus milestone:
   - Added conditional noncreature counterspell targets with explicit `unless` payment choices and deterministic automated resolution.
   - Added generic noncombat-damage replacement to `-1/-1` counters, power-based death-trigger damage, Hydroid Krasis-style self-cast X triggers, and X-counter entry handling.
