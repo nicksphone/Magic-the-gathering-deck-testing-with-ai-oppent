@@ -2689,6 +2689,21 @@ def test_master_uses_two_ply_search_only_on_developed_boards() -> None:
     assert ai._strategic_search_depth(State(), 1) == 1
 
 
+def test_master_plus_uses_bounded_three_ply_search_on_late_developed_boards() -> None:
+    ai = AIAgent(difficulty="master_plus", archetype="Control")
+
+    class State:
+        turn = 9
+        players = {
+            1: type("P", (), {"battlefield": [f"a{i}" for i in range(5)]})(),
+            2: type("P", (), {"battlefield": [f"b{i}" for i in range(5)]})(),
+        }
+
+    assert ai._strategic_search_depth(State(), 1) == 3
+    State.turn = 6
+    assert ai._strategic_search_depth(State(), 1) == 2
+
+
 def test_aggro_selects_token_mode_when_board_is_empty() -> None:
     ai = AIAgent(difficulty="strong", archetype="Aggro")
 

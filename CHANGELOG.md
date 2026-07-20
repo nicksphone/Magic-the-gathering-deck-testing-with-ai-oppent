@@ -4,6 +4,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- Adaptive Master+ search milestone:
+  - Late developed boards now receive bounded three-ply strategic planning with a four-action beam.
+  - Sparse and early-game states retain the existing cheaper horizons; the focused gate now passes 365 tests.
+
 - Simultaneous SBA milestone:
   - Non-paused lethal creature deaths now move as a batch before leave/death trigger collection.
   - Supported `one or more` death triggers are deduplicated across the simultaneous event.

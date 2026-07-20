@@ -136,7 +136,7 @@ class AIAgent:
             return None
         candidates = []
         search_depth = self._strategic_search_depth(state, player_id)
-        beam_limit = 6 if search_depth > 1 else 8
+        beam_limit = 4 if search_depth > 2 else (6 if search_depth > 1 else 8)
         for mv in self._rank_moves(state, legal_moves, player_id)[:beam_limit]:
             mat = self._materialize_action(state, mv, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
@@ -162,6 +162,13 @@ class AIAgent:
     def _strategic_search_depth(self, state: MatchState, player_id: int) -> int:
         """Choose a bounded tactical horizon without making every turn expensive."""
         if self.difficulty == "master_plus":
+            turn = int(getattr(state, "turn", 1) or 1)
+            board_size = sum(
+                len(getattr(state.players[pid], "battlefield", []) or [])
+                for pid in state.players
+            )
+            if turn >= 8 and board_size >= 10:
+                return 3
             return 2
         if self.difficulty != "master":
             return 1
