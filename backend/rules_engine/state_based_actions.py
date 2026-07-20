@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, Zone
 from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
-from rules_engine.events import emit_event
+from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.continuous import effective_toughness, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
 
@@ -78,12 +78,54 @@ def resume_legend_rule_replacement(
     if "Creature" in card.types:
         emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
+
+def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> None:
+    """Move simultaneous lethal creatures together before collecting their triggers."""
+    valid_ids = [
+        cid
+        for cid in card_ids
+        if cid in state.cards
+        and state.cards[cid].zone == Zone.BATTLEFIELD
+        and cid in state.players[state.cards[cid].controller].battlefield
+    ]
+    if not valid_ids:
+        return
+    leave_events = [
+        {"card_id": cid, "controller": state.cards[cid].controller}
+        for cid in valid_ids
+    ]
+    emit_event_batch(state, "leaves_battlefield", leave_events)
+    for cid in valid_ids:
+        card = state.cards[cid]
+        state.players[card.controller].battlefield.remove(cid)
+
+    death_events: list[dict] = []
+    creature_death_events: list[dict] = []
+    for cid in valid_ids:
+        card = state.cards[cid]
+        owner = state.players[getattr(card, "owner", card.controller)]
+        destination = replace_die_zone(state, card.controller, cid)
+        if destination == "exile":
+            owner.exile.append(cid)
+            card.zone = Zone.EXILE
+            state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
+            continue
+        owner.graveyard.append(cid)
+        card.zone = Zone.GRAVEYARD
+        state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
+        event = {"card_id": cid, "controller": card.controller}
+        death_events.append(event)
+        creature_death_events.append(event)
+    emit_event_batch(state, "permanent_dies", death_events)
+    emit_event_batch(state, "creature_dies", creature_death_events)
+
 def apply_state_based_actions(state: MatchState) -> None:
     for pid, player in state.players.items():
         if player.life <= 0:
             state.winner = 1 if pid == 2 else 2
             state.log.append(f"{player.name} has 0 or less life and loses.")
 
+    lethal_ids: list[str] = []
     for cid, card in list(state.cards.items()):
         if "Creature" in card.types and card.zone == Zone.BATTLEFIELD and card.toughness is not None:
             lethal_from_zero_toughness = effective_toughness(state, cid) <= 0
@@ -106,7 +148,11 @@ def apply_state_based_actions(state: MatchState) -> None:
                         f"Replacement choice required for lethal state-based action; {state.players[card.controller].name} must choose one of {len(options)} effects."
                     )
                     return
-                _move_lethal_creature(state, cid)
+                lethal_ids.append(cid)
+    if lethal_ids:
+        _resolve_lethal_creature_batch(state, lethal_ids)
+
+    for cid, card in list(state.cards.items()):
         if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
             battlefield_owner = state.players[card.controller]
             zone_owner = state.players[getattr(card, "owner", card.controller)]

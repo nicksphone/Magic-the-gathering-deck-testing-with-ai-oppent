@@ -25,6 +25,7 @@ It is designed for serious deck work:
 - Human-controlled legend-rule zone changes use the same resumable die-replacement choice contract; chained prevention choices and simultaneous SBA batching remain under active rules hardening.
 - Damage prevention re-evaluates the modified event and applies remaining applicable sources once each; human matches receive follow-up choices for the chain, while AI/replay uses deterministic timestamp ordering.
 - Common continuous `can't have` keyword overrides are applied after applicable grants through deterministic layer ordering.
+- Simultaneous lethal creature state-based actions batch zone changes and deduplicate supported `one or more` death triggers before stack insertion.
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents

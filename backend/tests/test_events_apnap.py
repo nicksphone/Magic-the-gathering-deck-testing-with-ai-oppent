@@ -375,6 +375,29 @@ def test_human_can_order_simultaneous_triggers_and_resume_stack() -> None:
     assert [item.source_card_id for item in state.stack] == [second, first]
 
 
+def test_state_based_lethal_creatures_emit_one_or_more_trigger_once() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=23)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    trigger_id = _put_trigger_creature(state, 1, "Whenever one or more creatures you control die, draw a card.")
+    dead_ids = []
+    for _ in range(2):
+        cid = _put_trigger_creature(state, 1, "")
+        state.cards[cid].power = 1
+        state.cards[cid].toughness = 1
+        state.cards[cid].counters["__damage_marked"] = 1
+        dead_ids.append(cid)
+
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    apply_state_based_actions(state)
+
+    assert all(state.cards[cid].zone == Zone.GRAVEYARD for cid in dead_ids)
+    assert state.cards[trigger_id].zone == Zone.BATTLEFIELD
+    assert len([item for item in state.stack if item.source_card_id == trigger_id]) == 1
+
+
 def test_creature_dies_trigger_matches_you_control_clause() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

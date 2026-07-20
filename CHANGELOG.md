@@ -4,6 +4,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- Simultaneous SBA milestone:
+  - Non-paused lethal creature deaths now move as a batch before leave/death trigger collection.
+  - Supported `one or more` death triggers are deduplicated across the simultaneous event.
+  - The focused rules/AI gate now passes 364 tests; legend-rule batching and mixed SBA classes remain open.
+
 - Human chained replacement milestone:
   - Human damage replacement choices now reopen for each remaining applicable source after the event is modified.
   - Used source IDs persist through snapshots and cannot be reused for the same damage event.
