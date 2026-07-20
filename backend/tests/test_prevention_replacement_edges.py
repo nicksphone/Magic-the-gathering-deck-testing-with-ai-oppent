@@ -216,6 +216,62 @@ def test_human_damage_replacement_chain_prompts_for_remaining_source() -> None:
     assert state.players[1].life == 19
 
 
+def test_human_permanent_damage_replacement_chain_prompts_for_remaining_source() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for index, name in enumerate(("Permanent Ward A", "Permanent Ward B"), start=1):
+        cid = f"permanent-chain-{index}"
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a source would deal damage to a creature you control, prevent 1 of that damage.",
+            static_order=index,
+        )
+        state.players[1].battlefield.append(cid)
+    target_id = state.players[1].hand[0]
+    target = state.cards[target_id]
+    target.zone = Zone.BATTLEFIELD
+    target.types = ["Creature"]
+    target.power = 3
+    target.toughness = 4
+    state.players[1].hand.remove(target_id)
+    state.players[1].battlefield.append(target_id)
+    source = CardInstance(
+        id="permanent-chain-source",
+        name="Permanent Damage Spell",
+        owner=2,
+        controller=2,
+        zone=Zone.STACK,
+        types=["Sorcery"],
+    )
+    state.cards[source.id] = source
+    add_to_stack(
+        state,
+        source_card_id=source.id,
+        controller=2,
+        label=source.name,
+        effect_key="deal_damage",
+        payload={"target_card_id": target_id, "amount": 3},
+    )
+
+    assert resolve_top_of_stack(state) is False
+    first_choice = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, first_choice)
+    assert state.pending_replacement_choice is not None
+    second_choice = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, second_choice)
+
+    assert state.pending_replacement_choice is None
+    assert target.counters.get("__damage_marked", 0) == 1
+
+
 def test_you_or_creature_you_control_damage_prevention_applies_to_player_and_perm() -> None:
     state = _state()
     shield = CardInstance(
