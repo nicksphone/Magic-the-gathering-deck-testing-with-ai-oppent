@@ -4,6 +4,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-19
 
+- Human chained replacement milestone:
+  - Human damage replacement choices now reopen for each remaining applicable source after the event is modified.
+  - Used source IDs persist through snapshots and cannot be reused for the same damage event.
+  - The focused rules/AI gate now passes 362 tests; additional replacement families and simultaneous SBA batching remain open.
+
 - Nested lethal replacement milestone:
   - State-based lethal deaths and combat cleanup now pause for human die-replacement choices before moving the card.
   - Continuations preserve ownership, exile/graveyard semantics, and subsequent death triggers; AI/replay remains deterministic.

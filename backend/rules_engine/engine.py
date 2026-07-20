@@ -317,6 +317,30 @@ class RulesEngine:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
+            if pending.get("resume_kind") == "damage_chain":
+                state.pending_replacement_choice = None
+                state.log.append(
+                    f"{state.players[player_id].name} chooses replacement source {chosen_id}."
+                )
+                resolve_effect(
+                    state,
+                    int(pending.get("controller", player_id)),
+                    "deal_damage",
+                    {
+                        "target_player": pending.get("target_player"),
+                        "target_card_id": pending.get("target_card_id"),
+                        "amount": int(pending.get("amount", 0) or 0),
+                        "__source_card_id": pending.get("source_card_id"),
+                        "__replacement_source_id": chosen_id,
+                        "__used_replacement_source_ids": list(pending.get("selected_source_ids") or [])
+                        + [chosen_id],
+                    },
+                )
+                apply_state_based_actions(state)
+                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                    state.priority_player = state.active_player
+                    state.passed_priority = set()
+                return
             if not state.stack or state.stack[-1].id != pending.get("stack_id"):
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return

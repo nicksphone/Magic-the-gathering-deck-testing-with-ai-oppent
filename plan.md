@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `361 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated rules/AI validation: `362 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -223,7 +223,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, and API smoke tests: `361 passed`.
+- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, and API smoke tests: `362 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -391,13 +391,20 @@ Exit criteria:
 
 - Damage replacement resolution now re-evaluates the modified damage event and can apply each applicable prevention source once, rather than silently stopping after the first source.
 - Explicit source selection controls the first replacement; deterministic timestamp ordering selects remaining sources for AI/replay.
-- Regression coverage now rejects the former one-replacement-only behavior; human second-choice prompts for the remaining chain are still open.
+- Regression coverage now rejects the former one-replacement-only behavior; human follow-up choices for remaining damage replacements are persisted and resolved through the chain.
 
 ### Layer and can't-override milestone
 
 - Continuous keyword removal now recognizes common `can't have` static text and applies it through the same timestamp-ordered layer-6 path as `lose` effects.
 - A granted keyword can no longer survive a later applicable `can't have` override; focused coverage protects the ordering behavior.
 - Full dependency ordering, protection-characteristic layers, and human chained replacement prompts remain open.
+
+### Human chained replacement milestone
+
+- Human damage replacement resolution now pauses again after each selected source while the modified damage event remains replaceable.
+- Previously selected replacement source IDs are persisted and excluded from later choices, preventing the same static effect from being reused for one event.
+- The continuation is snapshot-safe and supports player and permanent damage; AI/replay still use the deterministic all-applicable-source path.
+- Additional chained replacement families, simultaneous SBA batches, and full dependency ordering remain open.
 
 ### Latest audit correction
 

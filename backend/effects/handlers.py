@@ -22,11 +22,65 @@ from rules_engine.replacement import (
     damage_cant_be_prevented,
     player_cant_gain_life,
     player_cant_lose_life,
+    replacement_options,
     replace_die_zone,
     replace_draw_cards,
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
+
+
+def _queue_human_damage_replacement_choice(
+    state: MatchState,
+    controller: int,
+    payload: dict,
+    remaining_amount: int,
+    selected_source_id: str | None,
+) -> bool:
+    """Pause a human damage chain when the modified event remains replaceable."""
+    if remaining_amount <= 0 or not selected_source_id:
+        return False
+    if not getattr(state, "replacement_choice_required", False):
+        return False
+    target_player = payload.get("target_player")
+    target_card_id = payload.get("target_card_id")
+    affected_player = int(target_player) if target_player is not None else None
+    if target_card_id in state.cards:
+        affected_player = int(state.cards[target_card_id].controller)
+    human_players = set(getattr(state, "replacement_choice_players", set()) or set())
+    if affected_player is None or (human_players and affected_player not in human_players):
+        return False
+    event = "damage_to_player" if target_player is not None else "damage_to_permanent"
+    options = replacement_options(
+        state,
+        event,
+        target_player=affected_player if target_player is not None else None,
+        target_card_id=str(target_card_id) if target_card_id else None,
+    )
+    used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
+    if str(selected_source_id) not in used_source_ids:
+        used_source_ids.append(str(selected_source_id))
+    options = [option for option in options if str(option.get("source_id")) not in set(used_source_ids)]
+    if not options:
+        return False
+    state.pending_replacement_choice = {
+        "resume_kind": "damage_chain",
+        "player_id": affected_player,
+        "event": event,
+        "target_player": int(target_player) if target_player is not None else None,
+        "target_card_id": str(target_card_id) if target_card_id else None,
+        "amount": int(remaining_amount),
+        "controller": int(controller),
+        "source_card_id": payload.get("__source_card_id"),
+        "selected_source_ids": used_source_ids,
+        "options": options,
+    }
+    state.priority_player = affected_player
+    state.passed_priority = set()
+    state.log.append(
+        f"Replacement choice required for remaining {event}; {state.players[affected_player].name} must choose one of {len(options)} effects."
+    )
+    return True
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -90,6 +144,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
     target_card_id = payload.get("target_card_id")
     amount = int(payload.get("amount", 0))
     source_card_id = payload.get("__source_card_id")
+    selected_source_id = payload.get("__replacement_source_id")
+    human_chain = bool(selected_source_id and getattr(state, "replacement_choice_required", False))
     prevention_locked = damage_cant_be_prevented(
         state,
         source_card_id=source_card_id,
@@ -115,8 +171,11 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state,
                 target_card_id,
                 amount,
-                replacement_source_id=payload.get("__replacement_source_id"),
+                replacement_source_id=selected_source_id,
+                max_replacements=1 if human_chain else None,
             )
+            if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+                return
             post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
@@ -133,8 +192,11 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             state,
             int(target_player),
             amount,
-            replacement_source_id=payload.get("__replacement_source_id"),
+            replacement_source_id=selected_source_id,
+            max_replacements=1 if human_chain else None,
         )
+        if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+            return
         post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")

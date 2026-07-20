@@ -116,6 +116,7 @@ def apply_damage_replacements(
     target_player: int | None,
     amount: int,
     replacement_source_id: str | None = None,
+    max_replacements: int | None = None,
 ) -> int:
     out = int(amount)
     if target_player is None:
@@ -127,13 +128,15 @@ def apply_damage_replacements(
     ]
     used: set[str] = set()
     requested = replacement_source_id
-    while out > 0:
+    applied = 0
+    while out > 0 and (max_replacements is None or applied < max_replacements):
         available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
         chosen = _choose_replacement_candidate(state, available, requested, "damage to player")
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
         out = max(0, out - 1)
+        applied += 1
         requested = None
     return out
 
@@ -143,6 +146,7 @@ def apply_permanent_damage_replacements(
     target_card_id: str,
     amount: int,
     replacement_source_id: str | None = None,
+    max_replacements: int | None = None,
 ) -> int:
     out = int(amount)
     if target_card_id not in state.cards:
@@ -155,13 +159,15 @@ def apply_permanent_damage_replacements(
     ]
     used: set[str] = set()
     requested = replacement_source_id
-    while out > 0:
+    applied = 0
+    while out > 0 and (max_replacements is None or applied < max_replacements):
         available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
         chosen = _choose_replacement_candidate(state, available, requested, f"damage to {target.name}")
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
         out = max(0, out - 1)
+        applied += 1
         requested = None
     return out
 

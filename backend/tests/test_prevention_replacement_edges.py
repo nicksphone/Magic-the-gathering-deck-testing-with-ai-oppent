@@ -159,6 +159,63 @@ def test_damage_replacement_re_evaluates_remaining_sources() -> None:
     assert sum("selected from 2" in line for line in state.log) == 1
 
 
+def test_human_damage_replacement_chain_prompts_for_remaining_source() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for index, name in enumerate(("Human Ward A", "Human Ward B"), start=1):
+        cid = f"human-chain-{index}"
+        state.cards[cid] = CardInstance(
+            id=cid,
+            name=name,
+            owner=1,
+            controller=1,
+            zone=Zone.BATTLEFIELD,
+            types=["Enchantment"],
+            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+            static_order=index,
+        )
+        state.players[1].battlefield.append(cid)
+    source = CardInstance(
+        id="human-chain-source",
+        name="Damage Spell",
+        owner=2,
+        controller=2,
+        zone=Zone.STACK,
+        types=["Sorcery"],
+    )
+    state.cards[source.id] = source
+    add_to_stack(
+        state,
+        source_card_id=source.id,
+        controller=2,
+        label=source.name,
+        effect_key="deal_damage",
+        payload={"target_player": 1, "amount": 3},
+    )
+
+    assert resolve_top_of_stack(state) is False
+    first_choice = RulesEngine().legal_moves(state, 1)[0]
+    RulesEngine().take_action(state, 1, first_choice)
+
+    assert state.pending_replacement_choice is not None
+    assert state.pending_replacement_choice["resume_kind"] == "damage_chain"
+    assert state.players[1].life == 20
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.pending_replacement_choice == state.pending_replacement_choice
+    choice_count = 1
+    while state.pending_replacement_choice is not None:
+        next_choice = RulesEngine().legal_moves(state, 1)[0]
+        RulesEngine().take_action(state, 1, next_choice)
+        choice_count += 1
+
+    assert state.pending_replacement_choice is None
+    assert choice_count == 2
+    assert state.players[1].life == 19
+
+
 def test_you_or_creature_you_control_damage_prevention_applies_to_player_and_perm() -> None:
     state = _state()
     shield = CardInstance(
