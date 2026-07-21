@@ -12,7 +12,7 @@ from ai.matchup_profiles import profile_for
 from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
-from rules_engine.continuous import effective_keywords, effective_power
+from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
@@ -20,6 +20,17 @@ from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_man
 def _has_counter_spell_text(text: str) -> bool:
     normalized = str(text or "").lower()
     return "counter target spell" in normalized or "counter target noncreature spell" in normalized or "counterspell" in normalized
+
+
+def _effective_combat_stats(state: MatchState, card_id: str) -> tuple[int, int]:
+    """Read resolved combat stats, falling back safely for lightweight fixtures."""
+    card = state.cards.get(card_id)
+    if card is None:
+        return (0, 0)
+    try:
+        return (int(effective_power(state, card_id)), int(effective_toughness(state, card_id)))
+    except Exception:
+        return (int(getattr(card, "power", 0) or 0), int(getattr(card, "toughness", 0) or 0))
 
 
 @dataclass
@@ -933,9 +944,9 @@ class AIAgent:
         if not attackers:
             return -1.0
         opp_id = 1 if player_id == 2 else 2
-        attack_power = sum((state.cards[c].power or 0) for c in attackers if c in state.cards)
+        attack_power = sum(_effective_combat_stats(state, c)[0] for c in attackers if c in state.cards)
         opp_block_power = sum(
-            (state.cards[c].power or 0)
+            _effective_combat_stats(state, c)[0]
             for c in state.players[opp_id].battlefield
             if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
         )
@@ -1055,7 +1066,7 @@ class AIAgent:
             if cid in state.cards and "Creature" in state.cards[cid].types
         )
         opp_board_power = sum(
-            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[opp_id].battlefield
             if cid in state.cards and "Creature" in state.cards[cid].types
         )
@@ -1154,7 +1165,7 @@ class AIAgent:
         attacker_ids = [x["id"] for x in (move.get("attackers") or [])]
         if not blocker_ids or not attacker_ids:
             return -0.8
-        threatened = sum((state.cards.get(cid).power or 0) for cid in attacker_ids if cid in state.cards)
+        threatened = sum(_effective_combat_stats(state, cid)[0] for cid in attacker_ids if cid in state.cards)
         life = state.players[player_id].life
         lethal_pressure = 4.0 if threatened >= life else 0.0
         profitable = 0.0
@@ -1162,15 +1173,13 @@ class AIAgent:
             atk = state.cards.get(aid)
             if not atk:
                 continue
-            atk_pow = atk.power or 0
-            atk_tgh = atk.toughness or 0
+            atk_pow, atk_tgh = _effective_combat_stats(state, aid)
             best = 0.0
             for bid in blocker_ids:
                 blk = state.cards.get(bid)
                 if not blk:
                     continue
-                blk_pow = blk.power or 0
-                blk_tgh = blk.toughness or 0
+                blk_pow, blk_tgh = _effective_combat_stats(state, bid)
                 score = 0.0
                 if blk_pow >= atk_tgh:
                     score += 1.6
@@ -2171,19 +2180,19 @@ class AIAgent:
         if searched is not None:
             return searched
         assignments: dict[str, str | list[str]] = {}
-        player_id = getattr(state, "priority_player", None)
-        if player_id not in getattr(state, "players", {}):
-            player_id = None
-            for bid in available:
-                blk = state.cards.get(bid)
-                ctrl = getattr(blk, "controller", None)
-                if ctrl in getattr(state, "players", {}):
-                    player_id = ctrl
-                    break
-            if player_id is None:
-                player_id = 1
+        # During declare blockers priority may still belong to the active
+        # attacker. The blocker controller, not priority_player, owns the
+        # life-total and combat-role decisions here.
+        player_id = next(
+            (
+                getattr(state.cards.get(bid), "controller", None)
+                for bid in available
+                if getattr(state.cards.get(bid), "controller", None) in getattr(state, "players", {})
+            ),
+            getattr(state, "priority_player", 1),
+        )
         incoming_total = sum(
-            (state.cards[a["id"]].power or 0)
+            _effective_combat_stats(state, a["id"])[0]
             for a in attackers
             if a.get("id") in state.cards
         )
@@ -2193,7 +2202,7 @@ class AIAgent:
         prevented = 0
         sorted_attackers = sorted(
             [a for a in attackers if a.get("id") in state.cards],
-            key=lambda a: (state.cards[a["id"]].power or 0),
+            key=lambda a: _effective_combat_stats(state, a["id"])[0],
             reverse=True,
         )
         for a in sorted_attackers:
@@ -2201,8 +2210,7 @@ class AIAgent:
             atk = state.cards.get(aid)
             if not atk:
                 continue
-            atk_pow = atk.power or 0
-            atk_tgh = atk.toughness or 0
+            atk_pow, atk_tgh = _effective_combat_stats(state, aid)
             atk_has_trample = "trample" in set(effective_keywords(state, aid))
             atk_has_deathtouch = "deathtouch" in set(effective_keywords(state, aid))
             required_blockers = 2 if self._requires_two_or_more_blockers(state, atk) else 1
@@ -2213,8 +2221,7 @@ class AIAgent:
                 blk = state.cards.get(bid)
                 if not blk:
                     continue
-                blk_pow = blk.power or 0
-                blk_tgh = blk.toughness or 0
+                blk_pow, blk_tgh = _effective_combat_stats(state, bid)
                 score = 0.0
                 # Primary value: prevent face damage.
                 score += (atk_pow or 0) * 1.15
@@ -2303,7 +2310,14 @@ class AIAgent:
         blocker_ids = [item["id"] for item in blockers if item.get("id") in state.cards]
         if not attacker_ids or not blocker_ids or len(attacker_ids) > 4 or len(blocker_ids) > 5:
             return None
-        defender = getattr(state, "priority_player", None)
+        defender = next(
+            (
+                getattr(state.cards.get(bid), "controller", None)
+                for bid in blocker_ids
+                if getattr(state.cards.get(bid), "controller", None) in getattr(state, "players", {})
+            ),
+            getattr(state, "priority_player", None),
+        )
         if defender not in getattr(state, "players", {}):
             defender = state.cards[blocker_ids[0]].controller
         choices: dict[str, list[str | None]] = {}
@@ -2346,7 +2360,7 @@ class AIAgent:
         initial_life = state.players[defender].life
         opponent = 1 if defender == 2 else 2
         incoming_power = sum(
-            max(0, int(getattr(state.cards[aid], "power", 0) or 0))
+            max(0, _effective_combat_stats(state, aid)[0])
             for aid in attacker_ids
         )
         for assignment in assignments:
@@ -2360,10 +2374,10 @@ class AIAgent:
                         if target == aid and bid in state.cards
                     ]
                     blocking_power = sum(
-                        max(0, int(getattr(blocker, "power", 0) or 0))
+                        max(0, _effective_combat_stats(state, blocker.id)[0])
                         for blocker in assigned_blockers
                     )
-                    if blocking_power >= max(0, int(getattr(attacker, "toughness", 0) or 0)):
+                    if blocking_power >= max(0, _effective_combat_stats(state, attacker.id)[1]):
                         chump_only = False
                         break
                 if chump_only:
@@ -2503,7 +2517,7 @@ class AIAgent:
 
         # If nothing qualifies but we have lethal on board, send all.
         if not chosen:
-            total_power = sum((state.cards[c].power or 0) for c in candidates if c in state.cards)
+            total_power = sum(_effective_combat_stats(state, c)[0] for c in candidates if c in state.cards)
             if total_power >= opp_life:
                 return list(candidates)
         return chosen
@@ -2567,7 +2581,7 @@ class AIAgent:
                 score += 1000.0
             elif sim.winner is not None:
                 score -= 1000.0
-            score += sum(max(0, getattr(sim.cards[cid], "power", 0) or 0) for cid in actual_attackers) * 0.05
+            score += sum(max(0, _effective_combat_stats(sim, cid)[0]) for cid in actual_attackers) * 0.05
             candidate = (score, tuple(subset), actual_attackers)
             if best is None or candidate[:2] > best[:2]:
                 best = candidate
@@ -3373,12 +3387,12 @@ class AIAgent:
         my_life = int(getattr(state.players[player_id], "life", 20) or 20)
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
         my_power = sum(
-            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[player_id].battlefield
             if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
         )
         opp_power = sum(
-            max(0, int(getattr(state.cards.get(cid), "power", 0) or 0))
+            max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[opp_id].battlefield
             if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
         )

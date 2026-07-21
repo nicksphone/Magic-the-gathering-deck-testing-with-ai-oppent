@@ -55,6 +55,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Replay comparison metadata now strips raw log arrays so the API cannot accidentally return an entire game log.
   - Added Testing Simulator controls for paging through selected game logs.
 
+- Effective-stat combat AI milestone:
+  - Attack/block heuristics and bounded combat search now use resolved effective power/toughness rather than raw printed stats.
+  - Blocker decisions derive the defending player from blocker control, not whichever player currently has priority.
+  - Added anthem-buff and attacker-priority regressions; full backend validation passes `556` tests.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

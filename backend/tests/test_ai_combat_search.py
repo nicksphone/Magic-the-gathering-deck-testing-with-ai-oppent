@@ -60,6 +60,67 @@ def test_master_block_search_avoids_safe_life_chump_block() -> None:
     assert action == {}
 
 
+def test_master_block_search_uses_effective_anthem_stats() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=662,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = 1
+    state.priority_player = 2
+    state.players[2].life = 2
+    attacker = CardInstance("attacker-anthem", "Bear", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    blocker = CardInstance("blocker-anthem", "Soldier", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1)
+    anthem = CardInstance(
+        "anthem", "Field Anthem", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
+        oracle_text="Creatures you control get +1/+1.",
+    )
+    state.cards.update({attacker.id: attacker, blocker.id: blocker, anthem.id: anthem})
+    state.players[1].battlefield.append(attacker.id)
+    state.players[2].battlefield.extend([blocker.id, anthem.id])
+    state.attackers = [attacker.id]
+
+    action = AIAgent(difficulty="master", archetype="Control")._choose_blocks(
+        state,
+        [{"id": attacker.id, "name": attacker.name}],
+        [{"id": blocker.id, "name": blocker.name}],
+    )
+
+    assert action == {attacker.id: blocker.id}
+
+
+def test_block_search_uses_blocker_controller_when_attacker_has_priority() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=663,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = 1
+    state.priority_player = 1
+    state.players[1].life = 20
+    state.players[2].life = 2
+    attacker = CardInstance("attacker-priority", "Bear", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    blocker = CardInstance("blocker-priority", "Bear", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    state.cards.update({attacker.id: attacker, blocker.id: blocker})
+    state.players[1].battlefield.append(attacker.id)
+    state.players[2].battlefield.append(blocker.id)
+    state.attackers = [attacker.id]
+
+    action = AIAgent(difficulty="master", archetype="Control")._choose_blocks(
+        state,
+        [{"id": attacker.id, "name": attacker.name}],
+        [{"id": blocker.id, "name": blocker.name}],
+    )
+
+    assert action == {attacker.id: blocker.id}
+
+
 def test_ai_materializes_required_library_search_choice() -> None:
     state = MatchFactory.from_decks(
         [{"quantity": 60, "card_name": "Forest"}],

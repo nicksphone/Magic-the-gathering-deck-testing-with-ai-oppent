@@ -83,6 +83,7 @@ It is designed for serious deck work:
 - Replay-prior tuning and training exports for deeper decision analysis
 - Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
 - Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
+- Combat AI evaluates resolved effective stats and blocker ownership, including counters, continuous buffs, temporary changes, and characteristic-defined values
 - Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
