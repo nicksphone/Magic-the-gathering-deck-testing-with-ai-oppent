@@ -45,6 +45,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Comparison avoids raw log loading; full line-by-line replay diff remains separate.
   - Full backend validation passes `553` tests; frontend production build and deterministic replay smoke pass.
 
+- Persisted replay diff milestone:
+  - Added `/diagnostics/compare/replay` to compare selected persisted games and return the first normalized divergent line with root-cause classification and bounded context.
+  - Added Testing Simulator controls for comparing game indexes from two diagnostic runs.
+  - Full backend validation, frontend production build, and deterministic replay smoke remain release gates.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated backend validation: `553 passed`, 77 deprecation warnings; frontend production build passes.
+- Current consolidated backend validation: `554 passed`, 88 deprecation warnings; frontend production build passes.
 - Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Latest six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels after the static spell-tax change.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
@@ -33,6 +33,7 @@ Verified strengths:
 - The frontend now lists persisted diagnostic runs and opens a bounded root-cause snapshot containing summary, anomaly clusters, and at most five sample games.
 - Persisted diagnostic runs now expose up to 20 ordinary game summaries with 80-line log excerpts, and the Testing Simulator provides a bounded game selector.
 - Persisted diagnostic summaries can now be compared through a bounded numeric-delta API and the Testing Simulator comparison controls.
+- Persisted diagnostic games can now be compared by selected game index; the API returns the first normalized divergent line, category, and bounded context without exposing full logs.
 - Continuous and replacement effects now carry an explicit persisted monotonic timestamp, with legacy `static_order` fallback and deterministic battlefield/instance tie-breakers.
 - Continuous-layer diagnostics now order supported keyword effects before base-P/T setters and modifiers using explicit layer ranks, without changing unsupported Oracle behavior.
 
@@ -237,7 +238,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, replay-browser API, bounded-run comparison, and API smoke tests: `553 passed`.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, replay-browser API, bounded-run comparison, persisted replay diff, and API smoke tests: `554 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -375,7 +376,7 @@ Exit criteria:
 2. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 3. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 4. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
-5. Finish bulk card/token completeness reporting, add full line-by-line replay playback and drift comparison beyond the bounded summary browser, then validate LAN deployment and long-session UX.
+5. Finish bulk card/token completeness reporting, extend replay comparison into full interactive line-by-line playback beyond the bounded first-divergence response, then validate LAN deployment and long-session UX.
 
 ### Replacement pause/resume milestone
 
@@ -443,7 +444,14 @@ Exit criteria:
 - Added `/diagnostics/compare` for numeric summary deltas between two persisted runs without reading raw JSONL logs.
 - Added Testing Simulator selectors for comparing two persisted runs and displaying the returned deltas.
 - Added API coverage for numeric nested fields and missing-run handling; full line-by-line replay diff remains open.
-- Full backend validation passes `553` tests, frontend production build passes, and seeded replay has 0 determinism failures.
+- Full backend validation passes `554` tests, frontend production build passes, and seeded replay has 0 determinism failures.
+
+### Persisted replay diff milestone
+
+- Added `/diagnostics/compare/replay` for bounded selected-game comparison across two persisted runs.
+- The endpoint reuses normalized first-divergence and root-cause classification, caps selectable games at the first 20 records and each compared log at 5,000 lines, and returns no full log payload.
+- The Testing Simulator now exposes game indexes and displays the categorized first divergence with surrounding context.
+- Full backend validation, frontend production build, and deterministic replay smoke remain release gates.
 
 ### Simultaneous trigger ordering milestone
 

@@ -21,6 +21,7 @@ from ai.agent import AIAgent
 from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
+from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService
 from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
@@ -946,6 +947,37 @@ def _valid_diagnostic_run_name(run_name: str) -> bool:
     return bool(run_name) and Path(run_name).name == run_name and run_name not in {".", ".."}
 
 
+def _read_diagnostic_game(run_name: str, game_index: int) -> dict:
+    """Read one bounded games.jsonl record for replay comparison."""
+    if not _valid_diagnostic_run_name(run_name) or game_index < 0 or game_index >= 20:
+        raise HTTPException(status_code=400, detail="Invalid diagnostic game selection")
+    path = DIAGNOSTICS_ROOT / run_name / "games.jsonl"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Diagnostic game log not found")
+    try:
+        with path.open("r", encoding="utf-8") as stream:
+            for index, line in enumerate(stream):
+                if index > game_index:
+                    break
+                if index != game_index:
+                    continue
+                try:
+                    value = json.loads(line)
+                except ValueError as exc:
+                    raise HTTPException(status_code=422, detail="Diagnostic game record is invalid JSON") from exc
+                if not isinstance(value, dict):
+                    raise HTTPException(status_code=422, detail="Diagnostic game record is not an object")
+                log = value.get("log")
+                if not isinstance(log, list):
+                    log = value.get("log_excerpt")
+                if not isinstance(log, list):
+                    raise HTTPException(status_code=422, detail="Diagnostic game has no replay log")
+                return {"game_index": game_index, "record": value, "log": [str(item) for item in log[:5000]]}
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail="Unable to read diagnostic game log") from exc
+    raise HTTPException(status_code=404, detail="Diagnostic game index not found")
+
+
 def _numeric_summary_values(value: object, prefix: str = "") -> dict[str, float]:
     values: dict[str, float] = {}
     if isinstance(value, dict):
@@ -980,6 +1012,20 @@ def compare_diagnostic_runs(left: str, right: str) -> dict:
             }
             for key in keys
         },
+    }
+
+
+@app.get("/diagnostics/compare/replay")
+def compare_diagnostic_replay(left: str, right: str, left_game: int = 0, right_game: int = 0) -> dict:
+    """Return the first normalized line divergence for two bounded persisted games."""
+    left_item = _read_diagnostic_game(left, int(left_game))
+    right_item = _read_diagnostic_game(right, int(right_game))
+    drift = first_log_divergence(left_item["log"], right_item["log"])
+    return {
+        "left": {"run_name": left, "game_index": left_item["game_index"], "record": left_item["record"]},
+        "right": {"run_name": right, "game_index": right_item["game_index"], "record": right_item["record"]},
+        "first_divergence": classify_first_divergence(drift),
+        "identical": drift.get("index") == -1,
     }
 
 

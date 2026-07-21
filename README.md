@@ -250,6 +250,7 @@ Key endpoints:
 - `GET /diagnostics/runs`
 - `GET /diagnostics/runs/{run_name}`
 - `GET /diagnostics/compare`
+- `GET /diagnostics/compare/replay`
 - `GET /ai/priors`
 - `POST /ai/priors/rebuild`
 - `GET /analytics/history`
@@ -265,6 +266,7 @@ The application currently supports:
 - Local card caching with image fallback handling
 - Replay logs, batch simulations, matchup stats, anomaly diagnostics, turn-level AI trace summaries, and training trace export
 - Compact first-divergence drilldown for replay drift analysis
+- Bounded persisted-game replay comparison with categorized first-divergence context
 - Role-aware log priors derived from replay traces and training exports
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation
 - AI seat control with archetype detection, hand-profile mulligan logic, curve evaluation, interaction heuristics, attack heuristics, and keyword-aware battlefield evaluation
@@ -277,7 +279,7 @@ Current focus:
 - deepening tactical AI for complex board states and matchup-specific heuristics
 - broadening deterministic replay coverage across more representative deck pairings
 - keeping the UI dense and readable during long sessions
-- adding full line-by-line replay diff beyond bounded persisted summary deltas
+- extending bounded replay comparison into interactive full line-by-line playback
 
 ## Known Limitations and Next Upgrades
 
@@ -286,6 +288,7 @@ Current focus:
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.
 - The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
 - Larger deterministic replay matrices and longer validation runs would improve confidence in balance and edge-case coverage.
+- Persisted replay comparison intentionally caps game selection and log lines; full interactive replay playback remains future work.
 - The UI still has room for more polished long-session deck-testing ergonomics.
 
 ## Development Notes

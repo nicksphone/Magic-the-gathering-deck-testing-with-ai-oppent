@@ -27,6 +27,9 @@ export function AnalyticsPanel({ decks }: Props) {
   const [compareLeft, setCompareLeft] = useState("");
   const [compareRight, setCompareRight] = useState("");
   const [comparison, setComparison] = useState<Record<string, unknown> | null>(null);
+  const [replayComparison, setReplayComparison] = useState<Record<string, unknown> | null>(null);
+  const [replayLeftGame, setReplayLeftGame] = useState(0);
+  const [replayRightGame, setReplayRightGame] = useState(0);
   const [diagnosticError, setDiagnosticError] = useState("");
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
   const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
@@ -59,6 +62,16 @@ export function AnalyticsPanel({ decks }: Props) {
     try {
       setDiagnosticError("");
       setComparison(await api.compareDiagnosticRuns(compareLeft, compareRight) as unknown as Record<string, unknown>);
+    } catch (err) {
+      setDiagnosticError(String(err));
+    }
+  }
+
+  async function compareDiagnosticReplay() {
+    if (!compareLeft || !compareRight || compareLeft === compareRight) return;
+    try {
+      setDiagnosticError("");
+      setReplayComparison(await api.compareDiagnosticReplay(compareLeft, compareRight, replayLeftGame, replayRightGame) as unknown as Record<string, unknown>);
     } catch (err) {
       setDiagnosticError(String(err));
     }
@@ -243,10 +256,16 @@ export function AnalyticsPanel({ decks }: Props) {
               {diagnosticRuns.map((run) => <option key={`right-${run.run_name}`} value={run.run_name}>{run.run_name}</option>)}
             </select>
             <button type="button" onClick={() => void compareDiagnosticRuns()} disabled={!compareLeft || !compareRight || compareLeft === compareRight}>Compare Summaries</button>
+            <input aria-label="Left replay game" type="number" min="0" max="19" value={replayLeftGame} onChange={(event) => setReplayLeftGame(Math.max(0, Math.min(19, Number(event.target.value) || 0)))} />
+            <input aria-label="Right replay game" type="number" min="0" max="19" value={replayRightGame} onChange={(event) => setReplayRightGame(Math.max(0, Math.min(19, Number(event.target.value) || 0)))} />
+            <button type="button" onClick={() => void compareDiagnosticReplay()} disabled={!compareLeft || !compareRight || compareLeft === compareRight}>Compare Replay Lines</button>
           </div>
         ) : null}
         {comparison ? (
           <pre className="analytics-log-excerpt">{JSON.stringify(comparison, null, 2)}</pre>
+        ) : null}
+        {replayComparison ? (
+          <pre className="analytics-log-excerpt">{JSON.stringify(replayComparison, null, 2)}</pre>
         ) : null}
         {selectedDiagnostic ? (
           <div>

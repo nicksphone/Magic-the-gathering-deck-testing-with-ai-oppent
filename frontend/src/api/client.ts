@@ -147,6 +147,13 @@ export type DiagnosticRunComparison = {
   }>;
 };
 
+export type DiagnosticReplayComparison = {
+  left: { run_name: string; game_index: number; record: Record<string, unknown> };
+  right: { run_name: string; game_index: number; record: Record<string, unknown> };
+  first_divergence: Record<string, unknown>;
+  identical: boolean;
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -230,4 +237,8 @@ export const api = {
     req<DiagnosticRunDetail>(`/diagnostics/runs/${encodeURIComponent(runName)}`),
   compareDiagnosticRuns: (left: string, right: string) =>
     req<DiagnosticRunComparison>(`/diagnostics/compare?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`),
+  compareDiagnosticReplay: (left: string, right: string, leftGame = 0, rightGame = 0) =>
+    req<DiagnosticReplayComparison>(
+      `/diagnostics/compare/replay?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}&left_game=${leftGame}&right_game=${rightGame}`,
+    ),
 };

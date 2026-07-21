@@ -128,3 +128,26 @@ def test_api_diagnostic_compare_returns_numeric_deltas(tmp_path, monkeypatch) ->
     assert response.json()["numeric_deltas"]["matches"]["delta_right_minus_left"] == 10
     assert response.json()["numeric_deltas"]["wins.deck_a"]["delta_right_minus_left"] == 9
     assert bad.status_code == 404
+
+
+def test_api_diagnostic_replay_compare_returns_first_divergence(tmp_path, monkeypatch) -> None:
+    for name, first_action in (("left", "Player A plays Island."), ("right", "Player A plays Mountain.")):
+        run_dir = tmp_path / name
+        run_dir.mkdir()
+        (run_dir / "summary.json").write_text(json.dumps({"matches": 1}), encoding="utf-8")
+        (run_dir / "games.jsonl").write_text(
+            json.dumps({"game": 1, "log": ["Game start.", f"Player A plays land {first_action}", "Player A passes priority."]}) + "\n",
+            encoding="utf-8",
+        )
+    monkeypatch.setattr(main, "DIAGNOSTICS_ROOT", tmp_path)
+
+    with TestClient(app) as client:
+        response = client.get("/diagnostics/compare/replay?left=left&right=right")
+        identical = client.get("/diagnostics/compare/replay?left=left&right=left")
+        bad_index = client.get("/diagnostics/compare/replay?left=left&right=right&left_game=20")
+
+    assert response.status_code == 200
+    assert response.json()["first_divergence"]["index"] == 1
+    assert response.json()["first_divergence"]["category"] == "land_drop_mismatch"
+    assert identical.json()["identical"] is True
+    assert bad_index.status_code == 400
