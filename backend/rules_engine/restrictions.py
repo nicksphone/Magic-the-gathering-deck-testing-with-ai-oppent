@@ -39,6 +39,8 @@ def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
     step = state.step
     is_active = state.active_player == player_id
     opponent_turn = state.active_player != player_id
+    types = {str(value) for value in (getattr(card, "types", []) or [])}
+    has_flash = "flash" in {str(value).lower() for value in (getattr(card, "keywords", []) or [])} or "flash" in text
     in_combat = step in {
         Step.BEGIN_COMBAT,
         Step.DECLARE_ATTACKERS,
@@ -47,6 +49,15 @@ def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
         Step.END_COMBAT,
     }
     in_upkeep = step == Step.UPKEEP
+
+    # Non-instant spells and permanents use sorcery timing unless they have
+    # flash. The previous implementation only handled explicit "only during"
+    # clauses, which exposed ordinary sorceries/creatures as legal casts in
+    # every priority window.
+    non_instant_spell = bool(types & {"Sorcery", "Creature", "Artifact", "Enchantment", "Planeswalker", "Battle"})
+    if non_instant_spell and "Instant" not in types and not has_flash:
+        if not (is_active and step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack):
+            return (False, "Cast only at sorcery speed.")
 
     if "only during your turn" in text and not is_active:
         return (False, "Cast only during your turn.")

@@ -60,6 +60,32 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
             legal_types = {m["type"] for m in legal}
             if action.get("type") not in legal_types:
                 action = {"type": "pass_priority"}
+        state.log.append(
+            "AI TRACE "
+            + json.dumps(
+                {
+                    "trace": True,
+                    "pid": pid,
+                    "turn": state.turn,
+                    "step": str(state.step),
+                    "active_player": state.active_player,
+                    "priority_player": state.priority_player,
+                    "hand": [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                    "battlefield": [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards],
+                    "legal_non_pass": any(move.get("type") != "pass_priority" for move in legal),
+                    "legal_meaningful": any(
+                        move.get("type") in {
+                            "play_land", "cast_spell", "activate_ability", "activate_loyalty",
+                            "cycle_card", "equip", "attack",
+                        }
+                        for move in legal
+                    ),
+                    "legal_action_types": sorted({str(move.get("type")) for move in legal}),
+                    "action": action,
+                },
+                separators=(",", ":"),
+            )
+        )
         engine_rules.take_action(state, pid, action)
         if state.step == state.step.COMBAT_DAMAGE:
             engine_rules.take_action(state, state.active_player, {"type": "combat_damage"})

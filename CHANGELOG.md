@@ -4,6 +4,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-21
 
+- Spell timing and seeded match validation milestone:
+  - Enforced default sorcery-speed timing for sorceries and non-flash permanents instead of only honoring explicit timing clauses.
+  - Regression traces now distinguish main-phase actionable passes from legitimate instant-speed hold decisions and long games.
+  - Mono Red Aggro vs Dimir Control completed best-of-3 and best-of-9 at the 1,800-tick cap with zero timeouts/determinism failures; best-of-9 was 5-4.
+  - Full non-API backend validation passes `560` tests; full-corpus balance remains open.
+
 - Saga/event and land-legality milestone:
   - Added generic Saga chapter II next-creature entry counters and chapter III transformed back-face resolution with snapshot-safe pending state.
   - Supported Delver, Sprite Dragon, and Soul-Scar Mage event patterns no longer emit false cast-parser fallback diagnostics.

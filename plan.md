@@ -12,10 +12,10 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current validation in this checkout: `558 passed` when API smoke tests are excluded. The installed environment has FastAPI `0.136`/Starlette `1.0`/httpx `0.28`, while the repository pins FastAPI `0.115`/httpx `0.27`; all seven API smoke tests stall inside the incompatible TestClient stack, including a minimal FastAPI app. Re-run the full gate inside the pinned requirements environment before release.
-- Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current validation in this checkout: `560 passed` when API smoke tests are excluded. The installed environment has FastAPI `0.136`/Starlette `1.0`/httpx `0.28`, while the repository pins FastAPI `0.115`/httpx `0.27`; all seven API smoke tests stall inside the incompatible TestClient stack, including a minimal FastAPI app. Re-run the full gate inside the pinned requirements environment before release.
+- Current deterministic replay validation has 0 determinism failures on the representative smoke and the Mono Red Aggro vs Dimir Control best-of-3/best-of-9 runs.
 - The corrected four-deck representative replay completed 6 hydrated games with 0 timeouts, 0 cost failures, 0 invalid targets, 0 stall streaks, 0 missed-land windows, and no unresolved Oracle diagnostics after the Saga/event-layer and land-legality fixes.
-- Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
+- Tempo vs Dimir Control three-game smoke completed with 0 timeouts and no obvious bad-attack, losing-block, or missed-land classifications; Tempo won 3-0, which is diagnostic evidence only and not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
 This is an engineering-completeness audit, not a claim that the simulator is rules-complete. The application is usable for deterministic deck testing and common archetypes, but it should not yet be described as a pro-level Magic rules implementation or as an AI trained to optimal play across arbitrary cards.
@@ -93,7 +93,7 @@ Release blockers identified by the audit:
 - Deck parser imports now also strip common set annotations like `[M11]` and `(XLN)` before lookup, which improves pasted decklist hydration.
 - Deck parser imports now accept `4x Card Name` multiplier notation and ignore common comment lines, which broadens pasted-list support.
 - Bounded regression gating completes successfully on a small deck sample.
-- The current bounded regression matrix on six representative decks completed with 0 timeouts, 0 determinism failures, and 0 anomaly hits.
+- The prior bounded regression matrix on six representative decks completed with 0 timeouts, 0 determinism failures, and 0 anomaly hits; the latest timing/trace changes require a fresh six-deck rerun before release sign-off.
 - Scryfall sync and token-art lookup now retry briefly on 429 responses instead of failing immediately.
 - Card sync now falls back to cached metadata if a retryable Scryfall lookup still fails.
 - Fallback card lookup now normalizes punctuation and spacing so common import-name variants can still resolve to cached metadata.
@@ -240,8 +240,8 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, effective-stat combat AI, replay-browser API, bounded-run comparison, persisted replay diff, paginated replay playback, front-face DFC typing, and land legality: `558 passed` excluding the incompatible API smoke environment.
-- The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates complete match sequences; targeted post-fix head-to-head replay completed with zero timeouts and no X-cost errors.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, effective-stat combat AI, replay-browser API, bounded-run comparison, persisted replay diff, paginated replay playback, front-face DFC typing, default spell timing, legal-action trace classification, and land legality: `560 passed` excluding the incompatible API smoke environment.
+- The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates complete match sequences. Mono Red Aggro vs Dimir Control completed best-of-3 and best-of-9 validation at the 1,800-tick cap with zero timeouts/determinism failures; best-of-9 finished 5-4 and is not a full-corpus balance conclusion.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
@@ -526,6 +526,14 @@ Exit criteria:
 - Front-face double-faced type lines are used until transformation, preventing combined Scryfall type lines from making a back-face creature playable or attackable early.
 - Added Saga, event-parser, snapshot, DFC typing, and stack-land legality regressions.
 - The corrected hydrated four-deck replay completed 6 games with zero hard errors, land-window anomalies, stalls, or unresolved Oracle families. The next work remains broader adversarial rules coverage and deeper strategic AI, not these surfaced defects.
+
+### Default spell timing and seeded match validation milestone
+
+- Ordinary sorceries and non-flash permanents now require the active player's precombat or postcombat main phase with an empty stack; instant-speed cards and flash remain legal in response windows.
+- Replay diagnostics now record legal action classes and distinguish main-phase passes with actionable choices from legitimate instant-speed holds and long games.
+- Added a regression for default sorcery timing and expanded replay trace coverage.
+- Mono Red Aggro vs Dimir Control completed seeded best-of-3 and best-of-9 runs at the 1,800-tick cap with zero timeouts and determinism failures; best-of-9 finished 5-4.
+- Full all-pairs balance coverage remains open; this pair is validation evidence, not a global balance claim.
 
 ### Adaptive Master+ search milestone
 

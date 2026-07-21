@@ -161,3 +161,15 @@ def test_classify_timeout_state_distinguishes_long_game_and_stall() -> None:
     assert classify_timeout_state(stall_log, True) == "likely_stall"
     assert classify_timeout_state(rules_log, True) == "timeout_rules_issue"
     assert classify_timeout_state([], False) == "resolved"
+
+
+def test_classify_timeout_trace_ignores_instant_speed_holds() -> None:
+    response_hold = [
+        'AI TRACE {"pid":1,"active_player":2,"step":"Step.UPKEEP","legal_meaningful":true,"action":{"type":"pass_priority"}}'
+    ] * 12
+    main_phase_pass = [
+        'AI TRACE {"pid":1,"active_player":1,"step":"Step.PRECOMBAT_MAIN","legal_meaningful":true,"action":{"type":"pass_priority"}}'
+    ] * 12
+
+    assert classify_timeout_state(response_hold, True) == "timeout_long_game"
+    assert classify_timeout_state(main_phase_pass, True) == "likely_stall"

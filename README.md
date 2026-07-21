@@ -17,6 +17,7 @@ It is designed for serious deck work:
 - London mulligan handling
 - Manual phase progression and autoplay
 - Land drops, casting, activated abilities, combat actions, and response windows
+- Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
 - Multiple prevention/replacement candidates use one explicit or deterministic timestamp-ordered choice per event, with source metadata preserved for replay diagnostics
@@ -95,6 +96,7 @@ It is designed for serious deck work:
 - AI vs AI autoplay
 - Batch simulation with progress tracking
 - Replay inspection and deterministic regression checks
+- Seeded best-of-3/5/7/9 replay validation with per-game hashes, legal-action traces, and timeout classification
 - Match logs, anomaly output, and training trace export
 - Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
 - Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context

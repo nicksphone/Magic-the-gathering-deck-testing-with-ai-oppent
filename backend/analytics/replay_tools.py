@@ -100,10 +100,20 @@ def classify_timeout_state(log: list[str], timeout: bool) -> str:
         return "timeout_unknown"
     lowered = [line.lower() for line in log]
     trace_count = sum(1 for line in log if line.startswith("AI TRACE "))
+    trace_payloads = [_parse_ai_trace_payload(line) for line in log if line.startswith("AI TRACE ")]
+    trace_payloads = [payload for payload in trace_payloads if payload]
     if trace_count >= 10 and not any(
         token in " ".join(lowered)
         for token in ["invalid targets", "cannot pay", "ward tax", "missed land-play window", "land in hand but no land play available"]
     ):
+        if any(
+            payload.get("legal_meaningful", payload.get("legal_non_pass"))
+            and (payload.get("action") or {}).get("type") == "pass_priority"
+            and str(payload.get("step", "")).split(".")[-1].lower() in {"precombat_main", "postcombat_main"}
+            and int(payload.get("active_player", -1)) == int(payload.get("pid", -2))
+            for payload in trace_payloads
+        ):
+            return "likely_stall"
         return "timeout_long_game"
     if any("passes priority" in line for line in lowered):
         pass_streak = 0
