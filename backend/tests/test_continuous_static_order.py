@@ -173,11 +173,11 @@ def test_continuous_layer_trace_includes_ordered_applied_layers() -> None:
 
     trace = continuous_layer_trace(state, target.id)
     assert [entry["layer"] for entry in trace["applied_layers"]] == [
-        "pt-mod:1/1",
         "keyword-grant:flying",
         "keyword-remove:flying",
+        "pt-mod:1/1",
     ]
-    assert [entry["source_id"] for entry in trace["applied_layers"]] == ["a", "a", "c"]
+    assert [entry["source_id"] for entry in trace["applied_layers"]] == ["a", "c", "a"]
     assert trace["effective_power"] == 3
     assert trace["effective_toughness"] == 3
     assert "flying" not in set(effective_keywords(state, target.id))

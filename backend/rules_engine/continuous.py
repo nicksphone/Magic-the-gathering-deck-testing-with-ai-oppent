@@ -83,6 +83,36 @@ def effect_timestamp(card) -> int:
     return explicit or int(getattr(card, "static_order", 0) or 0)
 
 
+def _continuous_layer_sort_key(state, source_id: str, layer: str) -> tuple[int, int, int, int, int, str]:
+    """Order supported continuous effects by rules layer, then timestamp.
+
+    Keyword changes are layer 6; base P/T setters and modifiers are 7b/7c.
+    The remaining fields keep same-layer, same-timestamp fixtures deterministic.
+    """
+    if layer.startswith("keyword-"):
+        layer_rank = 6
+        sublayer = 0
+    elif layer == "pt-set":
+        layer_rank = 7
+        sublayer = 0
+    elif layer.startswith("pt-mod:"):
+        layer_rank = 7
+        sublayer = 1
+    else:
+        layer_rank = 7
+        sublayer = 2
+    source = state.cards.get(source_id)
+    position = _battlefield_position_map(state).get(source_id, 0)
+    return (
+        layer_rank,
+        sublayer,
+        effect_timestamp(source),
+        int(getattr(source, "entered_turn", 0) or 0),
+        position,
+        str(source_id),
+    )
+
+
 def effective_power(state, card_id: str) -> int:
     card = state.cards[card_id]
     base_p, _ = _base_pt_with_layers(state, card_id)
@@ -468,7 +498,7 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     """Return a deterministic trace of continuous effect application for diagnostics."""
     card = state.cards[card_id]
     trace: list[dict[str, Any]] = []
-    applied_layers: list[dict[str, Any]] = []
+    applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
@@ -480,14 +510,15 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
             continue
         for entry in layer_entries:
             applied_layers.append(
-                {
-                    "layer_index": layer_index,
-                    "source_id": src_id,
-                    "source_name": src.name,
-                    "layer": entry["layer"],
-                }
+                (
+                    _continuous_layer_sort_key(state, src_id, entry["layer"]),
+                    {
+                        "source_id": src_id,
+                        "source_name": src.name,
+                        "layer": entry["layer"],
+                    },
+                )
             )
-            layer_index += 1
         trace.append(
             {
                 "source_id": src_id,
@@ -503,7 +534,10 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
         "card_name": card.name,
         "effective_power": effective_power(state, card_id),
         "effective_toughness": effective_toughness(state, card_id),
-        "applied_layers": applied_layers,
+        "applied_layers": [
+            {**entry, "layer_index": index}
+            for index, (_, entry) in enumerate(sorted(applied_layers, key=lambda item: item[0]))
+        ],
         "trace": trace,
     }
 

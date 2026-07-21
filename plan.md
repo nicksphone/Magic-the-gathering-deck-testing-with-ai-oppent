@@ -31,6 +31,7 @@ Verified strengths:
 - The frontend has a working production build, configurable LAN API routing, health/retry state, response windows, card inspection, density-aware battlefield rendering, and simulator progress reporting.
 - The frontend now lists persisted diagnostic runs and opens a bounded root-cause snapshot containing summary, anomaly clusters, and at most five sample games.
 - Continuous and replacement effects now carry an explicit persisted monotonic timestamp, with legacy `static_order` fallback and deterministic battlefield/instance tie-breakers.
+- Continuous-layer diagnostics now order supported keyword effects before base-P/T setters and modifiers using explicit layer ranks, without changing unsupported Oracle behavior.
 
 Verified limitations:
 
@@ -115,6 +116,7 @@ Release blockers identified by the audit:
 - Analytics now counts unsupported Oracle fallbacks explicitly and attributes them to card names, with the same data rendered in the Testing Simulator UI.
 - Persisted diagnostics now have bounded API routes at `/diagnostics/runs` and `/diagnostics/runs/{run_name}`; the UI can refresh the run list without loading raw multi-megabyte logs.
 - Snapshot serialization now preserves effect timestamps and the next timestamp counter, so re-entry ordering remains stable after restart.
+- Layer traces expose ordered `layer_index` entries, making cross-run comparisons able to distinguish layer-order drift from timestamp drift.
 - The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
@@ -362,7 +364,7 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Implement dependency-aware continuous layers, prevention/can't overrides, and multiple replacement choices on top of the new explicit timestamp model, each with integration coverage.
+1. Implement dependency-aware continuous layers, prevention/can't overrides, and multiple replacement choices on top of the new explicit timestamp/layer model, each with integration coverage.
 2. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 3. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 4. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
@@ -389,6 +391,12 @@ Exit criteria:
 - Replacement candidate ordering and continuous-layer traces now use the explicit timestamp before entered-turn, battlefield position, instance order, and card ID tie-breakers.
 - Snapshot serialization preserves each timestamp and the next timestamp counter; regression coverage verifies ordering and round-trip persistence.
 - Full backend validation now passes `547` tests; frontend production build and seeded replay smoke pass with 0 determinism failures.
+
+### Continuous layer ordering milestone
+
+- Added explicit layer ranks to continuous-effect diagnostics: keyword changes precede base-P/T setters and modifiers, with timestamps applied within each layer.
+- Existing behavior remains bounded to supported effect families; no unrecognized Oracle text is treated as a newly supported effect.
+- Full backend validation remains `547` passing tests; frontend production build and seeded replay smoke report no determinism failures.
 
 ### Simultaneous trigger ordering milestone
 
