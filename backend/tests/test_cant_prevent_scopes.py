@@ -1,6 +1,7 @@
 from effects.handlers import deal_damage
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine import combat
+from rules_engine.replacement import replacement_options
 
 
 def _state() -> object:
@@ -74,3 +75,33 @@ def test_named_source_override_does_not_unlock_other_sources() -> None:
     assert state.players[2].life == before - 2
     deal_damage(state, 1, {"target_player": 2, "amount": 2, "__source_card_id": other.id})
     assert state.players[2].life == before - 2
+
+
+def test_prevention_lock_suppresses_impossible_replacement_choices() -> None:
+    state = _state()
+    lock = CardInstance(
+        id="lock", name="No Prevention", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+        types=["Enchantment"], oracle_text="Damage that would be dealt to you can't be prevented.",
+    )
+    first = CardInstance(
+        id="first", name="First Shield", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+        types=["Enchantment"], oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+    )
+    second = CardInstance(
+        id="second", name="Second Shield", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+        types=["Enchantment"], oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+    )
+    source = CardInstance(id="source", name="Bolt Source", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"])
+    state.cards.update({card.id: card for card in [lock, first, second, source]})
+    state.players[1].battlefield.extend([lock.id, first.id, second.id])
+    state.players[2].battlefield.append(source.id)
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+
+    assert replacement_options(
+        state, "damage_to_player", target_player=1, source_card_id=source.id,
+    ) == []
+    before = state.players[1].life
+    deal_damage(state, 2, {"target_player": 1, "amount": 3, "__source_card_id": source.id, "__replacement_source_id": first.id})
+    assert state.players[1].life == before - 3
+    assert state.pending_replacement_choice is None

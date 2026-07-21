@@ -45,6 +45,7 @@ It is designed for serious deck work:
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
 - Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
 - Replacement candidates are queryable through `/matches/{match_id}/replacement-options`, and explicit source IDs can be carried through structured cast choices; deterministic timestamp selection remains the AI/replay default
+- Replacement-option responses identify the deterministic policy as `latest_effect_timestamp` and suppress choices that a supported prevention override makes impossible
 - Generic noncombat-damage replacement to -1/-1 counters, power-based death triggers, self-cast X triggers, and X-counter entry handling
 - Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
 - Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences

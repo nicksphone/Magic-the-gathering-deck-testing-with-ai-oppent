@@ -81,6 +81,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             event,
             target_player=target_player,
             target_card_id=target_card_id,
+            source_card_id=item.source_card_id,
         )
         if len(options) > 1 and target_player is not None:
             state.pending_replacement_choice = {

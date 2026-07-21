@@ -594,7 +594,7 @@ def get_replacement_options(
         "target_card_id": target_card_id,
         "options": options,
         "selection_key": "targets.replacement_source_id",
-        "default_policy": "latest_static_order",
+        "default_policy": "latest_effect_timestamp",
     }
 
 

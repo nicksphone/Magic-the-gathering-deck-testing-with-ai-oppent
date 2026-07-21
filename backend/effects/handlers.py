@@ -174,7 +174,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 replacement_source_id=selected_source_id,
                 max_replacements=1 if human_chain else None,
             )
-            if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+            if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
                 return
             post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
             if prevented > 0:
@@ -195,7 +195,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             replacement_source_id=selected_source_id,
             max_replacements=1 if human_chain else None,
         )
-        if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+        if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
             return
         post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:

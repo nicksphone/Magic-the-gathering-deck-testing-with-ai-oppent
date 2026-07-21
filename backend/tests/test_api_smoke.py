@@ -68,7 +68,7 @@ def test_api_replacement_options_route_returns_choice_contract() -> None:
     assert options.status_code == 200
     body = options.json()
     assert body["selection_key"] == "targets.replacement_source_id"
-    assert body["default_policy"] == "latest_static_order"
+    assert body["default_policy"] == "latest_effect_timestamp"
     assert body["options"] == []
 
 

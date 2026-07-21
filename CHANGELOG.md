@@ -15,6 +15,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Regression coverage verifies the ordered trace without broadening unsupported Oracle interpretation.
   - Full backend validation remains `547` tests; frontend production build and deterministic replay smoke pass.
 
+- Prevention override milestone:
+  - Stack replacement discovery now receives source/combat context and suppresses impossible prevention choices when a supported “can't be prevented” effect applies.
+  - The replacement-options API policy label now reports `latest_effect_timestamp`.
+  - Full backend validation passes `548` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

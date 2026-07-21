@@ -56,6 +56,8 @@ def replacement_options(
     event: str,
     target_player: int | None = None,
     target_card_id: str | None = None,
+    source_card_id: str | None = None,
+    combat: bool = False,
 ) -> list[dict]:
     """Return applicable replacement sources in deterministic choice order.
 
@@ -64,6 +66,15 @@ def replacement_options(
     supplying __replacement_source_id on the affected action.
     """
     event_key = str(event or "").strip().lower()
+    if event_key in {"damage_to_player", "player_damage", "damage_to_permanent", "permanent_damage"}:
+        if damage_cant_be_prevented(
+            state,
+            source_card_id=source_card_id,
+            target_player=target_player,
+            target_card_id=target_card_id,
+            combat=combat,
+        ):
+            return []
     candidates: list[tuple[object, str]] = []
     if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
         candidates = [
