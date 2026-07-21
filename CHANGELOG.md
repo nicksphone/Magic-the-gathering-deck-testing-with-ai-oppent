@@ -4,6 +4,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-21
 
+- Diagnostic metadata and X-cost fidelity milestone:
+  - Verbose round-robin and deterministic replay now hydrate deck cards from the shared local cache/fallback boundary before constructing games.
+  - X-value selection accounts for the selected spell's type/name when applying static taxes, preventing invalid retry loops for taxed X spells.
+  - Combat analytics ignores tapped blockers when classifying attack quality.
+  - Unknown/noncreature cards no longer receive fabricated 2/2 stats; missing characteristics remain unknown until card data supplies them.
+  - Added regressions for hydration, honest characteristics, taxed X costs, and tapped blockers. The corrected four-deck replay had 0 timeouts, cost failures, invalid targets, or stall streaks, while exposing the next unresolved Oracle families for follow-up.
+
 - Explicit effect timestamp milestone:
   - Battlefield permanents now receive a persisted monotonic `effect_timestamp`; older `static_order` metadata remains a compatibility fallback.
   - Continuous-layer traces and replacement candidate ordering use timestamps before deterministic tie-breakers.

@@ -12,9 +12,9 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated backend validation: `556 passed`, 88 deprecation warnings; frontend production build passes.
+- Current validation in this checkout: `553 passed` when API smoke tests are excluded. The installed environment has FastAPI `0.136`/Starlette `1.0`/httpx `0.28`, while the repository pins FastAPI `0.115`/httpx `0.27`; all seven API smoke tests stall inside the incompatible TestClient stack, including a minimal FastAPI app. Re-run the full `556+` gate inside the pinned requirements environment before release.
 - Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
-- Latest six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels after the static spell-tax change.
+- A corrected four-deck representative replay completed 6 hydrated games with 0 timeouts, 0 cost failures, 0 invalid targets, and 0 stall streaks. It exposed unresolved Oracle diagnostics for Kumano Faces Kakkazan, Delver of Secrets, Sprite Dragon, and Soul-Scar Mage, plus missed-land-window signals that need card-play review.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -107,7 +107,7 @@ Release blockers identified by the audit:
 - Triggered-ability fallback resolution now uses the same structured ability boundary as spell and loyalty resolution.
 - Unknown nonempty action text is now marked as an explicit parser fallback instead of being indistinguishable from static keyword text.
 - AI combat and threat evaluation now uses effective granted keywords, so static effects such as global deathtouch, trample, evasion, and menace grants affect attack/block planning.
-- Current six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels.
+- The prior six-deck replay artifact is retained for historical comparison, but its pre-hydration/pre-X-tax errors make it unsuitable as the current clean baseline.
 - Explicit top-library choices now support hand/exile/ordered-bottom placement for Expressive Iteration-style effects. Human selections are validated for exact one-time placement, while AI callers retain a deterministic fallback; the focused gate passes 61 tests and the latest three-game replay smoke has 0 determinism failures and 0 drift labels.
 - Common tempo bounce now has a reusable ownership-correct battlefield-to-owner-hand effect for nonland permanents and creatures, with target hints, leave events, stolen-permanent coverage, and no Oracle fallback.
 - Master/Master Plus now run bounded small-board attack-subset search through legal blocker assignments and combat resolution, reducing hopeless chip attacks while retaining lethal and mandatory attack behavior.
@@ -127,7 +127,7 @@ Release blockers identified by the audit:
 - Generic static spell taxes now flow through the shared cost-modifier hook, so supported noncreature/creature/artifact/enchantment and opponent-scoped taxes affect legality, AI feasibility, and payment consistently.
 - Supported `can't have` keyword overrides now apply after ordinary layer-6 grants/removals, so a later timestamped grant cannot restore a prohibited keyword.
 - Draw/life replacement chains now carry used-source IDs across transformed events, preventing the same replacement source from reapplying or creating a loop.
-- The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
+- The corrected four-deck verbose replay completed 6 hydrated games with no timeout, invalid-target, cost-payment, or stall anomalies; its Oracle fallback diagnostics remain actionable work rather than being treated as clean gameplay evidence.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
 - Arboreal Grazer-style land-from-hand ETB effects now put a land onto the battlefield tapped without consuming the normal land play, and Torrential Gearhulk-style instant/sorcery recursion now casts a qualifying spell from the controller's graveyard through the normal stack.
@@ -241,7 +241,7 @@ Release blockers identified by the audit:
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
 - Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, effective-stat combat AI, replay-browser API, bounded-run comparison, persisted replay diff, paginated replay playback, and API smoke tests: `556 passed`.
-- The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
+- The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates complete match sequences; targeted post-fix head-to-head replay completed with zero timeouts and no X-cost errors.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
 - Card-data completeness reports now identify uncached cards and fallback-backed Oracle data instead of silently treating partial metadata as complete.
@@ -508,6 +508,15 @@ Exit criteria:
 - Batched `one or more` death triggers are deduplicated across the simultaneous event, while ordinary per-object triggers remain distinct.
 - Human ambiguous replacement choices still pause before the batch and resume through the existing continuation contract.
 - Legend-rule batches, simultaneous planeswalker/creature SBA combinations, and full APNAP trigger-order selection across all SBA classes remain open.
+
+### Diagnostic hydration and honest card metadata milestone
+
+- Added one shared card-hydration boundary for verbose round-robin and deterministic replay scripts, so diagnostics use cached Scryfall/fallback metadata instead of bare-name type guesses.
+- X-value selection now includes the spell's actual type and name when checking static cost taxes, preventing repeated invalid casts such as an overlarge Meathook Massacre under Thalia.
+- Card-play analytics now ignores tapped blockers when classifying attack quality.
+- Match construction no longer fabricates power/toughness for noncreatures or unknown cards; missing stats remain unknown until cache/fallback data supplies them.
+- Added regression coverage for hydration, noncreature stat integrity, X-cost tax selection, and tapped-blocker analytics.
+- The next replay sample still reports unresolved Oracle families for Kumano Faces Kakkazan, Delver of Secrets, Sprite Dragon, and Soul-Scar Mage; those are the next event/effect-fidelity targets.
 
 ### Adaptive Master+ search milestone
 

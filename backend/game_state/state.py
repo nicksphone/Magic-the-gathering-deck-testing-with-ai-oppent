@@ -198,8 +198,8 @@ class MatchFactory:
                     zone=Zone.LIBRARY,
                     types=types,
                     mana_cost=raw_item.get("mana_cost", ""),
-                    power=_infer_power(card_name, raw_item.get("power")),
-                    toughness=_infer_toughness(card_name, raw_item.get("toughness")),
+                    power=_infer_power(card_name, raw_item.get("power"), types),
+                    toughness=_infer_toughness(card_name, raw_item.get("toughness"), types),
                     loyalty=_infer_loyalty(card_name, raw_item.get("loyalty"), types),
                     summoning_sick="Creature" in types,
                     keywords=_infer_keywords(raw_item.get("oracle_text", "") or ""),
@@ -342,9 +342,15 @@ def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_tex
     return ["Creature"]
 
 
-def _infer_power(name: str, power: str | int | None = None) -> int | None:
+def _infer_power(
+    name: str,
+    power: str | int | None = None,
+    types: list[str] | None = None,
+) -> int | None:
     if power is not None and str(power).isdigit():
         return int(power)
+    if types is not None and "Creature" not in types:
+        return None
     n = name.lower()
     if "swiftspear" in n:
         return 1
@@ -358,12 +364,18 @@ def _infer_power(name: str, power: str | int | None = None) -> int | None:
         return 4
     if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp", "counterspell", "bolt", "consider"]):
         return None
-    return 2
+    return None
 
 
-def _infer_toughness(name: str, toughness: str | int | None = None) -> int | None:
+def _infer_toughness(
+    name: str,
+    toughness: str | int | None = None,
+    types: list[str] | None = None,
+) -> int | None:
     if toughness is not None and str(toughness).isdigit():
         return int(toughness)
+    if types is not None and "Creature" not in types:
+        return None
     n = name.lower()
     if "swiftspear" in n:
         return 2
@@ -377,7 +389,7 @@ def _infer_toughness(name: str, toughness: str | int | None = None) -> int | Non
         return 4
     if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp", "counterspell", "bolt", "consider"]):
         return None
-    return 2
+    return None
 
 
 def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str] | None = None) -> int | None:

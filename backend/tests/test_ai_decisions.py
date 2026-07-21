@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
-from game_state.state import MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 
 
 def test_ai_prefers_non_pass_action_when_available() -> None:
@@ -999,6 +999,45 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
     out = ai._materialize_action(FakeState(), move, 1)
     assert out["targets"]["target_card_id"] == "enemy-1"
     assert out["targets"]["x_value"] >= 1
+
+
+def test_ai_x_value_accounts_for_opponent_static_spell_tax() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Island"}],
+        [{"quantity": 60, "card_name": "Plains"}],
+        seed=972,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 8
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    p1 = state.players[1]
+    p2 = state.players[2]
+    p1.hand.clear()
+    for index in range(9):
+        land_id = f"x-land-{index}"
+        land = CardInstance(land_id, "Swamp", 1, 1, Zone.BATTLEFIELD, ["Land"], type_line="Basic Land — Swamp")
+        state.cards[land_id] = land
+        p1.battlefield.append(land_id)
+    tax = CardInstance(
+        "tax", "Thalia", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+        oracle_text="Noncreature spells cost {1} more to cast.", power=2, toughness=1,
+    )
+    spell = CardInstance(
+        "meathook", "The Meathook Massacre", 1, 1, Zone.HAND, ["Enchantment"],
+        mana_cost="{X}{B}{B}", oracle_text="When The Meathook Massacre enters the battlefield, each creature gets -X/-X until end of turn.",
+    )
+    state.cards.update({tax.id: tax, spell.id: spell})
+    p2.battlefield.append(tax.id)
+    p1.hand.append(spell.id)
+
+    chosen = AIAgent(difficulty="master", archetype="Control")._choose_x_value(
+        state, 1, spell.mana_cost, card=spell,
+    )
+
+    assert chosen == 6
 
 
 def test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible() -> None:

@@ -72,6 +72,7 @@ It is designed for serious deck work:
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail
 - Token art fallback handling and face-aware image reuse for double-faced cards
+- Diagnostic replay scripts hydrate cards from the local cache before simulation; unknown cards retain unknown characteristics instead of being silently treated as generic 2/2s
 
 ### AI
 - Archetype-aware AI with difficulty levels: `casual`, `strong`, `master`, `master_plus`
@@ -95,6 +96,7 @@ It is designed for serious deck work:
 - Match logs, anomaly output, and training trace export
 - Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
 - Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context
+- Card-play analytics excludes tapped blockers from attack-quality warnings and preserves hand/board context for missed-land investigations
 - Tactical analytics record effective keywords, attacker/blocker assignments, evasion-aware bad attacks, lethal misses, block trades, and resource-preservation decisions
 - First-divergence drilldown with compact trace context for both sides
 - Per-game batch results and matchup summaries

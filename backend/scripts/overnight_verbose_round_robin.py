@@ -18,6 +18,7 @@ from ai.deck_analysis import guess_archetype
 from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
+from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
@@ -118,10 +119,10 @@ def run() -> int:
         deck_pool: list[dict] = []
         for row in selected:
             if isinstance(row, dict):
-                mainboard = row["mainboard"]
+                mainboard = hydrate_deck_cards(repo, row["mainboard"])
                 deck_pool.append({"id": row.get("id"), "name": row["name"], "mainboard": mainboard})
             else:
-                mainboard = json.loads(row.mainboard_json)
+                mainboard = hydrate_deck_cards(repo, json.loads(row.mainboard_json))
                 deck_pool.append({"id": row.id, "name": row.name, "mainboard": mainboard})
 
         total_pairs = len(list(combinations(deck_pool, 2)))

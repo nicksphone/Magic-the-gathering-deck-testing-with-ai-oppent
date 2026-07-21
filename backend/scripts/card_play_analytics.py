@@ -220,6 +220,8 @@ def _number(value: object) -> float:
 
 def _can_snapshot_block(attacker: dict, blocker: dict) -> bool:
     """Apply the common evasion checks needed for quality diagnostics."""
+    if bool(blocker.get("tapped", False)):
+        return False
     attacker_keywords = {str(value).lower() for value in (attacker.get("keywords") or [])}
     blocker_keywords = {str(value).lower() for value in (blocker.get("keywords") or [])}
     if "flying" in attacker_keywords and not ({"flying", "reach"} & blocker_keywords):

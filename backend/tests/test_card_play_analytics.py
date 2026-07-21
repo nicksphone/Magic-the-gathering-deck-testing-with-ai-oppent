@@ -64,3 +64,21 @@ def test_card_play_analytics_reports_combat_quality(tmp_path: Path) -> None:
     assert out["combat_quality"]["lethal_attack_misses"]["1"] == 1
     assert out["combat_quality"]["block_actions"]["2"] == 1
     assert out["combat_quality"]["profitable_blocks"]["2"] == 1
+
+
+def test_card_play_analytics_ignores_tapped_blockers(tmp_path: Path) -> None:
+    games = tmp_path / "games.jsonl"
+    _games_jsonl(
+        games,
+        [{
+            "winner": 1,
+            "log": [
+                'AI TRACE {"pid":1,"turn":5,"step":"Step.DECLARE_ATTACKERS","life":{"self":20,"opp":20},"battlefield":[{"id":"a","types":["Creature"],"power":1,"toughness":2,"tapped":false}],"opp_battlefield":[{"id":"b","types":["Creature"],"power":2,"toughness":2,"tapped":true}],"action":{"type":"attack","attackers":["a"]}}',
+            ],
+        }],
+    )
+
+    out = summarize_card_play_logic(games)
+
+    assert out["combat_quality"]["attacks_with_blockers"].get("1", 0) == 0
+    assert out["combat_quality"]["obvious_bad_attacks"].get("1", 0) == 0

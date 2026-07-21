@@ -2655,10 +2655,14 @@ class AIAgent:
         )
         upper = max(0, pool_total + untapped_lands)
         floor = self._minimum_useful_x_value(state, player_id, card, mana_cost)
+        spell_types = set(getattr(card, "types", []) or []) if card is not None else None
+        card_name = str(getattr(card, "name", "") or "") if card is not None else ""
         scored: list[tuple[float, int]] = []
         for x in range(upper, 0, -1):
             cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
-            if x >= floor and can_pay_with_pool_and_lands(state, player_id, cost):
+            if x >= floor and can_pay_with_pool_and_lands(
+                state, player_id, cost, card_name=card_name, spell_types=spell_types,
+            ):
                 scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
         if not scored:
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
@@ -2666,11 +2670,15 @@ class AIAgent:
             if interactive_x:
                 for x in range(1, upper + 1):
                     cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
-                    if can_pay_with_pool_and_lands(state, player_id, cost):
+                    if can_pay_with_pool_and_lands(
+                        state, player_id, cost, card_name=card_name, spell_types=spell_types,
+                    ):
                         return x
             for x in range(max(1, floor), upper + 1):
                 cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
-                if can_pay_with_pool_and_lands(state, player_id, cost):
+                if can_pay_with_pool_and_lands(
+                    state, player_id, cost, card_name=card_name, spell_types=spell_types,
+                ):
                     return x
             return 0
         scored.sort(key=lambda item: (item[0], item[1]), reverse=True)

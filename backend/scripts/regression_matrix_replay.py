@@ -14,6 +14,7 @@ from pathlib import Path
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
 from analytics.replay_tools import classify_first_divergence, classify_log_line, classify_timeout_state, first_log_divergence, normalize_log_line
+from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
@@ -118,7 +119,13 @@ def main() -> None:
         ensure_expansion_top_decks(repo)
         rows = repo.list_decks()
 
-    decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
+    selected_decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
+    with Session(engine) as session:
+        hydration_repo = Repository(session)
+        decks = [
+            {**deck, "mainboard": hydrate_deck_cards(hydration_repo, deck["mainboard"])}
+            for deck in selected_decks
+        ]
 
     summary = {
         "decks": len(decks),
