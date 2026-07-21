@@ -1,12 +1,43 @@
 from __future__ import annotations
 
 from game_state.state import CardInstance, MatchFactory, Zone
-from rules_engine.continuous import continuous_layer_trace, effective_keywords
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+from rules_engine.continuous import continuous_layer_trace, effect_timestamp, effective_keywords
 
 
 def _state() -> object:
     deck = [{"quantity": 60, "card_name": "Island"}]
     return MatchFactory.from_decks(deck, deck, seed=23)
+
+
+def test_effect_timestamp_overrides_legacy_static_order_and_survives_snapshot() -> None:
+    state = _state()
+    target = CardInstance(
+        id="timestamp-target", name="Soldier", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Soldier",
+    )
+    older = CardInstance(
+        id="older", name="Older", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text="Creatures you control have flying.", static_order=90, effect_timestamp=2,
+    )
+    newer = CardInstance(
+        id="newer", name="Newer", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text="Creatures your opponents control lose flying.", static_order=1, effect_timestamp=8,
+    )
+    state.cards.update({target.id: target, older.id: older, newer.id: newer})
+    state.players[1].battlefield.extend([target.id, older.id])
+    state.players[2].battlefield.append(newer.id)
+
+    assert effect_timestamp(older) == 2
+    assert "flying" not in set(effective_keywords(state, target.id))
+    trace = continuous_layer_trace(state, target.id)
+    assert [entry["source_id"] for entry in trace["trace"]] == ["older", "newer"]
+    assert trace["trace"][1]["effect_timestamp"] == 8
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert effect_timestamp(restored.cards["older"]) == 2
+    assert effect_timestamp(restored.cards["newer"]) == 8
 
 
 def test_continuous_uses_static_order_for_grant_remove() -> None:

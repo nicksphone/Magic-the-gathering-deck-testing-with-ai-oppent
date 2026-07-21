@@ -69,6 +69,9 @@ class CardInstance:
     image_uri: str | None = None
     attached_to: str | None = None
     static_order: int = 0
+    # Monotonic timestamp for continuous/replacement effects. static_order is
+    # retained as a compatibility alias for older snapshots and tests.
+    effect_timestamp: int = 0
     instance_order: int = 0
     card_faces: list[dict] = field(default_factory=list)
     selected_face_index: int | None = None
@@ -138,6 +141,7 @@ class MatchState:
     )
     log: list[str] = field(default_factory=list)
     next_static_order: int = 1
+    next_effect_timestamp: int = 1
     # Day/night is a game-wide state. Keep the previous turn's spell count so
     # the upkeep transition is deterministic and survives snapshot restore.
     day_night: str = "none"
@@ -238,8 +242,14 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card = state.cards.get(card_id)
     if not card:
         return
-    card.static_order = int(getattr(state, "next_static_order", 1) or 1)
-    state.next_static_order = card.static_order + 1
+    timestamp = max(
+        int(getattr(state, "next_effect_timestamp", 1) or 1),
+        int(getattr(state, "next_static_order", 1) or 1),
+    )
+    card.effect_timestamp = timestamp
+    card.static_order = timestamp
+    state.next_effect_timestamp = timestamp + 1
+    state.next_static_order = timestamp + 1
 
 
 def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_text: str = "") -> list[str]:

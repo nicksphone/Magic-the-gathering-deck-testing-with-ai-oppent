@@ -77,6 +77,12 @@ KNOWN_KEYWORDS = [
 ]
 
 
+def effect_timestamp(card) -> int:
+    """Return the persisted timestamp used by layer and replacement ordering."""
+    explicit = int(getattr(card, "effect_timestamp", 0) or 0)
+    return explicit or int(getattr(card, "static_order", 0) or 0)
+
+
 def effective_power(state, card_id: str) -> int:
     card = state.cards[card_id]
     base_p, _ = _base_pt_with_layers(state, card_id)
@@ -435,7 +441,7 @@ def _all_battlefield_ids(state) -> list[str]:
         ids.extend(list(state.players[pid].battlefield))
     ids.sort(
         key=lambda cid: (
-            int(getattr(state.cards.get(cid), "static_order", 0) or 0),
+            effect_timestamp(state.cards.get(cid)),
             int(getattr(state.cards.get(cid), "entered_turn", 0) or 0),
             int(battlefield_index.get(cid, 0) or 0),
             str(cid),
@@ -487,6 +493,7 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
                 "source_id": src_id,
                 "source_name": src.name,
                 "static_order": int(getattr(src, "static_order", 0) or 0),
+                "effect_timestamp": effect_timestamp(src),
                 "entered_turn": int(getattr(src, "entered_turn", 0) or 0),
                 "layers": layers,
             }

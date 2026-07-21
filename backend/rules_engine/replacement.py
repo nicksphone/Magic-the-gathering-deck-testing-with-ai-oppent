@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from rules_engine.continuous import effect_timestamp
+
 
 def _battlefield_oracle_texts(state, controller: int | None = None):
     ordered: list[tuple[tuple[int, int, int, str], object, str]] = []
@@ -12,7 +14,7 @@ def _battlefield_oracle_texts(state, controller: int | None = None):
             if controller is not None and card.controller != controller:
                 continue
             order_key = (
-                -int(getattr(card, "static_order", 0) or 0),
+                -effect_timestamp(card),
                 -int(getattr(card, "entered_turn", 0) or 0),
                 -int(battlefield_index.get(cid, 0) or 0),
                 -int(getattr(card, "instance_order", 0) or 0),
@@ -106,6 +108,7 @@ def replacement_options(
             "name": card.name,
             "controller": int(card.controller),
             "static_order": int(getattr(card, "static_order", 0) or 0),
+            "effect_timestamp": effect_timestamp(card),
         }
         for card, _ in candidates
     ]

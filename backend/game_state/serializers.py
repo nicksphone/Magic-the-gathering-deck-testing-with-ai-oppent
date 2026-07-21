@@ -39,6 +39,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         },
         "log": list(state.log),
         "next_static_order": state.next_static_order,
+        "next_effect_timestamp": state.next_effect_timestamp,
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
@@ -97,6 +98,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "image_uri": card.image_uri,
                 "attached_to": card.attached_to,
                 "static_order": card.static_order,
+                "effect_timestamp": card.effect_timestamp,
                 "instance_order": card.instance_order,
                 "card_faces": list(card.card_faces),
                 "selected_face_index": card.selected_face_index,
@@ -146,6 +148,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             keywords=list(raw.get("keywords", [])), oracle_text=str(raw.get("oracle_text", "")),
             type_line=str(raw.get("type_line", "")), image_uri=raw.get("image_uri"),
             attached_to=raw.get("attached_to"), static_order=int(raw.get("static_order", 0)),
+            effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),
             instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
             selected_face_index=raw.get("selected_face_index"),
             chosen_creature_type=raw.get("chosen_creature_type"),
@@ -182,6 +185,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.log = list(payload.get("log", []))
     state.next_static_order = int(payload.get("next_static_order", 1))
+    state.next_effect_timestamp = int(payload.get("next_effect_timestamp", state.next_static_order))
     state.day_night = str(payload.get("day_night", "none") or "none")
     state.spells_cast_this_turn = {
         int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()

@@ -4,6 +4,12 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-21
 
+- Explicit effect timestamp milestone:
+  - Battlefield permanents now receive a persisted monotonic `effect_timestamp`; older `static_order` metadata remains a compatibility fallback.
+  - Continuous-layer traces and replacement candidate ordering use timestamps before deterministic tie-breakers.
+  - Snapshot round-trip regression coverage verifies timestamp ordering survives restart.
+  - Full backend validation passes `547` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.
