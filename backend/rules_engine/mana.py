@@ -96,8 +96,15 @@ def can_pay_with_pool_and_lands(
     is_land: bool = False,
     card_name: str = "",
     x_value: int = 0,
+    spell_types: set[str] | None = None,
+    apply_modifiers: bool = True,
 ) -> bool:
-    context = apply_cost_modifiers(CostContext(player_id=player_id, card_name=card_name, mana_cost=mana_cost))
+    context = CostContext(
+        player_id=player_id, card_name=card_name, mana_cost=mana_cost,
+        state=state, spell_types=spell_types,
+    )
+    if apply_modifiers:
+        context = apply_cost_modifiers(context)
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
     req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
     pool = dict(state.players[player_id].mana_pool)
@@ -157,10 +164,17 @@ def auto_pay_cost(
     is_land: bool = False,
     card_name: str = "",
     x_value: int = 0,
+    spell_types: set[str] | None = None,
 ) -> bool:
-    context = apply_cost_modifiers(CostContext(player_id=player_id, card_name=card_name, mana_cost=mana_cost))
+    context = apply_cost_modifiers(CostContext(
+        player_id=player_id, card_name=card_name, mana_cost=mana_cost,
+        state=state, spell_types=spell_types,
+    ))
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    if not can_pay_with_pool_and_lands(state, player_id, mana_cost, is_land=is_land, card_name=card_name, x_value=x_value):
+    if not can_pay_with_pool_and_lands(
+        state, player_id, mana_cost, is_land=is_land, card_name=card_name,
+        x_value=x_value, spell_types=spell_types, apply_modifiers=False,
+    ):
         return False
     req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
     player = state.players[player_id]

@@ -220,7 +220,10 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
-    return can_pay_with_pool_and_lands(state, player_id, option.mana_cost, is_land=("Land" in card.types), card_name=card.name, x_value=x_value)
+    return can_pay_with_pool_and_lands(
+        state, player_id, option.mana_cost, is_land=("Land" in card.types),
+        card_name=card.name, x_value=x_value, spell_types=set(card.types),
+    )
 
 
 def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> CostOption:

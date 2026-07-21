@@ -255,6 +255,7 @@ Key endpoints:
 
 The application currently supports:
 - Rules-aware 2-player testing with turn structure, priority, stack, combat, cleanup, and turn advancement
+- Shared cost-modifier handling for supported static spell taxes, including opponent-scoped taxes
 - Human vs AI, AI vs human, and AI vs AI matches
 - Manual phase progression and autoplay-driven simulation
 - Built-in deck imports, expansion deck imports, file/text deck import, and deck saving

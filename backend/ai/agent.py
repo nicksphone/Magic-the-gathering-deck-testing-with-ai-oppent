@@ -1142,7 +1142,10 @@ class AIAgent:
 
     def _can_pay_card_cost(self, state: MatchState, player_id: int, card) -> bool:
         try:
-            return bool(can_pay_with_pool_and_lands(state, player_id, getattr(card, "mana_cost", "")))
+            return bool(can_pay_with_pool_and_lands(
+                state, player_id, getattr(card, "mana_cost", ""),
+                card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+            ))
         except Exception:
             return False
 
@@ -3321,7 +3324,10 @@ class AIAgent:
             card = state.cards.get(cid)
             if not card or not self._is_major_threat_card(card):
                 continue
-            if can_pay_with_pool_and_lands(state, player_id, getattr(card, "mana_cost", "")):
+            if can_pay_with_pool_and_lands(
+                state, player_id, getattr(card, "mana_cost", ""),
+                card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+            ):
                 opp_id = 1 if player_id == 2 else 2
                 opp_creatures = sum(
                     1

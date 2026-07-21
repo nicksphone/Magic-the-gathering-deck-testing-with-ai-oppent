@@ -522,7 +522,10 @@ class RulesEngine:
                 target_ids.extend([x for x in (action_targets.get("target_card_ids") or []) if x not in target_ids])
                 ward_tax = ward_tax_for_targets(state, player_id, target_ids)
                 adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
-                paid = auto_pay_cost(state, player_id, adjusted_cost, is_land=("Land" in card.types), card_name=card.name, x_value=x_value)
+                paid = auto_pay_cost(
+                    state, player_id, adjusted_cost, is_land=("Land" in card.types),
+                    card_name=card.name, x_value=x_value, spell_types=set(card.types),
+                )
                 if not paid:
                     if ward_tax > 0:
                         state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")

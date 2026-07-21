@@ -118,6 +118,7 @@ Release blockers identified by the audit:
 - Snapshot serialization now preserves effect timestamps and the next timestamp counter, so re-entry ordering remains stable after restart.
 - Layer traces expose ordered `layer_index` entries, making cross-run comparisons able to distinguish layer-order drift from timestamp drift.
 - The replacement-options API now reports `latest_effect_timestamp` as its deterministic default policy, matching the engine implementation.
+- Generic static spell taxes now flow through the shared cost-modifier hook, so supported noncreature/creature/artifact/enchantment and opponent-scoped taxes affect legality, AI feasibility, and payment consistently.
 - The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
@@ -231,7 +232,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, and API smoke tests: `548 passed`.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, and API smoke tests: `550 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -405,6 +406,13 @@ Exit criteria:
 - Stack resolution passes the source into replacement discovery, preventing impossible human prompts before damage resolves.
 - The direct damage path also avoids reopening a human replacement chain when prevention is locked.
 - Full backend validation passes `548` tests; frontend production build and seeded replay smoke pass with 0 determinism failures.
+
+### Static spell-tax milestone
+
+- Added reusable Oracle-driven generic cost modifiers for supported spell-tax wording, including noncreature, creature, artifact, enchantment, instant/sorcery, global, and opponent-scoped forms.
+- The same adjusted cost is used by move legality, AI feasibility checks, and payment, avoiding a card being shown as castable when the tax makes it unaffordable.
+- Added regression coverage for shared and opponent-scoped taxes; no card-name-specific exception was added.
+- Full backend validation passes `550` tests; frontend production build and seeded replay smoke pass with 0 determinism failures.
 
 ### Simultaneous trigger ordering milestone
 
