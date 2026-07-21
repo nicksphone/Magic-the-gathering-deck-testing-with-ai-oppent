@@ -24,6 +24,9 @@ export function AnalyticsPanel({ decks }: Props) {
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
   const [selectedGameIndex, setSelectedGameIndex] = useState(0);
+  const [compareLeft, setCompareLeft] = useState("");
+  const [compareRight, setCompareRight] = useState("");
+  const [comparison, setComparison] = useState<Record<string, unknown> | null>(null);
   const [diagnosticError, setDiagnosticError] = useState("");
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
   const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
@@ -46,6 +49,16 @@ export function AnalyticsPanel({ decks }: Props) {
       setDiagnosticError("");
       setSelectedDiagnostic(await api.getDiagnosticRun(runName));
       setSelectedGameIndex(0);
+    } catch (err) {
+      setDiagnosticError(String(err));
+    }
+  }
+
+  async function compareDiagnosticRuns() {
+    if (!compareLeft || !compareRight || compareLeft === compareRight) return;
+    try {
+      setDiagnosticError("");
+      setComparison(await api.compareDiagnosticRuns(compareLeft, compareRight) as unknown as Record<string, unknown>);
     } catch (err) {
       setDiagnosticError(String(err));
     }
@@ -219,6 +232,22 @@ export function AnalyticsPanel({ decks }: Props) {
             })}
           </ul>
         )}
+        {diagnosticRuns.length > 1 ? (
+          <div className="row">
+            <select value={compareLeft} onChange={(event) => setCompareLeft(event.target.value)}>
+              <option value="">Compare left run</option>
+              {diagnosticRuns.map((run) => <option key={`left-${run.run_name}`} value={run.run_name}>{run.run_name}</option>)}
+            </select>
+            <select value={compareRight} onChange={(event) => setCompareRight(event.target.value)}>
+              <option value="">Compare right run</option>
+              {diagnosticRuns.map((run) => <option key={`right-${run.run_name}`} value={run.run_name}>{run.run_name}</option>)}
+            </select>
+            <button type="button" onClick={() => void compareDiagnosticRuns()} disabled={!compareLeft || !compareRight || compareLeft === compareRight}>Compare Summaries</button>
+          </div>
+        ) : null}
+        {comparison ? (
+          <pre className="analytics-log-excerpt">{JSON.stringify(comparison, null, 2)}</pre>
+        ) : null}
         {selectedDiagnostic ? (
           <div>
             <strong>Root-Cause Snapshot: {selectedDiagnostic.run_name}</strong>

@@ -137,6 +137,16 @@ export type DiagnosticRunDetail = DiagnosticRunSummary & {
   };
 };
 
+export type DiagnosticRunComparison = {
+  left: DiagnosticRunSummary;
+  right: DiagnosticRunSummary;
+  numeric_deltas: Record<string, {
+    left: number | null;
+    right: number | null;
+    delta_right_minus_left: number;
+  }>;
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -218,4 +228,6 @@ export const api = {
     req<{ runs: DiagnosticRunSummary[] }>(`/diagnostics/runs?limit=${limit}`),
   getDiagnosticRun: (runName: string) =>
     req<DiagnosticRunDetail>(`/diagnostics/runs/${encodeURIComponent(runName)}`),
+  compareDiagnosticRuns: (left: string, right: string) =>
+    req<DiagnosticRunComparison>(`/diagnostics/compare?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`),
 };

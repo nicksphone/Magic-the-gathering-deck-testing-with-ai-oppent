@@ -40,6 +40,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - The Testing Simulator includes a game selector while avoiding full JSONL loads in memory.
   - Full backend validation passes `552` tests; frontend production build and deterministic replay smoke pass.
 
+- Bounded run comparison milestone:
+  - Added `/diagnostics/compare` and Testing Simulator controls for numeric deltas between persisted runs.
+  - Comparison avoids raw log loading; full line-by-line replay diff remains separate.
+  - Full backend validation passes `553` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

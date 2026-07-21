@@ -942,6 +942,47 @@ def get_diagnostic_run(run_name: str) -> dict:
     }
 
 
+def _valid_diagnostic_run_name(run_name: str) -> bool:
+    return bool(run_name) and Path(run_name).name == run_name and run_name not in {".", ".."}
+
+
+def _numeric_summary_values(value: object, prefix: str = "") -> dict[str, float]:
+    values: dict[str, float] = {}
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_prefix = f"{prefix}.{key}" if prefix else str(key)
+            values.update(_numeric_summary_values(child, child_prefix))
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        values[prefix] = float(value)
+    return values
+
+
+@app.get("/diagnostics/compare")
+def compare_diagnostic_runs(left: str, right: str) -> dict:
+    """Compare persisted numeric summaries without loading replay logs."""
+    if not _valid_diagnostic_run_name(left) or not _valid_diagnostic_run_name(right):
+        raise HTTPException(status_code=400, detail="Invalid diagnostic run name")
+    left_item = _diagnostic_summary(DIAGNOSTICS_ROOT / left)
+    right_item = _diagnostic_summary(DIAGNOSTICS_ROOT / right)
+    if left_item is None or right_item is None:
+        raise HTTPException(status_code=404, detail="One or both diagnostic runs not found")
+    left_values = _numeric_summary_values(left_item["summary"])
+    right_values = _numeric_summary_values(right_item["summary"])
+    keys = sorted(set(left_values) | set(right_values))
+    return {
+        "left": {"run_name": left, "summary": left_item["summary"]},
+        "right": {"run_name": right, "summary": right_item["summary"]},
+        "numeric_deltas": {
+            key: {
+                "left": left_values.get(key),
+                "right": right_values.get(key),
+                "delta_right_minus_left": (right_values.get(key, 0.0) - left_values.get(key, 0.0)),
+            }
+            for key in keys
+        },
+    }
+
+
 @app.get("/ai/priors")
 def get_ai_priors() -> dict:
     return load_log_priors()

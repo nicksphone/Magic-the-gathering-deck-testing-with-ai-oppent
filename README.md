@@ -249,6 +249,7 @@ Key endpoints:
 - `POST /ai/diagnostics`
 - `GET /diagnostics/runs`
 - `GET /diagnostics/runs/{run_name}`
+- `GET /diagnostics/compare`
 - `GET /ai/priors`
 - `POST /ai/priors/rebuild`
 - `GET /analytics/history`
@@ -276,7 +277,7 @@ Current focus:
 - deepening tactical AI for complex board states and matchup-specific heuristics
 - broadening deterministic replay coverage across more representative deck pairings
 - keeping the UI dense and readable during long sessions
-- adding full replay playback and cross-run diagnostic comparison beyond the bounded persisted replay browser
+- adding full line-by-line replay diff beyond bounded persisted summary deltas
 
 ## Known Limitations and Next Upgrades
 

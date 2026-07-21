@@ -108,3 +108,23 @@ def test_api_diagnostic_run_routes_bound_artifact_reads(tmp_path, monkeypatch) -
     assert body["artifacts"]["anomaly_games"] == "anomaly_games.jsonl"
     assert body["artifacts"]["games"] == "games.jsonl"
     assert missing.status_code == 404
+
+
+def test_api_diagnostic_compare_returns_numeric_deltas(tmp_path, monkeypatch) -> None:
+    for name, matches, wins in (("left", 10, 4), ("right", 20, 13)):
+        run_dir = tmp_path / name
+        run_dir.mkdir()
+        (run_dir / "summary.json").write_text(
+            json.dumps({"matches": matches, "wins": {"deck_a": wins}, "label": name}),
+            encoding="utf-8",
+        )
+    monkeypatch.setattr(main, "DIAGNOSTICS_ROOT", tmp_path)
+
+    with TestClient(app) as client:
+        response = client.get("/diagnostics/compare?left=left&right=right")
+        bad = client.get("/diagnostics/compare?left=missing&right=right")
+
+    assert response.status_code == 200
+    assert response.json()["numeric_deltas"]["matches"]["delta_right_minus_left"] == 10
+    assert response.json()["numeric_deltas"]["wins.deck_a"]["delta_right_minus_left"] == 9
+    assert bad.status_code == 404
