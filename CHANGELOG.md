@@ -25,6 +25,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Move legality, AI feasibility, and payment now share the adjusted cost for creature/noncreature and opponent-scoped taxes.
   - Full backend validation passes `550` tests; frontend production build and deterministic replay smoke pass.
 
+- Keyword override milestone:
+  - Separated ordinary keyword removal from supported `can't have` overrides in the continuous-effect layer.
+  - Override effects now apply after supported grants/removals regardless of timestamp order.
+  - Full backend validation passes `551` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

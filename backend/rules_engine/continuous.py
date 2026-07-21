@@ -170,6 +170,21 @@ def effective_keywords(state, card_id: str) -> list[str]:
                         out.clear()
                     else:
                         out.difference_update(removed)
+    # "Can't have" is an override in the keyword layer, not a timestamped
+    # ordinary removal. Apply it after all grants and normal removals.
+    for src_id in _all_battlefield_ids(state):
+        src = state.cards.get(src_id)
+        if not src:
+            continue
+        for scope, other_only, subject, removed in _iter_keyword_cant_removals(src):
+            if _scope_controller(src.controller, scope, card.controller):
+                if other_only and src_id == card_id:
+                    continue
+                if _subject_matches(state, card_id, subject):
+                    if "all abilities" in removed:
+                        out.clear()
+                    else:
+                        out.difference_update(removed)
     return sorted(out)
 
 
@@ -360,6 +375,8 @@ def _iter_keyword_removals(source_card):
         removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
         if removed:
             yield (scope, other_only, subject, set(removed))
+def _iter_keyword_cant_removals(source_card):
+    text = (getattr(source_card, "oracle_text", "") or "").lower()
     for match in KW_CANT_HAVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -560,6 +577,11 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
             entries.append({"layer": f"keyword-grant:{','.join(granted)}"})
             break
     for scope, other_only, subject, removed in _iter_keyword_removals(source_card):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+            label = "all-abilities" if "all abilities" in removed else ",".join(sorted(removed))
+            entries.append({"layer": f"keyword-remove:{label}"})
+            break
+    for scope, other_only, subject, removed in _iter_keyword_cant_removals(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
             label = "all-abilities" if "all abilities" in removed else ",".join(sorted(removed))
             entries.append({"layer": f"keyword-remove:{label}"})

@@ -133,6 +133,19 @@ def test_cant_have_keyword_override_wins_over_granted_keyword() -> None:
     assert "flying" not in effective_keywords(state, creature)
 
 
+def test_cant_have_keyword_override_wins_even_when_grant_is_newer() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    _setup_permanent(state, 1, "Suppression", "Enchantment", "Creatures you control can't have flying.")
+    _setup_permanent(state, 1, "Grant", "Enchantment", "Creatures you control have flying.")
+    creature = _setup_creature(state, 1, "Ground Bear", 2, 2, [])
+
+    assert "flying" not in effective_keywords(state, creature)
+
+
 def test_opponent_static_minus_kills_x1_creature() -> None:
     deck = [{"quantity": 60, "card_name": "Swamp"}]
     state = MatchFactory.from_decks(deck, deck)
