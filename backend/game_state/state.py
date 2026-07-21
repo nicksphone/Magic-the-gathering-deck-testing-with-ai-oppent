@@ -148,6 +148,9 @@ class MatchState:
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
+    # Delayed entry modifications created by resolving effects such as Saga
+    # chapters. Entries are consumed by the next matching spell this turn.
+    pending_entry_counters: list[dict] = field(default_factory=list)
     # Restrictions created by resolving spells that last through cleanup.
     turn_cant_gain_life: set[int] = field(default_factory=set)
     turn_damage_cant_be_prevented: bool = False
@@ -184,9 +187,12 @@ class MatchFactory:
                 card_name = raw_item["card_name"]
                 cid = f"p{owner}-{copy_index:03d}"
                 type_line = raw_item.get("type_line", "")
+                # Scryfall combines double-faced type lines with `//`. Until
+                # a face is selected, only the front face defines types.
+                front_type_line = str(type_line).split("//", 1)[0].strip()
                 types = _infer_types(
                     card_name,
-                    type_line=type_line,
+                    type_line=front_type_line,
                     mana_cost=raw_item.get("mana_cost", "") or "",
                     oracle_text=raw_item.get("oracle_text", "") or "",
                 )

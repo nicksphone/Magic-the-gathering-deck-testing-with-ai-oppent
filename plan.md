@@ -12,9 +12,9 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current validation in this checkout: `553 passed` when API smoke tests are excluded. The installed environment has FastAPI `0.136`/Starlette `1.0`/httpx `0.28`, while the repository pins FastAPI `0.115`/httpx `0.27`; all seven API smoke tests stall inside the incompatible TestClient stack, including a minimal FastAPI app. Re-run the full `556+` gate inside the pinned requirements environment before release.
+- Current validation in this checkout: `558 passed` when API smoke tests are excluded. The installed environment has FastAPI `0.136`/Starlette `1.0`/httpx `0.28`, while the repository pins FastAPI `0.115`/httpx `0.27`; all seven API smoke tests stall inside the incompatible TestClient stack, including a minimal FastAPI app. Re-run the full gate inside the pinned requirements environment before release.
 - Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
-- A corrected four-deck representative replay completed 6 hydrated games with 0 timeouts, 0 cost failures, 0 invalid targets, and 0 stall streaks. It exposed unresolved Oracle diagnostics for Kumano Faces Kakkazan, Delver of Secrets, Sprite Dragon, and Soul-Scar Mage, plus missed-land-window signals that need card-play review.
+- The corrected four-deck representative replay completed 6 hydrated games with 0 timeouts, 0 cost failures, 0 invalid targets, 0 stall streaks, 0 missed-land windows, and no unresolved Oracle diagnostics after the Saga/event-layer and land-legality fixes.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -46,7 +46,7 @@ Verified limitations:
 - Master AI is bounded and heuristic. It can still miss multi-turn resource plans, hidden-information inferences, sideboard plans, complex combat assignments, and matchup-specific “hold versus deploy” decisions.
 - Small replay samples are useful for finding deterministic bugs but cannot establish balance. A result such as 100% win rate is an anomaly signal until a larger seeded matrix explains it.
 - Missing or placeholder card data/art can still reduce both player readability and AI quality when a deck is imported offline.
-- A reproducible `oracle_corpus_report.py` now ranks the shipped corpus by weighted copies and unresolved Oracle family. The current report covers 81 unique cards / 3,780 copies across 11 built-ins and 52 expansion entries; 3,441 weighted copies are structured effects, 155 are structured event/replacement paths, 184 are static/no-op classifications, and 0 remain parser-fallback or missing-Oracle. The report uses the same stable backend SQLite cache regardless of launch directory, so the previous false 450-copy missing-Oracle result is retired.
+- A reproducible `oracle_corpus_report.py` now ranks the shipped corpus by weighted copies and unresolved Oracle family. The current report covers 81 unique cards / 3,780 copies across 11 built-ins and 52 expansion entries; 3,441 weighted copies are structured effects, 155 are structured event/replacement paths, 184 are static/no-op classifications, and 0 remain parser-fallback, missing-Oracle, or unresolved-family classifications. The report uses the same stable backend SQLite cache regardless of launch directory, so the previous false 450-copy missing-Oracle result is retired.
 
 The abandoned token-compression experiment is not part of this project plan, runtime, or release criteria. Do not add it back as a gameplay, diagnostics, or documentation dependency.
 
@@ -127,7 +127,7 @@ Release blockers identified by the audit:
 - Generic static spell taxes now flow through the shared cost-modifier hook, so supported noncreature/creature/artifact/enchantment and opponent-scoped taxes affect legality, AI feasibility, and payment consistently.
 - Supported `can't have` keyword overrides now apply after ordinary layer-6 grants/removals, so a later timestamped grant cannot restore a prohibited keyword.
 - Draw/life replacement chains now carry used-source IDs across transformed events, preventing the same replacement source from reapplying or creating a loop.
-- The corrected four-deck verbose replay completed 6 hydrated games with no timeout, invalid-target, cost-payment, or stall anomalies; its Oracle fallback diagnostics remain actionable work rather than being treated as clean gameplay evidence.
+- The corrected four-deck verbose replay completed 6 hydrated games with no timeout, invalid-target, cost-payment, stall, missed-land, or Oracle-fallback anomalies.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
 - Arboreal Grazer-style land-from-hand ETB effects now put a land onto the battlefield tapped without consuming the normal land play, and Torrential Gearhulk-style instant/sorcery recursion now casts a qualifying spell from the controller's graveyard through the normal stack.
@@ -240,7 +240,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, effective-stat combat AI, replay-browser API, bounded-run comparison, persisted replay diff, paginated replay playback, and API smoke tests: `556 passed`.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, effective-stat combat AI, replay-browser API, bounded-run comparison, persisted replay diff, paginated replay playback, front-face DFC typing, and land legality: `558 passed` excluding the incompatible API smoke environment.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates complete match sequences; targeted post-fix head-to-head replay completed with zero timeouts and no X-cost errors.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -516,7 +516,16 @@ Exit criteria:
 - Card-play analytics now ignores tapped blockers when classifying attack quality.
 - Match construction no longer fabricates power/toughness for noncreatures or unknown cards; missing stats remain unknown until cache/fallback data supplies them.
 - Added regression coverage for hydration, noncreature stat integrity, X-cost tax selection, and tapped-blocker analytics.
-- The next replay sample still reports unresolved Oracle families for Kumano Faces Kakkazan, Delver of Secrets, Sprite Dragon, and Soul-Scar Mage; those are the next event/effect-fidelity targets.
+- The next replay sample is now the acceptance check for broader adversarial Oracle families and complex AI lines; the four fallback families from the previous sample are closed.
+
+### Saga, event diagnostics, and land-legality milestone
+
+- Added reusable Saga chapter effects for one-shot next-creature entry counters and transformed back-face resolution, with pending effects serialized through snapshots and expired at cleanup.
+- Event-layer patterns for Delver, Sprite Dragon, Soul-Scar Mage, and similar supported triggers no longer produce false cast-parser fallback logs.
+- Land drops are no longer exposed as legal moves while the stack is live; this removed the matrix's false missed-land-window cluster.
+- Front-face double-faced type lines are used until transformation, preventing combined Scryfall type lines from making a back-face creature playable or attackable early.
+- Added Saga, event-parser, snapshot, DFC typing, and stack-land legality regressions.
+- The corrected hydrated four-deck replay completed 6 games with zero hard errors, land-window anomalies, stalls, or unresolved Oracle families. The next work remains broader adversarial rules coverage and deeper strategic AI, not these surfaced defects.
 
 ### Adaptive Master+ search milestone
 

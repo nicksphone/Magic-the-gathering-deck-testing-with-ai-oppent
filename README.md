@@ -31,6 +31,7 @@ It is designed for serious deck work:
 - Damage prevention re-evaluates the modified event and applies remaining applicable sources once each; human matches receive follow-up choices for the chain, while AI/replay uses deterministic timestamp ordering.
 - Common continuous `can't have` keyword overrides are applied after applicable grants through deterministic layer ordering.
 - Simultaneous lethal creature state-based actions batch zone changes and deduplicate supported `one or more` death triggers before stack insertion.
+- Saga chapters can create one-shot next-creature entry counters and transform a double-faced Saga through the stack; pending delayed entries survive snapshots and expire at cleanup.
 - Master+ uses a bounded three-ply strategic search on late, developed boards with a reduced candidate beam; early states retain cheaper search.
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
 - Explicit `{C}` mana handling separate from generic mana
@@ -60,6 +61,7 @@ It is designed for serious deck work:
 - Local card cache synced from live card data
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
 - Double-faced, split, modal, adventure, and token-aware card handling
+- Double-faced type lines use the front face until a legal transform selects the back face, avoiding premature creature/land characteristics from combined metadata
 - Generic upkeep top-card transform handling for double-faced cards
 - Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations
 - Day/night transition triggers use the normal stack and APNAP ordering path

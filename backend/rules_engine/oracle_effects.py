@@ -107,6 +107,10 @@ def infer_effect_from_oracle(
     mode_text = action_targets.get("mode_text")
     mode_texts = action_targets.get("mode_texts") or []
     x_value = int(action_targets.get("x_value", 0) or 0)
+    if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
+        target = action_targets.get("target_card_id") or action_targets.get("source_card_id")
+        if target:
+            return "transform_card", {"target_card_id": target, "face_index": 1}
     if mode_text:
         oracle = mode_text.lower()
     elif mode_texts:
@@ -198,7 +202,7 @@ def infer_effect_from_oracle(
 
     # Static-only/keyword text often has no explicit resolver-side action.
     # Treat those as no-op without warning to keep logs focused on real misses.
-    if _looks_static_or_keyword_only(card.oracle_text or ""):
+    if _looks_static_or_keyword_only(card.oracle_text or "") or _is_event_layer_resolved(card.oracle_text or ""):
         return "noop", {}
     # Fallback: log uninferrable oracle text instead of silent no-op.
     state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
@@ -267,6 +271,21 @@ def _looks_static_or_keyword_only(text: str) -> bool:
         "prowess", "lands you control have", "add two mana of any one color",
     ]
     return any(m in t for m in static_markers)
+
+
+def _is_event_layer_resolved(text: str) -> bool:
+    """Identify event patterns resolved by rules_engine.events, not casts."""
+    t = (text or "").strip().lower()
+    return any(
+        pattern in t
+        for pattern in (
+            "at the beginning of your upkeep, look at the top card",
+            "whenever you cast a noncreature spell, put a +1/+1 counter",
+            "would deal noncombat damage to a creature",
+            "when this creature dies, it deals damage equal to its power",
+            "when this creature enters the battlefield, cast target instant card from your graveyard",
+        )
+    )
 
 
 def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -805,6 +824,14 @@ def _infer_clause_effect(
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
+
+    if "when you next cast a creature spell" in oracle and "additional +1/+1 counter" in oracle:
+        return "set_next_creature_entry_counter", {"counter": "+1/+1", "amount": 1}
+
+    if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
+        target = target_card_id or action_targets.get("source_card_id")
+        if target:
+            return "transform_card", {"target_card_id": target, "face_index": 1}
 
     control_match = GAIN_CONTROL_RE.search(oracle)
     if control_match:

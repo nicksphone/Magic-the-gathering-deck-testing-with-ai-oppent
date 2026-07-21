@@ -1,5 +1,7 @@
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.engine import RulesEngine
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 
 
 def _saga_state(oracle: str):
@@ -48,3 +50,69 @@ def test_saga_is_sacrificed_after_final_chapter_resolves() -> None:
     engine.next_step(state)
     assert "saga" in state.players[1].graveyard
     assert state.cards["saga"].zone == Zone.GRAVEYARD
+
+
+def test_saga_next_creature_chapter_applies_one_shot_entry_counter() -> None:
+    state = _saga_state(
+        "I — Draw a card.\n"
+        "II — When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it."
+    )
+    state.cards["saga"].counters["__lore"] = 1
+    engine = RulesEngine()
+    engine._advance_sagas(state)
+    assert state.stack[-1].effect_key == "set_next_creature_entry_counter"
+    resolve_top_of_stack(state)
+    assert state.pending_entry_counters
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.pending_entry_counters == state.pending_entry_counters
+    state = restored
+
+    creature = CardInstance(
+        id="bear",
+        name="Bear",
+        owner=1,
+        controller=1,
+        zone=Zone.STACK,
+        types=["Creature"],
+        power=2,
+        toughness=2,
+    )
+    state.cards[creature.id] = creature
+    add_to_stack(state, creature.id, 1, creature.name, "noop", {})
+    resolve_top_of_stack(state)
+
+    assert state.cards[creature.id].counters["+1/+1"] == 1
+    assert state.pending_entry_counters == []
+
+
+def test_saga_transform_chapter_uses_the_source_permanents_back_face() -> None:
+    state = _saga_state(
+        "I — Draw a card.\n"
+        "II — Draw a card.\n"
+        "III — Exile this Saga, then return it to the battlefield transformed under your control."
+    )
+    state.cards["saga"].card_faces = [
+        {"name": "Front Saga", "type_line": "Enchantment — Saga"},
+        {"name": "Back Creature", "type_line": "Creature — Human", "power": "3", "toughness": "3"},
+    ]
+    state.cards["saga"].counters["__lore"] = 2
+    engine = RulesEngine()
+    engine._advance_sagas(state)
+    resolve_top_of_stack(state)
+
+    assert state.cards["saga"].selected_face_index == 1
+    assert state.cards["saga"].name == "Back Creature"
+    assert "Creature" in state.cards["saga"].types
+
+
+def test_double_faced_type_line_uses_front_face_before_transformation() -> None:
+    deck = [{
+        "quantity": 1,
+        "card_name": "Kumano Faces Kakkazan",
+        "type_line": "Enchantment — Saga // Enchantment Creature — Human Shaman",
+        "oracle_text": "I — Draw a card.",
+    }]
+    state = MatchFactory.from_decks(deck, deck, seed=77)
+    card = next(item for item in state.cards.values() if item.name == "Kumano Faces Kakkazan")
+
+    assert card.types == ["Enchantment"]

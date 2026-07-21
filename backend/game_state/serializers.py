@@ -47,6 +47,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
         },
+        "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "replacement_choice_required": state.replacement_choice_required,
@@ -195,6 +196,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()
     }
+    state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
     state.replacement_choice_required = bool(payload.get("replacement_choice_required", False))

@@ -46,6 +46,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "reveal_defending_top_land": handlers.reveal_defending_top_land,
     "add_mana": handlers.add_mana,
     "add_counters": handlers.add_counters,
+    "set_next_creature_entry_counter": handlers.set_next_creature_entry_counter,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
     "temporary_pt_buff": handlers.temporary_pt_buff,
     "sacrifice": handlers.sacrifice,

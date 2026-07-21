@@ -120,6 +120,22 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             card.summoning_sick = "Creature" in card.types
             card.entered_turn = state.turn
             assign_static_order_on_battlefield_entry(state, card.id)
+            if "Creature" in card.types:
+                pending = list(getattr(state, "pending_entry_counters", []) or [])
+                remaining: list[dict] = []
+                applied = False
+                for entry in pending:
+                    if (
+                        not applied
+                        and int(entry.get("controller", -1)) == int(card.controller)
+                        and int(entry.get("expires_turn", state.turn)) == int(state.turn)
+                    ):
+                        counter = str(entry.get("counter", "+1/+1"))
+                        card.counters[counter] = int(card.counters.get(counter, 0)) + max(0, int(entry.get("amount", 1) or 0))
+                        applied = True
+                    else:
+                        remaining.append(entry)
+                state.pending_entry_counters = remaining
             if "as this creature enters, choose a creature type" in (card.oracle_text or "").lower():
                 selected = str(payload.get("chosen_creature_type") or "").strip().lower()
                 card.chosen_creature_type = selected or choose_type_for_realmwalker(state, card.controller)

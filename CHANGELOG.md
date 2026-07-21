@@ -4,6 +4,13 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-07-21
 
+- Saga/event and land-legality milestone:
+  - Added generic Saga chapter II next-creature entry counters and chapter III transformed back-face resolution with snapshot-safe pending state.
+  - Supported Delver, Sprite Dragon, and Soul-Scar Mage event patterns no longer emit false cast-parser fallback diagnostics.
+  - Land drops are no longer offered while the stack is live, removing false missed-land-window reports.
+  - Double-faced cards use front-face types until transformation.
+  - Full non-API backend validation passes `558` tests; the corrected four-deck hydrated replay completed 6 games with zero hard errors, land anomalies, stalls, or unresolved Oracle families.
+
 - Diagnostic metadata and X-cost fidelity milestone:
   - Verbose round-robin and deterministic replay now hydrate deck cards from the shared local cache/fallback boundary before constructing games.
   - X-value selection accounts for the selected spell's type/name when applying static taxes, preventing invalid retry loops for taxed X spells.

@@ -148,6 +148,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and used_land_plays < max_land_plays
             and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
             and state.active_player == player_id
+            and not state.stack
         ):
             moves.append({"type": "play_land", "card_id": cid})
         elif (
@@ -212,6 +213,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and used_land_plays < max_land_plays
             and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
             and state.active_player == player_id
+            and not state.stack
         ):
             moves.append({"type": "play_land", "card_id": cid, "from_exile": True})
         elif not _is_land_card(card) and _can_cast_spell(state, card, player_id):

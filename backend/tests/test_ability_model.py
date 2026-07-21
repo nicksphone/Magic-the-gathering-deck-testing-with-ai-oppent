@@ -64,3 +64,24 @@ def test_planeswalker_static_and_loyalty_text_is_not_cast_time_fallback() -> Non
 
     assert spec.effect.key == "noop"
     assert not spec.used_fallback
+
+
+def test_event_layer_patterns_are_not_reported_as_cast_parser_fallbacks() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Island"}],
+        [{"quantity": 60, "card_name": "Island"}],
+    )
+    for index, oracle in enumerate(
+        (
+            "At the beginning of your upkeep, look at the top card of your library. If an instant or sorcery card is revealed this way, transform this creature.",
+            "Whenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+            "If a source you control would deal noncombat damage to a creature an opponent controls, put that many -1/-1 counters on that creature instead.",
+        )
+    ):
+        card = CardInstance(
+            id=f"event-{index}", name="Event Permanent", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Creature"], oracle_text=oracle,
+        )
+        spec = build_ability_spec(state, card, 1)
+        assert spec.effect.key == "noop"
+        assert not spec.used_fallback

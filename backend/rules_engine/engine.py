@@ -100,6 +100,11 @@ class RulesEngine:
             self._clear_prevention_shields(state)
             self._revert_expired_control_changes(state)
             self._revert_crew_vehicles(state)
+            state.pending_entry_counters = [
+                entry
+                for entry in getattr(state, "pending_entry_counters", [])
+                if int(entry.get("expires_turn", state.turn)) > int(state.turn)
+            ]
             self._enforce_cleanup_hand_size(state, state.active_player)
             state.turn_cant_gain_life = set()
             state.turn_damage_cant_be_prevented = False
@@ -128,7 +133,12 @@ class RulesEngine:
             if chapter is None:
                 continue
             proxy = type("SagaChapterProxy", (), {"oracle_text": chapter["text"], "name": card.name, "mana_cost": "", "types": ["Enchantment"]})()
-            ability = build_ability_spec(state, proxy, card.controller)
+            ability = build_ability_spec(
+                state,
+                proxy,
+                card.controller,
+                action_targets={"source_card_id": cid, "target_card_id": cid},
+            )
             state.stack.append(
                 StackItem(
                     id=str(uuid.uuid4()),

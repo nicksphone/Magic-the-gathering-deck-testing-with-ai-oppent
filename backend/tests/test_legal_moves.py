@@ -17,6 +17,21 @@ def test_generates_basic_legal_moves() -> None:
     assert "tap_land_for_mana" not in move_types
 
 
+def test_land_drop_is_not_legal_while_the_stack_is_live() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 1
+    state.priority_player = 1
+    state.stack.append(object())
+
+    moves = RulesEngine().legal_moves(state, 1)
+
+    assert all(move.get("type") != "play_land" for move in moves)
+
+
 def test_land_named_card_is_not_offered_as_cast_spell_even_if_mistyped() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
