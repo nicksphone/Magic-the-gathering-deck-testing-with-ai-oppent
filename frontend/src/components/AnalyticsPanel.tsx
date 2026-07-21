@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
+import type { DiagnosticRunDetail, DiagnosticRunSummary } from "../api/client";
 
 type Props = {
   decks: DeckRecord[];
@@ -20,11 +21,37 @@ export function AnalyticsPanel({ decks }: Props) {
   const [jobStatus, setJobStatus] = useState<string>("idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
+  const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
+  const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
+  const [diagnosticError, setDiagnosticError] = useState("");
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
   const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
   const anomalyObj = (resultObj?.anomalies as Record<string, unknown> | null) ?? null;
   const balanceAlerts = Array.isArray(resultObj?.balance_alerts) ? resultObj.balance_alerts as Array<Record<string, unknown>> : [];
   const confidenceIntervals = (resultObj?.confidence_intervals as Record<string, Record<string, unknown>> | null) ?? null;
+
+  async function refreshDiagnosticRuns() {
+    try {
+      setDiagnosticError("");
+      const payload = await api.listDiagnosticRuns(20);
+      setDiagnosticRuns(payload.runs);
+    } catch (err) {
+      setDiagnosticError(String(err));
+    }
+  }
+
+  async function openDiagnosticRun(runName: string) {
+    try {
+      setDiagnosticError("");
+      setSelectedDiagnostic(await api.getDiagnosticRun(runName));
+    } catch (err) {
+      setDiagnosticError(String(err));
+    }
+  }
+
+  useEffect(() => {
+    void refreshDiagnosticRuns();
+  }, []);
 
   function renderTraceContext(title: string, context: Record<string, unknown> | null | undefined) {
     if (!context || Object.keys(context).length === 0) {
@@ -169,6 +196,41 @@ export function AnalyticsPanel({ decks }: Props) {
         </div>
       </div>
       {jobError ? <p className="sim-error">Latest simulator error: {jobError}</p> : null}
+      <div className="analytics-sample-block">
+        <div className="sim-status-row">
+          <strong>Persisted Diagnostic Runs</strong>
+          <button type="button" onClick={() => void refreshDiagnosticRuns()}>Refresh</button>
+        </div>
+        {diagnosticError ? <p className="sim-error">Diagnostics: {diagnosticError}</p> : null}
+        {diagnosticRuns.length === 0 ? (
+          <p>No persisted diagnostic runs found.</p>
+        ) : (
+          <ul className="analytics-sample-list">
+            {diagnosticRuns.map((run) => {
+              const summary = run.summary;
+              return (
+                <li key={run.run_name}>
+                  <button type="button" onClick={() => void openDiagnosticRun(run.run_name)}>{run.run_name}</button>{" "}
+                  {new Date(run.modified_at * 1000).toLocaleString()} | matches {String(summary.matches ?? summary.games ?? "-")} | anomalies {String(summary.anomaly_count ?? summary.anomalies ?? "-")}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {selectedDiagnostic ? (
+          <div>
+            <strong>Root-Cause Snapshot: {selectedDiagnostic.run_name}</strong>
+            <pre className="analytics-log-excerpt">
+              {JSON.stringify({
+                summary: selectedDiagnostic.summary,
+                anomaly_clusters: selectedDiagnostic.anomaly_clusters,
+                anomaly_samples: selectedDiagnostic.anomaly_samples.slice(0, 5),
+                artifacts: selectedDiagnostic.artifacts,
+              }, null, 2)}
+            </pre>
+          </div>
+        ) : null}
+      </div>
       {resultObj ? (
         <div className="analytics-summary">
           <p>

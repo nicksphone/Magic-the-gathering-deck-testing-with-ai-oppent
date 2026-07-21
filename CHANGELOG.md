@@ -2,6 +2,14 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-07-21
+
+- Persisted diagnostics browser milestone:
+  - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
+  - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.
+  - Added Testing Simulator controls for refreshing persisted runs and opening compact root-cause snapshots without loading raw multi-megabyte logs.
+  - Full backend validation passes `546` tests; frontend production build passes.
+
 ## 2026-07-19
 
 - Adaptive Master+ search milestone:

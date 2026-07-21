@@ -119,6 +119,22 @@ export type BatchSimulationJobStatus = {
   result?: any;
 };
 
+export type DiagnosticRunSummary = {
+  run_name: string;
+  modified_at: number;
+  summary: Record<string, unknown>;
+};
+
+export type DiagnosticRunDetail = DiagnosticRunSummary & {
+  anomaly_clusters: unknown;
+  anomaly_samples: Record<string, unknown>[];
+  artifacts: {
+    summary: string;
+    clusters: string | null;
+    anomaly_games: string | null;
+  };
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -196,4 +212,8 @@ export const api = {
     }),
   getSimulateBatchJob: (jobId: string) =>
     req<BatchSimulationJobStatus>(`/simulate/batch/${encodeURIComponent(jobId)}`),
+  listDiagnosticRuns: (limit = 20) =>
+    req<{ runs: DiagnosticRunSummary[] }>(`/diagnostics/runs?limit=${limit}`),
+  getDiagnosticRun: (runName: string) =>
+    req<DiagnosticRunDetail>(`/diagnostics/runs/${encodeURIComponent(runName)}`),
 };

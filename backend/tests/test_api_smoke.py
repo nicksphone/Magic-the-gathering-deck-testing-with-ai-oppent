@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+
 from fastapi.testclient import TestClient
 
+import main
 from main import ACTIVE_MATCHES, app
 
 
@@ -67,3 +70,34 @@ def test_api_replacement_options_route_returns_choice_contract() -> None:
     assert body["selection_key"] == "targets.replacement_source_id"
     assert body["default_policy"] == "latest_static_order"
     assert body["options"] == []
+
+
+def test_api_diagnostic_run_routes_bound_artifact_reads(tmp_path, monkeypatch) -> None:
+    run_dir = tmp_path / "run-20260721"
+    run_dir.mkdir()
+    (run_dir / "summary.json").write_text(json.dumps({"matches": 20, "anomaly_count": 2}), encoding="utf-8")
+    (run_dir / "anomaly-clusters.json").write_text(
+        json.dumps([{"category": "stall", "count": index} for index in range(120)]),
+        encoding="utf-8",
+    )
+    (run_dir / "anomaly_games.jsonl").write_text(
+        "".join(json.dumps({"game": index}) + "\n" for index in range(30)),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(main, "DIAGNOSTICS_ROOT", tmp_path)
+
+    with TestClient(app) as client:
+        listing = client.get("/diagnostics/runs?limit=1")
+        detail = client.get("/diagnostics/runs/run-20260721")
+        missing = client.get("/diagnostics/runs/not-found")
+
+    assert listing.status_code == 200
+    assert len(listing.json()["runs"]) == 1
+    assert detail.status_code == 200
+    body = detail.json()
+    assert body["summary"]["matches"] == 20
+    assert body["anomaly_clusters"][0]["category"] == "stall"
+    assert len(body["anomaly_clusters"]) == 100
+    assert len(body["anomaly_samples"]) == 25
+    assert body["artifacts"]["anomaly_games"] == "anomaly_games.jsonl"
+    assert missing.status_code == 404

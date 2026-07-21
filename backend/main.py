@@ -83,6 +83,7 @@ class MatchController:
 ACTIVE_MATCHES: dict[str, MatchController] = {}
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOBS_LOCK = threading.Lock()
+DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
 
 
 class DeckImportRequest(BaseModel):
@@ -844,6 +845,82 @@ def ai_diagnostics(payload: AIDiagnosticsRequest, repo: Repository = Depends(get
         difficulty=payload.difficulty,
         max_ticks=payload.max_ticks,
     )
+
+
+def _diagnostic_summary(run_dir: Path) -> dict | None:
+    summary_path = run_dir / "summary.json"
+    if not summary_path.is_file():
+        return None
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    try:
+        modified_at = summary_path.stat().st_mtime
+    except OSError:
+        return None
+    return {"run_name": run_dir.name, "modified_at": modified_at, "summary": summary}
+
+
+@app.get("/diagnostics/runs")
+def list_diagnostic_runs(limit: int = 20) -> dict:
+    """List persisted diagnostic summaries without loading raw game logs."""
+    bounded_limit = max(1, min(int(limit), 100))
+    if not DIAGNOSTICS_ROOT.is_dir():
+        return {"runs": []}
+    runs = [
+        item
+        for path in DIAGNOSTICS_ROOT.iterdir()
+        if path.is_dir()
+        for item in [_diagnostic_summary(path)]
+        if item is not None
+    ]
+    runs.sort(key=lambda item: float(item.get("modified_at", 0)), reverse=True)
+    return {"runs": runs[:bounded_limit]}
+
+
+@app.get("/diagnostics/runs/{run_name}")
+def get_diagnostic_run(run_name: str) -> dict:
+    """Return one summary plus bounded anomaly/root-cause artifacts."""
+    if Path(run_name).name != run_name or run_name in {"", ".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid diagnostic run name")
+    run_dir = DIAGNOSTICS_ROOT / run_name
+    summary_item = _diagnostic_summary(run_dir)
+    if summary_item is None:
+        raise HTTPException(status_code=404, detail="Diagnostic run not found")
+
+    clusters: object = []
+    clusters_path = run_dir / "anomaly-clusters.json"
+    if clusters_path.is_file():
+        try:
+            clusters = json.loads(clusters_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            clusters = []
+    if isinstance(clusters, list):
+        clusters = clusters[:100]
+    anomaly_samples: list[dict] = []
+    anomaly_path = run_dir / "anomaly_games.jsonl"
+    if anomaly_path.is_file():
+        try:
+            for line in anomaly_path.read_text(encoding="utf-8").splitlines()[:25]:
+                try:
+                    value = json.loads(line)
+                except ValueError:
+                    continue
+                if isinstance(value, dict):
+                    anomaly_samples.append(value)
+        except OSError:
+            pass
+    return {
+        **summary_item,
+        "anomaly_clusters": clusters,
+        "anomaly_samples": anomaly_samples,
+        "artifacts": {
+            "summary": "summary.json",
+            "clusters": "anomaly-clusters.json" if clusters_path.is_file() else None,
+            "anomaly_games": "anomaly_games.jsonl" if anomaly_path.is_file() else None,
+        },
+    }
 
 
 @app.get("/ai/priors")

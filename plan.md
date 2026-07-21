@@ -2,17 +2,18 @@
 
 This plan reflects the current codebase, the verified runtime checks, and the remaining work needed to finish the project.
 
-## Audit Status (2026-07-19)
+## Audit Status (2026-07-21)
 
 The project is a substantial, test-backed simulator, but it is not yet rules-complete or consistently capable of piloting arbitrary decks at seasoned-player level. The current implementation is best described as a deterministic rules-aware testing platform with heuristic Oracle interpretation and matchup-aware AI.
 
 Confirmed validation baseline:
 
-- Backend: `443 passed`, 43 deprecation warnings.
+- Backend: `546 passed`, 66 deprecation warnings.
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated rules/AI validation: `365 passed`; frontend production build passes; the current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Current consolidated backend validation: `546 passed`, 66 deprecation warnings; frontend production build passes.
+- Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
@@ -28,6 +29,7 @@ Verified strengths:
 - AI has archetype detection, mulligan and land-drop logic, interaction timing, bounded spell/stack/combat lookahead, legal tutor-choice materialization, and structured decision traces.
 - The simulator has persistent job state, deterministic seeds, replay hashes, first-divergence reporting, anomaly classification, and confidence-interval reporting.
 - The frontend has a working production build, configurable LAN API routing, health/retry state, response windows, card inspection, density-aware battlefield rendering, and simulator progress reporting.
+- The frontend now lists persisted diagnostic runs and opens a bounded root-cause snapshot containing summary, anomaly clusters, and at most five sample games.
 
 Verified limitations:
 
@@ -110,6 +112,7 @@ Release blockers identified by the audit:
 - Combat legality now recognizes nonbasic, snow, desert, wastes, and legendary landwalk in addition to the basic landwalk variants, with focused regression coverage.
 - API smoke coverage now exercises `/health`, built-in deck loading, and local card-image serving; it also fixed the missing `BUILTIN_DECKS` import that caused built-in deck requests to fail at runtime. SQLite persistence is anchored to `backend/mtg_lab.db` rather than the process cwd, preventing API and diagnostics from silently using different caches.
 - Analytics now counts unsupported Oracle fallbacks explicitly and attributes them to card names, with the same data rendered in the Testing Simulator UI.
+- Persisted diagnostics now have bounded API routes at `/diagnostics/runs` and `/diagnostics/runs/{run_name}`; the UI can refresh the run list without loading raw multi-megabyte logs.
 - The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
@@ -223,7 +226,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current focused implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, and API smoke tests: `365 passed`.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, diagnostics routes, and API smoke tests: `546 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -347,7 +350,7 @@ Current implementation note:
 ### 7. Complete the testing UI and release hardening
 1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.
 2. Add visible AI reasoning, action legality explanations, and response-window seat/controller context.
-3. Add frontend replay browsing, anomaly drilldown, and simulator progress after refresh.
+3. Add frontend replay browsing, anomaly drilldown, and simulator progress after refresh. Persisted diagnostic run listing and bounded anomaly drilldown are now implemented; full replay playback and cross-run comparison remain open.
 4. Add error boundaries, request timeouts, retry controls, and backend health reporting.
 5. Verify hover inspection, keyboard accessibility, mobile fallback behavior, and LAN access.
 6. Update README, changelog, plan, and generated analysis exports after every milestone.
@@ -357,12 +360,11 @@ Exit criteria:
 - The documentation matches the actual shipped behavior.
 
 ### Current next implementation slice
-1. Extend human/API replacement pause/resume to chained prevention/replacement re-evaluation, including explicit second-choice prompts when the modified event remains replaceable; deterministic AI/replay chaining is now covered.
-2. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
-3. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
-4. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
-5. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
-6. Finish bulk card/token completeness reporting plus frontend replay/anomaly drilldown, then validate LAN deployment and long-session UX.
+1. Implement the next high-value replacement/layer slice: explicit effect timestamps, dependency ordering, prevention/can't overrides, and multiple replacement choices, each with integration coverage.
+2. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
+3. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
+4. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
+5. Finish bulk card/token completeness reporting, add full replay playback and cross-run comparison, then validate LAN deployment and long-session UX.
 
 ### Replacement pause/resume milestone
 
@@ -371,6 +373,13 @@ Exit criteria:
 - Pending choices and the untouched stack item survive match snapshots; selecting a source resumes the same event with the selected replacement metadata.
 - AI and deterministic replay seats continue using timestamp-ordered fallback selection; mixed human/AI matches pause only for the human-controlled affected player.
 - Nested combat, lethal state-based, and legend-rule replacement prompts now use continuation-safe choices; simultaneous SBA batches and combat damage prevention choices remain open.
+
+### Persisted diagnostics browser milestone
+
+- Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` endpoints that read persisted summaries and cap anomaly samples at 25 records.
+- Added API regression coverage for summary listing, artifact metadata, bounded samples, and missing runs.
+- Added a Testing Simulator browser for persisted runs with refresh, timestamped summary rows, and bounded root-cause snapshots.
+- Full backend validation now passes `546` tests; frontend production build passes.
 
 ### Simultaneous trigger ordering milestone
 

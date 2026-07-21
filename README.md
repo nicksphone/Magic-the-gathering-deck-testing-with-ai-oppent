@@ -6,6 +6,7 @@ It is designed for serious deck work:
 - Human vs AI playtesting
 - AI vs AI simulation
 - Batch matchup analysis and replay diagnostics
+- Persisted diagnostic-run browsing with bounded anomaly/root-cause snapshots
 - Custom deck import and deck library management
 - Rules-engine-first gameplay logic with local persistence
 
@@ -101,6 +102,7 @@ It is designed for serious deck work:
 - Hover inspection and card zoom for readable long-session testing
 - Density-aware battlefield scaling for crowded boards
 - Match simulator panel with progress and first-divergence reporting
+- Testing Simulator can browse persisted diagnostic summaries without loading raw anomaly logs; selected runs show bounded samples and cluster metadata
 
 ## Architecture
 
@@ -240,6 +242,8 @@ Key endpoints:
 - `POST /simulate/batch/start`
 - `GET /simulate/batch/{job_id}`
 - `POST /ai/diagnostics`
+- `GET /diagnostics/runs`
+- `GET /diagnostics/runs/{run_name}`
 - `GET /ai/priors`
 - `POST /ai/priors/rebuild`
 - `GET /analytics/history`
@@ -266,6 +270,7 @@ Current focus:
 - deepening tactical AI for complex board states and matchup-specific heuristics
 - broadening deterministic replay coverage across more representative deck pairings
 - keeping the UI dense and readable during long sessions
+- adding full replay playback and cross-run diagnostic comparison
 
 ## Known Limitations and Next Upgrades
 
