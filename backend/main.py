@@ -972,10 +972,34 @@ def _read_diagnostic_game(run_name: str, game_index: int) -> dict:
                     log = value.get("log_excerpt")
                 if not isinstance(log, list):
                     raise HTTPException(status_code=422, detail="Diagnostic game has no replay log")
-                return {"game_index": game_index, "record": value, "log": [str(item) for item in log[:5000]]}
+                return {
+                    "game_index": game_index,
+                    "record": {key: item for key, item in value.items() if key not in {"log", "log_excerpt"}},
+                    "log": [str(item) for item in log[:5000]],
+                }
     except OSError as exc:
         raise HTTPException(status_code=500, detail="Unable to read diagnostic game log") from exc
     raise HTTPException(status_code=404, detail="Diagnostic game index not found")
+
+
+@app.get("/diagnostics/runs/{run_name}/games/{game_index}")
+def get_diagnostic_game_page(run_name: str, game_index: int, offset: int = 0, limit: int = 120) -> dict:
+    """Return one bounded page of a persisted game log for interactive playback."""
+    if offset < 0 or limit < 1 or limit > 200:
+        raise HTTPException(status_code=400, detail="Invalid replay page bounds")
+    game = _read_diagnostic_game(run_name, int(game_index))
+    lines = game["log"]
+    page = lines[offset : offset + limit]
+    return {
+        "run_name": run_name,
+        "game_index": game_index,
+        "record": game["record"],
+        "offset": offset,
+        "limit": limit,
+        "total_lines": len(lines),
+        "lines": page,
+        "has_more": offset + len(page) < len(lines),
+    }
 
 
 def _numeric_summary_values(value: object, prefix: str = "") -> dict[str, float]:

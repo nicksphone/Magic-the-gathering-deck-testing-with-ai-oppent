@@ -24,6 +24,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
   const [selectedGameIndex, setSelectedGameIndex] = useState(0);
+  const [selectedGamePage, setSelectedGamePage] = useState<{ offset: number; lines: string[]; total_lines: number; has_more: boolean } | null>(null);
   const [compareLeft, setCompareLeft] = useState("");
   const [compareRight, setCompareRight] = useState("");
   const [comparison, setComparison] = useState<Record<string, unknown> | null>(null);
@@ -52,6 +53,17 @@ export function AnalyticsPanel({ decks }: Props) {
       setDiagnosticError("");
       setSelectedDiagnostic(await api.getDiagnosticRun(runName));
       setSelectedGameIndex(0);
+      setSelectedGamePage(null);
+    } catch (err) {
+      setDiagnosticError(String(err));
+    }
+  }
+
+  async function loadDiagnosticGamePage(runName: string, gameIndex: number, offset = 0) {
+    try {
+      setDiagnosticError("");
+      const page = await api.getDiagnosticGamePage(runName, gameIndex, offset);
+      setSelectedGamePage(page);
     } catch (err) {
       setDiagnosticError(String(err));
     }
@@ -295,6 +307,12 @@ export function AnalyticsPanel({ decks }: Props) {
                 <pre className="analytics-log-excerpt">
                   {JSON.stringify(selectedDiagnostic.games[selectedGameIndex] ?? {}, null, 2)}
                 </pre>
+                <div className="row">
+                  <button type="button" onClick={() => void loadDiagnosticGamePage(selectedDiagnostic.run_name, selectedGameIndex, Math.max(0, (selectedGamePage?.offset ?? 0) - 120))} disabled={!selectedGamePage || selectedGamePage.offset === 0}>Previous log page</button>
+                  <button type="button" onClick={() => void loadDiagnosticGamePage(selectedDiagnostic.run_name, selectedGameIndex, selectedGamePage ? selectedGamePage.offset + selectedGamePage.lines.length : 0)}>Load log page</button>
+                  <span>{selectedGamePage ? `Lines ${selectedGamePage.offset + 1}-${selectedGamePage.offset + selectedGamePage.lines.length} of ${selectedGamePage.total_lines}` : "Paged playback not loaded"}</span>
+                </div>
+                {selectedGamePage ? <pre className="analytics-log-excerpt">{selectedGamePage.lines.join("\n")}</pre> : null}
               </div>
             ) : null}
           </div>

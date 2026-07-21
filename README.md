@@ -251,6 +251,7 @@ Key endpoints:
 - `GET /diagnostics/runs/{run_name}`
 - `GET /diagnostics/compare`
 - `GET /diagnostics/compare/replay`
+- `GET /diagnostics/runs/{run_name}/games/{game_index}`
 - `GET /ai/priors`
 - `POST /ai/priors/rebuild`
 - `GET /analytics/history`
@@ -267,6 +268,7 @@ The application currently supports:
 - Replay logs, batch simulations, matchup stats, anomaly diagnostics, turn-level AI trace summaries, and training trace export
 - Compact first-divergence drilldown for replay drift analysis
 - Bounded persisted-game replay comparison with categorized first-divergence context
+- Paginated persisted game-log playback with bounded response pages
 - Role-aware log priors derived from replay traces and training exports
 - AI seat control with archetype detection, mulligan logic, curve evaluation, interaction heuristics, and keyword-aware battlefield evaluation
 - AI seat control with archetype detection, hand-profile mulligan logic, curve evaluation, interaction heuristics, attack heuristics, and keyword-aware battlefield evaluation
@@ -279,7 +281,7 @@ Current focus:
 - deepening tactical AI for complex board states and matchup-specific heuristics
 - broadening deterministic replay coverage across more representative deck pairings
 - keeping the UI dense and readable during long sessions
-- extending bounded replay comparison into interactive full line-by-line playback
+- validating LAN and long-session UX, then adding richer state-by-state replay reconstruction
 
 ## Known Limitations and Next Upgrades
 
@@ -288,7 +290,7 @@ Current focus:
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.
 - The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
 - Larger deterministic replay matrices and longer validation runs would improve confidence in balance and edge-case coverage.
-- Persisted replay comparison intentionally caps game selection and log lines; full interactive replay playback remains future work.
+- Persisted replay inspection is paginated and bounded; state-by-state card highlighting and full long-session/LAN validation remain future work.
 - The UI still has room for more polished long-session deck-testing ergonomics.
 
 ## Development Notes

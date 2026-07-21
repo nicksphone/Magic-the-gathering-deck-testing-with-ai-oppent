@@ -154,6 +154,17 @@ export type DiagnosticReplayComparison = {
   identical: boolean;
 };
 
+export type DiagnosticGamePage = {
+  run_name: string;
+  game_index: number;
+  record: Record<string, unknown>;
+  offset: number;
+  limit: number;
+  total_lines: number;
+  lines: string[];
+  has_more: boolean;
+};
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -241,4 +252,6 @@ export const api = {
     req<DiagnosticReplayComparison>(
       `/diagnostics/compare/replay?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}&left_game=${leftGame}&right_game=${rightGame}`,
     ),
+  getDiagnosticGamePage: (runName: string, gameIndex: number, offset = 0, limit = 120) =>
+    req<DiagnosticGamePage>(`/diagnostics/runs/${encodeURIComponent(runName)}/games/${gameIndex}?offset=${offset}&limit=${limit}`),
 };

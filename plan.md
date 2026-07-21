@@ -34,6 +34,7 @@ Verified strengths:
 - Persisted diagnostic runs now expose up to 20 ordinary game summaries with 80-line log excerpts, and the Testing Simulator provides a bounded game selector.
 - Persisted diagnostic summaries can now be compared through a bounded numeric-delta API and the Testing Simulator comparison controls.
 - Persisted diagnostic games can now be compared by selected game index; the API returns the first normalized divergent line, category, and bounded context without exposing full logs.
+- Persisted game logs now have a paginated playback endpoint; comparison records strip raw log arrays, and the UI can page through bounded log excerpts without loading the whole diagnostic run.
 - Continuous and replacement effects now carry an explicit persisted monotonic timestamp, with legacy `static_order` fallback and deterministic battlefield/instance tie-breakers.
 - Continuous-layer diagnostics now order supported keyword effects before base-P/T setters and modifiers using explicit layer ranks, without changing unsupported Oracle behavior.
 
@@ -376,7 +377,7 @@ Exit criteria:
 2. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 3. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 4. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
-5. Finish bulk card/token completeness reporting, extend replay comparison into full interactive line-by-line playback beyond the bounded first-divergence response, then validate LAN deployment and long-session UX.
+5. Finish bulk card/token completeness reporting and validate LAN deployment and long-session UX; replay playback now exists as bounded pages, while richer state-by-state reconstruction remains open.
 
 ### Replacement pause/resume milestone
 
@@ -452,6 +453,13 @@ Exit criteria:
 - The endpoint reuses normalized first-divergence and root-cause classification, caps selectable games at the first 20 records and each compared log at 5,000 lines, and returns no full log payload.
 - The Testing Simulator now exposes game indexes and displays the categorized first divergence with surrounding context.
 - Full backend validation, frontend production build, and deterministic replay smoke remain release gates.
+
+### Paginated replay playback milestone
+
+- Added `/diagnostics/runs/{run_name}/games/{game_index}` with bounded page size and offset controls for persisted game logs.
+- Replay comparison responses now remove raw `log`/`log_excerpt` arrays from record metadata, preventing accidental full-log responses.
+- The Testing Simulator exposes previous/next page controls and line ranges for selected games.
+- Full state reconstruction, card-by-card highlighting, and LAN/long-session validation remain open.
 
 ### Simultaneous trigger ordering milestone
 

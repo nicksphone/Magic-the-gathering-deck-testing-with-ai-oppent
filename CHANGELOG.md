@@ -50,6 +50,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Added Testing Simulator controls for comparing game indexes from two diagnostic runs.
   - Full backend validation, frontend production build, and deterministic replay smoke remain release gates.
 
+- Paginated replay playback milestone:
+  - Added `/diagnostics/runs/{run_name}/games/{game_index}` with bounded line pages for selected persisted games.
+  - Replay comparison metadata now strips raw log arrays so the API cannot accidentally return an entire game log.
+  - Added Testing Simulator controls for paging through selected game logs.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

@@ -145,9 +145,16 @@ def test_api_diagnostic_replay_compare_returns_first_divergence(tmp_path, monkey
         response = client.get("/diagnostics/compare/replay?left=left&right=right")
         identical = client.get("/diagnostics/compare/replay?left=left&right=left")
         bad_index = client.get("/diagnostics/compare/replay?left=left&right=right&left_game=20")
+        page = client.get("/diagnostics/runs/left/games/0?offset=1&limit=1")
+        bad_page = client.get("/diagnostics/runs/left/games/0?offset=-1")
 
     assert response.status_code == 200
     assert response.json()["first_divergence"]["index"] == 1
     assert response.json()["first_divergence"]["category"] == "land_drop_mismatch"
+    assert "log" not in response.json()["left"]["record"]
     assert identical.json()["identical"] is True
     assert bad_index.status_code == 400
+    assert page.status_code == 200
+    assert page.json()["lines"] == ["Player A plays land Player A plays Island."]
+    assert page.json()["total_lines"] == 3
+    assert bad_page.status_code == 400
