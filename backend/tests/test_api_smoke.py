@@ -84,6 +84,10 @@ def test_api_diagnostic_run_routes_bound_artifact_reads(tmp_path, monkeypatch) -
         "".join(json.dumps({"game": index}) + "\n" for index in range(30)),
         encoding="utf-8",
     )
+    (run_dir / "games.jsonl").write_text(
+        "".join(json.dumps({"game": index, "winner": 1, "log": list(range(100))}) + "\n" for index in range(30)),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(main, "DIAGNOSTICS_ROOT", tmp_path)
 
     with TestClient(app) as client:
@@ -99,5 +103,8 @@ def test_api_diagnostic_run_routes_bound_artifact_reads(tmp_path, monkeypatch) -
     assert body["anomaly_clusters"][0]["category"] == "stall"
     assert len(body["anomaly_clusters"]) == 100
     assert len(body["anomaly_samples"]) == 25
+    assert len(body["games"]) == 20
+    assert len(body["games"][0]["log_excerpt"]) == 80
     assert body["artifacts"]["anomaly_games"] == "anomaly_games.jsonl"
+    assert body["artifacts"]["games"] == "games.jsonl"
     assert missing.status_code == 404

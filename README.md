@@ -276,7 +276,7 @@ Current focus:
 - deepening tactical AI for complex board states and matchup-specific heuristics
 - broadening deterministic replay coverage across more representative deck pairings
 - keeping the UI dense and readable during long sessions
-- adding full replay playback and cross-run diagnostic comparison
+- adding full replay playback and cross-run diagnostic comparison beyond the bounded persisted replay browser
 
 ## Known Limitations and Next Upgrades
 

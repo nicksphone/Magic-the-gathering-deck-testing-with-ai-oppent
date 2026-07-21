@@ -31,6 +31,7 @@ Verified strengths:
 - The simulator has persistent job state, deterministic seeds, replay hashes, first-divergence reporting, anomaly classification, and confidence-interval reporting.
 - The frontend has a working production build, configurable LAN API routing, health/retry state, response windows, card inspection, density-aware battlefield rendering, and simulator progress reporting.
 - The frontend now lists persisted diagnostic runs and opens a bounded root-cause snapshot containing summary, anomaly clusters, and at most five sample games.
+- Persisted diagnostic runs now expose up to 20 ordinary game summaries with 80-line log excerpts, and the Testing Simulator provides a bounded game selector.
 - Continuous and replacement effects now carry an explicit persisted monotonic timestamp, with legacy `static_order` fallback and deterministic battlefield/instance tie-breakers.
 - Continuous-layer diagnostics now order supported keyword effects before base-P/T setters and modifiers using explicit layer ranks, without changing unsupported Oracle behavior.
 
@@ -359,7 +360,7 @@ Current implementation note:
 ### 7. Complete the testing UI and release hardening
 1. Keep battlefield, stack, mana, priority, combat, and hand panels readable on long matches and dense boards.
 2. Add visible AI reasoning, action legality explanations, and response-window seat/controller context.
-3. Add frontend replay browsing, anomaly drilldown, and simulator progress after refresh. Persisted diagnostic run listing and bounded anomaly drilldown are now implemented; full replay playback and cross-run comparison remain open.
+3. Add frontend replay browsing, anomaly drilldown, and simulator progress after refresh. Persisted run listing, bounded anomaly drilldown, and bounded game replay browsing are now implemented; full replay playback and cross-run comparison remain open.
 4. Add error boundaries, request timeouts, retry controls, and backend health reporting.
 5. Verify hover inspection, keyboard accessibility, mobile fallback behavior, and LAN access.
 6. Update README, changelog, plan, and generated analysis exports after every milestone.
@@ -373,7 +374,7 @@ Exit criteria:
 2. Expand the now-zero-fallback corpus coverage with adversarial state tests for Realmwalker top-library permissions, Hydroid Krasis X triggers, self-cast triggers, and conditional replacement choices; keep future metadata gaps separate and never fill cache gaps with guessed card text.
 3. Extend Master tactical search using the new decision-quality metrics, then add stronger crack-back and post-combat evaluation, hidden-information signals, and explicit resource-preservation plans across all archetypes.
 4. Run seeded best-of-3/best-of-9 round-robin batches with full hand/board/action analytics, classify every anomaly, and fix defects before using results for balance tuning.
-5. Finish bulk card/token completeness reporting, add full replay playback and cross-run comparison, then validate LAN deployment and long-session UX.
+5. Finish bulk card/token completeness reporting, add full replay playback and cross-run comparison beyond the bounded browser, then validate LAN deployment and long-session UX.
 
 ### Replacement pause/resume milestone
 
@@ -428,6 +429,13 @@ Exit criteria:
 - Draw and life-gain replacement payloads now preserve the source IDs already applied to the transformed event.
 - Automatic and explicit replacement selection both exclude consumed sources, preventing draw/life replacement cycles while preserving the event amount.
 - Added regression coverage for a draw-to-life-to-draw interaction; full backend validation passes `552` tests, frontend production build passes, and seeded replay has 0 determinism failures.
+
+### Persisted replay browser milestone
+
+- Diagnostic detail responses now stream bounded ordinary game summaries instead of reading full JSONL files into memory.
+- Each run exposes at most 20 games and each selected game exposes at most 80 log lines; anomaly samples remain separately capped at 25.
+- The Testing Simulator now selects and displays bounded game replay excerpts; full replay playback and cross-run comparison remain open.
+- Full backend validation passes `552` tests, frontend production build passes, and seeded replay has 0 determinism failures.
 
 ### Simultaneous trigger ordering milestone
 

@@ -23,6 +23,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [jobError, setJobError] = useState<string>("");
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
+  const [selectedGameIndex, setSelectedGameIndex] = useState(0);
   const [diagnosticError, setDiagnosticError] = useState("");
   const firstDivergence = (resultObj?.first_divergence as Record<string, unknown> | null) ?? null;
   const firstDivergenceExcerpt = (resultObj?.first_divergence_excerpt as Record<string, unknown> | null) ?? null;
@@ -44,6 +45,7 @@ export function AnalyticsPanel({ decks }: Props) {
     try {
       setDiagnosticError("");
       setSelectedDiagnostic(await api.getDiagnosticRun(runName));
+      setSelectedGameIndex(0);
     } catch (err) {
       setDiagnosticError(String(err));
     }
@@ -228,6 +230,25 @@ export function AnalyticsPanel({ decks }: Props) {
                 artifacts: selectedDiagnostic.artifacts,
               }, null, 2)}
             </pre>
+            {selectedDiagnostic.games.length > 0 ? (
+              <div>
+                <strong>Replay Games</strong>
+                <div className="row">
+                  {selectedDiagnostic.games.map((game, index) => (
+                    <button
+                      type="button"
+                      key={`${String(game.game ?? index)}-${index}`}
+                      onClick={() => setSelectedGameIndex(index)}
+                    >
+                      Game {String(game.game ?? index + 1)}
+                    </button>
+                  ))}
+                </div>
+                <pre className="analytics-log-excerpt">
+                  {JSON.stringify(selectedDiagnostic.games[selectedGameIndex] ?? {}, null, 2)}
+                </pre>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

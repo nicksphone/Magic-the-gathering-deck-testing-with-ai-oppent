@@ -898,19 +898,36 @@ def get_diagnostic_run(run_name: str) -> dict:
             clusters = []
     if isinstance(clusters, list):
         clusters = clusters[:100]
-    anomaly_samples: list[dict] = []
-    anomaly_path = run_dir / "anomaly_games.jsonl"
-    if anomaly_path.is_file():
+    def read_jsonl_prefix(path: Path, limit: int, log_limit: int = 0) -> list[dict]:
+        values: list[dict] = []
+        if not path.is_file():
+            return values
         try:
-            for line in anomaly_path.read_text(encoding="utf-8").splitlines()[:25]:
-                try:
-                    value = json.loads(line)
-                except ValueError:
-                    continue
-                if isinstance(value, dict):
-                    anomaly_samples.append(value)
+            with path.open("r", encoding="utf-8") as stream:
+                for line in stream:
+                    if len(values) >= limit:
+                        break
+                    try:
+                        value = json.loads(line)
+                    except ValueError:
+                        continue
+                    if not isinstance(value, dict):
+                        continue
+                    if log_limit and isinstance(value.get("log"), list):
+                        value = {
+                            key: item
+                            for key, item in value.items()
+                            if key != "log"
+                        } | {"log_excerpt": value["log"][:log_limit]}
+                    values.append(value)
         except OSError:
-            pass
+            return []
+        return values
+
+    anomaly_path = run_dir / "anomaly_games.jsonl"
+    anomaly_samples = read_jsonl_prefix(anomaly_path, 25)
+    games_path = run_dir / "games.jsonl"
+    games = read_jsonl_prefix(games_path, 20, log_limit=80)
     return {
         **summary_item,
         "anomaly_clusters": clusters,
@@ -919,7 +936,9 @@ def get_diagnostic_run(run_name: str) -> dict:
             "summary": "summary.json",
             "clusters": "anomaly-clusters.json" if clusters_path.is_file() else None,
             "anomaly_games": "anomaly_games.jsonl" if anomaly_path.is_file() else None,
+            "games": "games.jsonl" if games_path.is_file() else None,
         },
+        "games": games,
     }
 
 

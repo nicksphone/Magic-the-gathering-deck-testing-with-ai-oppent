@@ -128,10 +128,12 @@ export type DiagnosticRunSummary = {
 export type DiagnosticRunDetail = DiagnosticRunSummary & {
   anomaly_clusters: unknown;
   anomaly_samples: Record<string, unknown>[];
+  games: Record<string, unknown>[];
   artifacts: {
     summary: string;
     clusters: string | null;
     anomaly_games: string | null;
+    games: string | null;
   };
 };
 

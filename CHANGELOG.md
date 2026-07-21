@@ -35,6 +35,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Automatic and human-selected chains no longer reapply the same source or loop between draw and life gain.
   - Full backend validation passes `552` tests; frontend production build and deterministic replay smoke pass.
 
+- Persisted replay browser milestone:
+  - Diagnostic runs now expose bounded ordinary game summaries and 80-line log excerpts through the API.
+  - The Testing Simulator includes a game selector while avoiding full JSONL loads in memory.
+  - Full backend validation passes `552` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.
