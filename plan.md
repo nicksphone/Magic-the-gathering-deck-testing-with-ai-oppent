@@ -14,6 +14,7 @@ Confirmed validation baseline:
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
 - Current consolidated backend validation: `547 passed`, 66 deprecation warnings; frontend production build passes.
 - Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
+- Latest six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels after the static spell-tax change.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
 - Latest implementation milestones are pushed to `main`; preserve any future unrelated local changes while completing this plan.
 
