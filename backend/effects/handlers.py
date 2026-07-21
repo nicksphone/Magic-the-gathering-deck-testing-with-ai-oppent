@@ -211,11 +211,14 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
+    used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
+    selected_source_id = payload.get("__replacement_source_id")
     replaced = replace_draw_cards(
         state,
         target_player,
         amount,
-        replacement_source_id=payload.get("__replacement_source_id"),
+        replacement_source_id=selected_source_id,
+        used_source_ids=used_source_ids,
     )
     if replaced is not None:
         key, repl_payload = replaced
@@ -252,11 +255,14 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     if player_cant_gain_life(state, target_player):
         state.log.append(f"{state.players[target_player].name} can't gain life.")
         return
+    used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
+    selected_source_id = payload.get("__replacement_source_id")
     replaced = replace_gain_life(
         state,
         target_player,
         amount,
-        replacement_source_id=payload.get("__replacement_source_id"),
+        replacement_source_id=selected_source_id,
+        used_source_ids=used_source_ids,
     )
     if replaced is not None:
         key, repl_payload = replaced

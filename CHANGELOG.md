@@ -30,6 +30,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
   - Override effects now apply after supported grants/removals regardless of timestamp order.
   - Full backend validation passes `551` tests; frontend production build and deterministic replay smoke pass.
 
+- Transformed replacement-chain milestone:
+  - Draw and life-gain replacement payloads now carry consumed source IDs across transformed events.
+  - Automatic and human-selected chains no longer reapply the same source or loop between draw and life gain.
+  - Full backend validation passes `552` tests; frontend production build and deterministic replay smoke pass.
+
 - Persisted diagnostics browser milestone:
   - Added bounded `/diagnostics/runs` and `/diagnostics/runs/{run_name}` API routes for stored summaries, anomaly clusters, and capped sample games.
   - Added API regression coverage for listing, missing runs, artifact metadata, and the 25-record sample bound.

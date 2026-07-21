@@ -23,6 +23,7 @@ It is designed for serious deck work:
 - Continuous and replacement sources carry persisted monotonic effect timestamps, with deterministic tie-breakers for legacy snapshots and same-timestamp entries
 - Continuous-effect diagnostics expose explicit layer ordering for supported keyword and power/toughness effects
 - Supported `can't have` keyword overrides remain authoritative even when a later effect grants the keyword
+- Draw/life replacement chains preserve consumed sources to prevent repeated application loops
 - Human-controlled matches pause supported top-level replacement events and present legal `choose_replacement` buttons; the pending stack item is snapshot-persisted and resumes after selection. AI/replay uses deterministic timestamp ordering.
 - Human-controlled simultaneous trigger groups pause before stack insertion and expose validated `choose_trigger_order` moves; APNAP grouping and AI/replay fallback remain deterministic.
 - Human-controlled lethal creature deaths in state-based actions and combat cleanup pause for multiple die replacements and resume through the same ownership-correct zone-change path.

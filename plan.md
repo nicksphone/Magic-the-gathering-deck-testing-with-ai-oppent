@@ -12,7 +12,7 @@ Confirmed validation baseline:
 - Frontend production build: passes.
 - Current focused diagnostics taxonomy tests: `8 passed`.
 - Current decision-reason and trace-export tests: `15 passed`; AI traces now preserve stable reason labels and legal action-type summaries for downstream analytics and training.
-- Current consolidated backend validation: `551 passed`, 66 deprecation warnings; frontend production build passes.
+- Current consolidated backend validation: `552 passed`, 66 deprecation warnings; frontend production build passes.
 - Current three-game deterministic replay smoke has 0 determinism failures and 0 drift labels.
 - Latest six-deck representative replay matrix completed 15 games with 0 determinism failures and no drift labels after the static spell-tax change.
 - Tempo vs Blue Control two-game smoke run: completed with 0 timeouts; the sample result was Blue Control 2-0, which is not a balance conclusion because the sample is too small.
@@ -121,6 +121,7 @@ Release blockers identified by the audit:
 - The replacement-options API now reports `latest_effect_timestamp` as its deterministic default policy, matching the engine implementation.
 - Generic static spell taxes now flow through the shared cost-modifier hook, so supported noncreature/creature/artifact/enchantment and opponent-scoped taxes affect legality, AI feasibility, and payment consistently.
 - Supported `can't have` keyword overrides now apply after ordinary layer-6 grants/removals, so a later timestamped grant cannot restore a prohibited keyword.
+- Draw/life replacement chains now carry used-source IDs across transformed events, preventing the same replacement source from reapplying or creating a loop.
 - The current four-deck deterministic replay smoke completed 6 games with 0 determinism failures, 0 drift labels, and no anomaly hits; the prior six-deck 15-game baseline also remains clean.
 - Controller-scoped creature, permanent, artifact, and enchantment ETB/death triggers are now matched before broad Oracle prefixes, preventing opponent-controlled entries or deaths from firing “under your control” abilities.
 - An earlier Blue Control vs Ramp audit surfaced five Oracle fallbacks for Arboreal Grazer, Torrential Gearhulk, and Nissa; all three targets now have reusable handlers and subsequent Blue Control vs Ramp smoke runs showed no fallback, invalid-target, or cost-payment errors.
@@ -234,7 +235,7 @@ Release blockers identified by the audit:
 - Day/night now tracks spell casts, applies zero/two-spell upkeep transitions, persists through snapshots, and transforms matching battlefield double-faced permanents; focused day/night/replay coverage passes `14` tests.
 - Day/night state changes now emit stack-backed transition events for matching “becomes day/night” triggers.
 - Characteristic-defining power/toughness now supports distinct card-type counts across all graveyards, feeding effective combat stats and AI evaluation dynamically; continuous-effect/AI coverage passes `102` tests.
-- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, and API smoke tests: `551 passed`.
+- Current implementation gate combines cycling, search, top-card choices, bounce, Saga, Vehicle, mass exile, target legality, Oracle, event, replacement, continuous-effect, modal, topdeck-tutor, stack, temporal-restriction, legendary-state, combat-family, conditional-target, database-path, top-library permissions, X triggers, AI search-budget, tactical analytics, ability-model, trigger-order, chained-replacement, keyword-can't-have, simultaneous-SBA, adaptive-Master-plus-search, explicit-effect-timestamps, diagnostics routes, prevention-lock choices, static-spell-tax costs, transformed-replacement chains, and API smoke tests: `552 passed`.
 - The deterministic replay matrix now supports seeded best-of-1/3/5/7/9 matches, aggregates per-game wins and hashes, and validates the complete match sequence for determinism; a best-of-three two-deck smoke completed with zero replay failures.
 - Remaining Scryfall/network edge cases are now mostly transient or offline-only rather than an unhandled hot path.
 - Card metadata refreshes are now resilient even when the upstream API is temporarily unavailable after retries.
@@ -421,6 +422,12 @@ Exit criteria:
 - Separated ordinary keyword loss from `can't have` overrides in the supported continuous-effect layer.
 - `can't have` effects now apply after all supported layer-6 grants and ordinary removals, independent of timestamp order.
 - Added reverse-order regression coverage; full backend validation passes `551` tests, frontend production build passes, and seeded replay has 0 determinism failures.
+
+### Transformed replacement-chain milestone
+
+- Draw and life-gain replacement payloads now preserve the source IDs already applied to the transformed event.
+- Automatic and explicit replacement selection both exclude consumed sources, preventing draw/life replacement cycles while preserving the event amount.
+- Added regression coverage for a draw-to-life-to-draw interaction; full backend validation passes `552` tests, frontend production build passes, and seeded replay has 0 determinism failures.
 
 ### Simultaneous trigger ordering milestone
 

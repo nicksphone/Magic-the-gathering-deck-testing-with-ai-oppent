@@ -83,6 +83,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             target_card_id=target_card_id,
             source_card_id=item.source_card_id,
         )
+        used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
+        options = [option for option in options if str(option.get("source_id")) not in used]
         if len(options) > 1 and target_player is not None:
             state.pending_replacement_choice = {
                 "stack_id": item.id,

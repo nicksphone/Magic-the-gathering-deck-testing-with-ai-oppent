@@ -318,14 +318,18 @@ def replace_gain_life(
     target_player: int,
     amount: int,
     replacement_source_id: str | None = None,
+    used_source_ids: list[str] | None = None,
 ) -> tuple[str, dict] | None:
+    used = {str(value) for value in (used_source_ids or [])}
     candidates = [
         (card, text)
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
-        if "if you would gain life, draw that many cards instead" in text
+        if str(getattr(card, "id", "")) not in used
+        and "if you would gain life, draw that many cards instead" in text
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "life gain")
     if card is not None:
+        next_used = sorted(used | {str(card.id)})
         return (
             "draw_cards",
             {
@@ -333,6 +337,7 @@ def replace_gain_life(
                 "amount": int(amount),
                 "__replacement_source": card.name,
                 "__replacement_source_id": card.id,
+                "__used_replacement_source_ids": next_used,
             },
         )
     return None
@@ -343,14 +348,18 @@ def replace_draw_cards(
     target_player: int,
     amount: int,
     replacement_source_id: str | None = None,
+    used_source_ids: list[str] | None = None,
 ) -> tuple[str, dict] | None:
+    used = {str(value) for value in (used_source_ids or [])}
     candidates = [
         (card, text)
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
-        if "if you would draw a card, gain 1 life instead" in text
+        if str(getattr(card, "id", "")) not in used
+        and "if you would draw a card, gain 1 life instead" in text
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "card draw")
     if card is not None:
+        next_used = sorted(used | {str(card.id)})
         return (
             "gain_life",
             {
@@ -358,6 +367,7 @@ def replace_draw_cards(
                 "amount": int(amount),
                 "__replacement_source": card.name,
                 "__replacement_source_id": card.id,
+                "__used_replacement_source_ids": next_used,
             },
         )
     return None

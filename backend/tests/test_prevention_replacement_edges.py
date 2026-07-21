@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from effects.registry import resolve_effect
-from effects.handlers import deal_damage
+from effects.handlers import deal_damage, gain_life
 from rules_engine import combat
 from rules_engine.ability_model import build_ability_spec
 from game_state.state import CardInstance, MatchFactory, Step, Zone
@@ -34,6 +34,38 @@ def test_global_damage_cant_be_prevented_ignores_player_shield() -> None:
     before = state.players[2].life
     deal_damage(state, controller=1, payload={"target_player": 2, "amount": 3})
     assert state.players[2].life == before - 3
+
+
+def test_transformed_draw_life_replacements_consume_each_source_once() -> None:
+    state = _state()
+    gain_replacement = CardInstance(
+        id="gain-replacement",
+        name="Gain Replacement",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would gain life, draw that many cards instead.",
+    )
+    draw_replacement = CardInstance(
+        id="draw-replacement",
+        name="Draw Replacement",
+        owner=1,
+        controller=1,
+        zone=Zone.BATTLEFIELD,
+        types=["Enchantment"],
+        oracle_text="If you would draw a card, gain 1 life instead.",
+    )
+    state.cards[gain_replacement.id] = gain_replacement
+    state.cards[draw_replacement.id] = draw_replacement
+    state.players[1].battlefield.extend([gain_replacement.id, draw_replacement.id])
+    before = state.players[1].life
+    hand_before = len(state.players[1].hand)
+
+    gain_life(state, 1, {"target_player": 1, "amount": 3})
+
+    assert state.players[1].life == before + 3
+    assert len(state.players[1].hand) == hand_before
 
 
 def test_skullcrack_style_turn_restrictions_apply_and_expire_at_cleanup() -> None:
