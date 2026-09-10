@@ -25,9 +25,33 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(description="Fail CI on timeout/pass-overuse/determinism regression")
+def build_round_robin_command(args: argparse.Namespace, out_dir: Path) -> list[str]:
+    return [
+        sys.executable,
+        "scripts/overnight_verbose_round_robin.py",
+        "--matches-per-pair",
+        str(args.matches_per_pair),
+        "--difficulty",
+        args.difficulty,
+        "--max-ticks",
+        str(args.max_ticks),
+        "--max-decks",
+        str(args.max_decks),
+        "--sources",
+        "builtin,user",
+        "--output-dir",
+        str(out_dir),
+        "--write-full-log-for-all-games",
+    ]
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Fail CI on timeout/pass-overuse/determinism regression",
+        allow_abbrev=False,
+    )
     p.add_argument("--output-dir", default="training_runs/ci_gate")
+    p.add_argument("--out", default="", help="Explicit path for the copied overnight summary JSON")
     p.add_argument("--matches-per-pair", type=int, default=1)
     p.add_argument("--max-ticks", type=int, default=6000)
     p.add_argument("--difficulty", default="master")
@@ -35,11 +59,20 @@ def main() -> int:
     p.add_argument("--max-timeouts", type=int, default=0)
     p.add_argument("--max-determinism-failures", type=int, default=0)
     p.add_argument("--max-passed-with-options", type=int, default=500)
-    args = p.parse_args()
+    return p.parse_args(argv)
+
+
+def summary_output_path(args: argparse.Namespace, out_dir: Path) -> Path:
+    return Path(args.out) if args.out else out_dir / "overnight_summary.json"
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    rr_out = out_dir / "overnight_summary.json"
+    rr_out = summary_output_path(args, out_dir)
+    rr_out.parent.mkdir(parents=True, exist_ok=True)
     replay_out = out_dir / "regression_matrix_replay.json"
 
     init_db()
@@ -48,24 +81,7 @@ def main() -> int:
         ensure_builtin_decks(repo)
         ensure_expansion_top_decks(repo)
 
-    rr = run_cmd(
-        [
-            sys.executable,
-            "scripts/overnight_verbose_round_robin.py",
-            "--matches-per-pair",
-            str(args.matches_per_pair),
-            "--difficulty",
-            args.difficulty,
-            "--max-ticks",
-            str(args.max_ticks),
-            "--max-decks",
-            str(args.max_decks),
-            "--sources",
-            "builtin,user",
-            "--output-dir",
-            str(out_dir),
-        ]
-    )
+    rr = run_cmd(build_round_robin_command(args, out_dir))
     if rr["code"] != 0:
         print(rr["stdout"])
         print(rr["stderr"], file=sys.stderr)

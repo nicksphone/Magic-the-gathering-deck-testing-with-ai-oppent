@@ -5,6 +5,7 @@ try:  # pragma: no cover - import path bootstrap for CLI execution
 except ImportError:  # pragma: no cover - direct script execution
     import _bootstrap  # noqa: F401
 import argparse
+import copy
 import json
 import time
 from collections import Counter
@@ -12,6 +13,7 @@ from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
 import re
+from typing import TextIO
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
@@ -24,6 +26,7 @@ from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
 from persistence.db import engine, init_db
 from persistence.repository import Repository
+from rules_engine.continuous import effective_power
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
 
@@ -66,6 +69,30 @@ def hand_snapshot(state, pid: int) -> list[str]:
     return names
 
 
+def life_snapshot(state, pid: int) -> dict[str, int]:
+    opponent_pid = 1 if pid == 2 else 2
+    return {
+        "self": state.players[pid].life,
+        "opp": state.players[opponent_pid].life,
+    }
+
+
+def lethal_attack_available(state, pid: int, legal_moves: list[dict]) -> bool:
+    """Return open-board lethal evidence from a validated attack declaration."""
+    opponent_pid = 1 if pid == 2 else 2
+    if any("Creature" in state.cards[cid].types for cid in state.players[opponent_pid].battlefield):
+        return False
+    attack_move = next((move for move in legal_moves if move.get("type") == "attack"), None)
+    if attack_move is None:
+        return False
+    declaration = dict(attack_move)
+    declaration["attackers"] = list(attack_move.get("attackers") or attack_move.get("options") or [])
+    simulated_state = copy.deepcopy(state)
+    RulesEngine().take_action(simulated_state, pid, declaration)
+    legal_power = sum(max(0, effective_power(simulated_state, cid)) for cid in simulated_state.attackers)
+    return legal_power >= state.players[opponent_pid].life
+
+
 def battlefield_snapshot(state, pid: int) -> list[dict]:
     """Keep round-robin traces compact while retaining tactical board state."""
     out: list[dict] = []
@@ -85,6 +112,42 @@ def battlefield_snapshot(state, pid: int) -> list[dict]:
             }
         )
     return sorted(out, key=lambda item: (item["name"], item["id"]))
+
+
+def _deck_artifact(deck_pool: list[dict]) -> list[dict]:
+    return sorted(
+        [
+            {"id": deck.get("id"), "name": deck["name"], "archetype": deck["archetype"]}
+            for deck in deck_pool
+        ],
+        key=lambda deck: (deck["name"], str(deck["id"])),
+    )
+
+
+def _game_identity(left: dict, right: dict) -> dict:
+    return {
+        "deck_a": left["name"],
+        "deck_a_id": left.get("id"),
+        "deck_a_archetype": left["archetype"],
+        "deck_b": right["name"],
+        "deck_b_id": right.get("id"),
+        "deck_b_archetype": right["archetype"],
+    }
+
+
+def _write_game_record(
+    game_record: dict,
+    *,
+    all_games: TextIO,
+    anomalies: TextIO,
+    write_full_log: bool,
+    qualifies_as_anomaly: bool,
+) -> None:
+    encoded = json.dumps(game_record, ensure_ascii=True) + "\n"
+    if write_full_log:
+        all_games.write(encoded)
+    if qualifies_as_anomaly:
+        anomalies.write(encoded)
 
 
 def run() -> int:
@@ -120,10 +183,24 @@ def run() -> int:
         for row in selected:
             if isinstance(row, dict):
                 mainboard = hydrate_deck_cards(repo, row["mainboard"])
-                deck_pool.append({"id": row.get("id"), "name": row["name"], "mainboard": mainboard})
+                deck_pool.append(
+                    {
+                        "id": row.get("id"),
+                        "name": row["name"],
+                        "mainboard": mainboard,
+                        "archetype": guess_archetype(mainboard),
+                    }
+                )
             else:
                 mainboard = hydrate_deck_cards(repo, json.loads(row.mainboard_json))
-                deck_pool.append({"id": row.id, "name": row.name, "mainboard": mainboard})
+                deck_pool.append(
+                    {
+                        "id": row.id,
+                        "name": row.name,
+                        "mainboard": mainboard,
+                        "archetype": guess_archetype(mainboard),
+                    }
+                )
 
         total_pairs = len(list(combinations(deck_pool, 2)))
         total_games = total_pairs * args.matches_per_pair
@@ -146,8 +223,8 @@ def run() -> int:
                 pair_turns: list[int] = []
                 pair_start = time.time()
 
-                left_arch = guess_archetype(left["mainboard"])
-                right_arch = guess_archetype(right["mainboard"])
+                left_arch = left["archetype"]
+                right_arch = right["archetype"]
 
                 for game_idx in range(args.matches_per_pair):
                     state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
@@ -217,6 +294,8 @@ def run() -> int:
                             "opp_graveyard_count": len(state.players[1 if pid == 2 else 2].graveyard),
                             "library_count": len(state.players[pid].library),
                             "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
+                            "life": life_snapshot(state, pid),
+                            "lethal_attack_available": lethal_attack_available(state, pid, legal),
                             "legal_non_pass": legal_non_pass,
                             "legal_non_pass_count": sum(1 for move in legal if is_actionable_move(move)),
                             "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
@@ -254,8 +333,7 @@ def run() -> int:
                     game_counter += 1
 
                     game_record = {
-                        "deck_a": left["name"],
-                        "deck_b": right["name"],
+                        **_game_identity(left, right),
                         "game_index": game_idx + 1,
                         "winner": state.winner,
                         "turns": state.turn,
@@ -278,12 +356,16 @@ def run() -> int:
                     )
                     has_behavior_anomaly = passed_with_options > 0 or missed_land_windows > 0 or stalled_pass_streak >= 3
 
-                    if args.write_full_log_for_all_games:
+                    qualifies_as_anomaly = has_anomaly or has_behavior_anomaly or state.winner is None
+                    if args.write_full_log_for_all_games or qualifies_as_anomaly:
                         game_record["log"] = state.log
-                        all_games.write(json.dumps(game_record, ensure_ascii=True) + "\n")
-                    elif has_anomaly or has_behavior_anomaly or state.winner is None:
-                        game_record["log"] = state.log
-                        anomalies.write(json.dumps(game_record, ensure_ascii=True) + "\n")
+                    _write_game_record(
+                        game_record,
+                        all_games=all_games,
+                        anomalies=anomalies,
+                        write_full_log=args.write_full_log_for_all_games,
+                        qualifies_as_anomaly=qualifies_as_anomaly,
+                    )
 
                     if game_counter % 50 == 0:
                         elapsed = time.time() - t0
@@ -325,6 +407,7 @@ def run() -> int:
         "matches_per_pair": args.matches_per_pair,
         "max_ticks": args.max_ticks,
         "sources": sorted({x.strip().lower() for x in args.sources.split(",") if x.strip()}),
+        "decks": _deck_artifact(deck_pool),
         "totals": {
             "timeouts": int(global_counts["timeouts"]),
             "long_game_timeouts": int(global_counts["long_game_timeouts"]),

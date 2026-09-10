@@ -1,0 +1,246 @@
+{
+  "anomalies": {
+    "additional_cost_failures": 0,
+    "cost_failures": 0,
+    "invalid_targets": 0,
+    "long_game_timeouts": 0,
+    "stall_streaks": 0,
+    "timeouts": 0
+  },
+  "card_cache_completeness": {
+    "cached_cards": 81,
+    "completeness_percent": 100.0,
+    "missing_cards": 0,
+    "total_cards": 81
+  },
+  "decision_quality_by_archetype": {
+    "Burn": {
+      "lethal_misses": 0,
+      "missed_land_drops": 0,
+      "unused_mana_passes": 0
+    },
+    "Control": {
+      "lethal_misses": 0,
+      "missed_land_drops": 0,
+      "unused_mana_passes": 0
+    },
+    "Ramp": {
+      "lethal_misses": 0,
+      "missed_land_drops": 0,
+      "unused_mana_passes": 0
+    },
+    "Tokens": {
+      "lethal_misses": 0,
+      "missed_land_drops": 0,
+      "unused_mana_passes": 0
+    }
+  },
+  "log_priors": {
+    "cards": 81,
+    "samples": {
+      "games": 2767,
+      "logs": 1318629
+    }
+  },
+  "oracle_status_counts": {
+    "unique": {
+      "static_or_noop": 8,
+      "structured_effect": 66,
+      "structured_event": 7
+    },
+    "weighted": {
+      "static_or_noop": 184,
+      "structured_effect": 3441,
+      "structured_event": 155
+    }
+  },
+  "unavailable_metrics": {
+    "bad_blocks": "not present in current gate or card-play analytics artifacts"
+  },
+  "win_rates_by_archetype_pair": {
+    "Burn vs Control": {
+      "archetype_a": "Burn",
+      "archetype_b": "Control",
+      "games": 4,
+      "resolved_games": 4,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 4,
+        "high": 85.0,
+        "low": 15.0,
+        "wins": 2
+      },
+      "wilson_ci_b": {
+        "games": 4,
+        "high": 85.0,
+        "low": 15.0,
+        "wins": 2
+      },
+      "win_rate_a": 50.0,
+      "win_rate_b": 50.0,
+      "wins_a": 2,
+      "wins_b": 2
+    },
+    "Burn vs Ramp": {
+      "archetype_a": "Burn",
+      "archetype_b": "Ramp",
+      "games": 2,
+      "resolved_games": 2,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 2,
+        "high": 100.0,
+        "low": 34.24,
+        "wins": 2
+      },
+      "wilson_ci_b": {
+        "games": 2,
+        "high": 65.76,
+        "low": 0.0,
+        "wins": 0
+      },
+      "win_rate_a": 100.0,
+      "win_rate_b": 0.0,
+      "wins_a": 2,
+      "wins_b": 0
+    },
+    "Burn vs Tokens": {
+      "archetype_a": "Burn",
+      "archetype_b": "Tokens",
+      "games": 4,
+      "resolved_games": 4,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 4,
+        "high": 95.44,
+        "low": 30.06,
+        "wins": 3
+      },
+      "wilson_ci_b": {
+        "games": 4,
+        "high": 69.94,
+        "low": 4.56,
+        "wins": 1
+      },
+      "win_rate_a": 75.0,
+      "win_rate_b": 25.0,
+      "wins_a": 3,
+      "wins_b": 1
+    },
+    "Control vs Control": {
+      "archetype_a": "Control",
+      "archetype_b": "Control",
+      "games": 2,
+      "resolved_games": 2,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 2,
+        "high": 100.0,
+        "low": 34.24,
+        "wins": 2
+      },
+      "wilson_ci_b": {
+        "games": 2,
+        "high": 65.76,
+        "low": 0.0,
+        "wins": 0
+      },
+      "win_rate_a": 100.0,
+      "win_rate_b": 0.0,
+      "wins_a": 2,
+      "wins_b": 0
+    },
+    "Control vs Ramp": {
+      "archetype_a": "Control",
+      "archetype_b": "Ramp",
+      "games": 4,
+      "resolved_games": 4,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 4,
+        "high": 95.44,
+        "low": 30.06,
+        "wins": 3
+      },
+      "wilson_ci_b": {
+        "games": 4,
+        "high": 69.94,
+        "low": 4.56,
+        "wins": 1
+      },
+      "win_rate_a": 75.0,
+      "win_rate_b": 25.0,
+      "wins_a": 3,
+      "wins_b": 1
+    },
+    "Control vs Tokens": {
+      "archetype_a": "Control",
+      "archetype_b": "Tokens",
+      "games": 8,
+      "resolved_games": 8,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 8,
+        "high": 86.32,
+        "low": 30.57,
+        "wins": 5
+      },
+      "wilson_ci_b": {
+        "games": 8,
+        "high": 69.43,
+        "low": 13.68,
+        "wins": 3
+      },
+      "win_rate_a": 62.5,
+      "win_rate_b": 37.5,
+      "wins_a": 5,
+      "wins_b": 3
+    },
+    "Ramp vs Tokens": {
+      "archetype_a": "Ramp",
+      "archetype_b": "Tokens",
+      "games": 4,
+      "resolved_games": 4,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 4,
+        "high": 85.0,
+        "low": 15.0,
+        "wins": 2
+      },
+      "wilson_ci_b": {
+        "games": 4,
+        "high": 85.0,
+        "low": 15.0,
+        "wins": 2
+      },
+      "win_rate_a": 50.0,
+      "win_rate_b": 50.0,
+      "wins_a": 2,
+      "wins_b": 2
+    },
+    "Tokens vs Tokens": {
+      "archetype_a": "Tokens",
+      "archetype_b": "Tokens",
+      "games": 2,
+      "resolved_games": 2,
+      "timeouts": 0,
+      "wilson_ci_a": {
+        "games": 2,
+        "high": 65.76,
+        "low": 0.0,
+        "wins": 0
+      },
+      "wilson_ci_b": {
+        "games": 2,
+        "high": 100.0,
+        "low": 34.24,
+        "wins": 2
+      },
+      "win_rate_a": 0.0,
+      "win_rate_b": 100.0,
+      "wins_a": 0,
+      "wins_b": 2
+    }
+  }
+}
