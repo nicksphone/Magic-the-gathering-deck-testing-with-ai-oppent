@@ -17,6 +17,12 @@ from typing import TextIO
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.decision_quality import (
+    build_decision_quality_artifact,
+    build_trace_payload,
+    deck_artifact_entries,
+    summarize_trace_rows,
+)
 from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
@@ -135,6 +141,93 @@ def _game_identity(left: dict, right: dict) -> dict:
     }
 
 
+def _build_overnight_trace_payload(
+    state,
+    pid: int,
+    legal_moves: list[dict],
+    action: dict,
+    reasoning: str,
+    reason_code: str,
+) -> dict:
+    """Extend the shared authoritative trace with overnight-only diagnostics."""
+    opponent_pid = 1 if pid == 2 else 2
+    payload = build_trace_payload(state, pid, legal_moves, action, reasoning)
+    payload.update(
+        {
+            "graveyard_count": len(state.players[pid].graveyard),
+            "opp_graveyard_count": len(state.players[opponent_pid].graveyard),
+            "library_count": len(state.players[pid].library),
+            "opp_library_count": len(state.players[opponent_pid].library),
+            "legal_non_pass_count": sum(1 for move in legal_moves if is_actionable_move(move)),
+            "legal_action_types": sorted(
+                {str(move.get("type")) for move in legal_moves if is_actionable_move(move)}
+            ),
+            "reason_code": reason_code,
+        }
+    )
+    return payload
+
+
+def _deck_quality_key(deck: dict) -> tuple[str, str]:
+    deck_id = deck.get("id")
+    return ("id", f"{type(deck_id).__name__}:{deck_id}") if deck_id is not None else ("name", str(deck["name"]))
+
+
+def _decision_quality_game_summary(log: list[str], left: dict, right: dict) -> dict:
+    summary = summarize_trace_rows(({"log": log},))
+    return {
+        "decks": [
+            {
+                "deck_ref": left,
+                "counts": summary["counts"]["1"],
+                "availability": summary["availability"]["1"],
+            },
+            {
+                "deck_ref": right,
+                "counts": summary["counts"]["2"],
+                "availability": summary["availability"]["2"],
+            },
+        ]
+    }
+
+
+def _decision_quality_artifact(game_summaries: list[dict], decks: list[dict]) -> dict:
+    entries = deck_artifact_entries(decks)
+    keys_by_legacy_identity: dict[tuple[str, str], list[str]] = {}
+    for deck, entry in zip(decks, entries, strict=True):
+        keys_by_legacy_identity.setdefault(_deck_quality_key(deck), []).append(entry["deck_key"])
+
+    normalized_games = []
+    for game in game_summaries:
+        raw_evidence = game.get("decks") or []
+        evidence_rows = []
+        if isinstance(raw_evidence, dict):
+            for legacy_key, evidence in raw_evidence.items():
+                matching = keys_by_legacy_identity.get(legacy_key, [])
+                if len(matching) != 1:
+                    raise ValueError(f"ambiguous decision-quality deck identity: {legacy_key!r}")
+                evidence_rows.append({**evidence, "deck_key": matching[0]})
+        else:
+            for evidence in raw_evidence:
+                deck_ref = evidence.get("deck_ref")
+                matching = [
+                    entry["deck_key"]
+                    for deck, entry in zip(decks, entries, strict=True)
+                    if deck is deck_ref
+                ]
+                if len(matching) != 1:
+                    raise ValueError("decision-quality evidence does not reference one pool deck")
+                evidence_rows.append(
+                    {
+                        "deck_key": matching[0],
+                        "counts": evidence.get("counts") or {},
+                        "availability": evidence.get("availability") or {},
+                    }
+                )
+        normalized_games.append({"decks": evidence_rows})
+    return build_decision_quality_artifact(decks, normalized_games)
+
+
 def _write_game_record(
     game_record: dict,
     *,
@@ -208,6 +301,7 @@ def run() -> int:
         global_counts: Counter = Counter()
         top_errors: Counter = Counter()
         pair_summaries: list[dict] = []
+        decision_quality_games: list[dict] = []
 
         engine_rules = RulesEngine()
         game_counter = 0
@@ -278,32 +372,14 @@ def run() -> int:
                             missed_land_windows += 1
 
                         # Verbose trace line for each AI decision point.
-                        trace_line = {
-                            "trace": True,
-                            "pid": pid,
-                            "turn": state.turn,
-                            "step": str(state.step),
-                            "active_player": getattr(state, "active_player", None),
-                            "priority_player": getattr(state, "priority_player", None),
-                            "hand": hand_snapshot(state, pid),
-                            "opp_hand": hand_snapshot(state, 1 if pid == 2 else 2),
-                            "battlefield": battlefield_snapshot(state, pid),
-                            "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),
-                            "mana_pool": dict(state.players[pid].mana_pool),
-                            "graveyard_count": len(state.players[pid].graveyard),
-                            "opp_graveyard_count": len(state.players[1 if pid == 2 else 2].graveyard),
-                            "library_count": len(state.players[pid].library),
-                            "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
-                            "life": life_snapshot(state, pid),
-                            "lethal_attack_available": lethal_attack_available(state, pid, legal),
-                            "legal_non_pass": legal_non_pass,
-                            "legal_non_pass_count": sum(1 for move in legal if is_actionable_move(move)),
-                            "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
-                            "legal_has_land": legal_has_land,
-                            "action": compact_action(action),
-                            "reason_code": reason_code,
-                            "reasoning": reasoning,
-                        }
+                        trace_line = _build_overnight_trace_payload(
+                            state,
+                            pid,
+                            legal,
+                            action,
+                            reasoning,
+                            reason_code,
+                        )
                         state.log.append(f"AI TRACE {json.dumps(trace_line, separators=(',', ':'))}")
 
                         pre_len = len(state.log)
@@ -329,6 +405,7 @@ def run() -> int:
                         pair_counts["stall_streaks"] += 1
 
                     analytics._scan_log_for_anomalies(state.log, pair_counts, top_errors)
+                    decision_quality_games.append(_decision_quality_game_summary(state.log, left, right))
                     pair_turns.append(state.turn)
                     game_counter += 1
 
@@ -408,6 +485,7 @@ def run() -> int:
         "max_ticks": args.max_ticks,
         "sources": sorted({x.strip().lower() for x in args.sources.split(",") if x.strip()}),
         "decks": _deck_artifact(deck_pool),
+        "decision_quality": _decision_quality_artifact(decision_quality_games, deck_pool),
         "totals": {
             "timeouts": int(global_counts["timeouts"]),
             "long_game_timeouts": int(global_counts["long_game_timeouts"]),

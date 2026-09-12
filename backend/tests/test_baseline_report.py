@@ -56,9 +56,10 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
             "deck_b": "Slow Deck",
             "winner": 1,
             "log": [
-                'AI TRACE {"pid":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"mana_pool":{"R":1},"action":{"type":"pass_priority"}}',
-                'AI TRACE {"pid":1,"step":"Step.DECLARE_ATTACKERS","legal_non_pass":false,"mana_pool":{},"lethal_attack_available":true,"action":{"type":"pass_priority"}}',
-                'AI TRACE {"pid":2,"step":"Step.UPKEEP","action":{"type":"keep_hand"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"stall_actionable_options":false,"mana_pool":{"R":1},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.END_STEP","legal_non_pass":false,"legal_has_land":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"step":"Step.DECLARE_ATTACKERS","legal_non_pass":false,"stall_actionable_options":false,"mana_pool":{},"lethal_attack_available":true,"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":2,"step":"Step.UPKEEP","stall_actionable_options":false,"action":{"type":"keep_hand"}}',
             ],
         },
         {
@@ -66,8 +67,8 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
             "deck_b": "Slow Deck",
             "winner": 2,
             "log": [
-                'AI TRACE {"pid":1,"step":"Step.UPKEEP","action":{"type":"keep_hand"}}',
-                'AI TRACE {"pid":2,"step":"Step.UPKEEP","action":{"type":"keep_hand"}}',
+                'AI TRACE {"pid":1,"step":"Step.UPKEEP","stall_actionable_options":false,"action":{"type":"keep_hand"}}',
+                'AI TRACE {"pid":2,"step":"Step.UPKEEP","stall_actionable_options":false,"action":{"type":"keep_hand"}}',
             ],
         },
     ]
@@ -104,6 +105,8 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
         "missed_land_drops": 1,
         "unused_mana_passes": 1,
         "lethal_misses": 1,
+        "bad_blocks": 0,
+        "stall_streaks": 0,
     }
     assert report["card_cache_completeness"] == {
         "cached_cards": 1,
@@ -113,9 +116,7 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
     }
     assert report["oracle_status_counts"]["unique"]["missing_oracle"] == 1
     assert report["log_priors"] == {"cards": 1, "samples": {"games": 7, "logs": 11}}
-    assert report["unavailable_metrics"] == {
-        "bad_blocks": "not present in current gate or card-play analytics artifacts"
-    }
+    assert report["unavailable_metrics"] == {}
     assert render_report(report) == render_report(
         build_report(
             oracle_path=oracle,
@@ -158,8 +159,9 @@ def test_baseline_report_consolidates_reversed_pairs_and_swaps_player_attributio
             "deck_b": "Fast Deck",
             "winner": 2,
             "log": [
-                'AI TRACE {"pid":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"mana_pool":{},"action":{"type":"pass_priority"}}',
-                'AI TRACE {"pid":2,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":false,"mana_pool":{"R":1},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"turn":2,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"mana_pool":{},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":2,"turn":2,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":false,"mana_pool":{"R":1},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"turn":2,"step":"Step.END_STEP","legal_non_pass":false,"legal_has_land":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
             ],
         },
     ]
@@ -307,6 +309,43 @@ def _minimal_report(
     )
 
 
+def test_baseline_report_empty_games_marks_all_archetype_metrics_unavailable(
+    tmp_path: Path,
+) -> None:
+    oracle = tmp_path / "oracle.json"
+    gate = tmp_path / "gate.json"
+    priors = tmp_path / "log_priors.json"
+    games = tmp_path / "games.jsonl"
+    _write_json(oracle, {"status_unique": {}, "status_weighted": {}, "cards": []})
+    _write_json(gate, {
+        "decks": [
+            {"id": 1, "name": "Fast Deck", "archetype": "Aggro"},
+            {"id": 2, "name": "Slow Deck", "archetype": "Control"},
+        ],
+        "totals": {},
+    })
+    _write_json(priors, {"cards": {}, "samples": {}})
+    games.write_text("", encoding="utf-8")
+
+    report = build_report(
+        oracle_path=oracle,
+        gate_path=gate,
+        log_priors_path=priors,
+        games_jsonl_path=games,
+    )
+
+    expected_metrics = {metric: None for metric in baseline_report.DECISION_QUALITY_METRICS}
+    assert report["decision_quality_by_archetype"] == {
+        "Aggro": expected_metrics,
+        "Control": expected_metrics,
+    }
+    assert {
+        f"decision_quality_by_archetype.{archetype}.{metric}"
+        for archetype in ("Aggro", "Control")
+        for metric in baseline_report.DECISION_QUALITY_METRICS
+    } <= set(report["unavailable_metrics"])
+
+
 def test_baseline_report_marks_absent_source_metrics_unavailable(tmp_path: Path) -> None:
     report = _minimal_report(
         tmp_path,
@@ -325,8 +364,20 @@ def test_baseline_report_marks_absent_source_metrics_unavailable(tmp_path: Path)
         "additional_cost_failures",
     )}
     assert report["decision_quality_by_archetype"] == {
-        "Aggro": {"missed_land_drops": None, "unused_mana_passes": None, "lethal_misses": None},
-        "Control": {"missed_land_drops": None, "unused_mana_passes": None, "lethal_misses": None},
+        "Aggro": {
+            "missed_land_drops": None,
+            "unused_mana_passes": None,
+            "lethal_misses": None,
+            "bad_blocks": None,
+            "stall_streaks": None,
+        },
+        "Control": {
+            "missed_land_drops": None,
+            "unused_mana_passes": None,
+            "lethal_misses": None,
+            "bad_blocks": None,
+            "stall_streaks": None,
+        },
     }
     assert report["oracle_status_counts"] == {"unique": None, "weighted": None}
     assert report["card_cache_completeness"] == {
@@ -360,9 +411,10 @@ def test_baseline_report_preserves_measured_zero_values(tmp_path: Path) -> None:
             "deck_b": "Slow Deck",
             "winner": 1,
             "log": [
-                'AI TRACE {"pid":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"mana_pool":{},"action":{"type":"play_land"}}',
-                'AI TRACE {"pid":1,"step":"Step.UPKEEP","legal_non_pass":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
-                'AI TRACE {"pid":1,"step":"Step.DECLARE_ATTACKERS","lethal_attack_available":false,"action":{"type":"attack"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"play_land"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.END_STEP","legal_non_pass":false,"legal_has_land":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"step":"Step.UPKEEP","legal_non_pass":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"step":"Step.DECLARE_ATTACKERS","stall_actionable_options":false,"lethal_attack_available":false,"action":{"type":"attack"}}',
             ],
         },
     )
@@ -372,6 +424,8 @@ def test_baseline_report_preserves_measured_zero_values(tmp_path: Path) -> None:
         "missed_land_drops": 0,
         "unused_mana_passes": 0,
         "lethal_misses": 0,
+        "bad_blocks": 0,
+        "stall_streaks": 0,
     }
     assert report["oracle_status_counts"] == {"unique": {}, "weighted": {}}
     assert report["card_cache_completeness"] == {
@@ -460,7 +514,8 @@ def test_baseline_report_accepts_explicit_false_land_evidence_as_measured(tmp_pa
             "deck_b": "Slow Deck",
             "winner": 1,
             "log": [
-                'AI TRACE {"pid":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":false,"legal_has_land":false,"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":false,"legal_has_land":false,"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":1,"turn":1,"step":"Step.END_STEP","legal_non_pass":false,"legal_has_land":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
                 'AI TRACE {"pid":2,"step":"Step.UPKEEP","action":{"type":"keep_hand"}}',
             ],
         },
@@ -602,8 +657,10 @@ def test_baseline_report_requires_complete_evidence_in_every_game_row(
             "missed_land_drops": None,
             "unused_mana_passes": None,
             "lethal_misses": None,
+            "bad_blocks": None,
+            "stall_streaks": None,
         }
-        for metric in ("missed_land_drops", "unused_mana_passes", "lethal_misses"):
+        for metric in baseline_report.DECISION_QUALITY_METRICS:
             assert f"decision_quality_by_archetype.{archetype}.{metric}" in unavailable
 
 
@@ -693,6 +750,60 @@ def test_baseline_report_does_not_treat_absent_winner_as_timeout(tmp_path: Path)
     assert matchup["wins_a"] is None
     assert matchup["wins_b"] is None
     assert "win_rates_by_archetype_pair.Aggro vs Control.timeouts" in report["unavailable_metrics"]
+
+
+def test_baseline_report_carries_measured_bad_blocks_and_stall_streaks(tmp_path: Path) -> None:
+    report = _minimal_report(
+        tmp_path,
+        oracle_payload={"status_unique": {}, "status_weighted": {}, "cards": []},
+        gate_totals={},
+        priors_payload={"cards": {}, "samples": {}},
+        game_row={
+            "deck_a": "Fast Deck",
+            "deck_b": "Slow Deck",
+            "winner": 1,
+            "log": [
+                *[
+                    'AI TRACE {"pid":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":false,"stall_actionable_options":true,"mana_pool":{},"action":{"type":"pass_priority"}}'
+                    for _ in range(3)
+                ],
+                'AI TRACE {"pid":1,"step":"Step.DECLARE_BLOCKERS","stall_actionable_options":false,"bad_blocks":2,"action":{"type":"block","blocks":{"attacker":"blocker"}}}',
+                'AI TRACE {"pid":2,"step":"Step.UPKEEP","legal_non_pass":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+            ],
+        },
+    )
+
+    assert report["decision_quality_by_archetype"]["Aggro"]["bad_blocks"] == 2
+    assert report["decision_quality_by_archetype"]["Aggro"]["stall_streaks"] == 1
+    assert "bad_blocks" not in report["unavailable_metrics"]
+    assert "decision_quality_by_archetype.Aggro.bad_blocks" not in report["unavailable_metrics"]
+    assert "decision_quality_by_archetype.Aggro.stall_streaks" not in report["unavailable_metrics"]
+
+
+def test_baseline_report_marks_bad_blocks_and_stall_streaks_unavailable_without_evidence(
+    tmp_path: Path,
+) -> None:
+    report = _minimal_report(
+        tmp_path,
+        oracle_payload={"status_unique": {}, "status_weighted": {}, "cards": []},
+        gate_totals={},
+        priors_payload={"cards": {}, "samples": {}},
+        game_row={
+            "deck_a": "Fast Deck",
+            "deck_b": "Slow Deck",
+            "winner": 1,
+            "log": [
+                'AI TRACE {"pid":1,"step":"Step.DECLARE_BLOCKERS","action":{"type":"block","blocks":{}}}',
+                'AI TRACE {"pid":1,"step":"Step.UPKEEP","legal_non_pass":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+                'AI TRACE {"pid":2,"step":"Step.UPKEEP","legal_non_pass":false,"stall_actionable_options":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+            ],
+        },
+    )
+
+    assert report["decision_quality_by_archetype"]["Aggro"]["bad_blocks"] is None
+    assert report["decision_quality_by_archetype"]["Aggro"]["stall_streaks"] is None
+    assert "decision_quality_by_archetype.Aggro.bad_blocks" in report["unavailable_metrics"]
+    assert "decision_quality_by_archetype.Aggro.stall_streaks" in report["unavailable_metrics"]
 
 
 def test_baseline_report_cli_runs_from_backend_without_network(tmp_path: Path) -> None:

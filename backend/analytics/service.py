@@ -8,6 +8,12 @@ from collections import Counter
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.decision_quality import (
+    build_decision_quality_artifact,
+    build_trace_payload,
+    deck_artifact_entries,
+    summarize_trace_rows,
+)
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
@@ -42,6 +48,7 @@ class AnalyticsService:
         first_game_log: list[str] = []
         second_game_log: list[str] = []
         game_results: list[dict[str, object]] = []
+        decision_quality_games: list[dict[str, object]] = []
 
         for i in range(matches):
             seed = self._batch_seed(deck_a, deck_b, i, difficulty)
@@ -70,6 +77,14 @@ class AnalyticsService:
                 legal_types = {m["type"] for m in legal}
                 if decision.action.get("type") not in legal_types:
                     decision.action = {"type": "pass_priority"}
+                trace_payload = build_trace_payload(
+                    state,
+                    pid,
+                    legal,
+                    decision.action,
+                    decision.reasoning,
+                )
+                state.log.append(f"AI TRACE {json.dumps(trace_payload, separators=(',', ':'))}")
                 self.engine.take_action(state, pid, decision.action)
                 if state.step == state.step.COMBAT_DAMAGE:
                     self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
@@ -102,6 +117,9 @@ class AnalyticsService:
                     "timeout": winner is None,
                     "deck_a_on_play": deck_a_on_play,
                 }
+            )
+            decision_quality_games.append(
+                self._decision_quality_game_summary(state.log, deck_a_on_play)
             )
             replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
             turn_counts.append(state.turn)
@@ -152,6 +170,7 @@ class AnalyticsService:
                 "x_spell_error_loops": int(anomaly_counts["x_spell_error_loops"]),
                 "oracle_fallbacks": int(anomaly_counts["oracle_fallbacks"]),
             },
+            "decision_quality": self._decision_quality_summary(decision_quality_games),
             "oracle_fallback_cards": [
                 {"card_name": name, "count": count}
                 for name, count in oracle_fallback_cards.most_common(20)
@@ -166,6 +185,43 @@ class AnalyticsService:
         }
         self.repo.save_snapshot("batch_simulation", result)
         return result
+
+    @staticmethod
+    def _decision_quality_game_summary(log: list[str], deck_a_on_play: bool) -> dict[str, object]:
+        decks = [
+            {"id": None, "name": "Deck A"},
+            {"id": None, "name": "Deck B"},
+        ]
+        entries = deck_artifact_entries(decks)
+        summary = summarize_trace_rows(({"log": log},))
+        pid_to_index = {"1": 0, "2": 1} if deck_a_on_play else {"1": 1, "2": 0}
+        return {
+            "decks": [
+                {
+                    "deck_key": entries[index]["deck_key"],
+                    "counts": summary["counts"][pid],
+                    "availability": summary["availability"][pid],
+                }
+                for pid, index in pid_to_index.items()
+            ]
+        }
+
+    @staticmethod
+    def _decision_quality_summary(games) -> dict:
+        decks = [
+            {"id": None, "name": "Deck A"},
+            {"id": None, "name": "Deck B"},
+        ]
+        game_summaries = []
+        for game in games:
+            if isinstance(game, tuple):
+                row, deck_a_on_play = game
+                game_summaries.append(
+                    AnalyticsService._decision_quality_game_summary(row.get("log", []), deck_a_on_play)
+                )
+            else:
+                game_summaries.append(game)
+        return build_decision_quality_artifact(decks, game_summaries)
 
     @staticmethod
     def _wilson_interval(wins: int, total: int) -> dict[str, float | int]:

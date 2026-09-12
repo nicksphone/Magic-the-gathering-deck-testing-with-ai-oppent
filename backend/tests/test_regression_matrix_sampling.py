@@ -104,6 +104,125 @@ def test_verbose_round_robin_game_rows_include_stable_deck_identity() -> None:
     }
 
 
+def test_verbose_round_robin_decision_quality_uses_stable_ids_for_duplicate_names() -> None:
+    left = {"id": 11, "name": "Mirror", "archetype": "Aggro"}
+    right = {"id": 22, "name": "Mirror", "archetype": "Control"}
+    log = [
+        'AI TRACE {"pid":1,"turn":1,"step":"Step.PRECOMBAT_MAIN","legal_non_pass":true,"legal_has_land":true,"mana_pool":{"R":1},"action":{"type":"pass_priority"}}',
+        'AI TRACE {"pid":1,"turn":1,"step":"Step.END_STEP","legal_non_pass":false,"legal_has_land":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+        'AI TRACE {"pid":1,"step":"Step.DECLARE_ATTACKERS","legal_non_pass":true,"legal_has_land":false,"mana_pool":{},"lethal_attack_available":true,"action":{"type":"pass_priority"}}',
+        'AI TRACE {"pid":2,"step":"Step.UPKEEP","legal_non_pass":false,"legal_has_land":false,"mana_pool":{},"action":{"type":"pass_priority"}}',
+    ]
+
+    game = overnight_verbose_round_robin._decision_quality_game_summary(log, left, right)  # type: ignore[attr-defined]
+    out = overnight_verbose_round_robin._decision_quality_artifact([game], [left, right])  # type: ignore[attr-defined]
+
+    assert out["per_deck"] == [
+        {
+            "deck_id": 11,
+            "deck_name": "Mirror",
+            "deck_key": "source::id:int:11",
+            "metrics": {
+                "missed_land_drops": 1,
+                "unused_mana_passes": 1,
+                "lethal_misses": 1,
+                "bad_blocks": 0,
+                "stall_streaks": None,
+            },
+            "unavailable_metrics": {
+                "stall_streaks": "complete per-player AI decision trace evidence absent",
+            },
+        },
+        {
+            "deck_id": 22,
+            "deck_name": "Mirror",
+            "deck_key": "source::id:int:22",
+            "metrics": {
+                "missed_land_drops": 0,
+                "unused_mana_passes": 0,
+                "lethal_misses": 0,
+                "bad_blocks": 0,
+                "stall_streaks": None,
+            },
+            "unavailable_metrics": {
+                "stall_streaks": "complete per-player AI decision trace evidence absent",
+            },
+        },
+    ]
+    assert out["overall"] == {
+        "missed_land_drops": 1,
+        "unused_mana_passes": 1,
+        "lethal_misses": 1,
+        "bad_blocks": 0,
+        "stall_streaks": None,
+    }
+    assert out["unavailable_metrics"] == {
+        "stall_streaks": "complete per-player AI decision trace evidence absent",
+    }
+
+
+def test_verbose_round_robin_decision_quality_only_validates_participating_decks() -> None:
+    decks = [
+        {"id": 1, "name": "A", "archetype": "Aggro"},
+        {"id": 2, "name": "B", "archetype": "Control"},
+        {"id": 3, "name": "C", "archetype": "Tempo"},
+    ]
+    complete = {
+        metric: True
+        for metric in (
+            "missed_land_drops",
+            "unused_mana_passes",
+            "lethal_misses",
+            "bad_blocks",
+            "stall_streaks",
+        )
+    }
+    games = []
+    for left, right in ((decks[0], decks[1]), (decks[0], decks[2]), (decks[1], decks[2])):
+        games.append(
+            {
+                "decks": {
+                    overnight_verbose_round_robin._deck_quality_key(left): {  # type: ignore[attr-defined]
+                        "counts": {},
+                        "availability": complete,
+                    },
+                    overnight_verbose_round_robin._deck_quality_key(right): {  # type: ignore[attr-defined]
+                        "counts": {},
+                        "availability": complete,
+                    },
+                }
+            }
+        )
+
+    out = overnight_verbose_round_robin._decision_quality_artifact(games, decks)  # type: ignore[attr-defined]
+
+    assert all(value == 0 for row in out["per_deck"] for value in row["metrics"].values())
+    assert all(value == 0 for value in out["overall"].values())
+    assert out["unavailable_metrics"] == {}
+
+
+def test_verbose_round_robin_decision_quality_keys_cannot_silently_collide() -> None:
+    decks = [
+        {"id": 7, "source": "builtin", "name": "Duplicate", "archetype": "Aggro"},
+        {"id": 7, "source": "builtin", "name": "Duplicate", "archetype": "Control"},
+        {"id": "7", "source": "builtin", "name": "String ID", "archetype": "Tempo"},
+        {"id": None, "source": "user", "name": "Nameless", "archetype": "Ramp"},
+        {"id": None, "source": "user", "name": "Nameless", "archetype": "Combo"},
+    ]
+
+    out = overnight_verbose_round_robin._decision_quality_artifact([], decks)  # type: ignore[attr-defined]
+
+    assert len(out["per_deck"]) == len(decks)
+    assert len({row["deck_key"] for row in out["per_deck"]}) == len(decks)
+    assert [(row["deck_id"], row["deck_name"]) for row in out["per_deck"]] == [
+        (7, "Duplicate"),
+        (7, "Duplicate"),
+        ("7", "String ID"),
+        (None, "Nameless"),
+        (None, "Nameless"),
+    ]
+
+
 def test_verbose_round_robin_full_logging_also_writes_anomaly() -> None:
     all_games = StringIO()
     anomalies = StringIO()

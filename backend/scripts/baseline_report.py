@@ -12,8 +12,8 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
+from analytics.decision_quality import DECISION_QUALITY_METRICS, summarize_trace_rows
 from analytics.service import AnalyticsService
-
 
 
 ANOMALY_KEYS = (
@@ -24,7 +24,7 @@ ANOMALY_KEYS = (
     "cost_failures",
     "additional_cost_failures",
 )
-DECISION_QUALITY_METRICS = ("missed_land_drops", "unused_mana_passes", "lethal_misses")
+
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -90,86 +90,7 @@ def _archetypes_for_row(
 
 
 def _summarize_rows(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
-    missed_land_windows: Counter[str] = Counter()
-    unused_mana_with_options: Counter[str] = Counter()
-    lethal_attack_misses: Counter[str] = Counter()
-    expected_pids = ("1", "2")
-    evidence_complete = {
-        pid: {metric: True for metric in DECISION_QUALITY_METRICS}
-        for pid in expected_pids
-    }
-    for row in rows:
-        row_trace_seen: set[str] = set()
-        row_evidence_complete: dict[str, dict[str, bool]] = defaultdict(
-            lambda: {metric: True for metric in DECISION_QUALITY_METRICS}
-        )
-        log = row.get("log")
-        for log_line in log if isinstance(log, list) else []:
-            if not log_line.startswith("AI TRACE "):
-                continue
-            payload = json.loads(log_line[len("AI TRACE ") :])
-            pid = str(payload.get("pid"))
-            if pid not in expected_pids:
-                continue
-            row_trace_seen.add(pid)
-            action = payload.get("action")
-            action_type = action.get("type") if isinstance(action, dict) else None
-            step = str(payload.get("step") or "").split(".")[-1].strip().lower()
-            if not step:
-                row_evidence_complete[pid]["missed_land_drops"] = False
-                row_evidence_complete[pid]["lethal_misses"] = False
-            if action_type is None:
-                row_evidence_complete[pid]["unused_mana_passes"] = False
-
-            if step in {"precombat_main", "postcombat_main"}:
-                land_evidence = (
-                    isinstance(payload.get("legal_non_pass"), bool)
-                    and isinstance(payload.get("legal_has_land"), bool)
-                    and action_type is not None
-                )
-                if not land_evidence:
-                    row_evidence_complete[pid]["missed_land_drops"] = False
-                elif (
-                    bool(payload["legal_non_pass"])
-                    and bool(payload["legal_has_land"])
-                    and action_type != "play_land"
-                ):
-                    missed_land_windows[pid] += 1
-
-            if action_type == "pass_priority":
-                mana_pool = payload.get("mana_pool")
-                pass_evidence = isinstance(payload.get("legal_non_pass"), bool) and isinstance(mana_pool, dict)
-                if not pass_evidence:
-                    row_evidence_complete[pid]["unused_mana_passes"] = False
-                elif bool(payload["legal_non_pass"]):
-                    if sum(max(0, int(value or 0)) for value in mana_pool.values()) > 0:
-                        unused_mana_with_options[pid] += 1
-
-            if step == "declare_attackers":
-                lethal_available = payload.get("lethal_attack_available")
-                if not isinstance(lethal_available, bool):
-                    row_evidence_complete[pid]["lethal_misses"] = False
-                elif lethal_available and action_type != "attack":
-                    lethal_attack_misses[pid] += 1
-        for pid in expected_pids:
-            for metric in DECISION_QUALITY_METRICS:
-                evidence_complete[pid][metric] = (
-                    evidence_complete[pid][metric]
-                    and pid in row_trace_seen
-                    and row_evidence_complete[pid][metric]
-                )
-    return {
-        "missed_land_windows": dict(missed_land_windows),
-        "unused_mana_with_options": dict(unused_mana_with_options),
-        "combat_quality": {"lethal_attack_misses": dict(lethal_attack_misses)},
-        "availability": {
-            pid: {
-                metric: bool(evidence_complete[pid][metric])
-                for metric in DECISION_QUALITY_METRICS
-            }
-            for pid in expected_pids
-        },
-    }
+    return summarize_trace_rows(rows)
 
 
 def _aggregate_game_rows(
@@ -210,18 +131,17 @@ def _aggregate_game_rows(
                 archetype,
                 {metric: True for metric in DECISION_QUALITY_METRICS},
             )
-            pid_availability = (analytics.get("availability") or {}).get(pid, {})
+            pid_availability = analytics["availability"][pid]
             for metric in DECISION_QUALITY_METRICS:
                 availability[metric] = availability[metric] and pid_availability.get(metric) is True
-            decision_quality[archetype].update(
-                {
-                    "missed_land_drops": int((analytics.get("missed_land_windows") or {}).get(pid, 0)),
-                    "unused_mana_passes": int((analytics.get("unused_mana_with_options") or {}).get(pid, 0)),
-                    "lethal_misses": int(
-                        ((analytics.get("combat_quality") or {}).get("lethal_attack_misses") or {}).get(pid, 0)
-                    ),
-                }
-            )
+            decision_quality[archetype].update(analytics["counts"][pid])
+
+    known_archetypes = set(deck_archetypes[0].values()) | set(deck_archetypes[1].values())
+    for archetype in known_archetypes:
+        decision_quality_available.setdefault(
+            archetype,
+            {metric: False for metric in DECISION_QUALITY_METRICS},
+        )
 
     return {
         "matchups": matchups,
@@ -243,9 +163,7 @@ def build_report(
     gate = _load_json(gate_path)
     log_priors = _load_json(log_priors_path)
     deck_archetypes = _deck_archetypes(gate)
-    unavailable = {
-        "bad_blocks": "not present in current gate or card-play analytics artifacts",
-    }
+    unavailable = {}
     aggregated = _aggregate_game_rows(_iter_jsonl(games_jsonl_path), deck_archetypes)
     rows_without_archetypes = aggregated["rows_without_archetypes"]
     rows_with_conflicting_archetypes = aggregated["rows_with_conflicting_archetypes"]

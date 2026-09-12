@@ -4,10 +4,19 @@ try:  # pragma: no cover - import path bootstrap for CLI execution
     from . import _bootstrap  # type: ignore[attr-defined]  # noqa: F401
 except ImportError:  # pragma: no cover - direct script execution
     import _bootstrap  # noqa: F401
+
 import argparse
 import json
+import math
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from pathlib import Path
+
+from analytics.decision_quality import (
+    DECISION_QUALITY_METRICS,
+    UNAVAILABLE_REASON,
+    DecisionQualityAccumulator,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -25,13 +34,49 @@ def _step_key(step: object) -> str:
 
 
 def _is_main_phase_window(payload: dict) -> bool:
-    return _step_key(payload.get("step")) in {"precombat_main", "postcombat_main"} and bool(payload.get("legal_non_pass"))
+    return _step_key(payload.get("step")) in {"precombat_main", "postcombat_main"} and payload.get("legal_non_pass") is True
+
+
+def _number(value: object) -> float | None:
+    try:
+        number = float(value or 0)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _nonnegative_int(value: object) -> int | None:
+    number = _number(value)
+    return None if number is None else max(0, int(number))
+
+
+def _dict_items(value: object) -> list[dict]:
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
+
+
+def _can_snapshot_block(attacker: dict, blocker: dict) -> bool:
+    """Apply the common evasion checks needed for legacy quality diagnostics."""
+    if bool(blocker.get("tapped", False)):
+        return False
+    attacker_keywords = {str(value).lower() for value in (attacker.get("keywords") or [])}
+    blocker_keywords = {str(value).lower() for value in (blocker.get("keywords") or [])}
+    if "flying" in attacker_keywords and not ({"flying", "reach"} & blocker_keywords):
+        return False
+    if "shadow" in attacker_keywords and "shadow" not in blocker_keywords:
+        return False
+    if "horsemanship" in attacker_keywords and "horsemanship" not in blocker_keywords:
+        return False
+    return True
 
 
 def summarize_card_play_logic(path: Path) -> dict:
     if not path.exists():
         raise SystemExit(f"games.jsonl not found: {path}")
+    with path.open("r", encoding="utf-8") as lines:
+        return _summarize_card_play_lines(lines)
 
+
+def _summarize_card_play_lines(lines: Iterable[str]) -> dict:
     total_games = 0
     timeouts = 0
     winners = Counter()
@@ -41,141 +86,211 @@ def summarize_card_play_logic(path: Path) -> dict:
     pass_with_options = Counter()
     pass_with_meaningful_options = Counter()
     main_phase_passes = Counter()
-    missed_land_windows = Counter()
-    unused_mana_with_options = Counter()
     main_phase_land_not_first = Counter()
     attack_actions = Counter()
     attack_with_blockers = Counter()
     obvious_bad_attacks = Counter()
     lethal_attack_opportunities = Counter()
-    lethal_attack_misses = Counter()
+    legacy_lethal_attack_misses = Counter()
     block_actions = Counter()
     profitable_blocks = Counter()
-    losing_blocks = Counter()
     engine_protection_passes = Counter()
     resource_preservation_passes = Counter()
     reason_codes = Counter()
     pass_reason_codes = Counter()
     per_player_actions = defaultdict(Counter)
     pass_examples: list[dict] = []
+    decision_accumulator = DecisionQualityAccumulator()
 
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            total_games += 1
+    for line in lines:
+        if not isinstance(line, str) or not line.strip():
+            if not isinstance(line, str):
+                decision_accumulator.invalidate_all()
+            continue
+        try:
             row = json.loads(line)
-            winner = row.get("winner")
-            winners[str(winner)] += 1
-            if winner is None:
-                timeouts += 1
+        except (TypeError, json.JSONDecodeError):
+            decision_accumulator.invalidate_all()
+            continue
+        if not isinstance(row, dict):
+            decision_accumulator.invalidate_all()
+            continue
 
-            for log_line in row.get("log", []):
-                if not log_line.startswith("AI TRACE "):
-                    continue
-                payload = json.loads(log_line[len("AI TRACE ") :])
-                pid = str(payload.get("pid"))
-                act = (payload.get("action") or {})
-                atype = str(act.get("type", "unknown"))
-                action_types[atype] += 1
-                per_player_actions[pid][atype] += 1
-                reason_code = str(payload.get("reason_code") or "unknown")
-                reason_codes[reason_code] += 1
-                if atype == "pass_priority":
-                    pass_reason_codes[reason_code] += 1
+        total_games += 1
+        winner = row.get("winner")
+        winners[str(winner)] += 1
+        if winner is None:
+            timeouts += 1
+        payloads = decision_accumulator.consume_row(row)
 
-                if atype == "cast_spell":
-                    name = str(act.get("card_name") or "unknown_card")
-                    cast_by_card[name] += 1
-                elif atype == "play_land":
-                    play_land_count[pid] += 1
-                elif atype == "attack":
-                    attackers = [item for item in (act.get("attackers") or []) if isinstance(item, str)]
-                    attack_actions[pid] += 1
-                    attacking_cards = [item for item in (payload.get("battlefield") or []) if item.get("id") in attackers]
-                    blockers = [
-                        item
-                        for item in (payload.get("opp_battlefield") or [])
-                        if "Creature" in (item.get("types") or [])
-                        and any(_can_snapshot_block(attacker, item) for attacker in attacking_cards)
+        for payload in payloads:
+            pid = str(payload.get("pid"))
+            action = payload.get("action")
+            if not isinstance(action, dict):
+                continue
+            raw_type = action.get("type")
+            atype = raw_type if isinstance(raw_type, str) and raw_type else "unknown"
+            action_types[atype] += 1
+            per_player_actions[pid][atype] += 1
+            reason_code = str(payload.get("reason_code") or "unknown")
+            reason_codes[reason_code] += 1
+            if atype == "pass_priority":
+                pass_reason_codes[reason_code] += 1
+
+            battlefield = _dict_items(payload.get("battlefield"))
+            opp_battlefield = _dict_items(payload.get("opp_battlefield"))
+            if atype == "cast_spell":
+                cast_by_card[str(action.get("card_name") or "unknown_card")] += 1
+            elif atype == "play_land":
+                play_land_count[pid] += 1
+            elif atype == "attack":
+                attackers = [item for item in (action.get("attackers") or []) if isinstance(item, str)] if isinstance(action.get("attackers") or [], list) else []
+                attack_actions[pid] += 1
+                attacking_cards = [item for item in battlefield if item.get("id") in attackers]
+                blockers = [
+                    item for item in opp_battlefield
+                    if "Creature" in (item.get("types") or [])
+                    and any(_can_snapshot_block(attacker, item) for attacker in attacking_cards)
+                ]
+                if blockers:
+                    attack_with_blockers[pid] += 1
+                    attacker_powers = [
+                        _nonnegative_int(item.get("power")) for item in attacking_cards
                     ]
-                    if blockers:
-                        attack_with_blockers[pid] += 1
-                        attacker_power = sum(max(0, int(_number(item.get("power")))) for item in (payload.get("battlefield") or []) if item.get("id") in attackers)
-                        largest_blocker = max((max(0, int(_number(item.get("power")))) for item in blockers), default=0)
-                        if attackers and attacker_power < largest_blocker and len(attackers) <= len(blockers):
+                    blocker_powers = [_nonnegative_int(item.get("power")) for item in blockers]
+                    if (
+                        any(value is None for value in attacker_powers)
+                        or any(value is None for value in blocker_powers)
+                    ):
+                        decision_accumulator.invalidate_metric(pid, "lethal_misses")
+                    else:
+                        attacker_power = sum(
+                            value for value in attacker_powers if value is not None
+                        )
+                        largest_blocker = max(
+                            (value for value in blocker_powers if value is not None),
+                            default=0,
+                        )
+                        if (
+                            attackers
+                            and attacker_power < largest_blocker
+                            and len(attackers) <= len(blockers)
+                        ):
                             obvious_bad_attacks[pid] += 1
-                    if attackers and not blockers:
-                        attack_power = sum(max(0, int(_number(item.get("power")))) for item in (payload.get("battlefield") or []) if item.get("id") in attackers)
-                        if attack_power >= int(_number((payload.get("life") or {}).get("opp"))):
-                            lethal_attack_opportunities[pid] += 1
-                elif atype == "block":
-                    block_map = act.get("blocks") or {}
-                    block_actions[pid] += 1
+                elif attackers:
+                    # Kept as a legacy descriptive key only; authoritative misses come from shared evidence.
+                    attack_powers = [_nonnegative_int(item.get("power")) for item in attacking_cards]
+                    life = payload.get("life") if isinstance(payload.get("life"), dict) else {}
+                    opponent_life = _number(life.get("opp"))
+                    if any(value is None for value in attack_powers) or opponent_life is None:
+                        decision_accumulator.invalidate_metric(pid, "lethal_misses")
+                    elif sum(attack_powers) >= int(opponent_life):
+                        lethal_attack_opportunities[pid] += 1
+            elif atype == "block":
+                block_actions[pid] += 1
+                block_map = action.get("blocks")
+                if isinstance(block_map, dict):
                     for attacker_id, assigned in block_map.items():
                         assigned_ids = assigned if isinstance(assigned, list) else [assigned]
-                        attacker = next((item for item in (payload.get("opp_battlefield") or []) if item.get("id") == attacker_id), None)
+                        attacker = next((item for item in opp_battlefield if item.get("id") == attacker_id), None)
                         if not attacker:
                             continue
-                        attacker_power = max(0, int(_number(attacker.get("power"))))
-                        attacker_toughness = max(0, int(_number(attacker.get("toughness"))))
-                        blockers_for_attack = [item for item in (payload.get("battlefield") or []) if item.get("id") in assigned_ids]
+                        blockers_for_attack = [item for item in battlefield if item.get("id") in assigned_ids]
                         if not blockers_for_attack:
                             continue
-                        blocker_power = sum(max(0, int(_number(item.get("power")))) for item in blockers_for_attack)
-                        blocker_toughness = sum(max(0, int(_number(item.get("toughness")))) for item in blockers_for_attack)
+                        attacker_power = _nonnegative_int(attacker.get("power"))
+                        attacker_toughness = _nonnegative_int(attacker.get("toughness"))
+                        blocker_powers = [
+                            _nonnegative_int(item.get("power")) for item in blockers_for_attack
+                        ]
+                        blocker_toughnesses = [
+                            _nonnegative_int(item.get("toughness")) for item in blockers_for_attack
+                        ]
+                        if (
+                            attacker_power is None
+                            or attacker_toughness is None
+                            or any(value is None for value in blocker_powers)
+                            or any(value is None for value in blocker_toughnesses)
+                        ):
+                            decision_accumulator.invalidate_metric(pid, "bad_blocks")
+                            continue
+                        blocker_power = sum(value for value in blocker_powers if value is not None)
+                        blocker_toughness = sum(
+                            value for value in blocker_toughnesses if value is not None
+                        )
                         if blocker_power >= attacker_toughness and attacker_power < blocker_toughness:
                             profitable_blocks[pid] += 1
-                        elif attacker_power >= blocker_toughness and blocker_power < attacker_toughness:
-                            losing_blocks[pid] += 1
-                elif atype == "pass_priority" and bool(payload.get("legal_non_pass")):
-                    mana_pool = payload.get("mana_pool") or {}
-                    pool_total = sum(max(0, int(value or 0)) for value in mana_pool.values())
-                    if pool_total > 0:
-                        unused_mana_with_options[pid] += 1
-                    pass_with_options[pid] += 1
-                    if _is_main_phase_window(payload):
-                        pass_with_meaningful_options[pid] += 1
-                        main_phase_passes[pid] += 1
-                        if len(pass_examples) < 5:
-                            pass_examples.append(
-                                {
-                                    "game_index": total_games,
-                                    "player": pid,
-                                    "turn": payload.get("turn"),
-                                    "step": payload.get("step"),
-                                    "hand": payload.get("hand"),
-                                    "opp_hand": payload.get("opp_hand"),
-                                    "battlefield_size": len(payload.get("battlefield") or []),
-                                    "opp_battlefield_size": len(payload.get("opp_battlefield") or []),
-                                    "graveyard_count": payload.get("graveyard_count"),
-                                    "opp_graveyard_count": payload.get("opp_graveyard_count"),
-                                    "library_count": payload.get("library_count"),
-                                    "opp_library_count": payload.get("opp_library_count"),
-                                }
-                            )
-                        hand_names = {str(name).lower() for name in (payload.get("hand") or [])}
-                        if any(any(tag in name for tag in ("engine", "walker", "planeswalker", "anthem", "lord")) for name in hand_names):
-                            engine_protection_passes[pid] += 1
-                        if any(tag in reason_code for tag in ("hold", "interaction", "response", "strategic")):
-                            resource_preservation_passes[pid] += 1
+            elif atype == "pass_priority" and payload.get("legal_non_pass") is True:
+                pass_with_options[pid] += 1
+                if _is_main_phase_window(payload):
+                    pass_with_meaningful_options[pid] += 1
+                    main_phase_passes[pid] += 1
+                    if len(pass_examples) < 5:
+                        pass_examples.append({
+                            "game_index": total_games,
+                            "player": pid,
+                            "turn": payload.get("turn"),
+                            "step": payload.get("step"),
+                            "hand": payload.get("hand"),
+                            "opp_hand": payload.get("opp_hand"),
+                            "battlefield_size": len(battlefield),
+                            "opp_battlefield_size": len(opp_battlefield),
+                            "graveyard_count": payload.get("graveyard_count"),
+                            "opp_graveyard_count": payload.get("opp_graveyard_count"),
+                            "library_count": payload.get("library_count"),
+                            "opp_library_count": payload.get("opp_library_count"),
+                        })
+                    hand = payload.get("hand") if isinstance(payload.get("hand"), list) else []
+                    hand_names = {str(name).lower() for name in hand}
+                    if any(any(tag in name for tag in ("engine", "walker", "planeswalker", "anthem", "lord")) for name in hand_names):
+                        engine_protection_passes[pid] += 1
+                    if any(tag in reason_code for tag in ("hold", "interaction", "response", "strategic")):
+                        resource_preservation_passes[pid] += 1
 
+            if (
+                not isinstance(payload.get("lethal_attack_available"), bool)
+                and atype != "attack"
+                and _step_key(payload.get("step")) == "declare_attackers"
+                and "attack" in (payload.get("legal_action_types") or [])
+                and not [item for item in opp_battlefield if "Creature" in (item.get("types") or [])]
+            ):
+                life = payload.get("life") if isinstance(payload.get("life"), dict) else {}
+                possible_powers = [
+                    _nonnegative_int(item.get("power"))
+                    for item in battlefield
+                    if "Creature" in (item.get("types") or []) and not item.get("tapped")
+                ]
+                opponent_life = _number(life.get("opp"))
                 if (
-                    atype != "attack"
-                    and _step_key(payload.get("step")) == "declare_attackers"
-                    and "attack" in (payload.get("legal_action_types") or [])
+                    any(value is None for value in possible_powers)
+                    or opponent_life is None
                 ):
-                    battlefield = payload.get("battlefield") or []
-                    blockers = [item for item in (payload.get("opp_battlefield") or []) if "Creature" in (item.get("types") or [])]
-                    if not blockers:
-                        possible_power = sum(max(0, int(_number(item.get("power")))) for item in battlefield if "Creature" in (item.get("types") or []) and not item.get("tapped"))
-                        if possible_power >= int(_number((payload.get("life") or {}).get("opp"))):
-                            lethal_attack_misses[pid] += 1
+                    decision_accumulator.invalidate_metric(pid, "lethal_misses")
+                elif sum(value for value in possible_powers if value is not None) >= int(
+                    opponent_life
+                ):
+                    legacy_lethal_attack_misses[pid] += 1
 
-                if bool(payload.get("legal_has_land")) and atype != "play_land" and _is_main_phase_window(payload):
-                    missed_land_windows[pid] += 1
-                    if atype != "pass_priority":
-                        main_phase_land_not_first[pid] += 1
+            if payload.get("legal_has_land") is True and atype not in {"play_land", "pass_priority"} and _is_main_phase_window(payload):
+                main_phase_land_not_first[pid] += 1
+
+    decision_summary = decision_accumulator.finish()
+    overall_metrics = {
+        metric: (
+            sum(decision_summary["counts"][pid][metric] for pid in ("1", "2"))
+            if all(decision_summary["availability"][pid][metric] for pid in ("1", "2"))
+            else None
+        )
+        for metric in DECISION_QUALITY_METRICS
+    }
+    explicit_decision_quality = {
+        "metrics": overall_metrics,
+        "per_player": decision_summary["counts"],
+        "availability": decision_summary["availability"],
+        "unavailable_metrics": {
+            metric: UNAVAILABLE_REASON for metric, value in overall_metrics.items() if value is None
+        },
+    }
 
     return {
         "games": total_games,
@@ -188,49 +303,41 @@ def summarize_card_play_logic(path: Path) -> dict:
         "pass_with_options": dict(pass_with_options),
         "pass_with_meaningful_options": dict(pass_with_meaningful_options),
         "main_phase_passes": dict(main_phase_passes),
-        "missed_land_windows": dict(missed_land_windows),
-        "unused_mana_with_options": dict(unused_mana_with_options),
+        "missed_land_windows": {
+            pid: values["missed_land_drops"] for pid, values in decision_summary["counts"].items()
+            if decision_summary["availability"][pid]["missed_land_drops"] and values["missed_land_drops"]
+        },
+        "unused_mana_with_options": {
+            pid: values["unused_mana_passes"] for pid, values in decision_summary["counts"].items()
+            if decision_summary["availability"][pid]["unused_mana_passes"] and values["unused_mana_passes"]
+        },
         "main_phase_land_not_first": dict(main_phase_land_not_first),
         "combat_quality": {
             "attack_actions": dict(attack_actions),
             "attacks_with_blockers": dict(attack_with_blockers),
             "obvious_bad_attacks": dict(obvious_bad_attacks),
             "lethal_attack_opportunities": dict(lethal_attack_opportunities),
-            "lethal_attack_misses": dict(lethal_attack_misses),
+            "lethal_attack_misses": {
+                pid: values["lethal_misses"] + legacy_lethal_attack_misses[pid]
+                for pid, values in decision_summary["counts"].items()
+                if values["lethal_misses"] + legacy_lethal_attack_misses[pid]
+            },
             "block_actions": dict(block_actions),
             "profitable_blocks": dict(profitable_blocks),
-            "losing_blocks": dict(losing_blocks),
+            "losing_blocks": {
+                pid: values["bad_blocks"] for pid, values in decision_summary["counts"].items()
+                if decision_summary["availability"][pid]["bad_blocks"] and values["bad_blocks"]
+            },
         },
         "resource_quality": {
             "engine_protection_passes": dict(engine_protection_passes),
             "resource_preservation_passes": dict(resource_preservation_passes),
         },
-        "top_cast_cards": [{"card": c, "count": n} for c, n in cast_by_card.most_common(50)],
+        "top_cast_cards": [{"card": card, "count": count} for card, count in cast_by_card.most_common(50)],
         "land_plays": dict(play_land_count),
         "pass_examples": pass_examples,
-}
-
-
-def _number(value: object) -> float:
-    try:
-        return float(value or 0)
-    except (TypeError, ValueError):
-        return 0.0
-
-
-def _can_snapshot_block(attacker: dict, blocker: dict) -> bool:
-    """Apply the common evasion checks needed for quality diagnostics."""
-    if bool(blocker.get("tapped", False)):
-        return False
-    attacker_keywords = {str(value).lower() for value in (attacker.get("keywords") or [])}
-    blocker_keywords = {str(value).lower() for value in (blocker.get("keywords") or [])}
-    if "flying" in attacker_keywords and not ({"flying", "reach"} & blocker_keywords):
-        return False
-    if "shadow" in attacker_keywords and "shadow" not in blocker_keywords:
-        return False
-    if "horsemanship" in attacker_keywords and "horsemanship" not in blocker_keywords:
-        return False
-    return True
+        "decision_quality": explicit_decision_quality,
+    }
 
 
 def main() -> int:
