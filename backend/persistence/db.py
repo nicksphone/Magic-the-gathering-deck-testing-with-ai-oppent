@@ -4,6 +4,9 @@ from pathlib import Path
 
 from sqlmodel import Session, SQLModel, create_engine
 
+# Import so CardKnowledge is registered on SQLModel.metadata before create_all.
+import knowledge.models  # noqa: F401
+
 # Resolve the local cache from the backend package, not the process cwd. This
 # keeps the API, sync jobs, and diagnostics on the same SQLite database.
 DATABASE_PATH = Path(__file__).resolve().parents[1] / "mtg_lab.db"

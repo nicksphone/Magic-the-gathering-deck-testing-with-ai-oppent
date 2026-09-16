@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Any, Iterable
 
 from sqlmodel import Session, func, select
 
+from knowledge.models import CardKnowledge
 from persistence.models import (
     ActiveMatchRecord,
     CardCache,
@@ -36,6 +38,51 @@ class Repository:
 
     def list_cards(self) -> list[CardCache]:
         return list(self.session.exec(select(CardCache)).all())
+
+    def upsert_card_knowledge(self, payload: dict[str, Any]) -> CardKnowledge:
+        """Upsert one CardKnowledge row keyed by normalized card name."""
+        normalized = str(payload["name"]).strip()
+        query = select(CardKnowledge).where(
+            func.lower(CardKnowledge.name) == normalized.lower()
+        )
+        row = self.session.exec(query).first()
+        values = {
+            "scryfall_id": str(payload.get("scryfall_id", "")),
+            "oracle_source": str(payload.get("oracle_source", "manual")),
+            "play_value": payload.get("play_value"),
+            "threat_level": payload.get("threat_level"),
+            "answerable_by_json": json.dumps(payload.get("answerable_by") or []),
+            "cast_windows_json": json.dumps(payload.get("cast_windows") or []),
+            "etb_impact": payload.get("etb_impact"),
+            "profiles_json": json.dumps(payload.get("profiles") or {}),
+            "updated_at": datetime.utcnow(),
+        }
+        if row is None:
+            row = CardKnowledge(name=normalized, **values)
+        else:
+            for key, value in values.items():
+                setattr(row, key, value)
+        self.session.add(row)
+        self.session.commit()
+        self.session.refresh(row)
+        return row
+
+    def get_card_knowledge(self, name: str) -> CardKnowledge | None:
+        normalized = str(name or "").strip()
+        if not normalized:
+            return None
+        query = select(CardKnowledge).where(
+            func.lower(CardKnowledge.name) == normalized.lower()
+        )
+        return self.session.exec(query).first()
+
+    def list_card_knowledge(self, names: list[str] | None = None) -> list[CardKnowledge]:
+        query = select(CardKnowledge)
+        if names:
+            normalized = {str(n).strip().lower() for n in names if str(n).strip()}
+            if normalized:
+                query = query.where(func.lower(CardKnowledge.name).in_(normalized))
+        return list(self.session.exec(query).all())
 
     def get_cached_card_by_name(self, name: str) -> CardCache | None:
         normalized = name.strip().lower()
