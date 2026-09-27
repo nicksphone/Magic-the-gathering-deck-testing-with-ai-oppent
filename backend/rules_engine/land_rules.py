@@ -34,3 +34,9 @@ def compute_max_land_plays_this_turn(state, player_id: int) -> int:
                 extra += _NUMBER_WORDS.get(token, 0)
     return max(1, 1 + extra)
 
+
+def apply_land_entry(card):
+    """Unconditional tapped entry; conditional/optional entry uses other rules."""
+    subject = rf"(?:this land|{re.escape(card.name)})"
+    if re.search(rf"{subject} enters (?:the battlefield )?tapped[.\n]", card.oracle_text or "", re.IGNORECASE):
+        card.tapped = True

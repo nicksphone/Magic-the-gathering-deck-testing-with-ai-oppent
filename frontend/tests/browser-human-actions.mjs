@@ -72,6 +72,30 @@ try {
   await waitFor("window.fixtureState.stack.length === 1");
   assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.C"), 2);
   console.log("PASS human modal choice switches the action and pays only the selected face cost");
+
+  await click("Land Face Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Play Land Bala Ged Sanctuary'))");
+  await click("Play Land Bala Ged Sanctuary");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Bala Ged Sanctuary' && c.tapped)");
+  assert.equal(await evaluate("window.fixtureState.stack.length"), 0);
+  assert.equal(await evaluate("window.fixtureActions[0].action.selected_face_index"), 1);
+  console.log("PASS human land face bypasses stack and enters tapped");
+
+  await click("Adventure Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && !!document.querySelector('.cast-card-box select')");
+  await evaluate("(() => { const select = document.querySelector('.cast-card-box select'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("document.querySelector('.cast-card-box button').textContent.includes('Cast Stomp')");
+  await evaluate("(() => { const box = document.querySelector('.cast-card-box'); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Stomp");
+  await waitFor("window.fixtureState.stack.length === 1");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 18 && window.fixtureState.players['2'].exile_count === 1 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Cast Bonecrusher Giant");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.find(a => a.action.from_exile)?.action.selected_face_index ?? 0"), 0);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Bonecrusher Giant')");
+  console.log("PASS human Adventure resolves into exile then normal face casts to battlefield");
 } finally {
   await close();
 }

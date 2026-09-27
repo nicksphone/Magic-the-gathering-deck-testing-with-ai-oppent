@@ -112,5 +112,139 @@
     "url": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
     "retrieved_at": "2026-09-27",
     "usage": "Read-only canonical test fixtures, not imported into gameplay cache"
+  },
+  "Riverglide Pathway // Lavaglide Pathway": {
+    "id": "2668ac91-6cda-4f81-a08d-4fc5f9cb35b2",
+    "name": "Riverglide Pathway // Lavaglide Pathway",
+    "oracle_id": "4924b3a4-a218-4783-8a4d-82361fdecc78",
+    "layout": "modal_dfc",
+    "type_line": "Land // Land",
+    "oracle_text": null,
+    "mana_cost": null,
+    "power": null,
+    "toughness": null,
+    "card_faces": [
+      {
+        "name": "Riverglide Pathway",
+        "mana_cost": "",
+        "type_line": "Land",
+        "oracle_text": "{T}: Add {U}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": []
+      },
+      {
+        "name": "Lavaglide Pathway",
+        "mana_cost": "",
+        "type_line": "Land",
+        "oracle_text": "{T}: Add {R}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": []
+      }
+    ]
+  },
+  "Brazen Borrower // Petty Theft": {
+    "id": "25d309d6-9e56-441e-bd29-5c903d5221bf",
+    "name": "Brazen Borrower // Petty Theft",
+    "oracle_id": "c7b044c3-3cfa-407e-bf20-2875e8e04b7b",
+    "layout": "adventure",
+    "type_line": "Creature \u2014 Faerie Rogue // Instant \u2014 Adventure",
+    "oracle_text": null,
+    "mana_cost": "{1}{U}{U} // {1}{U}",
+    "power": "3",
+    "toughness": "1",
+    "card_faces": [
+      {
+        "name": "Brazen Borrower",
+        "mana_cost": "{1}{U}{U}",
+        "type_line": "Creature \u2014 Faerie Rogue",
+        "oracle_text": "Flash\nFlying\nThis creature can block only creatures with flying.",
+        "power": "3",
+        "toughness": "1",
+        "loyalty": null,
+        "colors": null
+      },
+      {
+        "name": "Petty Theft",
+        "mana_cost": "{1}{U}",
+        "type_line": "Instant \u2014 Adventure",
+        "oracle_text": "Return target nonland permanent an opponent controls to its owner's hand.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": null
+      }
+    ]
+  },
+  "Bala Ged Recovery // Bala Ged Sanctuary": {
+    "id": "c5cb3052-358d-44a7-8cfd-cd31b236494a",
+    "name": "Bala Ged Recovery // Bala Ged Sanctuary",
+    "oracle_id": "d2075f58-b0e9-4e85-b7e6-0523a27a1d5b",
+    "layout": "modal_dfc",
+    "type_line": "Sorcery // Land",
+    "oracle_text": null,
+    "mana_cost": null,
+    "power": null,
+    "toughness": null,
+    "card_faces": [
+      {
+        "name": "Bala Ged Recovery",
+        "mana_cost": "{2}{G}",
+        "type_line": "Sorcery",
+        "oracle_text": "Return target card from your graveyard to your hand.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": [
+          "G"
+        ]
+      },
+      {
+        "name": "Bala Ged Sanctuary",
+        "mana_cost": "",
+        "type_line": "Land",
+        "oracle_text": "This land enters tapped.\n{T}: Add {G}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": []
+      }
+    ]
+  },
+  "Bonecrusher Giant // Stomp": {
+    "id": "b5b71cd2-de35-451f-b16e-2e3936169407",
+    "name": "Bonecrusher Giant // Stomp",
+    "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902",
+    "layout": "adventure",
+    "type_line": "Creature \u2014 Giant // Instant \u2014 Adventure",
+    "oracle_text": null,
+    "mana_cost": "{2}{R} // {1}{R}",
+    "power": "4",
+    "toughness": "3",
+    "card_faces": [
+      {
+        "name": "Bonecrusher Giant",
+        "mana_cost": "{2}{R}",
+        "type_line": "Creature \u2014 Giant",
+        "oracle_text": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller.",
+        "power": "4",
+        "toughness": "3",
+        "loyalty": null,
+        "colors": null
+      },
+      {
+        "name": "Stomp",
+        "mana_cost": "{1}{R}",
+        "type_line": "Instant \u2014 Adventure",
+        "oracle_text": "Damage can't be prevented this turn. Stomp deals 2 damage to any target.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": null
+      }
+    ]
   }
 }

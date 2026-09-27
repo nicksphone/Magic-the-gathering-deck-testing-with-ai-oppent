@@ -2,6 +2,7 @@
 from copy import copy
 
 from game_state.state import _infer_keywords
+from game_state.state import Zone
 
 CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery", "Kindred"}
 FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "keywords", "image_uri", "selected_face_index")
@@ -35,3 +36,27 @@ def apply_cast_face(card, face):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(card, field)))
         setattr(card, field, copy(getattr(face, field)))
+
+
+def exile_permission(state, player_id, card_id, face_index=0):
+    card = state.cards.get(card_id)
+    if card is None or card.zone != Zone.EXILE:
+        return False
+    player = state.players[player_id]
+    temporary = card_id in player.exile and player.exile_play_until.get(card_id, 0) >= state.turn
+    return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0)
+
+
+def exile_candidates(state, player_id):
+    return list(dict.fromkeys(state.players[player_id].exile + [
+        cid for cid, pid in state.adventure_permissions.items()
+        if pid == player_id and cid in state.cards and state.cards[cid].zone == Zone.EXILE
+    ]))
+
+
+def leave_exile(state, card_id):
+    for player in state.players.values():
+        if card_id in player.exile:
+            player.exile.remove(card_id)
+        player.exile_play_until.pop(card_id, None)
+    state.adventure_permissions.pop(card_id, None)

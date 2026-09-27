@@ -78,6 +78,7 @@ class CardAction(InputModel):
 class LandAction(CardAction):
     type: Literal["play_land"]
     from_exile: StrictBool = False
+    selected_face_index: Annotated[StrictInt, Field(ge=0, le=20)] | None = None
 
 
 class CostChoice(InputModel):

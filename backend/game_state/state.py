@@ -158,6 +158,7 @@ class MatchState:
     # Delayed entry modifications created by resolving effects such as Saga
     # chapters. Entries are consumed by the next matching spell this turn.
     pending_entry_counters: list[dict] = field(default_factory=list)
+    adventure_permissions: dict[str, int] = field(default_factory=dict)
     # Restrictions created by resolving spells that last through cleanup.
     turn_cant_gain_life: set[int] = field(default_factory=set)
     turn_damage_cant_be_prevented: bool = False

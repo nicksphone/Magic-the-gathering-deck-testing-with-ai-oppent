@@ -123,6 +123,8 @@ def apply_state_based_actions(state: MatchState) -> None:
     if state.pending_mechanic_choice:
         return
     from rules_engine.alternative_casts import restore_printed_characteristics
+    state.adventure_permissions = {cid: pid for cid, pid in state.adventure_permissions.items()
+                                   if cid in state.cards and state.cards[cid].zone == Zone.EXILE}
     for card in state.cards.values():
         if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
             restore_printed_characteristics(card)

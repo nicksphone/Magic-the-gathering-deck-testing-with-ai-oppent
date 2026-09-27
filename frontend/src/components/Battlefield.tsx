@@ -428,12 +428,16 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
             const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
-            const move = card.layout === "modal_dfc"
+            const move = ["modal_dfc", "adventure"].includes(card.layout ?? "")
               ? cardCastMoves.find((m) => (m.selected_face_index ?? 0) === selectedFaceIndex)
               : cardCastMoves[0];
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
-            const landMove = playLandMoves.find((m) => m.card_id === card.id);
+            const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
+            const landControls = cardLandMoves.map((landMove) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}`}
+              onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, selected_face_index: landMove.selected_face_index, from_exile: landMove.from_exile })}>
+              Play Land {landMove.card_name ?? card.card_faces?.[landMove.selected_face_index ?? 0]?.name ?? card.name}
+            </button>);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             const faceNames = move?.target_hints?.face_names ?? [];
             if (!move) {
@@ -444,11 +448,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   onMouseEnter={() => setHoverPreview(previewFromCard(card))}
                   onMouseLeave={() => setHoverPreview(null)}
                 >
-                  {landMove ? (
-                    <button onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, from_exile: landMove?.from_exile })}>
-                      Play Land {card.name}
-                    </button>
-                  ) : cycleMove ? (
+                  {landControls.length ? landControls : cycleMove ? (
                     <>
                     {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
                       <select
@@ -479,6 +479,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 onMouseEnter={() => setHoverPreview(previewFromCard(card))}
                 onMouseLeave={() => setHoverPreview(null)}
               >
+                {landControls}
                 <button
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
@@ -503,7 +504,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   >
                     {faceNames.map((faceName, idx) => (
                       <option key={`${card.id}-face-${idx}`} value={idx}
-                        disabled={["modal_dfc", "transform", "meld", "flip", "double_faced_token"].includes(card.layout ?? "") && !cardCastMoves.some((m) => (m.selected_face_index ?? 0) === idx)}>
+                        disabled={["modal_dfc", "adventure", "transform", "meld", "flip", "double_faced_token"].includes(card.layout ?? "") && !cardCastMoves.some((m) => (m.selected_face_index ?? 0) === idx)}>
                         Face {idx + 1}: {faceName}
                       </option>
                     ))}

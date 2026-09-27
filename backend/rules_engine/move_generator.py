@@ -209,8 +209,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     # Cards granted temporary play permission by effects such as Light Up the
     # Stage remain in exile but are legal sources for the same actions.
-    for cid in list(player.exile):
-        if int(player.exile_play_until.get(cid, 0) or 0) < int(state.turn):
+    from rules_engine.card_faces import exile_candidates, exile_permission
+    for cid in exile_candidates(state, player_id):
+        if not exile_permission(state, player_id, cid):
             continue
         card = state.cards[cid]
         max_land_plays = compute_max_land_plays_this_turn(state, player_id)
@@ -393,18 +394,24 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
-    # Modal spell faces have independent timing, costs and target surfaces.
-    # Land faces are play actions, not spells; they need separate handling.
+    # Modal/Adventure faces have independent timing, costs and target surfaces.
     from rules_engine.card_faces import select_cast_face
-    for cid in list(player.hand) + list(player.graveyard) + list(player.exile):
+    for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]
-        if original.layout != "modal_dfc":
-            continue
-        if original.zone == Zone.EXILE and player.exile_play_until.get(cid, 0) < state.turn:
+        if original.layout not in {"modal_dfc", "adventure"}:
             continue
         for index in range(1, len(original.card_faces)):
+            if original.zone == Zone.EXILE and not exile_permission(state, player_id, cid, index):
+                continue
             face = select_cast_face(original, index)
-            if "Land" in face.types or not can_cast_in_current_timing(state, face, player_id)[0]:
+            if "Land" in face.types:
+                if original.layout == "modal_dfc" and original.zone in {Zone.HAND, Zone.EXILE} and state.active_player == player_id and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack:
+                    used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn) if player.last_land_play_turn == state.turn else 0
+                    if used < compute_max_land_plays_this_turn(state, player_id):
+                        moves.append({"type": "play_land", "card_id": cid, "card_name": face.name,
+                                      "selected_face_index": index, "from_exile": original.zone == Zone.EXILE})
+                continue
+            if not can_cast_in_current_timing(state, face, player_id)[0]:
                 continue
             options = [option for option in collect_cost_options(state, player_id, face)
                        if check_cost_option_available(state, player_id, face, option)]

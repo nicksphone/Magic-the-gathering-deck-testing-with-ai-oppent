@@ -15,7 +15,7 @@ Use the isolated backend/browser procedure in [human actions](human-actions-brow
 ## Limits Still Open
 
 - Older cached rows get an empty layout from schema migration. Force-sync affected cards to obtain canonical layout; the migration does not guess semantics from names or face count. Historical snapshots without layout retain the legacy compatibility path.
-- Land-face play actions, Adventure resolution/exile permissions, fuse/aftermath and other split-card restrictions are not completed by this milestone.
+- Common land-face play and Adventure exile-permission paths have a separate [bounded implementation and test record](land-adventure-boundary.md). Conditional land entries, multi-target Adventure failures, fuse/aftermath and other split-card restrictions remain open.
 - Selected-face browser acceptance does not prove target-heavy modes, transformations, card-image selection or a backend process restart during a face-specific spell.
 - Face-specific cast bias and action materialization do not certify every AI scoring/search feature or strategically optimal face retention.
 - Targeted-trigger choices, multi-clause ability compilation and broader beta/release gates remain open.

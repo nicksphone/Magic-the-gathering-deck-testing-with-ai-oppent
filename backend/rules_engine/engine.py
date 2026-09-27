@@ -482,8 +482,15 @@ class RulesEngine:
                 reject("Cannot pay or activate Ninjutsu")
         elif kind == "play_land":
             cid = action["card_id"]
+            from rules_engine.card_faces import select_cast_face, apply_cast_face, exile_permission, leave_exile
+            card = state.cards[cid]
+            face_index = action.get("selected_face_index", 0) or 0
+            if face_index and card.layout != "modal_dfc":
+                reject("This card has no playable alternate land face")
+                return
+            face = select_cast_face(card, face_index)
             from_exile = bool(action.get("from_exile"))
-            allowed_source = cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn if from_exile else cid in player.hand
+            allowed_source = exile_permission(state, player_id, cid, face_index) if from_exile else cid in player.hand
             if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
                 apply_state_based_actions(state)
                 return
@@ -497,15 +504,20 @@ class RulesEngine:
                 int(getattr(player, "lands_played_this_turn", 0)) if getattr(player, "last_land_play_turn", 0) == state.turn else 0,
                 int(getattr(player, "land_plays_recorded_on_turn", 0)),
             )
-            if allowed_source and used_land_plays < max_land_plays and _is_land_card(state.cards[cid]):
-                (player.exile if from_exile else player.hand).remove(cid)
-                player.exile_play_until.pop(cid, None)
+            if allowed_source and used_land_plays < max_land_plays and _is_land_card(face):
+                if from_exile:
+                    leave_exile(state, cid)
+                else:
+                    player.hand.remove(cid)
+                apply_cast_face(card, face)
                 player.battlefield.append(cid)
                 player.lands_played_this_turn = used_land_plays + 1
                 player.land_plays_recorded_on_turn = used_land_plays + 1
                 player.last_land_play_turn = state.turn
                 state.cards[cid].zone = Zone.BATTLEFIELD
                 state.cards[cid].summoning_sick = False
+                from rules_engine.land_rules import apply_land_entry
+                apply_land_entry(card)
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
@@ -560,8 +572,10 @@ class RulesEngine:
             from_exile = bool(action.get("from_exile"))
             from_library = bool(action.get("from_library"))
             from_graveyard = bool(action.get("from_graveyard"))
+            from rules_engine.card_faces import exile_permission, leave_exile
+            chosen_face = action.get("selected_face_index", (action.get("targets") or {}).get("selected_face_index", 0)) or 0
             allowed_source = (
-                (cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn)
+                exile_permission(state, player_id, cid, chosen_face)
                 if from_exile
                 else (cid in player.graveyard if from_graveyard else cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
             )
@@ -672,6 +686,7 @@ class RulesEngine:
                     return
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
+                payload["__announced_targets"] = dict(action_targets)
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)
 
@@ -686,9 +701,13 @@ class RulesEngine:
                 apply_cast_face(card, face_card)
                 if chosen.id == "escape":
                     payload["__escaped"] = True
-                (player.exile if from_exile else player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
+                if from_exile:
+                    leave_exile(state, cid)
+                else:
+                    (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
+                card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
 

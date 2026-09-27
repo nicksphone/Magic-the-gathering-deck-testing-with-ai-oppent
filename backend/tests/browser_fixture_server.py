@@ -13,10 +13,11 @@ from sqlmodel import Session
 init_db()
 
 @app.post("/fixture")
-def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3):
-    if modal:
+def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if modal or face_kind:
         import json
-        raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())["Wandering Archaic // Explore the Vastlands"]
+        name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
+        raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[name]
         deck = [{"quantity": 60, "card_name": raw["name"], **raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}]
         state = MatchFactory.from_decks(deck, deck, seed=9)
         state.pregame_pending = False
@@ -24,6 +25,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3):
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool["C"] = modal_mana
+        if face_kind == "adventure":
+            state.players[2].mana_pool["R"] = 4
         return publish(state, deck)
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=15)

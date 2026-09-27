@@ -67,6 +67,19 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
+    card = state.cards.get(item.source_card_id)
+    announced = (item.payload or {}).get("__announced_targets") or {}
+    target_count = (len(announced.get("target_card_ids") or []) + len(announced.get("target_distribution") or {})
+                    + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
+    if card and card.zone == Zone.STACK and target_count == 1:
+        from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
+        from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
+        legal = (validate_cast_choice(build_cast_hints(state, card, item.controller, announced), announced)[0]
+                 and validate_protection_targets(state, card, announced)[0]
+                 and validate_hexproof_shroud_targets(state, item.controller, announced)[0])
+        if not legal:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     context = _replacement_context(state, item)
     choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
     requires_human_choice = (
@@ -123,13 +136,20 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK and not is_trigger:
         owner = state.players[getattr(card, "owner", card.controller)]
-        if "Instant" in card.types or "Sorcery" in card.types:
-            owner.graveyard.append(card.id)
-            card.zone = Zone.GRAVEYARD
+        if "Instant" in card.types or "Sorcery" in card.types or payload.get("__failed_to_resolve"):
+            if card.layout == "adventure" and (card.selected_face_index or 0) > 0 and not payload.get("__failed_to_resolve"):
+                owner.exile.append(card.id)
+                card.zone = Zone.EXILE
+                state.adventure_permissions[card.id] = item.controller
+            else:
+                owner.graveyard.append(card.id)
+                card.zone = Zone.GRAVEYARD
             from rules_engine.alternative_casts import restore_printed_characteristics
             restore_printed_characteristics(card)
         else:
-            owner.battlefield.append(card.id)
+            battlefield_player = state.players[item.controller]
+            card.controller = item.controller
+            battlefield_player.battlefield.append(card.id)
             card.zone = Zone.BATTLEFIELD
             card.summoning_sick = "Creature" in card.types
             card.entered_turn = state.turn
@@ -167,7 +187,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if is_aura(card):
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):
-                    owner.battlefield.remove(card.id)
+                    battlefield_player.battlefield.remove(card.id)
                     owner.graveyard.append(card.id)
                     card.zone = Zone.GRAVEYARD
                     state.log.append(f"{card.name} has no legal attachment target and is put into graveyard.")
@@ -175,5 +195,5 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                     return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
     if not state.pending_mechanic_choice:
-        state.log.append(f"{item.label} resolves.")
+        state.log.append(f"{item.label} does not resolve because its target is illegal." if payload.get("__failed_to_resolve") else f"{item.label} resolves.")
     return True
