@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added two browser regression paths for the previous loser's BO3 play/draw choice through production Controls and `/next-game`; both verify game-two starter and that live seed metadata stays hidden. All fifteen Chromium paths and the frontend build/unit checks pass. The fixture begins between games, so full-series and sideboarding acceptance are still open.
+
 - Interactive BO3 now stores a root seed and derives repeatable per-game seeds without exposing live hidden-library order. The previous game's human loser chooses play or draw in the UI/API; AI losers choose play. Focused helper and HTTP tests cover chooser validation, game-two opener replay and persisted restore. Existing unseeded saved matches remain legacy; full-browser BO3 and AI sideboarding are open.
 - Validation: 875 backend tests pass in a fresh isolated source/database copy; frontend production build and unit checks pass. A seeded two-game Mono Red Aggro/Dimir Control BO3 diagnostic replay has no timeout, anomaly label or determinism drift. That diagnostic does not exercise the interactive play/draw choice or prove balance.
 

@@ -143,6 +143,20 @@ try {
   await click("Resolve Stack");
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Ulamog, the Infinite Gyre')");
   console.log("PASS cast-trigger target resolves before its creature spell through the production UI/API");
+
+  await click("BO3 Fixture");
+  await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
+  await click("P2 Draw First");
+  await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 1 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureState.root_seed"), null);
+  console.log("PASS human loser chooses draw through Controls and the production next-game API");
+
+  await click("BO3 Fixture");
+  await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Play First')");
+  await click("P2 Play First");
+  await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 2 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureState.root_seed"), null);
+  console.log("PASS human loser chooses play through Controls and the production next-game API");
 } finally {
   await close();
 }

@@ -37,6 +37,17 @@ function Harness() {
     await load(next);
     return next as MatchState;
   }
+  async function nextGame(playFirst: boolean) {
+    if (!match?.next_play_draw_chooser) throw new Error("No play/draw chooser");
+    setReady(false);
+    window.fixtureActions?.push({ type: "next_game", player_id: match.next_play_draw_chooser, play_first: playFirst });
+    const response = await fetch(`${BASE}/matches/${match.id}/next-game`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player_id: match.next_play_draw_chooser, play_first: playFirst }),
+    });
+    if (!response.ok) throw new Error(`Next game HTTP ${response.status}`);
+    await load(await response.json());
+  }
   return <>
     <p data-testid="ready">{ready ? "Ready" : "Loading"}</p>
     <button onClick={() => reset().catch((failure) => setError(String(failure)))}>Reset Fixture</button>
@@ -47,6 +58,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
+    <button onClick={() => reset(false, false, 3, "bo3").catch((failure) => setError(String(failure)))}>BO3 Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
     {match ? <Controls
@@ -60,7 +72,7 @@ function Harness() {
       onNextStep={() => {}} onAutoplayTick={() => {}}
       autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
       onSubmitBlocks={() => {}} onSubmitAttack={() => {}}
-      onApplySideboard={() => {}} onNextGame={() => {}} onSetPriorityStops={() => {}}
+      onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
       onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}}
       onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
       onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}

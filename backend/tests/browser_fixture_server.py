@@ -14,6 +14,18 @@ init_db()
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "bo3":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=31)
+        state.winner = 1
+        state.score = {1: 1, 2: 0}
+        publish(state, deck)
+        match = ACTIVE_MATCHES[state.id]
+        match.current_game_recorded = True
+        match.root_seed = 31
+        with Session(engine) as session:
+            _persist_active_match(Repository(session), match)
+        return get_match(state.id)
     if face_kind in {"trigger", "cast_trigger"}:
         import json
         rows = json.loads((Path(__file__).parent / "fixtures/permanent_spell_context.json").read_text())
