@@ -130,6 +130,19 @@ try {
   await click("Decline effect");
   await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.some(c => c.name === \"Smuggler's Copter\")");
   console.log("PASS human optional ETB effect can be declined after its target was announced");
+
+  await click("Cast Trigger Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Ulamog, the Infinite Gyre'))");
+  await click("Cast Ulamog, the Infinite Gyre");
+  await waitFor("window.fixtureState.pending_trigger_order?.phase === 'targets' && window.fixtureState.stack.length === 2");
+  await click("Sol Ring");
+  await waitFor("window.fixtureState.pending_trigger_order === null");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Ulamog, the Infinite Gyre')"), false);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Ulamog, the Infinite Gyre')");
+  console.log("PASS cast-trigger target resolves before its creature spell through the production UI/API");
 } finally {
   await close();
 }

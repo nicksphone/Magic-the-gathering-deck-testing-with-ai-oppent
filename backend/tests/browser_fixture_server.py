@@ -14,7 +14,7 @@ init_db()
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
-    if face_kind == "trigger":
+    if face_kind in {"trigger", "cast_trigger"}:
         import json
         rows = json.loads((Path(__file__).parent / "fixtures/permanent_spell_context.json").read_text())
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
@@ -25,10 +25,11 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.PRECOMBAT_MAIN
         state.trigger_order_choice_required = True
         state.trigger_order_choice_players = {2}
-        state.players[2].mana_pool.update({"G": 3, "C": 3})
+        state.players[2].mana_pool.update({"G": 3, "C": 12 if face_kind == "cast_trigger" else 3})
 
         for cid, name, owner, zone in (
-            ("sage", "Reclamation Sage", 2, Zone.HAND),
+            ("cast-source" if face_kind == "cast_trigger" else "sage",
+             "Ulamog, the Infinite Gyre" if face_kind == "cast_trigger" else "Reclamation Sage", 2, Zone.HAND),
             ("ring", "Sol Ring", 2, Zone.BATTLEFIELD),
             ("copter", "Smuggler's Copter", 1, Zone.BATTLEFIELD),
         ):

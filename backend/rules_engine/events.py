@@ -105,7 +105,7 @@ def _append_trigger_groups(
             effect_key=trig["effect_key"],
             payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
         )
-        clause = _targeted_etb_clause(state, item)
+        clause = _targeted_trigger_clause(state, item)
         if clause:
             item.payload["__trigger_target_clause"] = clause
             options = trigger_target_options(state, item)
@@ -173,15 +173,21 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
     return True
 
 
-def _targeted_etb_clause(state: MatchState, item: StackItem) -> str | None:
-    if item.payload.get("__trigger_event") != "enters_battlefield" or item.payload.get("__trigger_target_clause"):
+def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    event = item.payload.get("__trigger_event")
+    if event not in {"enters_battlefield", "spell_cast"} or item.payload.get("__trigger_target_clause"):
         return None
     card = state.cards.get(item.source_card_id)
     if not card:
         return None
     for sentence in re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""):
         clause = sentence.strip()
-        if re.match(r"^(?:when|whenever)\b.*\benters\b", clause, re.I) and re.search(r"\btarget\b", clause, re.I):
+        matches_event = (
+            re.match(r"^(?:when|whenever)\b.*\benters\b", clause, re.I)
+            if event == "enters_battlefield" else
+            re.match(r"^(?:when|whenever) you cast this spell\b", clause, re.I)
+        )
+        if matches_event and re.search(r"\btarget\b", clause, re.I):
             if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
                 return clause
     return None
@@ -252,7 +258,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         if attacker:
             for amount in re.findall(r"\bannihilator\s+(\d+)", attacker.oracle_text or "", re.IGNORECASE):
                 out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
-    if event in {"spell_cast", "spell_copy"}:
+    if event == "spell_cast":
         source_card_id = str(payload.get("source_card_id", "") or "")
         source_card = state.cards.get(source_card_id) if source_card_id else None
         cast_controller = int(payload.get("controller", 0) or 0)
@@ -313,7 +319,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 source_card_id = str(payload.get("source_card_id", "") or "")
                 source_card = state.cards.get(source_card_id) if source_card_id else None
                 source_types = {t.lower() for t in (getattr(source_card, "types", []) or [])}
-                if cast_controller == card.controller and "whenever you cast a spell" in oracle:
+                if event == "spell_cast" and cast_controller == card.controller and "whenever you cast a spell" in oracle:
                     out.append(
                         _trigger_from_oracle(
                             state,
@@ -325,7 +331,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                             payload=payload,
                         )
                     )
-                elif cast_controller == card.controller and (
+                elif event == "spell_cast" and cast_controller == card.controller and (
                     ("whenever you cast an instant spell" in oracle and "instant" in source_types)
                     or ("whenever you cast a sorcery spell" in oracle and "sorcery" in source_types)
                     or ("whenever you cast an instant or sorcery spell" in oracle and ("instant" in source_types or "sorcery" in source_types))
@@ -342,14 +348,14 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         )
                     )
                 elif cast_controller == card.controller and source_card and "creature" not in source_types and (
-                    "prowess" in oracle
+                    ("prowess" in oracle and event == "spell_cast")
                     or "magecraft" in oracle
-                    or "whenever you cast a noncreature spell" in oracle
-                    or "whenever you cast a non-creature spell" in oracle
+                    or (event == "spell_cast" and "whenever you cast a noncreature spell" in oracle)
+                    or (event == "spell_cast" and "whenever you cast a non-creature spell" in oracle)
                     or "whenever you cast or copy an instant or sorcery spell" in oracle
                     or "whenever you cast or copy a noncreature spell" in oracle
                     or "whenever you cast or copy a non-creature spell" in oracle
-                    or "gets +1/+1 until end of turn" in oracle
+                    or (event == "spell_cast" and "gets +1/+1 until end of turn" in oracle)
                 ):
                     ability = _trigger_from_oracle(
                         state,

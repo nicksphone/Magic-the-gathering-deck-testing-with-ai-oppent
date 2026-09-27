@@ -98,5 +98,32 @@
     "oracle_text": "{T}: Add {C}{C}.",
     "power": null,
     "toughness": null
+  },
+  "Ulamog, the Infinite Gyre": {
+    "name": "Ulamog, the Infinite Gyre",
+    "oracle_id": "b817bc56-9b4d-4c50-bafa-3c652b99578f",
+    "mana_cost": "{11}",
+    "type_line": "Legendary Creature \u2014 Eldrazi",
+    "oracle_text": "When you cast this spell, destroy target permanent.\nIndestructible\nAnnihilator 4 (Whenever this creature attacks, defending player sacrifices four permanents of their choice.)\nWhen Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+    "power": "10",
+    "toughness": "10"
+  },
+  "Monastery Swiftspear": {
+    "name": "Monastery Swiftspear",
+    "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e",
+    "mana_cost": "{R}",
+    "type_line": "Creature \u2014 Human Monk",
+    "oracle_text": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "power": "1",
+    "toughness": "2"
+  },
+  "Lightning Bolt": {
+    "name": "Lightning Bolt",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "power": null,
+    "toughness": null
   }
 }

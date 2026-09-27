@@ -46,6 +46,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "land").catch((failure) => setError(String(failure)))}>Land Face Fixture</button>
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
+    <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
     {match ? <Controls
