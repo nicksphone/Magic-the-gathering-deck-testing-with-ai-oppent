@@ -123,6 +123,9 @@ Gate 1 exit: empty cache/database setup can import a supported deck, play both a
 
 ### 10. Verify corpus and finish knowledge consumers
 
+- September 27 ingestion milestone: reusable all-Oracle bulk import, exact-name/search rulings verification and a knowledge gap report are implemented. The first local import contains 38,690 unique Oracle records and 6,433 faces; bulk records explicitly await rulings verification. Data remains local and is rebuildable from the official source. Tactical profiles, AI consumers, verified offline seeds and full rules coverage remain open.
+- Corpus verification now covers 88 requested names with zero missing metadata or pending rulings (87 canonical records). The full bulk reimport leaves all 38,690 records unchanged. See `docs/plans/baselines/2026-09-27-card-knowledge.json` for the evidence summary.
+
 - [ ] Freeze and publish the supported corpus and per-mechanic coverage limits.
 - [ ] Sync canonical data/rulings with provenance; use verified offline seeds and report incomplete metadata honestly.
 - [ ] Reconcile [the knowledge implementation plan](docs/plans/2026-09-09-ai-knowledge-base.md) with current code before carrying forward its historical cache counts.
@@ -132,6 +135,8 @@ Gate 1 exit: empty cache/database setup can import a supported deck, play both a
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 
 ### 11. Validate semantics across rule families
+
+- The September inventory in `docs/plans/baselines/2026-09-27-mechanics-inventory.json` identifies additional gap candidates: Morph (153 cards), Suspend (74), Infect (49), Ninjutsu (37), Mutate (34), Discover (33), Escape (33), Banding (26), Craft (24), Prototype (21), Dredge (14), Manifest (68) and Annihilator (15). Battle metadata covers 39 cards; protector/defense behavior still needs implementation. These are data inventory counts and code-audit candidates, not exhaustive coverage certification. Supplemental, digital and novelty cards are also present in bulk data and require explicit format/scope handling.
 
 - [ ] Add golden fixtures for full clauses, costs, modes, targets, attachments and zone permissions.
 - [ ] Expand continuous layer/dependency, replacement/prevention ordering and can't-override fidelity.

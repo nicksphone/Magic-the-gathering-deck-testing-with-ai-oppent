@@ -197,6 +197,24 @@ python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
 
 The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.
 
+### Canonical Card Knowledge
+
+The knowledge database can ingest every unique Oracle card from Scryfall's official bulk dataset, including face data, keywords, legalities, image URLs and provenance. This stores metadata, not new rules implementations or trained AI behavior. Same-name token variants retain separate Oracle identities; their exact printed names remain in the canonical payload.
+
+```bash
+cd backend
+./.venv/bin/python -m scripts.sync_all_card_knowledge
+./.venv/bin/python -m scripts.sync_corpus_cards --out knowledge/data/corpus-sync-summary.json
+./.venv/bin/python -m scripts.knowledge_gap_report --require-rulings
+./.venv/bin/python -m scripts.card_mechanics_inventory --out knowledge/data/mechanics-inventory.json
+```
+
+The bulk command writes `CardKnowledge` in the application's SQLite database without replacing the gameplay/image cache. Repeated imports reuse the downloaded dataset and unchanged rows. Bulk download files and summaries live in ignored `backend/knowledge/data/`; rebuild them after a fresh checkout. Back up `backend/mtg_lab.db` before refreshing local data. Both sync commands accept `--database /path/to/isolated.db` for isolated ingestion.
+
+Bulk data does not include downloaded rulings. The corpus command verifies them separately, treating a successful empty list as valid and marking failed fetches as errors. Use repeatable `--name "Card Name"` or `--query "f:standard" --limit 200` to verify additional cards; `--force` refreshes previously verified entries. Knowledge coverage does not certify gameplay support, and the current AI does not yet consume this table.
+
+The September 27 local import contains 38,690 unique Oracle records and 6,433 faces. Rulings verification passes for the shipped/saved corpus (88 requested names, 87 verified canonical records). The mechanics inventory records metadata and explicit gap candidates, including Morph, Suspend, Infect, Ninjutsu, Mutate, Discover and Escape; it does not infer complete support from a keyword match. Counts and provenance are recorded in `docs/plans/baselines/2026-09-27-card-knowledge.json` and `2026-09-27-mechanics-inventory.json`.
+
 ## Deck Import
 
 Supported text format:

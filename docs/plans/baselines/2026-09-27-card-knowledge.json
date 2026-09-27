@@ -1,0 +1,32 @@
+{
+  "ai_consumes_persisted_knowledge": false,
+  "bulk": {
+    "added": 38690,
+    "cards": 38690,
+    "faces": 6433,
+    "name_collisions": 504,
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    },
+    "rulings_pending": 38690,
+    "total_knowledge_rows": 38690,
+    "unchanged": 0,
+    "updated": 0
+  },
+  "corpus": {
+    "database": {
+      "canonical_payloads": 38690,
+      "rows": 38690,
+      "rulings_verified": 87
+    },
+    "missing_cards": [],
+    "requested_names": 88,
+    "rulings_pending": []
+  },
+  "date": "2026-09-27",
+  "repeat_import_unchanged": 38690,
+  "rules_support_certified": false
+}

@@ -7,11 +7,12 @@ from sqlmodel import Field, SQLModel
 
 
 class CardKnowledge(SQLModel, table=True):
-    """Typed per-card knowledge consumed by the AI agent.
+    """Canonical card knowledge and optional future AI tactical profiles.
 
     ``oracle_source`` is provenance only: ``"scryfall"`` or ``"manual"``.
-    Hand-written fallbacks never produce a knowledge row — they are deleted
-    in Task 1.3 and their offline replacement lives in the committed seed.
+    Bulk imports preserve the full canonical payload in ``profiles_json``.
+    Rulings verification and tactical estimates are separate from ingestion;
+    the current AI does not yet consume these persisted profiles.
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)

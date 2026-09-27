@@ -35,6 +35,10 @@
     "mtime": 1784462244.4762628,
     "hash": "6d12c3070ca29b49f0d1dc2d3cb9ab82"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/scripts/card_mechanics_inventory.py": {
+    "mtime": 1790533001.8802936,
+    "hash": "ff0d84bbeaca3caa41b193d5d128629b"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/anomaly_cluster_report.py": {
     "mtime": 1784157199.4136155,
     "hash": "b8ca58cd3abf520cb92afbbfb868ebce"
@@ -43,9 +47,21 @@
     "mtime": 1783696110.3517222,
     "hash": "6207c9b706172134cfc5d61264ab9f77"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/scripts/sync_all_card_knowledge.py": {
+    "mtime": 1790532614.2496445,
+    "hash": "fa223af781b9a8373a11797500749cd8"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/scripts/sync_corpus_cards.py": {
+    "mtime": 1790532436.8015795,
+    "hash": "0270ea5382700d5668cfdecde7976373"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/card_play_analytics.py": {
     "mtime": 1789239187.6672006,
     "hash": "33e48b33007d446a3f25f40549e62894"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/scripts/knowledge_gap_report.py": {
+    "mtime": 1790532943.084253,
+    "hash": "e11cfe3f258c33ccb7a591da1f6e7724"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/debug_head_to_head.py": {
     "mtime": 1784468874.3349237,
@@ -152,8 +168,12 @@
     "hash": "a6d9f7ad761508ad1937ac69c5f19511"
   },
   "/home/nick/mtg-deck-testing-lab/backend/knowledge/models.py": {
-    "mtime": 1789580874.6483517,
-    "hash": "ce43f5cf4386de389dccddc10291bd27"
+    "mtime": 1790532757.786285,
+    "hash": "0c54202a22e685ca03f4d82b935441d9"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/knowledge/ingest.py": {
+    "mtime": 1790532436.8005795,
+    "hash": "d486f24868374459037859b64bb3e5d4"
   },
   "/home/nick/mtg-deck-testing-lab/backend/decks/expansion_top_decks.py": {
     "mtime": 1777217116.3009346,
@@ -523,6 +543,10 @@
     "mtime": 1789239172.606446,
     "hash": "2b72f83cac376011d3d61e53951697ca"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_knowledge_ingest.py": {
+    "mtime": 1790533001.8802936,
+    "hash": "9ffe45ad27a8b49cb36418d5db5b7acb"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_api_smoke.py": {
     "mtime": 1784667025.9515235,
     "hash": "12babb3b6f8d3e0cdf416b6bf65b85b8"
@@ -748,16 +772,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1784672415.318173,
-    "hash": "65c6eec661375af9f1277b563d750418"
+    "mtime": 1790533069.818186,
+    "hash": "8c12d1991cc379e66ac08882e42dadc1"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790525223.5619862,
-    "hash": "2138f8eca68377050d001834329a29f8"
+    "mtime": 1790533069.819186,
+    "hash": "65f73a4e54064656a94759d53288efe1"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790525235.7297833,
-    "hash": "427c78f3a9e681f83e3e925b9643b590"
+    "mtime": 1790533069.819186,
+    "hash": "07d96aa75992948b6e50bac27fc077e1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -780,8 +804,8 @@
     "hash": "7a17a40e47547ebceba110448145736e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1789038902.5644953,
-    "hash": "aa91173901e1f19da0479058fac142d3"
+    "mtime": 1790532757.789285,
+    "hash": "1ed232216aeef7419453df84a44cf236"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
     "mtime": 1790525223.5599864,
@@ -1254,6 +1278,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/e8b92271-4412-4165-a4a6-e8653e755107.jpg": {
     "mtime": 1777082553.6367424,
     "hash": "19a4a4c07ff8f02e073c25e8c96b06a6"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/placeholder-spell-lightning-bolt-instant.svg": {
+    "mtime": 1790532615.1886292,
+    "hash": "50fde3d04d68e6f21d61fd5f127c9eab"
   },
   "/home/nick/mtg-deck-testing-lab/backend/card_data/image_cache/e056b55f-82ed-4fe0-ab0c-bb20fa4a218a.jpg": {
     "mtime": 1777082231.4340863,

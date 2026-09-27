@@ -1,5 +1,9 @@
 # AI Quality + Knowledge Base Implementation Plan
 
+## September 27 implementation status
+
+The historical baseline below describes September 9 only. Canonical ingestion now supports all unique Scryfall Oracle cards via `scripts.sync_all_card_knowledge`, plus individual/corpus rulings verification via `scripts.sync_corpus_cards` and coverage reporting via `scripts.knowledge_gap_report`. The first local bulk import added 38,690 records, including 6,433 faces and 504 disambiguated same-name Oracle variants. Bulk metadata is not a gameplay-support certificate and does not include verified rulings until separately fetched. Successful empty ruling lists are valid; do not require every card to have published rulings. The existing AI does not yet consume persisted knowledge, and verified seed replacement, tactical profiles and sideboarding remain unfinished. See the current root `plan.md` for release priorities.
+
 > **For Hermes:** Use subagent-driven-development skill to implement this plan task-by-task.
 
 **Goal:** Raise AI decision quality by replacing hand-written heuristics with a verified, corpus-wide knowledge base, and close every known card-data gap in the shipped deck corpus.

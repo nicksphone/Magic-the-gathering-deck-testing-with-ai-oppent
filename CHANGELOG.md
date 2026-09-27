@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added canonical all-Oracle card knowledge ingestion, exact-name/corpus/search ruling verification, and a coverage report. Bulk ingestion preserves faces, legalities, keywords, provenance and same-name variants without overwriting the gameplay cache or claiming rules support. Local bulk data is rebuildable and remains outside Git.
+- Imported 38,690 unique Oracle records / 6,433 faces locally; repeat import changed zero records. Verified rulings for 87 canonical cards covering 88 corpus names, with no corpus metadata/rulings gaps. Added a reproducible mechanics inventory and committed evidence summaries; tactical AI consumption and all-card rules support remain unfinished.
+
 - Replaced the historical finish-plan patch notes with three release gates and 16 ordered implementation steps based on the September application audit.
 - Recorded the audit's clean-checkout failures, live-match integration gaps, pinned-environment results, and limits of the deterministic smoke evidence.
 - Added `docs/audits/2026-09-27-app-audit.md` as the repository audit reference. This documentation milestone does not mark implementation tasks complete.
