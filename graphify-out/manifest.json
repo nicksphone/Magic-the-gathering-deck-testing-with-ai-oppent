@@ -140,12 +140,20 @@
     "hash": "6874f34769c99213e50f75d3b64422fe"
   },
   "/home/nick/mtg-deck-testing-lab/backend/persistence/repository.py": {
-    "mtime": 1784200896.0301282,
-    "hash": "38107964c53955f8e92385410b0c6a30"
+    "mtime": 1789580932.9423172,
+    "hash": "5778ec909d326e23b0a12e3a0aa4c7fd"
   },
   "/home/nick/mtg-deck-testing-lab/backend/persistence/db.py": {
-    "mtime": 1784461155.555113,
-    "hash": "df35151065fdcd76d7a65318347ecdce"
+    "mtime": 1789580894.0090067,
+    "hash": "c5ad061251d5af63d0e54593034dc53e"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/knowledge/__init__.py": {
+    "mtime": 1789580874.6483517,
+    "hash": "a6d9f7ad761508ad1937ac69c5f19511"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/knowledge/models.py": {
+    "mtime": 1789580874.6483517,
+    "hash": "ce43f5cf4386de389dccddc10291bd27"
   },
   "/home/nick/mtg-deck-testing-lab/backend/decks/expansion_top_decks.py": {
     "mtime": 1777217116.3009346,
@@ -258,6 +266,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_control_changes.py": {
     "mtime": 1784413807.8488889,
     "hash": "74fca09ca55656fe420b3cf831820cc2"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_knowledge_models.py": {
+    "mtime": 1789580841.7929404,
+    "hash": "13294d46ccec521e5d370fe6b255fa16"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_additional_costs.py": {
     "mtime": 1784214076.8718328,
@@ -740,12 +752,12 @@
     "hash": "65c6eec661375af9f1277b563d750418"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1784672835.654347,
-    "hash": "d11a0b7cdf3f25861767e2c5aeac9ef6"
+    "mtime": 1790525223.5619862,
+    "hash": "2138f8eca68377050d001834329a29f8"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1784672835.804345,
-    "hash": "0fe49953873860113a8ec726d37acb87"
+    "mtime": 1790525235.7297833,
+    "hash": "427c78f3a9e681f83e3e925b9643b590"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -770,6 +782,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/plans/2026-09-09-ai-knowledge-base.md": {
     "mtime": 1789038902.5644953,
     "hash": "aa91173901e1f19da0479058fac142d3"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
+    "mtime": 1790525223.5599864,
+    "hash": "6eef3ecfe940916b38b201a0258c17c4"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/index.html": {
     "mtime": 1777063134.7080612,

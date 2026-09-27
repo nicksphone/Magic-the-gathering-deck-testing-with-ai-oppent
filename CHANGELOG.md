@@ -2,6 +2,12 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-09-27
+
+- Replaced the historical finish-plan patch notes with three release gates and 16 ordered implementation steps based on the September application audit.
+- Recorded the audit's clean-checkout failures, live-match integration gaps, pinned-environment results, and limits of the deterministic smoke evidence.
+- Added `docs/audits/2026-09-27-app-audit.md` as the repository audit reference. This documentation milestone does not mark implementation tasks complete.
+
 ## 2026-07-21
 
 - Spell timing and seeded match validation milestone:
