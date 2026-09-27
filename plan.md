@@ -73,6 +73,10 @@ Acceptance: full backend suite passes in a clean checkout; generic token media r
 
 Evidence: `test_release_card_contracts.py` checks HTTP names/quantities start, transformed views, snapshot resume and live/diagnostic parity. The HTTP fixture mocks persistence; it does not prove process-restart or browser face-choice workflows. Those remain Gate 1 acceptance requirements.
 
+Cache-name increment: repository bulk lookups now prefer exact Oracle names and only scan face aliases when needed; art-series `Card` records do not supply playable-face aliases. A canonical `Mountain // Mountain` art-series regression checks that a requested basic Mountain hydrates and enters the game as a Land, independent of cache insertion order. Explicit non-playable card import validation remains a separate Gate 2 corpus task.
+
+Validation: 878 backend tests pass in a fresh isolated source/database copy (103.65 seconds, 814 deprecation warnings), and frontend TypeScript/Vite build and unit checks pass. The browser harness was not rerun for this backend-only cache change.
+
 Acceptance: both faces survive HTTP start and restart; legal face selection and transformation work through UI controls with correct types and stats.
 
 ### 3. Expose truthful effective card views (P1)

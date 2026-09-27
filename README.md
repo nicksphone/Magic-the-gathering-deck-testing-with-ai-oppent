@@ -263,6 +263,7 @@ The app syncs and caches card data locally.
 - Card metadata is stored for repeatable testing
 - Missing art falls back to local placeholder handling
 - Cached double-faced cards reuse face-level art when the root image is missing
+- Exact cached card names take precedence over face aliases; non-playable art-series records cannot masquerade as a land or other split-face alias
 - Token art resolves when available, with a generic token fallback before blank placeholders
 - Fallback card lookups normalize punctuation, spacing, and common transform-face import names
 

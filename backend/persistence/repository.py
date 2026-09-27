@@ -95,7 +95,7 @@ class Repository:
             return hit
         # Handle split/DFC names cached as "Front Face // Back Face".
         for row in self.session.exec(select(CardCache)).all():
-            if normalized in _name_aliases(row.name):
+            if normalized in _name_aliases(row.name, row.layout, row.type_line):
                 return row
         return None
 
@@ -105,12 +105,18 @@ class Repository:
         lowered = {n.strip().lower() for n in names if n.strip()}
         if not lowered:
             return {}
-        rows = self.session.exec(select(CardCache)).all()
-        out: dict[str, CardCache] = {}
+        # Exact Oracle names must win over face aliases regardless of row order.
+        out: dict[str, CardCache] = {
+            row.name.strip().lower(): row
+            for row in self.session.exec(select(CardCache).where(func.lower(CardCache.name).in_(lowered))).all()
+        }
+        if len(out) == len(lowered):
+            return out
+        rows = self.session.exec(select(CardCache).order_by(CardCache.id)).all()
         for row in rows:
-            for alias in _name_aliases(row.name):
+            for alias in _name_aliases(row.name, row.layout, row.type_line):
                 if alias in lowered:
-                    out[alias] = row
+                    out.setdefault(alias, row)
         return out
 
     def save_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
@@ -300,11 +306,11 @@ class Repository:
         return list(self.session.exec(q).all())
 
 
-def _name_aliases(name: str | None) -> set[str]:
+def _name_aliases(name: str | None, layout: str = "", type_line: str = "") -> set[str]:
     raw = (name or "").strip().lower()
     if not raw:
         return set()
     aliases = {raw}
-    if "//" in raw:
+    if "//" in raw and layout != "art_series" and type_line.strip().lower() != "card":
         aliases.update(part.strip() for part in raw.split("//") if part.strip())
     return aliases

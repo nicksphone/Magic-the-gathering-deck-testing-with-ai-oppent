@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Fixed cache alias precedence: exact card names now beat later face aliases, and art-series `Card` records cannot supply split-face aliases. Exact-only deck hydration avoids a full cache scan. A real `Mountain // Mountain` art-series regression prevents a basic Mountain from being mis-hydrated as a non-playable Card.
+- Validation: 878 backend tests pass in a fresh isolated source/database copy; frontend TypeScript/Vite build and unit checks pass. The existing 15-path Chromium harness was not rerun for this backend-only cache change.
+
 - Fixed a real-card AI crash after double-faced permanents transform: both transform handlers now apply numeric face characteristics and keywords through the shared adapter, and sweeper threat assessment uses effective power. Canonical Kumano/Delver regressions fail before and pass after. A corrected local-Oracle Mono Red Aggro/Burn interactive autoplay BO3 completes 2-0 without a stall; this one series does not establish balance.
 - Validation: 877 backend tests pass in a fresh isolated source/database copy; frontend TypeScript/Vite build and unit checks pass. The interactive real-card BO3 is an additional diagnostic, not a determinism matrix.
 
