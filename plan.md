@@ -9,7 +9,7 @@ Latest implementation reconciliation: `b4eba86`. The [two-stage Jev review](docs
 - **Draw/cleanup: partially addressed.** `b4eba86` routes turn draws through the shared replacement-aware handler and adds persisted Dredge choices/continuations. Cleanup still needs deliberate discard selection, ownership/events, discard-before-expiration ordering, simultaneous damage/effect cleanup, priority and repeated cleanup. Multiple interacting replacements remain open.
 - **Knowledge/AI: partially addressed.** `babef27` implements canonical all-card/corpus ingestion and rulings verification. Typed production AI consumers, offline supported-corpus certification and decision-quality evidence remain open.
 - **Documentation: maintained, not reopened.** The finish-plan rewrite was already completed. Keep new evidence and limitations linked without presenting documentation as gameplay acceptance.
-- **Other local blockers remain open:** fallback packaging, live face hydration, effective public stats, both human seats/all legal actions, strict request validation, BO3 transitions and frontend contract/test gates.
+- **Local-beta repairs underway:** tracked offline fallback, shared live face hydration and effective public views are implemented with regressions. Broader UI acceptance remains separate. Both human seats/all legal actions, strict request validation, BO3 transitions and frontend contract/test gates remain open.
 - **Recovery and network gates remain open:** refresh/restart resume, serialized/idempotent mutations, same-origin production routing, access/origin controls and bounded jobs. Refresh advisories before choosing dependency upgrades; the historical scan is not a current exploitability assessment.
 - **Simulator strength remains unverified.** The latest two-game BO3 smoke shows repeatability only; it does not measure broad balance or seasoned-player quality.
 
@@ -21,7 +21,7 @@ Latest checks at `b4eba86`: 753 backend tests pass in an isolated copy **with lo
 
 First finish a reliable local desktop application for an explicitly supported card corpus. Arbitrary-card rules completeness and seasoned-player AI across every deck require additional acceptance criteria and remain longer-term goals.
 
-The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: live hydration loses card faces, the UI omits the second human seat and legal actions, effective combat stats are not displayed, and cleanup bypasses supported discard events/choices. Turn draws now use the replacement-aware effect path; broader integration acceptance remains open.
+The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: the UI omits the second human seat and legal actions, and cleanup bypasses supported discard events/choices. Live hydration now shares the face-aware helper, public card views carry effective stats/faces, and hover shows base stats, damage, keywords and counters. Turn draws use the replacement-aware effect path. Browser integration and broader acceptance remain open.
 
 This plan supersedes the July status paragraphs and patch history previously stored here. Historical changes remain in `CHANGELOG.md`. The September audit is stored in [docs/audits/2026-09-27-app-audit.md](docs/audits/2026-09-27-app-audit.md). Its detailed evidence and reproduction artifacts are local at `/home/nick/.hermes/cache/scratch/mtg-audit-6b95fab/`; those artifacts are not portable repository fixtures.
 
@@ -57,25 +57,31 @@ Complete these steps in order. Steps 1-5 close the highest-impact reproduced fai
 
 ### 1. Make clean checkout assets reproducible (P1)
 
-- [ ] Ship or deterministically generate the generic token fallback outside the disposable image cache.
-- [ ] Serve offline card/token placeholders through the intended media contract.
-- [ ] Test tracked source with empty database/cache and declared dependencies; do not copy ignored developer assets.
+- [x] Ship or deterministically generate the generic token fallback outside the disposable image cache.
+- [x] Serve offline card/token placeholders through the intended media contract.
+- [x] Test release-candidate source with empty database/cache and declared dependencies; do not copy ignored developer assets.
+
+Evidence: 758 backend tests pass after installing `requirements.txt` into a new venv and copying source without databases/image cache (159.21 seconds, 173 deprecation warnings). Generic-art HTTP and empty-cache/offline resolver tests pass using the tracked asset. Frontend production build passes. The final Git-archive/CI gate remains to be established under step 9; this test did not borrow ignored image files or the developer database.
 
 Acceptance: full backend suite passes in a clean checkout; generic token media returns 200 without a pre-existing cache.
 
 ### 2. Unify live and diagnostic hydration (P1)
 
-- [ ] Use one hydration contract for live start, sideboarding, analytics and replay; transfer cached face data.
-- [ ] Expose necessary face metadata in public card views and preserve it through snapshots/restart.
-- [ ] Add HTTP regressions using a real modal/transform card and names/quantities-only decks.
+- [x] Use one hydration contract for live start, sideboarding, analytics and replay; transfer cached face data.
+- [x] Expose necessary face metadata in public card views and preserve it through snapshots/restart.
+- [x] Add HTTP regressions using a real modal/transform card and names/quantities-only decks.
+
+Evidence: `test_release_card_contracts.py` checks HTTP names/quantities start, transformed views, snapshot resume and live/diagnostic parity. The HTTP fixture mocks persistence; it does not prove process-restart or browser face-choice workflows. Those remain Gate 1 acceptance requirements.
 
 Acceptance: both faces survive HTTP start and restart; legal face selection and transformation work through UI controls with correct types and stats.
 
 ### 3. Expose truthful effective card views (P1)
 
-- [ ] Serialize printed/base and effective power/toughness separately, with counters, damage and effective keywords.
-- [ ] Display effective battlefield/hover stats consistently with combat resolution.
-- [ ] Cover counters, anthems, temporary pumps, characteristic-defined stats and cleanup expiration.
+- [x] Serialize printed/base and effective power/toughness separately, with counters, damage and effective keywords.
+- [x] Display effective battlefield/hover stats consistently with combat resolution.
+- [x] Cover counters, anthems, temporary pumps, characteristic-defined stats and cleanup expiration.
+
+Evidence: view regressions cover counters, anthems, temporary-bonus/damage clearing, characteristic-defined and unknown stats, including snapshot reload. The frontend compiles with shared card types and the updated hover renderer. Browser visual verification and full cleanup timing remain open; helper expiration coverage is not a cleanup-order certificate.
 
 Acceptance: UI and engine agree before and after reload for each fixture.
 

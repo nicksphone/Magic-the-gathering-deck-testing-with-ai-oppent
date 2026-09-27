@@ -26,6 +26,12 @@ export type CardView = {
   summoning_sick: boolean;
   power: number | null;
   toughness: number | null;
+  base_power?: number | null;
+  base_toughness?: number | null;
+  keywords?: string[];
+  counters?: Record<string, number>;
+  damage_marked?: number;
+  selected_face_index?: number | null;
   loyalty?: number | null;
   types: string[];
 };
@@ -37,7 +43,7 @@ export type PlayerView = {
   library_count: number;
   hand_count: number;
   battlefield: CardView[];
-  hand: { id: string; name: string; mana_cost?: string; oracle_text?: string; image_uri?: string; types: string[]; card_faces?: CardView["card_faces"] }[];
+  hand: CardView[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;
@@ -61,7 +67,7 @@ export type MatchState = {
   stack: { id: string; label: string; controller: number; effect_key: string }[];
   attackers?: string[];
   attack_targets?: Record<string, string>;
-  blocks?: Record<string, string>;
+  blocks?: Record<string, string[]>;
   game_number?: number;
   best_of?: number;
   games_needed?: number;

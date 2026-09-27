@@ -18,11 +18,9 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         fallback = fallback_card_payload(name) or {}
         if row is not None:
             fields = {
-                "oracle_text": getattr(row, "oracle_text", None) or fallback.get("oracle_text"),
-                "mana_cost": getattr(row, "mana_cost", None) or fallback.get("mana_cost"),
-                "type_line": getattr(row, "type_line", None) or fallback.get("type_line"),
-                "power": getattr(row, "power", None) or fallback.get("power"),
-                "toughness": getattr(row, "toughness", None) or fallback.get("toughness"),
+                key: (getattr(row, key, None) if getattr(row, key, None) is not None else fallback.get(key))
+                if key in {"power", "toughness"} else getattr(row, key, None) or fallback.get(key)
+                for key in ("oracle_text", "mana_cost", "type_line", "power", "toughness")
             }
             for key, value in fields.items():
                 if value is not None:
@@ -36,10 +34,12 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
                     faces = json.loads(faces_json)
                 except (TypeError, ValueError):
                     faces = []
-                if isinstance(faces, list) and faces:
+                if isinstance(faces, list) and faces and all(isinstance(face, dict) for face in faces):
                     out["card_faces"] = faces
             out["image_uri"] = select_display_image_uri(row, name=name, type_line=str(out.get("type_line") or ""))
         elif fallback:
             out.update({key: value for key, value in fallback.items() if value is not None})
+        if not out.get("image_uri"):
+            out["image_uri"] = select_display_image_uri(out, name=name, type_line=str(out.get("type_line") or ""))
         hydrated.append(out)
     return hydrated

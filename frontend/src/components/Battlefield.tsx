@@ -17,6 +17,11 @@ type HoverPreview = {
   power?: number | null;
   toughness?: number | null;
   loyalty?: number | null;
+  basePower?: number | null;
+  baseToughness?: number | null;
+  damage?: number;
+  keywords?: string[];
+  counters?: Record<string, number>;
 };
 
 type LandPile = {
@@ -115,6 +120,11 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
       power: "power" in card ? card.power : null,
       toughness: "toughness" in card ? card.toughness : null,
       loyalty: "loyalty" in card ? card.loyalty : null,
+      basePower: card.base_power,
+      baseToughness: card.base_toughness,
+      damage: card.damage_marked,
+      keywords: card.keywords,
+      counters: card.counters,
     };
   }
 
@@ -700,6 +710,10 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
               </p>
             ) : null}
             {hoverPreview.loyalty !== null && hoverPreview.loyalty !== undefined ? <p>LOY: {hoverPreview.loyalty}</p> : null}
+            {hoverPreview.basePower !== null && hoverPreview.basePower !== undefined && (hoverPreview.power !== hoverPreview.basePower || hoverPreview.toughness !== hoverPreview.baseToughness) ? <p>Base: {hoverPreview.basePower}/{hoverPreview.baseToughness}</p> : null}
+            {hoverPreview.damage ? <p>Damage marked: {hoverPreview.damage}</p> : null}
+            {hoverPreview.keywords?.length ? <p>{hoverPreview.keywords.join(", ")}</p> : null}
+            {hoverPreview.counters ? Object.entries(hoverPreview.counters).filter(([name, count]) => !name.startsWith("__") && count > 0).map(([name, count]) => <p key={name}>{name}: {count}</p>) : null}
             {hoverPreview.oracleText ? <small>{hoverPreview.oracleText}</small> : null}
           </div>
         </aside>

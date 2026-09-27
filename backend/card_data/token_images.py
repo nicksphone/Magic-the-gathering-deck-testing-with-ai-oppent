@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import httpx
 
 from card_data.http_utils import get_with_backoff
-from card_data.placeholders import ensure_placeholder_image
+from card_data.placeholders import ensure_generic_token_image
 from card_data.sync import CACHE_DIR, CACHE_ROUTE_PREFIX
 
 SCRYFALL_SEARCH_URL = "https://api.scryfall.com/cards/search"
@@ -26,11 +26,7 @@ def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
         _TOKEN_IMAGE_CACHE[key] = image
         return image
 
-    generic = CACHE_DIR / "generic-token-creature.svg"
-    if generic.exists():
-        fallback = f"{CACHE_ROUTE_PREFIX}/{generic.name}"
-    else:
-        fallback = ensure_placeholder_image(name=name, type_line="Token Creature", token=True)
+    fallback = ensure_generic_token_image()
     _TOKEN_IMAGE_CACHE[key] = fallback
     return fallback
 

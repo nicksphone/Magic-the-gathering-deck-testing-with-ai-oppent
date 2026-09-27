@@ -11,6 +11,32 @@ def _tupleize(value):
     return value
 
 
+def serialize_card_view(state: MatchState, cid: str) -> dict:
+    from rules_engine.continuous import effective_combat_stats, effective_keywords
+    card = state.cards[cid]
+    creature = "Creature" in card.types and card.zone == Zone.BATTLEFIELD
+    def numeric(value):
+        try:
+            return int(value) if value is not None else None
+        except (TypeError, ValueError):
+            return None
+    base_power, base_toughness = numeric(card.power), numeric(card.toughness)
+    power, toughness = effective_combat_stats(state, cid) if creature else (base_power, base_toughness)
+    return {
+        "id": cid, "name": card.name, "tapped": card.tapped,
+        "summoning_sick": card.summoning_sick,
+        "power": power, "toughness": toughness,
+        "base_power": base_power, "base_toughness": base_toughness,
+        "keywords": effective_keywords(state, cid), "base_keywords": list(card.keywords),
+        "counters": dict(card.counters), "damage_marked": int(card.counters.get("__damage_marked", 0)),
+        "loyalty": card.loyalty, "mana_cost": card.mana_cost,
+        "oracle_text": card.oracle_text, "image_uri": card.image_uri,
+        "types": list(card.types), "type_line": card.type_line,
+        "chosen_creature_type": card.chosen_creature_type,
+        "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
+    }
+
+
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
     return {
@@ -254,32 +280,11 @@ def serialize_match(state: MatchState) -> dict:
                 "library_count": len(p.library),
                 "hand_count": len(p.hand),
                 "battlefield": [
-                    {
-                        "id": cid,
-                        "name": state.cards[cid].name,
-                        "tapped": state.cards[cid].tapped,
-                        "summoning_sick": state.cards[cid].summoning_sick,
-                        "power": state.cards[cid].power,
-                        "toughness": state.cards[cid].toughness,
-                        "loyalty": state.cards[cid].loyalty,
-                        "mana_cost": state.cards[cid].mana_cost,
-                        "oracle_text": state.cards[cid].oracle_text,
-                        "image_uri": state.cards[cid].image_uri,
-                        "types": state.cards[cid].types,
-                        "chosen_creature_type": state.cards[cid].chosen_creature_type,
-                    }
+                    serialize_card_view(state, cid)
                     for cid in p.battlefield
                 ],
                 "hand": [
-                    {
-                        "id": cid,
-                        "name": state.cards[cid].name,
-                        "mana_cost": state.cards[cid].mana_cost,
-                        "oracle_text": state.cards[cid].oracle_text,
-                        "image_uri": state.cards[cid].image_uri,
-                        "types": state.cards[cid].types,
-                        "chosen_creature_type": state.cards[cid].chosen_creature_type,
-                    }
+                    serialize_card_view(state, cid)
                     for cid in p.hand
                 ],
                 "graveyard_count": len(p.graveyard),

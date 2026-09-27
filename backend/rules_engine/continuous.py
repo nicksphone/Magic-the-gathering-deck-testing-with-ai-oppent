@@ -135,6 +135,13 @@ def effective_toughness(state, card_id: str) -> int:
     return base + t_bonus + counter_bonus + temp_bonus
 
 
+def effective_combat_stats(state, card_id: str) -> tuple[int | None, int | None]:
+    """Public stats preserve unknown characteristics rather than inventing zero."""
+    base_power, base_toughness = _base_pt_with_layers(state, card_id)
+    return (effective_power(state, card_id) if base_power is not None else None,
+            effective_toughness(state, card_id) if base_toughness is not None else None)
+
+
 def _counter_pt_delta(card) -> int:
     """Return PT bonus from +1/+1 and -1/-1 counters on a card."""
     bonus = 0

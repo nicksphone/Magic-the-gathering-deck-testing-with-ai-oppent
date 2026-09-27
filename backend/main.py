@@ -25,7 +25,7 @@ from analytics.replay_tools import classify_first_divergence, first_log_divergen
 from analytics.service import AnalyticsService
 from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
-from card_data.placeholders import ensure_placeholder_image
+from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
@@ -61,6 +61,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+ensure_generic_token_image()
 app.mount("/card-images", StaticFiles(directory=str(CACHE_DIR)), name="card-images")
 
 
@@ -1172,38 +1173,8 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
                     # Match start should still proceed if external sync is unavailable.
                     continue
             cached = repo.get_cached_cards_by_names(names)
-    hydrated: list[dict] = []
-    for item in deck:
-        row = cached.get(item["card_name"].lower())
-        out = dict(item)
-        fallback = fallback_card_payload(item["card_name"])
-        if row:
-            out["oracle_text"] = row.oracle_text or (fallback or {}).get("oracle_text")
-            out["mana_cost"] = row.mana_cost or (fallback or {}).get("mana_cost")
-            out["type_line"] = row.type_line or (fallback or {}).get("type_line")
-            out["power"] = row.power or (fallback or {}).get("power")
-            out["toughness"] = row.toughness or (fallback or {}).get("toughness")
-            out["image_uri"] = select_display_image_uri(
-                row,
-                name=str(out.get("card_name") or item.get("card_name") or "Card"),
-                type_line=str(out.get("type_line") or ""),
-                token=False,
-            )
-            loyalty = getattr(row, "loyalty", None)
-            if loyalty is not None:
-                out["loyalty"] = loyalty
-            elif fallback and fallback.get("loyalty") is not None:
-                out["loyalty"] = fallback["loyalty"]
-        elif fallback:
-            out.update({k: v for k, v in fallback.items() if v is not None})
-        if not out.get("image_uri"):
-            out["image_uri"] = ensure_placeholder_image(
-                name=str(out.get("card_name") or item.get("card_name") or "Card"),
-                type_line=str(out.get("type_line") or ""),
-                token=False,
-            )
-        hydrated.append(out)
-    return hydrated
+    from card_data.hydration import hydrate_deck_cards
+    return hydrate_deck_cards(repo, deck)
 
 
 def _default_player_for_state(match: MatchController) -> int:

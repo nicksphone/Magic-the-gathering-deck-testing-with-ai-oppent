@@ -8,6 +8,17 @@ CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
 CACHE_ROUTE_PREFIX = "/card-images"
 
 
+def ensure_generic_token_image() -> str:
+    """Install the shipped offline fallback into the disposable media cache."""
+    import shutil
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    filename = "generic-token-creature.svg"
+    destination = CACHE_DIR / filename
+    if not destination.exists():
+        shutil.copyfile(Path(__file__).resolve().parent / "assets" / filename, destination)
+    return f"{CACHE_ROUTE_PREFIX}/{filename}"
+
+
 def ensure_placeholder_image(name: str, type_line: str = "", token: bool = False) -> str:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     family = _family(type_line=type_line, token=token)

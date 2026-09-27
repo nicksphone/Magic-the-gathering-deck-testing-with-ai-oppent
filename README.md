@@ -177,6 +177,8 @@ Common tempo bounce is also handled through the rules engine: nonland-permanent 
 
 ### Expanded keyword engine
 
+Live starts, sideboarding and diagnostics share face-aware cached-card hydration. Public views retain both faces and the selected face, expose effective battlefield stats separately from base stats, and include counters, damage and effective keywords. Hover previews display this information. The generic token fallback ships as a tracked asset and is installed into an empty image cache automatically; artwork retrieval still prefers real token images.
+
 Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.
 
 These are engine/API foundations, not all-card certification. Human UI controls for the new choices/actions, interacting replacement choices, Prototype copy/layer edge cases, and split first-strike priority windows still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
