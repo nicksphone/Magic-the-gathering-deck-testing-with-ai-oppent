@@ -35,6 +35,7 @@ class ScryfallSyncService:
             "oracle_text": raw.get("oracle_text") or (face.get("oracle_text") if face else "") or "",
             "mana_cost": raw.get("mana_cost") or (face.get("mana_cost") if face else "") or "",
             "type_line": type_line,
+            "layout": raw.get("layout", ""),
             "colors": ",".join(raw.get("colors", [])),
             "power": raw.get("power") or (face.get("power") if face else None),
             "toughness": raw.get("toughness") or (face.get("toughness") if face else None),
@@ -55,6 +56,8 @@ class ScryfallSyncService:
                     "oracle_text": face.get("oracle_text"),
                     "power": face.get("power"),
                     "toughness": face.get("toughness"),
+                    "loyalty": face.get("loyalty"),
+                    "colors": face.get("colors", []),
                     "image_uri": self._extract_face_image_uri(face),
                 }
             )
@@ -157,6 +160,7 @@ class ScryfallSyncService:
             "image_uri": self._card_attr(card, "image_uri"),
             "legalities": json.loads(self._card_attr(card, "legalities_json", "{}") or "{}"),
             "card_faces": json.loads(self._card_attr(card, "card_faces_json", "[]") or "[]"),
+            "layout": self._card_attr(card, "layout", ""),
             "rulings": json.loads(self._card_attr(card, "rulings_json", "[]") or "[]"),
         }
 

@@ -13,6 +13,7 @@ class CardCache(SQLModel, table=True):
     oracle_text: str = ""
     mana_cost: str = ""
     type_line: str = ""
+    layout: str = ""
     colors: str = ""
     power: Optional[str] = None
     toughness: Optional[str] = None

@@ -323,7 +323,7 @@ The application currently supports:
 - Responsive desktop UI with readable stack, priority, mana, and hover inspection
 
 Current focus:
-- exposing targeted trigger choices in their correct window and completing selected-face stack/zone semantics
+- exposing targeted trigger choices in their correct window and completing land-face/Adventure play semantics
 - full-game browser acceptance, new-match creation recovery and successful-response runtime validation
 - seeded interactive BO3 and full browser/response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
@@ -335,7 +335,8 @@ Current focus:
 
 ## Known Limitations and Next Upgrades
 
-- Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Five canonical-card regressions verify delayed ETB draw/destruction, no activation on entry and no premature Aura draw. This is not complete triggered-ability compilation: human targeted-trigger choices, multiple ability clauses and mixed-type selected-face stack/zone behavior remain local-beta blockers.
+- Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Five canonical-card regressions verify delayed ETB draw/destruction, no activation on entry and no premature Aura draw. Human targeted-trigger choices and multiple ability clauses remain local-beta blockers.
+- Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Land-face actions, Adventure exile permissions, split-card restrictions and full face-specific restart/browser acceptance remain open. Older cache rows need force-sync to acquire canonical layout.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage; match creation is not yet idempotent and extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
 - Human action browser fixtures cover six paths, not a complete game or BO3. Crew currently resolves immediately rather than using its proper stack window; variable activated mana costs are explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.

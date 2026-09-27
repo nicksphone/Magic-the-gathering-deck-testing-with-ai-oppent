@@ -1,0 +1,116 @@
+{
+  "Valki, God of Lies // Tibalt, Cosmic Impostor": {
+    "id": "ea7e4c65-b4c4-4795-9475-3cba71c50ea5",
+    "name": "Valki, God of Lies // Tibalt, Cosmic Impostor",
+    "oracle_id": "907ae517-22d5-4ac7-bc3a-3f4d5eaeeb57",
+    "layout": "modal_dfc",
+    "type_line": "Legendary Creature \u2014 God // Legendary Planeswalker \u2014 Tibalt",
+    "oracle_text": null,
+    "mana_cost": null,
+    "power": null,
+    "toughness": null,
+    "card_faces": [
+      {
+        "name": "Valki, God of Lies",
+        "mana_cost": "{1}{B}",
+        "type_line": "Legendary Creature \u2014 God",
+        "oracle_text": "When Valki enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way until Valki leaves the battlefield.\n{X}: Choose a creature card exiled with Valki with mana value X. Valki becomes a copy of that card.",
+        "power": "2",
+        "toughness": "1",
+        "loyalty": null,
+        "colors": [
+          "B"
+        ]
+      },
+      {
+        "name": "Tibalt, Cosmic Impostor",
+        "mana_cost": "{5}{B}{R}",
+        "type_line": "Legendary Planeswalker \u2014 Tibalt",
+        "oracle_text": "As Tibalt enters, you get an emblem with \"You may play cards exiled with Tibalt, Cosmic Impostor, and you may spend mana as though it were mana of any color to cast those spells.\"\n+2: Exile the top card of each player's library.\n\u22123: Exile target artifact or creature.\n\u22128: Exile all graveyards. Add {R}{R}{R}.",
+        "power": null,
+        "toughness": null,
+        "loyalty": "5",
+        "colors": [
+          "B",
+          "R"
+        ]
+      }
+    ]
+  },
+  "Wandering Archaic // Explore the Vastlands": {
+    "id": "18a2bdc8-b705-4eb5-b3a5-ff2e2ab8f312",
+    "name": "Wandering Archaic // Explore the Vastlands",
+    "oracle_id": "6556c4c0-b10d-4208-821b-0c0a49abd188",
+    "layout": "modal_dfc",
+    "type_line": "Creature \u2014 Avatar // Sorcery",
+    "oracle_text": null,
+    "mana_cost": null,
+    "power": null,
+    "toughness": null,
+    "card_faces": [
+      {
+        "name": "Wandering Archaic",
+        "mana_cost": "{5}",
+        "type_line": "Creature \u2014 Avatar",
+        "oracle_text": "Whenever an opponent casts an instant or sorcery spell, they may pay {2}. If they don't, you may copy that spell. You may choose new targets for the copy.",
+        "power": "4",
+        "toughness": "4",
+        "loyalty": null,
+        "colors": []
+      },
+      {
+        "name": "Explore the Vastlands",
+        "mana_cost": "{3}",
+        "type_line": "Sorcery",
+        "oracle_text": "Each player looks at the top five cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order. Each player gains 3 life.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": []
+      }
+    ]
+  },
+  "Delver of Secrets // Insectile Aberration": {
+    "id": "6904ea20-e504-47da-95a0-08739fdde260",
+    "name": "Delver of Secrets // Insectile Aberration",
+    "oracle_id": "edd531b9-f615-4399-8c8c-1c5e18c4acbf",
+    "layout": "transform",
+    "type_line": "Creature \u2014 Human Wizard // Creature \u2014 Human Insect",
+    "oracle_text": null,
+    "mana_cost": null,
+    "power": null,
+    "toughness": null,
+    "card_faces": [
+      {
+        "name": "Delver of Secrets",
+        "mana_cost": "{U}",
+        "type_line": "Creature \u2014 Human Wizard",
+        "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
+        "power": "1",
+        "toughness": "1",
+        "loyalty": null,
+        "colors": [
+          "U"
+        ]
+      },
+      {
+        "name": "Insectile Aberration",
+        "mana_cost": "",
+        "type_line": "Creature \u2014 Human Insect",
+        "oracle_text": "Flying",
+        "power": "3",
+        "toughness": "2",
+        "loyalty": null,
+        "colors": [
+          "U"
+        ]
+      }
+    ]
+  },
+  "__provenance": {
+    "source": "Scryfall oracle bulk",
+    "url": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+    "retrieved_at": "2026-09-27",
+    "usage": "Read-only canonical test fixtures, not imported into gameplay cache"
+  }
+}

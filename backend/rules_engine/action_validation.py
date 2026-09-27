@@ -132,13 +132,16 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     elif kind == "cast_spell":
         from rules_engine.costs import collect_cost_options
         from rules_engine.engine import _select_face_for_cast
-        options = collect_cost_options(state, player_id, state.cards[action["card_id"]])
-        choice = (action.get("cost_choice") or {}).get("id")
-        require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
         face = action.get("selected_face_index", action.get("targets", {}).get("selected_face_index"))
         if face is not None:
             require(0 <= face < len(state.cards[action["card_id"]].card_faces), "Selected card face is unavailable")
+            require(not face or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
         face_card = _select_face_for_cast(state.cards[action["card_id"]], face)
+        if state.cards[action["card_id"]].layout == "modal_dfc":
+            require(any(item.get("selected_face_index", 0) == (face or 0) for item in available), "Selected face is not currently castable")
+        options = collect_cost_options(state, player_id, face_card)
+        choice = (action.get("cost_choice") or {}).get("id")
+        require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
         if targets.get("x_value") is not None:
             require("{X}" in face_card.mana_cost.upper(), "This casting cost does not have a chosen X")
 

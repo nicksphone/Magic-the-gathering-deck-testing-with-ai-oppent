@@ -53,6 +53,25 @@ try {
   assert.equal(await evaluate("window.fixtureActions[0].player_id"), 2);
   assert.equal(await evaluate("window.fixtureActions[0].action.bottom_card_ids.length"), 1);
   console.log("PASS seat-2 human mulligan bottom selection is required and applied");
+
+  await click("Modal Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Explore the Vastlands'))");
+  assert.equal(await evaluate("[...document.querySelector('.cast-card-box select').options].some(o => o.value === '0' && o.disabled)"), true);
+  await click("Cast Explore the Vastlands");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions[0].action.selected_face_index"), 1);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.stack.length === 0");
+  console.log("PASS affordable modal sorcery face reaches stack and resolves to graveyard");
+
+  await click("Modal Choice Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Wandering Archaic'))");
+  await evaluate("(() => { const select = document.querySelector('.cast-card-box select'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("document.querySelector('.cast-card-box button').textContent.includes('Cast Explore the Vastlands ({3})')");
+  await click("Cast Explore the Vastlands");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.C"), 2);
+  console.log("PASS human modal choice switches the action and pays only the selected face cost");
 } finally {
   await close();
 }

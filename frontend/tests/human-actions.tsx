@@ -20,9 +20,9 @@ function Harness() {
     setMatch(next); setMoves(legal.moves); setActor(legal.player_id);
     window.fixtureState = next; setReady(true);
   }
-  async function reset(pregame = false) {
+  async function reset(pregame = false, modal = false, modalMana = 3) {
     setReady(false); setError(""); window.fixtureActions = [];
-    const response = await fetch(BASE + "/fixture?pregame=" + pregame, { method: "POST" });
+    const response = await fetch(BASE + "/fixture?pregame=" + pregame + "&modal=" + modal + "&modal_mana=" + modalMana, { method: "POST" });
     if (!response.ok) throw new Error(`Fixture HTTP ${response.status}`);
     await load(await response.json());
   }
@@ -41,6 +41,8 @@ function Harness() {
     <p data-testid="ready">{ready ? "Ready" : "Loading"}</p>
     <button onClick={() => reset().catch((failure) => setError(String(failure)))}>Reset Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
+    <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
+    <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
     {match?.pregame_pending ? <Controls

@@ -13,7 +13,18 @@ from sqlmodel import Session
 init_db()
 
 @app.post("/fixture")
-def fixture(pregame: bool = False):
+def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3):
+    if modal:
+        import json
+        raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())["Wandering Archaic // Explore the Vastlands"]
+        deck = [{"quantity": 60, "card_name": raw["name"], **raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}]
+        state = MatchFactory.from_decks(deck, deck, seed=9)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool["C"] = modal_mana
+        return publish(state, deck)
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=15)
     if pregame:

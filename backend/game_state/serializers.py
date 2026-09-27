@@ -34,6 +34,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "types": list(card.types), "type_line": card.type_line,
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
+        "layout": card.layout,
     }
 
 
@@ -134,6 +135,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "effect_timestamp": card.effect_timestamp,
                 "instance_order": card.instance_order,
                 "card_faces": list(card.card_faces),
+                "layout": card.layout,
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
@@ -186,6 +188,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),
             instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
             selected_face_index=raw.get("selected_face_index"),
+            layout=str(raw.get("layout") or ""),
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
         )

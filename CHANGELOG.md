@@ -4,6 +4,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Preserved canonical card layout and face loyalty/colors through cache sync, hydration and snapshots, with an additive legacy-cache migration. Selected modal spell faces now drive timing, costs, types/stats, stack identity and printed-characteristic restoration instead of using the front face's types or cost. Known transform-only backs are rejected as direct casts.
+- Modal spell legal moves expose independently affordable faces; the human renderer selects available faces, resets stale costs/targets and pays the selected cost. AI materialization and cast bias use the offered face. Land-face actions, Adventure exile permissions, split restrictions and old-cache layout backfill remain unfinished.
+- Validation: 836 backend tests pass in a new isolated source/database/cache copy (102.42 seconds, 798 deprecation warnings); production build, frontend unit checks and eight component/production-HTTP browser paths pass. A seeded two-game Aggro/Dimir BO3 replay has no timeout/drift. Canonical face fixtures test boundary contracts, not complete Oracle semantics or expert strategy.
+
 - Separated conventional permanent spell compilation from later activated/triggered Oracle effects. Aura attachment and supported entry choices survive; entry events carry X and recognize modern "enters" wording. Canonical fixtures verify no activated damage on entry, delayed ETB draw/destruction, no self-trigger for "another" and no premature Aura draw.
 - Validation: all five new cases fail before the fix and pass after; 827 isolated backend tests pass. Seeded Aggro/Dimir BO3 completes two games in 36 total turns without timeout/drift. Human trigger targets/optional choices, multiple ability clauses and mixed-type selected-face stack/zone handling remain open; no broader rules or AI certification is claimed.
 

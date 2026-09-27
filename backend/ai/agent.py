@@ -1222,7 +1222,12 @@ class AIAgent:
         if not card:
             return 0.0
         role = self._board_role(state, player_id)
-        if self._modal_face_options(card):
+        if getattr(card, "layout", "") == "modal_dfc":
+            from rules_engine.card_faces import select_cast_face
+            index = int(move.get("selected_face_index", 0))
+            face_score = self._score_modal_face(state, card, card.card_faces[index], player_id)
+            card = select_cast_face(card, index)
+        elif self._modal_face_options(card):
             _, face_score = self._select_modal_face_index(state, card, player_id)
         else:
             face_score = 0.0
@@ -1676,7 +1681,8 @@ class AIAgent:
         return tags
 
     def _modal_face_options(self, card) -> list[dict]:
-        return list(getattr(card, "card_faces", []) or [])
+        faces = list(getattr(card, "card_faces", []) or [])
+        return faces[:1] if getattr(card, "layout", "") in {"transform", "meld", "flip", "double_faced_token"} else faces
 
     def _modal_face_proxy(self, card, face: dict) -> object:
         proxy = type("ModalFaceProxy", (), {})()
@@ -1975,8 +1981,17 @@ class AIAgent:
         if card:
             tags = self._spell_tags(card)
             if mtype == "cast_spell" and self._modal_face_options(card):
-                selected_face_index, _ = self._select_modal_face_index(state, card, player_id)
+                if getattr(card, "layout", "") == "modal_dfc":
+                    selected_face_index = int(move.get("selected_face_index", 0))
+                else:
+                    selected_face_index, _ = self._select_modal_face_index(state, card, player_id)
                 out["selected_face_index"] = selected_face_index
+                if getattr(card, "layout", "") == "modal_dfc":
+                    from rules_engine.card_faces import select_cast_face
+                    from rules_engine.cast_choice import build_cast_hints
+                    card = select_cast_face(card, selected_face_index)
+                    tags = self._spell_tags(card)
+                    hints = build_cast_hints(state, card, player_id, targets)
         opponent = 1 if player_id == 2 else 2
 
         # Choose the mode before deriving target candidates. Modal spells can

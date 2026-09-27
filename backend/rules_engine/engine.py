@@ -567,18 +567,25 @@ class RulesEngine:
             )
             if allowed_source:
                 card = state.cards[cid]
-                timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
+                at_targets = action.get("targets", {})
+                selected_face_index = action.get("selected_face_index", at_targets.get("selected_face_index"))
+                if selected_face_index and card.layout in {"transform", "meld", "flip", "double_faced_token"}:
+                    reject("This back face cannot be cast directly")
+                    state.log.append(f"{card.name}'s back face cannot be cast directly.")
+                    return
+                face_card = _select_face_for_cast(card, selected_face_index)
+                timing_ok, timing_reason = can_cast_in_current_timing(state, face_card, player_id)
                 if not timing_ok:
                     reject(timing_reason)
                     state.log.append(f"{player.name} cannot cast {card.name}: {timing_reason}")
                     apply_state_based_actions(state)
                     return
-                if _is_land_card(card):
+                if _is_land_card(face_card):
                     reject("Lands must be played, not cast")
                     state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
                     return
-                options = collect_cost_options(state, player_id, card)
+                options = collect_cost_options(state, player_id, face_card)
                 if not options:
                     reject("No supported casting cost")
                     return
@@ -592,18 +599,18 @@ class RulesEngine:
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
-                if not check_cost_option_available(state, player_id, card, chosen, x_value=x_value):
+                if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value):
                     explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
                     if not explicit_choice:
                         chosen = next(
                             (
                                 opt
                                 for opt in options
-                                if check_cost_option_available(state, player_id, card, opt, x_value=x_value)
+                                if check_cost_option_available(state, player_id, face_card, opt, x_value=x_value)
                             ),
                             chosen,
                         )
-                    if not check_cost_option_available(state, player_id, card, chosen, x_value=x_value):
+                    if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value):
                         reject("Cannot satisfy chosen casting costs")
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
@@ -647,8 +654,8 @@ class RulesEngine:
                 ward_tax = ward_tax_for_targets(state, player_id, target_ids)
                 adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
                 paid = auto_pay_cost(
-                    state, player_id, adjusted_cost, is_land=("Land" in card.types),
-                    card_name=card.name, x_value=x_value, spell_types=set(card.types),
+                    state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
+                    card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
                 )
                 if not paid:
                     reject("Cannot pay spell cost and ward tax")
@@ -675,6 +682,8 @@ class RulesEngine:
                 if chosen.id == "prototype":
                     from rules_engine.alternative_casts import apply_prototype
                     apply_prototype(card)
+                from rules_engine.card_faces import apply_cast_face
+                apply_cast_face(card, face_card)
                 if chosen.id == "escape":
                     payload["__escaped"] = True
                 (player.exile if from_exile else player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
@@ -1095,42 +1104,5 @@ def _extract_equip_cost_text(oracle_text: str) -> str:
 
 
 def _select_face_for_cast(card, selected_face_index) -> object:
-    faces = list(getattr(card, "card_faces", []) or [])
-    if not faces:
-        return card
-    try:
-        index = int(selected_face_index if selected_face_index is not None else getattr(card, "selected_face_index", 0) or 0)
-    except Exception:
-        index = 0
-    if index < 0 or index >= len(faces):
-        index = 0
-    face = faces[index] or {}
-    proxy = type("CardFaceProxy", (), {})()
-    for attr in [
-        "id",
-        "owner",
-        "controller",
-        "zone",
-        "tapped",
-        "summoning_sick",
-        "entered_turn",
-        "counters",
-        "keywords",
-        "attached_to",
-        "static_order",
-        "instance_order",
-        "selected_face_index",
-        "card_faces",
-    ]:
-        setattr(proxy, attr, getattr(card, attr, None))
-    proxy.name = str(face.get("name") or card.name)
-    proxy.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
-    proxy.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
-    proxy.type_line = str(face.get("type_line") or card.type_line or "")
-    proxy.power = face.get("power") if face.get("power") is not None else getattr(card, "power", None)
-    proxy.toughness = face.get("toughness") if face.get("toughness") is not None else getattr(card, "toughness", None)
-    proxy.loyalty = getattr(card, "loyalty", None)
-    proxy.types = list(getattr(card, "types", []) or [])
-    proxy.image_uri = face.get("image_uri") or getattr(card, "image_uri", None)
-    proxy.selected_face_index = index
-    return proxy
+    from rules_engine.card_faces import select_cast_face
+    return select_cast_face(card, selected_face_index)

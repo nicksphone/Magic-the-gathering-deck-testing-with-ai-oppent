@@ -126,6 +126,8 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
         if "Instant" in card.types or "Sorcery" in card.types:
             owner.graveyard.append(card.id)
             card.zone = Zone.GRAVEYARD
+            from rules_engine.alternative_casts import restore_printed_characteristics
+            restore_printed_characteristics(card)
         else:
             owner.battlefield.append(card.id)
             card.zone = Zone.BATTLEFIELD

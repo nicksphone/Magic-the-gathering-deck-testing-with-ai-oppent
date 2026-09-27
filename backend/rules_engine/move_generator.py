@@ -393,6 +393,29 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
+    # Modal spell faces have independent timing, costs and target surfaces.
+    # Land faces are play actions, not spells; they need separate handling.
+    from rules_engine.card_faces import select_cast_face
+    for cid in list(player.hand) + list(player.graveyard) + list(player.exile):
+        original = state.cards[cid]
+        if original.layout != "modal_dfc":
+            continue
+        if original.zone == Zone.EXILE and player.exile_play_until.get(cid, 0) < state.turn:
+            continue
+        for index in range(1, len(original.card_faces)):
+            face = select_cast_face(original, index)
+            if "Land" in face.types or not can_cast_in_current_timing(state, face, player_id)[0]:
+                continue
+            options = [option for option in collect_cost_options(state, player_id, face)
+                       if check_cost_option_available(state, player_id, face, option)]
+            hints = build_cast_hints(state, face, player_id)
+            if not options or (hints.get("action_has_target_text") and not _has_any_target_options(hints)):
+                continue
+            moves.append({"type": "cast_spell", "card_id": cid, "card_name": face.name,
+                          "selected_face_index": index, "mana_cost": face.mana_cost,
+                          "from_exile": original.zone == Zone.EXILE,
+                          "from_graveyard": original.zone == Zone.GRAVEYARD,
+                          "cost_options": [vars(option) for option in options], "target_hints": hints})
     return moves
 
 

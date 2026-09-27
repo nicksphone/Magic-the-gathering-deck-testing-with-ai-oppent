@@ -22,6 +22,7 @@ export type CardView = {
     type_line?: string;
     image_uri?: string;
   }[];
+  layout?: string;
   tapped: boolean;
   summoning_sick: boolean;
   power: number | null;
@@ -96,6 +97,7 @@ export type MatchState = {
 };
 
 export type LegalMove = {
+  selected_face_index?: number;
   kind?: "cleanup_discard" | "sacrifice" | "draw";
   player_id?: number;
   count?: number;

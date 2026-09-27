@@ -74,6 +74,7 @@ class CardInstance:
     effect_timestamp: int = 0
     instance_order: int = 0
     card_faces: list[dict] = field(default_factory=list)
+    layout: str = ""
     selected_face_index: int | None = None
     chosen_creature_type: str | None = None
     printed_characteristics: dict = field(default_factory=dict)
@@ -220,6 +221,7 @@ class MatchFactory:
                     type_line=type_line,
                     image_uri=raw_item.get("image_uri"),
                     card_faces=list(raw_item.get("card_faces") or []),
+                    layout=str(raw_item.get("layout") or ""),
                     selected_face_index=raw_item.get("selected_face_index"),
                     instance_order=copy_index,
                 )

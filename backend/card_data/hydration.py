@@ -17,6 +17,7 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         row = cached.get(name.lower())
         fallback = fallback_card_payload(name) or {}
         if row is not None:
+            out["layout"] = getattr(row, "layout", "") or fallback.get("layout", "")
             fields = {
                 key: (getattr(row, key, None) if getattr(row, key, None) is not None else fallback.get(key))
                 if key in {"power", "toughness"} else getattr(row, key, None) or fallback.get(key)
@@ -36,6 +37,10 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
                     faces = []
                 if isinstance(faces, list) and faces and all(isinstance(face, dict) for face in faces):
                     out["card_faces"] = faces
+                    if out["layout"] in {"modal_dfc", "transform", "adventure", "reversible_card"}:
+                        for key in ("oracle_text", "mana_cost", "type_line", "power", "toughness", "loyalty"):
+                            if key in faces[0]:
+                                out[key] = faces[0][key]
             out["image_uri"] = select_display_image_uri(row, name=name, type_line=str(out.get("type_line") or ""))
         elif fallback:
             out.update({key: value for key, value in fallback.items() if value is not None})

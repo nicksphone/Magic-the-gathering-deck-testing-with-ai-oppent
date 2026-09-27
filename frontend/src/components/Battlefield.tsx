@@ -137,7 +137,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
 
   function castAction(cardId: string, selectedFaceIndex?: number) {
     const t = targets[cardId] ?? {};
-    const move = castMoves.find((candidate) => candidate.card_id === cardId);
+    const move = castMoves.find((candidate) => candidate.card_id === cardId &&
+      (candidate.selected_face_index ?? 0) === (selectedFaceIndex ?? 0));
     onCardAction(viewerSeat, {
       type: "cast_spell",
       card_id: cardId,
@@ -425,13 +426,16 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         ) : null}
         <div className="hand-row">
           {playableCards.map((card) => {
-            const move = castMoves.find((m) => m.card_id === card.id);
+            const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
+            const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
+            const move = card.layout === "modal_dfc"
+              ? cardCastMoves.find((m) => (m.selected_face_index ?? 0) === selectedFaceIndex)
+              : cardCastMoves[0];
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const landMove = playLandMoves.find((m) => m.card_id === card.id);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             const faceNames = move?.target_hints?.face_names ?? [];
-            const selectedFaceIndex = faceChoices[card.id] ?? 0;
             if (!move) {
               return (
                 <div
@@ -478,7 +482,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 <button
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
-                  Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
+                  Cast {move.card_name ?? card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
                 {cycleMove ? (
                   <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
@@ -488,15 +492,18 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {faceNames.length > 1 ? (
                   <select
                     value={selectedFaceIndex}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setFaceChoices((prev) => ({
                         ...prev,
                         [card.id]: Number(e.target.value) || 0,
-                      }))
-                    }
+                      }));
+                      setTargets((prev) => ({ ...prev, [card.id]: {} }));
+                      setCostChoice((prev) => ({ ...prev, [card.id]: "" }));
+                    }}
                   >
                     {faceNames.map((faceName, idx) => (
-                      <option key={`${card.id}-face-${idx}`} value={idx}>
+                      <option key={`${card.id}-face-${idx}`} value={idx}
+                        disabled={["modal_dfc", "transform", "meld", "flip", "double_faced_token"].includes(card.layout ?? "") && !cardCastMoves.some((m) => (m.selected_face_index ?? 0) === idx)}>
                         Face {idx + 1}: {faceName}
                       </option>
                     ))}
