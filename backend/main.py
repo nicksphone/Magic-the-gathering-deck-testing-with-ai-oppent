@@ -6,6 +6,7 @@ import threading
 import time
 import uuid
 import inspect
+import secrets
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -85,6 +86,7 @@ class MatchController:
     current_game_recorded: bool
     match_complete: bool
     best_of: int
+    root_seed: int | None = None
     sideboarded_players: set[int] = field(default_factory=set)
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
     revision: int = 0
@@ -173,6 +175,11 @@ class StartMatchRequest(DeckPairInput):
             raise ValueError("Sideboards cannot exceed 15 cards")
         return value
 
+
+class NextGameRequest(BaseModel):
+    player_id: PlayerID | None = None
+    play_first: bool | None = None
+
 class SideboardRequest(InputModel):
     player_id: PlayerID
     cards_out: list[DeckEntry] = Field(max_length=15)
@@ -246,6 +253,7 @@ def _controller_snapshot(match: MatchController) -> dict:
         "current_game_recorded": match.current_game_recorded,
         "match_complete": match.match_complete,
         "best_of": match.best_of,
+        "root_seed": match.root_seed,
         "sideboarded_players": sorted(match.sideboarded_players),
         "difficulties": difficulties,
         "archetypes": archetypes,
@@ -291,6 +299,7 @@ def _restore_active_matches(repo: Repository) -> None:
                 current_game_recorded=bool(config.get("current_game_recorded", False)),
                 match_complete=bool(config.get("match_complete", False)),
                 best_of=int(config.get("best_of", state.best_of)),
+                root_seed=config.get("root_seed"),
                 sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
                 revision=int(config.get("revision", 0)),
                 mutation_receipts=dict(config.get("mutation_receipts", {})),
@@ -555,7 +564,8 @@ def tournament_event_summary(event_id: int, repo: Repository = Depends(get_repo)
 def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)) -> dict:
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
-    state = MatchFactory.from_decks(deck_a, deck_b, seed=payload.seed)
+    root_seed = payload.seed if payload.seed is not None else secrets.randbits(63)
+    state = MatchFactory.from_decks(deck_a, deck_b, seed=root_seed)
     state.best_of = payload.best_of
     state.replacement_choice_required = (
         payload.controller_a == "human" or payload.controller_b == "human"
@@ -582,6 +592,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         current_game_recorded=False,
         match_complete=False,
         best_of=payload.best_of,
+        root_seed=root_seed,
     )
     ACTIVE_MATCHES[state.id] = controller
     _persist_active_match(repo, controller)
@@ -802,7 +813,7 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
 
 @app.post("/matches/{match_id}/next-game")
 @coordinated_match
-def next_game(match_id: str, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
+def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -811,7 +822,16 @@ def next_game(match_id: str, repo: Repository = Depends(get_repo), request: Requ
     if match.state.winner is None:
         raise HTTPException(status_code=400, detail="Current game not finished.")
 
-    _start_next_game_state(match)
+    loser = 1 if match.state.winner == 2 else 2
+    if match.controllers.get(loser) == "human":
+        if payload is None or payload.player_id != loser or payload.play_first is None:
+            raise HTTPException(status_code=422, detail={"code": "play_draw_choice_required", "message": f"Player {loser} must choose play or draw"})
+        play_first = payload.play_first
+    else:
+        if payload is not None and payload.play_first is not None:
+            raise HTTPException(status_code=422, detail={"code": "invalid_play_draw_choice", "message": "AI loser chooses play or draw"})
+        play_first = True
+    _start_next_game_state(match, play_first=play_first)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
@@ -1240,6 +1260,10 @@ def _serialize_match_controller(match: MatchController) -> dict:
     payload["controllers"] = {str(pid): controller for pid, controller in match.controllers.items()}
     payload["game_number"] = match.game_number
     payload["best_of"] = match.best_of
+    # Revealing the RNG seed during play would expose hidden library order.
+    payload["root_seed"] = match.root_seed if match.match_complete else None
+    payload["game_seed"] = match.root_seed + match.game_number - 1 if match.match_complete and match.root_seed is not None else None
+    payload["next_play_draw_chooser"] = (1 if match.state.winner == 2 else 2) if match.state.winner is not None and not match.match_complete else None
     payload["match_complete"] = match.match_complete
     payload["games_needed"] = (match.best_of // 2) + 1
     payload["sideboard_sizes"] = {
@@ -1295,12 +1319,13 @@ def _is_full_ai_match(match: MatchController) -> bool:
     return match.controllers.get(1) == "ai" and match.controllers.get(2) == "ai"
 
 
-def _start_next_game_state(match: MatchController) -> None:
+def _start_next_game_state(match: MatchController, *, play_first: bool = True) -> None:
     prior_log_tail = list(match.state.log[-80:])
     prior_id = match.state.id
     p1_name = match.state.players[1].name
     p2_name = match.state.players[2].name
-    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name)
+    game_seed = match.root_seed + match.game_number if match.root_seed is not None else None
+    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=game_seed)
     new_state.id = prior_id
     new_state.score = dict(match.state.score)
     new_state.best_of = match.best_of
@@ -1312,7 +1337,8 @@ def _start_next_game_state(match: MatchController) -> None:
     }
     new_state.trigger_order_choice_required = new_state.replacement_choice_required
     new_state.trigger_order_choice_players = set(new_state.replacement_choice_players)
-    new_state.active_player = 1 if match.game_number % 2 == 1 else 2
+    loser = 1 if match.state.winner == 2 else 2
+    new_state.active_player = loser if play_first else match.state.winner
     new_state.priority_player = new_state.active_player
     transition = f"--- Starting game {match.game_number + 1} ---"
     new_state.log = prior_log_tail + [transition] + new_state.log

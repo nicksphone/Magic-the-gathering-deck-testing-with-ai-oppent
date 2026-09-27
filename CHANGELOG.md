@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Interactive BO3 now stores a root seed and derives repeatable per-game seeds without exposing live hidden-library order. The previous game's human loser chooses play or draw in the UI/API; AI losers choose play. Focused helper and HTTP tests cover chooser validation, game-two opener replay and persisted restore. Existing unseeded saved matches remain legacy; full-browser BO3 and AI sideboarding are open.
+- Validation: 875 backend tests pass in a fresh isolated source/database copy; frontend production build and unit checks pass. A seeded two-game Mono Red Aggro/Dimir Control BO3 diagnostic replay has no timeout, anomaly label or determinism drift. That diagnostic does not exercise the interactive play/draw choice or prove balance.
+
 - Supported divided-damage spells now recheck each recipient at resolution, ignore illegal recipients without reallocating announced damage and fail when all recipients are illegal. Protection checks include distribution recipients at cast time. Canonical Pyrotechnics regressions cover zone changes, protection, hexproof, player recipients and snapshot restoration. Other multi-target effect families remain open.
 - Validation: 871 backend tests pass in a fresh isolated source/database copy; frontend production build and unit checks pass. A seeded Mono Red Aggro/Dimir Control BO3 completes two games in 36 turns with no timeout, anomaly label or determinism drift. This does not measure balance or AI quality.
 

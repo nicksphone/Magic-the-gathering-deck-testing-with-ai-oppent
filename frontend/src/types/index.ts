@@ -71,6 +71,9 @@ export type MatchState = {
   attack_targets?: Record<string, string>;
   blocks?: Record<string, string[]>;
   game_number?: number;
+  root_seed?: number | null;
+  game_seed?: number | null;
+  next_play_draw_chooser?: number | null;
   best_of?: number;
   games_needed?: number;
   match_complete?: boolean;

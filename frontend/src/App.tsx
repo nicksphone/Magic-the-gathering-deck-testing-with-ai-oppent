@@ -232,8 +232,13 @@ export function App() {
     await mutateMatch((state, write) => api.sideboard(state.id, playerId, outCards, inCards, write));
   }
 
-  async function onNextGame() {
-    await mutateMatch((state, write) => api.nextGame(state.id, write));
+  async function onNextGame(playFirst?: boolean) {
+    await mutateMatch((state, write) => {
+      const chooser = state.next_play_draw_chooser;
+      const choice = chooser && state.controllers?.[String(chooser)] === "human" && playFirst !== undefined
+        ? { player_id: chooser, play_first: playFirst } : null;
+      return api.nextGame(state.id, choice, write);
+    });
   }
 
   async function onSetPriorityStops(playerId: number, stops: string[]) {

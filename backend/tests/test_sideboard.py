@@ -7,7 +7,7 @@ from sqlmodel import Session
 
 from game_state.state import MatchFactory
 from decks.sideboard import apply_sideboard_swaps
-from main import ACTIVE_MATCHES, MatchController, SideboardRequest, apply_sideboard, next_game
+from main import ACTIVE_MATCHES, MatchController, NextGameRequest, SideboardRequest, apply_sideboard, next_game
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -78,7 +78,7 @@ def test_sideboard_can_only_be_applied_once_per_game() -> None:
                 )
 
             match.state.winner = 1
-            next_game(state.id)
+            next_game(state.id, payload=NextGameRequest(player_id=2, play_first=True))
             assert match.sideboarded_players == set()
     finally:
         ACTIVE_MATCHES.pop(state.id, None)

@@ -25,7 +25,7 @@ type Props = {
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
   onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
-  onNextGame: () => void;
+  onNextGame: (playFirst?: boolean) => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
   onChooseReplacement: (sourceId: string) => void;
   onChooseTriggerOrder: (order: string[]) => void;
@@ -477,7 +477,10 @@ export function Controls(props: Props) {
             >
               Apply Sideboard Swaps
             </button>
-            <button onClick={props.onNextGame}>Start Next Game</button>
+            {props.match?.next_play_draw_chooser && props.match.controllers?.[String(props.match.next_play_draw_chooser)] === "human" ? <>
+              <button onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
+              <button onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
+            </> : <button onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
           </div>
           <textarea rows={3} value={sbOut} onChange={(e) => setSbOut(e.target.value)} placeholder="Cards out: e.g. 2 Shock" />
           <textarea rows={3} value={sbIn} onChange={(e) => setSbIn(e.target.value)} placeholder="Cards in: e.g. 2 Negate" />

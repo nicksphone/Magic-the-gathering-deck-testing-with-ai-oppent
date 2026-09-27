@@ -20,6 +20,7 @@ It is designed for serious deck work:
 - Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
 - Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
 - Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations
+- Interactive BO3 matches persist a root seed and derive per-game seeds without exposing them during play. The prior game's human loser chooses play or draw between games; AI losers choose play by default. The choice and subsequent game survive match restore.
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -326,7 +327,7 @@ The application currently supports:
 Current focus:
 - expanding targeted trigger choices beyond bounded ETB/self-cast clauses, non-damage multi-target rechecks and broader face mechanics
 - full-game browser acceptance, new-match creation recovery and successful-response runtime validation
-- seeded interactive BO3 and full browser/response-contract acceptance
+- sideboard-aware interactive BO3 browser coverage and full response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
 - improving replacement, prevention, and layer fidelity in edge cases
 - deepening tactical AI for complex board states and matchup-specific heuristics
@@ -339,6 +340,7 @@ Current focus:
 - Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Bounded single-target ETB and self-cast triggers choose targets in the ability window, with an optional accept/decline decision at resolution where applicable. Other trigger families, modal/multi-target clauses and multiple ability clauses remain local-beta blockers. See [targeted trigger boundary](docs/testing/targeted-trigger-choices.md).
 - Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Common modal land-face plays and Adventure resolution/exile permission paths are [tested separately](docs/testing/land-adventure-boundary.md). Divided-damage recipients now have bounded resolution-time legality coverage; non-damage multi-target spells, conditional land entries, split-card restrictions and full face-specific restart/browser acceptance remain open. Older cache rows need force-sync to acquire canonical layout.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage; match creation is not yet idempotent and extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
+- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Existing saved matches without root seeds remain unseeded in later games; sideboard strategy, full BO3 browser coverage and drawn-game policy remain open.
 - Human action browser fixtures cover thirteen paths, not a complete game or BO3. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.

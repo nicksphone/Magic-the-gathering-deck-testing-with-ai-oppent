@@ -233,7 +233,8 @@ export const api = {
       headers: writeHeaders(write),
       body: JSON.stringify({ player_id, cards_out, cards_in }),
     }),
-  nextGame: (matchId: string, write?: MatchWrite) => req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST", headers: writeHeaders(write) }),
+  nextGame: (matchId: string, choice: { player_id: number; play_first: boolean } | null, write?: MatchWrite) =>
+    req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST", headers: writeHeaders(write), body: choice ? JSON.stringify(choice) : undefined }),
   setPriorityStops: (matchId: string, player_id: number, stops: string[], write?: MatchWrite) =>
     req<MatchState>(`/matches/${matchId}/priority-stops`, {
       method: "POST",
