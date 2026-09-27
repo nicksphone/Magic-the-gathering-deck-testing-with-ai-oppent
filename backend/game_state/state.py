@@ -128,6 +128,9 @@ class MatchState:
     attackers_declared: bool = False
     blockers_declared: bool = False
     combat_damage_resolved: bool = False
+    cleanup_pending: bool = False
+    cleanup_repeat_required: bool = False
+    cleanup_deferred_triggers: list[dict] = field(default_factory=list)
     winner: int | None = None
     best_of: int = 3
     score: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})

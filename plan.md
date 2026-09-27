@@ -6,7 +6,7 @@ Latest implementation reconciliation: `b4eba86`. The [two-stage Jev review](docs
 
 ## Review reconciliation and next execution order
 
-- **Draw/cleanup: partially addressed.** `b4eba86` routes turn draws through the shared replacement-aware handler and adds persisted Dredge choices/continuations. Cleanup still needs deliberate discard selection, ownership/events, discard-before-expiration ordering, simultaneous damage/effect cleanup, priority and repeated cleanup. Multiple interacting replacements remain open.
+- **Draw/cleanup: core paths repaired.** Turn draws use the shared replacement-aware handler. Cleanup now has persisted human discard choices, ownership-correct shared discard events, discard-before-expiration ordering, deferred APNAP triggers, state-based checks and repeated cleanup. The GUI exposes draw/sacrifice/cleanup choices. Multiple interacting replacements, discard-replacement families and full browser/process-restart acceptance remain open.
 - **Knowledge/AI: partially addressed.** `babef27` implements canonical all-card/corpus ingestion and rulings verification. Typed production AI consumers, offline supported-corpus certification and decision-quality evidence remain open.
 - **Documentation: maintained, not reopened.** The finish-plan rewrite was already completed. Keep new evidence and limitations linked without presenting documentation as gameplay acceptance.
 - **Local-beta repairs underway:** tracked offline fallback, shared live face hydration and effective public views are implemented with regressions. Broader UI acceptance remains separate. Both human seats/all legal actions, strict request validation, BO3 transitions and frontend contract/test gates remain open.
@@ -21,7 +21,7 @@ Latest checks at `b4eba86`: 753 backend tests pass in an isolated copy **with lo
 
 First finish a reliable local desktop application for an explicitly supported card corpus. Arbitrary-card rules completeness and seasoned-player AI across every deck require additional acceptance criteria and remain longer-term goals.
 
-The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: the UI omits the second human seat and legal actions, and cleanup bypasses supported discard events/choices. Live hydration now shares the face-aware helper, public card views carry effective stats/faces, and hover shows base stats, damage, keywords and counters. Turn draws use the replacement-aware effect path. Browser integration and broader acceptance remain open.
+The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: second-seat battlefield/hand action controls and several legal actions remain unfinished. Live hydration shares the face-aware helper, public views carry effective stats/faces, and hover shows base stats, damage, keywords and counters. Turn draws and cleanup discards share event-aware paths; cleanup choices are exposed in the GUI. Browser integration and broader acceptance remain open.
 
 This plan supersedes the July status paragraphs and patch history previously stored here. Historical changes remain in `CHANGELOG.md`. The September audit is stored in [docs/audits/2026-09-27-app-audit.md](docs/audits/2026-09-27-app-audit.md). Its detailed evidence and reproduction artifacts are local at `/home/nick/.hermes/cache/scratch/mtg-audit-6b95fab/`; those artifacts are not portable repository fixtures.
 
@@ -88,10 +88,15 @@ Acceptance: UI and engine agree before and after reload for each fixture.
 ### 4. Share draw/discard event paths and choices (P1)
 
 - [ ] Route turn draws, spell draws and cycling through replacement-aware shared operations.
-- [ ] Route cleanup discards through event-aware, ownership-correct operations.
-- [ ] Let humans choose cleanup discards and resume pending replacements/choices after snapshots.
-- [ ] Discard before damage removal/end-of-turn expiration, perform simultaneous cleanup, then handle state-based actions, triggers, priority and repeated cleanup.
-- [ ] Test trigger ordering and cleanup repetition where resulting triggers require another priority window.
+- [x] Route cleanup discards through event-aware, ownership-correct operations.
+- [x] Let humans choose cleanup discards and resume pending choices after snapshots.
+- [x] Discard before damage removal/end-of-turn expiration, perform simultaneous cleanup, then handle state-based actions, triggers, priority and repeated cleanup.
+- [x] Test cleanup repetition where resulting triggers require another priority window.
+- [ ] Expand interacting draw/discard replacement and APNAP/replacement-order fixtures; complete process-restart and browser interaction acceptance.
+
+Evidence: `test_cleanup_choices.py` covers seat-2 ownership, rejected choices leaving snapshots unchanged, choice reload, damage/pump clearing without an intervening SBA, shared discard ownership and trigger-driven repeated cleanup. A React server-render probe confirms all three mechanic-choice controls render for seat 2 and block priority advancement; it is not browser E2E. The deterministic replay runner now initializes its database before querying decks and runs independently of prior API/tests.
+
+Validation: full existing suite 762 passed after the final engine change; the five cleanup fixtures also pass, including the subsequently added cascading-SBA case. Frontend build passes. Clean standalone seeded BO3 (Aetherdrift Aggro/Karlov Manor Control) completes without timeout or drift. No arbitrary-card or balance certification is inferred.
 
 Acceptance: equivalent draw/discard sources invoke the same applicable replacements/triggers; cleanup choices and restart resume are correct.
 

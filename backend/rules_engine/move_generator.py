@@ -19,7 +19,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         return []
     if state.pending_mechanic_choice:
         pending = state.pending_mechanic_choice
-        return [{"type": "choose_mechanic", **pending}] if pending["player_id"] == player_id else []
+        labels = {cid: state.cards[cid].name if cid in state.cards else "Draw normally" for cid in pending.get("options", [])}
+        return [{"type": "choose_mechanic", **pending, "option_labels": labels}] if pending["player_id"] == player_id else []
     pending_order = getattr(state, "pending_trigger_order", None)
     if pending_order:
         if int(pending_order.get("current_controller", -1)) != player_id:
@@ -58,6 +59,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             {"type": "mulligan", "current_mulligans": state.mulligan_count.get(player_id, 0)},
         ]
     moves: list[dict] = [{"type": "pass_priority"}]
+    if state.step == Step.CLEANUP and (state.cleanup_pending or not state.cleanup_repeat_required):
+        return moves
     player = state.players[player_id]
 
     if state.priority_player != player_id:

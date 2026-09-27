@@ -177,6 +177,8 @@ Common tempo bounce is also handled through the rules engine: nonland-permanent 
 
 ### Expanded keyword engine
 
+Cleanup offers deliberate discard selection to human seats, persists that choice through snapshots, and emits the same discard events used by spells. Damage and turn-duration effects expire after discarding; resulting state-based actions/triggers open priority and force another cleanup. Normal cleanup cannot cast spells or activate abilities. The controls panel exposes pending cleanup, draw-replacement and mandatory sacrifice choices with the correct acting seat.
+
 Live starts, sideboarding and diagnostics share face-aware cached-card hydration. Public views retain both faces and the selected face, expose effective battlefield stats separately from base stats, and include counters, damage and effective keywords. Hover previews display this information. The generic token fallback ships as a tracked asset and is installed into an empty image cache automatically; artwork retrieval still prefers real token images.
 
 Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.

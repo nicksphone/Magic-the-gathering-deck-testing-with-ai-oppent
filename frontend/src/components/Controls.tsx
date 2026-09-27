@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
 type Props = {
@@ -28,6 +28,7 @@ type Props = {
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
   onChooseReplacement: (sourceId: string) => void;
   onChooseTriggerOrder: (order: string[]) => void;
+  onChooseMechanic: (playerId: number, action: Record<string, unknown>) => void;
   responseCountdown: number | null;
   autoResponsePaused: boolean;
   onToggleAutoResponsePause: () => void;
@@ -49,6 +50,11 @@ function parseDeckLines(text: string): DeckItem[] {
 }
 
 export function Controls(props: Props) {
+  const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
+  const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
+  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}`;
+  useEffect(() => setMechanicSelections([]), [mechanicKey]);
+  const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);
   const stepOptions = [
     "untap",
     "upkeep",
@@ -179,6 +185,21 @@ export function Controls(props: Props) {
           </div>
         </div>
       ) : null}
+      {mechanicMove ? (
+        <div className="block-panel">
+          <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
+          {mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
+            <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
+          )) : <>
+            <p>Select exactly {mechanicMove.count} card(s).</p>
+            {(mechanicMove.options ?? []).map((cid) => <label key={cid}>
+              <input type="checkbox" checked={mechanicSelections.includes(cid)} onChange={(event) => setMechanicSelections((selected) => event.target.checked ? [...selected, cid] : selected.filter((id) => id !== cid))} />
+              {mechanicMove.option_labels?.[cid] ?? cid}
+            </label>)}
+            <button disabled={mechanicSelections.length !== mechanicMove.count} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
+          </>}
+        </div>
+      ) : null}
       {replacementPaused ? (
         <div className="block-panel replacement-choice-panel">
           <h3>Replacement Choice Required</h3>
@@ -286,16 +307,16 @@ export function Controls(props: Props) {
         </div>
       ) : null}
       <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused || triggerOrderPaused}>
+        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Pass Priority
         </button>
-        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused}>
+        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused || triggerOrderPaused}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused || triggerOrderPaused}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
           AI Step x30
         </button>
       </div>

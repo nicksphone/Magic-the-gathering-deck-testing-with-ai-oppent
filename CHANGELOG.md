@@ -4,6 +4,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added snapshot-safe human cleanup discards, shared ownership-correct discard operations, deferred cleanup triggers, simultaneous damage/duration expiry, state-based stabilization and exception priority/repeated cleanup. Ordinary cleanup no longer permits casts/activations. GUI controls now expose draw, sacrifice and cleanup choices for either owning seat.
+- Fixed the standalone deterministic replay runner to initialize an empty database before reading decks; it no longer relies on API/test startup. Cleanup and choice regressions plus a seat-2 render probe cover the new paths; full browser/restart and complex replacement acceptance remain open.
+- Cleanup validation: full existing suite passes 762 tests after the final engine refinement; all five cleanup regressions pass, including an additional cascading-SBA fixture. Frontend build passes. A clean standalone Aetherdrift Aggro/Karlov Manor Control BO3 completes two games without timeout or deterministic drift; evidence is in `docs/plans/baselines/2026-09-27-cleanup-replay.json`.
+
 - Repaired local-beta foundations: tracked generic-token fallback installation, shared API/diagnostic hydration preserving cached faces and zero stats, and public effective/base stats, faces, keywords, counters and damage. Updated typed hand/battlefield views, list-valued block assignments and hover details. Added HTTP/snapshot/empty-cache regressions; broader human/browser workflows remain open.
 - Validation: 758 backend tests pass with freshly installed declared Python dependencies and an initially empty database/image cache; production TypeScript/Vite build and whitespace checks pass. Live database and the pre-existing coder plan were preserved. Browser and process-restart acceptance remain open.
 

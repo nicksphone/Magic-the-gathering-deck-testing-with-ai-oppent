@@ -1195,13 +1195,10 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     amount = int(payload.get("amount", 1))
     player = state.players[target_player]
-    discarded = 0
-    while player.hand and discarded < max(0, amount):
-        cid = player.hand.pop(0)
-        player.graveyard.append(cid)
-        state.cards[cid].zone = Zone.GRAVEYARD
-        emit_event(state, "discard", {"card_id": cid, "controller": target_player})
-        discarded += 1
+    from rules_engine.zone_actions import discard_selected
+    selected = list(player.hand[:max(0, amount)])
+    discard_selected(state, target_player, selected)
+    discarded = len(selected)
     state.log.append(f"{player.name} discards {discarded}.")
 
 

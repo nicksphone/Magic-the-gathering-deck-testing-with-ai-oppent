@@ -310,6 +310,7 @@ export function App() {
           onSetPriorityStops={onSetPriorityStops}
           onChooseReplacement={onChooseReplacement}
           onChooseTriggerOrder={onChooseTriggerOrder}
+          onChooseMechanic={onCardAction}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}

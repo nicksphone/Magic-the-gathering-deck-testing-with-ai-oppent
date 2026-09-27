@@ -52,6 +52,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "attackers_declared": state.attackers_declared,
         "blockers_declared": state.blockers_declared,
         "combat_damage_resolved": state.combat_damage_resolved,
+        "cleanup_pending": state.cleanup_pending,
+        "cleanup_repeat_required": state.cleanup_repeat_required,
+        "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
         "winner": state.winner,
         "best_of": state.best_of,
         "score": {str(key): value for key, value in state.score.items()},
@@ -207,6 +210,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.attackers_declared = bool(payload.get("attackers_declared", False))
     state.blockers_declared = bool(payload.get("blockers_declared", False))
     state.combat_damage_resolved = bool(payload.get("combat_damage_resolved", False))
+    state.cleanup_pending = bool(payload.get("cleanup_pending", False))
+    state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
+    state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))
     state.score = {int(key): int(value) for key, value in payload.get("score", {"1": 0, "2": 0}).items()}
     state.pregame_pending = bool(payload.get("pregame_pending", True))
     state.mulligan_count = {int(key): int(value) for key, value in payload.get("mulligan_count", {}).items()}

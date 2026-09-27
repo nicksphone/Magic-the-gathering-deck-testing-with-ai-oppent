@@ -18,7 +18,7 @@ from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
-from persistence.db import engine
+from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
@@ -139,6 +139,7 @@ def main() -> None:
     p.add_argument("--best-of", type=int, choices=(1, 3, 5, 7, 9), default=1)
     args = p.parse_args()
 
+    init_db()
     with Session(engine) as session:
         repo = Repository(session)
         ensure_builtin_decks(repo)

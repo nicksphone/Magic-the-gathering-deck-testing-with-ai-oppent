@@ -21,7 +21,7 @@ This is core engine coverage, not a guarantee that every card carrying these key
 
 ## Remaining work
 
-- Frontend action/choice rendering and live hydration must expose these contracts before claiming complete human playability.
+- Draw/sacrifice/cleanup choice controls and shared live face hydration are now exposed. Ninjutsu and alternative-cost action UI integration plus complete human/browser workflows remain open.
 - Multiple interacting draw/death replacements need full affected-player ordering, optional decline and resumable nested-choice coverage. Current handling is not a general replacement solver.
 - First-strike and ordinary damage still execute in one engine call rather than separate priority windows. Simultaneous player losses/draws need explicit adjudication.
 - Damage last-known information, noncombat damage keyword interactions, keyword removal/grant layers, Prototype copies/restrictions and arbitrary escaped-condition clauses need additional fixtures.
@@ -34,6 +34,6 @@ No rule or card data was changed to force a matchup win rate.
 
 The frontend production build passes. A seeded Mono Red Aggro versus Dimir Control BO3 completed two logical games, 30 total turns, with no timeout or determinism failure; results are recorded in `docs/plans/baselines/2026-09-27-expanded-keywords-replay.json`. This is a regression smoke test, not evidence of balance, expert AI or coverage of every new mechanic.
 
-Backend full-suite validation uses a disposable source/database copy and the existing pinned virtual environment. That copy includes local image assets; it is not a fresh-install or tracked-only checkout gate. The previously audited ignored generic-token fallback packaging issue remains open in `plan.md`.
+The earlier 753-test keyword validation used local image assets. The later `d68641b` repair tracks the generic fallback; 758 tests passed with fresh Python dependencies and initially empty database/image cache. Cleanup validation is recorded separately in `CHANGELOG.md`; these checks do not certify browser or all-card rules completeness.
 
 Final backend result: **753 passed**, 113 deprecation warnings, 86.34 seconds. The expanded-keyword test module contains 21 regressions. Python compilation and `git diff --check` also pass.

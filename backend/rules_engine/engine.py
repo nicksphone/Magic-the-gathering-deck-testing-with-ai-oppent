@@ -29,7 +29,7 @@ class RulesEngine:
     def next_step(self, state: MatchState) -> None:
         if state.pregame_pending:
             return
-        if state.pending_mechanic_choice:
+        if state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order:
             return
         if state.winner is not None:
             return
@@ -38,6 +38,15 @@ class RulesEngine:
             apply_state_based_actions(state)
             if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                 state.priority_player = state.active_player
+            return
+
+        if state.step == Step.CLEANUP and state.cleanup_pending:
+            self._finish_cleanup(state)
+            return
+        if state.step == Step.CLEANUP and state.cleanup_repeat_required:
+            state.cleanup_repeat_required = False
+            state.log.append("Another cleanup step begins.")
+            self._apply_step_start_actions(state)
             return
 
         self._clear_mana_pools(state)
@@ -81,8 +90,9 @@ class RulesEngine:
                 state.blockers_declared = False
 
         self._apply_step_start_actions(state)
-        state.priority_player = state.active_player
-        state.passed_priority = set()
+        if not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
+            state.priority_player = state.active_player
+            state.passed_priority = set()
 
     def _apply_step_start_actions(self, state: MatchState) -> None:
         player = state.players[state.active_player]
@@ -108,18 +118,43 @@ class RulesEngine:
         elif state.step == Step.END_STEP:
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:
-            self._clear_marked_damage(state)
-            self._clear_prevention_shields(state)
-            self._revert_expired_control_changes(state)
-            self._revert_crew_vehicles(state)
-            state.pending_entry_counters = [
-                entry
-                for entry in getattr(state, "pending_entry_counters", [])
-                if int(entry.get("expires_turn", state.turn)) > int(state.turn)
-            ]
+            state.cleanup_pending = True
             self._enforce_cleanup_hand_size(state, state.active_player)
-            state.turn_cant_gain_life = set()
-            state.turn_damage_cant_be_prevented = False
+            if not state.pending_mechanic_choice:
+                self._finish_cleanup(state)
+
+    def _finish_cleanup(self, state: MatchState) -> None:
+        # Damage removal and duration expiry have no intervening SBA check.
+        self._clear_marked_damage(state)
+        self._clear_prevention_shields(state)
+        self._revert_expired_control_changes(state)
+        self._revert_crew_vehicles(state)
+        state.pending_entry_counters = [
+            entry
+            for entry in getattr(state, "pending_entry_counters", [])
+            if int(entry.get("expires_turn", state.turn)) > int(state.turn)
+        ]
+        state.turn_cant_gain_life = set()
+        state.turn_damage_cant_be_prevented = False
+        performed_sba = False
+        while True:
+            before = {cid: (card.zone, dict(card.counters), card.loyalty) for cid, card in state.cards.items()}
+            apply_state_based_actions(state)
+            changed = before != {cid: (card.zone, dict(card.counters), card.loyalty) for cid, card in state.cards.items()}
+            performed_sba = performed_sba or changed
+            if not changed or state.pending_replacement_choice or state.pending_trigger_order or state.winner is not None:
+                break
+        state.cleanup_repeat_required = state.cleanup_repeat_required or performed_sba or bool(state.cleanup_deferred_triggers or state.pending_replacement_choice or state.pending_trigger_order)
+        if state.pending_replacement_choice or state.pending_trigger_order:
+            return
+        state.cleanup_pending = False
+        triggers = state.cleanup_deferred_triggers
+        state.cleanup_deferred_triggers = []
+        from rules_engine.events import _push_triggers
+        _push_triggers(state, "cleanup", triggers)
+        if not state.pending_trigger_order:
+            state.priority_player = state.active_player
+        state.passed_priority = set()
 
     def _revert_crew_vehicles(self, state: MatchState) -> None:
         for card in state.cards.values():
@@ -250,11 +285,26 @@ class RulesEngine:
         if len(player.hand) <= max_hand_size:
             return
         discard_count = len(player.hand) - max_hand_size
-        for _ in range(discard_count):
-            cid = player.hand.pop(0)
-            player.graveyard.append(cid)
-            state.cards[cid].zone = Zone.GRAVEYARD
-            state.log.append(f"{player.name} discards {state.cards[cid].name} during cleanup.")
+        human_players = state.replacement_choice_players
+        human = state.replacement_choice_required and (not human_players or player_id in human_players)
+        if human:
+            state.pending_mechanic_choice = {"kind": "cleanup_discard", "player_id": player_id, "options": list(player.hand), "count": discard_count, "label": "Discard to maximum hand size"}
+            state.priority_player = player_id
+        else:
+            from rules_engine.zone_actions import discard_selected
+            discard_selected(state, player_id, list(player.hand[:discard_count]))
+
+    def choose_cleanup_discards(self, state: MatchState, player_id: int, action: dict) -> bool:
+        from rules_engine.zone_actions import discard_selected
+        pending = state.pending_mechanic_choice
+        ids = action.get("card_ids")
+        if not pending or pending["kind"] != "cleanup_discard" or pending["player_id"] != player_id or not isinstance(ids, list) or len(ids) != pending["count"]:
+            return False
+        if not discard_selected(state, player_id, ids):
+            return False
+        state.pending_mechanic_choice = None
+        self._finish_cleanup(state)
+        return True
 
     def _has_no_max_hand_size_effect(self, state: MatchState, player_id: int) -> bool:
         player = state.players[player_id]
@@ -270,6 +320,10 @@ class RulesEngine:
             return
         kind = action.get("type")
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice["kind"] == "cleanup_discard":
+                if kind == "choose_mechanic":
+                    self.choose_cleanup_discards(state, player_id, action)
+                return
             from rules_engine.keyword_actions import finish_mechanic_choice
             if kind == "choose_mechanic" and finish_mechanic_choice(state, player_id, action):
                 apply_state_based_actions(state)
@@ -383,6 +437,12 @@ class RulesEngine:
             apply_state_based_actions(state)
             return
 
+        if state.cleanup_pending and state.step == Step.CLEANUP:
+            self._finish_cleanup(state)
+            if state.pending_trigger_order or state.pending_replacement_choice:
+                return
+        if state.step == Step.CLEANUP and not state.cleanup_repeat_required and kind != "pass_priority":
+            return
         if kind == "pass_priority":
             actor = state.players.get(player_id)
             if actor:

@@ -43,6 +43,9 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
+    if state.cleanup_pending:
+        state.cleanup_deferred_triggers.extend({**trigger, "payload": {**trigger["payload"], "__trigger_event": event}} for trigger in triggers)
+        return
     active = state.active_player
     controller_order = [active, 1 if active == 2 else 2]
     groups: dict[str, list[dict[str, Any]]] = {}
@@ -99,7 +102,7 @@ def _append_trigger_groups(
                 controller=trig["controller"],
                 label=trig["label"],
                 effect_key=trig["effect_key"],
-                payload={**payload, "__trigger_order": order_index, "__trigger_event": event},
+                payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
             )
         )
     state.log.append(f"{len(ordered)} triggered ability(s) added to stack ({event}).")
@@ -617,20 +620,21 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
     if not discarded_id or discarded_id not in state.cards:
         return False
     discarded_card = state.cards[discarded_id]
+    discarding_player = payload.get("controller", discarded_card.controller)
     if "whenever you discard a card" in oracle:
-        return discarded_card.controller == card.controller
+        return discarding_player == card.controller
     if "whenever you discard one or more cards" in oracle:
-        return discarded_card.controller == card.controller
+        return discarding_player == card.controller
     if "whenever one or more cards are discarded" in oracle:
         return True
     if "whenever a card is discarded" in oracle:
         return True
     if "whenever a card you discard" in oracle:
-        return discarded_card.controller == card.controller
+        return discarding_player == card.controller
     if "whenever an opponent discards a card" in oracle or "whenever an opponent discards one or more cards" in oracle:
-        return discarded_card.controller != card.controller
+        return discarding_player != card.controller
     if "whenever one or more cards an opponent discards" in oracle:
-        return discarded_card.controller != card.controller
+        return discarding_player != card.controller
     return False
 
 

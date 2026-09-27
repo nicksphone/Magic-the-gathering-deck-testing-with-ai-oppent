@@ -75,6 +75,13 @@ export type MatchState = {
   day_night?: "none" | "day" | "night";
   sideboard_sizes?: Record<string, number>;
   log: string[];
+  pending_mechanic_choice?: {
+    kind: "cleanup_discard" | "sacrifice" | "draw";
+    player_id: number;
+    options: string[];
+    count?: number;
+    label?: string;
+  } | null;
   pending_replacement_choice?: {
     event: string;
     player_id: number;
@@ -88,6 +95,11 @@ export type MatchState = {
 };
 
 export type LegalMove = {
+  kind?: "cleanup_discard" | "sacrifice" | "draw";
+  player_id?: number;
+  count?: number;
+  label?: string;
+  option_labels?: Record<string, string>;
   type: string;
   card_id?: string;
   card_name?: string;
