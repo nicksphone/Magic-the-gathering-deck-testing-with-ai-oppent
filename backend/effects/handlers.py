@@ -954,16 +954,8 @@ def transform_if_top_matches(state: MatchState, controller: int, payload: dict) 
     index = int(payload.get("face_index", 1) or 1)
     if index < 0 or index >= len(faces):
         return
-    face = faces[index] or {}
-    card.selected_face_index = index
-    card.name = str(face.get("name") or card.name)
-    card.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
-    card.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
-    card.type_line = str(face.get("type_line") or card.type_line or "")
-    card.types = [part for part in card.type_line.replace("—", " ").split() if part in {"Artifact", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery", "Battle"}]
-    card.power = face.get("power") if face.get("power") is not None else card.power
-    card.toughness = face.get("toughness") if face.get("toughness") is not None else card.toughness
-    card.image_uri = face.get("image_uri") or card.image_uri
+    from rules_engine.card_faces import apply_transform_face
+    apply_transform_face(card, index)
     state.log.append(f"{card.name} transforms.")
 
 
@@ -980,19 +972,8 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
         return
     if index < 0 or index >= len(faces) or index == getattr(card, "selected_face_index", None):
         return
-    face = faces[index] or {}
-    card.selected_face_index = index
-    card.name = str(face.get("name") or card.name)
-    card.oracle_text = str(face.get("oracle_text") or card.oracle_text or "")
-    card.mana_cost = str(face.get("mana_cost") or card.mana_cost or "")
-    card.type_line = str(face.get("type_line") or card.type_line or "")
-    card.types = [
-        part for part in card.type_line.replace("—", " ").split()
-        if part in {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery"}
-    ]
-    card.power = face.get("power") if face.get("power") is not None else card.power
-    card.toughness = face.get("toughness") if face.get("toughness") is not None else card.toughness
-    card.image_uri = face.get("image_uri") or card.image_uri
+    from rules_engine.card_faces import apply_transform_face
+    apply_transform_face(card, index)
     state.log.append(f"{card.name} transforms.")
 
 

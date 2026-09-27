@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Fixed a real-card AI crash after double-faced permanents transform: both transform handlers now apply numeric face characteristics and keywords through the shared adapter, and sweeper threat assessment uses effective power. Canonical Kumano/Delver regressions fail before and pass after. A corrected local-Oracle Mono Red Aggro/Burn interactive autoplay BO3 completes 2-0 without a stall; this one series does not establish balance.
+- Validation: 877 backend tests pass in a fresh isolated source/database copy; frontend TypeScript/Vite build and unit checks pass. The interactive real-card BO3 is an additional diagnostic, not a determinism matrix.
+
 - Added two browser regression paths for the previous loser's BO3 play/draw choice through production Controls and `/next-game`; both verify game-two starter and that live seed metadata stays hidden. All fifteen Chromium paths and the frontend build/unit checks pass. The fixture begins between games, so full-series and sideboarding acceptance are still open.
 
 - Interactive BO3 now stores a root seed and derives repeatable per-game seeds without exposing live hidden-library order. The previous game's human loser chooses play or draw in the UI/API; AI losers choose play. Focused helper and HTTP tests cover chooser validation, game-two opener replay and persisted restore. Existing unseeded saved matches remain legacy; full-browser BO3 and AI sideboarding are open.

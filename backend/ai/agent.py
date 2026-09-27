@@ -569,7 +569,7 @@ class AIAgent:
         ]
         if not opp_creatures:
             return None
-        opp_power = sum((state.cards[cid].power or 0) for cid in opp_creatures)
+        opp_power = sum(max(0, effective_power(state, cid)) for cid in opp_creatures)
         own_life = int(getattr(state.players[player_id], "life", 20) or 20)
         should_force = (
             len(opp_creatures) >= 3

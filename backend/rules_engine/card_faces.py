@@ -38,6 +38,13 @@ def apply_cast_face(card, face):
         setattr(card, field, copy(getattr(face, field)))
 
 
+def apply_transform_face(card, index):
+    """Apply a battlefield face without changing the card's printed identity."""
+    face = select_cast_face(card, index)
+    for field in FACE_FIELDS:
+        setattr(card, field, copy(getattr(face, field)))
+
+
 def exile_permission(state, player_id, card_id, face_index=0):
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.EXILE:

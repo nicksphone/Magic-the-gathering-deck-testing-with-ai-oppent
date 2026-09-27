@@ -69,6 +69,7 @@ It is designed for serious deck work:
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
 - Double-faced, split, modal, adventure, and token-aware card handling
 - Double-faced type lines use the front face until a legal transform selects the back face, avoiding premature creature/land characteristics from combined metadata
+- Both battlefield transform paths normalize face power, toughness, loyalty and keywords through the shared face adapter; AI threat checks use effective power rather than raw printed strings
 - Generic upkeep top-card transform handling for double-faced cards
 - Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations
 - Day/night transition triggers use the normal stack and APNAP ordering path
