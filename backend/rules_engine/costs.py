@@ -59,6 +59,8 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
                     tap_source = True
                 else:
                     mana_symbols.append(symbol.upper())
+                    if symbol.upper() == "{X}":
+                        supported = False
             remainder = re.sub(r"\{[^}]+\}", "", part).strip(" ,")
             if not remainder:
                 continue

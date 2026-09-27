@@ -46,7 +46,7 @@ SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
 SAGA_CHAPTER_RE = re.compile(r"^\s*(I{1,3}|IV|V|VI|VII|VIII|IX|X)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
 ACTIVATED_ABILITY_RE = re.compile(
-    r"(?m)((?:\{[^{}]+\})(?:\s*,\s*(?:\{[^{}]+\}|[^:\n]+))*)\s*:\s*([^\n]+)"
+    r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)

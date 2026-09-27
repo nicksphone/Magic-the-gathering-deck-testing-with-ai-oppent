@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { resolveCardMediaUrl } from "../api/client";
 import type { LegalMove, MatchState } from "../types";
+import { PermanentActions } from "./PermanentActions";
 
 type Props = {
   match: MatchState;
   legalMoves: LegalMove[];
+  actingPlayerId?: number;
   onCardAction: (playerId: number, action: Record<string, unknown>) => void;
 };
 
@@ -85,9 +87,13 @@ function manaPoolPips(pool: Record<string, number>): { symbol: ManaSymbol; count
     .filter((entry) => entry.count > 0);
 }
 
-export function Battlefield({ match, legalMoves, onCardAction }: Props) {
-  const p1 = match.players["1"];
-  const p2 = match.players["2"];
+export function Battlefield({ match, legalMoves: authoritativeMoves, onCardAction, actingPlayerId = match.priority_player }: Props) {
+  const humanActor = (match.controllers?.[String(actingPlayerId)] ?? "human") === "human";
+  const viewerSeat = humanActor ? actingPlayerId : ([1, 2].find((seat) => match.controllers?.[String(seat)] === "human") ?? 1);
+  const opponentSeat = viewerSeat === 1 ? 2 : 1;
+  const legalMoves = humanActor ? authoritativeMoves : [];
+  const p1 = match.players[String(viewerSeat)];
+  const p2 = match.players[String(opponentSeat)];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool), [p1.mana_pool]);
@@ -108,7 +114,8 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
-  const canManualTapP1 = match.priority_player === 1;
+  const canManualTapP1 = humanActor && match.priority_player === viewerSeat && !match.pending_mechanic_choice;
+  const playableCards = [...new Map([...p1.hand, ...legalMoves.filter((move) => move.card_view && (move.type === "cast_spell" || move.type === "play_land")).map((move) => move.card_view!)].map((card) => [card.id, card])).values()];
 
   function previewFromCard(card: MatchState["players"]["1"]["battlefield"][number] | MatchState["players"]["1"]["hand"][number]): HoverPreview {
     return {
@@ -130,12 +137,16 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
 
   function castAction(cardId: string, selectedFaceIndex?: number) {
     const t = targets[cardId] ?? {};
-    onCardAction(1, {
+    const move = castMoves.find((candidate) => candidate.card_id === cardId);
+    onCardAction(viewerSeat, {
       type: "cast_spell",
       card_id: cardId,
       targets: t,
       cost_choice: costChoice[cardId] ? { id: costChoice[cardId] } : undefined,
       selected_face_index: selectedFaceIndex,
+      from_exile: move?.from_exile,
+      from_library: move?.from_library,
+      from_graveyard: move?.from_graveyard,
     });
   }
 
@@ -151,8 +162,8 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           </p>
         </div>
         <div className="life-counters">
-          <span>P2 Life: {p2.life}</span>
-          <span>P1 Life: {p1.life}</span>
+          <span>P{opponentSeat} Life: {p2.life}</span>
+          <span>P{viewerSeat} Life: {p1.life}</span>
         </div>
       </header>
 
@@ -294,7 +305,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                       </select>
                       <button
                         onClick={() =>
-                          onCardAction(1, {
+                          onCardAction(viewerSeat, {
                             type: "tap_lands_bulk",
                             land_name: pile.name,
                             count: landTapCounts[pile.key] ?? 1,
@@ -319,7 +330,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                 <div key={key} className="cast-card-box">
                   <button
                     onClick={() =>
-                      onCardAction(1, {
+                      onCardAction(viewerSeat, {
                         type: "activate_loyalty",
                         card_id: move.card_id,
                         ability_index: move.ability_index,
@@ -383,7 +394,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                 <div key={key} className="cast-card-box">
                   <button
                     onClick={() =>
-                      onCardAction(1, {
+                      onCardAction(viewerSeat, {
                         type: "equip",
                         card_id: move.card_id,
                         target_card_id: (targets[key]?.target_card_id as string) || move.targets?.[0]?.id,
@@ -413,7 +424,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           </div>
         ) : null}
         <div className="hand-row">
-          {p1.hand.map((card) => {
+          {playableCards.map((card) => {
             const move = castMoves.find((m) => m.card_id === card.id);
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
@@ -430,7 +441,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                   onMouseLeave={() => setHoverPreview(null)}
                 >
                   {landMove ? (
-                    <button onClick={() => onCardAction(1, { type: "play_land", card_id: card.id })}>
+                    <button onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, from_exile: landMove?.from_exile })}>
                       Play Land {card.name}
                     </button>
                   ) : cycleMove ? (
@@ -443,7 +454,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                         {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
                       </select>
                     ) : null}
-                    <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
+                    <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
                       Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
                     </button>
                     </>
@@ -470,7 +481,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
                   Cast {card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                 </button>
                 {cycleMove ? (
-                  <button onClick={() => onCardAction(1, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
+                  <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
                     Cycle {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
                   </button>
                 ) : null}
@@ -695,6 +706,7 @@ export function Battlefield({ match, legalMoves, onCardAction }: Props) {
           })}
         </div>
       </div>
+      <PermanentActions moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
       {hoverPreview ? (
         <aside className="card-hover-preview">
           {resolveCardMediaUrl(hoverPreview.imageUri) ? (

@@ -17,6 +17,7 @@ It is designed for serious deck work:
 - London mulligan handling
 - Manual phase progression and autoplay
 - Land drops, casting, activated abilities, combat actions, and response windows
+- Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -169,6 +170,8 @@ cd frontend
 npm run build
 ```
 
+The dependency-free Chromium action regression is available through `npm run test:browser` after starting its isolated fixture API and browser. Setup and coverage limits: [human action browser tests](docs/testing/human-actions-browser.md).
+
 The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
 
 The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects accept one selected card for hand, one for exile, and an ordered list for the bottom of the library; invalid, duplicate, or incomplete selections are rejected before the spell reaches the stack. AI callers use deterministic value-based choices when no explicit choice is provided.
@@ -177,13 +180,15 @@ Common tempo bounce is also handled through the rules engine: nonland-permanent 
 
 ### Expanded keyword engine
 
+Battlefield controls follow the acting human seat instead of assuming player 1. Legal-move responses include public card views for playable non-hand cards; exile/library/graveyard casting preserves its source flags. Ordinary permanent abilities offer target/mode controls and advanced JSON choices. Ability targets are checked before paying activation costs, and adjacent mana symbols are retained. Variable activated mana costs are explicitly unsupported and are not offered as legal actions.
+
 Cleanup offers deliberate discard selection to human seats, persists that choice through snapshots, and emits the same discard events used by spells. Damage and turn-duration effects expire after discarding; resulting state-based actions/triggers open priority and force another cleanup. Normal cleanup cannot cast spells or activate abilities. The controls panel exposes pending cleanup, draw-replacement and mandatory sacrifice choices with the correct acting seat.
 
 Live starts, sideboarding and diagnostics share face-aware cached-card hydration. Public views retain both faces and the selected face, expose effective battlefield stats separately from base stats, and include counters, damage and effective keywords. Hover previews display this information. The generic token fallback ships as a tracked asset and is installed into an empty image cache automatically; artwork retrieval still prefers real token images.
 
 Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.
 
-These are engine/API foundations, not all-card certification. Human UI controls for the new choices/actions, interacting replacement choices, Prototype copy/layer edge cases, and split first-strike priority windows still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
+These are engine/API foundations, not all-card certification. Full human-game/browser acceptance, complex action choices, interacting replacement choices, Prototype copy/layer edge cases, and split first-strike priority windows still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
 
 Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
 
@@ -191,7 +196,7 @@ Master two-ply and rollout search is also bounded by total battlefield permanent
 
 Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
 
-Vehicles expose explicit crew actions. The engine validates creature power and tap costs, makes a crewed Vehicle a creature until cleanup, and lets the AI choose a legal minimal crew group.
+Vehicles expose explicit crew actions. The engine validates creature power and tap costs, makes a crewed Vehicle a creature until cleanup, and lets the AI choose a legal minimal crew group. Crew currently resolves immediately rather than using a responseable ability on the stack; this remains a rules gap.
 
 Targeted actions are validated against the current candidate set before entering the stack. Stale, cross-zone, or restricted-card IDs are rejected, while broad “any target” effects continue through protection and hexproof checks.
 

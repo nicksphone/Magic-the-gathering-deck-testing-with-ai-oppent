@@ -1,0 +1,39 @@
+# Human action browser regression
+
+The harness renders the production Battlefield component and invokes the production API action handlers. It tests five paths: seat-2 land play, targeted permanent activation, explicit Vehicle crew selection, permitted exile casting and permitted top-library casting. It also verifies the opposing hand is not rendered as playable cards.
+
+This is not a complete App onboarding/game/recovery test or a rules certification. Fixtures use named real cards with only relevant clauses, never add cards to the gameplay corpus, and cannot be launched from the live Git checkout. Crew currently resolves immediately; testing that UI path does not certify crew stack timing.
+
+Requirements: installed backend dependencies, installed frontend dependencies, Node 22 with built-in WebSocket, and Chromium with remote debugging. Use three separate terminals; all services bind loopback. The copied backend owns its database/cache; changing only cwd is not isolation.
+
+```bash
+cd /home/nick/mtg-deck-testing-lab
+scratch=$(mktemp -d /tmp/mtg-human-actions-XXXXXX)
+# After this milestone is committed, all harness files are tracked.
+git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
+cd "$scratch/backend"
+/home/nick/mtg-deck-testing-lab/backend/.venv/bin/python -m uvicorn \
+  tests.browser_fixture_server:app --host 127.0.0.1 --port 10199
+```
+
+```bash
+cd /home/nick/mtg-deck-testing-lab/frontend
+npm run dev -- --host 127.0.0.1 --port 15173 --strictPort
+```
+
+```bash
+profile=$(mktemp -d /tmp/mtg-chromium-XXXXXX)
+chromium --headless --disable-dev-shm-usage --no-first-run \
+  --user-data-dir="$profile" --remote-debugging-port=19222 about:blank
+```
+
+Run in another terminal:
+
+```bash
+cd /home/nick/mtg-deck-testing-lab/frontend
+node tests/browser-human-actions.mjs
+```
+
+Exit status must be zero with five PASS lines. Stop these test-only services afterward. Do not expose Chromium debugging or fixture routes on the network. Root/container Chromium may require `--no-sandbox`; prefer an ordinary-user sandboxed browser where available.
+
+Validation on 2026-09-27: all five paths pass against the final target-validation backend, and the configured TypeScript/Vite production build passes. Backend regression evidence is recorded in the root plan/changelog. No dependency installs or paid model calls were required for this harness.

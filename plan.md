@@ -2,14 +2,14 @@
 
 Updated: 2026-09-27 UTC. Audited implementation: `6b95fab0875f4cc35cb9648f8a598be5b13b2c80`, branch `main`.
 
-Latest implementation reconciliation: `b4eba86`. The [two-stage Jev review](docs/audits/2026-09-27-jev-two-stage-review.md) evaluates the older `f760c98` snapshot, not this latest implementation. Its typed judgments evaluate supplied evidence and proposed remedies; they are not application fixes or current release certification. No new paid API calls were made to reconcile it.
+Latest implementation reconciliation: cleanup baseline `26adcf1` plus the acting-seat milestone described below. The [two-stage Jev review](docs/audits/2026-09-27-jev-two-stage-review.md) evaluates the older `f760c98` snapshot, not this latest implementation. Its typed judgments evaluate supplied evidence and proposed remedies; they are not application fixes or current release certification. No new paid API calls were made to reconcile it.
 
 ## Review reconciliation and next execution order
 
 - **Draw/cleanup: core paths repaired.** Turn draws use the shared replacement-aware handler. Cleanup now has persisted human discard choices, ownership-correct shared discard events, discard-before-expiration ordering, deferred APNAP triggers, state-based checks and repeated cleanup. The GUI exposes draw/sacrifice/cleanup choices. Multiple interacting replacements, discard-replacement families and full browser/process-restart acceptance remain open.
 - **Knowledge/AI: partially addressed.** `babef27` implements canonical all-card/corpus ingestion and rulings verification. Typed production AI consumers, offline supported-corpus certification and decision-quality evidence remain open.
 - **Documentation: maintained, not reopened.** The finish-plan rewrite was already completed. Keep new evidence and limitations linked without presenting documentation as gameplay acceptance.
-- **Local-beta repairs underway:** tracked offline fallback, shared live face hydration and effective public views are implemented with regressions. Broader UI acceptance remains separate. Both human seats/all legal actions, strict request validation, BO3 transitions and frontend contract/test gates remain open.
+- **Local-beta repairs underway:** tracked offline fallback, shared live face hydration, effective public views and acting-seat action controls are implemented with regressions. Five real Chromium action paths pass; full human-game acceptance remains separate. Strict request validation, BO3 transitions and frontend contract/test gates remain open.
 - **Recovery and network gates remain open:** refresh/restart resume, serialized/idempotent mutations, same-origin production routing, access/origin controls and bounded jobs. Refresh advisories before choosing dependency upgrades; the historical scan is not a current exploitability assessment.
 - **Simulator strength remains unverified.** The latest two-game BO3 smoke shows repeatability only; it does not measure broad balance or seasoned-player quality.
 
@@ -102,10 +102,16 @@ Acceptance: equivalent draw/discard sources invoke the same applicable replaceme
 
 ### 5. Render legal actions for the acting seat (P1)
 
-- [ ] Replace player-1 assumptions with explicit acting-seat ownership and human controller checks.
-- [ ] Drive typed controls from legal moves, including generic activation, crew, loyalty, cycling, equipment and permitted exile/top-library play.
+- [x] Replace battlefield player-1 assumptions with explicit acting-seat ownership and human controller checks.
+- [x] Drive controls from legal moves, including generic activation, crew, loyalty, cycling, equipment and permitted exile/top-library play.
 - [ ] Provide target, mode, face, X-value, mulligan and cleanup choices needed by supported actions.
-- [ ] Show an explicit warning for any supported legal action without an implemented control.
+- [x] Show an explicit warning for any legal action kind without an implemented control.
+
+Evidence: [browser harness and reproduction](docs/testing/human-actions-browser.md) exercises the actual Battlefield component and production API action handlers in an isolated database: seat-2 land, targeted permanent activation, crew selection, exile spell and top-library creature. This is not a full App onboarding/game/recovery E2E. Generic abilities expose advanced JSON for less common choice contracts; polished multi-choice/mulligan/face coverage remains open. Shared extraction now retains adjacent mana symbols, targets validate before costs and unsupported variable activated costs are excluded. Crew response-stack fidelity is still missing and must be repaired in rules work, not inferred from its working UI control.
+
+Validation: 768 backend regressions pass in a tracked-source copy with initially empty database/cache and existing pinned dependencies; the TypeScript/Vite build also checks the browser harness. Five Chromium action scenarios pass. No fresh dependency install, full browser game or network deployment is claimed.
+
+The [seeded Aggro/Dimir BO3 smoke replay](docs/plans/baselines/2026-09-27-human-actions-replay.json) completes two games without timeout or deterministic drift. This is repeatability evidence, not a matchup-balance or expert-AI measurement.
 
 Acceptance: complete human-vs-human and human-vs-AI flows through UI; seat 2 can act, crew a Vehicle, activate an ordinary ability and play a permitted exile card. No silent legal-action omissions.
 

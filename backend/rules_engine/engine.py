@@ -714,12 +714,28 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             cost = ability["mana_cost"]
+            if "{X}" in cost.upper():
+                state.log.append("Variable activated costs are not yet supported; no costs paid.")
+                return
+            action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
+            hints = build_cast_hints(state, proxy, player_id, action_targets)
+            valid, error = validate_cast_choice(hints, action_targets)
+            if not valid:
+                state.log.append(f"Invalid activation targets: {error}")
+                return
+            valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets)
+            if not valid:
+                state.log.append(f"Invalid activation targets: {error}")
+                return
+            valid, error = validate_protection_targets(state, state.cards[cid], action_targets)
+            if not valid:
+                state.log.append(f"Invalid activation targets: {error}")
+                return
             if not apply_activated_costs(state, player_id, cid, cost):
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
-            action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
-            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
             resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             add_to_stack(
                 state,

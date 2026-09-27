@@ -102,6 +102,13 @@ export type LegalMove = {
   option_labels?: Record<string, string>;
   type: string;
   card_id?: string;
+  card_view?: CardView;
+  from_exile?: boolean;
+  from_library?: boolean;
+  from_graveyard?: boolean;
+  return_card_id?: string;
+  crew_value?: number;
+  crew_candidates?: { id: string; name: string; power: number }[];
   card_name?: string;
   mana_cost?: string;
   x_value?: number;
@@ -129,8 +136,17 @@ export type LegalMove = {
   trigger_order?: string[];
   trigger_labels?: string[];
   target_hints?: {
+    choice_schema?: Record<string, unknown>;
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];
+    permanent_targets?: { id: string; name: string }[];
+    graveyard_creature_targets?: { id: string; name: string }[];
+    graveyard_permanent_targets?: { id: string; name: string }[];
+    land_targets?: { id: string; name: string }[];
+    artifact_targets?: { id: string; name: string }[];
+    enchantment_targets?: { id: string; name: string }[];
+    noncreature_permanent_targets?: { id: string; name: string }[];
+    aura_targets?: { id: string; name: string }[];
     planeswalker_targets?: { id: string; name: string }[];
     stack_targets?: { id: string; label: string }[];
     face_names?: string[];

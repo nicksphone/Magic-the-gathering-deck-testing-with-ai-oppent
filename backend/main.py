@@ -33,7 +33,7 @@ from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
-from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
+from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
@@ -568,7 +568,12 @@ def get_legal_moves(match_id: str, player_id: int | None = None) -> dict:
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
     pid = player_id or _default_player_for_state(match)
-    return {"player_id": pid, "moves": match.rules.legal_moves(match.state, pid)}
+    moves = match.rules.legal_moves(match.state, pid)
+    for move in moves:
+        cid = move.get("card_id")
+        if cid in match.state.cards:
+            move["card_view"] = serialize_card_view(match.state, cid)
+    return {"player_id": pid, "moves": moves}
 
 
 @app.get("/matches/{match_id}/replacement-options")

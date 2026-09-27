@@ -4,6 +4,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added acting-seat battlefield controls, ordinary permanent activation/target forms, explicit crew selection, Ninjutsu and permitted non-hand card casting. Legal-move HTTP responses carry card views without enlarging AI search moves. Unknown action kinds warn instead of silently disappearing.
+- Validated ability targets before costs, rejected invalid player/stack/graveyard targets, and fixed adjacent activated mana symbols being truncated. Variable activated costs remain explicitly unsupported, with no payment or legal-move offer. Added reusable isolated Chromium fixtures; full human-game and crew-stack acceptance remain open.
+- Validation: 768 backend regressions pass in an isolated empty-cache/database source copy using existing pinned dependencies; TypeScript/Vite build (including harness typing) and five Chromium action scenarios pass. Graphify refreshed; live database and pre-existing coder plan preserved.
+
 - Added snapshot-safe human cleanup discards, shared ownership-correct discard operations, deferred cleanup triggers, simultaneous damage/duration expiry, state-based stabilization and exception priority/repeated cleanup. Ordinary cleanup no longer permits casts/activations. GUI controls now expose draw, sacrifice and cleanup choices for either owning seat.
 - Fixed the standalone deterministic replay runner to initialize an empty database before reading decks; it no longer relies on API/test startup. Cleanup and choice regressions plus a seat-2 render probe cover the new paths; full browser/restart and complex replacement acceptance remain open.
 - Cleanup validation: full existing suite passes 762 tests after the final engine refinement; all five cleanup regressions pass, including an additional cascading-SBA fixture. Frontend build passes. A clean standalone Aetherdrift Aggro/Karlov Manor Control BO3 completes two games without timeout or deterministic drift; evidence is in `docs/plans/baselines/2026-09-27-cleanup-replay.json`.

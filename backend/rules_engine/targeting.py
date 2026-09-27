@@ -87,17 +87,27 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         if action_targets.get("target_player") is None and not action_targets.get("target_card_id"):
             return False, "A player or permanent target is required."
 
+    selected_player = action_targets.get("target_player")
+    if selected_player is not None:
+        allowed_players = {str(item["id"]) for item in target_hints.get("player_targets", [])} if "player_targets" in target_hints else {"1", "2"}
+        if str(selected_player) not in allowed_players:
+            return False, "The selected player is not a legal target for this effect."
+    selected_stack = action_targets.get("target_stack_id")
+    if selected_stack and "stack_targets" in target_hints and str(selected_stack) not in {str(item["id"]) for item in target_hints["stack_targets"]}:
+        return False, "The selected stack item is not a legal target for this effect."
     selected_card_id = action_targets.get("target_card_id")
     if selected_card_id:
         candidate_ids: set[str] = set()
         for key in (
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
             "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
+            "graveyard_creature_targets", "graveyard_permanent_targets",
         ):
             candidate_ids.update(str(item.get("id")) for item in (target_hints.get(key) or []) if item.get("id") is not None)
         candidate_surface_present = bool(candidate_ids) or any(key in target_hints for key in (
             "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
+            "graveyard_creature_targets", "graveyard_permanent_targets",
         )) or ("planeswalker_targets" in target_hints and "player_targets" not in target_hints)
         if candidate_surface_present and str(selected_card_id) not in candidate_ids:
             return False, "The selected card is not a legal target for this effect."

@@ -323,7 +323,7 @@ export function App() {
       <section className="right-column">
         {match ? (
           <>
-            <Battlefield match={match} legalMoves={legalMoves} onCardAction={onCardAction} />
+            <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={onCardAction} />
             <StackLog match={match} />
           </>
         ) : (
