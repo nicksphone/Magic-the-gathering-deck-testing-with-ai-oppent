@@ -10,6 +10,11 @@ from game_state.state import MatchState, StackItem
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     triggers = _collect_triggers(state, event, payload)
     _push_triggers(state, event, triggers)
+    if event == "leaves_battlefield":
+        from rules_engine.alternative_casts import restore_printed_characteristics
+        card = state.cards.get(payload.get("card_id"))
+        if card:
+            restore_printed_characteristics(card)
 
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
@@ -27,6 +32,12 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
                 one_or_more_sources.add(source_id)
             triggers.append(trigger)
     _push_triggers(state, event, triggers)
+    if event == "leaves_battlefield":
+        from rules_engine.alternative_casts import restore_printed_characteristics
+        for payload in payloads:
+            card = state.cards.get(payload.get("card_id"))
+            if card:
+                restore_printed_characteristics(card)
 
 
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
@@ -141,6 +152,11 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
+    if event == "attack_declared":
+        attacker = state.cards.get(payload.get("card_id"))
+        if attacker:
+            for amount in re.findall(r"\bannihilator\s+(\d+)", attacker.oracle_text or "", re.IGNORECASE):
+                out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
     if event in {"spell_cast", "spell_copy"}:
         source_card_id = str(payload.get("source_card_id", "") or "")
         source_card = state.cards.get(source_card_id) if source_card_id else None
@@ -192,7 +208,9 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "combat_damage_dealt" and _matches_combat_damage_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} combat damage trigger", event=event, payload=payload))
             elif event == "attack_declared" and _matches_attack_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} attack trigger", event=event, payload=payload))
+                stripped = re.sub(r"annihilator\s+\d+\s*\([^)]*\)", "", oracle)
+                if _matches_attack_trigger(state, card, stripped, payload):
+                    out.append(_trigger_from_oracle(state, cid, card.controller, stripped, default_label=f"{card.name} attack trigger", event=event, payload=payload))
             elif event == "block_declared" and _matches_block_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} block trigger", event=event, payload=payload))
             elif event in {"spell_cast", "spell_copy"}:

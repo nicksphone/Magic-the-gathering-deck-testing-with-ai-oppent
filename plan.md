@@ -6,7 +6,7 @@ Updated: 2026-09-27 UTC. Audited implementation: `6b95fab0875f4cc35cb9648f8a598b
 
 First finish a reliable local desktop application for an explicitly supported card corpus. Arbitrary-card rules completeness and seasoned-player AI across every deck require additional acceptance criteria and remain longer-term goals.
 
-The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: live hydration loses card faces, the UI omits the second human seat and legal actions, effective combat stats are not displayed, and turn draw/cleanup bypass supported rules events.
+The frontend compiles and the backend has substantial regression coverage. Human playtesting is not release-ready: live hydration loses card faces, the UI omits the second human seat and legal actions, effective combat stats are not displayed, and cleanup bypasses supported discard events/choices. Turn draws now use the replacement-aware effect path; broader integration acceptance remains open.
 
 This plan supersedes the July status paragraphs and patch history previously stored here. Historical changes remain in `CHANGELOG.md`. The September audit is stored in [docs/audits/2026-09-27-app-audit.md](docs/audits/2026-09-27-app-audit.md). Its detailed evidence and reproduction artifacts are local at `/home/nick/.hermes/cache/scratch/mtg-audit-6b95fab/`; those artifacts are not portable repository fixtures.
 
@@ -120,6 +120,8 @@ Acceptance: malformed block/card-view payloads fail contract tests; regressions 
 Gate 1 exit: empty cache/database setup can import a supported deck, play both advertised human modes, choose mulligans/targets/responses/cleanup, complete combat and a BO3, sideboard, reload/restart and resume. All configured gates pass without developer-only assets; bad inputs return 4xx.
 
 ## Gate 2: Trustworthy supported-corpus simulator
+
+September 27 engine increment: dedicated core handlers for Infect/Wither/Toxic, Ninjutsu, Annihilator, Escape, Prototype and optional Dredge; persisted mechanic choices and spell continuations; draw-step replacement routing; ability-versus-spell cast events. This does not complete corpus certification. Next: expose new actions/choices to humans, unify canonical live hydration, validate interacting replacements and first-strike windows, then implement Morph/Manifest, Suspend, Discover, Battle protectors/defense, Mutate, Craft and Banding in separately tested increments. Contracts and remaining limits: [docs/rules/expanded-keywords.md](docs/rules/expanded-keywords.md).
 
 ### 10. Verify corpus and finish knowledge consumers
 

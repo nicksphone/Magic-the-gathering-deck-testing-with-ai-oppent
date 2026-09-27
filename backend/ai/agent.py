@@ -58,6 +58,15 @@ class AIAgent:
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No legal actions")
+        choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
+        if choice:
+            options = list(choice.get("options", []))
+            if choice["kind"] == "draw":
+                prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
+                selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
+                return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
+            options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
+            return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Choose least costly permanents for mandatory sacrifice")
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
@@ -881,6 +890,10 @@ class AIAgent:
                 label = str(move.get("ability_label", "")).lower()
                 if "look at the top" in label or "draw" in label or "search" in label:
                     base += 4.0
+            elif mtype == "ninjutsu":
+                ninja = state.cards[move["card_id"]]
+                returned_power = effective_power(state, move["return_card_id"])
+                base += max(0, int(ninja.power or 0) - returned_power) + (3 if "draw" in ninja.oracle_text.lower() else 1)
             elif mtype == "pass_priority":
                 base += self._pass_bias(state, player_id)
                 if own_main_sorcery_window and castable_creature_moves:

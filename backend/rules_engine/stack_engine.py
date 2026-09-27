@@ -10,7 +10,7 @@ from rules_engine.library_permissions import choose_type_for_realmwalker
 from rules_engine.replacement import replacement_options
 
 
-def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None) -> StackItem:
+def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
     item = StackItem(
         id=str(uuid.uuid4()),
         source_card_id=source_card_id,
@@ -22,16 +22,17 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
     )
     state.stack.append(item)
     state.log.append(f"{state.players[controller].name} casts/activates {label}.")
-    emit_event(
-        state,
-        "spell_cast",
-        {
-            "source_card_id": source_card_id,
-            "controller": controller,
-            "label": label,
-            "stack_payload": dict(payload or {}),
-        },
-    )
+    if is_spell:
+        emit_event(
+            state,
+            "spell_cast",
+            {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": label,
+                "stack_payload": dict(payload or {}),
+            },
+        )
     # MTG priority rule: after casting/activating, the same player receives priority first.
     state.priority_player = controller
     state.passed_priority = set()
@@ -61,6 +62,8 @@ def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int |
 
 
 def resolve_top_of_stack(state: MatchState) -> bool:
+    if state.pending_mechanic_choice:
+        return False
     if not state.stack:
         return False
     item = state.stack[-1]
@@ -108,6 +111,15 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         return True
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
+    if state.pending_mechanic_choice:
+        from dataclasses import asdict
+        state.pending_mechanic_choice["resolving_item"] = asdict(item)
+        return False
+    return finish_stack_resolution(state, item, payload)
+
+
+def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -> bool:
+    is_trigger = bool(payload.get("__trigger_event"))
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK and not is_trigger:
         owner = state.players[getattr(card, "owner", card.controller)]
@@ -121,6 +133,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             card.entered_turn = state.turn
             assign_static_order_on_battlefield_entry(state, card.id)
             if "Creature" in card.types:
+                if payload.get("__escaped"):
+                    import re
+                    match = re.search(r"escapes with (a|one|\d+) \+1/\+1 counters?", card.oracle_text, re.IGNORECASE)
+                    if match:
+                        amount = 1 if match.group(1).lower() in {"a", "one"} else int(match.group(1))
+                        card.counters["+1/+1"] = int(card.counters.get("+1/+1", 0)) + amount
                 pending = list(getattr(state, "pending_entry_counters", []) or [])
                 remaining: list[dict] = []
                 applied = False
@@ -154,5 +172,6 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     state.log.append(f"{item.label} resolves.")
                     return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller})
-    state.log.append(f"{item.label} resolves.")
+    if not state.pending_mechanic_choice:
+        state.log.append(f"{item.label} resolves.")
     return True

@@ -25,6 +25,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "blocks": {key: list(value) for key, value in state.blocks.items()},
         "attackers_declared": state.attackers_declared,
         "blockers_declared": state.blockers_declared,
+        "combat_damage_resolved": state.combat_damage_resolved,
         "winner": state.winner,
         "best_of": state.best_of,
         "score": {str(key): value for key, value in state.score.items()},
@@ -56,12 +57,14 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "trigger_order_choice_required": state.trigger_order_choice_required,
         "trigger_order_choice_players": sorted(state.trigger_order_choice_players),
         "pending_trigger_order": state.pending_trigger_order,
+        "pending_mechanic_choice": state.pending_mechanic_choice,
         "rng_state": state.rng.getstate(),
         "players": {
             str(pid): {
                 "id": player.id,
                 "name": player.name,
                 "life": player.life,
+                "poison": player.poison,
                 "library": list(player.library),
                 "hand": list(player.hand),
                 "battlefield": list(player.battlefield),
@@ -104,6 +107,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "card_faces": list(card.card_faces),
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
+                "printed_characteristics": dict(card.printed_characteristics),
             }
             for cid, card in state.cards.items()
         },
@@ -126,6 +130,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     players = {}
     for raw in payload["players"].values():
         player = PlayerState(id=int(raw["id"]), name=str(raw["name"]), life=int(raw["life"]))
+        player.poison = int(raw.get("poison", 0))
         for key in ("library", "hand", "battlefield", "graveyard", "exile"):
             setattr(player, key, list(raw.get(key, [])))
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
@@ -153,6 +158,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
             selected_face_index=raw.get("selected_face_index"),
             chosen_creature_type=raw.get("chosen_creature_type"),
+            printed_characteristics=dict(raw.get("printed_characteristics", {})),
         )
 
     state = MatchState(
@@ -174,6 +180,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.blocks = {key: list(value) for key, value in payload.get("blocks", {}).items()}
     state.attackers_declared = bool(payload.get("attackers_declared", False))
     state.blockers_declared = bool(payload.get("blockers_declared", False))
+    state.combat_damage_resolved = bool(payload.get("combat_damage_resolved", False))
     state.score = {int(key): int(value) for key, value in payload.get("score", {"1": 0, "2": 0}).items()}
     state.pregame_pending = bool(payload.get("pregame_pending", True))
     state.mulligan_count = {int(key): int(value) for key, value in payload.get("mulligan_count", {}).items()}
@@ -205,6 +212,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.trigger_order_choice_required = bool(payload.get("trigger_order_choice_required", False))
     state.trigger_order_choice_players = {int(value) for value in payload.get("trigger_order_choice_players", [])}
     state.pending_trigger_order = payload.get("pending_trigger_order")
+    state.pending_mechanic_choice = payload.get("pending_mechanic_choice")
     state.rng.setstate(_tupleize(payload["rng_state"]))
     return state
 
@@ -242,6 +250,7 @@ def serialize_match(state: MatchState) -> dict:
                 "id": p.id,
                 "name": p.name,
                 "life": p.life,
+                "poison": p.poison,
                 "library_count": len(p.library),
                 "hand_count": len(p.hand),
                 "battlefield": [
@@ -290,6 +299,7 @@ def serialize_match(state: MatchState) -> dict:
             for item in state.stack
         ],
         "attackers": state.attackers,
+        "pending_mechanic_choice": state.pending_mechanic_choice,
         "attack_targets": state.attack_targets,
         "blocks": state.blocks,
         "log": state.log[-120:],

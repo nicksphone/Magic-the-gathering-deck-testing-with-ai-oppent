@@ -70,7 +70,8 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         return
     if effect_key == "effect_sequence":
         source_card_id = payload.get("__source_card_id")
-        for item in payload.get("effects", []):
+        effects = payload.get("effects", [])
+        for index, item in enumerate(effects):
             key = item.get("effect_key")
             data = dict(item.get("payload", {}) or {})
             if source_card_id and "__source_card_id" not in data:
@@ -78,8 +79,23 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
             if not key:
                 continue
             resolve_effect(state, controller, key, data)
+            if state.pending_mechanic_choice:
+                remaining = []
+                for next_effect in effects[index + 1:]:
+                    next_data = dict(next_effect.get("payload", {}))
+                    if source_card_id:
+                        next_data.setdefault("__source_card_id", source_card_id)
+                    remaining.append({**next_effect, "payload": next_data})
+                state.pending_mechanic_choice.setdefault("continuation_effects", []).extend(remaining)
+                return
         return
     handler = EFFECT_HANDLERS.get(effect_key)
+    if effect_key in {"ninjutsu", "annihilator"}:
+        from rules_engine.keyword_actions import resolve_ninjutsu, resolve_annihilator
+        handler = {"ninjutsu": resolve_ninjutsu, "annihilator": resolve_annihilator}[effect_key]
+    if effect_key == "dredge":
+        from rules_engine.dredge import resolve_dredge
+        handler = resolve_dredge
     if handler is None:
         state.log.append(f"Missing effect handler: {effect_key}")
         return

@@ -16,6 +16,7 @@ from persistence.db import engine, init_db
 from persistence.repository import Repository
 
 GAP_CANDIDATES = {"Annihilator", "Banding", "Craft", "Discover", "Dredge", "Escape", "Infect", "Manifest", "Morph", "Mutate", "Ninjutsu", "Prototype", "Suspend"}
+CORE_HANDLERS = {"Annihilator", "Dredge", "Escape", "Infect", "Ninjutsu", "Prototype"}
 
 
 def inventory(rows) -> dict:
@@ -43,9 +44,9 @@ def inventory(rows) -> dict:
         "keywords": dict(sorted(keywords.items())),
         "layouts": dict(sorted(layouts.items())),
         "type_and_supertype_counts": dict(sorted(types.items())),
-        "gap_candidates": [{"keyword": keyword, "cards": keywords[keyword], "examples": examples[keyword], "status": "needs_dedicated_rules_and_integration_validation"} for keyword in sorted(GAP_CANDIDATES) if keywords[keyword]],
+        "gap_candidates": [{"keyword": keyword, "cards": keywords[keyword], "examples": examples[keyword], "status": "core_handler_added_integration_and_edge_cases_open" if keyword in CORE_HANDLERS else "needs_dedicated_rules_and_integration_validation"} for keyword in sorted(GAP_CANDIDATES) if keywords[keyword]],
         "rules_support_certified": False,
-        "interpretation": "Inventory of canonical metadata, not engine certification. Gap candidates have no dedicated implementation found in the September source check; reminder text may be partially inferred. Validate complete mechanics and interactions with rules fixtures. Non-keyword mechanics need a separate Oracle-text and rules audit.",
+        "interpretation": "Inventory of canonical metadata, not engine certification. Some candidates now have dedicated core handlers, but complete interactions and HTTP/UI integration remain unverified. Reminder text may otherwise be partially inferred. Non-keyword mechanics need a separate Oracle-text and rules audit.",
     }
 
 

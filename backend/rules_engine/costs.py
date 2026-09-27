@@ -25,6 +25,7 @@ class CostOption:
     discard_cards: int = 0
     sacrifice_creatures: int = 0
     sacrifice_kind: str = "creature"
+    exile_graveyard: int = 0
 
 
 @dataclass(frozen=True)
@@ -174,16 +175,23 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:
+    from rules_engine.alternative_casts import escape_cost, prototype_characteristics
     oracle = (card.oracle_text or "").lower()
     base = CostOption(id="base", label="Base Cost", mana_cost=card.mana_cost or "")
-    options = [base]
+    escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
+    if card.zone == Zone.GRAVEYARD and escape is None:
+        return []
+    options = [CostOption(id="escape", label="Escape", mana_cost=escape[0], exile_graveyard=escape[1])] if escape else [base]
+    prototype = prototype_characteristics(card)
+    if prototype and not escape:
+        options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
 
     alt = ALT_COST_RE.search(card.oracle_text or "")
-    if alt:
+    if alt and not escape:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
     kicker = KICKER_RE.search(card.oracle_text or "")
-    if kicker:
+    if kicker and not escape:
         options.append(CostOption(id="kicker", label=f"Kicker {kicker.group(1)}", mana_cost=_join_costs(base.mana_cost, kicker.group(1))))
 
     life_match = PAY_LIFE_RE.search(card.oracle_text or "")
@@ -214,9 +222,11 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
     player = state.players[player_id]
+    if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id]) < option.exile_graveyard:
+        return False
     if player.life <= option.pay_life:
         return False
-    if len(player.hand) <= option.discard_cards:
+    if len(player.hand) - int(card.id in player.hand) < option.discard_cards:
         return False
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False

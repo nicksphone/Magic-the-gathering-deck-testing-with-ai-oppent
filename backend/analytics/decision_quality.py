@@ -71,6 +71,7 @@ def _resolution_is_paused(state: Any) -> bool:
     return bool(
         getattr(state, "pending_replacement_choice", None)
         or getattr(state, "pending_trigger_order", None)
+        or getattr(state, "pending_mechanic_choice", None)
     )
 
 
@@ -153,8 +154,7 @@ def _simulate_block_line(
     if (
         _resolution_is_paused(simulated_state)
         or simulated_state.stack
-        or simulated_state.attackers
-        or simulated_state.blocks
+        or not simulated_state.combat_damage_resolved
     ):
         return None
     return simulated_state, accepted_blocks

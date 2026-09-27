@@ -17,6 +17,9 @@ from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timi
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.winner is not None:
         return []
+    if state.pending_mechanic_choice:
+        pending = state.pending_mechanic_choice
+        return [{"type": "choose_mechanic", **pending}] if pending["player_id"] == player_id else []
     pending_order = getattr(state, "pending_trigger_order", None)
     if pending_order:
         if int(pending_order.get("current_controller", -1)) != player_id:
@@ -59,6 +62,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     if state.priority_player != player_id:
         return moves
+    from rules_engine.keyword_actions import ninjutsu_moves
+    moves.extend(ninjutsu_moves(state, player_id))
 
     if state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not getattr(state, "attackers_declared", False):
         restricted_attackers: list[dict] = []
@@ -112,10 +117,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         blocker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in blockers]
         moves.append({"type": "block", "attackers": attacker_opts, "blockers": blocker_opts})
 
-    for cid in list(player.hand):
+    for cid in list(player.hand) + list(player.graveyard):
         card = state.cards[cid]
         cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
-        if cycle_cost:
+        if cycle_cost and cid in player.hand:
             x_values = range(0, 21) if cycling_is_variable(cycle_cost) else range(1)
             for x_value in x_values:
                 if not can_pay_with_pool_and_lands(
@@ -145,6 +150,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             used_land_plays = 0
         if (
             _is_land_card(card)
+            and cid in player.hand
             and used_land_plays < max_land_plays
             and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
             and state.active_player == player_id
@@ -152,7 +158,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         ):
             moves.append({"type": "play_land", "card_id": cid})
         elif (
-            card.zone == Zone.HAND
+            card.zone in {Zone.HAND, Zone.GRAVEYARD}
             and not _is_land_card(card)
             and _can_cast_spell(state, card, player_id)
         ):
@@ -180,6 +186,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "type": "cast_spell",
                     "card_id": cid,
                     "card_name": card.name,
+                    "from_graveyard": card.zone == Zone.GRAVEYARD,
                     "mana_cost": card.mana_cost,
                     "cost_options": [
                         {
@@ -190,6 +197,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                             "discard_cards": o.discard_cards,
                             "sacrifice_creatures": o.sacrifice_creatures,
                             "sacrifice_kind": o.sacrifice_kind,
+                            "exile_graveyard": o.exile_graveyard,
                         }
                         for o in available_options
                     ],

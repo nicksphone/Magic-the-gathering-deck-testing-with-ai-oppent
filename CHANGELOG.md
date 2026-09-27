@@ -4,6 +4,10 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added reusable core handlers for Infect/Wither/Toxic, poison loss, Ninjutsu, Annihilator, Escape, Prototype and optional Dredge. Snapshot-safe mechanic choices resume multi-draw/nested effects and finish resolving spells once. Turn draws now use the shared replacement path; cycling/activated/loyalty abilities no longer emit spell-cast events.
+- Retained combat participants until combat ends for post-damage Ninjutsu, persisted a once-only combat-damage guard, preserved mixed blocker damage sources and post-prevention lifelink amounts, and updated combat diagnostics accordingly. Complete keyword families and human UI integration remain open rather than being inferred from metadata coverage.
+- Validation: 753 backend tests pass in a disposable copy with local image assets, frontend production build passes, and seeded Aggro/Dimir BO3 replay has zero timeouts or determinism failures. This does not close the tracked-only fallback-asset release gate.
+
 - Added canonical all-Oracle card knowledge ingestion, exact-name/corpus/search ruling verification, and a coverage report. Bulk ingestion preserves faces, legalities, keywords, provenance and same-name variants without overwriting the gameplay cache or claiming rules support. Local bulk data is rebuildable and remains outside Git.
 - Imported 38,690 unique Oracle records / 6,433 faces locally; repeat import changed zero records. Verified rulings for 87 canonical cards covering 88 corpus names, with no corpus metadata/rulings gaps. Added a reproducible mechanics inventory and committed evidence summaries; tactical AI consumption and all-card rules support remain unfinished.
 

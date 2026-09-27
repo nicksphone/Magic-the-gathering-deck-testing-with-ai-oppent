@@ -120,7 +120,16 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
     emit_event_batch(state, "creature_dies", creature_death_events)
 
 def apply_state_based_actions(state: MatchState) -> None:
+    if state.pending_mechanic_choice:
+        return
+    from rules_engine.alternative_casts import restore_printed_characteristics
+    for card in state.cards.values():
+        if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
+            restore_printed_characteristics(card)
     for pid, player in state.players.items():
+        if player.poison >= 10:
+            state.winner = 1 if pid == 2 else 2
+            state.log.append(f"{player.name} has ten or more poison counters and loses.")
         if player.life <= 0:
             state.winner = 1 if pid == 2 else 2
             state.log.append(f"{player.name} has 0 or less life and loses.")

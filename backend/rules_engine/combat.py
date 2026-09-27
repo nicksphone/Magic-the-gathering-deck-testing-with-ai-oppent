@@ -74,6 +74,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal = []
         legal_targets = {}
     state.attackers = legal
+    state.combat_damage_resolved = False
     state.attack_targets = legal_targets
     if legal:
         names = ", ".join(
@@ -214,17 +215,15 @@ def _add_combat_modifier(card, power: int, toughness: int) -> None:
 
 
 def combat_damage(state: MatchState) -> None:
+    if state.combat_damage_resolved:
+        return
+    state.combat_damage_resolved = True
     default_defender = 1 if state.active_player == 2 else 2
     _combat_damage_step(state, default_defender, first_strike_only=True)
     _remove_dead_creatures(state)
     _combat_damage_step(state, default_defender, first_strike_only=False)
     _remove_dead_creatures(state)
 
-    state.attackers = []
-    state.attack_targets = {}
-    state.blocks = {}
-    state.attackers_declared = False
-    state.blockers_declared = False
 
 
 def _combat_damage_step(state: MatchState, default_defender: int, first_strike_only: bool) -> None:
@@ -243,6 +242,9 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
         defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
         if not blocks:
+            # A blocked creature stays blocked when its blockers leave combat.
+            if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
+                continue
             dealt = _deal_unblocked_damage(state, defender_key, effective_power(state, attacker), source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
@@ -267,14 +269,14 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
                 continue
             lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
             dealt = min(remaining, lethal)
-            _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
-            if dealt > 0 and has_keyword(state, attacker, "lifelink"):
-                state.players[atk.controller].life += dealt
-            if dealt > 0:
+            actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
+            if actual > 0 and has_keyword(state, attacker, "lifelink"):
+                state.players[atk.controller].life += actual
+            if actual > 0:
                 emit_event(
                     state,
                     "combat_damage_dealt",
-                    {"source_card_id": attacker, "target_card_id": blocker_id, "amount": dealt},
+                    {"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual},
                 )
             remaining -= dealt
 
@@ -283,8 +285,6 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
 
-        atk_damage_taken = 0
-        got_deathtouch_from_blocker = False
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
             blk_has_fs = has_keyword(state, blocker_id, "first strike") or has_keyword(state, blocker_id, "double strike")
@@ -295,13 +295,9 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
             blk_power = effective_power(state, blocker_id)
             if _damage_prevented_by_protection(state, blocker_id, attacker):
                 continue
-            atk_damage_taken += blk_power
-            if blk_power > 0 and has_keyword(state, blocker_id, "deathtouch"):
-                got_deathtouch_from_blocker = True
-            if blk_power > 0 and has_keyword(state, blocker_id, "lifelink"):
-                state.players[blk.controller].life += blk_power
-        if atk_damage_taken > 0:
-            _mark_creature_damage(state, attacker, atk_damage_taken, deathtouch=got_deathtouch_from_blocker, source_id=blocks[0] if len(blocks) == 1 else None)
+            actual = _mark_creature_damage(state, attacker, blk_power, deathtouch=has_keyword(state, blocker_id, "deathtouch"), source_id=blocker_id)
+            if actual > 0 and has_keyword(state, blocker_id, "lifelink"):
+                state.players[blk.controller].life += actual
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
@@ -522,7 +518,8 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")
     if post <= 0:
         return 0
-    state.players[pid].life -= post
+    from rules_engine.damage_results import apply_player_damage
+    apply_player_damage(state, pid, post, source_id, combat=True)
     return post
 
 
@@ -532,9 +529,9 @@ def _mark_creature_damage(
     amount: int,
     deathtouch: bool = False,
     source_id: str | None = None,
-) -> None:
+) -> int:
     if amount <= 0:
-        return
+        return 0
     card = state.cards[card_id]
     prevention_locked = source_id is not None and source_id in state.cards and damage_cant_be_prevented(
         state,
@@ -546,10 +543,12 @@ def _mark_creature_damage(
     if prevented > 0:
         state.log.append(f"{card.name} prevents {prevented} damage.")
     if post <= 0:
-        return
-    card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(post)
+        return 0
+    from rules_engine.damage_results import apply_creature_damage
+    apply_creature_damage(state, card_id, int(post), source_id)
     if deathtouch:
         card.counters[DEATHTOUCH_MARK_KEY] = 1
+    return int(post)
 
 
 def _remaining_lethal_damage(state: MatchState, card_id: str) -> int:
@@ -563,6 +562,8 @@ def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
     if card.toughness is None:
         return False
+    if effective_toughness(state, card_id) <= 0:
+        return True
     if has_keyword(state, card_id, "indestructible"):
         return False
     marked = int(card.counters.get(DMG_MARK_KEY, 0))

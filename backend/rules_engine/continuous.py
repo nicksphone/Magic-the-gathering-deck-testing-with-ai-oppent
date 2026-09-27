@@ -53,6 +53,8 @@ KNOWN_KEYWORDS = [
     "flash",
     "lifelink",
     "deathtouch",
+    "infect",
+    "wither",
     "flying",
     "reach",
     "menace",

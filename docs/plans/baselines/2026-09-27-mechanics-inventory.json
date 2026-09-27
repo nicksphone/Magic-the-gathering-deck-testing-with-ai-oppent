@@ -11,7 +11,7 @@
         "Ulamog's Crusher"
       ],
       "keyword": "Annihilator",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 26,
@@ -59,7 +59,7 @@
         "Nightmare Void"
       ],
       "keyword": "Dredge",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 33,
@@ -71,7 +71,7 @@
         "Ox of Agonas"
       ],
       "keyword": "Escape",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 49,
@@ -83,7 +83,7 @@
         "Core Prowler"
       ],
       "keyword": "Infect",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 68,
@@ -131,7 +131,7 @@
         "Spring-Leaf Avenger"
       ],
       "keyword": "Ninjutsu",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 21,
@@ -143,7 +143,7 @@
         "Cradle Clearcutter"
       ],
       "keyword": "Prototype",
-      "status": "needs_dedicated_rules_and_integration_validation"
+      "status": "core_handler_added_integration_and_edge_cases_open"
     },
     {
       "cards": 74,
@@ -158,7 +158,7 @@
       "status": "needs_dedicated_rules_and_integration_validation"
     }
   ],
-  "interpretation": "Inventory of canonical metadata, not engine certification. Gap candidates have no dedicated implementation found in the September source check; reminder text may be partially inferred. Validate complete mechanics and interactions with rules fixtures. Non-keyword mechanics need a separate Oracle-text and rules audit.",
+  "interpretation": "Inventory of canonical metadata, not engine certification. Some candidates now have dedicated core handlers, but complete interactions and HTTP/UI integration remain unverified. Reminder text may otherwise be partially inferred. Non-keyword mechanics need a separate Oracle-text and rules audit.",
   "keywords": {
     "... Catch": 1,
     "10,000 Needles": 1,

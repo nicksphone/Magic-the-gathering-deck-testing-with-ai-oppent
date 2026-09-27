@@ -101,6 +101,8 @@ def replacement_options(
             for card, text in _battlefield_oracle_texts(state, controller=target_player)
             if "if you would draw a card, gain 1 life instead" in text
         ]
+        from rules_engine.dredge import dredge_options
+        candidates.extend((state.cards[option["card_id"]], state.cards[option["card_id"]].oracle_text) for option in dredge_options(state, target_player))
     elif event_key in {"die_zone", "dies"} and target_card_id in state.cards:
         target = state.cards[target_card_id]
         is_token = bool(
@@ -350,6 +352,9 @@ def replace_draw_cards(
     replacement_source_id: str | None = None,
     used_source_ids: list[str] | None = None,
 ) -> tuple[str, dict] | None:
+    from rules_engine.dredge import dredge_options
+    if any(option["card_id"] == replacement_source_id for option in dredge_options(state, target_player)):
+        return ("dredge", {"target_player": target_player, "dredge_card_id": replacement_source_id})
     used = {str(value) for value in (used_source_ids or [])}
     candidates = [
         (card, text)

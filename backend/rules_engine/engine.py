@@ -29,12 +29,14 @@ class RulesEngine:
     def next_step(self, state: MatchState) -> None:
         if state.pregame_pending:
             return
+        if state.pending_mechanic_choice:
+            return
         if state.winner is not None:
             return
         if state.stack:
             resolve_top_of_stack(state)
             apply_state_based_actions(state)
-            if not state.pending_replacement_choice and not state.pending_trigger_order:
+            if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                 state.priority_player = state.active_player
             return
 
@@ -68,7 +70,14 @@ class RulesEngine:
             state.step = TURN_STEPS[idx + 1]
             if state.step == Step.DECLARE_ATTACKERS:
                 state.attackers_declared = False
+                state.combat_damage_resolved = False
             elif state.step == Step.DECLARE_BLOCKERS:
+                state.blockers_declared = False
+            elif state.step == Step.POSTCOMBAT_MAIN:
+                state.attackers = []
+                state.attack_targets = {}
+                state.blocks = {}
+                state.attackers_declared = False
                 state.blockers_declared = False
 
         self._apply_step_start_actions(state)
@@ -86,9 +95,12 @@ class RulesEngine:
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
         elif state.step == Step.DRAW and state.turn > 1:
             before = len(player.hand)
-            draw_card(state, state.active_player)
+            resolve_effect(state, state.active_player, "draw_cards", {"amount": 1})
             after = len(player.hand)
-            state.log.append(f"{player.name} draws a card. Hand {before}->{after}.")
+            if after == before + 1 and not state.pending_mechanic_choice:
+                state.log.append(f"{player.name} draws a card. Hand {before}->{after}.")
+            else:
+                state.log.append(f"{player.name} processes the draw step. Hand {before}->{after}.")
         elif state.step == Step.DRAW and state.turn == 1:
             state.log.append(f"{player.name} skips draw on turn 1 (on the play rule).")
         elif state.step == Step.PRECOMBAT_MAIN:
@@ -257,6 +269,11 @@ class RulesEngine:
         if state.winner is not None:
             return
         kind = action.get("type")
+        if state.pending_mechanic_choice:
+            from rules_engine.keyword_actions import finish_mechanic_choice
+            if kind == "choose_mechanic" and finish_mechanic_choice(state, player_id, action):
+                apply_state_based_actions(state)
+            return
 
         if state.pregame_pending:
             self._handle_pregame_action(state, player_id, action)
@@ -292,7 +309,7 @@ class RulesEngine:
                 )
                 resume_state_based_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
                 apply_state_based_actions(state)
-                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
@@ -305,7 +322,7 @@ class RulesEngine:
                 )
                 resume_combat_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
                 apply_state_based_actions(state)
-                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
@@ -323,7 +340,7 @@ class RulesEngine:
                     chosen_id,
                 )
                 apply_state_based_actions(state)
-                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
@@ -347,7 +364,7 @@ class RulesEngine:
                     },
                 )
                 apply_state_based_actions(state)
-                if not state.pending_replacement_choice and not state.pending_trigger_order:
+                if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
@@ -360,7 +377,7 @@ class RulesEngine:
                 f"{state.players[player_id].name} chooses replacement source {chosen_id}."
             )
             resolve_top_of_stack(state)
-            if not state.pending_replacement_choice and not state.pending_trigger_order:
+            if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                 state.priority_player = state.active_player
                 state.passed_priority = set()
             apply_state_based_actions(state)
@@ -376,7 +393,7 @@ class RulesEngine:
             if both_passed:
                 if state.stack:
                     resolve_top_of_stack(state)
-                    if not state.pending_replacement_choice and not state.pending_trigger_order:
+                    if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                         state.priority_player = state.active_player
                 else:
                     self.next_step(state)
@@ -387,7 +404,10 @@ class RulesEngine:
             return
 
         player = state.players[player_id]
-        if kind == "play_land":
+        if kind == "ninjutsu":
+            from rules_engine.keyword_actions import activate_ninjutsu
+            activate_ninjutsu(state, player_id, action)
+        elif kind == "play_land":
             cid = action["card_id"]
             from_exile = bool(action.get("from_exile"))
             allowed_source = cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn if from_exile else cid in player.hand
@@ -466,10 +486,11 @@ class RulesEngine:
             cid = action["card_id"]
             from_exile = bool(action.get("from_exile"))
             from_library = bool(action.get("from_library"))
+            from_graveyard = bool(action.get("from_graveyard"))
             allowed_source = (
                 (cid in player.exile and player.exile_play_until.get(cid, 0) >= state.turn)
                 if from_exile
-                else (cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
+                else (cid in player.graveyard if from_graveyard else cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
             )
             if allowed_source:
                 card = state.cards[cid]
@@ -483,7 +504,14 @@ class RulesEngine:
                     apply_state_based_actions(state)
                     return
                 options = collect_cost_options(state, player_id, card)
+                if not options:
+                    return
                 chosen = normalize_cost_choice(action, options)
+                from rules_engine.alternative_casts import validate_escape_exiles
+                escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if chosen.id == "escape" else []
+                if escape_ids is None:
+                    state.log.append("Invalid escape exile selection.")
+                    return
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
@@ -552,7 +580,16 @@ class RulesEngine:
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)
 
-                (player.exile if from_exile else player.hand if not from_library else player.library).remove(cid)
+                for exile_id in escape_ids:
+                    player.graveyard.remove(exile_id)
+                    player.exile.append(exile_id)
+                    state.cards[exile_id].zone = Zone.EXILE
+                if chosen.id == "prototype":
+                    from rules_engine.alternative_casts import apply_prototype
+                    apply_prototype(card)
+                if chosen.id == "escape":
+                    payload["__escaped"] = True
+                (player.exile if from_exile else player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.zone = Zone.STACK
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
@@ -583,6 +620,7 @@ class RulesEngine:
                 source_card_id=cid,
                 controller=player_id,
                 label=f"{card.name} cycling ability",
+                is_spell=False,
                 effect_key="cycle_search" if cycling_variant(card.oracle_text) else "cycle_draw",
                 payload=(
                     {"contains": cycling_variant(card.oracle_text), "count": 1, "shuffle": True}
@@ -628,6 +666,7 @@ class RulesEngine:
                 source_card_id=cid,
                 controller=player_id,
                 label=f"{state.cards[cid].name} ability",
+                is_spell=False,
                 effect_key=resolved.effect.key,
                 payload=resolved.effect.payload,
             )
@@ -697,6 +736,7 @@ class RulesEngine:
                 source_card_id=cid,
                 controller=player_id,
                 label=f"{pw.name} loyalty ability",
+                is_spell=False,
                 effect_key=effect_key,
                 payload=payload,
             )

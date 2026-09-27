@@ -76,6 +76,7 @@ class CardInstance:
     card_faces: list[dict] = field(default_factory=list)
     selected_face_index: int | None = None
     chosen_creature_type: str | None = None
+    printed_characteristics: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -94,6 +95,7 @@ class PlayerState:
     id: int
     name: str
     life: int = 20
+    poison: int = 0
     library: list[str] = field(default_factory=list)
     hand: list[str] = field(default_factory=list)
     battlefield: list[str] = field(default_factory=list)
@@ -125,6 +127,7 @@ class MatchState:
     blocks: dict[str, list[str]] = field(default_factory=dict)
     attackers_declared: bool = False
     blockers_declared: bool = False
+    combat_damage_resolved: bool = False
     winner: int | None = None
     best_of: int = 3
     score: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
@@ -162,6 +165,7 @@ class MatchState:
     trigger_order_choice_required: bool = False
     trigger_order_choice_players: set[int] = field(default_factory=set)
     pending_trigger_order: dict | None = None
+    pending_mechanic_choice: dict | None = None
 
 
 class MatchFactory:
@@ -426,6 +430,8 @@ def _infer_keywords(oracle_text: str) -> list[str]:
         "flash",
         "lifelink",
         "deathtouch",
+        "infect",
+        "wither",
         "flying",
         "reach",
         "menace",

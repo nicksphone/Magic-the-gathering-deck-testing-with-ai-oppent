@@ -175,6 +175,12 @@ The rules engine exposes explicit choice contracts for supported tutor and top-l
 
 Common tempo bounce is also handled through the rules engine: nonland-permanent and creature returns use legal target hints, preserve ownership for stolen cards, emit battlefield-leave events, and return the permanent to its owner's hand. Master AI additionally evaluates small-board attack subsets through blocker search and combat resolution before committing attackers.
 
+### Expanded keyword engine
+
+Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.
+
+These are engine/API foundations, not all-card certification. Human UI controls for the new choices/actions, interacting replacement choices, Prototype copy/layer edge cases, and split first-strike priority windows still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
+
 Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
 
 Master two-ply and rollout search is also bounded by total battlefield permanents and legal-action count. This keeps token-heavy matchups responsive; it is a performance guard, not a claim of exhaustive search or pro-level optimal play on large boards.

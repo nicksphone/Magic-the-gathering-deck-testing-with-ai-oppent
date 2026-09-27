@@ -181,7 +181,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
                 return
-            card.counters[DMG_MARK_KEY] = int(card.counters.get(DMG_MARK_KEY, 0)) + int(post)
+            from rules_engine.damage_results import apply_creature_damage
+            apply_creature_damage(state, target_card_id, int(post), source_card_id)
             state.log.append(f"{card.name} takes {post} damage.")
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
             if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
@@ -202,7 +203,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
         if post <= 0:
             return
-        state.players[target_player].life -= post
+        from rules_engine.damage_results import apply_player_damage
+        apply_player_damage(state, int(target_player), int(post), source_card_id)
         state.log.append(f"{state.players[target_player].name} takes {post} damage.")
 
 
@@ -211,6 +213,20 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
 
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
+    if amount <= 0:
+        return
+    if amount > 1:
+        for index in range(amount):
+            draw_cards(state, controller, {**payload, "amount": 1})
+            if state.pending_mechanic_choice:
+                state.pending_mechanic_choice["remaining_draws"] = amount - index - 1
+                return
+            if state.winner is not None:
+                return
+        return
+    from rules_engine.dredge import offer_dredge_choice
+    if offer_dredge_choice(state, controller, payload):
+        return
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
     selected_source_id = payload.get("__replacement_source_id")
     replaced = replace_draw_cards(
