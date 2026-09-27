@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Crew now pays creature tap costs on activation and animates a Vehicle only when its counterable stack ability resolves. Source-creature removal does not undo the paid cost; the same Vehicle can change controllers before resolution, while a departed/re-entered object is not affected. Already-creature Vehicles can be crewed again. Canonical Smuggler's Copter/Soul Warden tests and the existing browser crew path cover the response window. Vehicle-specific crew triggers and complex copy/layer effects remain open.
+- Crew resolution now restores Artifact and Creature where needed; cleanup removes only types this crew effect added, preserving an already-creature Vehicle. Validation: 860 backend tests pass in a fresh isolated source/database copy; frontend production build/unit checks and all twelve Chromium action paths pass. A seeded two-game Aetherdrift Aggro/Karlov Manor Control BO3 completes in 40 turns without timeout, anomaly label or determinism drift. This does not establish balance or expert AI.
+
 - Added resolution-time human accept/decline for supported optional triggered effects. Target announcement remains mandatory and earlier; an illegal target skips the optional decision. Pending choice is snapshot-safe and validated for the controlling seat; declining prevents effect/replacement application. Canonical Reclamation Sage tests and a twelfth browser action path cover both decisions.
 - Validation: 854 isolated backend tests, frontend production build/unit checks and twelve Chromium human-action paths pass. A seeded two-game Aetherdrift Aggro/Karlov Manor Control BO3 replay completes in 40 turns without timeout, anomaly label or determinism drift. These are bounded regressions, not balance or expert-AI evidence.
 

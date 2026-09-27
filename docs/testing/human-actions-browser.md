@@ -2,7 +2,7 @@
 
 The harness renders the production Battlefield and Controls components and invokes the production API action handlers. It tests twelve paths: seat-2 land play, targeted permanent activation, explicit Vehicle crew selection, permitted exile casting, permitted top-library casting, deliberate seat-2 London mulligan bottom selection, an affordable modal spell face, a deliberate face switch with distinct cost, a tapped modal land play, an Adventure spell followed by its normal-face cast from exile, a human ETB target choice, and a separate optional-trigger decline at resolution. It also verifies the opposing hand is not rendered as playable cards and Keep is disabled until the required number of bottoms is selected.
 
-This is not a complete App onboarding/game/recovery test or a rules certification. Fixtures use named real cards with only relevant clauses, never add cards to the gameplay corpus, and cannot be launched from the live Git checkout. Crew currently resolves immediately; testing that UI path does not certify crew stack timing.
+This is not a complete App onboarding/game/recovery test or a rules certification. Fixtures use named real cards with only relevant clauses, never add cards to the gameplay corpus, and cannot be launched from the live Git checkout. The crew path asserts that tapping pays its cost before the Vehicle gains creature type on stack resolution; see [crew timing checks](crew-stack-timing.md).
 
 Requirements: installed backend dependencies, installed frontend dependencies, Node 22 with built-in WebSocket, and Chromium with remote debugging. Use three separate terminals; all services bind loopback. The copied backend owns its database/cache; changing only cwd is not isolation.
 

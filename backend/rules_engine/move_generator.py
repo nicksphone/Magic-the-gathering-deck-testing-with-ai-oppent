@@ -376,14 +376,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
 
-    # Vehicle crew is a tap cost that turns the artifact into a creature until
-    # end of turn. The creature selection is explicit so human and AI actions
-    # use the same legality contract.
+    # Crew costs are paid now; the animation ability resolves on the stack.
     from rules_engine.oracle_effects import crew_value
     for vehicle_id in player.battlefield:
         vehicle = state.cards[vehicle_id]
         crew = crew_value(vehicle)
-        if crew is None or "Artifact" not in vehicle.types or "Creature" in vehicle.types:
+        if crew is None or "Artifact" not in vehicle.types:
             continue
         candidates = [
             cid
@@ -392,7 +390,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and "Creature" in state.cards[cid].types
             and not state.cards[cid].tapped
         ]
-        if candidates and sum(max(0, effective_power(state, cid)) for cid in candidates) >= crew:
+        if sum(max(0, effective_power(state, cid)) for cid in candidates) >= crew:
             moves.append(
                 {
                     "type": "crew",

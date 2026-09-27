@@ -161,9 +161,12 @@ class RulesEngine:
             if int(card.counters.get("__crew_until_turn", -1)) != int(state.turn):
                 continue
             card.counters.pop("__crew_until_turn", None)
-            if "Creature" in card.types:
+            removed_creature = bool(card.counters.pop("__crew_added_creature", 0))
+            if removed_creature and "Creature" in card.types:
                 card.types.remove("Creature")
-            state.log.append(f"{card.name} is no longer a creature after cleanup.")
+            if card.counters.pop("__crew_added_artifact", 0) and "Artifact" in card.types:
+                card.types.remove("Artifact")
+            state.log.append(f"{card.name} is no longer a creature after cleanup." if removed_creature else f"Crew effect ends for {card.name} after cleanup.")
 
     def _advance_sagas(self, state: MatchState) -> None:
         for cid in list(state.players[state.active_player].battlefield):
@@ -924,7 +927,6 @@ class RulesEngine:
                 vehicle is not None
                 and vehicle_id in player.battlefield
                 and "Artifact" in vehicle.types
-                and "Creature" not in vehicle.types
                 and required is not None
                 and len(selected) == len(set(selected))
                 and all(
@@ -939,9 +941,13 @@ class RulesEngine:
             if valid:
                 for cid in selected:
                     state.cards[cid].tapped = True
-                vehicle.types = list(dict.fromkeys([*vehicle.types, "Creature"]))
-                vehicle.counters["__crew_until_turn"] = int(state.turn)
-                state.log.append(f"{player.name} crews {vehicle.name} with {len(selected)} creature(s).")
+                add_to_stack(
+                    state, source_card_id=vehicle_id, controller=player_id,
+                    label=f"{vehicle.name} crew", effect_key="crew_vehicle",
+                    payload={"card_id": vehicle_id, "effect_timestamp": vehicle.effect_timestamp,
+                             "crew_card_ids": selected}, is_spell=False,
+                )
+                state.log.append(f"{player.name} taps {len(selected)} creature(s) to crew {vehicle.name}.")
             else:
                 reject("Crew selection does not satisfy the activation cost")
 

@@ -1959,7 +1959,7 @@ class AIAgent:
             required = int(move.get("crew_value", 0) or 0)
             selected: list[str] = []
             power = 0
-            for option in sorted(options, key=lambda item: (int(item.get("power", 0) or 0), str(item.get("name") or "")), reverse=True):
+            for option in sorted(options, key=lambda item: (int(item.get("power", 0) or 0), str(item.get("name") or "")), reverse=True) if required > 0 else []:
                 selected.append(option["id"])
                 power += max(0, int(option.get("power", 0) or 0))
                 if power >= required:

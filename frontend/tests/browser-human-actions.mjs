@@ -24,8 +24,12 @@ try {
   await reset();
   await evaluate("(() => { const label = [...document.querySelectorAll('label')].find(l => l.textContent.includes('Grizzly Bears (2 power)')); label.querySelector('input').click(); })()");
   await click("Crew Smuggler's Copter");
+  await waitFor("window.fixtureState.stack.some(item => item.effect_key === 'crew_vehicle')");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.id === 'copter').types.includes('Creature')"), false);
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.id === 'bear').tapped"), true);
+  await click("Resolve Stack");
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.id === 'copter' && c.types.includes('Creature'))");
-  console.log("PASS explicit crew selection makes Vehicle a creature");
+  console.log("PASS explicit crew taps as cost and animates only after its response stack resolves");
 
   await reset();
   await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Shock')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
