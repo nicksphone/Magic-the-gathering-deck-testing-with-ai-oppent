@@ -2,6 +2,21 @@
 
 Updated: 2026-09-27 UTC. Audited implementation: `6b95fab0875f4cc35cb9648f8a598be5b13b2c80`, branch `main`.
 
+Latest implementation reconciliation: `b4eba86`. The [two-stage Jev review](docs/audits/2026-09-27-jev-two-stage-review.md) evaluates the older `f760c98` snapshot, not this latest implementation. Its typed judgments evaluate supplied evidence and proposed remedies; they are not application fixes or current release certification. No new paid API calls were made to reconcile it.
+
+## Review reconciliation and next execution order
+
+- **Draw/cleanup: partially addressed.** `b4eba86` routes turn draws through the shared replacement-aware handler and adds persisted Dredge choices/continuations. Cleanup still needs deliberate discard selection, ownership/events, discard-before-expiration ordering, simultaneous damage/effect cleanup, priority and repeated cleanup. Multiple interacting replacements remain open.
+- **Knowledge/AI: partially addressed.** `babef27` implements canonical all-card/corpus ingestion and rulings verification. Typed production AI consumers, offline supported-corpus certification and decision-quality evidence remain open.
+- **Documentation: maintained, not reopened.** The finish-plan rewrite was already completed. Keep new evidence and limitations linked without presenting documentation as gameplay acceptance.
+- **Other local blockers remain open:** fallback packaging, live face hydration, effective public stats, both human seats/all legal actions, strict request validation, BO3 transitions and frontend contract/test gates.
+- **Recovery and network gates remain open:** refresh/restart resume, serialized/idempotent mutations, same-origin production routing, access/origin controls and bounded jobs. Refresh advisories before choosing dependency upgrades; the historical scan is not a current exploitability assessment.
+- **Simulator strength remains unverified.** The latest two-game BO3 smoke shows repeatability only; it does not measure broad balance or seasoned-player quality.
+
+Execute steps 1-3 first (offline assets, unified hydration, truthful views), then steps 4-6 (cleanup, acting-seat controls, validated mutations), followed by recovery/BO3/frontend gates with regression tests alongside each change. Keep network release gates mandatory before wider exposure; continue supported-corpus AI work after local correctness. All acceptance checkboxes below remain evidence-based.
+
+Latest checks at `b4eba86`: 753 backend tests pass in an isolated copy **with local image assets**, frontend build passes, seeded Aggro/Dimir BO3 has no timeout or determinism failure. Fresh dependencies, empty-cache tracked-only acceptance and browser/network flows were not validated by those checks.
+
 ## Release scope and status
 
 First finish a reliable local desktop application for an explicitly supported card corpus. Arbitrary-card rules completeness and seasoned-player AI across every deck require additional acceptance criteria and remain longer-term goals.
@@ -69,6 +84,7 @@ Acceptance: UI and engine agree before and after reload for each fixture.
 - [ ] Route turn draws, spell draws and cycling through replacement-aware shared operations.
 - [ ] Route cleanup discards through event-aware, ownership-correct operations.
 - [ ] Let humans choose cleanup discards and resume pending replacements/choices after snapshots.
+- [ ] Discard before damage removal/end-of-turn expiration, perform simultaneous cleanup, then handle state-based actions, triggers, priority and repeated cleanup.
 - [ ] Test trigger ordering and cleanup repetition where resulting triggers require another priority window.
 
 Acceptance: equivalent draw/discard sources invoke the same applicable replacements/triggers; cleanup choices and restart resume are correct.

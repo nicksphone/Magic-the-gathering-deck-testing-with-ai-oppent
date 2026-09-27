@@ -796,12 +796,12 @@
     "hash": "35b53801935aa11a38015302eda1d045"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790534816.8215075,
-    "hash": "748b58787002c95e60f0f51f4ae49798"
+    "mtime": 1790535102.2599523,
+    "hash": "d9bc8df5538e5343899477c927e04380"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790535035.7400148,
-    "hash": "64a3d1704e36f91ac416eb57ca8986fe"
+    "mtime": 1790535102.2609522,
+    "hash": "4287c9091cd96600d08665962f0b7814"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -830,6 +830,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/rules/expanded-keywords.md": {
     "mtime": 1790535035.7390149,
     "hash": "2c721a28432ee6535da15d5d5ea1d83d"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-jev-two-stage-review.md": {
+    "mtime": 1790535102.2339525,
+    "hash": "81be7581a483bf4a2755beda09e66f32"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
     "mtime": 1790525223.5599864,

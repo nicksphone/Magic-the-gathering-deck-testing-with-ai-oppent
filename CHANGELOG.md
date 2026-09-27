@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Archived the supplied two-stage Jev review and reconciled its older snapshot against `b4eba86`. Recorded partial draw/knowledge progress without closing cleanup, AI consumers or local/network release gates. No additional model calls or application fixes were performed for this reconciliation.
+
 - Added reusable core handlers for Infect/Wither/Toxic, poison loss, Ninjutsu, Annihilator, Escape, Prototype and optional Dredge. Snapshot-safe mechanic choices resume multi-draw/nested effects and finish resolving spells once. Turn draws now use the shared replacement path; cycling/activated/loyalty abilities no longer emit spell-cast events.
 - Retained combat participants until combat ends for post-damage Ninjutsu, persisted a once-only combat-damage guard, preserved mixed blocker damage sources and post-prevention lifelink amounts, and updated combat diagnostics accordingly. Complete keyword families and human UI integration remain open rather than being inferred from metadata coverage.
 - Validation: 753 backend tests pass in a disposable copy with local image assets, frontend production build passes, and seeded Aggro/Dimir BO3 replay has zero timeouts or determinism failures. This does not close the tracked-only fallback-asset release gate.
