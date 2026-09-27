@@ -87,6 +87,22 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    if (item.payload or {}).get("__may"):
+        is_trigger = bool(item.payload.get("__trigger_event"))
+        choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
+        if is_trigger and getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players) and not item.payload.get("__may_decided"):
+            state.pending_trigger_order = {
+                "phase": "optional", "event": item.payload["__trigger_event"],
+                "current_stack_id": item.id, "current_controller": item.controller,
+            }
+            state.priority_player = item.controller
+            state.passed_priority = set()
+            state.log.append(f"{state.players[item.controller].name} must decide whether to apply {item.label}.")
+            return False
+        if not bool(item.payload.get("__may_choose", True)):
+            state.stack.pop()
+            state.log.append(f"{state.players[item.controller].name} declines optional effect: {item.label}.")
+            return finish_stack_resolution(state, item, item.payload) if is_trigger else True
     context = _replacement_context(state, item)
     choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
     requires_human_choice = (
@@ -126,9 +142,6 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     state.stack.pop()
     payload = dict(item.payload or {})
     is_trigger = bool(payload.get("__trigger_event"))
-    if bool(payload.get("__may")) and not bool(payload.get("__may_choose", True)):
-        state.log.append(f"{state.players[item.controller].name} declines optional effect: {item.label}.")
-        return True
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
     if state.pending_mechanic_choice:

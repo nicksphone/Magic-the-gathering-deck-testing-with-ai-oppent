@@ -30,6 +30,7 @@ type Props = {
   onChooseReplacement: (sourceId: string) => void;
   onChooseTriggerOrder: (order: string[]) => void;
   onChooseTriggerTarget: (stackId: string, targetCardId: string) => void;
+  onChooseOptionalEffect: (stackId: string, accept: boolean) => void;
   onChooseMechanic: (playerId: number, action: Record<string, unknown>) => void;
   responseCountdown: number | null;
   autoResponsePaused: boolean;
@@ -88,6 +89,10 @@ export function Controls(props: Props) {
   );
   const triggerTargetMoves = useMemo(
     () => props.legalMoves.filter((m) => m.type === "choose_trigger_target"),
+    [props.legalMoves],
+  );
+  const optionalEffectMoves = useMemo(
+    () => props.legalMoves.filter((m) => m.type === "choose_optional_effect"),
     [props.legalMoves],
   );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
@@ -263,6 +268,22 @@ export function Controls(props: Props) {
                 onClick={() => props.onChooseTriggerTarget(move.stack_id ?? "", move.target_card_id ?? "")}
               >
                 {move.target_name ?? move.target_card_id ?? "Choose target"}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {optionalEffectMoves.length > 0 ? (
+        <div className="block-panel optional-effect-panel">
+          <h3>Optional Trigger</h3>
+          <p>Choose whether to apply this ability as it resolves.</p>
+          <div className="row">
+            {optionalEffectMoves.map((move) => (
+              <button
+                key={`${move.stack_id}-${move.accept}`}
+                onClick={() => props.onChooseOptionalEffect(move.stack_id ?? "", move.accept === true)}
+              >
+                {move.accept ? "Apply effect" : "Decline effect"}
               </button>
             ))}
           </div>

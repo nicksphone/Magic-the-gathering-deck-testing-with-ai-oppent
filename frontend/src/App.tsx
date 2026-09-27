@@ -206,6 +206,15 @@ export function App() {
     }, write));
   }
 
+  async function onChooseOptionalEffect(stackId: string, accept: boolean) {
+    if (!stackId) return;
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
+      type: "choose_optional_effect",
+      stack_id: stackId,
+      accept,
+    }, write));
+  }
+
   async function onSubmitBlocks(blocks: Record<string, string[]>) {
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered }, write));
@@ -377,6 +386,7 @@ export function App() {
           onChooseReplacement={reportAction(onChooseReplacement)}
           onChooseTriggerOrder={reportAction(onChooseTriggerOrder)}
           onChooseTriggerTarget={reportAction(onChooseTriggerTarget)}
+          onChooseOptionalEffect={reportAction(onChooseOptionalEffect)}
           onChooseMechanic={reportAction(onCardAction)}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}

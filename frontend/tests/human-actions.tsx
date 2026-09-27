@@ -62,6 +62,7 @@ function Harness() {
       onApplySideboard={() => {}} onNextGame={() => {}} onSetPriorityStops={() => {}}
       onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}}
       onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
+      onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}
       onChooseMechanic={() => {}}
       responseCountdown={null} autoResponsePaused={false} onToggleAutoResponsePause={() => {}}
       legalMoves={moves} match={match} actingPlayerId={actor}

@@ -115,6 +115,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         unique_ids(action["trigger_order"], expected, len(expected))
     elif kind == "choose_trigger_target":
         require(any(move.get("stack_id") == action["stack_id"] and move.get("target_card_id") == action["target_card_id"] for move in available), "Unavailable trigger target")
+    elif kind == "choose_optional_effect":
+        require(any(move.get("stack_id") == action["stack_id"] and move.get("accept") is action["accept"] for move in available), "Unavailable optional effect choice")
     elif kind == "attack":
         unique_ids(action["attackers"], move.get("options", []))
         defenders = {item["id"] for item in move.get("defenders", [])}

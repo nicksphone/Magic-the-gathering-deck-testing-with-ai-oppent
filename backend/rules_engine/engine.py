@@ -347,7 +347,15 @@ class RulesEngine:
         if pending_order:
             if int(pending_order.get("current_controller", -1)) != player_id:
                 return
-            if pending_order.get("phase") == "targets":
+            if pending_order.get("phase") == "optional":
+                if kind != "choose_optional_effect" or not state.stack or state.stack[-1].id != pending_order.get("current_stack_id") or action.get("stack_id") != pending_order.get("current_stack_id") or type(action.get("accept")) is not bool:
+                    reject("Invalid optional effect choice")
+                    return
+                state.stack[-1].payload["__may_choose"] = action["accept"]
+                state.stack[-1].payload["__may_decided"] = True
+                state.pending_trigger_order = None
+                resolve_top_of_stack(state)
+            elif pending_order.get("phase") == "targets":
                 if kind != "choose_trigger_target" or not resume_trigger_target(state, str(action.get("stack_id", "")), str(action.get("target_card_id", ""))):
                     reject("Invalid trigger target")
                     return

@@ -173,7 +173,13 @@ class TriggerTargetChoice(InputModel):
     target_card_id: CardID
 
 
-Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice, Field(discriminator="type")]
+class OptionalEffectChoice(InputModel):
+    type: Literal["choose_optional_effect"]
+    stack_id: CardID
+    accept: StrictBool
+
+
+Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
 
 
 class ActionRequest(InputModel):

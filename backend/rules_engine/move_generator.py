@@ -25,6 +25,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if pending_order:
         if int(pending_order.get("current_controller", -1)) != player_id:
             return []
+        if pending_order.get("phase") == "optional":
+            return [
+                {"type": "choose_optional_effect", "stack_id": pending_order["current_stack_id"], "accept": accept}
+                for accept in (True, False)
+            ]
         if pending_order.get("phase") == "targets":
             from rules_engine.events import trigger_target_options
             item = next((item for item in state.stack if item.id == pending_order.get("current_stack_id")), None)

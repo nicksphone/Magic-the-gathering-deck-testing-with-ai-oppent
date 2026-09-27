@@ -27,7 +27,7 @@ def setup_targeted_sage(*, seat=1, with_warden=False):
     validate_action(game, rules, seat, action)
     rules.take_action(game, seat, action, reject_invalid=True)
     assert game.stack[-1].source_card_id == sage.id
-    assert ring.zone == copter.zone == Zone.BATTLEFIELD
+    assert game.cards[ring.id].zone == game.cards[copter.id].zone == Zone.BATTLEFIELD
     resolve_top_of_stack(game)
     return game, rules, sage, ring, copter
 
@@ -47,6 +47,9 @@ def test_etb_target_is_selected_after_permanent_resolves_and_is_snapshot_safe():
     assert game.pending_trigger_order is None
     assert game.stack[-1].payload['target_card_id'] == ring.id
     resolve_top_of_stack(game)
+    assert game.pending_trigger_order['phase'] == 'optional'
+    optional = next(move for move in rules.legal_moves(game, 1) if move['accept'])
+    rules.take_action(game, 1, optional, reject_invalid=True)
     assert game.cards[ring.id].zone == Zone.GRAVEYARD
     assert game.cards[copter.id].zone == Zone.BATTLEFIELD
 
@@ -112,3 +115,25 @@ def test_targeted_trigger_without_legal_target_does_not_stall():
     assert game.pending_trigger_order is None
     assert not game.stack
     assert any('no legal target' in line for line in game.log)
+
+
+def test_optional_effect_is_chosen_on_resolution_and_decline_keeps_target():
+    game, rules, _, ring, copter = setup_targeted_sage()
+    target = next(move for move in rules.legal_moves(game, 1) if move.get('target_card_id') == copter.id)
+    rules.take_action(game, 1, {'type': 'choose_trigger_target', 'stack_id': target['stack_id'], 'target_card_id': copter.id}, reject_invalid=True)
+    assert rules.legal_moves(game, 1)[0]['type'] == 'pass_priority'
+    resolve_top_of_stack(game)
+    assert game.pending_trigger_order['phase'] == 'optional'
+    assert {move['accept'] for move in rules.legal_moves(game, 1)} == {True, False}
+    assert rules.legal_moves(game, 2) == []
+    game = deserialize_match_snapshot(serialize_match_snapshot(game))
+    before = serialize_match_snapshot(game)
+    with pytest.raises(ActionRejected):
+        validate_action(game, rules, 2, {'type': 'choose_optional_effect', 'stack_id': game.stack[-1].id, 'accept': False})
+    assert serialize_match_snapshot(game) == before
+    decline = next(move for move in rules.legal_moves(game, 1) if move['accept'] is False)
+    rules.take_action(game, 1, decline, reject_invalid=True)
+    assert game.pending_trigger_order is None
+    assert not game.stack
+    assert ring.zone == copter.zone == Zone.BATTLEFIELD
+    assert any('declines optional effect' in line for line in game.log)

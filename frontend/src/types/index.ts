@@ -90,7 +90,7 @@ export type MatchState = {
     options: { source_id: string; name: string; controller: number; static_order: number }[];
   } | null;
   pending_trigger_order?: {
-    phase?: "targets";
+    phase?: "targets" | "optional";
     event: string;
     current_controller: number;
     groups?: Record<string, { _choice_id: string; source_card_id: string; label: string }[]>;
@@ -143,6 +143,7 @@ export type LegalMove = {
   stack_id?: string;
   target_card_id?: string;
   target_name?: string;
+  accept?: boolean;
   target_hints?: {
     choice_schema?: Record<string, unknown>;
     player_targets?: { id: number; name: string }[];
