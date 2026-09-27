@@ -18,7 +18,7 @@ from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
-from rules_engine.events import emit_event, resume_trigger_order
+from rules_engine.events import emit_event, resume_trigger_order, resume_trigger_target
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.attachments import attach_if_legal
@@ -345,12 +345,17 @@ class RulesEngine:
         pending = getattr(state, "pending_replacement_choice", None)
         pending_order = getattr(state, "pending_trigger_order", None)
         if pending_order:
-            if kind != "choose_trigger_order" or int(pending_order.get("current_controller", -1)) != player_id:
+            if int(pending_order.get("current_controller", -1)) != player_id:
                 return
-            requested = action.get("trigger_order") or []
-            if not isinstance(requested, list) or not resume_trigger_order(state, requested):
-                reject("Invalid trigger order")
-                return
+            if pending_order.get("phase") == "targets":
+                if kind != "choose_trigger_target" or not resume_trigger_target(state, str(action.get("stack_id", "")), str(action.get("target_card_id", ""))):
+                    reject("Invalid trigger target")
+                    return
+            else:
+                requested = action.get("trigger_order") or []
+                if kind != "choose_trigger_order" or not isinstance(requested, list) or not resume_trigger_order(state, requested):
+                    reject("Invalid trigger order")
+                    return
             if not state.pending_trigger_order:
                 state.priority_player = state.active_player
                 state.passed_priority = set()

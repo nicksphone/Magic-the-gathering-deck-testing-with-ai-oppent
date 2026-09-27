@@ -25,6 +25,13 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if pending_order:
         if int(pending_order.get("current_controller", -1)) != player_id:
             return []
+        if pending_order.get("phase") == "targets":
+            from rules_engine.events import trigger_target_options
+            item = next((item for item in state.stack if item.id == pending_order.get("current_stack_id")), None)
+            return [
+                {"type": "choose_trigger_target", "stack_id": item.id, **option}
+                for option in trigger_target_options(state, item)
+            ] if item else []
         group = list((pending_order.get("groups") or {}).get(str(player_id), []))
         ids = [str(trigger.get("_choice_id")) for trigger in group]
         labels = {str(trigger.get("_choice_id")): str(trigger.get("label", "Triggered ability")) for trigger in group}

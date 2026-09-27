@@ -505,10 +505,15 @@ def inspect_target_hints(
                 "choice_key": "pay_unless_counter",
                 "default": "pay_if_legal",
             }
+    target_players = [1, 2]
+    if re.search(r"target [^.\n]{0,65}\byou control\b", oracle):
+        target_players = [controller]
+    elif re.search(r"target [^.\n]{0,65}\b(?:an opponent|your opponent) controls\b", oracle):
+        target_players = [opponent]
     if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[opponent].battlefield
+            for pid in target_players for cid in state.players[pid].battlefield
             if "Creature" in state.cards[cid].types
         ]
     if re.search(r"target (?:basic |nonbasic )?land", oracle):
@@ -544,25 +549,25 @@ def inspect_target_hints(
     if "target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle:
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[opponent].battlefield
-            if "Land" not in state.cards[cid].types
+            for pid in target_players for cid in state.players[pid].battlefield
+            if "nonland permanent" not in oracle or "Land" not in state.cards[cid].types
         ]
     if "artifact" in oracle:
         hints["artifact_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[opponent].battlefield
+            for pid in target_players for cid in state.players[pid].battlefield
             if "Artifact" in state.cards[cid].types
         ]
     if "enchantment" in oracle:
         hints["enchantment_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[opponent].battlefield
+            for pid in target_players for cid in state.players[pid].battlefield
             if "Enchantment" in state.cards[cid].types
         ]
     if "artifact" in oracle and "enchantment" in oracle:
         hints["noncreature_permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[opponent].battlefield
+            for pid in target_players for cid in state.players[pid].battlefield
             if ("Artifact" in state.cards[cid].types or "Enchantment" in state.cards[cid].types)
         ]
     if "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):

@@ -29,6 +29,7 @@ type Props = {
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
   onChooseReplacement: (sourceId: string) => void;
   onChooseTriggerOrder: (order: string[]) => void;
+  onChooseTriggerTarget: (stackId: string, targetCardId: string) => void;
   onChooseMechanic: (playerId: number, action: Record<string, unknown>) => void;
   responseCountdown: number | null;
   autoResponsePaused: boolean;
@@ -83,6 +84,10 @@ export function Controls(props: Props) {
   );
   const triggerOrderMoves = useMemo(
     () => props.legalMoves.filter((m) => m.type === "choose_trigger_order"),
+    [props.legalMoves],
+  );
+  const triggerTargetMoves = useMemo(
+    () => props.legalMoves.filter((m) => m.type === "choose_trigger_target"),
     [props.legalMoves],
   );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
@@ -226,7 +231,7 @@ export function Controls(props: Props) {
           </div>
         </div>
       ) : null}
-      {triggerOrderPaused ? (
+      {triggerOrderMoves.length > 0 ? (
         <div className="block-panel trigger-order-panel">
           <h3>Order Simultaneous Triggers</h3>
           <p>
@@ -242,6 +247,22 @@ export function Controls(props: Props) {
                 onClick={() => props.onChooseTriggerOrder(move.trigger_order ?? [])}
               >
                 {(move.trigger_labels ?? move.trigger_order ?? []).join(" -> ") || "Use trigger order"}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {triggerTargetMoves.length > 0 ? (
+        <div className="block-panel trigger-target-panel">
+          <h3>Choose Trigger Target</h3>
+          <p>Select a legal target before players receive priority.</p>
+          <div className="row">
+            {triggerTargetMoves.map((move) => (
+              <button
+                key={`${move.stack_id}-${move.target_card_id}`}
+                onClick={() => props.onChooseTriggerTarget(move.stack_id ?? "", move.target_card_id ?? "")}
+              >
+                {move.target_name ?? move.target_card_id ?? "Choose target"}
               </button>
             ))}
           </div>

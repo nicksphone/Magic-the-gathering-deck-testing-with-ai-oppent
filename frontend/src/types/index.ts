@@ -90,9 +90,11 @@ export type MatchState = {
     options: { source_id: string; name: string; controller: number; static_order: number }[];
   } | null;
   pending_trigger_order?: {
+    phase?: "targets";
     event: string;
     current_controller: number;
-    groups: Record<string, { _choice_id: string; source_card_id: string; label: string }[]>;
+    groups?: Record<string, { _choice_id: string; source_card_id: string; label: string }[]>;
+    current_stack_id?: string;
   } | null;
 };
 
@@ -138,6 +140,9 @@ export type LegalMove = {
   replacement_name?: string;
   trigger_order?: string[];
   trigger_labels?: string[];
+  stack_id?: string;
+  target_card_id?: string;
+  target_name?: string;
   target_hints?: {
     choice_schema?: Record<string, unknown>;
     player_targets?: { id: number; name: string }[];

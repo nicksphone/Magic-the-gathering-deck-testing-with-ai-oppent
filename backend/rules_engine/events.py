@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 import re
+from copy import copy
 from typing import Any
 
 from game_state.state import MatchState, StackItem
@@ -93,24 +94,43 @@ def _append_trigger_groups(
             by_id = {str(trigger.get("_choice_id")): trigger for trigger in group}
             group = [by_id[choice_id] for choice_id in requested if choice_id in by_id]
         ordered.extend(group)
+    target_stack_ids: list[str] = []
     for order_index, trig in enumerate(ordered):
         payload = dict(trig["payload"])
-        state.stack.append(
-            StackItem(
-                id=str(uuid.uuid4()),
-                source_card_id=trig["source_card_id"],
-                controller=trig["controller"],
-                label=trig["label"],
-                effect_key=trig["effect_key"],
-                payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
-            )
+        item = StackItem(
+            id=str(uuid.uuid4()),
+            source_card_id=trig["source_card_id"],
+            controller=trig["controller"],
+            label=trig["label"],
+            effect_key=trig["effect_key"],
+            payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
         )
+        clause = _targeted_etb_clause(state, item)
+        if clause:
+            item.payload["__trigger_target_clause"] = clause
+            options = trigger_target_options(state, item)
+            if not options:
+                state.log.append(f"{item.label} has no legal target and is not put on the stack.")
+                continue
+            choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
+            if getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players):
+                target_stack_ids.append(item.id)
+            else:
+                # Non-human controllers still need a legal target at stack entry.
+                # Destructive effects prefer an opponent's permanent over their own.
+                if item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent"}:
+                    options.sort(key=lambda option: state.cards[option["target_card_id"]].controller == item.controller)
+                item.payload["target_card_id"] = options[0]["target_card_id"]
+                item.payload["__trigger_target_choice"] = True
+        state.stack.append(item)
+    if target_stack_ids:
+        _advance_trigger_target(state, event, target_stack_ids)
     state.log.append(f"{len(ordered)} triggered ability(s) added to stack ({event}).")
 
 
 def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
     pending = getattr(state, "pending_trigger_order", None)
-    if not pending:
+    if not pending or pending.get("phase") == "targets":
         return False
     controller = int(pending.get("current_controller", -1))
     group = list((pending.get("groups") or {}).get(str(controller), []))
@@ -141,6 +161,7 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
             f"{state.players[controller].name} ordered simultaneous triggers; awaiting Player {next_controller}."
         )
         return True
+    state.pending_trigger_order = None
     _append_trigger_groups(
         state,
         str(pending.get("event", "trigger")),
@@ -148,8 +169,79 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
         controller_order,
         selected,
     )
-    state.pending_trigger_order = None
     state.log.append(f"{state.players[controller].name} finalized simultaneous trigger order.")
+    return True
+
+
+def _targeted_etb_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.payload.get("__trigger_event") != "enters_battlefield" or item.payload.get("__trigger_target_clause"):
+        return None
+    card = state.cards.get(item.source_card_id)
+    if not card:
+        return None
+    for sentence in re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""):
+        clause = sentence.strip()
+        if re.match(r"^(?:when|whenever)\b.*\benters\b", clause, re.I) and re.search(r"\btarget\b", clause, re.I):
+            if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
+                return clause
+    return None
+
+
+def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str, Any]]:
+    clause = item.payload.get("__trigger_target_clause")
+    source = state.cards.get(item.source_card_id)
+    if not clause or not source:
+        return []
+    from rules_engine.oracle_effects import inspect_target_hints
+    from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
+    proxy = copy(source)
+    proxy.oracle_text = clause
+    hints = inspect_target_hints(state, proxy, item.controller)
+    low = clause.lower()
+    if "target artifact or enchantment" in low:
+        key = "noncreature_permanent_targets"
+    elif "target nonland permanent" in low or "target permanent" in low:
+        key = "permanent_targets"
+    elif "target creature" in low:
+        key = "creature_targets"
+    elif "target artifact" in low:
+        key = "artifact_targets"
+    else:
+        key = "enchantment_targets"
+    options = []
+    for target in hints.get(key, []):
+        choice = {"target_card_id": target["id"]}
+        if validate_protection_targets(state, source, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice)[0]:
+            options.append({**choice, "target_name": target["name"]})
+    return options
+
+
+def _advance_trigger_target(state: MatchState, event: str, stack_ids: list[str]) -> None:
+    remaining = [sid for sid in stack_ids if any(item.id == sid for item in state.stack)]
+    if not remaining:
+        state.pending_trigger_order = None
+        return
+    item = next(item for item in state.stack if item.id == remaining[0])
+    state.pending_trigger_order = {
+        "phase": "targets", "event": event, "stack_ids": remaining,
+        "current_stack_id": item.id, "current_controller": item.controller,
+    }
+    state.priority_player = item.controller
+    state.passed_priority = set()
+    state.log.append(f"{state.players[item.controller].name} must choose a target for {item.label}.")
+
+
+def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str) -> bool:
+    pending = state.pending_trigger_order or {}
+    if pending.get("phase") != "targets" or pending.get("current_stack_id") != stack_id:
+        return False
+    item = next((item for item in state.stack if item.id == stack_id), None)
+    if not item or target_card_id not in {option["target_card_id"] for option in trigger_target_options(state, item)}:
+        return False
+    item.payload["target_card_id"] = target_card_id
+    item.payload["__trigger_target_choice"] = True
+    state.log.append(f"{state.players[item.controller].name} targets {state.cards[target_card_id].name} with {item.label}.")
+    _advance_trigger_target(state, str(pending["event"]), list(pending["stack_ids"])[1:])
     return True
 
 

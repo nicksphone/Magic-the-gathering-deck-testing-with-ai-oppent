@@ -167,7 +167,13 @@ class TriggerChoice(InputModel):
     trigger_order: CardIDs
 
 
-Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice, Field(discriminator="type")]
+class TriggerTargetChoice(InputModel):
+    type: Literal["choose_trigger_target"]
+    stack_id: CardID
+    target_card_id: CardID
+
+
+Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice, Field(discriminator="type")]
 
 
 class ActionRequest(InputModel):

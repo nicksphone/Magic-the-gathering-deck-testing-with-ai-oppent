@@ -14,6 +14,36 @@ init_db()
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "trigger":
+        import json
+        rows = json.loads((Path(__file__).parent / "fixtures/permanent_spell_context.json").read_text())
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=17)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.trigger_order_choice_required = True
+        state.trigger_order_choice_players = {2}
+        state.players[2].mana_pool.update({"G": 3, "C": 3})
+
+        for cid, name, owner, zone in (
+            ("sage", "Reclamation Sage", 2, Zone.HAND),
+            ("ring", "Sol Ring", 2, Zone.BATTLEFIELD),
+            ("copter", "Smuggler's Copter", 1, Zone.BATTLEFIELD),
+        ):
+            row = rows[name]
+            card = CardInstance(
+                id=cid, name=name, owner=owner, controller=owner, zone=zone,
+                types=row["type_line"].split(" — ")[0].split(),
+                type_line=row["type_line"], oracle_text=row["oracle_text"],
+                mana_cost=row["mana_cost"],
+                power=int(row["power"]) if row["power"] else None,
+                toughness=int(row["toughness"]) if row["toughness"] else None,
+            )
+            state.cards[cid] = card
+            getattr(state.players[owner], zone.value).append(cid)
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")

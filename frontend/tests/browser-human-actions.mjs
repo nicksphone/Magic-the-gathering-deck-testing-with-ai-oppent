@@ -96,6 +96,20 @@ try {
   await click("Resolve Stack");
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Bonecrusher Giant')");
   console.log("PASS human Adventure resolves into exile then normal face casts to battlefield");
+
+  await click("Trigger Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
+  await click("Cast Reclamation Sage");
+  await waitFor("window.fixtureState.stack.length === 1");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_trigger_order?.phase === 'targets' && [...document.querySelectorAll('.trigger-target-panel button')].some(b => b.textContent.includes('Sol Ring'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('.trigger-target-panel button')].some(b => b.textContent.includes(\"Smuggler's Copter\"))"), true);
+  await click("Sol Ring");
+  await waitFor("window.fixtureState.pending_trigger_order === null && window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.type"), "choose_trigger_target");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.players['1'].battlefield.some(c => c.name === \"Smuggler's Copter\")");
+  console.log("PASS human ETB trigger chooses friendly legal artifact after permanent resolution");
 } finally {
   await close();
 }

@@ -88,5 +88,15 @@
       "type": "oracle_cards",
       "updated_at": "2026-09-27T09:01:57.616+00:00"
     }
+  },
+  "Sol Ring": {
+    "name": "Sol Ring",
+    "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+    "layout": "normal",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "power": null,
+    "toughness": null
   }
 }

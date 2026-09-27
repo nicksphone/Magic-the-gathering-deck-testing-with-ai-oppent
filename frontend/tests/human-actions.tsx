@@ -45,9 +45,10 @@ function Harness() {
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
     <button onClick={() => reset(false, false, 3, "land").catch((failure) => setError(String(failure)))}>Land Face Fixture</button>
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
+    <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
-    {match?.pregame_pending ? <Controls
+    {match ? <Controls
       decks={[]} selectedA={null} selectedB={null}
       setSelectedA={() => {}} setSelectedB={() => {}}
       startMode="human_vs_human" setStartMode={() => {}}
@@ -59,7 +60,9 @@ function Harness() {
       autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
       onSubmitBlocks={() => {}} onSubmitAttack={() => {}}
       onApplySideboard={() => {}} onNextGame={() => {}} onSetPriorityStops={() => {}}
-      onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}} onChooseMechanic={() => {}}
+      onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}}
+      onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
+      onChooseMechanic={() => {}}
       responseCountdown={null} autoResponsePaused={false} onToggleAutoResponsePause={() => {}}
       legalMoves={moves} match={match} actingPlayerId={actor}
     /> : null}

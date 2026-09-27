@@ -197,6 +197,15 @@ export function App() {
     }, write));
   }
 
+  async function onChooseTriggerTarget(stackId: string, targetCardId: string) {
+    if (!stackId || !targetCardId) return;
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
+      type: "choose_trigger_target",
+      stack_id: stackId,
+      target_card_id: targetCardId,
+    }, write));
+  }
+
   async function onSubmitBlocks(blocks: Record<string, string[]>) {
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered }, write));
@@ -367,6 +376,7 @@ export function App() {
           onSetPriorityStops={reportAction(onSetPriorityStops)}
           onChooseReplacement={reportAction(onChooseReplacement)}
           onChooseTriggerOrder={reportAction(onChooseTriggerOrder)}
+          onChooseTriggerTarget={reportAction(onChooseTriggerTarget)}
           onChooseMechanic={reportAction(onCardAction)}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}

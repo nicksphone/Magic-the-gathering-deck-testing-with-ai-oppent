@@ -78,7 +78,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(not action.get("attack_targets"), "Attack targets require selected attackers")
         return
     require(bool(available), "Action is not currently legal")
-    for key in ("card_id", "ability_index", "return_card_id", "replacement_source_id"):
+    for key in ("card_id", "ability_index", "return_card_id", "replacement_source_id", "stack_id", "target_card_id"):
         if key in action:
             available = [move for move in available if move.get(key) == action[key]]
     require(bool(available), "Action references an unavailable card, ability or choice")
@@ -113,6 +113,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         group = state.pending_trigger_order["groups"].get(str(player_id), [])
         expected = [str(trigger["_choice_id"]) for trigger in group]
         unique_ids(action["trigger_order"], expected, len(expected))
+    elif kind == "choose_trigger_target":
+        require(any(move.get("stack_id") == action["stack_id"] and move.get("target_card_id") == action["target_card_id"] for move in available), "Unavailable trigger target")
     elif kind == "attack":
         unique_ids(action["attackers"], move.get("options", []))
         defenders = {item["id"] for item in move.get("defenders", [])}
