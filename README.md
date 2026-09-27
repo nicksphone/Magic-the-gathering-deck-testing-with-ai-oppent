@@ -256,6 +256,7 @@ Import sources:
 - Choose expansion decks
 
 The parser accepts common `Mainboard`, `Maindeck`, `Sideboard`, and `SB:` section headers, set annotations such as `[M11]`, `4x` multiplier notation, and common comment lines.
+Known cached art-series, token and emblem objects are reported as non-playable on import and rejected before a match starts. Unknown cards still require metadata sync before play.
 
 ## Card Data and Images
 

@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Deck import now reports cached art-series/token/emblem objects as non-playable, and match-start admission rejects them with a structured 422 before any match is created. The shared check preserves legitimate transform cards. A real `Mountain // Mountain` art-series HTTP regression covers both entry points.
+- Validation: 880 backend tests pass in a fresh isolated source/database copy; frontend TypeScript/Vite build and unit checks pass. The browser harness was not rerun for this backend-only admission change.
+
 - Fixed cache alias precedence: exact card names now beat later face aliases, and art-series `Card` records cannot supply split-face aliases. Exact-only deck hydration avoids a full cache scan. A real `Mountain // Mountain` art-series regression prevents a basic Mountain from being mis-hydrated as a non-playable Card.
 - Validation: 878 backend tests pass in a fresh isolated source/database copy; frontend TypeScript/Vite build and unit checks pass. The existing 15-path Chromium harness was not rerun for this backend-only cache change.
 

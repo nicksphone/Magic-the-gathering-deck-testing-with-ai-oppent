@@ -6,6 +6,12 @@ from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
 
 
+def is_playable_deck_card(metadata: dict) -> bool:
+    layout = str(metadata.get("layout") or "").lower()
+    type_line = str(metadata.get("type_line") or "").strip().lower()
+    return layout not in {"art_series", "token", "double_faced_token", "emblem"} and type_line not in {"card", "emblem"} and not type_line.startswith("token ")
+
+
 def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
     """Attach cached/fallback metadata before constructing a game state."""
     names = [str(item.get("card_name") or "") for item in deck]

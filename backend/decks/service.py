@@ -4,6 +4,7 @@ import json
 
 from ai.deck_analysis import analyze_deck, guess_archetype
 from card_data.display import select_display_image_uri
+from card_data.hydration import is_playable_deck_card
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
@@ -61,6 +62,10 @@ class DeckService:
         archetype = analysis["primary_archetype"]
         resolved_mainboard = self._resolve_card_metadata(parsed.mainboard)
         resolved_sideboard = self._resolve_card_metadata(parsed.sideboard)
+        for item in resolved_mainboard + resolved_sideboard:
+            metadata = item.get("card_metadata")
+            if metadata is not None and not is_playable_deck_card(metadata):
+                parsed.errors.append(f"{item['card_name']} is not a playable deck card.")
         if not parsed.errors:
             record = self.repo.save_deck(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
             deck_id = record.id
@@ -138,6 +143,7 @@ class DeckService:
             "oracle_text": card.oracle_text,
             "mana_cost": card.mana_cost,
             "type_line": card.type_line,
+            "layout": getattr(card, "layout", ""),
             "colors": card.colors.split(",") if card.colors else [],
             "power": card.power,
             "toughness": card.toughness,

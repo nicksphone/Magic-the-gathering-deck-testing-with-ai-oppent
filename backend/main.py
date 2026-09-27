@@ -1278,6 +1278,10 @@ def _validated_deck_cards(repo, entries: list[DeckEntry]) -> list[dict]:
     missing = sorted({item["card_name"] for item in deck if not item.get("type_line")})
     if missing:
         raise HTTPException(status_code=422, detail={"code": "card_data_unavailable", "message": "Sync card data or correct these names before starting", "cards": missing})
+    from card_data.hydration import is_playable_deck_card
+    nonplayable = sorted({item["card_name"] for item in deck if not is_playable_deck_card(item)})
+    if nonplayable:
+        raise HTTPException(status_code=422, detail={"code": "nonplayable_card", "message": "Art-series, token and emblem objects cannot be put in a deck", "cards": nonplayable})
     return deck
 
 
