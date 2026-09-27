@@ -10,7 +10,7 @@ Latest implementation reconciliation: validation `01a0235`, recovery `a17712f`, 
 - **Knowledge/AI: partially addressed.** `babef27` implements canonical all-card/corpus ingestion and rulings verification. Typed production AI consumers, offline supported-corpus certification and decision-quality evidence remain open.
 - **Documentation: maintained, not reopened.** The finish-plan rewrite was already completed. Keep new evidence and limitations linked without presenting documentation as gameplay acceptance.
 - **Local-beta repairs underway:** tracked offline fallback, shared live face hydration, effective public views, acting-seat controls and strict request validation are implemented with regressions. Fifteen Chromium action paths pass, including both BO3 play/draw choices; full human-game acceptance remains separate. Conventional permanent spells no longer execute later abilities. Modal face costs/timing, land-face plays, Adventure exile permissions, supported ETB/self-cast target choices and divided-damage recipient legality have bounded coverage. Non-damage multi-target resolution, broader face semantics and full face-specific restart acceptance remain open. Interactive BO3 now has bounded seed/play-draw tests; sideboard strategy and complete-series browser acceptance remain open.
-- **Recovery implemented with bounded acceptance:** saved-match restore, serialized/versioned/idempotent guarded mutations, refresh, lost-response reconciliation and test-backend process restart have regression/browser coverage. Match creation recovery and extended soak remain open. Same-origin production routing, access/origin controls, bounded jobs and multiworker coordination are still network release gates. Refresh advisories before choosing dependency upgrades.
+- **Recovery implemented with bounded acceptance:** saved-match restore, serialized/versioned/idempotent guarded mutations, refresh, lost-response reconciliation and test-backend process restart have regression/browser coverage. Match creation recovery and extended soak remain open. Production now defaults to same-origin `/api` with matched card-media routing, but an actual HTTPS proxy smoke test remains open. Access/origin controls, bounded jobs and multiworker coordination are still network release gates. Refresh advisories before choosing dependency upgrades.
 - **Simulator strength remains unverified.** The latest two-game BO3 smoke shows repeatability only; it does not measure broad balance or seasoned-player quality.
 - **Import analysis corrected:** curve buckets now come from cached mana costs (including front-face modal costs), with separate land/unknown counts; spell-color counts come from cached colors, and archetype analysis sees resolved metadata. These are not mana-source quality or AI-strength metrics. Full-deck strategy and mana-base validation remain open.
 
@@ -243,8 +243,8 @@ Gate 2 exit: no unexplained supported-corpus rules/cost/target stalls; reproduci
 
 ### 14. Test production API and media routing
 
-- [ ] Default production routing to same-origin `/api` or explicitly require and validate a backend URL.
-- [ ] Align card-media routing and remove implicit HTTPS-to-HTTP mixed-content behavior.
+- [x] Default production routing to same-origin `/api`; keep an explicit backend-origin override.
+- [x] Align card-media routing and remove implicit HTTPS-to-HTTP mixed-content behavior from the default.
 - [ ] Test the actual built artifact under HTTPS proxying `/api` and `/card-images`, plus configured cross-origin operation.
 
 Acceptance: health/import/start/action/media work under both documented deployment modes; Vite development proxy success alone is insufficient.

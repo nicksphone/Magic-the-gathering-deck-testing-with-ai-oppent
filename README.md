@@ -156,7 +156,7 @@ npm install
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-The Vite development server proxies `/api` and `/card-images` to the backend on port `9999`. For a separate static frontend deployment, copy `frontend/.env.example` to `.env.production` and set `VITE_API_BASE_URL` to the reachable backend origin, for example `http://192.168.1.50:9999`. If the frontend and backend are served behind one reverse proxy, keep the default `/api` routing and proxy both `/api` and `/card-images` to the backend.
+The Vite development server proxies `/api` and `/card-images` to the backend on port `9999`. Production builds also default to same-origin `/api`, so a static deployment must proxy both `/api` (stripping that prefix) and `/card-images` to the backend. For a separate backend origin, copy `frontend/.env.example` to `.env.production` and set `VITE_API_BASE_URL` before building, for example `http://192.168.1.50:9999` on an HTTP-only LAN. Use an HTTPS backend origin when serving the frontend over HTTPS; the app no longer guesses an HTTP backend on port `9999`.
 
 ### Open the App
 - Frontend: `http://<server-ip>:5173`

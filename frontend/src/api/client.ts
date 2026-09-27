@@ -1,12 +1,9 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { httpErrorMessage } from "./errors";
+import { apiBase, cardMediaUrl } from "./routing";
 
 const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
-const runtimeHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-const productionApi = `http://${runtimeHost}:9999`;
-// Development keeps the Vite proxy; production builds need a real backend URL
-// unless the deployment supplies VITE_API_BASE_URL or a reverse proxy.
-const API = configuredApi || ((import.meta as any).env?.PROD ? productionApi : "/api");
+const API = apiBase(configuredApi);
 
 export const API_BASE = API;
 
@@ -17,11 +14,7 @@ export type HealthResponse = {
 };
 
 export function resolveCardMediaUrl(uri?: string): string | undefined {
-  if (!uri) return undefined;
-  if (uri.startsWith("http://") || uri.startsWith("https://")) return uri;
-  const path = uri.startsWith("/") ? uri : `/${uri}`;
-  if (API === "/api" && path.startsWith("/card-images/")) return path;
-  return `${API}${path}`;
+  return cardMediaUrl(uri, API);
 }
 
 export type DeckImportResponse = {

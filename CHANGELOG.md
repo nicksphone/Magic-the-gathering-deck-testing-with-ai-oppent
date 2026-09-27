@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Production frontend routing now defaults to same-origin `/api` rather than guessing an HTTP backend on port `9999`; card-image routing follows the same deployment policy. A separate backend remains configurable through `VITE_API_BASE_URL`. Build and routing unit tests pass; actual HTTPS/reverse-proxy acceptance remains open.
+
 - Replaced deck-import name guesses for mana curve/colors with cached card metadata. The curve distinguishes zero-cost spells, lands and unknown cards, and uses front-face costs for modal/transform cards. Imported archetype analysis now receives resolved metadata; the UI displays the resulting curve and spell-color counts. This is descriptive analysis, not a mana-base or strategy certificate.
 
 - Deck import now reports cached art-series/token/emblem objects as non-playable, and match-start admission rejects them with a structured 422 before any match is created. The shared check preserves legitimate transform cards. A real `Mountain // Mountain` art-series HTTP regression covers both entry points.
