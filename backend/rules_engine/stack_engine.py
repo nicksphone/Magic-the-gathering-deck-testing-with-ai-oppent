@@ -61,6 +61,26 @@ def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int |
     return None
 
 
+def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, announced: dict) -> dict:
+    """Recheck each announced recipient without reallocating its fixed damage."""
+    from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+
+    hints = build_cast_hints(state, card, item.controller, announced)
+    legal = {}
+    for target_id, amount in (announced.get("target_distribution") or {}).items():
+        single = {**announced, "target_distribution": {target_id: amount}, "divide_total": amount}
+        if str(target_id) in {"1", "2"}:
+            allowed = {str(target["id"]) for target in hints.get("player_targets", [])}
+            if str(target_id) not in allowed or int(target_id) not in state.players:
+                continue
+        if (validate_cast_choice(hints, single)[0]
+                and validate_protection_targets(state, card, single)[0]
+                and validate_hexproof_shroud_targets(state, item.controller, single)[0]):
+            legal[target_id] = amount
+    return legal
+
+
 def resolve_top_of_stack(state: MatchState) -> bool:
     if state.pending_mechanic_choice:
         return False
@@ -78,7 +98,13 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     announced = (item.payload or {}).get("__announced_targets") or {}
     target_count = (len(announced.get("target_card_ids") or []) + len(announced.get("target_distribution") or {})
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
-    if card and card.zone == Zone.STACK and target_count == 1:
+    legal_distribution = None
+    if card and card.zone == Zone.STACK and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
+        legal_distribution = _legal_divided_damage_targets(state, item, card, announced)
+        if not legal_distribution:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    elif card and card.zone == Zone.STACK and target_count == 1:
         from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
         from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
         legal = (validate_cast_choice(build_cast_hints(state, card, item.controller, announced), announced)[0]
@@ -141,6 +167,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    if legal_distribution is not None:
+        payload["target_distribution"] = legal_distribution
+        ignored = len(announced["target_distribution"]) - len(legal_distribution)
+        if ignored:
+            state.log.append(f"{item.label} ignores {ignored} illegal target(s).")
     is_trigger = bool(payload.get("__trigger_event"))
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)

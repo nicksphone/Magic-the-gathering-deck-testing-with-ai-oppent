@@ -127,6 +127,8 @@ def validate_protection_targets(state, source_card, action_targets: dict[str, An
         target_ids.append(target_card_id)
     target_card_ids = action_targets.get("target_card_ids") or []
     target_ids.extend([cid for cid in target_card_ids if cid not in target_ids])
+    distribution = action_targets.get("target_distribution") or {}
+    target_ids.extend([cid for cid in distribution if cid in state.cards and cid not in target_ids])
     for cid in target_ids:
         target = state.cards.get(cid)
         if not target:

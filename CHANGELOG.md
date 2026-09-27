@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Supported divided-damage spells now recheck each recipient at resolution, ignore illegal recipients without reallocating announced damage and fail when all recipients are illegal. Protection checks include distribution recipients at cast time. Canonical Pyrotechnics regressions cover zone changes, protection, hexproof, player recipients and snapshot restoration. Other multi-target effect families remain open.
+- Validation: 871 backend tests pass in a fresh isolated source/database copy; frontend production build and unit checks pass. A seeded Mono Red Aggro/Dimir Control BO3 completes two games in 36 turns with no timeout, anomaly label or determinism drift. This does not measure balance or AI quality.
+
 - Supported self-cast single-target triggers now choose targets in their ability window, not on the creature spell. Canonical Ulamog tests cover separate stack objects, snapshot choice, no legal target, trigger-before-spell resolution and trigger survival after the spell is countered. Cast-only triggers and prowess no longer fire for copied spells, while explicit cast-or-copy effects retain their separate event path. A thirteenth browser action path covers Ulamog through the production UI/API. Modal, multi-target and broader cast-trigger semantics remain open.
 - Validation: 866 backend tests pass in a fresh isolated source/database copy; frontend production build/unit checks and thirteen Chromium action paths pass. A seeded two-game Aetherdrift Aggro/Karlov Manor Control BO3 completes in 40 turns without timeout, anomaly label or determinism drift. This is bounded regression evidence, not balance or expert-AI proof.
 
