@@ -1,0 +1,92 @@
+{
+  "Prodigal Pyromancer": {
+    "name": "Prodigal Pyromancer",
+    "mana_cost": "{2}{R}",
+    "oracle_text": "{T}: This creature deals 1 damage to any target.",
+    "type_line": "Creature \u2014 Human Wizard",
+    "power": "1",
+    "toughness": "1",
+    "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  "Wall of Omens": {
+    "name": "Wall of Omens",
+    "mana_cost": "{1}{W}",
+    "oracle_text": "Defender\nWhen this creature enters, draw a card.",
+    "type_line": "Creature \u2014 Wall",
+    "power": "0",
+    "toughness": "4",
+    "oracle_id": "5f601f48-d24b-4883-9fde-b3f620e7c9ea",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  "Soul Warden": {
+    "name": "Soul Warden",
+    "mana_cost": "{W}",
+    "oracle_text": "Whenever another creature enters, you gain 1 life.",
+    "type_line": "Creature \u2014 Human Cleric",
+    "power": "1",
+    "toughness": "1",
+    "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  "Curiosity": {
+    "name": "Curiosity",
+    "mana_cost": "{U}",
+    "oracle_text": "Enchant creature\nWhenever enchanted creature deals damage to an opponent, you may draw a card.",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "oracle_id": "223fa044-d387-4884-bf4e-75f1b61c6a46",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  "Reclamation Sage": {
+    "name": "Reclamation Sage",
+    "mana_cost": "{2}{G}",
+    "oracle_text": "When this creature enters, you may destroy target artifact or enchantment.",
+    "type_line": "Creature \u2014 Elf Shaman",
+    "power": "2",
+    "toughness": "1",
+    "oracle_id": "032ec6e2-6cc3-4a97-9cc7-3233f5e11904",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  "Smuggler's Copter": {
+    "name": "Smuggler's Copter",
+    "mana_cost": "{2}",
+    "oracle_text": "Flying\nWhenever this Vehicle attacks or blocks, you may draw a card. If you do, discard a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "type_line": "Artifact \u2014 Vehicle",
+    "power": "3",
+    "toughness": "3",
+    "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  }
+}

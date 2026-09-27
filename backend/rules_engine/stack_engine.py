@@ -171,7 +171,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                     state.log.append(f"{card.name} has no legal attachment target and is put into graveyard.")
                     state.log.append(f"{item.label} resolves.")
                     return True
-            emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller})
+            emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
     if not state.pending_mechanic_choice:
         state.log.append(f"{item.label} resolves.")
     return True

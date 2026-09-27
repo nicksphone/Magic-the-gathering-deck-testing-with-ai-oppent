@@ -323,7 +323,7 @@ The application currently supports:
 - Responsive desktop UI with readable stack, priority, mana, and hover inspection
 
 Current focus:
-- separating permanent spell resolution from later ability text and exposing targeted trigger choices in the correct window
+- exposing targeted trigger choices in their correct window and completing selected-face stack/zone semantics
 - full-game browser acceptance, new-match creation recovery and successful-response runtime validation
 - seeded interactive BO3 and full browser/response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
@@ -335,7 +335,7 @@ Current focus:
 
 ## Known Limitations and Next Upgrades
 
-- Permanent cast-target hints no longer borrow later ability targets, but resolution-time Oracle inference still needs a broader spell/ability context audit. Targeted ETB/cast-trigger choice timing is not certified; this remains a local-beta blocker rather than a cosmetic follow-up.
+- Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Five canonical-card regressions verify delayed ETB draw/destruction, no activation on entry and no premature Aura draw. This is not complete triggered-ability compilation: human targeted-trigger choices, multiple ability clauses and mixed-type selected-face stack/zone behavior remain local-beta blockers.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage; match creation is not yet idempotent and extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
 - Human action browser fixtures cover six paths, not a complete game or BO3. Crew currently resolves immediately rather than using its proper stack window; variable activated mana costs are explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.

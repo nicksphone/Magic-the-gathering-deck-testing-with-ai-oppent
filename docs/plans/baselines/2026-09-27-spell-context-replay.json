@@ -1,0 +1,34 @@
+{
+  "decks": 2,
+  "pairs": 1,
+  "games": 2,
+  "matches": 1,
+  "best_of": 3,
+  "determinism_failures": 0,
+  "drift_labels": {},
+  "pair_results": [
+    {
+      "deck_a": "Mono Red Aggro",
+      "deck_b": "Dimir Control",
+      "games": [
+        {
+          "seed": 706964673,
+          "winner": 1,
+          "turns": 36,
+          "games_played": 2,
+          "wins": {
+            "deck_a": 2,
+            "deck_b": 0
+          },
+          "timeout": false,
+          "termination_status": "resolved",
+          "deterministic": true,
+          "drift": null,
+          "drift_label": null,
+          "drift_excerpt": null
+        }
+      ]
+    }
+  ],
+  "anomaly_counts": {}
+}

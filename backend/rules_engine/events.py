@@ -483,6 +483,8 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 
 
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    # Modern Oracle abbreviates battlefield entry to "enters".
+    oracle = re.sub(r"\benters\b(?! the battlefield)", "enters the battlefield", oracle)
     entering_id = payload.get("card_id")
     if not entering_id or entering_id not in state.cards:
         return False
@@ -513,7 +515,7 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
         return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller
     if f"when {card.name.lower()} enters the battlefield" in oracle:
         return entering_id == card.id
-    if "when this creature enters the battlefield" in oracle or "when this creature enters," in oracle:
+    if any(f"when {subject} enters the battlefield" in oracle for subject in ("this creature", "this permanent", "this artifact", "this enchantment", "this planeswalker")):
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:
         return "Creature" in (getattr(entering_card, "types", []) or []) and entering_id != card.id

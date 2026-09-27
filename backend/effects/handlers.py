@@ -687,10 +687,10 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
         return
     player.graveyard.remove(target)
     card.zone = Zone.STACK
-    from rules_engine.ability_model import build_ability_spec
+    from rules_engine.ability_model import build_spell_spec
     from rules_engine.stack_engine import add_to_stack
 
-    ability = build_ability_spec(state, card, controller)
+    ability = build_spell_spec(state, card, controller)
     add_to_stack(
         state,
         source_card_id=target,

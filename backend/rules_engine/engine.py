@@ -13,7 +13,7 @@ from rules_engine.move_generator import legal_moves
 from rules_engine.library_permissions import choose_type_for_realmwalker, top_library_creature_for_type
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.oracle_effects import crew_value, extract_activated_abilities, extract_loyalty_abilities, extract_saga_chapters
-from rules_engine.ability_model import build_ability_spec
+from rules_engine.ability_model import build_ability_spec, build_spell_spec
 from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
@@ -663,7 +663,7 @@ class RulesEngine:
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                ability = build_ability_spec(state, face_card, player_id, action_targets=action_targets)
+                ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)

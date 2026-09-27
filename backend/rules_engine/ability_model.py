@@ -36,6 +36,23 @@ class AbilitySpec:
     event_supported: bool = False
 
 
+def build_spell_spec(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any] | None = None) -> AbilitySpec:
+    """Compile a spell, never a permanent's later activated/triggered text."""
+    types = set(getattr(card, "types", []) or [])
+    if types.intersection({"Instant", "Sorcery"}) or not types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}):
+        return build_ability_spec(state, card, controller, action_targets)
+    from rules_engine.cast_choice import build_cast_hints
+    choices = {key: value for key, value in (action_targets or {}).items() if key in {
+        "selected_face_index", "x_value", "target_card_id", "chosen_creature_type",
+    }}
+    return AbilitySpec(
+        source_card_id=getattr(card, "id", None), source_name=card.name,
+        controller=controller, oracle_text=card.oracle_text or "", mana_cost=card.mana_cost or "",
+        target_hints=build_cast_hints(state, card, controller, action_targets), modes=[],
+        choices=choices, effect=EffectSpec("noop", dict(choices)),
+    )
+
+
 def build_ability_spec(
     state: MatchState,
     card: CardInstance,
