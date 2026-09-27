@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 
-from ai.deck_analysis import analyze_deck, guess_archetype
+from ai.deck_analysis import analyze_deck
 from card_data.display import select_display_image_uri
 from card_data.hydration import is_playable_deck_card
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
 from persistence.repository import Repository
+from rules_engine.mana import mana_value
 
 
 class DeckService:
@@ -58,10 +59,10 @@ class DeckService:
 
     def import_deck_text(self, name: str, deck_text: str, source: str = "user") -> dict:
         parsed = self.parser.parse(deck_text)
-        analysis = analyze_deck(parsed.mainboard)
-        archetype = analysis["primary_archetype"]
         resolved_mainboard = self._resolve_card_metadata(parsed.mainboard)
         resolved_sideboard = self._resolve_card_metadata(parsed.sideboard)
+        analysis = analyze_deck(resolved_mainboard)
+        archetype = analysis["primary_archetype"]
         for item in resolved_mainboard + resolved_sideboard:
             metadata = item.get("card_metadata")
             if metadata is not None and not is_playable_deck_card(metadata):
@@ -81,44 +82,50 @@ class DeckService:
             "sideboard": parsed.sideboard,
             "resolved_mainboard_cards": resolved_mainboard,
             "resolved_sideboard_cards": resolved_sideboard,
-            "mana_curve": self._compute_curve(parsed.mainboard),
-            "color_profile": self._color_profile(parsed.mainboard),
+            "mana_curve": self._compute_curve(resolved_mainboard),
+            "color_profile": self._color_profile(resolved_mainboard),
             "analysis": analysis,
         }
 
     def _compute_curve(self, mainboard: list[dict]) -> dict[str, int]:
-        # Placeholder curve that remains stable without full mana cost DB hydration.
-        buckets = {"1": 0, "2": 0, "3": 0, "4": 0, "5+": 0}
+        buckets = {"0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5+": 0, "lands": 0, "unknown": 0}
         for item in mainboard:
-            name = item["card_name"].lower()
             qty = item["quantity"]
-            if any(k in name for k in ["bolt", "spike", "shock", "push"]):
-                buckets["1"] += qty
-            elif any(k in name for k in ["counterspell", "growth", "mage", "guide"]):
-                buckets["2"] += qty
-            elif any(k in name for k in ["fable", "adeline", "deluge"]):
-                buckets["3"] += qty
-            elif any(k in name for k in ["sheoldred", "teferi", "festival"]):
-                buckets["4"] += qty
-            else:
-                buckets["5+"] += qty
+            meta = item.get("card_metadata") or {}
+            if not meta:
+                buckets["unknown"] += qty
+                continue
+            faces = meta.get("card_faces") or []
+            front = faces[0] if faces and isinstance(faces[0], dict) else {}
+            type_line = str(meta.get("type_line") or front.get("type_line") or "")
+            if "Land" in type_line.split(" // ")[0].split(" - ")[0].split():
+                buckets["lands"] += qty
+                continue
+            cost = str(meta.get("mana_cost") or "")
+            if meta.get("layout") in {"modal_dfc", "transform", "reversible_card", "adventure"}:
+                cost = str(front.get("mana_cost") or cost)
+            elif not cost and faces:
+                cost = " ".join(str(face.get("mana_cost") or "") for face in faces if isinstance(face, dict))
+            if not cost and not type_line:
+                buckets["unknown"] += qty
+                continue
+            value = mana_value(cost)
+            buckets[str(value) if value < 5 else "5+"] += qty
         return buckets
 
     def _color_profile(self, mainboard: list[dict]) -> dict[str, int]:
         color_map = {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0}
         for item in mainboard:
-            n = item["card_name"].lower()
-            qty = item["quantity"]
-            if "plains" in n or "white" in n:
-                color_map["W"] += qty
-            if "island" in n or "blue" in n:
-                color_map["U"] += qty
-            if "swamp" in n or "black" in n:
-                color_map["B"] += qty
-            if "mountain" in n or "red" in n or "bolt" in n:
-                color_map["R"] += qty
-            if "forest" in n or "green" in n or "elves" in n:
-                color_map["G"] += qty
+            meta = item.get("card_metadata") or {}
+            # Profile printed spell colors, not inferred land production or color identity.
+            faces = meta.get("card_faces") or []
+            front = faces[0] if faces and isinstance(faces[0], dict) else {}
+            type_line = str(meta.get("type_line") or front.get("type_line") or "")
+            if "Land" in type_line.split(" // ")[0].split(" - ")[0].split():
+                continue
+            for color in set(meta.get("colors") or []):
+                if color in color_map:
+                    color_map[color] += item["quantity"]
         return color_map
 
     def _resolve_card_metadata(self, items: list[dict]) -> list[dict]:

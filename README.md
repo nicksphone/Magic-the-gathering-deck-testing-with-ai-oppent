@@ -257,6 +257,7 @@ Import sources:
 
 The parser accepts common `Mainboard`, `Maindeck`, `Sideboard`, and `SB:` section headers, set annotations such as `[M11]`, `4x` multiplier notation, and common comment lines.
 Known cached art-series, token and emblem objects are reported as non-playable on import and rejected before a match starts. Unknown cards still require metadata sync before play.
+The import panel shows a mana curve computed from cached Oracle mana costs, with lands and unresolved cards counted separately. For modal/transform cards the curve uses the front face; X is zero outside the stack. Spell-color counts use cached card colors and exclude lands, so they are not a mana-source analysis. Archetype analysis receives resolved metadata, but remains a heuristic rather than a verified deck strategy.
 
 ## Card Data and Images
 

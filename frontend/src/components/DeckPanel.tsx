@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
-import type { ExpansionTopDeckMeta } from "../api/client";
+import type { DeckImportResponse, ExpansionTopDeckMeta } from "../api/client";
 import type { CardCompletenessReport } from "../api/client";
 
 type Props = {
@@ -18,6 +18,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [deckName, setDeckName] = useState("");
   const [status, setStatus] = useState("");
   const [completeness, setCompleteness] = useState<CardCompletenessReport | null>(null);
+  const [importAnalysis, setImportAnalysis] = useState<DeckImportResponse | null>(null);
 
   useEffect(() => {
     void refreshDeckData();
@@ -75,9 +76,11 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     const data = await api.getBuiltinText(selectedBuiltin);
     const imported = await api.importDeck(data.name, data.deck_text.trim(), "builtin");
     if (imported.errors?.length) {
+      setImportAnalysis(null);
       setStatus(`Built-in import errors: ${imported.errors.join(" | ")}`);
       return;
     }
+    setImportAnalysis(imported);
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
@@ -98,9 +101,11 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     if (!selectedExpansionCode) return;
     const imported = await api.importExpansionTopDeck(selectedExpansionCode);
     if (imported.errors?.length) {
+      setImportAnalysis(null);
       setStatus(`Expansion import errors: ${imported.errors.join(" | ")}`);
       return;
     }
+    setImportAnalysis(imported);
     const loaded = await api.getExpansionTopDeck(selectedExpansionCode);
     setDeckName(loaded.name);
     setDeckText(loaded.deck_text.trim());
@@ -119,9 +124,11 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   async function importDeck() {
     const data = await api.importDeck(deckName || "Imported Deck", deckText, "user");
     if (data.errors?.length) {
+      setImportAnalysis(null);
       setStatus(`Import errors: ${data.errors.join(" | ")}`);
       return;
     }
+    setImportAnalysis(data);
     const resolved = data.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - resolved ${resolved}/${data.mainboard.length} card entries`);
     await showCompleteness(data.mainboard.map((item) => item.card_name));
@@ -166,6 +173,14 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       />
       <button onClick={importDeck}>Save Deck</button>
       <p className="status">{status}</p>
+      {importAnalysis && (
+        <div className="data-report" role="status">
+          <strong>Imported deck analysis</strong>
+          <span>Mana curve (spells): {(["0", "1", "2", "3", "4", "5+"] as const).map((cost) => `${cost}: ${importAnalysis.mana_curve[cost] ?? 0}`).join("  |  ")}</span>
+          <span>Lands: {importAnalysis.mana_curve.lands ?? 0} | Unknown costs: {importAnalysis.mana_curve.unknown ?? 0}</span>
+          <span>Spell colors (lands excluded): {(["W", "U", "B", "R", "G"] as const).map((color) => `${color}: ${importAnalysis.color_profile[color] ?? 0}`).join("  |  ")}</span>
+        </div>
+      )}
       {completeness && (
         <div className="data-report" role="status">
           <strong>Card data: {completeness.complete}/{completeness.requested} complete</strong>
