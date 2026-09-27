@@ -54,6 +54,16 @@ class AIAgent:
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
+        pending_crews = {
+            item.source_card_id for item in (getattr(state, "stack", []) or [])
+            if getattr(item, "effect_key", None) == "crew_vehicle"
+        }
+        legal_moves = [
+            move for move in legal_moves
+            if move.get("type") != "crew"
+            or (move.get("card_id") not in pending_crews
+                and "Creature" not in (getattr(state.cards.get(move.get("card_id")), "types", []) or []))
+        ]
         if getattr(state, "pregame_pending", False):
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:

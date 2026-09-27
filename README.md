@@ -199,7 +199,7 @@ Master two-ply and rollout search is also bounded by total battlefield permanent
 
 Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
 
-Vehicles expose explicit crew actions. The engine validates creature power and pays tap costs at activation, then puts a counterable crew ability on the stack. On resolution, the same battlefield Vehicle becomes a creature until cleanup; the AI selects a legal crew group. Crewing an already-creature Vehicle is legal. Vehicle-specific "becomes crewed" triggers and unusual copy/layer interactions still need broader coverage. See [crew timing checks](docs/testing/crew-stack-timing.md).
+Vehicles expose explicit crew actions. The engine validates creature power and pays tap costs at activation, then puts a counterable crew ability on the stack. On resolution, the same battlefield Vehicle becomes a creature until cleanup; the AI selects a legal crew group but skips redundant repeat activations. Crewing an already-creature Vehicle remains legal for humans. Vehicle-specific "becomes crewed" triggers and unusual copy/layer interactions still need broader coverage. See [crew timing checks](docs/testing/crew-stack-timing.md).
 
 Targeted actions are validated against the current candidate set before entering the stack. Stale, cross-zone, or restricted-card IDs are rejected, while broad “any target” effects continue through protection and hexproof checks.
 

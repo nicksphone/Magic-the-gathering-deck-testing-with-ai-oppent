@@ -5,7 +5,7 @@ from pathlib import Path
 from ai.agent import AIAgent
 from effects.handlers import change_control, counter_ability
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone, assign_static_order_on_battlefield_entry
 from rules_engine.action_validation import checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -130,3 +130,17 @@ def test_ai_materializes_legal_crew_selection() -> None:
     }
     action = AIAgent(difficulty="master", archetype="Midrange")._materialize_action(state, move, 1)
     assert action["crew_card_ids"] == ["crew"]
+
+
+def test_ai_does_not_waste_crew_on_animated_or_pending_vehicle() -> None:
+    agent = AIAgent(difficulty="master", archetype="Midrange")
+    rules = RulesEngine()
+    state = _vehicle_state()
+    state.players[1].hand = []
+    state.cards["vehicle"].types.append("Creature")
+    assert agent.choose_action(state, rules.legal_moves(state, 1), 1).action["type"] != "crew"
+
+    state = _vehicle_state()
+    state.players[1].hand = []
+    state.stack.append(StackItem("pending-crew", "vehicle", 1, "Smuggler's Copter crew", "crew_vehicle", {"card_id": "vehicle"}))
+    assert agent.choose_action(state, rules.legal_moves(state, 1), 1).action["type"] != "crew"
