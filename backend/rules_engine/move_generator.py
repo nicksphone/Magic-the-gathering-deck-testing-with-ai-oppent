@@ -181,8 +181,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not available_options:
                 continue
             hints = build_cast_hints(state, card, player_id)
-            oracle = (card.oracle_text or "").lower()
-            if "target" in oracle and not _has_any_target_options(hints):
+            if hints.get("action_has_target_text") and not _has_any_target_options(hints):
                 continue
             moves.append(
                 {
@@ -236,7 +235,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not available_options:
                 continue
             hints = build_cast_hints(state, card, player_id)
-            if "target" in (card.oracle_text or "").lower() and not _has_any_target_options(hints):
+            if hints.get("action_has_target_text") and not _has_any_target_options(hints):
                 continue
             moves.append(
                 {
@@ -413,7 +412,8 @@ def _has_any_target_options(hints: dict) -> bool:
         for key in [
             "player_targets", "creature_targets", "planeswalker_targets", "stack_targets",
             "graveyard_spell_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
-            "aura_targets",
+            "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
+            "land_targets", "noncreature_permanent_targets",
         ]
     )
 

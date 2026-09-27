@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { createMutationGate, newMutationKey } from '../src/api/mutation-gate.ts';
+assert.match(newMutationKey(), /^[a-f0-9]{32}$/);
+assert.notEqual(newMutationKey(), newMutationKey());
+const gate = createMutationGate();
+let finish;
+let writes = 0;
+const first = gate.run(async () => { writes++; return await new Promise(resolve => { finish = resolve; }); });
+assert.equal(gate.busy, true);
+await assert.rejects(gate.run(async () => { writes++; }), /pending/);
+assert.equal(writes, 1);
+finish('accepted');
+assert.equal(await first, 'accepted');
+assert.equal(gate.busy, false);
+await assert.rejects(gate.run(async () => { throw new Error('network'); }), /network/);
+assert.equal(gate.busy, false);
+assert.equal(await gate.run(async () => 'reconciled'), 'reconciled');
+console.log('Mutation gate: overlap, rejection and recovery assertions passed');

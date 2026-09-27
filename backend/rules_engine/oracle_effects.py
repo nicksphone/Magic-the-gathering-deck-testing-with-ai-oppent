@@ -511,10 +511,12 @@ def inspect_target_hints(
             for cid in state.players[opponent].battlefield
             if "Creature" in state.cards[cid].types
         ]
-    if "target land" in oracle:
+    if re.search(r"target (?:basic |nonbasic )?land", oracle):
+        land_players = [controller] if re.search(r"target (?:basic |nonbasic )?land you control", oracle) else [opponent] if re.search(r"target (?:basic |nonbasic )?land (?:an opponent|your opponent) controls", oracle) else [1, 2]
         hints["land_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
-            for cid in state.players[controller].battlefield
+            for pid in land_players
+            for cid in state.players[pid].battlefield
             if "Land" in state.cards[cid].types
         ]
     aura_restrictions = {

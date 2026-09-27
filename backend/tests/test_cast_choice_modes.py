@@ -36,6 +36,8 @@ def test_bullet_and_choose_two_modes_are_exposed_as_explicit_choices() -> None:
     state = _state()
     card = state.cards[state.players[1].hand[0]]
     card.name = "Modal Charm"
+    card.types = ["Sorcery"]
+    card.type_line = "Sorcery"
     card.oracle_text = "Choose two —\n• Draw a card.\n• Gain 3 life.\n• Create a 1/1 white Soldier creature token."
     hints = build_cast_hints(state, card, 1)
 

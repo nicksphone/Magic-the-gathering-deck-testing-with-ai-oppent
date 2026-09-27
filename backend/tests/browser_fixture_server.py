@@ -2,19 +2,15 @@
 from pathlib import Path
 if (Path(__file__).resolve().parents[2] / ".git").exists():
     raise RuntimeError("Run browser fixtures only from an isolated source copy, not the live Git checkout")
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from main import ACTIVE_MATCHES, ActionRequest, MatchController, get_match, get_legal_moves, take_action
+from main import app, ACTIVE_MATCHES, MatchController, get_match, _persist_active_match
 from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
-from persistence.db import init_db
+from persistence.db import init_db, engine
+from persistence.repository import Repository
+from sqlmodel import Session
 
 init_db()
-
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:15173"], allow_methods=["*"], allow_headers=["*"])
-
 
 @app.post("/fixture")
 def fixture(pregame: bool = False):
@@ -52,19 +48,6 @@ def fixture(pregame: bool = False):
 def publish(state, deck):
     ACTIVE_MATCHES.clear()
     ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck}, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)
+    with Session(engine) as session:
+        _persist_active_match(Repository(session), ACTIVE_MATCHES[state.id])
     return get_match(state.id)
-
-
-@app.get("/matches/{match_id}")
-def state_view(match_id: str):
-    return get_match(match_id)
-
-
-@app.get("/matches/{match_id}/legal-moves")
-def moves(match_id: str, player_id: int | None = None):
-    return get_legal_moves(match_id, player_id)
-
-
-@app.post("/matches/{match_id}/action")
-def action(match_id: str, payload: ActionRequest):
-    return take_action(match_id, payload, repo=None)

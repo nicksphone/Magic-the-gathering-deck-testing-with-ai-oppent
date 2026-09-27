@@ -619,7 +619,7 @@ class RulesEngine:
                 hints = build_cast_hints(state, face_card, player_id, action_targets)
                 if reject_invalid:
                     from rules_engine.action_validation import require_declared_targets
-                    require_declared_targets(face_card, hints, action_targets, player_id)
+                    require_declared_targets(face_card, hints, action_targets, player_id, spell=True)
                 if hints.get("supports_divide") and "divide_total" not in action_targets:
                     reject("Cannot derive this allocation total from the supported card effect")
                 ok, error = validate_cast_choice(hints, action_targets)

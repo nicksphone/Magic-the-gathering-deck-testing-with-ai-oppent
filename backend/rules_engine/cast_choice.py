@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from copy import copy
 from typing import Any
 
 from game_state.state import CardInstance, MatchState
@@ -17,7 +18,16 @@ def build_cast_hints(
     controller: int,
     action_targets: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    types = set(getattr(card, "types", []) or [])
+    if types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}) and not types.intersection({"Instant", "Sorcery"}):
+        from rules_engine.attachments import is_aura
+        if not is_aura(card):
+            # This is a permanent spell, not one of its later abilities.
+            # Preserve mana/face choices without borrowing ability targets.
+            card = copy(card)
+            card.oracle_text = ""
     hints = inspect_target_hints(state, card, controller, action_targets)
+    hints["action_has_target_text"] = "target" in (card.oracle_text or "").lower()
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
     if face_names:

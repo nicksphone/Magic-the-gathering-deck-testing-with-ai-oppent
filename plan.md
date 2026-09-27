@@ -105,6 +105,7 @@ Acceptance: equivalent draw/discard sources invoke the same applicable replaceme
 - [x] Replace battlefield player-1 assumptions with explicit acting-seat ownership and human controller checks.
 - [x] Drive controls from legal moves, including generic activation, crew, loyalty, cycling, equipment and permitted exile/top-library play.
 - [ ] Provide target, mode, face, X-value, mulligan and cleanup choices needed by supported actions.
+- [ ] Verify permanent cast effects cannot execute later activated/triggered text prematurely; select targeted ETB/cast-trigger choices in their actual ability window, not as spell targets.
 - [x] Show an explicit warning for any legal action kind without an implemented control.
 
 Evidence: [browser harness and reproduction](docs/testing/human-actions-browser.md) exercises the actual Battlefield component and production API action handlers in an isolated database: seat-2 land, targeted permanent activation, crew selection, exile spell and top-library creature. This is not a full App onboarding/game/recovery E2E. Generic abilities expose advanced JSON for less common choice contracts; polished multi-choice/mulligan/face coverage remains open. Shared extraction now retains adjacent mana symbols, targets validate before costs and unsupported variable activated costs are excluded. Crew response-stack fidelity is still missing and must be repaired in rules work, not inferred from its working UI control.
@@ -121,7 +122,7 @@ Acceptance: complete human-vs-human and human-vs-AI flows through UI; seat 2 can
 - [x] Reject malformed quantities, missing fields, invalid player/card IDs and unsupported actions with structured 4xx responses.
 - [x] Define explicit sandbox deck-size policy separately from malformed-input validation.
 - [x] Verify rejected external actions leave authoritative game state and persisted snapshots unchanged through copy-on-write execution.
-- [ ] Make accepted action publication, history and snapshots atomic on storage failure; add durable version/idempotency controls under steps 7/14.
+- [x] Commit accepted match mutations, history and snapshots together and roll back memory on persistence failure; retain durable revision/idempotency metadata for the versioned UI write path.
 
 Evidence: 806 backend tests pass in an isolated source/database copy (120.05 seconds, 548 deprecation warnings). Malformed HTTP payloads, invalid actor/source/face/cost/target choices, failed loyalty payments, duplicate concurrent land requests, combat restrictions, and deliberate London mulligan bottoms have regression coverage. Normal mainboards require 60-250 cards; explicit sandbox permits 1-250, never empty. The 250 cap is an application resource limit, not a Magic maximum. Live and batch admission resolve name/quantity entries through cached/canonical metadata. See [input contracts](docs/api/input-contracts.md).
 
@@ -133,10 +134,17 @@ Acceptance: missing/negative/oversized inputs and stale IDs cannot cause interna
 
 ### 7. Restore matches and coordinate UI mutations (P2)
 
-- [ ] Add saved active-match discovery/resume and persisted frontend selection.
-- [ ] Add visible errors, bounded request timeouts/cancellation and stale-result rejection.
-- [ ] Serialize manual/autoplay mutations and guard duplicate clicks.
-- [ ] Establish safe retry semantics when a request result is lost.
+- [x] Add saved active-match discovery/resume and persisted frontend selection.
+- [x] Add visible errors, bounded request timeouts and revision-checked state/legal-move reads.
+- [x] Serialize manual/autoplay/response-window mutations and guard duplicate clicks.
+- [x] Reconcile authoritative state before retrying when a write result is lost; persist revision and bounded idempotency receipts.
+- [ ] Make match creation idempotent, validate successful response contracts, test extended disconnect/reconnect and rapid multi-window transitions, and enforce deployment-specific authorization/topology under steps 9/14.
+
+Evidence: 822 backend tests pass (161.21 seconds, 798 warnings), including concurrent identical retries, stale/conflicting writes, restored revision/receipts and injected snapshot/commit failures with unchanged full game/database snapshots. HTTP match mutation history and snapshots commit together; memory rolls back on exceptions. `GET /matches` discovers incomplete restored matches. The UI stores only its selected ID, resumes authoritative state, pauses automatic play on restore/error, and uses one non-queuing mutation gate plus versioned write keys generated with HTTP-LAN-compatible `getRandomValues`.
+
+The production build and frontend unit scripts pass. Chromium passes the six human-action paths plus full-App refresh/double-click, discarded-success-response reconciliation and actual backend-process-restart checks. These use an isolated fixture/database with production routes, not a complete human game. Retry receipts retain the latest 100 keys; matching retries return current authoritative state. Legacy headerless callers remain supported without stale-version protection. Network/multiworker deployment and new-match creation retries remain open.
+
+Cast admission also distinguishes permanent spells from their later target-bearing abilities, preserves Aura attachment requirements and covers artifact/enchantment/land/general-permanent target availability. Unqualified land targets include both players' lands; supported controller qualifiers remain explicit. The modal-parser fixture now has its intended Sorcery type rather than retaining a setup Island's Land type. These checks do not certify ETB/effect timing. The post-change seeded BO3 has zero timeout/drift ([replay](docs/plans/baselines/2026-09-27-recovery-replay.json)).
 
 Acceptance: refresh, backend restart, disconnect, double-click and autoplay/manual overlap do not lose a match or apply an action twice.
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable
 
@@ -138,7 +139,7 @@ class Repository:
             log_json=json.dumps(list(log)),
         )
         self.session.add(record)
-        self.session.commit()
+        self._commit_match_write()
         self.session.refresh(record)
         return record
 
@@ -153,9 +154,28 @@ class Repository:
             row.state_json = state_json
             row.controller_json = controller_json
         self.session.add(row)
-        self.session.commit()
+        self._commit_match_write()
         self.session.refresh(row)
         return row
+
+    def _commit_match_write(self) -> None:
+        if getattr(self, "_atomic_match_write", False):
+            self.session.flush()
+        else:
+            self.session.commit()
+
+    @contextmanager
+    def atomic_match_writes(self):
+        """Commit game history and its active snapshot as one storage unit."""
+        self._atomic_match_write = True
+        try:
+            yield
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        finally:
+            self._atomic_match_write = False
 
     def get_active_match(self, match_id: str) -> ActiveMatchRecord | None:
         return self.session.get(ActiveMatchRecord, match_id)

@@ -18,7 +18,7 @@ cd "$scratch/backend"
 
 ```bash
 cd /home/nick/mtg-deck-testing-lab/frontend
-npm run dev -- --host 127.0.0.1 --port 15173 --strictPort
+VITE_API_BASE_URL=http://127.0.0.1:10199 npm run dev -- --host 127.0.0.1 --port 15173 --strictPort
 ```
 
 ```bash
@@ -36,4 +36,4 @@ node tests/browser-human-actions.mjs
 
 Exit status must be zero with six PASS lines. Stop these test-only services afterward. Do not expose Chromium debugging or fixture routes on the network. Root/container Chromium may require `--no-sandbox`; prefer an ordinary-user sandboxed browser where available.
 
-Validation on 2026-09-27: all six paths pass against the checked-action backend, and the configured TypeScript/Vite production build passes. `npm run test:unit` runs seven HTTP error-message assertions with Node 22 TypeScript stripping. Backend regression evidence is recorded in the root plan/changelog. No dependency installs or paid model calls are required for this harness.
+Validation on 2026-09-27: all six paths pass against production routes in the isolated fixture backend, and the configured TypeScript/Vite production build passes. `npm run test:unit` runs seven HTTP error-message assertions plus mutation-gate/key checks with Node 22 TypeScript stripping. Backend regression evidence is recorded in the root plan/changelog. No dependency installs or paid model calls are required for this harness. See [App recovery checks](match-recovery.md) for additional refresh/lost-response/process-restart scenarios.

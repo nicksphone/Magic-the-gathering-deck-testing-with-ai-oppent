@@ -1,42 +1,6 @@
 import assert from "node:assert/strict";
-
-const origin = "http://127.0.0.1:19222";
-const page = await (await fetch(`${origin}/json/new?http://127.0.0.1:15173/tests/human-actions.html`, { method: "PUT" })).json();
-const socket = new WebSocket(page.webSocketDebuggerUrl);
-await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
-let sequence = 0;
-const pending = new Map();
-socket.onmessage = ({ data }) => {
-  const message = JSON.parse(data);
-  const waiter = pending.get(message.id);
-  if (!waiter) return;
-  pending.delete(message.id);
-  message.error ? waiter.reject(new Error(JSON.stringify(message.error))) : waiter.resolve(message.result);
-};
-function command(method, params = {}) {
-  return new Promise((resolve, reject) => {
-    const id = ++sequence;
-    const timer = setTimeout(() => { pending.delete(id); reject(new Error(`Chromium command timed out: ${method}`)); }, 15000);
-    pending.set(id, { resolve: (result) => { clearTimeout(timer); resolve(result); }, reject: (error) => { clearTimeout(timer); reject(error); } });
-    socket.send(JSON.stringify({ id, method, params }));
-  });
-}
-async function evaluate(expression) {
-  const response = await command("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
-  if (response.exceptionDetails) throw new Error(JSON.stringify(response.exceptionDetails));
-  return response.result.value;
-}
-async function waitFor(expression) {
-  const deadline = Date.now() + 15000;
-  while (Date.now() < deadline) {
-    if (await evaluate(expression)) return;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error(`Browser condition timed out: ${expression}\n${await evaluate("document.body.innerText")}`);
-}
-async function click(prefix) {
-  await evaluate(`(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)})); if (!button || button.disabled) throw new Error('Missing/enabled button: ' + ${JSON.stringify(prefix)}); button.click(); })()`);
-}
+import { openBrowser } from "./browser-driver.mjs";
+const { evaluate, waitFor, click, close } = await openBrowser("http://127.0.0.1:15173/tests/human-actions.html");
 async function reset() {
   await click("Reset Fixture");
   await waitFor("window.fixtureActions?.length === 0 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
@@ -90,6 +54,5 @@ try {
   assert.equal(await evaluate("window.fixtureActions[0].action.bottom_card_ids.length"), 1);
   console.log("PASS seat-2 human mulligan bottom selection is required and applied");
 } finally {
-  socket.close();
-  await fetch(`${origin}/json/close/${page.id}`);
+  await close();
 }

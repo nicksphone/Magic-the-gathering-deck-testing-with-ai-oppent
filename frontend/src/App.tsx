@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "./api/client";
+import { api, type MatchWrite, type SavedMatch } from "./api/client";
+import { createMutationGate, newMutationKey } from "./api/mutation-gate";
 import { AnalyticsPanel } from "./components/AnalyticsPanel";
 import { Battlefield } from "./components/Battlefield";
 import { Controls } from "./components/Controls";
@@ -23,9 +24,83 @@ export function App() {
   const [autoplayDelayMs, setAutoplayDelayMs] = useState<number>(1800);
   const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
   const [actionError, setActionError] = useState("");
+  const [savedMatches, setSavedMatches] = useState<SavedMatch[]>([]);
+  const [mutationPending, setMutationPending] = useState(false);
+  const [restoring, setRestoring] = useState(true);
+  const [autoProgressPaused, setAutoProgressPaused] = useState(false);
+  const gate = useRef(createMutationGate());
+  const currentMatch = useRef<MatchState | null>(null);
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+
+  const applyMatch = useCallback(async (next: MatchState) => {
+    let data = next;
+    let legal = await api.legalMoves(data.id);
+    if (legal.revision !== undefined && legal.revision !== data.revision) {
+      data = await api.getMatch(data.id);
+      legal = await api.legalMoves(data.id);
+      if (legal.revision !== data.revision) throw new Error("Match keeps changing in another window. Pause it, then reload.");
+    }
+    currentMatch.current = data;
+    setMatch(data);
+    setLegalPlayerId(legal.player_id);
+    setLegalMoves(legal.moves);
+    setMode(data.mode ?? "player_vs_ai");
+    try { localStorage.setItem("mtg.activeMatch", data.id); } catch { /* Storage may be disabled. */ }
+  }, []);
+
+  async function mutateMatch(operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>) {
+    await gate.current.run(async () => {
+      const state = currentMatch.current;
+      if (!state || restoring) return;
+      setMutationPending(true);
+      setLegalMoves([]);
+      try {
+        await applyMatch(await operation(state, { revision: state.revision ?? 0, key: newMutationKey() }));
+      } catch (error) {
+        setAutoProgressPaused(true);
+        try { await applyMatch(await api.getMatch(state.id)); }
+        catch { throw new Error("Write outcome is uncertain. Automatic play is paused; reconnect and resume the saved match before retrying."); }
+        throw error;
+      } finally { setMutationPending(false); }
+    });
+  }
+
+  async function resumeMatch(id: string) {
+    await gate.current.run(async () => {
+      setMutationPending(true);
+      setAutoProgressPaused(true);
+      try { await applyMatch(await api.getMatch(id)); }
+      finally { setMutationPending(false); }
+    });
+  }
+
+  useEffect(() => {
+    let disposed = false;
+    void (async () => {
+      try {
+        const records = await api.savedMatches();
+        if (disposed) return;
+        setSavedMatches(records);
+        let id: string | null = null;
+        try { id = localStorage.getItem("mtg.activeMatch"); } catch { /* Optional persistence. */ }
+        if (id) {
+          const data = await api.getMatch(id);
+          const legal = await api.legalMoves(id);
+          if (disposed) return;
+          if (legal.revision !== undefined && legal.revision !== data.revision) throw new Error("Saved match changed during restore. Resume it again.");
+          currentMatch.current = data;
+          setMatch(data); setMode(data.mode ?? "player_vs_ai");
+          setLegalPlayerId(legal.player_id); setLegalMoves(legal.moves);
+          setAutoProgressPaused(true);
+        }
+      } catch (error) {
+        if (!disposed) setActionError(error instanceof Error ? error.message : String(error));
+      } finally { if (!disposed) setRestoring(false); }
+    })();
+    return () => { disposed = true; };
+  }, []);
 
   function reportAction<Args extends unknown[]>(operation: (...args: Args) => Promise<void>) {
     return (...args: Args) => {
@@ -55,142 +130,104 @@ export function App() {
   }, []);
 
   async function startMatch() {
+    if (restoring) return;
     const deckA = decks.find((d) => d.id === selectedA);
     const deckB = decks.find((d) => d.id === selectedB);
     if (!deckA || !deckB) return;
-    const data = await api.startMatch({
-      deck_a: deckA.mainboard,
-      deck_b: deckB.mainboard,
-      deck_a_sideboard: deckA.sideboard,
-      deck_b_sideboard: deckB.sideboard,
-      deck_a_id: deckA.id,
-      deck_b_id: deckB.id,
-      controller_a: mode === "ai_vs_ai" ? "ai" : "human",
-      controller_b: mode === "human_vs_human" ? "human" : "ai",
-      ai_difficulty: difficulty,
-      mode,
-      best_of: bestOf,
+    await gate.current.run(async () => {
+      setMutationPending(true);
+      try {
+        const data = await api.startMatch({
+          deck_a: deckA.mainboard,
+          deck_b: deckB.mainboard,
+          deck_a_sideboard: deckA.sideboard,
+          deck_b_sideboard: deckB.sideboard,
+          deck_a_id: deckA.id,
+          deck_b_id: deckB.id,
+          controller_a: mode === "ai_vs_ai" ? "ai" : "human",
+          controller_b: mode === "human_vs_human" ? "human" : "ai",
+          ai_difficulty: difficulty,
+          mode,
+          best_of: bestOf,
+        });
+        await applyMatch(data);
+        setAutoProgressPaused(false);
+        setSavedMatches(await api.savedMatches());
+      } finally { setMutationPending(false); }
     });
-    setMatch(data);
-    const legal = await api.legalMoves(data.id, data.priority_player);
-    setLegalPlayerId(legal.player_id);
-    setLegalMoves(legal.moves);
   }
 
-  const syncMoves = useCallback(async (nextMatch: MatchState) => {
-    const legal = await api.legalMoves(nextMatch.id);
-    setLegalPlayerId(legal.player_id);
-    setLegalMoves(legal.moves);
-  }, []);
-
   async function passPriority() {
-    if (!match) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, { type: "pass_priority" });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "pass_priority" }, write));
   }
 
   async function keepHand(bottomCardIds: string[]) {
-    if (!match) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, { type: "keep_hand", bottom_card_ids: bottomCardIds });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "keep_hand", bottom_card_ids: bottomCardIds }, write));
   }
 
   async function mulligan() {
-    if (!match) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, { type: "mulligan" });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "mulligan" }, write));
   }
 
   async function nextStep() {
-    if (!match) return;
-    const nextMatch = await api.autoplay(match.id, 1);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await autoplayTick(1);
   }
 
   async function autoplayTick(ticks: number) {
-    if (!match) return;
-    const nextMatch = await api.autoplay(match.id, ticks);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.autoplay(state.id, ticks, write));
   }
 
   async function onCardAction(playerId: number, action: Record<string, unknown>) {
-    if (!match) return;
-    const nextMatch = await api.act(match.id, playerId, action);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.act(state.id, playerId, action, write));
   }
 
   async function onChooseReplacement(sourceId: string) {
-    if (!match || !sourceId) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, {
+    if (!sourceId) return;
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
       type: "choose_replacement",
       replacement_source_id: sourceId,
-    });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    }, write));
   }
 
   async function onChooseTriggerOrder(order: string[]) {
-    if (!match || order.length === 0) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, {
+    if (order.length === 0) return;
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
       type: "choose_trigger_order",
       trigger_order: order,
-    });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    }, write));
   }
 
   async function onSubmitBlocks(blocks: Record<string, string[]>) {
-    if (!match) return;
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
-    const nextMatch = await api.act(match.id, match.priority_player, { type: "block", blocks: filtered });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered }, write));
   }
 
   async function onSubmitAttack(attackers: string[], attackTargets: Record<string, string>) {
-    if (!match) return;
-    const nextMatch = await api.act(match.id, match.priority_player, {
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
       type: "attack",
       attackers,
       attack_targets: attackTargets,
-    });
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    }, write));
   }
 
   async function onApplySideboard(playerId: number, outCards: DeckItem[], inCards: DeckItem[]) {
-    if (!match) return;
-    const nextMatch = await api.sideboard(match.id, playerId, outCards, inCards);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.sideboard(state.id, playerId, outCards, inCards, write));
   }
 
   async function onNextGame() {
-    if (!match) return;
-    const nextMatch = await api.nextGame(match.id);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.nextGame(state.id, write));
   }
 
   async function onSetPriorityStops(playerId: number, stops: string[]) {
-    if (!match) return;
-    const nextMatch = await api.setPriorityStops(match.id, playerId, stops);
-    setMatch(nextMatch);
-    await syncMoves(nextMatch);
+    await mutateMatch((state, write) => api.setPriorityStops(state.id, playerId, stops, write));
   }
 
   useEffect(() => {
-    if (!match) return;
+    if (!match || restoring || mutationPending || autoProgressPaused) return;
     if (autoTickInFlight.current) return;
     if (match.match_complete) return;
     const controllers = match.controllers ?? {};
-    const uiAiVsAi = mode === "ai_vs_ai";
+    const uiAiVsAi = match.mode === "ai_vs_ai";
     const kept = new Set(match.kept_hands ?? []);
     const actingPlayer = match.pregame_pending
       ? ([1, 2].find((pid) => !kept.has(pid)) ?? match.priority_player)
@@ -201,15 +238,15 @@ export function App() {
     if (!shouldAutoRun) return;
 
     const timer = window.setTimeout(async () => {
-      if (!match || autoTickInFlight.current) return;
+      if (!match || autoTickInFlight.current || gate.current.busy) return;
       autoTickInFlight.current = true;
       try {
         const ticks = bothAi ? 3 : 1;
-        const next = await api.autoplay(match.id, ticks);
-        setMatch(next);
-        await syncMoves(next);
+        await autoplayTick(ticks);
       } catch (error) {
         console.error("Auto progression tick failed", error);
+        setActionError(error instanceof Error ? error.message : String(error));
+        setAutoProgressPaused(true);
       } finally {
         autoTickInFlight.current = false;
         setAutoLoopBeat((v) => v + 1);
@@ -217,10 +254,11 @@ export function App() {
     }, autoplayDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [match, syncMoves, autoLoopBeat, autoplayDelayMs]);
+  }, [match, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused]);
 
   const humanResponseWindowActive =
-    mode === "player_vs_ai"
+    match?.mode === "player_vs_ai"
+    && !restoring && !mutationPending && !autoProgressPaused
     && !!match
     && !match.pregame_pending
     && !match.match_complete
@@ -259,19 +297,20 @@ export function App() {
     if (!humanResponseWindowActive) return;
     if (autoResponsePaused) return;
     if (responseCountdown !== 0) return;
-    if (!match || responsePassInFlight.current) return;
+    if (!match || responsePassInFlight.current || gate.current.busy) return;
     responsePassInFlight.current = true;
     void (async () => {
       try {
-        const nextMatch = await api.act(match.id, 1, { type: "pass_priority" });
-        setMatch(nextMatch);
-        await syncMoves(nextMatch);
+        await passPriority();
+      } catch (error) {
+        setActionError(error instanceof Error ? error.message : String(error));
+        setAutoProgressPaused(true);
       } finally {
         responsePassInFlight.current = false;
         setResponseCountdown(null);
       }
     })();
-  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, syncMoves]);
+  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match]);
 
   return (
     <main className="layout">
@@ -290,8 +329,17 @@ export function App() {
       </header>
 
       <section className="left-column">
-        {actionError ? <p role="alert">Action rejected: {actionError}</p> : null}
+        {actionError ? <p role="alert">Match operation: {actionError}</p> : null}
+        <article className="panel">
+          <h2>Saved matches</h2>
+          {restoring ? <p role="status">Restoring saved session...</p> : null}
+          <button disabled={mutationPending || restoring} onClick={reportAction(async () => { setSavedMatches(await api.savedMatches()); })}>Refresh saved matches</button>
+          {savedMatches.map((saved) => <button key={saved.id} disabled={mutationPending || restoring} onClick={reportAction(() => resumeMatch(saved.id))}>Resume {saved.players.join(" vs ")} | game {saved.game_number}, turn {saved.turn} | {saved.id.slice(0, 8)}</button>)}
+          {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
+          {mutationPending ? <p role="status">Match operation pending...</p> : null}
+        </article>
         <DeckPanel decks={decks} onDecksLoaded={onDecksLoaded} />
+        <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
           decks={decks}
           selectedA={selectedA}
@@ -327,13 +375,16 @@ export function App() {
           actingPlayerId={legalPlayerId}
           match={match}
         />
+        </fieldset>
         <AnalyticsPanel decks={decks} />
       </section>
 
       <section className="right-column">
         {match ? (
           <>
-            <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} />
+            <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+              <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} />
+            </fieldset>
             <StackLog match={match} />
           </>
         ) : (

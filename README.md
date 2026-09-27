@@ -19,6 +19,7 @@ It is designed for serious deck work:
 - Land drops, casting, activated abilities, combat actions, and response windows
 - Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
 - Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
+- Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -281,6 +282,7 @@ Key endpoints:
 - `GET /decks/expansion-top`
 - `POST /decks/analyze`
 - `POST /matches/start`
+- `GET /matches`
 - `GET /matches/{match_id}`
 - `GET /matches/{match_id}/legal-moves`
 - `POST /matches/{match_id}/action`
@@ -321,7 +323,8 @@ The application currently supports:
 - Responsive desktop UI with readable stack, priority, mana, and hover inspection
 
 Current focus:
-- saved-match resume, serialized manual/autoplay requests, durable version/idempotency and persistence-failure recovery
+- separating permanent spell resolution from later ability text and exposing targeted trigger choices in the correct window
+- full-game browser acceptance, new-match creation recovery and successful-response runtime validation
 - seeded interactive BO3 and full browser/response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
 - improving replacement, prevention, and layer fidelity in edge cases
@@ -332,7 +335,8 @@ Current focus:
 
 ## Known Limitations and Next Upgrades
 
-- Rejected checked human actions preserve game state; accepted-action history/snapshot writes are not yet atomic against database faults. Refresh recovery, duplicate-write retries and stale response handling remain unfinished.
+- Permanent cast-target hints no longer borrow later ability targets, but resolution-time Oracle inference still needs a broader spell/ability context audit. Targeted ETB/cast-trigger choice timing is not certified; this remains a local-beta blocker rather than a cosmetic follow-up.
+- Guarded match writes persist history/snapshots together and restore memory on storage faults. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage; match creation is not yet idempotent and extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
 - Human action browser fixtures cover six paths, not a complete game or BO3. Crew currently resolves immediately rather than using its proper stack window; variable activated mana costs are explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.

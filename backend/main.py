@@ -5,18 +5,21 @@ import json
 import threading
 import time
 import uuid
+import inspect
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Literal
 from functools import wraps
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, nullcontext
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from ai.agent import AIAgent
 from ai.deck_analysis import analyze_deck, guess_archetype
@@ -84,6 +87,8 @@ class MatchController:
     best_of: int
     sideboarded_players: set[int] = field(default_factory=set)
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
+    revision: int = 0
+    mutation_receipts: dict[str, str] = field(default_factory=dict)
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
@@ -101,7 +106,38 @@ def coordinated_match(handler):
         if match is None:
             raise HTTPException(status_code=404, detail="Match not found")
         with match.mutation_lock:
-            return handler(*args, **kwargs)
+            if handler.__name__ not in {"take_action", "autoplay_tick", "set_priority_stops", "apply_sideboard", "next_game"}:
+                return deepcopy(handler(*args, **kwargs))
+            bound = inspect.signature(handler).bind(*args, **kwargs)
+            bound.apply_defaults()
+            request = bound.arguments.get("request")
+            key = request.headers.get("Idempotency-Key") if request is not None else None
+            expected = request.headers.get("X-Match-Revision") if request is not None else None
+            if (key is None) != (expected is None) or (key is not None and not 1 <= len(key) <= 100):
+                raise HTTPException(422, detail={"code": "invalid_write_headers", "message": "Supply a bounded Idempotency-Key and X-Match-Revision together"})
+            params = {name: value.model_dump() if isinstance(value, BaseModel) else value for name, value in bound.arguments.items() if name not in {"repo", "request"}}
+            fingerprint = hashlib.sha256(json.dumps({"operation": handler.__name__, "params": params}, sort_keys=True).encode()).hexdigest()
+            if key in match.mutation_receipts:
+                if match.mutation_receipts[key] != fingerprint:
+                    raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This write key already identifies a different operation"})
+                return deepcopy(_serialize_match_controller(match))
+            if expected is not None and (not 1 <= len(expected) <= 16 or not expected.isascii() or not expected.isdigit() or int(expected) != match.revision):
+                raise HTTPException(409, detail={"code": "stale_revision", "message": "Match changed; reload authoritative state before acting"})
+            before = deepcopy({name: value for name, value in vars(match).items() if name != "mutation_lock"})
+            repo = bound.arguments.get("repo")
+            try:
+                match.revision += 1
+                if key:
+                    match.mutation_receipts[key] = fingerprint
+                    while len(match.mutation_receipts) > 100:
+                        del match.mutation_receipts[next(iter(match.mutation_receipts))]
+                with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():
+                    return deepcopy(handler(*args, **kwargs))
+            except Exception as exc:
+                vars(match).update(before)
+                if isinstance(exc, SQLAlchemyError):
+                    raise HTTPException(503, detail={"code": "match_storage_unavailable", "message": "Write was not committed; reload match state before retrying"}) from exc
+                raise
     return wrapped
 
 
@@ -213,6 +249,8 @@ def _controller_snapshot(match: MatchController) -> dict:
         "sideboarded_players": sorted(match.sideboarded_players),
         "difficulties": difficulties,
         "archetypes": archetypes,
+        "revision": match.revision,
+        "mutation_receipts": match.mutation_receipts,
     }
 
 
@@ -254,6 +292,8 @@ def _restore_active_matches(repo: Repository) -> None:
                 match_complete=bool(config.get("match_complete", False)),
                 best_of=int(config.get("best_of", state.best_of)),
                 sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
+                revision=int(config.get("revision", 0)),
+                mutation_receipts=dict(config.get("mutation_receipts", {})),
             )
             ACTIVE_MATCHES[state.id] = controller
         except Exception:
@@ -548,6 +588,18 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
     return _serialize_match_controller(controller)
 
 
+@app.get("/matches")
+def list_active_matches() -> list[dict]:
+    items = []
+    for match in list(ACTIVE_MATCHES.values()):
+        with match.mutation_lock:
+            if not match.match_complete:
+                items.append({"id": match.state.id, "mode": match.mode, "turn": match.state.turn,
+                              "game_number": match.game_number, "revision": match.revision,
+                              "players": [match.state.players[pid].name for pid in (1, 2)]})
+    return items
+
+
 @app.get("/matches/{match_id}")
 @coordinated_match
 def get_match(match_id: str) -> dict:
@@ -599,7 +651,7 @@ def get_legal_moves(match_id: str, player_id: Annotated[int | None, Query(ge=1, 
         cid = move.get("card_id")
         if cid in match.state.cards:
             move["card_view"] = serialize_card_view(match.state, cid)
-    return {"player_id": pid, "moves": moves}
+    return {"player_id": pid, "moves": moves, "revision": match.revision}
 
 
 @app.get("/matches/{match_id}/replacement-options")
@@ -634,7 +686,7 @@ def get_replacement_options(
 
 @app.post("/matches/{match_id}/action")
 @coordinated_match
-def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depends(get_repo)) -> dict:
+def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -652,7 +704,7 @@ def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depend
 
 @app.post("/matches/{match_id}/autoplay")
 @coordinated_match
-def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_repo)) -> dict:
+def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -703,7 +755,7 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
 
 @app.post("/matches/{match_id}/priority-stops")
 @coordinated_match
-def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repository = Depends(get_repo)) -> dict:
+def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -721,7 +773,7 @@ def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repos
 
 @app.post("/matches/{match_id}/sideboard")
 @coordinated_match
-def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository = Depends(get_repo)) -> dict:
+def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -750,7 +802,7 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
 
 @app.post("/matches/{match_id}/next-game")
 @coordinated_match
-def next_game(match_id: str, repo: Repository = Depends(get_repo)) -> dict:
+def next_game(match_id: str, repo: Repository = Depends(get_repo), request: Request = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -1183,6 +1235,7 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
 
 def _serialize_match_controller(match: MatchController) -> dict:
     payload = serialize_match(match.state)
+    payload["revision"] = match.revision
     payload["mode"] = match.mode
     payload["controllers"] = {str(pid): controller for pid, controller in match.controllers.items()}
     payload["game_number"] = match.game_number

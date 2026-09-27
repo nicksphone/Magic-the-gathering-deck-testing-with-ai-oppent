@@ -4,6 +4,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added saved-match discovery and frontend ID-based restore, explicit automatic-play pause/resume, a shared non-queuing mutation gate, revision-checked legal reads, bounded fetch timeouts and lost-write reconciliation. Write keys use `getRandomValues`, including plain HTTP LAN pages.
+- Match history/snapshot mutations now commit together with rollback of in-memory state on failure. Revisions and the latest 100 idempotency fingerprints survive restore; stale/conflicting guarded writes return 409 and matching retries return current authoritative state without applying again. Legacy headerless calls remain supported; creation/multiworker/network controls are not complete.
+- Permanent cast hints/target admission no longer borrow later activated/triggered ability targets, and spell availability now includes artifact/enchantment/land/general-permanent candidate surfaces. Added cast-admission regressions across those families; resolution-time ability isolation and targeted trigger windows remain tracked blockers.
+- Validation: 822 isolated backend tests, production build, frontend error/gate/key checks and six human-action browser paths pass. Additional full-App browser checks pass for refresh/duplicate clicks, an intercepted accepted response and an actual test-backend process restart. Original live database/servers remain untouched.
+
 - Added bounded name/quantity deck contracts, explicit small-deck sandbox policy, discriminated human action/choice inputs and shared cached hydration for batch admission. Invalid shapes and unsupported fields return 4xx rather than reaching unchecked engine mutations.
 - Checked human actions execute on copied state before publication; local per-match locks coordinate reads and writes. Added actor/source/face/cost/target checks, deliberate ordered London mulligan bottoms through zero cards, and visible frontend action errors. Persistence-failure atomicity, versions/idempotency, resume and multiworker safety remain open.
 - Fixed real divided-damage wording/budget validation and generic AI activation targeting; own permanents remain legal any-target candidates without becoming default AI damage targets. Complete multi-role targeting and optimized allocation remain unfinished.

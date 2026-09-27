@@ -2,6 +2,7 @@
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 
 import pytest
 from fastapi.testclient import TestClient
@@ -40,7 +41,7 @@ def persist(controller):
 def snapshot(controller):
     with sqlite3.connect(DATABASE_PATH) as connection:
         database = list(connection.iterdump())
-    return json.dumps(serialize_match_snapshot(controller.state), sort_keys=True), main._controller_snapshot(controller), database
+    return json.dumps(serialize_match_snapshot(controller.state), sort_keys=True), deepcopy(main._controller_snapshot(controller)), database
 
 
 def rejected(client, controller, action, player_id=1):
@@ -124,6 +125,40 @@ def test_failed_ability_targets_and_loyalty_costs_are_atomic(game):
     rejected(client, controller, {"type": "activate_loyalty", "card_id": "chandra", "ability_index": 0, "targets": {"target_card_id": controller.state.players[1].hand[0]}})
     assert controller.state.cards["chandra"].loyalty == 4
     assert not controller.state.cards["pyro"].tapped
+
+
+@pytest.mark.parametrize("name,types,cost,text", [
+    ("Ugin, the Spirit Dragon", ["Planeswalker"], "{8}", "+2: Ugin, the Spirit Dragon deals 3 damage to any target."),
+    ("Prodigal Pyromancer", ["Creature"], "{2}{R}", "{T}: Prodigal Pyromancer deals 1 damage to any target."),
+    ("Ravenous Chupacabra", ["Creature"], "{2}{B}{B}", "When Ravenous Chupacabra enters the battlefield, destroy target creature an opponent controls."),
+])
+def test_permanent_cast_does_not_require_its_later_ability_targets(game, name, types, cost, text):
+    client, controller = game
+    add_card(controller, "permanent", name, Zone.HAND, types, cost=cost, text=text)
+    controller.state.players[1].mana_pool.update({"C": 8, "R": 1, "B": 2})
+    persist(controller)
+    response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "permanent"}})
+    assert response.status_code == 200, response.text
+    assert controller.state.cards["permanent"].zone == Zone.STACK
+    # Targeted abilities remain separate choices when they actually trigger or
+    # are activated; this test certifies cast admission, not ETB resolution.
+
+
+@pytest.mark.parametrize("name,cost,text,target_name,target_types", [
+    ("Beast Within", "{2}{G}", "Destroy target permanent.", "Grizzly Bears", ["Creature"]),
+    ("Nature's Claim", "{G}", "Destroy target artifact or enchantment.", "Smuggler's Copter", ["Artifact"]),
+    ("Stone Rain", "{2}{R}", "Destroy target land.", "Forest", ["Land"]),
+])
+def test_noncreature_target_surfaces_offer_and_accept_casts(game, name, cost, text, target_name, target_types):
+    client, controller = game
+    add_card(controller, "removal", name, Zone.HAND, ["Instant" if name != "Stone Rain" else "Sorcery"], cost, text)
+    add_card(controller, "victim", target_name, Zone.BATTLEFIELD, target_types, owner=2, power=2, toughness=2)
+    controller.state.players[1].mana_pool.update({"C": 3, "G": 1, "R": 1})
+    persist(controller)
+    moves = client.get(f"/matches/{controller.state.id}/legal-moves").json()["moves"]
+    assert any(move.get("card_id") == "removal" and move["type"] == "cast_spell" for move in moves)
+    response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "removal", "targets": {"target_card_id": "victim"}}})
+    assert response.status_code == 200, response.text
 
 
 def test_x_cost_failure_and_unknown_cost_face_or_zone_are_atomic(game):

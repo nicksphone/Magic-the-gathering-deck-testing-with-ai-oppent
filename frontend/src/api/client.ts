@@ -170,6 +170,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...init,
+    signal: init?.signal ?? AbortSignal.timeout(30000),
   });
   if (!res.ok) {
     const txt = await res.text();
@@ -177,6 +178,11 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export type MatchWrite = { revision: number; key: string };
+const writeHeaders = (write?: MatchWrite): Record<string, string> => write ? { "Content-Type": "application/json", "X-Match-Revision": String(write.revision), "Idempotency-Key": write.key } : { "Content-Type": "application/json" };
+
+export type SavedMatch = { id: string; mode: NonNullable<MatchState["mode"]>; turn: number; game_number: number; revision: number; players: string[] };
 
 export const api = {
   health: () => req<HealthResponse>("/health"),
@@ -213,27 +219,31 @@ export const api = {
     best_of: number;
   }) => req<MatchState>("/matches/start", { method: "POST", body: JSON.stringify(payload) }),
   getMatch: (id: string) => req<MatchState>(`/matches/${id}`),
+  savedMatches: () => req<SavedMatch[]>("/matches"),
   legalMoves: (matchId: string, playerId?: number) =>
-    req<{ player_id: number; moves: LegalMove[] }>(
+    req<{ player_id: number; moves: LegalMove[]; revision?: number }>(
       `/matches/${matchId}/legal-moves${playerId ? `?player_id=${playerId}` : ""}`,
     ),
-  act: (matchId: string, player_id: number, action: Record<string, unknown>) =>
-    req<MatchState>(`/matches/${matchId}/action`, { method: "POST", body: JSON.stringify({ player_id, action }) }),
-  autoplay: (matchId: string, ticks = 1) => req<MatchState>(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST" }),
-  sideboard: (matchId: string, player_id: number, cards_out: DeckItem[], cards_in: DeckItem[]) =>
+  act: (matchId: string, player_id: number, action: Record<string, unknown>, write?: MatchWrite) =>
+    req<MatchState>(`/matches/${matchId}/action`, { method: "POST", headers: writeHeaders(write), body: JSON.stringify({ player_id, action }) }),
+  autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => req<MatchState>(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST", headers: writeHeaders(write) }),
+  sideboard: (matchId: string, player_id: number, cards_out: DeckItem[], cards_in: DeckItem[], write?: MatchWrite) =>
     req<MatchState>(`/matches/${matchId}/sideboard`, {
       method: "POST",
+      headers: writeHeaders(write),
       body: JSON.stringify({ player_id, cards_out, cards_in }),
     }),
-  nextGame: (matchId: string) => req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST" }),
-  setPriorityStops: (matchId: string, player_id: number, stops: string[]) =>
+  nextGame: (matchId: string, write?: MatchWrite) => req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST", headers: writeHeaders(write) }),
+  setPriorityStops: (matchId: string, player_id: number, stops: string[], write?: MatchWrite) =>
     req<MatchState>(`/matches/${matchId}/priority-stops`, {
       method: "POST",
+      headers: writeHeaders(write),
       body: JSON.stringify({ player_id, stops }),
     }),
   simulateBatch: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
     req("/simulate/batch", {
       method: "POST",
+      signal: AbortSignal.timeout(600000),
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
   startSimulateBatchJob: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
