@@ -1961,7 +1961,7 @@ class AIAgent:
             if power >= required:
                 out["crew_card_ids"] = selected
             return out
-        if mtype not in {"cast_spell", "activate_loyalty"}:
+        if mtype not in {"cast_spell", "activate_loyalty", "activate_ability"}:
             return move
         out = dict(move)
         hints = move.get("target_hints") or {}
@@ -2011,6 +2011,10 @@ class AIAgent:
                 targets["target_player"] = opponent
 
         creature_targets = hints.get("creature_targets") or []
+        target_text = str(move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
+        any_damage_target = "any target" in target_text or "any number of targets" in target_text
+        if any_damage_target:
+            creature_targets = [target for target in creature_targets if state.cards[target["id"]].controller != player_id]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(
                 creature_targets,
@@ -2080,6 +2084,8 @@ class AIAgent:
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         planeswalker_targets = hints.get("planeswalker_targets") or []
+        if any_damage_target:
+            planeswalker_targets = [target for target in planeswalker_targets if state.cards[target["id"]].controller != player_id]
         if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             targets["target_card_id"] = planeswalker_targets[0]["id"]
 
@@ -2145,7 +2151,7 @@ class AIAgent:
 
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
-                # Put first point on highest-threat creature by default.
+                # Start with one recipient, then use the rules-derived budget.
                 best = max(
                     creature_targets,
                     key=lambda t: (self._creature_threat_score(state, t.get("id"), player_id), str(t.get("name") or t.get("label") or "")),
@@ -2155,7 +2161,6 @@ class AIAgent:
                     targets["target_distribution"] = {best["id"]: 1}
             elif player_targets:
                 targets["target_distribution"] = {str(opponent): 1}
-            targets.setdefault("divide_total", 1)
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         if "{X}" in mana_cost.upper() and "x_value" not in targets:
@@ -2181,6 +2186,25 @@ class AIAgent:
                 xv = 0
             if xv <= 0:
                 out["_invalid_ai_choice"] = True
+
+        if hints.get("supports_divide") and card:
+            from types import SimpleNamespace
+            from rules_engine.cast_choice import enrich_divide_total
+            from rules_engine.engine import _select_face_for_cast
+            from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
+            allocation_card = _select_face_for_cast(card, out.get("selected_face_index"))
+            if mtype != "cast_spell":
+                abilities = extract_loyalty_abilities(card) if mtype == "activate_loyalty" else extract_activated_abilities(card)
+                ability = next((item for index, item in enumerate(abilities) if item.get("index", index) == move.get("ability_index")), None)
+                if ability:
+                    allocation_card = SimpleNamespace(oracle_text=ability["text"])
+            targets = enrich_divide_total(allocation_card, targets)
+            budget = targets.get("divide_total")
+            if budget is None:
+                out["_invalid_ai_choice"] = True
+            elif targets.get("target_distribution"):
+                recipient = next(iter(targets["target_distribution"]))
+                targets["target_distribution"] = {recipient: budget} if budget else {}
 
         out["targets"] = targets
         return out

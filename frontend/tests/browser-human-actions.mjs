@@ -79,6 +79,16 @@ try {
   await click("Resolve Stack");
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.id === 'elf')");
   console.log("PASS permitted top-library spell reaches battlefield");
+
+  await click("Pregame Fixture");
+  await waitFor("document.querySelector('legend')?.textContent.includes('Choose 1 cards to bottom') && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(button => button.textContent === 'Keep Hand').disabled"), true);
+  await evaluate("document.querySelector('fieldset input[type=checkbox]').click()");
+  await click("Keep Hand");
+  await waitFor("!window.fixtureState.pregame_pending && window.fixtureState.players['2'].hand_count === 6");
+  assert.equal(await evaluate("window.fixtureActions[0].player_id"), 2);
+  assert.equal(await evaluate("window.fixtureActions[0].action.bottom_card_ids.length"), 1);
+  console.log("PASS seat-2 human mulligan bottom selection is required and applied");
 } finally {
   socket.close();
   await fetch(`${origin}/json/close/${page.id}`);

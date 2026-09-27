@@ -117,10 +117,17 @@ Acceptance: complete human-vs-human and human-vs-AI flows through UI; seat 2 can
 
 ### 6. Validate API requests before mutation (P2)
 
-- [ ] Define bounded typed deck entries and discriminated action/choice contracts.
-- [ ] Reject malformed quantities, missing fields, invalid player/card IDs and unsupported actions with structured 4xx responses.
-- [ ] Define explicit sandbox deck-size policy separately from malformed-input validation.
-- [ ] Verify failed actions leave authoritative state unchanged; avoid catching exceptions after partial mutation.
+- [x] Define bounded typed deck entries and discriminated action/choice contracts.
+- [x] Reject malformed quantities, missing fields, invalid player/card IDs and unsupported actions with structured 4xx responses.
+- [x] Define explicit sandbox deck-size policy separately from malformed-input validation.
+- [x] Verify rejected external actions leave authoritative game state and persisted snapshots unchanged through copy-on-write execution.
+- [ ] Make accepted action publication, history and snapshots atomic on storage failure; add durable version/idempotency controls under steps 7/14.
+
+Evidence: 806 backend tests pass in an isolated source/database copy (120.05 seconds, 548 deprecation warnings). Malformed HTTP payloads, invalid actor/source/face/cost/target choices, failed loyalty payments, duplicate concurrent land requests, combat restrictions, and deliberate London mulligan bottoms have regression coverage. Normal mainboards require 60-250 cards; explicit sandbox permits 1-250, never empty. The 250 cap is an application resource limit, not a Magic maximum. Live and batch admission resolve name/quantity entries through cached/canonical metadata. See [input contracts](docs/api/input-contracts.md).
+
+Frontend production build, seven error-message assertions and six Chromium component/HTTP paths pass. A seeded Mono Red Aggro/Dimir Control BO3 finishes two games without timeout or drift ([replay](docs/plans/baselines/2026-09-27-api-validation-replay.json)). Human seat 2 can explicitly select ordered London bottoms; mulligans may continue to a zero-card opening hand. This does not establish full-game browser acceptance, arbitrary-card target semantics, fresh dependency installation or expert AI.
+
+One fresh, authorized Jev request judged the scoped rejection, storage/topology/target limits and next-work direction against current working-source excerpts. [Review provenance and limits](docs/audits/2026-09-27-api-validation-jev.md). No database contents were supplied; the credential was used only in the authorization header, not evidence or archives.
 
 Acceptance: missing/negative/oversized inputs and stale IDs cannot cause internal 500s or invalid games. Fuzz meaningful action families.
 

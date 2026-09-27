@@ -54,10 +54,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.pregame_pending:
         if player_id in state.kept_hands:
             return []
-        return [
-            {"type": "keep_hand"},
-            {"type": "mulligan", "current_mulligans": state.mulligan_count.get(player_id, 0)},
-        ]
+        moves = [{"type": "keep_hand"}]
+        if state.mulligan_count.get(player_id, 0) < 7:
+            moves.append({"type": "mulligan", "current_mulligans": state.mulligan_count.get(player_id, 0)})
+        return moves
     moves: list[dict] = [{"type": "pass_priority"}]
     if state.step == Step.CLEANUP and (state.cleanup_pending or not state.cleanup_repeat_required):
         return moves

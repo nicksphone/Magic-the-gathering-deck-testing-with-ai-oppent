@@ -15,7 +15,8 @@ type Props = {
   setBestOf: (bestOf: number) => void;
   onStart: () => void;
   onPassPriority: () => void;
-  onKeepHand: () => void;
+  onKeepHand: (bottomCardIds: string[]) => void;
+  actingPlayerId?: number;
   onMulligan: () => void;
   onNextStep: () => void;
   onAutoplayTick: (ticks: number) => void;
@@ -50,6 +51,10 @@ function parseDeckLines(text: string): DeckItem[] {
 }
 
 export function Controls(props: Props) {
+  const pregameActor = props.actingPlayerId ?? props.match?.priority_player ?? 1;
+  const bottomCount = props.match?.mulligan_count?.[String(pregameActor)] ?? 0;
+  const [bottomCards, setBottomCards] = useState<string[]>([]);
+  useEffect(() => setBottomCards([]), [props.match?.id, pregameActor, bottomCount]);
   const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
   const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}`;
@@ -320,15 +325,22 @@ export function Controls(props: Props) {
           AI Step x30
         </button>
       </div>
-      {props.match?.pregame_pending ? (
+      {props.match?.pregame_pending && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
         <div className="block-panel">
           <h3>London Mulligan</h3>
           <p>
             P1 mulligans: {props.match.mulligan_count?.["1"] ?? 0} | P2 mulligans: {props.match.mulligan_count?.["2"] ?? 0}
           </p>
+          {bottomCount > 0 ? <fieldset>
+            <legend>Choose {bottomCount} cards to bottom for player {pregameActor}</legend>
+            <small>Selection order is bottom-most first.</small>
+            {props.match.players[String(pregameActor)].hand.map((card) => <label key={card.id}>
+              <input type="checkbox" aria-label={`Bottom ${card.name} ${card.id}`} checked={bottomCards.includes(card.id)} onChange={(event) => setBottomCards((selected) => event.target.checked ? [...selected, card.id] : selected.filter((cid) => cid !== card.id))} />{card.name} {card.mana_cost}
+            </label>)}
+          </fieldset> : null}
           <div className="row">
-            <button onClick={props.onKeepHand}>Keep Hand</button>
-            <button onClick={props.onMulligan}>Mulligan</button>
+            <button disabled={bottomCards.length !== bottomCount} onClick={() => props.onKeepHand(bottomCards)}>Keep Hand</button>
+            <button disabled={!props.legalMoves.some((move) => move.type === "mulligan")} onClick={props.onMulligan}>Mulligan</button>
           </div>
         </div>
       ) : null}

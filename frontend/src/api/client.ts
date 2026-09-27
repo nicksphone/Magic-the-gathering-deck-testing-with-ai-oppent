@@ -1,4 +1,5 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
+import { httpErrorMessage } from "./errors";
 
 const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
 const runtimeHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
@@ -172,7 +173,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `HTTP ${res.status}`);
+    throw new Error(httpErrorMessage(txt, res.status));
   }
   return res.json() as Promise<T>;
 }

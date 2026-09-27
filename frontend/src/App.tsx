@@ -22,9 +22,17 @@ export function App() {
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
   const [autoplayDelayMs, setAutoplayDelayMs] = useState<number>(1800);
   const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
+  const [actionError, setActionError] = useState("");
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+
+  function reportAction<Args extends unknown[]>(operation: (...args: Args) => Promise<void>) {
+    return (...args: Args) => {
+      setActionError("");
+      void operation(...args).catch((error: unknown) => setActionError(error instanceof Error ? error.message : String(error)));
+    };
+  }
 
   const checkApiHealth = useCallback(async () => {
     try {
@@ -82,9 +90,9 @@ export function App() {
     await syncMoves(nextMatch);
   }
 
-  async function keepHand() {
+  async function keepHand(bottomCardIds: string[]) {
     if (!match) return;
-    const nextMatch = await api.act(match.id, legalPlayerId, { type: "keep_hand", bottom_card_ids: [] });
+    const nextMatch = await api.act(match.id, legalPlayerId, { type: "keep_hand", bottom_card_ids: bottomCardIds });
     setMatch(nextMatch);
     await syncMoves(nextMatch);
   }
@@ -282,6 +290,7 @@ export function App() {
       </header>
 
       <section className="left-column">
+        {actionError ? <p role="alert">Action rejected: {actionError}</p> : null}
         <DeckPanel decks={decks} onDecksLoaded={onDecksLoaded} />
         <Controls
           decks={decks}
@@ -295,26 +304,27 @@ export function App() {
           setDifficulty={setDifficulty}
           bestOf={bestOf}
           setBestOf={setBestOf}
-          onStart={startMatch}
-          onPassPriority={passPriority}
-          onKeepHand={keepHand}
-          onMulligan={mulligan}
-          onNextStep={nextStep}
-          onAutoplayTick={autoplayTick}
+          onStart={reportAction(startMatch)}
+          onPassPriority={reportAction(passPriority)}
+          onKeepHand={reportAction(keepHand)}
+          onMulligan={reportAction(mulligan)}
+          onNextStep={reportAction(nextStep)}
+          onAutoplayTick={reportAction(autoplayTick)}
           autoplayDelayMs={autoplayDelayMs}
           setAutoplayDelayMs={setAutoplayDelayMs}
-          onSubmitBlocks={onSubmitBlocks}
-          onSubmitAttack={onSubmitAttack}
-          onApplySideboard={onApplySideboard}
-          onNextGame={onNextGame}
-          onSetPriorityStops={onSetPriorityStops}
-          onChooseReplacement={onChooseReplacement}
-          onChooseTriggerOrder={onChooseTriggerOrder}
-          onChooseMechanic={onCardAction}
+          onSubmitBlocks={reportAction(onSubmitBlocks)}
+          onSubmitAttack={reportAction(onSubmitAttack)}
+          onApplySideboard={reportAction(onApplySideboard)}
+          onNextGame={reportAction(onNextGame)}
+          onSetPriorityStops={reportAction(onSetPriorityStops)}
+          onChooseReplacement={reportAction(onChooseReplacement)}
+          onChooseTriggerOrder={reportAction(onChooseTriggerOrder)}
+          onChooseMechanic={reportAction(onCardAction)}
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}
           legalMoves={legalMoves}
+          actingPlayerId={legalPlayerId}
           match={match}
         />
         <AnalyticsPanel decks={decks} />
@@ -323,7 +333,7 @@ export function App() {
       <section className="right-column">
         {match ? (
           <>
-            <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={onCardAction} />
+            <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} />
             <StackLog match={match} />
           </>
         ) : (

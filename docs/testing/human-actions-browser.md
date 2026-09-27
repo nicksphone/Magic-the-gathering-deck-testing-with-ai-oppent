@@ -1,6 +1,6 @@
 # Human action browser regression
 
-The harness renders the production Battlefield component and invokes the production API action handlers. It tests five paths: seat-2 land play, targeted permanent activation, explicit Vehicle crew selection, permitted exile casting and permitted top-library casting. It also verifies the opposing hand is not rendered as playable cards.
+The harness renders the production Battlefield and Controls components and invokes the production API action handlers. It tests six paths: seat-2 land play, targeted permanent activation, explicit Vehicle crew selection, permitted exile casting, permitted top-library casting and deliberate seat-2 London mulligan bottom selection. It also verifies the opposing hand is not rendered as playable cards and Keep is disabled until the required number of bottoms is selected.
 
 This is not a complete App onboarding/game/recovery test or a rules certification. Fixtures use named real cards with only relevant clauses, never add cards to the gameplay corpus, and cannot be launched from the live Git checkout. Crew currently resolves immediately; testing that UI path does not certify crew stack timing.
 
@@ -34,6 +34,6 @@ cd /home/nick/mtg-deck-testing-lab/frontend
 node tests/browser-human-actions.mjs
 ```
 
-Exit status must be zero with five PASS lines. Stop these test-only services afterward. Do not expose Chromium debugging or fixture routes on the network. Root/container Chromium may require `--no-sandbox`; prefer an ordinary-user sandboxed browser where available.
+Exit status must be zero with six PASS lines. Stop these test-only services afterward. Do not expose Chromium debugging or fixture routes on the network. Root/container Chromium may require `--no-sandbox`; prefer an ordinary-user sandboxed browser where available.
 
-Validation on 2026-09-27: all five paths pass against the final target-validation backend, and the configured TypeScript/Vite production build passes. Backend regression evidence is recorded in the root plan/changelog. No dependency installs or paid model calls were required for this harness.
+Validation on 2026-09-27: all six paths pass against the checked-action backend, and the configured TypeScript/Vite production build passes. `npm run test:unit` runs seven HTTP error-message assertions with Node 22 TypeScript stripping. Backend regression evidence is recorded in the root plan/changelog. No dependency installs or paid model calls are required for this harness.

@@ -7,7 +7,7 @@ from sqlmodel import Session
 
 from game_state.state import MatchFactory
 from decks.sideboard import apply_sideboard_swaps
-from main import ACTIVE_MATCHES, MatchController, apply_sideboard, next_game
+from main import ACTIVE_MATCHES, MatchController, SideboardRequest, apply_sideboard, next_game
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -65,7 +65,7 @@ def test_sideboard_can_only_be_applied_once_per_game() -> None:
             repo = Repository(session)
             first = apply_sideboard(
                 state.id,
-                payload=type("SideboardPayload", (), {"player_id": 1, "cards_out": [{"card_name": "Counterspell", "quantity": 2}], "cards_in": [{"card_name": "Negate", "quantity": 2}]})(),
+                payload=SideboardRequest(player_id=1, cards_out=[{"card_name": "Counterspell", "quantity": 2}], cards_in=[{"card_name": "Negate", "quantity": 2}]),
                 repo=repo,
             )
             assert first["sideboard_sizes"]["1"] == 4
@@ -73,7 +73,7 @@ def test_sideboard_can_only_be_applied_once_per_game() -> None:
             with pytest.raises(HTTPException):
                 apply_sideboard(
                     state.id,
-                    payload=type("SideboardPayload", (), {"player_id": 1, "cards_out": [{"card_name": "Island", "quantity": 2}], "cards_in": [{"card_name": "Dispel", "quantity": 2}]})(),
+                    payload=SideboardRequest(player_id=1, cards_out=[{"card_name": "Island", "quantity": 2}], cards_in=[{"card_name": "Dispel", "quantity": 2}]),
                     repo=repo,
                 )
 

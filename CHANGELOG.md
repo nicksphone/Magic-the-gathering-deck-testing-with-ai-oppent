@@ -4,6 +4,11 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-27
 
+- Added bounded name/quantity deck contracts, explicit small-deck sandbox policy, discriminated human action/choice inputs and shared cached hydration for batch admission. Invalid shapes and unsupported fields return 4xx rather than reaching unchecked engine mutations.
+- Checked human actions execute on copied state before publication; local per-match locks coordinate reads and writes. Added actor/source/face/cost/target checks, deliberate ordered London mulligan bottoms through zero cards, and visible frontend action errors. Persistence-failure atomicity, versions/idempotency, resume and multiworker safety remain open.
+- Fixed real divided-damage wording/budget validation and generic AI activation targeting; own permanents remain legal any-target candidates without becoming default AI damage targets. Complete multi-role targeting and optimized allocation remain unfinished.
+- Validation: 806 backend tests pass in isolated source/database; frontend build, seven error-message assertions and six Chromium component/HTTP flows pass. Seeded two-game BO3 replay has no timeout/drift. One fresh authorized Jev review supports bounded design claims, not release certification; no app LLM dependency was added.
+
 - Added acting-seat battlefield controls, ordinary permanent activation/target forms, explicit crew selection, Ninjutsu and permitted non-hand card casting. Legal-move HTTP responses carry card views without enlarging AI search moves. Unknown action kinds warn instead of silently disappearing.
 - Validated ability targets before costs, rejected invalid player/stack/graveyard targets, and fixed adjacent activated mana symbols being truncated. Variable activated costs remain explicitly unsupported, with no payment or legal-move offer. Added reusable isolated Chromium fixtures; full human-game and crew-stack acceptance remain open.
 - Validation: 768 backend regressions pass in an isolated empty-cache/database source copy using existing pinned dependencies; TypeScript/Vite build (including harness typing) and five Chromium action scenarios pass. Graphify refreshed; live database and pre-existing coder plan preserved.

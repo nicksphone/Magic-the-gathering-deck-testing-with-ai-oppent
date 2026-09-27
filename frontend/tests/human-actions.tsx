@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Battlefield } from "../src/components/Battlefield";
+import { Controls } from "../src/components/Controls";
 import type { LegalMove, MatchState } from "../src/types";
 
 const BASE = "http://127.0.0.1:10199";
@@ -19,9 +20,9 @@ function Harness() {
     setMatch(next); setMoves(legal.moves); setActor(legal.player_id);
     window.fixtureState = next; setReady(true);
   }
-  async function reset() {
+  async function reset(pregame = false) {
     setReady(false); setError(""); window.fixtureActions = [];
-    const response = await fetch(`${BASE}/fixture`, { method: "POST" });
+    const response = await fetch(BASE + "/fixture?pregame=" + pregame, { method: "POST" });
     if (!response.ok) throw new Error(`Fixture HTTP ${response.status}`);
     await load(await response.json());
   }
@@ -39,8 +40,25 @@ function Harness() {
   return <>
     <p data-testid="ready">{ready ? "Ready" : "Loading"}</p>
     <button onClick={() => reset().catch((failure) => setError(String(failure)))}>Reset Fixture</button>
+    <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
+    {match?.pregame_pending ? <Controls
+      decks={[]} selectedA={null} selectedB={null}
+      setSelectedA={() => {}} setSelectedB={() => {}}
+      startMode="human_vs_human" setStartMode={() => {}}
+      difficulty="master" setDifficulty={() => {}} bestOf={3} setBestOf={() => {}}
+      onStart={() => {}} onPassPriority={() => {}}
+      onKeepHand={(ids) => { act(actor, { type: "keep_hand", bottom_card_ids: ids }).catch((failure) => setError(String(failure))); }}
+      onMulligan={() => { act(actor, { type: "mulligan" }).catch((failure) => setError(String(failure))); }}
+      onNextStep={() => {}} onAutoplayTick={() => {}}
+      autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
+      onSubmitBlocks={() => {}} onSubmitAttack={() => {}}
+      onApplySideboard={() => {}} onNextGame={() => {}} onSetPriorityStops={() => {}}
+      onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}} onChooseMechanic={() => {}}
+      responseCountdown={null} autoResponsePaused={false} onToggleAutoResponsePause={() => {}}
+      legalMoves={moves} match={match} actingPlayerId={actor}
+    /> : null}
     {match ? <Battlefield match={match} legalMoves={moves} actingPlayerId={actor} onCardAction={(playerId, action) => { act(playerId, action).catch((failure) => setError(String(failure))); }} /> : null}
   </>;
 }

@@ -315,18 +315,27 @@ class RulesEngine:
                 return True
         return False
 
-    def take_action(self, state: MatchState, player_id: int, action: dict) -> None:
+    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False) -> None:
+        def reject(reason: str) -> None:
+            if reject_invalid:
+                from rules_engine.action_validation import ActionRejected
+                raise ActionRejected(reason)
+
         if state.winner is not None:
             return
         kind = action.get("type")
         if state.pending_mechanic_choice:
             if state.pending_mechanic_choice["kind"] == "cleanup_discard":
                 if kind == "choose_mechanic":
-                    self.choose_cleanup_discards(state, player_id, action)
+                    if not self.choose_cleanup_discards(state, player_id, action):
+                        reject("Invalid cleanup discard selection")
                 return
             from rules_engine.keyword_actions import finish_mechanic_choice
-            if kind == "choose_mechanic" and finish_mechanic_choice(state, player_id, action):
-                apply_state_based_actions(state)
+            if kind == "choose_mechanic":
+                if finish_mechanic_choice(state, player_id, action):
+                    apply_state_based_actions(state)
+                else:
+                    reject("Invalid mechanic choice")
             return
 
         if state.pregame_pending:
@@ -340,6 +349,7 @@ class RulesEngine:
                 return
             requested = action.get("trigger_order") or []
             if not isinstance(requested, list) or not resume_trigger_order(state, requested):
+                reject("Invalid trigger order")
                 return
             if not state.pending_trigger_order:
                 state.priority_player = state.active_player
@@ -352,6 +362,7 @@ class RulesEngine:
             chosen_id = str(action.get("replacement_source_id") or "")
             allowed = {str(option.get("source_id")) for option in (pending.get("options") or [])}
             if chosen_id not in allowed:
+                reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
             if pending.get("resume_kind") == "state_based_die":
@@ -423,6 +434,7 @@ class RulesEngine:
                     state.passed_priority = set()
                 return
             if not state.stack or state.stack[-1].id != pending.get("stack_id"):
+                reject("Replacement continuation is no longer available")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
             state.stack[-1].payload["__replacement_source_id"] = chosen_id
@@ -466,7 +478,8 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == "ninjutsu":
             from rules_engine.keyword_actions import activate_ninjutsu
-            activate_ninjutsu(state, player_id, action)
+            if not activate_ninjutsu(state, player_id, action):
+                reject("Cannot pay or activate Ninjutsu")
         elif kind == "play_land":
             cid = action["card_id"]
             from_exile = bool(action.get("from_exile"))
@@ -556,20 +569,24 @@ class RulesEngine:
                 card = state.cards[cid]
                 timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
                 if not timing_ok:
+                    reject(timing_reason)
                     state.log.append(f"{player.name} cannot cast {card.name}: {timing_reason}")
                     apply_state_based_actions(state)
                     return
                 if _is_land_card(card):
+                    reject("Lands must be played, not cast")
                     state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
                     return
                 options = collect_cost_options(state, player_id, card)
                 if not options:
+                    reject("No supported casting cost")
                     return
                 chosen = normalize_cost_choice(action, options)
                 from rules_engine.alternative_casts import validate_escape_exiles
                 escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if chosen.id == "escape" else []
                 if escape_ids is None:
+                    reject("Invalid escape exile selection")
                     state.log.append("Invalid escape exile selection.")
                     return
                 # Extract x_value early — needed for cost checking and payment
@@ -587,6 +604,7 @@ class RulesEngine:
                             chosen,
                         )
                     if not check_cost_option_available(state, player_id, card, chosen, x_value=x_value):
+                        reject("Cannot satisfy chosen casting costs")
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
                         return
@@ -599,18 +617,26 @@ class RulesEngine:
                     action_targets = dict(action_targets)
                     action_targets.setdefault("selected_face_index", selected_face_index if selected_face_index is not None else 0)
                 hints = build_cast_hints(state, face_card, player_id, action_targets)
+                if reject_invalid:
+                    from rules_engine.action_validation import require_declared_targets
+                    require_declared_targets(face_card, hints, action_targets, player_id)
+                if hints.get("supports_divide") and "divide_total" not in action_targets:
+                    reject("Cannot derive this allocation total from the supported card effect")
                 ok, error = validate_cast_choice(hints, action_targets)
                 if not ok:
+                    reject(error)
                     state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
                 ok_prot, err_prot = validate_protection_targets(state, face_card, action_targets)
                 if not ok_prot:
+                    reject(err_prot)
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
                 ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
                 if not ok_hs:
+                    reject(err_hs)
                     state.log.append(f"Invalid targets for {card.name}: {err_hs}")
                     apply_state_based_actions(state)
                     return
@@ -625,6 +651,7 @@ class RulesEngine:
                     card_name=card.name, x_value=x_value, spell_types=set(card.types),
                 )
                 if not paid:
+                    reject("Cannot pay spell cost and ward tax")
                     if ward_tax > 0:
                         state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")
                     else:
@@ -632,6 +659,7 @@ class RulesEngine:
                     apply_state_based_actions(state)
                     return
                 if not apply_additional_costs(state, player_id, chosen, cid):
+                    reject("Cannot pay additional casting costs")
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
                     return
@@ -664,10 +692,12 @@ class RulesEngine:
             cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
             x_value = int(action.get("x_value", 0) or 0)
             if x_value < 0 or (cycle_cost and not cycling_is_variable(cycle_cost) and x_value != 0):
+                reject("Invalid cycling X value")
                 state.log.append(f"Invalid cycling X value for {card.name}.")
                 apply_state_based_actions(state)
                 return
             if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value):
+                reject("Cannot pay cycling cost")
                 state.log.append(f"{player.name} cannot pay cycling cost for {card.name}.")
                 apply_state_based_actions(state)
                 return
@@ -715,24 +745,35 @@ class RulesEngine:
                 return
             cost = ability["mana_cost"]
             if "{X}" in cost.upper():
+                reject("Variable activated costs are unsupported")
                 state.log.append("Variable activated costs are not yet supported; no costs paid.")
                 return
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
+            action_targets = enrich_divide_total(proxy, action_targets)
             hints = build_cast_hints(state, proxy, player_id, action_targets)
+            if reject_invalid:
+                from rules_engine.action_validation import require_declared_targets
+                require_declared_targets(proxy, hints, action_targets, player_id)
+            if hints.get("supports_divide") and "divide_total" not in action_targets:
+                reject("Cannot derive this allocation total from the supported ability")
             valid, error = validate_cast_choice(hints, action_targets)
             if not valid:
+                reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
             valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets)
             if not valid:
+                reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
             valid, error = validate_protection_targets(state, state.cards[cid], action_targets)
             if not valid:
+                reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
             if not apply_activated_costs(state, player_id, cid, cost):
+                reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
@@ -785,26 +826,41 @@ class RulesEngine:
             else:
                 next_loyalty = current_loyalty + int(ability["delta"])
             if next_loyalty < 0:
+                reject("Not enough loyalty for this ability")
                 state.log.append(f"{pw.name} does not have enough loyalty for that ability.")
                 apply_state_based_actions(state)
                 return
-            pw.loyalty = next_loyalty
-            state.loyalty_activated_this_turn.add(cid)
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             proxy = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
             if ability.get("x_cost") and "x_value" not in action_targets:
                 action_targets = dict(action_targets)
                 action_targets["x_value"] = max(0, min(current_loyalty, int(action_targets.get("x_value", 0) or 0)))
+            action_targets = enrich_divide_total(proxy, action_targets)
+            hints = build_cast_hints(state, proxy, player_id, action_targets)
+            if reject_invalid:
+                from rules_engine.action_validation import require_declared_targets
+                require_declared_targets(proxy, hints, action_targets, player_id)
+            if hints.get("supports_divide") and "divide_total" not in action_targets:
+                reject("Cannot derive this allocation total from the supported ability")
+            valid, error = validate_cast_choice(hints, action_targets)
+            if not valid:
+                reject(error)
+                state.log.append(f"Invalid targets for {pw.name}: {error}")
+                return
             ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
             if not ok_hs:
+                reject(err_hs)
                 state.log.append(f"Invalid targets for {pw.name}: {err_hs}")
                 apply_state_based_actions(state)
                 return
             ok_prot, err_prot = validate_protection_targets(state, pw, action_targets)
             if not ok_prot:
+                reject(err_prot)
                 state.log.append(f"Invalid targets for {pw.name}: {err_prot}")
                 apply_state_based_actions(state)
                 return
+            pw.loyalty = next_loyalty
+            state.loyalty_activated_this_turn.add(cid)
             ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             effect_key, payload = ability.effect.key, ability.effect.payload
             add_to_stack(
@@ -845,6 +901,8 @@ class RulesEngine:
                 vehicle.types = list(dict.fromkeys([*vehicle.types, "Creature"]))
                 vehicle.counters["__crew_until_turn"] = int(state.turn)
                 state.log.append(f"{player.name} crews {vehicle.name} with {len(selected)} creature(s).")
+            else:
+                reject("Crew selection does not satisfy the activation cost")
 
         elif kind == "equip":
             cid = action.get("card_id")
@@ -860,12 +918,14 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name):
+                reject("Cannot pay equipment cost")
                 state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
             if attach_if_legal(state, cid, target_id):
                 state.log.append(f"{player.name} equips {state.cards[cid].name} to {state.cards[target_id].name}.")
             else:
+                reject("Cannot legally equip this target")
                 state.log.append(f"{player.name} cannot legally equip {state.cards[cid].name} to chosen target.")
 
         elif kind == "block":
@@ -898,7 +958,7 @@ class RulesEngine:
         kind = action.get("type")
         player = state.players[player_id]
         if kind == "mulligan":
-            if state.mulligan_count.get(player_id, 0) >= 3:
+            if state.mulligan_count.get(player_id, 0) >= 7:
                 return
             while player.hand:
                 cid = player.hand.pop()
@@ -925,7 +985,7 @@ class RulesEngine:
             chosen = [cid for cid in bottom if cid in player.hand][:need_bottom]
             if len(chosen) < need_bottom:
                 chosen += _auto_bottom_cards(state, player_id, need_bottom - len(chosen), exclude=set(chosen))
-            for cid in chosen:
+            for cid in reversed(chosen):
                 if cid in player.hand:
                     player.hand.remove(cid)
                     player.library.insert(0, cid)

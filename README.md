@@ -14,10 +14,11 @@ It is designed for serious deck work:
 
 ### Gameplay
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
-- London mulligan handling
+- London mulligans through zero cards, with deliberate ordered bottom-card selection for human seats
 - Manual phase progression and autoplay
 - Land drops, casting, activated abilities, combat actions, and response windows
 - Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
+- Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -264,6 +265,10 @@ The app syncs and caches card data locally.
 
 Base backend default: `http://0.0.0.0:9999`
 
+`0.0.0.0` is a bind address; browsers use the host's real address. Operation is currently private, single-user and single-worker. Per-match locks coordinate this process only; they do not provide network authorization or multiworker consistency. Do not expose the dev service to the public internet.
+
+Start/batch payloads accept `{quantity, card_name}` entries, resolving gameplay data from the card cache/source rather than arbitrary client Oracle text. Mainboards require 60-250 cards; `sandbox: true` permits 1-250. The upper bound is an application resource limit, not a Magic rule. Sideboards are capped at 15. See [input contracts](docs/api/input-contracts.md) for actions, errors and remaining guarantees.
+
 Key endpoints:
 - `GET /health`
 - `GET /cards`
@@ -316,6 +321,8 @@ The application currently supports:
 - Responsive desktop UI with readable stack, priority, mana, and hover inspection
 
 Current focus:
+- saved-match resume, serialized manual/autoplay requests, durable version/idempotency and persistence-failure recovery
+- seeded interactive BO3 and full browser/response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
 - improving replacement, prevention, and layer fidelity in edge cases
 - deepening tactical AI for complex board states and matchup-specific heuristics
@@ -325,6 +332,10 @@ Current focus:
 
 ## Known Limitations and Next Upgrades
 
+- Rejected checked human actions preserve game state; accepted-action history/snapshot writes are not yet atomic against database faults. Refresh recovery, duplicate-write retries and stale response handling remain unfinished.
+- Human action browser fixtures cover six paths, not a complete game or BO3. Crew currently resolves immediately rather than using its proper stack window; variable activated mana costs are explicitly unsupported.
+- Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
+- Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
 - Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.

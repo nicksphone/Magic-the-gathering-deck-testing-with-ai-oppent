@@ -7,11 +7,12 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
+from functools import wraps
 
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
@@ -20,6 +21,7 @@ from sqlmodel import Session
 from ai.agent import AIAgent
 from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
+from api_contracts import ActionRequest, DeckEntry, DeckPairInput, InputModel, PlayerID
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService
@@ -38,6 +40,7 @@ from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.replacement import replacement_options
 
@@ -80,6 +83,7 @@ class MatchController:
     match_complete: bool
     best_of: int
     sideboarded_players: set[int] = field(default_factory=set)
+    mutation_lock: object = field(default_factory=threading.RLock, repr=False)
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
@@ -88,22 +92,33 @@ SIM_JOBS_LOCK = threading.Lock()
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
 
 
-class DeckImportRequest(BaseModel):
-    name: str
-    deck_text: str
-    source: str = "user"
+def coordinated_match(handler):
+    """Serialize local-process reads/writes; multiworker operation is unsupported."""
+    @wraps(handler)
+    def wrapped(*args, **kwargs):
+        match_id = args[0] if args else kwargs["match_id"]
+        match = ACTIVE_MATCHES.get(match_id)
+        if match is None:
+            raise HTTPException(status_code=404, detail="Match not found")
+        with match.mutation_lock:
+            return handler(*args, **kwargs)
+    return wrapped
 
 
-class StartMatchRequest(BaseModel):
-    deck_a: list[dict]
-    deck_b: list[dict]
-    deck_a_sideboard: list[dict] = []
-    deck_b_sideboard: list[dict] = []
+class DeckImportRequest(InputModel):
+    name: str = Field(min_length=1, max_length=200)
+    deck_text: str = Field(min_length=1, max_length=100000)
+    source: str = Field(default="user", max_length=100)
+
+
+class StartMatchRequest(DeckPairInput):
+    deck_a_sideboard: list[DeckEntry] = Field(default_factory=list, max_length=15)
+    deck_b_sideboard: list[DeckEntry] = Field(default_factory=list, max_length=15)
     deck_a_id: int | None = None
     deck_b_id: int | None = None
     controller_a: Literal["human", "ai"] = "human"
     controller_b: Literal["human", "ai"] = "ai"
-    ai_difficulty: str = "master"
+    ai_difficulty: Literal["casual", "strong", "master"] = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
     best_of: int = Field(default=3, ge=3, le=15)
     seed: int | None = None
@@ -115,20 +130,21 @@ class StartMatchRequest(BaseModel):
             raise ValueError("best_of must be an odd number")
         return value
 
+    @field_validator("deck_a_sideboard", "deck_b_sideboard")
+    @classmethod
+    def sideboard_size(cls, value):
+        if sum(entry.quantity for entry in value) > 15:
+            raise ValueError("Sideboards cannot exceed 15 cards")
+        return value
 
-class ActionRequest(BaseModel):
-    player_id: int
-    action: dict
+class SideboardRequest(InputModel):
+    player_id: PlayerID
+    cards_out: list[DeckEntry] = Field(max_length=15)
+    cards_in: list[DeckEntry] = Field(max_length=15)
 
 
-class SideboardRequest(BaseModel):
-    player_id: int
-    cards_out: list[dict]
-    cards_in: list[dict]
-
-
-class PriorityStopsRequest(BaseModel):
-    player_id: int
+class PriorityStopsRequest(InputModel):
+    player_id: PlayerID
     stops: list[str] = []
 
 
@@ -144,8 +160,15 @@ class TournamentIngestRequest(BaseModel):
     payload: dict
 
 
-class DeckAnalyzeRequest(BaseModel):
-    deck: list[dict]
+class DeckAnalyzeRequest(InputModel):
+    deck: list[DeckEntry] = Field(min_length=1, max_length=250)
+
+    @field_validator("deck")
+    @classmethod
+    def deck_size(cls, value):
+        if sum(entry.quantity for entry in value) > 250:
+            raise ValueError("Deck analysis is limited to 250 cards")
+        return value
 
 
 class BatchSimulationJobStartResponse(BaseModel):
@@ -461,10 +484,8 @@ def ingest_tournament_json(payload: TournamentIngestRequest, repo: Repository = 
 
 
 @app.post("/decks/analyze")
-def analyze_deck_payload(payload: DeckAnalyzeRequest) -> dict:
-    if not payload.deck:
-        raise HTTPException(status_code=400, detail="Deck cannot be empty.")
-    return analyze_deck(payload.deck)
+def analyze_deck_payload(payload: DeckAnalyzeRequest, repo: Repository = Depends(get_repo)) -> dict:
+    return analyze_deck(_validated_deck_cards(repo, payload.deck))
 
 
 @app.get("/ingest/tournaments/events")
@@ -492,8 +513,8 @@ def tournament_event_summary(event_id: int, repo: Repository = Depends(get_repo)
 
 @app.post("/matches/start")
 def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)) -> dict:
-    deck_a = _hydrate_deck_cards(repo, payload.deck_a)
-    deck_b = _hydrate_deck_cards(repo, payload.deck_b)
+    deck_a = _validated_deck_cards(repo, payload.deck_a)
+    deck_b = _validated_deck_cards(repo, payload.deck_b)
     state = MatchFactory.from_decks(deck_a, deck_b, seed=payload.seed)
     state.best_of = payload.best_of
     state.replacement_choice_required = (
@@ -506,8 +527,8 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
     state.trigger_order_choice_required = state.replacement_choice_required
     state.trigger_order_choice_players = set(state.replacement_choice_players)
     rules = RulesEngine()
-    a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_a))
-    b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(payload.deck_b))
+    a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(deck_a))
+    b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(deck_b))
     controller = MatchController(
         state=state,
         rules=rules,
@@ -516,7 +537,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         mode=payload.mode,
         deck_ids=(payload.deck_a_id, payload.deck_b_id),
         mainboards={1: deck_a, 2: deck_b},
-        sideboards={1: payload.deck_a_sideboard, 2: payload.deck_b_sideboard},
+        sideboards={1: [entry.model_dump() for entry in payload.deck_a_sideboard], 2: [entry.model_dump() for entry in payload.deck_b_sideboard]},
         game_number=1,
         current_game_recorded=False,
         match_complete=False,
@@ -528,6 +549,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
 
 
 @app.get("/matches/{match_id}")
+@coordinated_match
 def get_match(match_id: str) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -536,6 +558,7 @@ def get_match(match_id: str) -> dict:
 
 
 @app.get("/matches/{match_id}/replay")
+@coordinated_match
 def get_match_replay(match_id: str) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -563,10 +586,13 @@ def get_match_replay(match_id: str) -> dict:
 
 
 @app.get("/matches/{match_id}/legal-moves")
-def get_legal_moves(match_id: str, player_id: int | None = None) -> dict:
+@coordinated_match
+def get_legal_moves(match_id: str, player_id: Annotated[int | None, Query(ge=1, le=2)] = None) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
+    if player_id is not None and player_id not in (1, 2):
+        raise HTTPException(status_code=422, detail="player_id must be 1 or 2")
     pid = player_id or _default_player_for_state(match)
     moves = match.rules.legal_moves(match.state, pid)
     for move in moves:
@@ -577,6 +603,7 @@ def get_legal_moves(match_id: str, player_id: int | None = None) -> dict:
 
 
 @app.get("/matches/{match_id}/replacement-options")
+@coordinated_match
 def get_replacement_options(
     match_id: str,
     event: str = "damage_to_player",
@@ -606,17 +633,25 @@ def get_replacement_options(
 
 
 @app.post("/matches/{match_id}/action")
+@coordinated_match
 def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
-    match.rules.take_action(match.state, payload.player_id, payload.action)
+    if match.controllers.get(payload.player_id) != "human":
+        raise HTTPException(status_code=403, detail={"code": "ai_controlled_seat", "message": "Use autoplay for AI-controlled seats"})
+    try:
+        candidate = checked_action(match.state, match.rules, payload.player_id, payload.action.model_dump(exclude_none=True))
+    except ActionRejected as exc:
+        raise HTTPException(status_code=422, detail={"code": "illegal_action", "message": str(exc)}) from exc
+    match.state = candidate
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
 
 @app.post("/matches/{match_id}/autoplay")
+@coordinated_match
 def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -667,6 +702,7 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
 
 
 @app.post("/matches/{match_id}/priority-stops")
+@coordinated_match
 def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -684,6 +720,7 @@ def set_priority_stops(match_id: str, payload: PriorityStopsRequest, repo: Repos
 
 
 @app.post("/matches/{match_id}/sideboard")
+@coordinated_match
 def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -698,8 +735,8 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
         next_main, next_side = apply_sideboard_swaps(
             match.mainboards[payload.player_id],
             match.sideboards[payload.player_id],
-            payload.cards_out,
-            payload.cards_in,
+            [entry.model_dump() for entry in payload.cards_out],
+            [entry.model_dump() for entry in payload.cards_in],
         )
     except SideboardError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -712,6 +749,7 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
 
 
 @app.post("/matches/{match_id}/next-game")
+@coordinated_match
 def next_game(match_id: str, repo: Repository = Depends(get_repo)) -> dict:
     match = ACTIVE_MATCHES.get(match_id)
     if match is None:
@@ -729,8 +767,8 @@ def next_game(match_id: str, repo: Repository = Depends(get_repo)) -> dict:
 @app.post("/simulate/batch")
 def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
     return AnalyticsService(repo).run_batch(
-        payload.deck_a,
-        payload.deck_b,
+        _validated_deck_cards(repo, payload.deck_a),
+        _validated_deck_cards(repo, payload.deck_b),
         payload.matches,
         payload.difficulty,
         max_ticks=payload.max_ticks,
@@ -739,6 +777,8 @@ def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(g
 
 @app.post("/simulate/batch/start", response_model=BatchSimulationJobStartResponse)
 def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
+    deck_a = _validated_deck_cards(repo, payload.deck_a)
+    deck_b = _validated_deck_cards(repo, payload.deck_b)
     job_id = str(uuid.uuid4())
     job = {
         "job_id": job_id,
@@ -771,8 +811,8 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                             _persist_job(SIM_JOBS[job_id])
 
                 result = AnalyticsService(thread_repo).run_batch(
-                    payload.deck_a,
-                    payload.deck_b,
+                    deck_a,
+                    deck_b,
                     payload.matches,
                     payload.difficulty,
                     max_ticks=payload.max_ticks,
@@ -1154,6 +1194,14 @@ def _serialize_match_controller(match: MatchController) -> dict:
         "2": sum(x["quantity"] for x in match.sideboards.get(2, [])),
     }
     return payload
+
+
+def _validated_deck_cards(repo, entries: list[DeckEntry]) -> list[dict]:
+    deck = _hydrate_deck_cards(repo, [entry.model_dump() for entry in entries])
+    missing = sorted({item["card_name"] for item in deck if not item.get("type_line")})
+    if missing:
+        raise HTTPException(status_code=422, detail={"code": "card_data_unavailable", "message": "Sync card data or correct these names before starting", "cards": missing})
+    return deck
 
 
 def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]:

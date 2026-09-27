@@ -17,9 +17,14 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:15173"], all
 
 
 @app.post("/fixture")
-def fixture():
+def fixture(pregame: bool = False):
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=15)
+    if pregame:
+        state.kept_hands = {1}
+        state.priority_player = 2
+        state.mulligan_count[2] = 1
+        return publish(state, deck)
     state.pregame_pending = False
     state.active_player = state.priority_player = 2
     state.step = Step.PRECOMBAT_MAIN
@@ -41,6 +46,10 @@ def fixture():
     walker = add("walker", "Realmwalker", Zone.BATTLEFIELD, ["Creature"], "{2}{G}", "You may cast creature spells of the chosen type from the top of your library.", 2, 3)
     walker.chosen_creature_type = "Elf"
     add("elf", "Llanowar Elves", Zone.LIBRARY, ["Creature"], "{G}", "{T}: Add {G}.", 1, 1, "Creature - Elf Druid")
+    return publish(state, deck)
+
+
+def publish(state, deck):
     ACTIVE_MATCHES.clear()
     ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck}, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)
     return get_match(state.id)

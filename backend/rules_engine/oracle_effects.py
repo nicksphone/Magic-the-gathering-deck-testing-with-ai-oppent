@@ -27,7 +27,7 @@ TOKEN_NAME_RE = re.compile(
 )
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-]\s*(.+))?", re.IGNORECASE | re.DOTALL)
-DIVIDE_RE = re.compile(r"divide[^.]*damage[^.]*among[^.]*targets", re.IGNORECASE)
+DIVIDE_RE = re.compile(r"(?:divid[^.]*damage|damage[^.]*divid)[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 SEARCH_UP_TO_RE = re.compile(r"search your library for up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
 SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
@@ -618,7 +618,20 @@ def inspect_target_hints(
         ]
     if DIVIDE_RE.search(oracle):
         hints["supports_divide"] = True
-    if "any target" in oracle or "target creature or planeswalker" in oracle:
+    if "any target" in oracle or "any number of targets" in oracle:
+        hints["creature_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for player in state.players.values()
+            for cid in player.battlefield
+            if "Creature" in state.cards[cid].types
+        ]
+        hints["planeswalker_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for player in state.players.values()
+            for cid in player.battlefield
+            if "Planeswalker" in state.cards[cid].types
+        ]
+    elif "target creature or planeswalker" in oracle:
         hints["planeswalker_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield

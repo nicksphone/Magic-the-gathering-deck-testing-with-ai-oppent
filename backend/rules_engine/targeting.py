@@ -42,12 +42,14 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
 
     divide_total = action_targets.get("divide_total")
     distribution = action_targets.get("target_distribution") or {}
-    if target_hints.get("supports_divide") and not distribution:
+    if target_hints.get("supports_divide") and not distribution and divide_total != 0:
         return False, "A target distribution is required."
     if distribution:
         for value in distribution.values():
             if int(value) < 0:
                 return False, "Distribution values must be non-negative."
+            if target_hints.get("supports_divide") and int(value) == 0:
+                return False, "Each division target must receive at least one."
     if divide_total is not None:
         try:
             expected = int(divide_total)
@@ -95,8 +97,11 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     selected_stack = action_targets.get("target_stack_id")
     if selected_stack and "stack_targets" in target_hints and str(selected_stack) not in {str(item["id"]) for item in target_hints["stack_targets"]}:
         return False, "The selected stack item is not a legal target for this effect."
-    selected_card_id = action_targets.get("target_card_id")
-    if selected_card_id:
+    selected_card_ids = list(action_targets.get("target_card_ids") or [])
+    if action_targets.get("target_card_id"):
+        selected_card_ids.append(action_targets["target_card_id"])
+    selected_card_ids.extend(cid for cid in distribution if str(cid) not in {"1", "2"})
+    if selected_card_ids:
         candidate_ids: set[str] = set()
         for key in (
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
@@ -109,7 +114,7 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_creature_targets", "graveyard_permanent_targets",
         )) or ("planeswalker_targets" in target_hints and "player_targets" not in target_hints)
-        if candidate_surface_present and str(selected_card_id) not in candidate_ids:
+        if candidate_surface_present and any(str(cid) not in candidate_ids for cid in selected_card_ids):
             return False, "The selected card is not a legal target for this effect."
 
     return True, ""
