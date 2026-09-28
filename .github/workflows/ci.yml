@@ -60,4 +60,6 @@ jobs:
           python -m pip install -r backend/requirements.txt
           npm --prefix frontend ci
       - name: Browser action and recovery flows
+        env:
+          MTG_BROWSER_NO_SANDBOX: '1'
         run: bash frontend/tests/run-browser-ci.sh
