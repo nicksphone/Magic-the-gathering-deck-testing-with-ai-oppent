@@ -48,6 +48,7 @@ TARGET_MV_CONTROLLED_TYPE_RE = re.compile(
     re.IGNORECASE,
 )
 COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
+COPY_CREATURE_TOKEN_RE = re.compile(r"create a token that's a copy of (?:another )?target (?:nonlegendary )?creature you control", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
@@ -546,11 +547,13 @@ def inspect_target_hints(
         target_players = [controller]
     elif re.search(r"target [^.\n]{0,65}\b(?:an opponent|your opponent) controls\b", oracle):
         target_players = [opponent]
-    if "target creature" in oracle or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
+    if re.search(r"\btarget (?:nonlegendary )?creature\b", oracle) or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
             if "Creature" in state.cards[cid].types
+            and ("nonlegendary creature" not in oracle or not _is_legendary_target(state.cards[cid]))
+            and ("another target" not in oracle or cid != getattr(card, "id", None))
         ]
     if re.search(r"target (?:basic |nonbasic )?land", oracle):
         land_players = [controller] if re.search(r"target (?:basic |nonbasic )?land you control", oracle) else [opponent] if re.search(r"target (?:basic |nonbasic )?land (?:an opponent|your opponent) controls", oracle) else [1, 2]
@@ -724,7 +727,7 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Creature", "Planeswalker"]
     elif "target artifact or enchantment" in oracle:
         restrictions["allowed_types"] = ["Artifact", "Enchantment"]
-    elif "target creature" in oracle:
+    elif re.search(r"\btarget (?:nonlegendary )?creature\b", oracle):
         restrictions["allowed_types"] = ["Creature"]
     elif "target planeswalker" in oracle:
         restrictions["allowed_types"] = ["Planeswalker"]
@@ -745,6 +748,11 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         if controlled_match:
             restrictions["mana_value_max_source"] = f"controlled_{controlled_match.group(1).lower()}"
     return restrictions
+
+
+def _is_legendary_target(card: CardInstance) -> bool:
+    return ("Legendary" in (card.types or [])
+            or "legendary" in (card.type_line or "").lower())
 
 
 def _target_id_matches_restrictions(
@@ -887,6 +895,13 @@ def _infer_clause_effect(
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
+
+    if COPY_CREATURE_TOKEN_RE.search(oracle):
+        return "create_token_copy", {
+            "target_card_id": target_card_id,
+            "grant_haste": "it has haste" in oracle,
+            "sacrifice_next_end_step": "sacrifice it at the beginning of the next end step" in (card.oracle_text or "").lower(),
+        }
 
     if "when you next cast a creature spell" in oracle and "additional +1/+1 counter" in oracle:
         return "set_next_creature_entry_counter", {"counter": "+1/+1", "amount": 1}

@@ -435,7 +435,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         )
                 elif step == "end_step":
                     # Delayed sacrifice marker support for token effects.
-                    if card.counters.get("__sac_next_end_step", 0) > 0 and card.controller == active_player:
+                    if card.counters.get("__sac_next_end_step", 0) > 0:
                         out.append(
                             {
                                 "source_card_id": cid,

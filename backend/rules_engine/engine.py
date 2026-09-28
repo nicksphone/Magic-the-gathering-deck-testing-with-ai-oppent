@@ -849,7 +849,7 @@ class RulesEngine:
                 state.log.append("Variable activated costs are not yet supported; no costs paid.")
                 return
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
-            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
+            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
             action_targets = enrich_divide_total(proxy, action_targets)
             hints = build_cast_hints(state, proxy, player_id, action_targets)
             if reject_invalid:

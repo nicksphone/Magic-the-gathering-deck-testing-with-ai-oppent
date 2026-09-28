@@ -39,6 +39,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "return_permanent_from_graveyard_to_battlefield": handlers.return_permanent_from_graveyard_to_battlefield,
     "search_library": handlers.search_library,
     "create_token": handlers.create_token,
+    "create_token_copy": handlers.create_token_copy,
     "create_shark_token": handlers.create_shark_token,
     "exile_top_cards_playable": handlers.exile_top_cards_playable,
     "look_top_choose": handlers.look_top_choose,

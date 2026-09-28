@@ -948,6 +948,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             zone=Zone.BATTLEFIELD,
             types=types,
             is_token=True,
+            mana_cost=payload.get("mana_cost", ""),
             power=p if "Creature" in types else None,
             toughness=t if "Creature" in types else None,
             type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
@@ -966,6 +967,29 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             token.counters["__sac_next_end_step"] = 1
     token_label = f"{p}/{t}" if "Creature" in types else name
     state.log.append(f"{state.players[token_controller].name} creates {amount} {token_label} token(s).")
+
+
+def create_token_copy(state: MatchState, controller: int, payload: dict) -> None:
+    target_id = payload.get("target_card_id")
+    source_id = payload.get("__source_card_id")
+    target = state.cards.get(target_id)
+    if (target is None or target_id == source_id or target.zone != Zone.BATTLEFIELD
+            or target.controller != controller or "Creature" not in target.types
+            or "Legendary" in target.types or "legendary" in (target.type_line or "").lower()):
+        state.log.append("Copy token ability has no legal target at resolution.")
+        return
+    keywords = list(target.keywords or [])
+    if payload.get("grant_haste") and "haste" not in {value.lower() for value in keywords}:
+        keywords.append("haste")
+    create_token(state, controller, {
+        "name": target.name, "types": list(dict.fromkeys([*target.types, "Token"])),
+        "mana_cost": target.mana_cost, "type_line": target.type_line,
+        "power": target.power if target.power is not None else 0,
+        "toughness": target.toughness if target.toughness is not None else 0,
+        "oracle_text": target.oracle_text, "keywords": keywords,
+        "colors": target.colors or [], "image_uri": target.image_uri,
+        "sacrifice_next_end_step": bool(payload.get("sacrifice_next_end_step")),
+    })
 
 
 def create_shark_token(state: MatchState, controller: int, payload: dict) -> None:

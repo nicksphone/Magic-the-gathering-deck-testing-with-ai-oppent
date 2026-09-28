@@ -346,8 +346,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             parsed_cost = parse_activated_cost(cost)
             if not parsed_cost.supported or not activated_cost_available(state, player_id, cid, cost):
                 continue
-            proxy = type("ActivatedOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
             hints = build_cast_hints(state, proxy, player_id)
+            if ("creature_targets" in hints and not hints["creature_targets"]
+                    and "target" in ability["text"].lower() and "creature" in ability["text"].lower()
+                    and not hints.get("player_targets") and not hints.get("permanent_targets")):
+                continue
             moves.append(
                 {
                     "type": "activate_ability",
