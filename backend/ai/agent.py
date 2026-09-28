@@ -2304,7 +2304,7 @@ class AIAgent:
             atk_has_trample = "trample" in set(effective_keywords(state, aid))
             atk_has_deathtouch = "deathtouch" in set(effective_keywords(state, aid))
             protected_power = sum(max(0, _effective_combat_stats(state, cid)[0]) for cid in prevented_by_block(aid))
-            required_blockers = 2 if self._requires_two_or_more_blockers(state, atk) else 1
+            required_blockers = self._minimum_blockers_for_ai(state, atk)
             best_bid = None
             best_score = -999.0
             scored: list[tuple[float, str]] = []
@@ -2362,18 +2362,18 @@ class AIAgent:
                 threshold = -0.4 if lethal_pressure else 0.65
             else:
                 threshold = -0.6 if lethal_pressure else 0.4
-            if required_blockers == 2:
+            if required_blockers > 1:
                 scored.sort(reverse=True)
-                if len(scored) < 2:
+                if len(scored) < required_blockers:
                     continue
-                pair = [scored[0][1], scored[1][1]]
-                pair_score = scored[0][0] + scored[1][0]
-                if pair_score <= threshold * 2:
+                group = [item[1] for item in scored[:required_blockers]]
+                group_score = sum(item[0] for item in scored[:required_blockers])
+                if group_score <= threshold * required_blockers:
                     continue
-                assignments[aid] = pair
+                assignments[aid] = group
                 prevented += protected_power
                 covered_attackers.update(band_members.get(aid, [aid]))
-                for bid in pair:
+                for bid in group:
                     if bid in available:
                         available.remove(bid)
                 if not available:
@@ -2435,10 +2435,7 @@ class AIAgent:
                 counts: dict[str, int] = {}
                 for aid in current.values():
                     counts[aid] = counts.get(aid, 0) + 1
-                if any(
-                    self._requires_two_or_more_blockers(state, state.cards[aid]) and counts.get(aid, 0) < 2
-                    for aid in attacker_ids
-                ):
+                if any(0 < counts.get(aid, 0) < self._minimum_blockers_for_ai(state, state.cards[aid]) for aid in attacker_ids):
                     return
                 assignments.append(dict(current))
                 return
@@ -2528,6 +2525,11 @@ class AIAgent:
             return True
         text = (getattr(attacker, "oracle_text", "") or "").lower()
         return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text
+
+    def _minimum_blockers_for_ai(self, state, attacker) -> int:
+        if isinstance(state, MatchState) and attacker.id in state.cards:
+            return combat._minimum_blockers_required(state, attacker.id)
+        return 2 if self._requires_two_or_more_blockers(state, attacker) else 1
 
     def _choose_attackers(self, state: MatchState, candidates: list[str], player_id: int) -> list[str]:
         opp_id = 1 if player_id == 2 else 2

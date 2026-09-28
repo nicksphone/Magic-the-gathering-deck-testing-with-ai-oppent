@@ -72,6 +72,78 @@ def test_large_board_fallback_blocks_legal_band_member_not_unblockable_flyer() -
     assert state.blocks == {"hero": ["bears"], "angel": ["bears"]}
 
 
+def test_large_board_fallback_uses_three_blockers_when_required() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=665,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = 1
+    state.priority_player = 2
+    state.players[2].life = 7
+    guile = CardInstance(
+        id="guile", name="Guile", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+        types=["Creature"], power=6, toughness=6, summoning_sick=False,
+        oracle_text="This creature can't be blocked except by three or more creatures.",
+    )
+    state.cards[guile.id] = guile
+    state.players[1].battlefield.append(guile.id)
+    state.attackers = [guile.id]
+    for index in range(4):
+        cid = f"elf-{index}"
+        card = CardInstance(cid, "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1, summoning_sick=False)
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+        state.attackers.append(cid)
+    for index in range(3):
+        cid = f"bears-{index}"
+        card = CardInstance(cid, "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+        state.cards[cid] = card
+        state.players[2].battlefield.append(cid)
+
+    action = AIAgent(difficulty="master", archetype="Control")._choose_blocks(
+        state,
+        [{"id": cid, "name": state.cards[cid].name} for cid in state.attackers],
+        [{"id": cid, "name": state.cards[cid].name} for cid in state.players[2].battlefield],
+    )
+    assert set(action["guile"]) == {f"bears-{index}" for index in range(3)}
+    combat.declare_blockers(state, action)
+    assert len(state.blocks["guile"]) == 3
+
+
+def test_small_board_search_can_leave_three_blocker_attacker_unblocked() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=666,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = 1
+    state.priority_player = 2
+    state.cards["guile"] = CardInstance(
+        "guile", "Guile", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=6, toughness=6,
+        oracle_text="This creature can't be blocked except by three or more creatures.",
+    )
+    state.players[1].battlefield.append("guile")
+    state.attackers = ["guile"]
+    for index in range(2):
+        cid = f"bears-{index}"
+        state.cards[cid] = CardInstance(cid, "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+        state.players[2].battlefield.append(cid)
+
+    choice = AIAgent(difficulty="master", archetype="Control")._search_block_assignments(
+        state,
+        [{"id": "guile", "name": "Guile"}],
+        [{"id": cid, "name": "Grizzly Bears"} for cid in state.players[2].battlefield],
+    )
+    assert choice == {}
+
+
 def test_master_block_search_avoids_safe_life_chump_block() -> None:
     state = MatchFactory.from_decks(
         [{"quantity": 60, "card_name": "Forest"}],

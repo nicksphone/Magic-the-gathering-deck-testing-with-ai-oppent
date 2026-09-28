@@ -293,6 +293,7 @@ Acceptance: expected zones, choices, stats, timing, triggers and outcomes match 
 - [ ] Establish per-archetype before/after decision metrics using full hand/board/legal-action traces.
 - [ ] Evaluate land drops, mana sequencing, lethal opportunities, bad attacks/blocks, engine protection and interaction windows.
 Partial blocking evidence: a five-attacker banded-board regression found that large-board AI fallback assigned a ground blocker to a flyer; legality filtering and band-aware prevented-damage scoring now pass 983 isolated backend tests. A seeded two-game Burn/Dimir Control BO3 has zero timeout, anomaly label or determinism drift. This does not close broader archetype decision-quality measurement.
+Further blocker restriction coverage: small-board search and large-board fallback now use the engine's numeric minimum-blocker count, with real Guile three-blocker and unblocked-choice fixtures. Verification: 985 isolated backend tests and a seeded two-game Burn/Dimir Control replay without timeout, anomaly or deterministic drift. This remains a bounded AI legality repair, not proof of optimal combat.
 - [ ] Extend bounded multi-turn planning, hidden-information estimates and sideboard plans using demonstrated mistakes.
 - [ ] Cover control, tempo, aggro, ramp, tokens, tribal, midrange, drain and combo-style decks rather than tuning one archetype alone.
 
