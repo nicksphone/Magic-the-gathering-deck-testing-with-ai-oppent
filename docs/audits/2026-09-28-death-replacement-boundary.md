@@ -10,6 +10,7 @@ Status: open. This is a code/data audit, not a claim that replacement effects ar
 - Five older tests that called an altered or blank fixture `Rest in Peace` now use the canonical Oracle text. Other synthetic named-card fixtures remain a separate audit task.
 - Live HTTP action tests now cast Lightning Bolt on Doomed Traveler under Rest in Peace and cast Rest in Peace into occupied graveyards. The first verifies that no dies-trigger Spirit appears; both verify exile destinations after SQLite controller restore. This does not cover simultaneous human replacement choices.
 - The shared destination check now also recognizes the [current Scryfall Oracle opponent-card wording for Leyline of the Void](https://scryfall.com/card/dsk/106/leyline-of-the-void). Tests separate card owner from controller, exclude tokens, and destroy Leyline simultaneously with an opposing enchantment. An HTTP action and SQLite restore cover an opponent-owned spell; its opening-hand ability is a separate unsupported pregame mechanic.
+- [Comprehensive Rules 704.5d](https://media.wizards.com/2026/downloads/MagicCompRules%2020260619.pdf) token disappearance now has an SBA path: generated tokens are removed from graveyard/exile lists and marked internally ceased after their move and trigger collection. A canonical Bastion of Remembrance trigger test checks that this cleanup does not erase the dies event. Re-moving a departed token before SBA and unusual token-copy interactions remain unverified.
 
 ## Evidence
 

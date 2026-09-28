@@ -151,6 +151,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
     for card in state.cards.values():
         if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
             restore_printed_characteristics(card)
+    _cease_nonbattlefield_tokens(state)
     for pid, player in state.players.items():
         if player.poison >= 10:
             state.winner = 1 if pid == 2 else 2
@@ -202,6 +203,18 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
         return
     _apply_saga_state_actions(state)
     _apply_attachment_state_checks(state)
+
+
+def _cease_nonbattlefield_tokens(state: MatchState) -> None:
+    for cid, card in state.cards.items():
+        if "Token" not in card.types or card.zone in {Zone.BATTLEFIELD, Zone.STACK, Zone.CEASED}:
+            continue
+        for player in state.players.values():
+            for zone in ("library", "hand", "graveyard", "exile"):
+                cards = getattr(player, zone)
+                if cid in cards:
+                    cards.remove(cid)
+        card.zone = Zone.CEASED
 
 
 def _apply_saga_state_actions(state: MatchState) -> None:

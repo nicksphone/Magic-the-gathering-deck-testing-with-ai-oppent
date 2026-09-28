@@ -14,6 +14,7 @@ class Zone(str, Enum):
     GRAVEYARD = "graveyard"
     EXILE = "exile"
     STACK = "stack"
+    CEASED = "ceased"
 
 
 class Step(str, Enum):
