@@ -23,7 +23,7 @@ type Props = {
   autoplayDelayMs: number;
   setAutoplayDelayMs: (ms: number) => void;
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
-  onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>) => void;
+  onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>, bands: string[][]) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: (playFirst?: boolean) => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
@@ -99,6 +99,13 @@ export function Controls(props: Props) {
   );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
+  const [excludedAttackers, setExcludedAttackers] = useState<string[]>([]);
+  const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
+  useEffect(() => {
+    setAttackTargets({});
+    setExcludedAttackers([]);
+    setAttackBandNumbers({});
+  }, [props.match?.id, props.match?.game_number, props.match?.turn, props.match?.step]);
   const [sbPlayer, setSbPlayer] = useState(1);
   const [sbOut, setSbOut] = useState("");
   const [sbIn, setSbIn] = useState("");
@@ -466,12 +473,15 @@ export function Controls(props: Props) {
       {attackMove ? (
         <div className="block-panel">
           <h3>Declare Attackers</h3>
+          <p>Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without.</p>
           {(attackMove.options ?? []).map((attackerId) => {
             const attacker = props.match?.players?.["1"]?.battlefield?.find((c) => c.id === attackerId)
               || props.match?.players?.["2"]?.battlefield?.find((c) => c.id === attackerId);
             return (
               <div className="row" key={`atk-${attackerId}`}>
+                <input type="checkbox" aria-label={`Attack with ${attacker?.name ?? attackerId}`} checked={!excludedAttackers.includes(attackerId)} onChange={(e) => setExcludedAttackers((prev) => e.target.checked ? prev.filter((id) => id !== attackerId) : [...prev, attackerId])} />
                 <span>{attacker?.name ?? attackerId}</span>
+                <label>Band <input type="number" min="0" max="125" aria-label={`Band number for ${attacker?.name ?? attackerId}`} value={attackBandNumbers[attackerId] ?? 0} onChange={(e) => setAttackBandNumbers((prev) => ({ ...prev, [attackerId]: Number(e.target.value) || 0 }))} /></label>
                 <select
                   value={attackTargets[attackerId] ?? ""}
                   onChange={(e) =>
@@ -491,7 +501,16 @@ export function Controls(props: Props) {
               </div>
             );
           })}
-          <button onClick={() => props.onSubmitAttack(attackMove.options ?? [], attackTargets)}>
+          <button onClick={() => {
+            const attackers = (attackMove.options ?? []).filter((id) => !excludedAttackers.includes(id));
+            const targets = Object.fromEntries(Object.entries(attackTargets).filter(([id, target]) => attackers.includes(id) && target));
+            const grouped = new Map<number, string[]>();
+            for (const id of attackers) {
+              const number = attackBandNumbers[id] ?? 0;
+              if (number > 0) grouped.set(number, [...(grouped.get(number) ?? []), id]);
+            }
+            props.onSubmitAttack(attackers, targets, [...grouped.values()]);
+          }}>
             Submit Attackers
           </button>
         </div>

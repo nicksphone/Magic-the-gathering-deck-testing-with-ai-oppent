@@ -88,6 +88,7 @@ class RulesEngine:
         else:
             state.step = TURN_STEPS[idx + 1]
             if state.step == Step.DECLARE_ATTACKERS:
+                state.attack_bands = []
                 state.attackers_declared = False
                 state.combat_damage_resolved = False
                 state.combat_damage_stage = "none"
@@ -101,6 +102,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
             elif state.step == Step.POSTCOMBAT_MAIN:
                 state.attackers = []
+                state.attack_bands = []
                 state.attack_targets = {}
                 state.blocks = {}
                 state.attackers_declared = False
@@ -820,7 +822,7 @@ class RulesEngine:
         elif kind == "attack":
             ids = action.get("attackers", [])
             attack_targets = action.get("attack_targets", {})
-            combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {})
+            combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {}, action.get("bands", []))
             state.attackers_declared = True
 
         elif kind == "activate_ability":

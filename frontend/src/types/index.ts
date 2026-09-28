@@ -70,6 +70,7 @@ export type MatchState = {
   stack: { id: string; label: string; controller: number; effect_key: string }[];
   attackers?: string[];
   attack_targets?: Record<string, string>;
+  attack_bands?: string[][];
   blocks?: Record<string, string[]>;
   game_number?: number;
   root_seed?: number | null;

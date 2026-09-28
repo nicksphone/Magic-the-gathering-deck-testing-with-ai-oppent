@@ -85,6 +85,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     if kind == "attack" and not action["attackers"]:
         require(state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not state.attackers_declared, "Not an attacker declaration window")
         require(not action.get("attack_targets"), "Attack targets require selected attackers")
+        require(not action.get("bands"), "Bands require selected attackers")
         return
     require(bool(available), "Action is not currently legal")
     for key in ("card_id", "ability_index", "return_card_id", "replacement_source_id", "stack_id", "target_card_id"):
@@ -136,6 +137,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         unique_ids(action["attackers"], move.get("options", []))
         defenders = {item["id"] for item in move.get("defenders", [])}
         require(all(cid in action["attackers"] and target in defenders for cid, target in action.get("attack_targets", {}).items()), "Invalid attack target")
+        from rules_engine.combat import valid_attack_bands
+        require(valid_attack_bands(state, action["attackers"], action.get("attack_targets", {}), action.get("bands", [])), "Invalid attacking band")
     elif kind == "block":
         attackers = {item["id"] for item in move["attackers"]}
         blockers = {item["id"] for item in move["blockers"]}

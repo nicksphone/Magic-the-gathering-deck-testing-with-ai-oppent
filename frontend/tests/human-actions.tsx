@@ -63,6 +63,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "combat_damage_assignment").catch((failure) => setError(String(failure)))}>Damage Assignment Fixture</button>
     <button onClick={() => reset(false, false, 3, "shared_trample").catch((failure) => setError(String(failure)))}>Shared Trample Fixture</button>
     <button onClick={() => reset(false, false, 3, "banding_damage").catch((failure) => setError(String(failure)))}>Banding Damage Fixture</button>
+    <button onClick={() => reset(false, false, 3, "attacking_band").catch((failure) => setError(String(failure)))}>Attacking Band Fixture</button>
     <button onClick={() => reset(false, false, 3, "iteration").catch((failure) => setError(String(failure)))}>Iteration Fixture</button>
     <button onClick={() => reset(false, false, 3, "company").catch((failure) => setError(String(failure)))}>Company Fixture</button>
     <button onClick={() => reset(false, false, 3, "search").catch((failure) => setError(String(failure)))}>Search Fixture</button>
@@ -75,12 +76,13 @@ function Harness() {
       setSelectedA={() => {}} setSelectedB={() => {}}
       startMode="human_vs_human" setStartMode={() => {}}
       difficulty="master" setDifficulty={() => {}} bestOf={3} setBestOf={() => {}}
-      onStart={() => {}} onPassPriority={() => {}}
+      onStart={() => {}} onPassPriority={() => { act(actor, { type: "pass_priority" }).catch((failure) => setError(String(failure))); }}
       onKeepHand={(ids) => { act(actor, { type: "keep_hand", bottom_card_ids: ids }).catch((failure) => setError(String(failure))); }}
       onMulligan={() => { act(actor, { type: "mulligan" }).catch((failure) => setError(String(failure))); }}
       onNextStep={() => {}} onAutoplayTick={() => {}}
       autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
-      onSubmitBlocks={() => {}} onSubmitAttack={() => {}}
+      onSubmitBlocks={(blocks) => { act(actor, { type: "block", blocks }).catch((failure) => setError(String(failure))); }}
+      onSubmitAttack={(attackers, attackTargets, bands) => { act(actor, { type: "attack", attackers, attack_targets: attackTargets, bands }).catch((failure) => setError(String(failure))); }}
       onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
       onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }} onChooseTriggerOrder={() => {}}
       onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}

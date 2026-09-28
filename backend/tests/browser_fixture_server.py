@@ -283,6 +283,27 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.attackers = ["courser"]
         state.blocks = {"courser": ["hero", "bears"]}
         return publish(state, deck)
+    if face_kind == "attacking_band":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=99)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_ATTACKERS
+        for cid, name, owner, power, toughness, keywords in (
+            ("hero", "Benalish Hero", 1, 1, 1, ["banding"]),
+            ("angel", "Serra Angel", 1, 4, 4, ["flying", "vigilance"]),
+            ("elf", "Llanowar Elves", 1, 1, 1, []),
+            ("bears", "Grizzly Bears", 2, 2, 2, []),
+        ):
+            card = CardInstance(
+                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
+                types=["Creature"], power=power, toughness=toughness,
+                keywords=keywords, summoning_sick=False,
+            )
+            state.cards[cid] = card
+            state.players[owner].battlefield.append(cid)
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")

@@ -138,6 +138,7 @@ class AttackAction(InputModel):
     type: Literal["attack"]
     attackers: CardIDs
     attack_targets: dict[CardID, CardID] = Field(default_factory=dict, max_length=250)
+    bands: list[CardIDs] = Field(default_factory=list, max_length=125)
 
 
 class BlockAction(InputModel):

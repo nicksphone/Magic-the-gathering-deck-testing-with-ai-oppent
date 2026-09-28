@@ -49,6 +49,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "passed_priority": sorted(state.passed_priority),
         "attackers": list(state.attackers),
         "attack_targets": dict(state.attack_targets),
+        "attack_bands": [list(band) for band in state.attack_bands],
         "blocks": {key: list(value) for key, value in state.blocks.items()},
         "attackers_declared": state.attackers_declared,
         "blockers_declared": state.blockers_declared,
@@ -216,6 +217,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))
     state.attack_targets = dict(payload.get("attack_targets", {}))
+    state.attack_bands = [list(band) for band in payload.get("attack_bands", [])]
     state.blocks = {key: list(value) for key, value in payload.get("blocks", {}).items()}
     state.attackers_declared = bool(payload.get("attackers_declared", False))
     state.blockers_declared = bool(payload.get("blockers_declared", False))
@@ -339,6 +341,7 @@ def serialize_match(state: MatchState) -> dict:
         "attackers": state.attackers,
         "pending_mechanic_choice": state.pending_mechanic_choice,
         "attack_targets": state.attack_targets,
+        "attack_bands": state.attack_bands,
         "blocks": state.blocks,
         "log": state.log[-120:],
     }

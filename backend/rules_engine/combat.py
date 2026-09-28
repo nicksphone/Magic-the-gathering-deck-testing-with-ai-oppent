@@ -21,8 +21,27 @@ DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 
-def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None) -> None:
+def valid_attack_bands(state: MatchState, attackers: list[str], targets: dict[str, str], bands: list[list[str]]) -> bool:
+    defender = 1 if state.active_player == 2 else 2
+    seen: set[str] = set()
+    for band in bands:
+        if len(band) < 2 or len(set(band)) != len(band):
+            return False
+        if any(cid not in attackers or cid in seen or cid not in state.cards for cid in band):
+            return False
+        seen.update(band)
+        if sum(not has_keyword(state, cid, "banding") for cid in band) > 1:
+            return False
+        if len({targets.get(cid, f"player:{defender}") for cid in band}) != 1:
+            return False
+    return True
+
+
+def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None, bands: list[list[str]] | None = None) -> None:
     attack_targets = attack_targets or {}
+    bands = bands or []
+    if not valid_attack_bands(state, attacker_ids, attack_targets, bands):
+        raise ValueError("Invalid attacking band")
     legal: list[str] = []
     legal_targets: dict[str, str] = {}
     defender = 1 if state.active_player == 2 else 2
@@ -74,6 +93,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal = []
         legal_targets = {}
     state.attackers = legal
+    state.attack_bands = [list(band) for band in bands if all(cid in legal for cid in band)]
     state.combat_damage_resolved = False
     state.combat_damage_stage = "none"
     state.first_strike_damage_ids = set()
@@ -157,6 +177,14 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
             legal.setdefault(attacker_id, []).append(blocker_id)
             blocker_assignments[blocker_id] = blocker_assignments.get(blocker_id, 0) + 1
             break
+    # A legal direct block of one band member blocks every member, regardless
+    # of whether the blocker could have blocked those other members directly.
+    for band in state.attack_bands:
+        members = [cid for cid in band if cid in state.attackers and state.cards[cid].zone == Zone.BATTLEFIELD]
+        shared = list(dict.fromkeys(bid for cid in members for bid in legal.get(cid, [])))
+        for cid in members:
+            if shared:
+                legal[cid] = list(shared)
     state.blocks = legal
     _apply_block_combat_abilities(state)
     for attacker_id, blocker_ids in legal.items():

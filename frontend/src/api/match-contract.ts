@@ -36,6 +36,10 @@ export function parseMatchState(value: unknown): MatchState {
     || !Object.values(value.blocks).every((ids) => Array.isArray(ids) && ids.every((id) => typeof id === "string")))) {
     throw new Error("Invalid match response: blocks must map attackers to blocker ID arrays");
   }
+  if (value.attack_bands !== undefined && (!Array.isArray(value.attack_bands)
+    || !value.attack_bands.every((band) => Array.isArray(band) && band.every((id) => typeof id === "string")))) {
+    throw new Error("Invalid match response: attack bands must be card ID arrays");
+  }
   if (value.sideboarding !== undefined && (!record(value.sideboarding)
     || !Object.entries(value.sideboarding).every(([seat, inventory]) => ["1", "2"].includes(seat)
       && record(inventory) && typeof inventory.applied === "boolean"

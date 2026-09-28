@@ -125,6 +125,7 @@ class MatchState:
     passed_priority: set[int] = field(default_factory=set)
     attackers: list[str] = field(default_factory=list)
     attack_targets: dict[str, str] = field(default_factory=dict)
+    attack_bands: list[list[str]] = field(default_factory=list)
     blocks: dict[str, list[str]] = field(default_factory=dict)
     attackers_declared: bool = False
     blockers_declared: bool = False

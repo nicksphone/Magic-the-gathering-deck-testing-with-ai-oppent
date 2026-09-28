@@ -109,6 +109,24 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.id === 'bears')"), true);
   console.log("PASS banding blocker transfers attacker's damage choice to defending human seat");
 
+  await click("Attacking Band Fixture");
+  await waitFor("window.fixtureState.step === 'declare_attackers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await evaluate("document.querySelector('[aria-label=\"Attack with Llanowar Elves\"]').click()");
+  await evaluate("(() => { for (const name of ['Benalish Hero', 'Serra Angel']) { const input = document.querySelector(`[aria-label=\"Band number for ${name}\"]`); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '1'); input.dispatchEvent(new Event('input', { bubbles: true })); } })()");
+  await click("Submit Attackers");
+  await waitFor("window.fixtureState.attack_bands?.length === 1 && window.fixtureState.attackers?.length === 2 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.bands"), [["hero", "angel"]]);
+  assert.deepEqual(await evaluate("window.fixtureState.attack_bands"), [["hero", "angel"]]);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.step === 'declare_blockers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Pass Priority");
+  await waitFor("window.fixtureState.priority_player === 2 && [...document.querySelectorAll('.block-panel .row')].some(row => row.textContent.includes('Benalish Hero')) && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await evaluate("(() => { const row = [...document.querySelectorAll('.block-panel .row')].find(row => row.textContent.includes('Benalish Hero')); const select = row.querySelector('select'); select.options[0].selected = true; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Submit Blocks");
+  await waitFor("window.fixtureState.blocks?.hero?.includes('bears') && window.fixtureState.blocks?.angel?.includes('bears') && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.deepEqual(await evaluate("window.fixtureState.blocks"), { hero: ["bears"], angel: ["bears"] });
+  console.log("PASS human attacking-band block propagates to flying member through UI and API");
+
   await reset();
   await click("Cast Llanowar Elves");
   await waitFor("window.fixtureState.stack.length === 1");

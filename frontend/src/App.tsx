@@ -274,11 +274,12 @@ export function App() {
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered }, write));
   }
 
-  async function onSubmitAttack(attackers: string[], attackTargets: Record<string, string>) {
+  async function onSubmitAttack(attackers: string[], attackTargets: Record<string, string>, bands: string[][]) {
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
       type: "attack",
       attackers,
       attack_targets: attackTargets,
+      bands,
     }, write));
   }
 
