@@ -10,17 +10,16 @@ frontend_pid=''
 browser_pid=''
 cleanup() {
   kill "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
-  wait "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
 }
 trap cleanup EXIT
 
 start_backend() {
-  (cd "$scratch/backend" && python -m uvicorn tests.browser_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec python -m uvicorn tests.browser_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
 start_backend
-(cd frontend && VITE_API_BASE_URL=http://127.0.0.1:10199 npm run dev -- --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
+(cd frontend && exec env VITE_API_BASE_URL=http://127.0.0.1:10199 ./node_modules/.bin/vite --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
 browser=$(command -v chromium || command -v google-chrome)
@@ -42,9 +41,19 @@ wait_for_services() {
 }
 
 wait_for_services
-(cd frontend && timeout 300s node tests/browser-human-actions.mjs && timeout 120s node tests/browser-recovery.mjs)
+echo 'Browser CI: action scenarios'
+(cd frontend && timeout 300s node tests/browser-human-actions.mjs)
+echo 'Browser CI: App recovery scenarios'
+(cd frontend && timeout 120s node tests/browser-recovery.mjs)
+echo 'Browser CI: stopping copied backend'
 kill "$backend_pid"
+for _ in $(seq 1 50); do
+  if ! kill -0 "$backend_pid" 2>/dev/null; then break; fi
+  sleep 0.1
+done
+kill -KILL "$backend_pid" 2>/dev/null || true
 wait "$backend_pid" 2>/dev/null || true
 start_backend
 wait_for_services
+echo 'Browser CI: verifying process restart'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs --verify-restart)
