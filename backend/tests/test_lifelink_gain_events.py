@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import pytest
-
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine import combat
+from rules_engine.engine import RulesEngine
+from rules_engine.move_generator import legal_moves
 from rules_engine.stack_engine import resolve_top_of_stack
 
 
@@ -102,7 +103,6 @@ def test_locked_lifelink_controller_gets_no_gain_event():
     assert not pridemate_triggers(state)
 
 
-@pytest.mark.xfail(strict=True, reason="Combat lifelink still bypasses gain replacement selection")
 def test_lifelink_gain_uses_alhammarrets_archive_replacement():
     state = game()
     archive = CardInstance(
@@ -115,3 +115,118 @@ def test_lifelink_gain_uses_alhammarrets_archive_replacement():
     state.attackers = [add_nighthawk(state, "hawk-1")]
     combat.combat_damage(state)
     assert state.players[1].life == 24
+
+
+def test_each_lifelink_source_is_replaced_separately():
+    state = game()
+    archive = CardInstance(
+        id="archive", name="Alhammarret's Archive", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Legendary", "Artifact"],
+        oracle_text="If you would gain life, you gain twice that much life instead.",
+    )
+    state.cards[archive.id] = archive
+    state.players[1].battlefield.append(archive.id)
+    add_pridemate(state)
+    state.attackers = [add_nighthawk(state, "hawk-1"), add_nighthawk(state, "hawk-2")]
+    combat.combat_damage(state)
+    assert state.players[1].life == 28
+    assert len(pridemate_triggers(state)) == 2
+
+
+def test_human_lifelink_replacement_choice_survives_snapshot_before_sba():
+    state = game()
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name, types in (
+        ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
+        ("reflection", "Boon Reflection", ["Enchantment"]),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=types,
+            oracle_text="If you would gain life, you gain twice that much life instead.",
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+    add_pridemate(state)
+    state.attackers = [add_nighthawk(state, "hawk-1")]
+    combat.combat_damage(state)
+    assert state.players[1].life == 20
+    assert state.players[2].life == 18
+    assert state.trigger_staging
+    assert not pridemate_triggers(state)
+    assert {move["replacement_source_id"] for move in legal_moves(state, 1)} == {"archive", "reflection"}
+
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "reflection"})
+    assert state.players[1].life == 28
+    assert not state.pending_replacement_choice
+    assert not state.trigger_staging
+    assert len(pridemate_triggers(state)) == 1
+
+
+def test_lifelink_source_death_waits_for_gain_choice():
+    state = game()
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name, types in (
+        ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
+        ("reflection", "Boon Reflection", ["Enchantment"]),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=types,
+            oracle_text="If you would gain life, you gain twice that much life instead.",
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+    attacker = add_nighthawk(state, "hawk-1")
+    blocker = CardInstance(
+        id="blocker", name="Centaur Courser", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=3, toughness=3,
+    )
+    state.cards[blocker.id] = blocker
+    state.players[2].battlefield.append(blocker.id)
+    state.attackers = [attacker]
+    state.blocks = {attacker: [blocker.id]}
+    combat.combat_damage(state)
+    assert state.cards[attacker].zone == Zone.BATTLEFIELD
+    assert state.pending_replacement_choice
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "archive"})
+    assert state.players[1].life == 28
+    assert state.cards[attacker].zone == Zone.GRAVEYARD
+    assert not state.trigger_staging
+
+
+def test_separate_lifelink_sources_resume_both_human_choices():
+    state = game()
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name, types in (
+        ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
+        ("reflection", "Boon Reflection", ["Enchantment"]),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=types,
+            oracle_text="If you would gain life, you gain twice that much life instead.",
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+    add_pridemate(state)
+    state.attackers = [add_nighthawk(state, "hawk-1"), add_nighthawk(state, "hawk-2")]
+    combat.combat_damage(state)
+    assert state.pending_replacement_choice
+    assert state.players[1].life == 20
+
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "archive"})
+    assert state.players[1].life == 28
+    assert state.pending_replacement_choice
+    assert state.trigger_staging
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    engine.take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "reflection"})
+    assert state.players[1].life == 36
+    assert len(pridemate_triggers(state)) == 2
+    assert not state.trigger_staging

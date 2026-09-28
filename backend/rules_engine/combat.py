@@ -8,7 +8,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, player_cant_gain_life, replace_die_zone
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -310,6 +310,9 @@ def _resolve_damage_step(state: MatchState) -> None:
     _combat_damage_step(state, defender, state.first_strike_damage_ids, first_strike_only=first_only)
     if not first_only:
         state.combat_damage_resolved = True
+    if state.pending_replacement_choice or state.pending_mechanic_choice:
+        (state.pending_replacement_choice or state.pending_mechanic_choice)["combat_damage_needs_sba"] = True
+        return
     _remove_dead_creatures(state)
     if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
         state.priority_player = state.active_player
@@ -532,15 +535,15 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             record_lifelink(blocker_id, blk.controller, actual)
             if actual > 0:
                 damage_events.append({"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual})
-    life_gain_events = []
-    for source_id, (controller, amount) in lifelink_gains.items():
-        if player_cant_gain_life(state, controller):
-            continue
-        state.players[controller].life += amount
-        state.log.append(f"{state.players[controller].name} gains {amount} life from lifelink.")
-        life_gain_events.append({"player_id": controller, "amount": amount, "source_card_id": source_id})
-    emit_event_batch(state, "life_gain", life_gain_events)
     emit_event_batch(state, "combat_damage_dealt", damage_events)
+    gain_effects = []
+    for source_id, (controller, amount) in lifelink_gains.items():
+        gain_effects.append({"effect_key": "gain_life", "payload": {
+            "target_player": controller, "amount": amount, "__source_card_id": source_id,
+        }})
+    if gain_effects:
+        from effects.registry import resolve_effect
+        resolve_effect(state, state.active_player, "effect_sequence", {"effects": gain_effects})
 
 
 def _remove_dead_creatures(state: MatchState) -> None:

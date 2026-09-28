@@ -274,6 +274,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
         next_pending.setdefault("draw_continuation_queue", []).extend(queue)
+        if pending.get("combat_damage_needs_sba"):
+            next_pending["combat_damage_needs_sba"] = True
         if pending.get("resolving_item"):
             next_pending["resolving_item"] = pending["resolving_item"]
         next_pending.setdefault("continuation_effects", []).extend(pending.get("continuation_effects", []))
@@ -282,11 +284,16 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         resolve_effect(state, controller, "effect_sequence", {"effects": pending["continuation_effects"]})
     next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
+        if pending.get("combat_damage_needs_sba"):
+            next_pending["combat_damage_needs_sba"] = True
         if pending.get("resolving_item"):
             next_pending["resolving_item"] = pending["resolving_item"]
     elif pending.get("resolving_item"):
         item = StackItem(**pending["resolving_item"])
         finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+    if pending.get("combat_damage_needs_sba") and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        from rules_engine.state_based_actions import apply_state_based_actions
+        apply_state_based_actions(state)
     if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
         state.priority_player = state.active_player
         state.passed_priority = set()

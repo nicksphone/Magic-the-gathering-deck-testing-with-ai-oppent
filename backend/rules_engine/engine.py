@@ -414,6 +414,19 @@ class RulesEngine:
                 reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
+            if pending.get("resume_kind") == "gain_event":
+                from rules_engine.stack_engine import resume_paused_resolution
+
+                state.pending_replacement_choice = None
+                state.log.append(f"{state.players[player_id].name} chooses replacement source {chosen_id}.")
+                resolve_effect(
+                    state, int(pending["controller"]), "gain_life",
+                    {**pending["gain_payload"], "__replacement_source_id": chosen_id},
+                )
+                resume_paused_resolution(state, pending)
+                if not state.pending_replacement_choice and not state.pending_mechanic_choice and not pending.get("combat_damage_needs_sba"):
+                    apply_state_based_actions(state)
+                return
             if pending.get("resume_kind") == "draw_event":
                 from rules_engine.stack_engine import resume_paused_resolution
 

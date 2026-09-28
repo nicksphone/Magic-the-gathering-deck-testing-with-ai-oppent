@@ -311,6 +311,21 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
         return
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
     selected_source_id = payload.get("__replacement_source_id")
+    if not selected_source_id and state.replacement_choice_required and target_player in state.replacement_choice_players:
+        used = set(used_source_ids)
+        options = [
+            option for option in replacement_options(state, "life_gain", target_player=target_player)
+            if not replacement_source_used(used, "life_gain", str(option["source_id"]))
+        ]
+        if len(options) > 1:
+            state.pending_replacement_choice = {
+                "resume_kind": "gain_event", "player_id": target_player,
+                "controller": controller, "gain_payload": dict(payload),
+                "options": options, "event": "life_gain",
+            }
+            state.priority_player = target_player
+            state.passed_priority = set()
+            return
     replaced = replace_gain_life(
         state,
         target_player,
@@ -320,6 +335,8 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     )
     if replaced is not None:
         key, repl_payload = replaced
+        if payload.get("__source_card_id"):
+            repl_payload["__source_card_id"] = payload["__source_card_id"]
         source = repl_payload.pop("__replacement_source", None)
         state.log.append(
             f"Replacement effect applied: gain_life -> {key} for {state.players[target_player].name}."
@@ -331,7 +348,7 @@ def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     state.players[target_player].life += amount
     state.log.append(f"{state.players[target_player].name} gains {amount} life.")
     if amount > 0:
-        emit_event(state, "life_gain", {"player_id": target_player, "amount": amount})
+        emit_event(state, "life_gain", {"player_id": target_player, "amount": amount, "source_card_id": payload.get("__source_card_id")})
 
 
 def lose_life(state: MatchState, controller: int, payload: dict) -> None:

@@ -1,10 +1,12 @@
 # Changelog
 
+- Combat lifelink gains now use the shared life-gain replacement handler instead of direct life mutation. Archive and Boon Reflection-style doublers apply to each source's event; human replacement choice can pause combat and resume after a snapshot before death state-based actions. The previous strict expected failure is removed. Verification: 1,113 isolated backend tests, frontend lint/build/unit and the full Chromium harness pass. Broader cross-event ordering remains open.
+
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
 ## 2026-09-28
 
-- Combat lifelink now stages a gain-life event per source rather than silently incrementing life. One source damaging multiple blockers produces one event; two sources produce two. Real Vampire Nighthawk and Ajani's Pridemate fixtures verify supported gain-life triggers. Gain replacement choices during combat remain open.
+- Combat lifelink now stages a gain-life event per source rather than silently incrementing life. One source damaging multiple blockers produces one event; two sources produce two. Real Vampire Nighthawk and Ajani's Pridemate fixtures verify supported gain-life triggers. Replacement choices were completed in the subsequent entry above.
 - Added a shared life-total-lock check for supported "can't change" wording across gain/loss effects, player damage, combat lifelink, land-entry payments and activated/additional costs. Paying exactly remaining life is now legal when no lock applies. Real Platinum Emperion, Cruel Sadist, Vampire Nighthawk and Glistener Elf fixtures cover the bounded contract; simultaneous lifelink replacements and payment triggers remain open.
 - Added a shared pre-entry choice for lands with the canonical pay-2-life-or-enter-tapped wording. Land plays and hand/library/graveyard battlefield-entry effects use it; human choices pause and survive snapshots, while AI pays only when untapped mana enables a current cast. Focused tests cover forced tapped entry, invalid choices, simultaneous entries and life-zero timing. Browser/API choices and one seeded AI replay pass; this does not certify other replacement families or broad replay behavior.
 - Audited battlefield-entry choices against the current Comprehensive Rules. Reproduced a conditional land entering untapped without its 2-life payment; inventoried the land-capable effect paths and set a shared pre-entry, choice, snapshot and replay acceptance gate. This is an audit, not a rules fix.

@@ -1,8 +1,8 @@
 # Combat lifelink gain-event boundary (2026-09-28)
 
-Status: common gain-life trigger path repaired with focused real-card tests. Combat gain replacements and nested human-choice continuation remain open.
+Status: common gain-life trigger and supported combat gain-replacement paths repaired with focused real-card tests. Broader cross-event ordering remains open.
 
-Verification: 1,108 backend tests passed with 1 strict expected failure in an isolated source/database copy. Frontend lint/build/unit checks passed. No browser-specific lifelink scenario or broad matchup matrix was run for this backend-only increment.
+Verification: the initial event-only increment passed 1,108 backend tests with 1 strict expected failure. The follow-up replacement fix passes 1,113 backend tests in an isolated source/database copy, frontend lint/build/unit and the full Chromium harness. The browser harness did not exercise a lifelink-specific scenario; no broad matchup matrix was run for this increment.
 
 ## Rules evidence
 
@@ -15,5 +15,5 @@ The [Magic 2015 release notes](https://magic.wizards.com/en/news/feature/magic-2
 
 ## Remaining gate
 
-- Combat life increments still bypass `effects.handlers.gain_life` replacement selection. A strict expected-failure regression using real Alhammarret's Archive text records the current 22-life result where 24 is required. Routing a human replacement choice through combat requires preserving all simultaneous damage results, gain events, state-based-action waves and trigger staging across a snapshot. Do not mark general lifelink/replacement fidelity complete on this event patch.
+- Combat gains now route through the shared life-gain replacement handler, with a serialized continuation for multiple human replacement choices. The former strict Archive expected failure now passes. Focused tests cover separate gains, human choice through a snapshot, and a dying lifelink source whose state-based death waits for the choice. Do not infer general life-gain/replacement fidelity from these bounded examples.
 - Extend golden tests to gain doublers, gain-prevention effects, damage dealt to multiple kinds of recipient, first/double-strike substeps, lock changes during combat and APNAP ordering after death replacements.
