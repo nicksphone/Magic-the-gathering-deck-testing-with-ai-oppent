@@ -14,6 +14,39 @@ init_db()
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "company":
+        from rules_engine.ability_model import build_ability_spec
+        from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
+        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
+        state = MatchFactory.from_decks(deck, deck, seed=34)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.replacement_choice_required = True
+        state.replacement_choice_players = {2}
+        for cid, name in zip(state.players[2].library[-6:],
+            ["Grizzly Bears", "Llanowar Elves", "Island", "Plains", "Swamp", "Mountain"]):
+            card = state.cards[cid]
+            card.name = name
+            if name in {"Grizzly Bears", "Llanowar Elves"}:
+                card.types = ["Creature"]
+                card.type_line = "Creature"
+                card.mana_cost = "{1}{G}" if name == "Grizzly Bears" else "{G}"
+                card.power = card.toughness = 2 if name == "Grizzly Bears" else 1
+            else:
+                card.types = ["Land"]
+                card.type_line = f"Basic Land - {name}"
+        spell = CardInstance(
+            id="company", name="Collected Company", owner=2, controller=2,
+            zone=Zone.STACK, types=["Instant"],
+            oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
+        )
+        state.cards[spell.id] = spell
+        spec = build_ability_spec(state, spell, 2)
+        add_to_stack(state, spell.id, 2, spell.name, spec.effect.key, spec.effect.payload)
+        resolve_top_of_stack(state)
+        return publish(state, deck)
     if face_kind == "iteration":
         from effects.registry import resolve_effect
         deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]

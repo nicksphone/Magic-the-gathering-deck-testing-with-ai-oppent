@@ -156,6 +156,19 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].exile_count"), 1);
   console.log("PASS ordered top-card hand/exile/bottom choice through Controls and API");
 
+  await click("Company Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'topdeck_put'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'topdeck_bottom_order'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].graveyard_count"), 0);
+  for (const name of ["Island", "Plains", "Swamp", "Mountain", "Llanowar Elves"]) await click(name);
+  await click("Confirm Order");
+  await waitFor("window.fixtureState?.pending_mechanic_choice === null && window.fixtureState?.players['2'].battlefield.some(c => c.name === 'Grizzly Bears')");
+  assert.equal(await evaluate("window.fixtureState.players['2'].graveyard_count"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.card_ids.length"), 5);
+  console.log("PASS two-step Collected Company choice orders bottom cards before spell completion");
+
   await click("Search Fixture");
   await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'search_library'");
   await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); label.querySelector('input').click(); })()");

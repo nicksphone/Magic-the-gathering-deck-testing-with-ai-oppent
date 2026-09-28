@@ -4,7 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
-- Supported topdeck battlefield effects now randomize the unchosen library-bottom cards only when Oracle text requires it. Storm the Festival's post-snapshot order matches the persisted match RNG; its older abbreviated test fixture was replaced with the canonical effect sentence. Collected Company's "any order" remains deterministic until a separate human bottom-order choice is implemented.
+- Added a second resolution-time human choice for supported topdeck effects with "any order" library-bottom text. Canonical Collected Company keeps the spell pending across both choices and snapshots, validates the complete bottom order, and completes through the production Controls/API browser path. Unattended play retains deterministic ordering.
+
+- Supported topdeck battlefield effects now randomize the unchosen library-bottom cards only when Oracle text requires it. Storm the Festival's post-snapshot order matches the persisted match RNG; its older abbreviated test fixture was replaced with the canonical effect sentence.
 
 - Moved supported library-search candidate selection from cast time to resolution and removed stale AI preselection from hidden cast hints. Human search choices survive snapshots and stack completion; one-card tutor inference now selects one card, not every match. Corrected a noncanonical Cultivate fixture and implemented its first-land-to-battlefield-tapped/second-land-to-hand split. Focused and browser tests cover the shared path. Broader tutor wordings and strategic AI search choice remain open.
 

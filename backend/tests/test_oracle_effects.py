@@ -1031,7 +1031,7 @@ def test_storm_the_festival_style_puts_permanents_from_top() -> None:
     key, payload = infer_effect_from_oracle(state, card, 1)
 
     assert key == "topdeck_put_permanents_battlefield"
-    assert payload == {"top_n": 5, "max_permanents": 2, "mv_max": 5, "bottom_random": True}
+    assert payload == {"top_n": 5, "max_permanents": 2, "mv_max": 5, "bottom_random": True, "bottom_any_order": False}
     resolve_effect(state, 1, key, payload)
     assert len(state.players[1].battlefield) == 2
 

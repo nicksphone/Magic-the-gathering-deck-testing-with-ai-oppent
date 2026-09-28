@@ -1278,6 +1278,15 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     else:
         for cid in rest:
             player.library.insert(0, cid)
+    if (rest and payload.get("bottom_any_order") and payload.get("selected_card_ids") is not None
+            and state.replacement_choice_required and controller in state.replacement_choice_players):
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_bottom_order", "player_id": controller,
+            "options": rest, "count": len(rest), "bottom_ids": rest,
+            "label": "Choose the bottom order, from bottommost to topmost",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
 
 
 def topdeck_put_permanents_battlefield(state: MatchState, controller: int, payload: dict) -> None:
@@ -1327,6 +1336,15 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
     else:
         for cid in rest:
             player.library.insert(0, cid)
+    if (rest and payload.get("bottom_any_order") and payload.get("selected_card_ids") is not None
+            and state.replacement_choice_required and controller in state.replacement_choice_players):
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_bottom_order", "player_id": controller,
+            "options": rest, "count": len(rest), "bottom_ids": rest,
+            "label": "Choose the bottom order, from bottommost to topmost",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
     state.log.append(f"{player.name} puts {len(chosen)} permanent(s) from the top of the library onto the battlefield.")
 
 

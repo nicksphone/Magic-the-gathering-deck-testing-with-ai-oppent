@@ -97,6 +97,25 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             state.priority_player = state.active_player
             state.passed_priority = set()
         return True
+    if pending and pending["kind"] == "topdeck_bottom_order":
+        ids = action.get("card_ids")
+        bottom = pending["bottom_ids"]
+        player = state.players[player_id]
+        if (pending["player_id"] != player_id or not isinstance(ids, list)
+                or len(ids) != len(bottom) or len(set(ids)) != len(ids)
+                or set(ids) != set(bottom) or set(player.library[:len(bottom)]) != set(bottom)):
+            return False
+        player.library[:len(bottom)] = ids
+        state.pending_mechanic_choice = None
+        if pending.get("resolving_item"):
+            from game_state.state import StackItem
+            from rules_engine.stack_engine import finish_stack_resolution
+            item = StackItem(**pending["resolving_item"])
+            finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+        if not state.pending_trigger_order and not state.pending_replacement_choice:
+            state.priority_player = state.active_player
+            state.passed_priority = set()
+        return True
     if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "search_library"}:
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
@@ -114,8 +133,12 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         else:
             payload = {**pending["effect_payload"], "selected_card_ids": ids}
             effect_key = pending["effect_key"]
-        resolve_effect(state, player_id, effect_key, payload)
         state.pending_mechanic_choice = None
+        resolve_effect(state, player_id, effect_key, payload)
+        if state.pending_mechanic_choice:
+            if pending.get("resolving_item"):
+                state.pending_mechanic_choice["resolving_item"] = pending["resolving_item"]
+            return True
         if pending.get("resolving_item"):
             from game_state.state import StackItem
             from rules_engine.stack_engine import finish_stack_resolution

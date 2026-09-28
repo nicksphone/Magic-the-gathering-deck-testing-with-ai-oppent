@@ -187,6 +187,7 @@ def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
 
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.payload["bottom_random"] is False
+    assert spec.effect.payload["bottom_any_order"] is True
     assert "selected_card_ids" not in spec.effect.payload
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
@@ -197,6 +198,13 @@ def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": chosen}, reject_invalid=True)
     assert all(cid in state.players[1].battlefield for cid in chosen)
+    pending = state.pending_mechanic_choice
+    assert pending and pending["kind"] == "topdeck_bottom_order"
+    bottom_order = list(reversed(pending["options"]))
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": bottom_order}, reject_invalid=True)
+    assert state.players[1].library[:len(bottom_order)] == bottom_order
+    assert state.pending_mechanic_choice is None
     assert top_ids[2] in state.players[1].library
 
 
@@ -220,6 +228,53 @@ def test_topdeck_battlefield_tutor_rejects_nonmatching_selection() -> None:
     ok, error = validate_cast_choice(hints, {"topdeck_card_ids": [top_ids[0]]})
     assert ok is False
     assert "when the effect resolves" in error.lower()
+
+
+def test_company_bottom_order_keeps_spell_unresolved_until_second_choice() -> None:
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from rules_engine.engine import RulesEngine
+    from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
+
+    state = _state_with_searcher()
+    top = state.players[1].library[-6:]
+    for cid in top[:2]:
+        card = state.cards[cid]
+        card.name = "Llanowar Elves"
+        card.types = ["Creature"]
+        card.type_line = "Creature - Elf Druid"
+        card.mana_cost = "{G}"
+        card.power = card.toughness = 1
+    spell = CardInstance(
+        id="company-stack", name="Collected Company", owner=1, controller=1,
+        zone=Zone.STACK, types=["Instant"],
+        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
+    )
+    state.cards[spell.id] = spell
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    spec = build_ability_spec(state, spell, 1)
+    add_to_stack(state, spell.id, 1, spell.name, spec.effect.key, spec.effect.payload)
+    resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["kind"] == "topdeck_put"
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": [top[0]]}, reject_invalid=True)
+    pending = state.pending_mechanic_choice
+    assert pending["kind"] == "topdeck_bottom_order"
+    assert pending["resolving_item"]["source_card_id"] == spell.id
+    assert spell.id not in state.players[1].graveyard
+    assert len(state.stack) == 0
+    from rules_engine.action_validation import ActionRejected
+    import pytest
+    with pytest.raises(ActionRejected):
+        RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": pending["options"][:-1]}, reject_invalid=True)
+    with pytest.raises(ActionRejected):
+        RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": [pending["options"][0]] * len(pending["options"])}, reject_invalid=True)
+    assert state.pending_mechanic_choice["kind"] == "topdeck_bottom_order"
+    bottom_order = list(reversed(pending["options"]))
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(restored, 1, {"type": "choose_mechanic", "card_ids": bottom_order}, reject_invalid=True)
+    assert restored.players[1].library[:len(bottom_order)] == bottom_order
+    assert spell.id in restored.players[1].graveyard
+    assert restored.pending_mechanic_choice is None
 
 
 def test_topdeck_put_uses_resolution_library_and_resumes_stack_after_snapshot() -> None:
