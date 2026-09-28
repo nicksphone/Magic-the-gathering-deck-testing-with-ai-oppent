@@ -6,11 +6,11 @@ Current rules source: [Magic Foundations update bulletin](https://magic.wizards.
 
 - Live matches collect persisted numeric damage splits from the relevant controller before dealing a damage step. Attackers facing multiple blockers, tramplers, and blockers facing multiple attackers receive a choice. The UI/API reject a wrong actor, unknown recipient, negative amount, incorrect total or stale step without persisting an action.
 - First/double-strike steps collect their own choices. AI ranks threats and assigns a legal bounded split; direct low-level calls without configured choice players retain deterministic allocation. Source power is captured before damage from that step is applied.
-- Focused fixtures cover a 3/3 choosing the later 3/3 blocker, Palace Guard splitting one damage between two attackers, trample to a player or planeswalker, snapshot continuation and a browser numeric submission.
+- Focused fixtures cover a 3/3 choosing the later 3/3 blocker, Palace Guard splitting one damage between two attackers, trample to a player or planeswalker, snapshot continuation and a browser numeric submission. The final attacking assignment checks all sources together, including an ordinary or deathtouch attacker sharing a blocker with a trampler. A human can restart an earlier provisional split before damage is dealt; AI accounts for prior assignments.
 
 ## Remaining Fidelity Risks
 
-- Trample validation currently checks each source independently against marked damage. Current rules also permit considering damage assigned by *other* creatures in the same step; this needs a controller-wide assignment/validation pass.
+- The controller-wide trample fixtures cover ordinary shared blockers, but simultaneous damage replacement/prevention and more exotic combat controllers still need independent certification.
 - Damage is applied source-by-source after assignments are collected. Simultaneous replacement/prevention interactions, banding controller overrides and unusual continuous/keyword changes need golden fixtures before full rules certification.
 - The AI's damage split is a bounded threat heuristic, not a globally optimized combat search. Wider AI-vs-AI and restart replay matrices are still needed.
 

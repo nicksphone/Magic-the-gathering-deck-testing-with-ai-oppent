@@ -46,6 +46,18 @@ def _enter_damage(state) -> None:
     assert state.step == Step.COMBAT_DAMAGE
 
 
+def _finish_shared_blocker_choice(state):
+    pending = state.pending_mechanic_choice
+    assert pending["player_id"] == 2
+    assert pending["kind"] == "combat_damage"
+    assert state.players[2].life == 20
+    amounts = {cid: 0 for cid in pending["options"]}
+    amounts[pending["options"][0]] = pending["count"]
+    return checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "damage_assignment": amounts,
+    })
+
+
 def test_multi_blocked_attacker_can_assign_all_damage_to_later_blocker_after_snapshot() -> None:
     state = _state()
     _creature(state, "courser", 1, "Centaur Courser", 3, 3)
@@ -128,6 +140,92 @@ def test_trample_cannot_spill_before_assigning_lethal_to_blocker() -> None:
     })
     assert state.cards["bears"].zone == Zone.GRAVEYARD
     assert state.players[2].life == 17
+
+
+def test_trample_counts_another_attacker_assigned_to_the_same_palace_guard() -> None:
+    state = _state()
+    _creature(state, "elf", 1, "Llanowar Elves", 1, 1)
+    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["elf", "trampler"]
+    combat.declare_blockers(state, {"elf": ["guard"], "trampler": ["guard"]})
+    _enter_damage(state)
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 3, "player:2": 2},
+    })
+    state = _finish_shared_blocker_choice(state)
+    assert state.cards["guard"].zone == Zone.GRAVEYARD
+    assert state.players[2].life == 18
+
+
+def test_two_tramplers_are_validated_as_one_controller_assignment_and_can_restart() -> None:
+    state = _state()
+    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["first", "second"]
+    combat.declare_blockers(state, {"first": ["guard"], "second": ["guard"]})
+    _enter_damage(state)
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 0, "player:2": 5},
+    })
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.pending_mechanic_choice["source_id"] == "second"
+    before = serialize_match_snapshot(state)
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {
+            "type": "choose_mechanic", "damage_assignment": {"guard": 3, "player:2": 2},
+        })
+    assert serialize_match_snapshot(state) == before
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "choice_id": "restart",
+    })
+    assert state.pending_mechanic_choice["source_id"] == "first"
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 1, "player:2": 4},
+    })
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 3, "player:2": 2},
+    })
+    state = _finish_shared_blocker_choice(state)
+    assert state.cards["guard"].zone == Zone.GRAVEYARD
+    assert state.players[2].life == 14
+
+
+def test_other_attacker_deathtouch_assignment_satisfies_trample_lethal() -> None:
+    state = _state()
+    _creature(state, "rats", 1, "Typhoid Rats", 1, 1, ["deathtouch"])
+    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["rats", "trampler"]
+    combat.declare_blockers(state, {"rats": ["guard"], "trampler": ["guard"]})
+    _enter_damage(state)
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 0, "player:2": 5},
+    })
+    state = _finish_shared_blocker_choice(state)
+    assert state.cards["guard"].zone == Zone.GRAVEYARD
+    assert state.players[2].life == 15
+
+
+def test_ai_second_trampler_spills_after_first_assigned_lethal_to_shared_blocker() -> None:
+    state = _state()
+    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["first", "second"]
+    combat.declare_blockers(state, {"first": ["guard"], "second": ["guard"]})
+    _enter_damage(state)
+    agent = AIAgent(difficulty="master")
+    engine = RulesEngine()
+    first = agent.choose_action(state, engine.legal_moves(state, 1), 1).action
+    assert first["damage_assignment"] == {"guard": 4, "player:2": 1}
+    state = checked_action(state, engine, 1, first)
+    second = agent.choose_action(state, engine.legal_moves(state, 1), 1).action
+    assert second["damage_assignment"] == {"guard": 0, "player:2": 5}
+    state = checked_action(state, engine, 1, second)
+    state = _finish_shared_blocker_choice(state)
+    assert state.players[2].life == 14
 
 
 def test_trample_assignment_to_planeswalker_reduces_loyalty() -> None:

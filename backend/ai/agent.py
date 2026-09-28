@@ -190,15 +190,21 @@ class AIAgent:
             return max(0, power) * 1.5 + max(0, toughness) + mana_value(card.mana_cost) * 0.5
 
         creatures.sort(key=lambda target: (-threat(target), target))
+        lethal_needs: dict[str, int] = {}
         for target in creatures:
-            lethal = 1 if has_keyword(state, source.id, "deathtouch") else max(
-                1, _effective_combat_stats(state, target)[1] - int(state.cards[target].counters.get("__damage_marked", 0))
+            prior = sum(amounts.get(target, 0) for cid, amounts in state.combat_damage_assignments.items() if cid in state.attackers)
+            prior_deathtouch = any(
+                amounts.get(target, 0) > 0 and has_keyword(state, cid, "deathtouch")
+                for cid, amounts in state.combat_damage_assignments.items() if cid in state.attackers
             )
+            remaining_toughness = max(0, _effective_combat_stats(state, target)[1] - int(state.cards[target].counters.get("__damage_marked", 0)) - prior)
+            lethal = 0 if prior_deathtouch or remaining_toughness == 0 else (1 if has_keyword(state, source.id, "deathtouch") else remaining_toughness)
+            lethal_needs[target] = lethal
             if remaining >= lethal:
                 allocation[target] = lethal
                 remaining -= lethal
         if remaining > 0:
-            if defender is not None and all(allocation[target] > 0 for target in creatures):
+            if defender is not None and all(allocation[target] >= lethal_needs[target] for target in creatures):
                 allocation[defender] += remaining
             elif creatures:
                 allocation[creatures[0]] += remaining

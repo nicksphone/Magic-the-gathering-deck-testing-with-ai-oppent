@@ -254,6 +254,7 @@ def _offer_damage_assignment(state: MatchState) -> None:
         "source_name": card.name, "stage": state.combat_damage_stage,
         "options": options, "option_labels": labels,
         "count": max(0, effective_power(state, source)),
+        "can_restart": card.controller == state.active_player and bool(state.combat_damage_assignments),
         "label": f"Assign {card.name}'s combat damage",
     }
     state.priority_player = card.controller
@@ -288,12 +289,46 @@ def _prepare_damage_step(state: MatchState) -> None:
         _resolve_damage_step(state)
 
 
-def valid_damage_assignment(state: MatchState, player_id: int, amounts: dict | None) -> bool:
+def _trample_assignments_legal(state: MatchState, assignments: dict[str, dict[str, int]]) -> bool:
+    first_only = state.combat_damage_stage == "first"
+    assigned_to_blocker: dict[str, int] = {}
+    deathtouch_blockers: set[str] = set()
+    for attacker in state.attackers:
+        if attacker not in state.cards or state.cards[attacker].zone != Zone.BATTLEFIELD or not _assigns_damage(state, attacker, first_only):
+            continue
+        amounts = assignments.get(attacker)
+        if amounts is None:
+            blockers = [bid for bid in state.blocks.get(attacker, []) if bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD]
+            amounts = {blockers[0]: max(0, effective_power(state, attacker))} if len(blockers) == 1 and not has_keyword(state, attacker, "trample") else {}
+        for blocker_id in state.blocks.get(attacker, []):
+            dealt = amounts.get(blocker_id, 0)
+            assigned_to_blocker[blocker_id] = assigned_to_blocker.get(blocker_id, 0) + dealt
+            if dealt > 0 and has_keyword(state, attacker, "deathtouch"):
+                deathtouch_blockers.add(blocker_id)
+    for attacker, amounts in assignments.items():
+        if attacker not in state.attackers or not has_keyword(state, attacker, "trample"):
+            continue
+        blockers = [bid for bid in state.blocks.get(attacker, []) if bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD]
+        defender = state.attack_targets.get(attacker, f"player:{2 if state.active_player == 1 else 1}")
+        if amounts.get(defender, 0) <= 0:
+            continue
+        for blocker_id in blockers:
+            card = state.cards[blocker_id]
+            lethal = max(0, effective_toughness(state, blocker_id) - int(card.counters.get(DMG_MARK_KEY, 0)))
+            if blocker_id not in deathtouch_blockers and assigned_to_blocker.get(blocker_id, 0) < lethal:
+                return False
+    return True
+
+
+def valid_damage_assignment(state: MatchState, player_id: int, action: dict) -> bool:
     pending = state.pending_mechanic_choice
     if not pending or pending.get("kind") != "combat_damage" or pending.get("player_id") != player_id:
         return False
     if state.step != Step.COMBAT_DAMAGE or state.combat_damage_stage != pending.get("stage"):
         return False
+    if action.get("choice_id") == "restart":
+        return bool(pending.get("can_restart")) and action.get("damage_assignment") is None
+    amounts = action.get("damage_assignment")
     source = pending.get("source_id")
     if source not in state.cards or state.cards[source].zone != Zone.BATTLEFIELD:
         return False
@@ -305,20 +340,20 @@ def valid_damage_assignment(state: MatchState, player_id: int, amounts: dict | N
     power = max(0, effective_power(state, source))
     if sum(amounts.values()) != power or power != pending.get("count"):
         return False
-    if source in state.attackers and has_keyword(state, source, "trample"):
-        defender_key = options[-1]
-        if amounts[defender_key] > 0:
-            for blocker_id in options[:-1]:
-                lethal = 1 if has_keyword(state, source, "deathtouch") else _remaining_lethal_damage(state, blocker_id)
-                if amounts[blocker_id] < lethal:
-                    return False
+    if source in state.attackers and not any(cid in state.attackers for cid in state.combat_assignment_queue[1:]):
+        projected = {**state.combat_damage_assignments, source: amounts}
+        if not _trample_assignments_legal(state, projected):
+            return False
     return True
 
 
 def finish_damage_assignment(state: MatchState, player_id: int, action: dict) -> bool:
-    amounts = action.get("damage_assignment")
-    if not valid_damage_assignment(state, player_id, amounts):
+    if not valid_damage_assignment(state, player_id, action):
         return False
+    if action.get("choice_id") == "restart":
+        _prepare_damage_step(state)
+        return True
+    amounts = action["damage_assignment"]
     source = state.pending_mechanic_choice["source_id"]
     state.combat_damage_assignments[source] = dict(amounts)
     state.combat_assignment_queue.pop(0)

@@ -235,6 +235,30 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.attackers = ["courser"]
         state.blocks = {"courser": ["bears", "giant"]}
         return publish(state, deck)
+    if face_kind == "shared_trample":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=89)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.mechanic_choice_players = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_BLOCKERS
+        state.blockers_declared = True
+        for cid, name, owner, power, toughness, keywords, oracle in (
+            ("first", "Charging Monstrosaur", 1, 5, 5, ["trample", "haste"], "Trample, haste"),
+            ("second", "Charging Monstrosaur", 1, 5, 5, ["trample", "haste"], "Trample, haste"),
+            ("guard", "Palace Guard", 2, 1, 4, [], "Palace Guard can block any number of creatures."),
+        ):
+            card = CardInstance(
+                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
+                types=["Creature"], power=power, toughness=toughness,
+                keywords=keywords, oracle_text=oracle, summoning_sick=False,
+            )
+            state.cards[cid] = card
+            state.players[owner].battlefield.append(cid)
+        state.attackers = ["first", "second"]
+        state.blocks = {"first": ["guard"], "second": ["guard"]}
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")

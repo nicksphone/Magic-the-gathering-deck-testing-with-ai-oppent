@@ -237,6 +237,9 @@ export function Controls(props: Props) {
                 damage_assignment: Object.fromEntries((mechanicMove.options ?? []).map((target) => [target, damageAmounts[target] ?? 0])),
               })}
             >Assign Damage</button>
+            {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
+              type: "choose_mechanic", choice_id: "restart",
+            })}>Restart Damage Assignments</button> : null}
           </> : mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" ? <>

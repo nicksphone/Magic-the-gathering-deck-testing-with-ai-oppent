@@ -5,6 +5,13 @@ async function reset() {
   await click("Reset Fixture");
   await waitFor("window.fixtureActions?.length === 0 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
 }
+async function assignDamage(amounts) {
+  for (const [label, value] of Object.entries(amounts)) {
+    await evaluate(`(() => { const input = document.querySelector(${JSON.stringify(`[aria-label="Damage to ${label}"]`)}); if (!input) throw new Error('Missing damage input: ${label}'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, ${JSON.stringify(String(value))}); input.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  }
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent === 'Assign Damage' && !b.disabled)");
+  await click("Assign Damage");
+}
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
@@ -72,6 +79,25 @@ try {
   await waitFor("window.fixtureState.pending_mechanic_choice === null && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'giant')");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.damage_assignment"), { bears: 0, giant: 3 });
   console.log("PASS human assigns all combat damage to the later blocker through UI and API");
+
+  await click("Shared Trample Fixture");
+  await waitFor("window.fixtureState.step === 'declare_blockers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'first' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await assignDamage({ "Player B player:2": 5 });
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'second' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+  await click("Restart Damage Assignments");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'first' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await assignDamage({ "Palace Guard guard": 1, "Player B player:2": 4 });
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'second' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await assignDamage({ "Palace Guard guard": 3, "Player B player:2": 2 });
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'guard' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+  await assignDamage({ "Charging Monstrosaur first": 1 });
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.players['2'].life === 14");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.id === 'guard')"), false);
+  console.log("PASS shared trample assignment can restart and resolves only after both players assign damage");
 
   await reset();
   await click("Cast Llanowar Elves");

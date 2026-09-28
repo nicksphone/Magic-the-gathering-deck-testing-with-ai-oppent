@@ -91,6 +91,7 @@ export type MatchState = {
     source_id?: string;
     source_name?: string;
     stage?: "first" | "regular";
+    can_restart?: boolean;
   } | null;
   pending_replacement_choice?: {
     event: string;
@@ -115,6 +116,7 @@ export type LegalMove = {
   source_id?: string;
   source_name?: string;
   stage?: "first" | "regular";
+  can_restart?: boolean;
   option_labels?: Record<string, string>;
   type: string;
   card_id?: string;

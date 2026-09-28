@@ -116,7 +116,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         pending = state.pending_mechanic_choice
         if pending["kind"] == "combat_damage":
             from rules_engine.combat import valid_damage_assignment
-            require(valid_damage_assignment(state, player_id, action.get("damage_assignment")), "Invalid combat damage assignment")
+            require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
         elif pending["kind"] == "draw":
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
         elif pending["kind"] in {"topdeck_put", "search_library"}:
