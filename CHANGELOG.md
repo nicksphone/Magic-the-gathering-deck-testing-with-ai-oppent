@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Added a reproducible self-signed HTTPS release-routing smoke using a disposable backend checkout. The built frontend passes same-origin `/api`/media and explicit HTTPS cross-origin modes in Chromium; both paths exercise health, deck import, match start/action and fallback art. Real deployment/security acceptance remains separate.
+
 - Bounded the in-process simulator history to 20 terminal jobs. Startup loads recent results and reconciles unfinished jobs; older results remain available from SQLite. Focused tests cover pruning and database fallback. This does not limit on-disk retention.
 
 - Public match responses now redact AI-controlled hands while retaining hand counts; AI legal-move queries no longer reveal hand card views. HTTP regressions cover human-vs-AI and AI-vs-AI visibility without mutating authoritative state. Separate-client human-vs-human privacy still requires authentication and per-seat views.

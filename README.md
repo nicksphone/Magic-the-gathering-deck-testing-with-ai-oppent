@@ -181,6 +181,17 @@ npm run build
 
 The dependency-free Chromium action regression is available through `npm run test:browser` after starting its isolated fixture API and browser. Setup and coverage limits: [human action browser tests](docs/testing/human-actions-browser.md).
 
+To smoke the built frontend through an isolated HTTPS proxy and a separately configured HTTPS backend origin (requires `openssl`, Chromium, and the backend venv):
+
+```bash
+npm --prefix frontend run build
+D=$(mktemp -d /tmp/mtg-routing-XXXXXX)
+git ls-files backend | tar -cf - -T - | tar -xf - -C "$D"
+python3 frontend/tests/production_proxy_smoke.py --backend-dir "$D/backend" --dist-dir frontend/dist --python "$PWD/backend/.venv/bin/python" --browser --cross-origin
+```
+
+The harness writes only to the disposable backend copy, uses a temporary self-signed certificate, and restores the original frontend build after its cross-origin variant. It checks the built page in Chromium plus HTTPS health, import, match start/action and card media in both modes. It is not a trusted-certificate LAN deployment or an authorization test.
+
 The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
 
 The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects accept one selected card for hand, one for exile, and an ordered list for the bottom of the library; invalid, duplicate, or incomplete selections are rejected before the spell reaches the stack. AI callers use deterministic value-based choices when no explicit choice is provided.
