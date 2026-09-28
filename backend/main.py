@@ -97,6 +97,7 @@ ACTIVE_MATCHES: dict[str, MatchController] = {}
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOBS_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
+SIM_JOBS_CACHE_LIMIT = 20
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
 
 
@@ -325,8 +326,11 @@ def _job_dict(row) -> dict:
 
 
 def _restore_simulation_jobs(repo: Repository) -> None:
+    rows = {row.id: row for row in repo.list_simulation_jobs(limit=SIM_JOBS_CACHE_LIMIT)}
+    rows.update({row.id: row for row in repo.list_unfinished_simulation_jobs()})
     with SIM_JOBS_LOCK:
-        for row in repo.list_simulation_jobs():
+        SIM_JOBS.clear()
+        for row in rows.values():
             job = _job_dict(row)
             if row.status in {"queued", "running"}:
                 job["status"] = "failed"
@@ -334,6 +338,17 @@ def _restore_simulation_jobs(repo: Repository) -> None:
                 job["finished_at"] = time.time()
                 repo.save_simulation_job({**job, "request": json.loads(row.request_json or "{}")})
             SIM_JOBS[row.id] = job
+        _prune_simulation_jobs()
+
+
+def _prune_simulation_jobs() -> None:
+    """Keep active jobs and recent terminal jobs; caller holds SIM_JOBS_LOCK."""
+    terminal = sorted(
+        (job for job in SIM_JOBS.values() if job["status"] not in {"queued", "running"}),
+        key=lambda job: (job.get("finished_at") or job.get("started_at") or 0, job["job_id"]),
+    )
+    for job in terminal[:-SIM_JOBS_CACHE_LIMIT]:
+        SIM_JOBS.pop(job["job_id"], None)
 
 
 def _persist_job(job: dict) -> None:
@@ -901,6 +916,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["result"] = result
                     _persist_job(SIM_JOBS[job_id])
+                    _prune_simulation_jobs()
         except Exception as exc:
             with SIM_JOBS_LOCK:
                 if job_id in SIM_JOBS:
@@ -908,6 +924,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["error"] = str(exc)
                     _persist_job(SIM_JOBS[job_id])
+                    _prune_simulation_jobs()
         finally:
             SIM_WORK_SLOT.release()
 
