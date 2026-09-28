@@ -42,9 +42,9 @@ wait_for_services() {
 }
 
 wait_for_services
-(cd frontend && node tests/browser-human-actions.mjs && node tests/browser-recovery.mjs)
+(cd frontend && timeout 300s node tests/browser-human-actions.mjs && timeout 120s node tests/browser-recovery.mjs)
 kill "$backend_pid"
 wait "$backend_pid" 2>/dev/null || true
 start_backend
 wait_for_services
-(cd frontend && node tests/browser-recovery.mjs --verify-restart)
+(cd frontend && timeout 120s node tests/browser-recovery.mjs --verify-restart)

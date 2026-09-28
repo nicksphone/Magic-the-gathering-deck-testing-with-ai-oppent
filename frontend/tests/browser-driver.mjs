@@ -1,8 +1,12 @@
 export async function openBrowser(url) {
   const origin = 'http://127.0.0.1:19222';
-  const page = await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT' })).json();
+  const page = await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
   const socket = new WebSocket(page.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Chromium WebSocket connection timed out')), 15000);
+    socket.onopen = () => { clearTimeout(timer); resolve(); };
+    socket.onerror = () => { clearTimeout(timer); reject(new Error('Chromium WebSocket connection failed')); };
+  });
   let sequence = 0;
   const pending = new Map();
   let intercept;
@@ -38,5 +42,5 @@ export async function openBrowser(url) {
   async function click(prefix) {
     await evaluate(`(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)})); if (!button || button.disabled) throw new Error('Missing/enabled button: ' + ${JSON.stringify(prefix)}); button.click(); })()`);
   }
-  return {command, evaluate, waitFor, click, onIntercept: handler => { intercept = handler; }, async close() { socket.close(); await fetch(`${origin}/json/close/${page.id}`); }};
+  return {command, evaluate, waitFor, click, onIntercept: handler => { intercept = handler; }, async close() { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
 }
