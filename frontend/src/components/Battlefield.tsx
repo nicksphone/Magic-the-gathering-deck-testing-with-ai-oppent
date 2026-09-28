@@ -152,7 +152,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   }
 
   return (
-    <section className={`panel battlefield ${battlefieldDensityClass}`}>
+    <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-revision={match.revision}>
       <header>
         <div>
           <h2>Battlefield</h2>

@@ -61,3 +61,5 @@ echo 'Browser CI: match creation recovery'
 (cd frontend && timeout 120s node tests/browser-start-recovery.mjs)
 echo 'Browser CI: sideboard transition'
 (cd frontend && timeout 120s node tests/browser-sideboard.mjs)
+echo 'Browser CI: natural AI BO3'
+(cd frontend && timeout 180s node tests/browser-live-bo3.mjs)
