@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.replacement import replacement_options
 from rules_engine.state_based_actions import apply_state_based_actions
+from rules_engine.zone_actions import discard_selected
 
 
 LORCAN_ORACLE = (
@@ -12,6 +15,53 @@ LORCAN_ORACLE = (
     "under your control. It's a Warlock in addition to its other types.\n"
     "If a Warlock you control would die, exile it instead."
 )
+REST_IN_PEACE_ORACLE = (
+    "When this enchantment enters, exile all graveyards.\n"
+    "If a card or token would be put into a graveyard from anywhere, exile it instead."
+)
+
+
+def _rest_in_peace_state():
+    deck = [{"quantity": 60, "card_name": "Plains"}]
+    state = MatchFactory.from_decks(deck, deck, seed=37)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.cards["rip"] = CardInstance(
+        id="rip", name="Rest in Peace", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
+        oracle_text=REST_IN_PEACE_ORACLE,
+    )
+    state.players[1].battlefield.append("rip")
+    return state
+
+
+@pytest.mark.xfail(strict=True, reason="Canonical Rest in Peace does not yet replace every graveyard move")
+def test_rest_in_peace_exiles_a_dying_creature() -> None:
+    state = _rest_in_peace_state()
+    cid = state.players[2].hand.pop()
+    state.players[2].battlefield.append(cid)
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Creature"]
+    card.name = "Grizzly Bears"
+    card.type_line = "Creature — Bear"
+    card.power = card.toughness = 2
+    card.counters["__damage_marked"] = 2
+
+    apply_state_based_actions(state)
+
+    assert card.zone == Zone.EXILE
+    assert cid in state.players[2].exile
+
+
+@pytest.mark.xfail(strict=True, reason="Canonical Rest in Peace does not yet replace every graveyard move")
+def test_rest_in_peace_exiles_a_discarded_card() -> None:
+    state = _rest_in_peace_state()
+    cid = state.players[2].hand[0]
+
+    assert discard_selected(state, 2, [cid])
+    assert state.cards[cid].zone == Zone.EXILE
+    assert cid in state.players[2].exile
 
 
 def test_real_subtype_replacement_applies_before_simultaneous_source_death() -> None:
