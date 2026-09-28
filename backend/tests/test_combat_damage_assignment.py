@@ -157,11 +157,37 @@ def test_blocker_damage_emits_combat_event_with_actual_amount() -> None:
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears"]}
 
-    with patch.object(combat, "emit_event", wraps=combat.emit_event) as emitted:
+    with patch.object(combat, "emit_event_batch", wraps=combat.emit_event_batch) as emitted:
         combat.combat_damage(state)
 
-    assert any(call.args[1:] == ("combat_damage_dealt", {"source_card_id": "bears", "target_card_id": "courser", "amount": 2})
+    assert any(call.args[1] == "combat_damage_dealt" and
+               {"source_card_id": "bears", "target_card_id": "courser", "amount": 2} in call.args[2]
                for call in emitted.call_args_list)
+
+
+def test_simultaneous_player_hits_offer_one_trigger_order_choice() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
+              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
+    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    state.attackers = ["bears", "courser"]
+
+    combat.combat_damage(state)
+
+    assert state.players[2].life == 15
+    assert state.pending_trigger_order is not None
+    assert state.pending_trigger_order["event"] == "combat_damage_dealt"
+    assert len(state.pending_trigger_order["groups"]["1"]) == 2
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    order = next(move["trigger_order"] for move in RulesEngine().legal_moves(state, 1)
+                 if move["type"] == "choose_trigger_order")
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_trigger_order", "trigger_order": order})
+    assert state.pending_trigger_order is None
+    assert sum(item.source_card_id == "frostfang" for item in state.stack) == 2
 
 
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:

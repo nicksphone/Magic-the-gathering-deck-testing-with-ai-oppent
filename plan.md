@@ -286,6 +286,7 @@ Combat-choice milestone validation: 964 backend tests pass in a disposable track
 - [ ] Expand continuous layer/dependency, replacement/prevention ordering and can't-override fidelity.
 - [ ] Cover simultaneous state-based actions, APNAP trigger choices and resumable nested effects.
 Combat-trigger follow-up: trample-to-defender and blocker-to-attacker damage now emit combat-damage events, while self-damage triggers reject another source. Verification: 993 isolated backend tests, frontend lint/build/unit checks and a two-game seeded replay without drift or anomaly labels pass. Collecting all combat-damage triggers simultaneously and ordering them after applicable state-based actions remains open.
+Damage-step batching follow-up: combat-damage events now enter the shared trigger-order path as one batch, with a two-hit human-choice and snapshot-resume regression. The 994-test isolated backend suite passed before the final test-only assertion, which passed separately; a two-game replay had no drift or anomaly labels. Combining combat-trigger stack insertion with death/state-based-action triggers at the complete Magic timing boundary remains open.
 - [ ] Test live HTTP and diagnostics against shared fixtures; parser classification alone cannot satisfy this task.
 
 Acceptance: expected zones, choices, stats, timing, triggers and outcomes match fixtures and replay/restart state.

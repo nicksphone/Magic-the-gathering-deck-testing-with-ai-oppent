@@ -5,7 +5,7 @@ import re
 from game_state.state import MatchState, Step, Zone
 from rules_engine.colors import card_color_names
 from rules_engine.continuous import effective_power, effective_toughness, has_keyword
-from rules_engine.events import emit_event
+from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
 from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, replacement_options
@@ -447,6 +447,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
     def assigns_damage(cid: str) -> bool:
         return _assigns_damage(state, cid, first_strike_only)
 
+    damage_events: list[dict] = []
     # All sources assign damage from the same pre-damage game state.
     attacker_power = {
         cid: max(0, effective_power(state, cid))
@@ -477,11 +478,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
             if dealt > 0:
-                emit_event(
-                    state,
-                    "combat_damage_dealt",
-                    {"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt},
-                )
+                damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
             continue
 
         if assigns_damage(attacker):
@@ -506,21 +503,13 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
                 if actual > 0 and has_keyword(state, attacker, "lifelink"):
                     state.players[atk.controller].life += actual
                 if actual > 0:
-                    emit_event(
-                        state,
-                        "combat_damage_dealt",
-                        {"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual},
-                    )
+                    damage_events.append({"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual})
             if has_keyword(state, attacker, "trample") and allocation.get(defender_key, 0) > 0:
                 dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
                 if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                     state.players[atk.controller].life += dealt
                 if dealt > 0:
-                    emit_event(
-                        state,
-                        "combat_damage_dealt",
-                        {"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt},
-                    )
+                    damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
 
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
@@ -537,11 +526,8 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if actual > 0 and has_keyword(state, blocker_id, "lifelink"):
                 state.players[blk.controller].life += actual
             if actual > 0:
-                emit_event(
-                    state,
-                    "combat_damage_dealt",
-                    {"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual},
-                )
+                damage_events.append({"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual})
+    emit_event_batch(state, "combat_damage_dealt", damage_events)
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
