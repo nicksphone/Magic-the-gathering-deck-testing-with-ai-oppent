@@ -89,6 +89,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         from rules_engine.stack_engine import resume_paused_resolution
         payload = dict(pending["effect_payload"])
         payload["__entry_choices"] = {**payload.get("__entry_choices", {}), pending["entry_card_id"]: choice}
+        if not state.trigger_staging:
+            state.trigger_staging = True
+            state.trigger_staging_event = "land_entry"
         state.pending_mechanic_choice = None
         resolve_effect(state, player_id, pending["effect_key"], payload)
         resume_paused_resolution(state, pending)

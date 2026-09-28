@@ -348,8 +348,8 @@
     "hash": "03fa88ee9f5172fcc05775e11ae86123"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_land_entry_choice.py": {
-    "mtime": 1790608918.377668,
-    "hash": "63dc491416f59b3955303ecf117022dc"
+    "mtime": 1790631027.5088856,
+    "hash": "a7242ad2bc661819c69dfb49f07defc1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cost_modifiers.py": {
     "mtime": 1784664889.4193473,
@@ -812,8 +812,8 @@
     "hash": "e9b4b7d97a62a5bf8c972da6efa0e115"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/keyword_actions.py": {
-    "mtime": 1790607860.043122,
-    "hash": "e1b600dea44c5d5809b046c19fb5dd2a"
+    "mtime": 1790631006.726223,
+    "hash": "bedebc4eefc34c699995625b2f05e9f8"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/hooks.py": {
     "mtime": 1784664817.925541,
@@ -1100,16 +1100,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790630894.9240377,
-    "hash": "2d0663d49cb184169d2df3529b4918e0"
+    "mtime": 1790631398.5878537,
+    "hash": "65e06f0c615ae8615cbd8aecd73bb3b5"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790626411.5376742,
-    "hash": "393aea1ceea807676aded2e64d455ff4"
+    "mtime": 1790631088.066902,
+    "hash": "9d5d73e34412f00fb0fbe00bd4e0da4d"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790630894.961037,
-    "hash": "46ee0f11cb905e302e82cbe36e28db03"
+    "mtime": 1790631398.625853,
+    "hash": "fb853003ba8b44a8c8f22b9544c1398a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1168,12 +1168,12 @@
     "hash": "f3def400b202c22ae3418e2d1f492d4e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-battlefield-entry-choice.md": {
-    "mtime": 1790608861.2924764,
-    "hash": "e17bccde68375a20f8a038083d496d89"
+    "mtime": 1790631088.1019013,
+    "hash": "6d078bed270fb83fefb701f924dd0e31"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-life-payment-triggers.md": {
-    "mtime": 1790626411.4636755,
-    "hash": "efd5d1cf02ccb969593fcf55ce4a8e8a"
+    "mtime": 1790631088.1399007,
+    "hash": "dad1e0db720072b970a80f784deab716"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-life-total-lock.md": {
     "mtime": 1790611743.2841349,

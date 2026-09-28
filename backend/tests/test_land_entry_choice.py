@@ -8,6 +8,7 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 FOUNDRY = {
@@ -177,3 +178,49 @@ def test_life_zero_payment_waits_for_remaining_entry_choice_before_state_based_l
     state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "choice_id": "tapped"})
     assert all(cid in state.players[1].battlefield for cid in ids)
     assert state.winner == 2
+
+
+def test_multiple_paid_effect_entries_defer_trigger_order_until_all_lands_enter():
+    deck = [{**FOUNDRY, "quantity": 2}, {"quantity": 58, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, [{"quantity": 60, "card_name": "Island"}], seed=21)
+    state.pregame_pending = False
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+    ids = [cid for cid, card in state.cards.items() if card.owner == 1 and card.name == "Sacred Foundry"]
+    for cid in ids:
+        for zone in (state.players[1].hand, state.players[1].library):
+            if cid in zone:
+                zone.remove(cid)
+        state.players[1].library.append(cid)
+        state.cards[cid].zone = Zone.LIBRARY
+    for suffix in ("a", "b"):
+        font = CardInstance(
+            id=f"font-{suffix}", name="Font of Agonies", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Enchantment"],
+            oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
+        )
+        state.cards[font.id] = font
+        state.players[1].battlefield.append(font.id)
+
+    topdeck_put_permanents_battlefield(state, 1, {"top_n": 2, "max_permanents": 2, "mv_max": 0})
+    assert state.pending_mechanic_choice["kind"] == "land_entry"
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "choice_id": "pay_two_life"})
+    assert state.pending_mechanic_choice["kind"] == "land_entry"
+    assert state.pending_trigger_order is None
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "choice_id": "pay_two_life"})
+    assert state.pending_mechanic_choice is None
+    assert set(ids).issubset(state.players[1].battlefield)
+    assert state.players[1].life == 16
+    assert state.pending_trigger_order is not None
+    assert len(state.pending_trigger_order["groups"]["1"]) == 4
+    assert not state.stack
+    order = next(move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "choose_trigger_order")
+    state = checked_action(state, RulesEngine(), 1, order)
+    assert len(state.stack) == 4
+    for _ in range(4):
+        assert resolve_top_of_stack(state)
+    assert state.cards["font-a"].counters.get("blood") == 4
+    assert state.cards["font-b"].counters.get("blood") == 4

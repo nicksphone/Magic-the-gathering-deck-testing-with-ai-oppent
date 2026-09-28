@@ -1,5 +1,7 @@
 # Changelog
 
+- Effect-driven multiple land entries now defer payment/ETB triggers until all pre-entry choices complete, rather than overwriting an earlier human trigger-order request. A two-Sacred-Foundry/two-Font-of-Agonies regression restores a snapshot between choices, orders all four triggers, and resolves the correct counters. Verification: 1,123 isolated backend tests and the full Chromium harness pass. Competing replacement effects remain open.
+
 - Routed positive activated, additional and land-entry life payments through one amount-bearing event; supported pay-life counter triggers now stage above paid-for spells and abilities and survive snapshots. Repaired generic type-qualified counterspell target inference and validation, exposed by a real Withering Boon regression. The prior Font of Agonies strict xfail is now a passing test. Verification: 1,122 isolated backend tests, frontend lint/build/unit and the full Chromium harness pass. Broader Oracle wording and nested payment/replacement timing are still open.
 
 - Historical audit: real Font of Agonies and Cruel Sadist text reproduced the missing payment trigger with one strict xfail among 1,115 passing tests. The [audit](docs/audits/2026-09-28-life-payment-triggers.md) records that pre-repair finding; the bounded repair above supersedes this status.
