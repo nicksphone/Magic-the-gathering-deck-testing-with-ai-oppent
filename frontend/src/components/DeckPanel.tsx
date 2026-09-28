@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
 import type { DeckImportResponse, ExpansionTopDeckMeta } from "../api/client";
@@ -20,11 +20,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [completeness, setCompleteness] = useState<CardCompletenessReport | null>(null);
   const [importAnalysis, setImportAnalysis] = useState<DeckImportResponse | null>(null);
 
-  useEffect(() => {
-    void refreshDeckData();
-  }, [onDecksLoaded]);
-
-  async function refreshDeckData() {
+  const refreshDeckData = useCallback(async () => {
     const [builtinsRes, expansionRes, decksRes] = await Promise.allSettled([
       api.listBuiltins(),
       api.listExpansionTopDecks(),
@@ -53,7 +49,11 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       const detail = [builtinsErr, expansionErr].filter(Boolean).join(" | ");
       setStatus((prev) => (prev ? `${prev} | Optional sources failed: ${detail}` : `Optional sources failed: ${detail}`));
     }
-  }
+  }, [onDecksLoaded]);
+
+  useEffect(() => {
+    void refreshDeckData();
+  }, [refreshDeckData]);
 
   async function loadBuiltin() {
     if (!selectedBuiltin) return;

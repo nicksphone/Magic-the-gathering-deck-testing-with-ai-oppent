@@ -50,7 +50,7 @@ export function App() {
     try { localStorage.setItem("mtg.activeMatch", data.id); } catch { /* Storage may be disabled. */ }
   }, []);
 
-  async function mutateMatch(operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>) {
+  const mutateMatch = useCallback(async (operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>) => {
     await gate.current.run(async () => {
       const state = currentMatch.current;
       if (!state || restoring) return;
@@ -65,7 +65,7 @@ export function App() {
         throw error;
       } finally { setMutationPending(false); }
     });
-  }
+  }, [applyMatch, restoring]);
 
   async function resumeMatch(id: string) {
     await gate.current.run(async () => {
@@ -157,9 +157,9 @@ export function App() {
     });
   }
 
-  async function passPriority() {
+  const passPriority = useCallback(async () => {
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "pass_priority" }, write));
-  }
+  }, [legalPlayerId, mutateMatch]);
 
   async function keepHand(bottomCardIds: string[]) {
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "keep_hand", bottom_card_ids: bottomCardIds }, write));
@@ -173,9 +173,9 @@ export function App() {
     await autoplayTick(1);
   }
 
-  async function autoplayTick(ticks: number) {
+  const autoplayTick = useCallback(async (ticks: number) => {
     await mutateMatch((state, write) => api.autoplay(state.id, ticks, write));
-  }
+  }, [mutateMatch]);
 
   async function onCardAction(playerId: number, action: Record<string, unknown>) {
     await mutateMatch((state, write) => api.act(state.id, playerId, action, write));
@@ -277,7 +277,7 @@ export function App() {
     }, autoplayDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [match, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused]);
+  }, [match, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused, autoplayTick]);
 
   const humanResponseWindowActive =
     match?.mode === "player_vs_ai"
@@ -333,7 +333,7 @@ export function App() {
         setResponseCountdown(null);
       }
     })();
-  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match]);
+  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, passPriority]);
 
   return (
     <main className="layout">

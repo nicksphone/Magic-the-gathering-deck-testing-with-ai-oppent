@@ -91,7 +91,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const humanActor = (match.controllers?.[String(actingPlayerId)] ?? "human") === "human";
   const viewerSeat = humanActor ? actingPlayerId : ([1, 2].find((seat) => match.controllers?.[String(seat)] === "human") ?? 1);
   const opponentSeat = viewerSeat === 1 ? 2 : 1;
-  const legalMoves = humanActor ? authoritativeMoves : [];
+  const legalMoves = useMemo(() => humanActor ? authoritativeMoves : [], [humanActor, authoritativeMoves]);
   const p1 = match.players[String(viewerSeat)];
   const p2 = match.players[String(opponentSeat)];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
