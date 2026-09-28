@@ -43,7 +43,16 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
             require(targets["target_player"] != controller, "Target must be an opponent")
         return
     if "any target" in text:
-        require(permanent or targets.get("target_player") is not None, "Announce a target")
+        if text.count("target") == 1:
+            selected = (
+                int(targets.get("target_player") is not None)
+                + int(bool(targets.get("target_card_id")))
+                + len(targets.get("target_card_ids") or [])
+                + len(targets.get("target_distribution") or {})
+            )
+            require(selected == 1, "Announce exactly one player or permanent target")
+        else:
+            require(permanent or targets.get("target_player") is not None, "Announce a target")
     if "target player" in text or "target opponent" in text:
         require(targets.get("target_player") is not None, "Announce a target player")
         require("target opponent" not in text or targets["target_player"] != controller, "Target must be an opponent")

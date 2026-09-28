@@ -4,6 +4,7 @@ import pytest
 
 from card_data.fallback_cards import fallback_card_payload
 from game_state.state import CardInstance, Zone
+from rules_engine.action_validation import ActionRejected, require_declared_targets
 from rules_engine.prevention import add_card_prevention_shield
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import single_player_permanent_alternative
@@ -22,6 +23,19 @@ def test_alternative_parser_excludes_qualified_and_multiple_targets() -> None:
     assert single_player_permanent_alternative("Deal 3 damage to target player or planeswalker.")
     assert single_player_permanent_alternative("Deal 3 damage to target player or creature that player controls.") is None
     assert single_player_permanent_alternative("Deal 3 damage to target player or planeswalker and target creature.") is None
+
+
+def test_any_target_rejects_dual_player_and_permanent_declaration() -> None:
+    bolt = CardInstance(
+        id="bolt", name="Lightning Bolt", owner=1, controller=1, zone=Zone.HAND,
+        types=["Instant"], oracle_text="Lightning Bolt deals 3 damage to any target.",
+    )
+    with pytest.raises(ActionRejected, match="exactly one"):
+        require_declared_targets(bolt, {}, {"target_player": 2, "target_card_id": "mystic"}, 1, spell=True)
+    with pytest.raises(ActionRejected, match="exactly one"):
+        require_declared_targets(bolt, {}, {"target_card_ids": ["mystic", "bear"]}, 1, spell=True)
+    require_declared_targets(bolt, {}, {"target_player": 2}, 1, spell=True)
+    require_declared_targets(bolt, {}, {"target_card_id": "mystic"}, 1, spell=True)
 
 
 def _setup(game, spell_data):

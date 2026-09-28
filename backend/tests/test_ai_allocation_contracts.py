@@ -29,6 +29,7 @@ def test_ai_uses_the_fixed_damage_budget_and_an_enemy_recipient():
 
 def test_generic_targeted_activation_gets_a_materialized_enemy_target():
     state = state_with_targets()
+    state.cards["enemy"].counters["__damage_marked"] = 1
     source = CardInstance(id="pyro", name="Prodigal Pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1, summoning_sick=False, oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.")
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
@@ -39,3 +40,16 @@ def test_generic_targeted_activation_gets_a_materialized_enemy_target():
     engine.take_action(state, 1, action, reject_invalid=True)
     assert source.tapped
     assert state.stack[-1].payload["target_card_id"] == "enemy"
+
+
+def test_generic_targeted_activation_avoids_nonlethal_creature_damage():
+    state = state_with_targets()
+    source = CardInstance(id="pyro", name="Prodigal Pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1, summoning_sick=False, oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.")
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    engine = RulesEngine()
+    move = next(move for move in engine.legal_moves(state, 1) if move.get("card_id") == source.id and move["type"] == "activate_ability")
+    action = AIAgent()._materialize_action(state, move, 1)
+    assert action["targets"] == {"target_player": 2}
+    engine.take_action(state, 1, action, reject_invalid=True)
+    assert state.stack[-1].payload["target_player"] == 2

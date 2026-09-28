@@ -2107,6 +2107,15 @@ class AIAgent:
         any_damage_target = "any target" in target_text or "any number of targets" in target_text
         if any_damage_target:
             creature_targets = [target for target in creature_targets if state.cards[target["id"]].controller != player_id]
+            damage_match = re.search(r"\bdeals?\s+(\d+)\s+damage\b", target_text)
+            if damage_match and player_targets and "any number of targets" not in target_text:
+                amount = int(damage_match.group(1))
+                creature_targets = [
+                    target for target in creature_targets
+                    if amount + int(state.cards[target["id"]].counters.get("__damage_marked", 0))
+                    >= _effective_combat_stats(state, target["id"])[1]
+                    and not has_keyword(state, target["id"], "indestructible")
+                ]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(
                 creature_targets,
@@ -2197,6 +2206,9 @@ class AIAgent:
             if best:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
+
+        if "any target" in target_text and target_text.count("target") == 1 and targets.get("target_card_id"):
+            targets.pop("target_player", None)
 
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:

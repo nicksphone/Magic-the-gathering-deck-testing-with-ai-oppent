@@ -64,6 +64,34 @@ def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
     assert any(item.source_card_id == ugin.id for item in state.stack)
 
 
+def test_ai_announces_only_one_target_for_any_target_damage() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=102)
+    bolt_data = fallback_card_payload("Lightning Bolt")
+    assert bolt_data is not None
+    bolt = CardInstance(
+        id="bolt", name=bolt_data["name"], owner=1, controller=1,
+        zone=Zone.HAND, types=["Instant"], mana_cost=bolt_data["mana_cost"],
+        oracle_text=bolt_data["oracle_text"],
+    )
+    creature = CardInstance(id="mystic", name="Elvish Mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1)
+    state.cards[bolt.id] = bolt
+    state.cards[creature.id] = creature
+    state.players[1].hand.append(bolt.id)
+    state.players[2].battlefield.append(creature.id)
+    move = {
+        "type": "cast_spell", "card_id": bolt.id, "card_name": bolt.name, "mana_cost": bolt.mana_cost,
+        "target_hints": {"player_targets": [{"id": 2, "name": "Player B"}], "creature_targets": [{"id": creature.id, "name": creature.name}]},
+    }
+    action = AIAgent(difficulty="master", archetype="Burn")._materialize_action(state, move, 1)
+    assert action["targets"]["target_card_id"] == creature.id
+    assert "target_player" not in action["targets"]
+    creature.toughness = 6
+    action = AIAgent(difficulty="master", archetype="Burn")._materialize_action(state, move, 1)
+    assert action["targets"]["target_player"] == 2
+    assert "target_card_id" not in action["targets"]
+
+
 def test_ai_prefers_non_pass_action_when_available() -> None:
     ai = AIAgent(difficulty="master", archetype="Burn")
     moves = [
