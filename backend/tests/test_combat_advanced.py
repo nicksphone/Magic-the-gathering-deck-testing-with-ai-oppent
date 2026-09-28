@@ -87,6 +87,27 @@ def test_multi_block_assignment_kills_multiple_small_blockers() -> None:
     assert state.cards[blk2].zone == Zone.GRAVEYARD
 
 
+def test_one_blocker_cannot_deal_full_power_to_each_attacker() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=41)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = 1
+    state.step = Step.COMBAT_DAMAGE
+
+    attacker_a = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
+    attacker_b = _setup_creature(state, 1, "Elvish Mystic", 1, 1)
+    guard = _setup_creature(state, 2, "Palace Guard", 1, 4)
+    state.cards[guard].oracle_text = "Palace Guard can block any number of creatures."
+    state.attackers = [attacker_a, attacker_b]
+    combat.declare_blockers(state, {attacker_a: [guard], attacker_b: [guard]})
+    assert state.blocks == {attacker_a: [guard], attacker_b: [guard]}
+
+    combat.combat_damage(state)
+    assert sum(state.cards[cid].zone == Zone.GRAVEYARD for cid in (attacker_a, attacker_b)) == 1
+    assert state.cards[guard].zone == Zone.BATTLEFIELD
+
+
 def test_lifelink_gains_life_on_combat_damage() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

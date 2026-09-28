@@ -262,6 +262,11 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
     def assigns_damage(cid: str) -> bool:
         return cid in first_ids if first_strike_only else cid not in first_ids or has_keyword(state, cid, "double strike")
 
+    blocker_damage_remaining = {
+        cid: max(0, effective_power(state, cid))
+        for blockers in state.blocks.values() for cid in blockers
+        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+    }
     for attacker in list(state.attackers):
         if attacker not in state.cards:
             continue
@@ -322,7 +327,10 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             blk = state.cards[blocker_id]
             if not assigns_damage(blocker_id):
                 continue
-            blk_power = effective_power(state, blocker_id)
+            blk_power = blocker_damage_remaining.get(blocker_id, 0)
+            blocker_damage_remaining[blocker_id] = 0
+            if blk_power <= 0:
+                continue
             if _damage_prevented_by_protection(state, blocker_id, attacker):
                 continue
             actual = _mark_creature_damage(state, attacker, blk_power, deathtouch=has_keyword(state, blocker_id, "deathtouch"), source_id=blocker_id)

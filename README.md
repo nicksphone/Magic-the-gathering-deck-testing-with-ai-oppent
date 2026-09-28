@@ -29,6 +29,7 @@ It is designed for serious deck work:
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Declared attackers deal combat damage automatically on entering the combat-damage step, before priority; an explicit repeated damage action cannot deal it twice
 - Combat with first or double strike uses separate first and regular damage priority windows; live autoplay, batch simulation and replay advance through priority passes rather than forcing both windows closed. Participants are recorded for snapshot-safe second-step eligibility, and the UI labels the active window.
+- A blocker assigned to multiple attackers spends its power only once per combat-damage step; the current automatic allocation goes to the first blocked attacker.
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
 - Deck archetype estimates use cached layout to distinguish split cards from modal/transform faces; modal front-face cost and type drive curve and creature-density priors. These descriptive estimates do not prove strategic play quality.
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -388,7 +389,7 @@ GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build
 - Incomplete type metadata for a nonbasic card is no longer guessed to be Land from mana text or a basic-land word in its name. Canonical cache hydration must supply that card's type line; the AI will not bypass missing legal moves by fabricating a land action.
 - Replay timeout labels now inspect the timed-out game alone; a prior game's cost error cannot make a long control game look like a rules failure. Deliberately low tick caps can still truncate legitimate games, so simulator conclusions require the recorded cap, seed and termination status.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
-- First/double-strike priority windows are covered for unblocked and single-blocker examples, including snapshot resume. Multi-block damage assignment, simultaneous replacement choices and unusual keyword changes still need broader rules certification.
+- First/double-strike priority windows are covered for unblocked and single-blocker examples, including snapshot resume. Multi-attacker blockers no longer duplicate damage, but explicit controller-chosen damage division and attacker-versus-multiple-blocker allocation under current rules are not implemented; the engine uses deterministic allocation. Simultaneous replacement choices and unusual keyword changes also need broader certification.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
 - Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.
