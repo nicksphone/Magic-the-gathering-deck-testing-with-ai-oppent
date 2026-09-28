@@ -78,7 +78,7 @@ class CardInstance:
     selected_face_index: int | None = None
     chosen_creature_type: str | None = None
     printed_characteristics: dict = field(default_factory=dict)
-    colors: list[str] = field(default_factory=list)
+    colors: list[str] | None = None
 
 
 @dataclass
@@ -235,6 +235,7 @@ class MatchFactory:
                     layout=str(raw_item.get("layout") or ""),
                     selected_face_index=raw_item.get("selected_face_index"),
                     instance_order=copy_index,
+                    colors=raw_item.get("colors"),
                 )
                 cards[cid] = card
                 player.library.append(cid)

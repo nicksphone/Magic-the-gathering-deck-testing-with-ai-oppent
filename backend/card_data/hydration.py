@@ -24,6 +24,13 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         fallback = fallback_card_payload(name) or {}
         if row is not None:
             out["layout"] = getattr(row, "layout", "") or fallback.get("layout", "")
+            cached_colors = str(getattr(row, "colors", "") or "")
+            if cached_colors:
+                out["colors"] = [
+                    color.strip().upper()
+                    for color in cached_colors.split(",")
+                    if color.strip().upper() in {"W", "U", "B", "R", "G"}
+                ]
             fields = {
                 key: (getattr(row, key, None) if getattr(row, key, None) is not None else fallback.get(key))
                 if key in {"power", "toughness"} else getattr(row, key, None) or fallback.get(key)

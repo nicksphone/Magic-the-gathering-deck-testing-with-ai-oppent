@@ -12,23 +12,21 @@ _MANA_COLOR_MAP = {
 }
 
 
-def card_color_names(card) -> set[str]:
-    # Prefer explicit color hints when available from card cache.
+def card_color_symbols(card) -> set[str]:
+    faces = getattr(card, "card_faces", None) or []
+    if faces:
+        index = getattr(card, "selected_face_index", None)
+        face = faces[index if isinstance(index, int) and 0 <= index < len(faces) else 0]
+        if isinstance(face, dict) and isinstance(face.get("colors"), list):
+            return {str(color).upper() for color in face["colors"] if str(color).upper() in _MANA_COLOR_MAP}
     explicit = getattr(card, "colors", None)
-    if isinstance(explicit, (list, tuple)) and explicit:
-        out = set()
-        for c in explicit:
-            name = _MANA_COLOR_MAP.get(str(c).upper())
-            if name:
-                out.add(name)
-        if out:
-            return out
-
+    if isinstance(explicit, (list, tuple)):
+        return {str(color).upper() for color in explicit if str(color).upper() in _MANA_COLOR_MAP}
+    if "devoid" in str(getattr(card, "oracle_text", "") or "").lower():
+        return set()
     mana_cost = str(getattr(card, "mana_cost", "") or "").upper()
-    out: set[str] = set()
-    for sym in re.findall(r"\{([WUBRG])\}", mana_cost):
-        name = _MANA_COLOR_MAP.get(sym)
-        if name:
-            out.add(name)
-    return out
+    return {symbol for cost in re.findall(r"\{([^}]+)\}", mana_cost) for symbol in cost if symbol in _MANA_COLOR_MAP}
 
+
+def card_color_names(card) -> set[str]:
+    return {_MANA_COLOR_MAP[symbol] for symbol in card_color_symbols(card)}
