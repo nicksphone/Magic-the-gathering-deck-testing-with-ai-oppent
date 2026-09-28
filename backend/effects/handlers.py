@@ -899,6 +899,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             summoning_sick="Creature" in types,
             entered_turn=state.turn,
             keywords=keywords,
+            colors=list(payload.get("colors", [])),
             image_uri=token_image_uri,
         )
         state.cards[cid] = token

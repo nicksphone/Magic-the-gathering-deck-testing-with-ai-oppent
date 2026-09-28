@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from ai.agent import AIAgent
-from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+from game_state.serializers import deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine import combat
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -250,6 +250,44 @@ def test_staged_combat_triggers_survive_snapshot_before_flush() -> None:
     assert not state.trigger_staging
     assert not state.staged_triggers
     assert [item.source_card_id for item in state.stack] == ["frostfang"]
+
+
+def test_doomed_traveler_own_death_trigger_survives_combat_zone_change() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "traveler", 2, "Doomed Traveler", 1, 1,
+              oracle_text="When this creature dies, create a 1/1 white Spirit creature token with flying.")
+    state.attackers = ["courser"]
+    state.blocks = {"courser": ["traveler"]}
+
+    combat.combat_damage(state)
+
+    assert state.cards["traveler"].zone == Zone.GRAVEYARD
+    assert any(item.source_card_id == "traveler" for item in state.stack)
+    from rules_engine.stack_engine import resolve_top_of_stack
+    resolve_top_of_stack(state)
+    spirits = [state.cards[cid] for cid in state.players[2].battlefield if state.cards[cid].name == "Spirit"]
+    assert len(spirits) == 1
+    assert (spirits[0].power, spirits[0].toughness) == (1, 1)
+    assert "flying" in spirits[0].keywords
+    assert spirits[0].colors == ["W"]
+    assert serialize_card_view(state, spirits[0].id)["colors"] == ["W"]
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.cards[spirits[0].id].colors == ["W"]
+
+
+def test_doomed_traveler_own_death_trigger_survives_state_based_action() -> None:
+    state = _state()
+    _creature(state, "traveler", 1, "Doomed Traveler", 1, 1,
+              oracle_text="When this creature dies, create a 1/1 white Spirit creature token with flying.")
+    state.cards["traveler"].counters["__damage_marked"] = 1
+
+    from rules_engine.state_based_actions import apply_state_based_actions
+    apply_state_based_actions(state)
+
+    assert state.cards["traveler"].zone == Zone.GRAVEYARD
+    assert any(item.source_card_id == "traveler" for item in state.stack)
 
 
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:

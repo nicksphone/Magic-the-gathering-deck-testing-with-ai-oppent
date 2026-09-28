@@ -14,6 +14,7 @@ function card(value: unknown): boolean {
     && value.types.every((type) => typeof type === "string")
     && (value.power === null || typeof value.power === "number")
     && (value.toughness === null || typeof value.toughness === "number")
+    && (value.colors === undefined || (Array.isArray(value.colors) && value.colors.every((color) => typeof color === "string" && /^[WUBRG]$/.test(color))))
     && (value.card_faces === undefined || (Array.isArray(value.card_faces) && value.card_faces.every(record)));
 }
 

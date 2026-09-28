@@ -26,6 +26,8 @@ TOKEN_NAME_RE = re.compile(
     r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
     re.IGNORECASE,
 )
+TOKEN_COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
+TOKEN_COLOR_RE = re.compile(r"^(white|blue|black|red|green|colorless)(?: and (white|blue|black|red|green))?\s+(.+)$", re.IGNORECASE)
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-]\s*(.+))?", re.IGNORECASE | re.DOTALL)
 DIVIDE_RE = re.compile(r"(?:divid[^.]*damage|damage[^.]*divid)[^.]*among[^.]*targets", re.IGNORECASE)
@@ -1087,8 +1089,13 @@ def _infer_clause_effect(
         token_count = _parse_count_token(count_match.group(1)) if count_match else 1
         token_name_match = TOKEN_NAME_RE.search(oracle)
         token_name = "Token"
+        token_colors: list[str] = []
         if token_name_match:
             token_name = token_name_match.group(1).strip().title()
+            color_match = TOKEN_COLOR_RE.match(token_name)
+            if color_match:
+                token_name = color_match.group(3)
+                token_colors = [TOKEN_COLOR_SYMBOLS[color.lower()] for color in color_match.groups()[:2] if color and color.lower() in TOKEN_COLOR_SYMBOLS]
         token_keywords = _extract_keywords_from_text(oracle)
         out = {
             "name": token_name,
@@ -1096,6 +1103,7 @@ def _infer_clause_effect(
             "toughness": int(token_match.group(2)),
             "amount": token_count,
             "keywords": token_keywords,
+            "colors": token_colors,
         }
         if SAC_AT_EOT_RE.search(oracle):
             out["sacrifice_next_end_step"] = True

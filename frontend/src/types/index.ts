@@ -30,6 +30,7 @@ export type CardView = {
   base_power?: number | null;
   base_toughness?: number | null;
   keywords?: string[];
+  colors?: string[];
   counters?: Record<string, number>;
   damage_marked?: number;
   selected_face_index?: number | null;

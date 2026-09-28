@@ -268,6 +268,16 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str)
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
+    if event == "creature_dies":
+        dead_id = payload.get("card_id")
+        dead = state.cards.get(dead_id)
+        if dead and dead_id not in state.players[dead.controller].battlefield:
+            oracle = (dead.oracle_text or "").lower()
+            if "when this creature dies" in oracle and _matches_creature_dies_trigger(state, dead, oracle, payload):
+                out.append(_trigger_from_oracle(
+                    state, dead.id, dead.controller, oracle,
+                    default_label=f"{dead.name} trigger", event=event, payload=payload,
+                ))
     if event == "attack_declared":
         attacker = state.cards.get(payload.get("card_id"))
         if attacker:

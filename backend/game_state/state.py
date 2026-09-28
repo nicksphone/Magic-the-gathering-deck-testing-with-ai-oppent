@@ -78,6 +78,7 @@ class CardInstance:
     selected_face_index: int | None = None
     chosen_creature_type: str | None = None
     printed_characteristics: dict = field(default_factory=dict)
+    colors: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -672,19 +672,20 @@ def test_oracle_token_count_and_keywords_parsing() -> None:
     state = MatchFactory.from_decks(deck, deck)
     card = CardInstance(
         id="tok",
-        name="Raise Patrol",
+        name="Call the Cavalry",
         owner=1,
         controller=1,
         zone=Zone.HAND,
         types=["Sorcery"],
-        oracle_text="Create two 1/1 white Soldier creature tokens with vigilance.",
+        oracle_text="Create two 2/2 white Knight creature tokens with vigilance.",
     )
     effect_key, payload = infer_effect_from_oracle(state, card, 1)
     assert effect_key == "create_token"
     assert payload["amount"] == 2
-    assert payload["power"] == 1
-    assert payload["toughness"] == 1
-    assert payload["name"] == "White Soldier"
+    assert payload["power"] == 2
+    assert payload["toughness"] == 2
+    assert payload["name"] == "Knight"
+    assert payload["colors"] == ["W"]
     assert "vigilance" in payload["keywords"]
 
 

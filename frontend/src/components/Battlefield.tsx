@@ -23,6 +23,7 @@ type HoverPreview = {
   baseToughness?: number | null;
   damage?: number;
   keywords?: string[];
+  colors?: string[];
   counters?: Record<string, number>;
 };
 
@@ -131,6 +132,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       baseToughness: card.base_toughness,
       damage: card.damage_marked,
       keywords: card.keywords,
+      colors: card.colors,
       counters: card.counters,
     };
   }
@@ -729,6 +731,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             {hoverPreview.basePower !== null && hoverPreview.basePower !== undefined && (hoverPreview.power !== hoverPreview.basePower || hoverPreview.toughness !== hoverPreview.baseToughness) ? <p>Base: {hoverPreview.basePower}/{hoverPreview.baseToughness}</p> : null}
             {hoverPreview.damage ? <p>Damage marked: {hoverPreview.damage}</p> : null}
             {hoverPreview.keywords?.length ? <p>{hoverPreview.keywords.join(", ")}</p> : null}
+            {hoverPreview.colors?.length ? <p>Color: {hoverPreview.colors.map((color) => ({ W: "White", U: "Blue", B: "Black", R: "Red", G: "Green" }[color] ?? color)).join(", ")}</p> : null}
             {hoverPreview.counters ? Object.entries(hoverPreview.counters).filter(([name, count]) => !name.startsWith("__") && count > 0).map(([name, count]) => <p key={name}>{name}: {count}</p>) : null}
             {hoverPreview.oracleText ? <small>{hoverPreview.oracleText}</small> : null}
           </div>

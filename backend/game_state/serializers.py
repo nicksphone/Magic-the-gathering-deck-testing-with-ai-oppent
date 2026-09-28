@@ -32,6 +32,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "type_line": card.type_line,
+        "colors": list(card.colors),
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
         "layout": card.layout,
@@ -149,6 +150,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
+                "colors": list(card.colors),
             }
             for cid, card in state.cards.items()
         },
@@ -201,6 +203,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             layout=str(raw.get("layout") or ""),
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
+            colors=list(raw.get("colors", [])),
         )
 
     state = MatchState(

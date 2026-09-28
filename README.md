@@ -52,6 +52,7 @@ It is designed for serious deck work:
 - Damage prevention re-evaluates the modified event and applies remaining applicable sources once each; human matches receive follow-up choices for the chain, while AI/replay uses deterministic timestamp ordering.
 - Common continuous `can't have` keyword overrides are applied after applicable grants through deterministic layer ordering.
 - Simultaneous lethal creature state-based actions batch zone changes and deduplicate supported `one or more` death triggers before stack insertion.
+- Supported "when this creature dies" abilities are collected from the departed creature after zone movement; a Doomed Traveler combat regression resolves its 1/1 flying Spirit. Generic colored-token parsing separates the token name from its color, preserves that color across snapshots, and exposes it in the card view and hover preview.
 - Saga chapters can create one-shot next-creature entry counters and transform a double-faced Saga through the stack; pending delayed entries survive snapshots and expire at cleanup.
 - Master+ uses a bounded three-ply strategic search on late, developed boards with a reduced candidate beam; early states retain cheaper search.
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
