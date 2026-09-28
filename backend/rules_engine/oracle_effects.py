@@ -23,6 +23,9 @@ COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+c
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
+NAMED_ARTIFACT_TOKEN_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+([a-z]+)\s+tokens?\b", re.IGNORECASE)
+TOKEN_REMINDER_ABILITY_RE = re.compile(r"\b(?:it's|they're|it is|they are)\s+(?:an?\s+)?artifacts?\s+with\s+[\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
+SAC_TOUGHNESS_TOKEN_RE = re.compile(r"if the sacrificed creature's toughness was (\d+) or greater, create (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) ([a-z]+) tokens? instead", re.IGNORECASE)
 TOKEN_NAME_RE = re.compile(
     r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
     re.IGNORECASE,
@@ -1168,6 +1171,22 @@ def _infer_clause_effect(
         if SAC_AT_EOT_RE.search(oracle):
             out["sacrifice_next_end_step"] = True
         return "create_token", out
+
+    named_token = NAMED_ARTIFACT_TOKEN_RE.search(oracle)
+    source_oracle = getattr(card, "source_oracle_text", card.oracle_text or "")
+    reminder_ability = TOKEN_REMINDER_ABILITY_RE.search(source_oracle)
+    if named_token and reminder_ability and " instead" not in oracle:
+        token_name = named_token.group(2).title()
+        amount = _parse_count_token(named_token.group(1))
+        conditional = SAC_TOUGHNESS_TOKEN_RE.search(without_reminder_text(source_oracle))
+        sacrificed_toughness = getattr(card, "sacrificed_toughness", None)
+        if (conditional and conditional.group(3).lower() == token_name.lower()
+                and sacrificed_toughness is not None and int(sacrificed_toughness) >= int(conditional.group(1))):
+            amount = _parse_count_token(conditional.group(2))
+        return "create_token", {
+            "name": token_name, "amount": amount, "types": ["Artifact", "Token"],
+            "oracle_text": reminder_ability.group(1).strip(),
+        }
 
     counters_match = COUNTER_RE.search(oracle)
     if counters_match:

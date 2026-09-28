@@ -872,11 +872,14 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
-            if not apply_activated_costs(state, player_id, cid, cost):
+            cost_context: dict = {}
+            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context):
                 reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
+            proxy.source_oracle_text = state.cards[cid].oracle_text
+            proxy.sacrificed_toughness = cost_context.get("__sacrificed_toughness")
             resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             add_to_stack(
                 state,

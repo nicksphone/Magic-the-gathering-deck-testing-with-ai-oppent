@@ -948,8 +948,10 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             zone=Zone.BATTLEFIELD,
             types=types,
             is_token=True,
-            power=p,
-            toughness=t,
+            power=p if "Creature" in types else None,
+            toughness=t if "Creature" in types else None,
+            type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
+            oracle_text=payload.get("oracle_text", ""),
             summoning_sick="Creature" in types,
             entered_turn=state.turn,
             keywords=keywords,
@@ -962,7 +964,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
-    state.log.append(f"{state.players[token_controller].name} creates {amount} {p}/{t} token(s).")
+    token_label = f"{p}/{t}" if "Creature" in types else name
+    state.log.append(f"{state.players[token_controller].name} creates {amount} {token_label} token(s).")
 
 
 def create_shark_token(state: MatchState, controller: int, payload: dict) -> None:

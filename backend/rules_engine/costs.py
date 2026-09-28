@@ -68,15 +68,17 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             upper = remainder.upper()
         if upper in {"T", "TAP"}:
             tap_source = True
-        elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT")):
+        elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT", "TOKEN")):
             match = ACTIVATED_SACRIFICE_RE.search(upper)
             if not match:
                 supported = False
                 continue
             number = re.search(r"(\d+)", match.group(0))
             sacrifice_creatures += int(number.group(1)) if number else 1
-            sacrifice_source = "THIS CREATURE" in upper
-            if "ARTIFACT OR CREATURE" in upper:
+            sacrifice_source = any(f"THIS {kind}" in upper for kind in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT", "TOKEN"))
+            if "THIS TOKEN" in upper:
+                sacrifice_kind = "permanent"
+            elif "ARTIFACT OR CREATURE" in upper:
                 sacrifice_kind = "artifact_or_creature"
             elif "PERMANENT" in upper:
                 sacrifice_kind = "permanent"
@@ -131,7 +133,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     return not cost.mana_cost or can_pay_with_pool_and_lands(state, player_id, cost.mana_cost, card_name=source.name)
 
 
-def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str) -> bool:
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None) -> bool:
     cost = parse_activated_cost(cost_text)
     if not activated_cost_available(state, player_id, source_id, cost_text):
         return False
@@ -160,6 +162,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     needed = cost.sacrifice_creatures
     destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids[:needed]}
     for sac_id in sacrifice_ids[:needed]:
+        if context is not None and "Creature" in state.cards[sac_id].types:
+            from rules_engine.continuous import effective_toughness
+            context["__sacrificed_toughness"] = effective_toughness(state, sac_id)
         if sac_id in player.battlefield:
             player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
