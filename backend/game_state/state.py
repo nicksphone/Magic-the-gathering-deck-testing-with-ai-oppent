@@ -154,6 +154,7 @@ class MatchState:
     day_night: str = "none"
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
+    draws_in_current_draw_step: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     # Delayed entry modifications created by resolving effects such as Saga
     # chapters. Entries are consumed by the next matching spell this turn.
@@ -252,6 +253,8 @@ def draw_card(state: MatchState, player_id: int, count: int = 1) -> None:
         card = state.cards[cid]
         card.zone = Zone.HAND
         player.hand.append(cid)
+        if state.step == Step.DRAW and state.active_player == player_id:
+            state.draws_in_current_draw_step[player_id] = state.draws_in_current_draw_step.get(player_id, 0) + 1
         emit_event(state, "draw_card", {"player_id": player_id, "card_id": cid})
 
 

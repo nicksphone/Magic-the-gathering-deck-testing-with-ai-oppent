@@ -80,6 +80,116 @@ def _thought_reflection(state, cid: str) -> None:
     state.players[1].battlefield.append(cid)
 
 
+def _draw_step_doubler(state, cid: str, *, archive: bool = False) -> None:
+    card = CardInstance(
+        id=cid,
+        name="Alhammarret's Archive" if archive else "Teferi's Ageless Insight",
+        owner=1, controller=1, zone=Zone.BATTLEFIELD,
+        types=["Artifact"] if archive else ["Enchantment"],
+        oracle_text=(
+            "If you would gain life, you gain twice that much life instead.\n"
+            if archive else ""
+        ) + "If you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
+    )
+    state.cards[cid] = card
+    state.players[1].battlefield.append(cid)
+
+
+def test_conditional_draw_doubling_exempts_only_first_actual_draw_in_own_step() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 2
+    state.step = Step.UPKEEP
+    _draw_step_doubler(state, "insight")
+    before = len(state.players[1].hand)
+    RulesEngine().next_step(state)
+    assert len(state.players[1].hand) == before + 1
+    assert state.draws_in_current_draw_step[1] == 1
+    resolve_effect(state, 1, "draw_cards", {"amount": 2})
+    assert len(state.players[1].hand) == before + 5
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.draws_in_current_draw_step[1] == 5
+    restored.step = Step.PRECOMBAT_MAIN
+    before = len(restored.players[1].hand)
+    resolve_effect(restored, 1, "draw_cards", {"amount": 1})
+    assert len(restored.players[1].hand) == before + 2
+
+
+def test_two_conditional_draw_doublers_are_cumulative_after_first_draw() -> None:
+    state = _state()
+    state.turn = 2
+    state.step = Step.DRAW
+    _draw_step_doubler(state, "insight")
+    _draw_step_doubler(state, "archive", archive=True)
+    assert replacement_options(state, "card_draw", target_player=1) == []
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    assert len(state.players[1].hand) == before + 1
+    assert {option["source_id"] for option in replacement_options(state, "card_draw", target_player=1)} == {
+        "insight", "archive",
+    }
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    assert len(state.players[1].hand) == before + 5
+
+
+def test_replaced_first_draw_does_not_use_draw_step_exception() -> None:
+    state = _state()
+    state.step = Step.DRAW
+    _draw_step_doubler(state, "insight")
+    dredger = CardInstance(
+        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
+        zone=Zone.GRAVEYARD, types=["Creature"],
+        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
+    )
+    state.cards[dredger.id] = dredger
+    state.players[1].graveyard.append(dredger.id)
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "choice_id": dredger.id}, reject_invalid=True)
+    assert state.draws_in_current_draw_step[1] == 0
+    assert len(state.players[1].hand) == before + 1
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    assert len(state.players[1].hand) == before + 2
+    assert state.draws_in_current_draw_step[1] == 1
+
+
+def test_archive_life_and_draw_replacements_remain_independent() -> None:
+    state = _state()
+    state.step = Step.PRECOMBAT_MAIN
+    _draw_step_doubler(state, "archive", archive=True)
+    before_life = state.players[1].life
+    gain_life(state, 1, {"target_player": 1, "amount": 3})
+    assert state.players[1].life == before_life + 6
+
+    lich = CardInstance(
+        id="lich", name="Lich", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text=(
+            "As this enchantment enters, you lose life equal to your life total.\n"
+            "You don't lose the game for having 0 or less life.\n"
+            "If you would gain life, draw that many cards instead.\n"
+            "Whenever you're dealt damage, sacrifice that many nontoken permanents. If you can't, you lose the game.\n"
+            "When this enchantment is put into a graveyard from the battlefield, you lose the game."
+        ),
+    )
+    state.cards[lich.id] = lich
+    state.players[1].battlefield.append(lich.id)
+    state.players[1].life = 0
+    assert {option["source_id"] for option in replacement_options(state, "life_gain", target_player=1)} == {
+        "archive", "lich",
+    }
+    for first_source, expected_draws in (("lich", 6), ("archive", 12)):
+        trial = deserialize_match_snapshot(serialize_match_snapshot(state))
+        before_hand = len(trial.players[1].hand)
+        gain_life(trial, 1, {
+            "target_player": 1, "amount": 3, "__replacement_source_id": first_source,
+        })
+        assert len(trial.players[1].hand) == before_hand + expected_draws
+        assert trial.players[1].life == 0
+        assert trial.winner is None
+
+
 def test_unconditional_draw_doubling_applies_once_per_source_and_original_draw() -> None:
     state = _state()
     _thought_reflection(state, "reflection-one")
@@ -88,7 +198,7 @@ def test_unconditional_draw_doubling_applies_once_per_source_and_original_draw()
     assert len(state.players[1].hand) == before + 6
     _thought_reflection(state, "reflection-two")
     before = len(state.players[1].hand)
-    assert replace_draw_cards(state, 1, 1)[1]["__used_replacement_source_ids"] == ["reflection-two"]
+    assert replace_draw_cards(state, 1, 1)[1]["__used_replacement_source_ids"] == ["card_draw:reflection-two"]
     resolve_effect(state, 1, "draw_cards", {"amount": 1})
     assert len(state.players[1].hand) == before + 4
     assert {o["source_id"] for o in replacement_options(state, "card_draw", target_player=1)} == {

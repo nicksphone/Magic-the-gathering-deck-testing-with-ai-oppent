@@ -23,6 +23,7 @@ from rules_engine.replacement import (
     player_cant_gain_life,
     player_cant_lose_life,
     replacement_options,
+    replacement_source_used,
     replace_die_zone,
     replace_draw_cards,
     replace_gain_life,
@@ -239,7 +240,10 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
             and target_player in state.replacement_choice_players):
         options = replacement_options(state, "card_draw", target_player=target_player)
         used = {str(value) for value in (payload.get("__used_replacement_source_ids") or [])}
-        options = [option for option in options if str(option["source_id"]) not in used]
+        options = [
+            option for option in options
+            if not replacement_source_used(used, "card_draw", str(option["source_id"]))
+        ]
         if len(options) > 1:
             state.pending_replacement_choice = {
                 "resume_kind": "draw_event", "player_id": target_player,

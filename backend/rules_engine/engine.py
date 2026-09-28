@@ -104,6 +104,7 @@ class RulesEngine:
             self._update_day_night(state)
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
         elif state.step == Step.DRAW and state.turn > 1:
+            state.draws_in_current_draw_step[state.active_player] = 0
             before = len(player.hand)
             resolve_effect(state, state.active_player, "draw_cards", {"amount": 1})
             after = len(player.hand)
@@ -112,6 +113,7 @@ class RulesEngine:
             else:
                 state.log.append(f"{player.name} processes the draw step. Hand {before}->{after}.")
         elif state.step == Step.DRAW and state.turn == 1:
+            state.draws_in_current_draw_step[state.active_player] = 0
             state.log.append(f"{player.name} skips draw on turn 1 (on the play rule).")
         elif state.step == Step.PRECOMBAT_MAIN:
             self._advance_sagas(state)

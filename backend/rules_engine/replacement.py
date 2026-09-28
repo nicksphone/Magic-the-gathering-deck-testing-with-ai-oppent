@@ -50,6 +50,24 @@ _DIE_EXILE_RE = re.compile(
     r"|if an? artifact or enchantment you control would die, exile it instead"
 )
 _DRAW_DOUBLE_RE = re.compile(r"(?:^|\n)if you would draw a card, draw two cards instead\.")
+_DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
+    r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
+)
+_LIFE_DOUBLE_RE = re.compile(r"(?:^|\n)if you would gain life, you gain twice that much life instead\.")
+
+
+def _draw_doubler_applies(state, target_player: int, text: str) -> bool:
+    if _DRAW_DOUBLE_RE.search(text):
+        return True
+    if not _DRAW_DOUBLE_EXCEPT_FIRST_RE.search(text):
+        return False
+    in_own_draw_step = getattr(state.step, "value", state.step) == "draw" and state.active_player == target_player
+    return not (in_own_draw_step and state.draws_in_current_draw_step.get(target_player, 0) == 0)
+
+
+def replacement_source_used(used_source_ids, event: str, source_id: str) -> bool:
+    used = {str(value) for value in (used_source_ids or [])}
+    return source_id in used or f"{event}:{source_id}" in used
 
 
 def replacement_options(
@@ -94,13 +112,13 @@ def replacement_options(
         candidates = [
             (card, text)
             for card, text in _battlefield_oracle_texts(state, controller=target_player)
-            if "if you would gain life, draw that many cards instead" in text
+            if "if you would gain life, draw that many cards instead" in text or _LIFE_DOUBLE_RE.search(text)
         ]
     elif event_key in {"card_draw", "draw"} and target_player in state.players:
         candidates = [
             (card, text)
             for card, text in _battlefield_oracle_texts(state, controller=target_player)
-            if "if you would draw a card, gain 1 life instead" in text or _DRAW_DOUBLE_RE.search(text)
+            if "if you would draw a card, gain 1 life instead" in text or _draw_doubler_applies(state, target_player, text)
         ]
         from rules_engine.dredge import dredge_options
         candidates.extend((state.cards[option["card_id"]], state.cards[option["card_id"]].oracle_text) for option in dredge_options(state, target_player))
@@ -327,12 +345,22 @@ def replace_gain_life(
     candidates = [
         (card, text)
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
-        if str(getattr(card, "id", "")) not in used
-        and "if you would gain life, draw that many cards instead" in text
+        if not replacement_source_used(used, "life_gain", str(getattr(card, "id", "")))
+        and ("if you would gain life, draw that many cards instead" in text or _LIFE_DOUBLE_RE.search(text))
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "life gain")
     if card is not None:
-        next_used = sorted(used | {str(card.id)})
+        next_used = sorted(used | {f"life_gain:{card.id}"})
+        if _LIFE_DOUBLE_RE.search((card.oracle_text or "").lower()):
+            return (
+                "gain_life",
+                {
+                    "target_player": target_player,
+                    "amount": int(amount) * 2,
+                    "__replacement_source": card.name,
+                    "__used_replacement_source_ids": next_used,
+                },
+            )
         return (
             "draw_cards",
             {
@@ -360,13 +388,13 @@ def replace_draw_cards(
     candidates = [
         (card, text)
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
-        if str(getattr(card, "id", "")) not in used
-        and ("if you would draw a card, gain 1 life instead" in text or _DRAW_DOUBLE_RE.search(text))
+        if not replacement_source_used(used, "card_draw", str(getattr(card, "id", "")))
+        and ("if you would draw a card, gain 1 life instead" in text or _draw_doubler_applies(state, target_player, text))
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "card draw")
     if card is not None:
-        next_used = sorted(used | {str(card.id)})
-        if _DRAW_DOUBLE_RE.search((card.oracle_text or "").lower()):
+        next_used = sorted(used | {f"card_draw:{card.id}"})
+        if _draw_doubler_applies(state, target_player, (card.oracle_text or "").lower()):
             return (
                 "draw_cards",
                 {

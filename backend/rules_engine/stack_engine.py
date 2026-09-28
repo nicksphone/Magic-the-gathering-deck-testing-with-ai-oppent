@@ -7,7 +7,7 @@ from game_state.state import MatchState, StackItem, Zone, assign_static_order_on
 from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 from rules_engine.library_permissions import choose_type_for_realmwalker
-from rules_engine.replacement import replacement_options
+from rules_engine.replacement import replacement_options, replacement_source_used
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
@@ -149,7 +149,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             source_card_id=item.source_card_id,
         )
         used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
-        options = [option for option in options if str(option.get("source_id")) not in used]
+        options = [
+            option for option in options
+            if not replacement_source_used(used, event, str(option.get("source_id")))
+        ]
         if len(options) > 1 and target_player is not None:
             state.pending_replacement_choice = {
                 "stack_id": item.id,
