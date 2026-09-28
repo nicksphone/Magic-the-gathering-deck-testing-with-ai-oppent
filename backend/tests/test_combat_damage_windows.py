@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from ai.agent import AIDecision, AIAgent
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from scripts.regression_matrix_replay import run_game
 
 
 def _state():
@@ -125,3 +127,27 @@ def test_first_strike_membership_is_fixed_before_response_window() -> None:
     engine.take_action(state, 1, {"type": "pass_priority"})
     engine.take_action(state, 2, {"type": "pass_priority"})
     assert state.players[2].life == 16
+
+
+def test_replay_keeps_both_combat_damage_priority_windows(monkeypatch) -> None:
+    state = _state()
+    _creature(state, "swiftblade", 1, "Boros Swiftblade", 1, 2, ["double strike"])
+    state.attackers = ["swiftblade"]
+    state.attack_targets = {"swiftblade": "player:2"}
+    state.blockers_declared = True
+    monkeypatch.setattr("scripts.regression_matrix_replay.MatchFactory.from_decks", lambda *args, **kwargs: state)
+    monkeypatch.setattr(AIAgent, "choose_action", lambda self, state, legal, pid: AIDecision({"type": "pass_priority"}, "test"))
+    original_take_action = RulesEngine.take_action
+    windows: list[tuple[str, int]] = []
+
+    def record_action(self, state, player_id, action):
+        assert action["type"] != "combat_damage"
+        original_take_action(self, state, player_id, action)
+        windows.append((state.combat_damage_stage, state.players[2].life))
+
+    monkeypatch.setattr(RulesEngine, "take_action", record_action)
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    run_game(deck, deck, seed=29, difficulty="strong", max_ticks=4)
+    assert windows[1] == ("first", 19)
+    assert windows[3] == ("regular", 18)

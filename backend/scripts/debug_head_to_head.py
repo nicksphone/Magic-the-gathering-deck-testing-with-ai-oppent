@@ -197,8 +197,6 @@ def main() -> int:
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")
 
                     engine_rules.take_action(state, pid, action)
-                    if state.step == state.step.COMBAT_DAMAGE:
-                        engine_rules.take_action(state, state.active_player, {"type": "combat_damage"})
                     ticks += 1
 
                 if state.winner in (1, 2):

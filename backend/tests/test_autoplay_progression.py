@@ -3,11 +3,51 @@ from __future__ import annotations
 from sqlmodel import Session
 
 from ai.agent import AIAgent, AIDecision
-from game_state.state import MatchFactory
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from main import ACTIVE_MATCHES, MatchController, _force_ai_land_action, autoplay_tick
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+
+
+def test_autoplay_preserves_first_strike_priority_window(monkeypatch) -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=91)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = state.priority_player = 1
+    state.blockers_declared = True
+    creature = CardInstance(
+        id="swiftblade", name="Boros Swiftblade", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
+        keywords=["double strike"], summoning_sick=False,
+    )
+    state.cards[creature.id] = creature
+    state.players[1].battlefield.append(creature.id)
+    state.attackers = [creature.id]
+    state.attack_targets = {creature.id: "player:2"}
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "ai", 2: "ai"},
+        ai={1: AIAgent(difficulty="strong"), 2: AIAgent(difficulty="strong")},
+        mode="ai_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    monkeypatch.setattr(AIAgent, "choose_action", lambda self, state, legal, pid: AIDecision({"type": "pass_priority"}, "test"))
+    ACTIVE_MATCHES[state.id] = match
+    init_db()
+    try:
+        with Session(engine) as session:
+            first = autoplay_tick(state.id, ticks=2, repo=Repository(session))
+            assert first["step"] == Step.COMBAT_DAMAGE
+            assert first["combat_damage_stage"] == "first"
+            assert first["players"][2]["life"] == 19
+            second = autoplay_tick(state.id, ticks=2, repo=Repository(session))
+            assert second["combat_damage_stage"] == "regular"
+            assert second["players"][2]["life"] == 18
+    finally:
+        ACTIVE_MATCHES.pop(state.id, None)
 
 
 def test_autoplay_advances_to_next_game_for_full_ai_match() -> None:

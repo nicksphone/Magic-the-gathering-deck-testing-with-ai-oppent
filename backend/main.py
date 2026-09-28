@@ -813,8 +813,6 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             if _human_priority_pause(match, pid):
                 break
             match.rules.take_action(match.state, pid, {"type": "pass_priority"})
-        if not match.state.pregame_pending and match.state.step == match.state.step.COMBAT_DAMAGE:
-            match.rules.take_action(match.state, match.state.active_player, {"type": "combat_damage"})
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)

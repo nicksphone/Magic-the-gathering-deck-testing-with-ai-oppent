@@ -95,8 +95,6 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
             )
         )
         engine_rules.take_action(state, pid, action)
-        if state.step == state.step.COMBAT_DAMAGE:
-            engine_rules.take_action(state, state.active_player, {"type": "combat_damage"})
         ticks += 1
 
     normalized_log = [normalize_log_line(line) for line in state.log]

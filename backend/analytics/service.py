@@ -87,8 +87,6 @@ class AnalyticsService:
                 )
                 state.log.append(f"AI TRACE {json.dumps(trace_payload, separators=(',', ':'))}")
                 self.engine.take_action(state, pid, decision.action)
-                if state.step == state.step.COMBAT_DAMAGE:
-                    self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
                 ticks += 1
 
             winner = state.winner
@@ -315,8 +313,6 @@ class AnalyticsService:
                         if decision.action.get("type") not in legal_types:
                             decision.action = {"type": "pass_priority"}
                         self.engine.take_action(state, pid, decision.action)
-                    if state.step == state.step.COMBAT_DAMAGE:
-                        self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
                     ticks += 1
 
                 if state.winner is None:

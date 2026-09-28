@@ -384,8 +384,6 @@ def run() -> int:
 
                         pre_len = len(state.log)
                         engine_rules.take_action(state, pid, action)
-                        if state.step == state.step.COMBAT_DAMAGE:
-                            engine_rules.take_action(state, state.active_player, {"type": "combat_damage"})
                         # Keep explicit mana payment lines in log as-is from mana.auto_pay_cost.
                         _ = state.log[pre_len:]
                         ticks += 1

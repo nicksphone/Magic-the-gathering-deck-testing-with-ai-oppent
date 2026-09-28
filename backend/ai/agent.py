@@ -249,8 +249,6 @@ class AIAgent:
         try:
             sim = copy.deepcopy(state)
             self.engine.take_action(sim, player_id, move)
-            if sim.step == sim.step.COMBAT_DAMAGE:
-                self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
         except Exception:
             return -9999.0
         score = evaluate_board(sim, player_id)
@@ -267,8 +265,6 @@ class AIAgent:
             try:
                 nxt = copy.deepcopy(sim)
                 self.engine.take_action(nxt, pid, cand)
-                if nxt.step == nxt.step.COMBAT_DAMAGE:
-                    self.engine.take_action(nxt, nxt.active_player, {"type": "combat_damage"})
                 val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
                 )
@@ -2856,11 +2852,6 @@ class AIAgent:
                 self.engine.take_action(state, pid, chosen)
             except Exception:
                 break
-            if state.step == state.step.COMBAT_DAMAGE:
-                try:
-                    self.engine.take_action(state, state.active_player, {"type": "combat_damage"})
-                except Exception:
-                    break
         if state.winner == eval_for_player:
             return 40.0
         if state.winner is not None and state.winner != eval_for_player:

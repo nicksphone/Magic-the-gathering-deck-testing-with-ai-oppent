@@ -28,7 +28,7 @@ It is designed for serious deck work:
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Declared attackers deal combat damage automatically on entering the combat-damage step, before priority; an explicit repeated damage action cannot deal it twice
-- Combat with first or double strike uses separate first and regular damage priority windows; participants are recorded for snapshot-safe second-step eligibility, and the UI labels the active window
+- Combat with first or double strike uses separate first and regular damage priority windows; live autoplay, batch simulation and replay advance through priority passes rather than forcing both windows closed. Participants are recorded for snapshot-safe second-step eligibility, and the UI labels the active window.
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
 - Deck archetype estimates use cached layout to distinguish split cards from modal/transform faces; modal front-face cost and type drive curve and creature-density priors. These descriptive estimates do not prove strategic play quality.
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
