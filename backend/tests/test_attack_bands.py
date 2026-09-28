@@ -3,9 +3,10 @@ from __future__ import annotations
 import pytest
 
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot, serialize_match
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone, _infer_keywords
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
+from rules_engine.continuous import has_keyword
 from rules_engine import combat
 
 
@@ -77,3 +78,24 @@ def test_band_persists_when_banding_lost_after_declaration():
     state.cards["hero"].keywords = []
     combat.declare_blockers(state, {"hero": ["bears"]})
     assert state.blocks["angel"] == ["bears"]
+
+
+def test_oracle_inference_distinguishes_ordinary_banding_from_bands_with_other():
+    assert "banding" in _infer_keywords("Banding (Any creatures with banding can attack in a band.)")
+    assert "banding" not in _infer_keywords("Phasing, fading 3, bands with other Dinosaurs, flanking")
+
+    hero = {"quantity": 60, "card_name": "Benalish Hero", "type_line": "Creature — Human Soldier", "oracle_text": "Banding", "power": 1, "toughness": 1}
+    state = MatchFactory.from_decks([hero], [hero], seed=82)
+    assert all("banding" in state.cards[cid].keywords for cid in state.players[1].library + state.players[1].hand)
+    hero_id = state.players[1].hand.pop()
+    state.players[1].battlefield.append(hero_id)
+    state.cards[hero_id].zone = Zone.BATTLEFIELD
+    assert has_keyword(state, hero_id, "banding")
+
+    fogey = {"quantity": 60, "card_name": "Old Fogey", "type_line": "Summon — Dinosaur", "oracle_text": "Phasing, fading 3, bands with other Dinosaurs, flanking", "keywords": ["Banding"], "power": 7, "toughness": 7}
+    state = MatchFactory.from_decks([fogey], [hero], seed=83)
+    assert all("banding" not in state.cards[cid].keywords for cid in state.players[1].library + state.players[1].hand)
+    fogey_id = state.players[1].hand.pop()
+    state.players[1].battlefield.append(fogey_id)
+    state.cards[fogey_id].zone = Zone.BATTLEFIELD
+    assert not has_keyword(state, fogey_id, "banding")

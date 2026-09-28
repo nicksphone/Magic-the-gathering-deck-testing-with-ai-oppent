@@ -426,6 +426,10 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 def _infer_keywords(oracle_text: str) -> list[str]:
     text = (oracle_text or "").lower()
     out: list[str] = []
+    # "Bands with other" is distinct from ordinary banding even though card
+    # data sources may classify both under the broad Banding keyword.
+    if re.search(r"(?:^|\n)\s*banding\b|,\s*banding\b", text):
+        out.append("banding")
     for kw in [
         "trample",
         "first strike",
