@@ -450,6 +450,13 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
         return _assigns_damage(state, cid, first_strike_only)
 
     damage_events: list[dict] = []
+    lifelink_gains: dict[str, tuple[int, int]] = {}
+
+    def record_lifelink(source_id: str, controller: int, amount: int) -> None:
+        if amount <= 0 or not has_keyword(state, source_id, "lifelink"):
+            return
+        previous = lifelink_gains.get(source_id, (controller, 0))[1]
+        lifelink_gains[source_id] = (controller, previous + amount)
     # All sources assign damage from the same pre-damage game state.
     attacker_power = {
         cid: max(0, effective_power(state, cid))
@@ -477,8 +484,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
                 continue
             dealt = _deal_unblocked_damage(state, defender_key, attacker_power[attacker], source_id=attacker)
-            if dealt > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
-                state.players[atk.controller].life += dealt
+            record_lifelink(attacker, atk.controller, dealt)
             if dealt > 0:
                 damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
             continue
@@ -502,14 +508,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
                 if dealt <= 0 or _damage_prevented_by_protection(state, attacker, blocker_id):
                     continue
                 actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
-                if actual > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
-                    state.players[atk.controller].life += actual
+                record_lifelink(attacker, atk.controller, actual)
                 if actual > 0:
                     damage_events.append({"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual})
             if has_keyword(state, attacker, "trample") and allocation.get(defender_key, 0) > 0:
                 dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
-                if dealt > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
-                    state.players[atk.controller].life += dealt
+                record_lifelink(attacker, atk.controller, dealt)
                 if dealt > 0:
                     damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
 
@@ -525,10 +529,17 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if _damage_prevented_by_protection(state, blocker_id, attacker):
                 continue
             actual = _mark_creature_damage(state, attacker, blk_power, deathtouch=has_keyword(state, blocker_id, "deathtouch"), source_id=blocker_id)
-            if actual > 0 and has_keyword(state, blocker_id, "lifelink") and not player_cant_gain_life(state, blk.controller):
-                state.players[blk.controller].life += actual
+            record_lifelink(blocker_id, blk.controller, actual)
             if actual > 0:
                 damage_events.append({"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual})
+    life_gain_events = []
+    for source_id, (controller, amount) in lifelink_gains.items():
+        if player_cant_gain_life(state, controller):
+            continue
+        state.players[controller].life += amount
+        state.log.append(f"{state.players[controller].name} gains {amount} life from lifelink.")
+        life_gain_events.append({"player_id": controller, "amount": amount, "source_card_id": source_id})
+    emit_event_batch(state, "life_gain", life_gain_events)
     emit_event_batch(state, "combat_damage_dealt", damage_events)
 
 

@@ -651,6 +651,10 @@
     "mtime": 1777113742.2907498,
     "hash": "eb82cb90799c82446da2538e26f5d354"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_lifelink_gain_events.py": {
+    "mtime": 1790610348.2542377,
+    "hash": "330319c37a9ea4917f9a09802abc411d"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_library_permissions.py": {
     "mtime": 1784462496.0321248,
     "hash": "6208fb9aabb721192d1e78bbdfe1a090"
@@ -888,8 +892,8 @@
     "hash": "e1b33d5eed0eec25a6879bdd94e81cab"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/combat.py": {
-    "mtime": 1790609464.6155446,
-    "hash": "d0849447455032db08dfa71facedc152"
+    "mtime": 1790610037.4082189,
+    "hash": "ae5a7042e7316648c39904abdb9258d3"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/targeting.py": {
     "mtime": 1790591869.09418,
@@ -1096,16 +1100,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790609922.785066,
-    "hash": "ecfe29fd0cb4b83568f4d100c735ee70"
+    "mtime": 1790610320.8316758,
+    "hash": "db3ac701ed7d448ecb057e1d149b3ee2"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790609589.115492,
-    "hash": "0e4882281eacb3bbba0ace80b65f43d3"
+    "mtime": 1790610320.8326757,
+    "hash": "7bdfd4ad541070bcb268c3cbf46cc1e0"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790609674.482095,
-    "hash": "084cbcc366a49ebbd0c54726bff91f22"
+    "mtime": 1790610117.9939241,
+    "hash": "72a5aeac6093261e17a2eb22be381c36"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1158,6 +1162,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-api-validation-jev.md": {
     "mtime": 1790543570.155747,
     "hash": "ed2906024869424314fc0fa1373c2d59"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-lifelink-events.md": {
+    "mtime": 1790610380.9207158,
+    "hash": "9468529621c0bf6f5df9dfb3cc34362b"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-battlefield-entry-choice.md": {
     "mtime": 1790608861.2924764,
