@@ -1,5 +1,8 @@
 from effects.registry import resolve_effect
+from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Zone
+from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
+from rules_engine.engine import RulesEngine
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
 
@@ -18,6 +21,30 @@ def _state_with_searcher() -> object:
         state.cards[cid].types = ["Land"]
         state.cards[cid].type_line = "Basic Land — Forest"
     return state
+
+
+def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
+    state = _state_with_searcher()
+    state.search_choice_players = {1}
+    state.cards[state.players[1].hand[0]].name = "Counterspell"
+    state.cards[state.players[1].hand[0]].mana_cost = "{U}{U}"
+    state.cards[state.players[1].hand[0]].types = ["Instant"]
+    state.cards[state.players[1].hand[0]].type_line = "Instant"
+    swamp, island = state.players[1].library[:2]
+    for cid, name in ((swamp, "Swamp"), (island, "Island")):
+        state.cards[cid].name = name
+        state.cards[cid].type_line = f"Basic Land — {name}"
+    resolve_effect(state, 1, "search_library", {"contains": "basic_land", "count": 1, "destination": "hand", "shuffle": True})
+    assert state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "search_library"
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.search_choice_players == {1}
+    legal = RulesEngine().legal_moves(restored, 1)
+    decision = AIAgent(archetype="Control").choose_action(restored, legal, 1)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": [island]}
+    RulesEngine().take_action(restored, 1, decision.action, reject_invalid=True)
+    assert island in restored.players[1].hand
+    assert swamp in restored.players[1].library
+    assert restored.pending_mechanic_choice is None
 
 
 def test_cultivate_inference_splits_canonical_land_destinations() -> None:

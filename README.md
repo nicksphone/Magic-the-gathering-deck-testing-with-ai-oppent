@@ -48,7 +48,7 @@ It is designed for serious deck work:
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
 - Supported topdeck creature/permanent battlefield effects now inspect and choose cards at resolution: legal cast hints reveal only counts, human choices can select up to the limit after a response window and snapshot restore, and unattended play selects deterministically. Random-order bottom clauses consume the persisted match RNG; supported "any order" clauses offer a second ordered human choice.
-- Resolution-time library-search candidates and validated player-selected tutor choices, with deterministic fallback selection for AI/replay callers
+- Resolution-time library-search candidates and validated choices for human and AI controllers. AI searches rank mana fixing and near-term card value; direct low-level effect calls retain deterministic fallback selection.
 - Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, tapped battlefield placement, and Cultivate's first-to-battlefield/second-to-hand split
 - Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
@@ -64,7 +64,7 @@ It is designed for serious deck work:
 - Generic noncombat-damage replacement to -1/-1 counters, power-based death triggers, self-cast X triggers, and X-counter entry handling
 - Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
 - Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
-- AI tutor resolution uses a deterministic search selection rather than peeking at library candidates during cast
+- AI tutor selection happens at resolution, not by peeking at library candidates during cast; its current ranking is heuristic rather than deep tactical planning
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support

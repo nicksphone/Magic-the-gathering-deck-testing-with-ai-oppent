@@ -279,7 +279,10 @@ def _persist_active_match(repo: Repository | object, match: MatchController) -> 
 def _restore_active_matches(repo: Repository) -> None:
     for row in repo.list_active_matches():
         try:
-            state = deserialize_match_snapshot(json.loads(row.state_json))
+            snapshot = json.loads(row.state_json)
+            state = deserialize_match_snapshot(snapshot)
+            if "search_choice_players" not in snapshot:
+                state.search_choice_players = {1, 2}
             config = json.loads(row.controller_json)
             ai = {
                 int(pid): AIAgent(
@@ -590,6 +593,7 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         pid for pid, controller in ((1, payload.controller_a), (2, payload.controller_b))
         if controller == "human"
     }
+    state.search_choice_players = {1, 2}
     state.trigger_order_choice_required = state.replacement_choice_required
     state.trigger_order_choice_players = set(state.replacement_choice_players)
     rules = RulesEngine()
@@ -1374,6 +1378,7 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True) -
     new_state.replacement_choice_players = {
         pid for pid, controller in match.controllers.items() if controller == "human"
     }
+    new_state.search_choice_players = {1, 2}
     new_state.trigger_order_choice_required = new_state.replacement_choice_required
     new_state.trigger_order_choice_players = set(new_state.replacement_choice_players)
     loser = 1 if match.state.winner == 2 else 2

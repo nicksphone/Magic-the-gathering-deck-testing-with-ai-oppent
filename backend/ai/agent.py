@@ -75,6 +75,9 @@ class AIAgent:
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
                 return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
+            if choice["kind"] == "search_library":
+                selected = self._choose_library_search(state, options, int(choice["count"]), player_id)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Search for useful cards at resolution")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Choose least costly permanents for mandatory sacrifice")
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
@@ -2886,6 +2889,35 @@ class AIAgent:
         ranked = sorted(legal, key=lambda mv: (quick_score(mv), self._move_sort_key(mv)), reverse=True)
         top = ranked[: min(3, len(ranked))]
         return top[0]
+
+    def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int) -> list[str]:
+        demand = self._color_demand(state, player_id)
+        sources = self._current_color_sources(state, player_id)
+        available_mana = len(state.players[player_id].battlefield)
+        selected: list[str] = []
+        candidates = [cid for cid in options if cid in state.cards]
+        while candidates and len(selected) < count:
+            def score(cid: str) -> tuple[float, str]:
+                card = state.cards[cid]
+                if "Land" in card.types:
+                    colors = self._land_colors(card)
+                    fixing = sum((3.5 if sources.get(color, 0) == 0 else 0.0) +
+                                 0.4 * demand.get(color, 0) for color in colors if demand.get(color, 0))
+                    return (2.0 + fixing + 0.1 * len(colors), card.name)
+                cost = mana_value(card.mana_cost)
+                text = str(getattr(card, "oracle_text", "") or "").lower()
+                value = self._closure_spell_score(card, text)
+                value += 2.0 if cost <= available_mana + 1 else -0.5 * (cost - available_mana - 1)
+                return (value, card.name)
+
+            chosen = max(candidates, key=lambda cid: (score(cid), cid))
+            selected.append(chosen)
+            card = state.cards[chosen]
+            if "Land" in card.types:
+                for color in self._land_colors(card):
+                    sources[color] = sources.get(color, 0) + 1
+            candidates.remove(chosen)
+        return selected
 
     def _best_land_move(self, state: MatchState, land_moves: list[dict], player_id: int) -> dict:
         demand = self._color_demand(state, player_id)

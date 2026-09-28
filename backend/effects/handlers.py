@@ -763,8 +763,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     if not subtype:
         return
-    if (payload.get("selected_card_ids") is None and state.replacement_choice_required
-            and controller in state.replacement_choice_players):
+    if (payload.get("selected_card_ids") is None
+            and (controller in state.search_choice_players
+                 or (state.replacement_choice_required and controller in state.replacement_choice_players))):
         eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
         if eligible:
             state.pending_mechanic_choice = {

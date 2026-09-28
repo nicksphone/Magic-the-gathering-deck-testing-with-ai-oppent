@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- AI-controlled live, replay and batch matches now pause supported library searches at resolution and choose legal targets using current hand color demand and a bounded card-value heuristic instead of first-in-library order. Search-choice state survives snapshots; a regression covers selecting an Island needed for a blue spell. This is a tactical improvement, not a broad AI-strength claim.
+
 - Added a second resolution-time human choice for supported topdeck effects with "any order" library-bottom text. Canonical Collected Company keeps the spell pending across both choices and snapshots, validates the complete bottom order, and completes through the production Controls/API browser path. Unattended play retains deterministic ordering.
 
 - Supported topdeck battlefield effects now randomize the unchosen library-bottom cards only when Oracle text requires it. Storm the Festival's post-snapshot order matches the persisted match RNG; its older abbreviated test fixture was replaced with the canonical effect sentence.
