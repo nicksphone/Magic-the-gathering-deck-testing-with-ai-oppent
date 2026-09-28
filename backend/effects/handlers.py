@@ -1267,11 +1267,17 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         assign_static_order_on_battlefield_entry(state, cid)
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
 
-    # Put the rest onto the bottom (deterministic order).
+    # Random bottom order consumes the match RNG so snapshots replay identically.
     rest = [cid for cid in top_slice if cid not in set(chosen)]
+    if payload.get("bottom_random"):
+        state.rng.shuffle(rest)
     for cid in rest:
         state.cards[cid].zone = Zone.LIBRARY
-        player.library.insert(0, cid)
+    if payload.get("bottom_random"):
+        player.library[:0] = rest
+    else:
+        for cid in rest:
+            player.library.insert(0, cid)
 
 
 def topdeck_put_permanents_battlefield(state: MatchState, controller: int, payload: dict) -> None:
@@ -1311,9 +1317,15 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
-    for cid in top_slice:
-        if cid not in chosen_set:
-            state.cards[cid].zone = Zone.LIBRARY
+    rest = [cid for cid in top_slice if cid not in chosen_set]
+    if payload.get("bottom_random"):
+        state.rng.shuffle(rest)
+    for cid in rest:
+        state.cards[cid].zone = Zone.LIBRARY
+    if payload.get("bottom_random"):
+        player.library[:0] = rest
+    else:
+        for cid in rest:
             player.library.insert(0, cid)
     state.log.append(f"{player.name} puts {len(chosen)} permanent(s) from the top of the library onto the battlefield.")
 

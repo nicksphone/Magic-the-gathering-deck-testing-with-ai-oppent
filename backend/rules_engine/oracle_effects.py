@@ -303,6 +303,7 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
         "top_n": max(1, top_n),
         "max_creatures": max(1, max_creatures),
         "mv_max": max(0, mv_max),
+        "bottom_random": "bottom of your library in a random order" in oracle,
     }
     return "topdeck_put_creatures_battlefield", payload
 
@@ -395,6 +396,7 @@ def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, A
         "top_n": max(1, int(action_targets.get("top_n", _parse_count_token(look_match.group(1))) or 1)),
         "max_permanents": max(1, int(action_targets.get("max_permanents", _parse_count_token(put_match.group(1))) or 1)),
         "mv_max": max(0, int(action_targets.get("mv_max", _parse_count_token(put_match.group(2))) or 0)),
+        "bottom_random": "bottom of your library in a random order" in oracle,
     }
     return "topdeck_put_permanents_battlefield", payload
 

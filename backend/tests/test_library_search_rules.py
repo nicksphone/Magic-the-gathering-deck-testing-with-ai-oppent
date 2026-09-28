@@ -174,7 +174,7 @@ def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
         controller=1,
         zone=Zone.HAND,
         types=["Instant"],
-        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield.",
+        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
     )
     state.cards[spell.id] = spell
 
@@ -186,6 +186,7 @@ def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
     assert ok is False and "when the effect resolves" in error
 
     spec = build_ability_spec(state, spell, 1)
+    assert spec.effect.payload["bottom_random"] is False
     assert "selected_card_ids" not in spec.effect.payload
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
@@ -212,7 +213,7 @@ def test_topdeck_battlefield_tutor_rejects_nonmatching_selection() -> None:
         controller=1,
         zone=Zone.HAND,
         types=["Instant"],
-        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield.",
+        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
     )
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
@@ -245,6 +246,7 @@ def test_topdeck_put_uses_resolution_library_and_resumes_stack_after_snapshot() 
     state.replacement_choice_players = {1}
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "topdeck_put_permanents_battlefield"
+    assert spec.effect.payload["bottom_random"] is True
     hints = build_cast_hints(state, spell, 1)
     assert not any(cid in str(hints) for cid in top)
     add_to_stack(state, spell.id, 1, spell.name, spec.effect.key, spec.effect.payload)
@@ -256,8 +258,14 @@ def test_topdeck_put_uses_resolution_library_and_resumes_stack_after_snapshot() 
     assert state.pending_mechanic_choice["top_ids"] == actual_top
     assert state.pending_mechanic_choice["resolving_item"]
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    import random
+    expected_rng = random.Random()
+    expected_rng.setstate(restored.rng.getstate())
+    expected_bottom = [cid for cid in actual_top if cid != actual_top[-1]]
+    expected_rng.shuffle(expected_bottom)
     RulesEngine().take_action(restored, 1, {"type": "choose_mechanic", "card_ids": [actual_top[-1]]}, reject_invalid=True)
     assert actual_top[-1] in restored.players[1].battlefield
+    assert restored.players[1].library[:len(expected_bottom)] == expected_bottom
     assert restored.pending_mechanic_choice is None
     assert not restored.stack
     assert spell.id in restored.players[1].graveyard
