@@ -216,6 +216,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
 
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import draw_card
+    from rules_engine.draw_restrictions import can_draw_card
 
     target_player = int(payload.get("target_player", controller))
     amount = int(payload.get("amount", 1))
@@ -239,6 +240,9 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
                 return
             if state.winner is not None:
                 return
+        return
+    if not can_draw_card(state, target_player):
+        state.log.append(f"{state.players[target_player].name} cannot draw another card this turn.")
         return
     selected_source_id = payload.get("__replacement_source_id")
     if (not selected_source_id and state.replacement_choice_required

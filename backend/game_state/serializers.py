@@ -89,6 +89,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
         "draws_in_current_draw_step": {str(key): value for key, value in state.draws_in_current_draw_step.items()},
+        "draws_this_turn": {str(key): value for key, value in state.draws_this_turn.items()},
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
@@ -265,6 +266,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.spells_cast_last_turn = int(payload.get("spells_cast_last_turn", 0) or 0)
     state.draws_in_current_draw_step = {
         int(key): int(value) for key, value in payload.get("draws_in_current_draw_step", {"1": 0, "2": 0}).items()
+    }
+    state.draws_this_turn = {
+        int(key): int(value) for key, value in payload.get("draws_this_turn", {"1": 0, "2": 0}).items()
     }
     state.temporary_control_changes = {
         str(cid): {str(key): int(value) for key, value in data.items()}

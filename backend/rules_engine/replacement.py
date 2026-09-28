@@ -89,6 +89,10 @@ def replacement_options(
     supplying __replacement_source_id on the affected action.
     """
     event_key = str(event or "").strip().lower()
+    if event_key in {"card_draw", "draw"} and target_player in state.players:
+        from rules_engine.draw_restrictions import can_draw_card
+        if not can_draw_card(state, target_player):
+            return []
     if event_key in {"damage_to_player", "player_damage", "damage_to_permanent", "permanent_damage"}:
         if damage_cant_be_prevented(
             state,

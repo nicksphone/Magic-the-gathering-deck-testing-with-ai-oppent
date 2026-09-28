@@ -26,6 +26,29 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "draw_cap":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=37)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        spirit = CardInstance(
+            id="draw-spirit", name="Spirit of the Labyrinth", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Enchantment", "Creature"],
+            oracle_text="Each player can't draw more than one card each turn.",
+            power=3, toughness=1,
+        )
+        spell = CardInstance(
+            id="draw-divination", name="Divination", owner=2, controller=2,
+            zone=Zone.HAND, types=["Sorcery"], mana_cost="{2}{U}",
+            oracle_text="Draw two cards.",
+        )
+        state.cards.update({spirit.id: spirit, spell.id: spell})
+        state.players[1].battlefield.append(spirit.id)
+        state.players[2].hand.append(spell.id)
+        state.players[2].mana_pool.update({"C": 2, "U": 1})
+        return publish(state, deck)
     if face_kind == "nonland_mana":
         from card_data.token_definitions import named_artifact_token
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]

@@ -33,6 +33,16 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   console.log("PASS manual creature and Treasure mana activation uses printed costs");
 
+  await click("Draw Cap Fixture");
+  await waitFor("window.fixtureState.players['2'].hand.some(c => c.id === 'draw-divination') && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  const libraryBeforeCap = await evaluate("window.fixtureState.players['2'].library_count");
+  await click("Cast Divination");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Divination')");
+  await click("Resolve Stack");
+  await waitFor(`window.fixtureState.players['2'].library_count === ${libraryBeforeCap - 1} && window.fixtureState.stack.length === 0`);
+  assert.equal(await evaluate("window.fixtureState.players['2'].hand_count"), 8);
+  console.log("PASS Spirit limits a Divination draw to one card through UI and API");
+
   await reset();
   await evaluate("(() => { const select = document.querySelector('[aria-label=\"Ability target player\"]'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Activate Prodigal Pyromancer");
