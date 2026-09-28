@@ -46,6 +46,8 @@ class CardService:
             faces = json.loads(getattr(card, "card_faces_json", "[]") or "[]") if card else []
             rulings = json.loads(getattr(card, "rulings_json", "[]") or "[]") if card else []
             oracle_source = "cache" if card and card.oracle_text else ("fallback" if fallback.get("oracle_text") else "missing")
+            oracle_text = str((getattr(card, "oracle_text", "") if card else "") or fallback.get("oracle_text") or "")
+            unsupported_mechanics = ["bands with other"] if "bands with other" in oracle_text.lower() else []
             image_uri = select_display_image_uri(
                 card,
                 name=name,
@@ -58,6 +60,7 @@ class CardService:
                     "cached": card is not None,
                     "oracle": bool((getattr(card, "oracle_text", "") if card else "") or fallback.get("oracle_text")),
                     "oracle_source": oracle_source,
+                    "unsupported_mechanics": unsupported_mechanics,
                     "mana_cost": bool((getattr(card, "mana_cost", "") if card else "") or fallback.get("mana_cost")),
                     "type_line": bool((getattr(card, "type_line", "") if card else "") or fallback.get("type_line")),
                     "legalities": bool(json.loads(getattr(card, "legalities_json", "{}") or "{}")) if card else False,
@@ -73,4 +76,5 @@ class CardService:
             for field in ("cached", "oracle", "mana_cost", "type_line", "legalities", "rulings", "faces_complete")
         }
         missing["real_image"] = sum(1 for card in cards if card["placeholder_image"])
-        return {"requested": len(requested), "complete": len(cards) - sum(1 for card in cards if card["oracle_source"] == "missing" or not card["cached"]), "missing": missing, "cards": cards}
+        unsupported_count = sum(bool(card["unsupported_mechanics"]) for card in cards)
+        return {"requested": len(requested), "complete": len(cards) - sum(1 for card in cards if card["oracle_source"] == "missing" or not card["cached"]), "missing": missing, "unsupported_count": unsupported_count, "cards": cards}

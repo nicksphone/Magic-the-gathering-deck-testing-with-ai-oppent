@@ -85,7 +85,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(data.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
-    await showCompleteness(imported.mainboard.map((item) => item.card_name));
+    await showCompleteness([...imported.mainboard, ...imported.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -111,7 +111,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckText(loaded.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
-    await showCompleteness(imported.mainboard.map((item) => item.card_name));
+    await showCompleteness([...imported.mainboard, ...imported.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -131,7 +131,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setImportAnalysis(data);
     const resolved = data.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
     setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - resolved ${resolved}/${data.mainboard.length} card entries`);
-    await showCompleteness(data.mainboard.map((item) => item.card_name));
+    await showCompleteness([...data.mainboard, ...data.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
 
@@ -188,6 +188,8 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
           <span>Uncached: {completeness.missing.cached}</span>
           <span>Placeholder art: {completeness.missing.real_image}</span>
           <span>Missing rulings: {completeness.missing.rulings}</span>
+          <span>Card data completeness does not guarantee rules support.</span>
+          {completeness.unsupported_count ? <span role="alert">Unsupported rules in this deck: {completeness.cards.filter((card) => card.unsupported_mechanics?.length).map((card) => `${card.name} (${card.unsupported_mechanics?.join(", ")})`).join("; ")}</span> : null}
         </div>
       )}
       <div className="deck-list">

@@ -74,11 +74,13 @@ export type CardCompletenessReport = {
   requested: number;
   complete: number;
   missing: Record<string, number>;
+  unsupported_count?: number;
   cards: {
     name: string;
     cached: boolean;
     oracle_source: "cache" | "fallback" | "missing";
     placeholder_image: boolean;
+    unsupported_mechanics?: string[];
   }[];
 };
 

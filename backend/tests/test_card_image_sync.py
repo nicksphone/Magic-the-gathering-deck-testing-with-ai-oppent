@@ -125,3 +125,25 @@ def test_completeness_report_identifies_cached_and_missing_card_data() -> None:
     assert report["missing"]["rulings"] == 2
     assert next(card for card in report["cards"] if card["name"] == "Clarion Spirit")["oracle_source"] == "fallback"
     assert next(card for card in report["cards"] if card["name"] == "Unknown Card")["oracle_source"] == "missing"
+
+
+def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
+    variant = _CompleteCachedCard()
+    variant.name = "Old Fogey"
+    variant.type_line = "Summon — Dinosaur"
+    variant.oracle_text = "Phasing, fading 3, bands with other Dinosaurs, flanking"
+    ordinary = _CompleteCachedCard()
+    ordinary.name = "Benalish Hero"
+    ordinary.type_line = "Creature — Human Soldier"
+    ordinary.oracle_text = "Banding"
+
+    class _ReportRepo:
+        def get_cached_cards_by_names(self, names):  # noqa: ANN001
+            del names
+            return {"old fogey": variant, "benalish hero": ordinary}
+
+    report = CardService(_ReportRepo()).completeness_report(["Old Fogey", "Benalish Hero"])
+    assert report["complete"] == 2
+    assert report["unsupported_count"] == 1
+    assert report["cards"][0]["unsupported_mechanics"] == ["bands with other"]
+    assert report["cards"][1]["unsupported_mechanics"] == []
