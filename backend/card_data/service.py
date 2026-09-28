@@ -48,7 +48,7 @@ class CardService:
             rulings = json.loads(getattr(card, "rulings_json", "[]") or "[]") if card else []
             oracle_source = "cache" if card and card.oracle_text else ("fallback" if fallback.get("oracle_text") else "missing")
             oracle_text = str((getattr(card, "oracle_text", "") if card else "") or fallback.get("oracle_text") or "")
-            unsupported_mechanics = known_unsupported_mechanics(oracle_text)
+            unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces)
             image_uri = select_display_image_uri(
                 card,
                 name=name,

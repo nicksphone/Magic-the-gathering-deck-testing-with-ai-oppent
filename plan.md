@@ -255,6 +255,7 @@ September 27 engine increment: dedicated core handlers for Infect/Wither/Toxic, 
 - [ ] Implement tactical profiles, AI consumers and measured matchup priors; storage alone does not complete knowledge integration.
 - [ ] Surface unsupported/ambiguous semantics before simulation instead of silently approximating them.
 Partial coverage: deck completeness distinguishes known unsupported from not certified across mainboard and sideboard. Persisted batch results and the Testing Simulator label win rates exploratory and list detected unsupported cards; 986 isolated backend tests and frontend lint/build/unit pass. This does not classify every unimplemented effect, publish a certified corpus or block unreliable simulations yet.
+Follow-up: the shared detector also flags Morph, Manifest, Suspend, Mutate, Craft and Discover from root/face Oracle text. Verification: 989 isolated backend tests plus frontend lint/build/unit checks pass. It is intentionally conservative, still lacks a certified supported corpus, and does not make those mechanics playable.
 
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 

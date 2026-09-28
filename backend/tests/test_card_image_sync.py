@@ -149,3 +149,18 @@ def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
     assert report["cards"][1]["unsupported_mechanics"] == []
     assert report["cards"][0]["rules_coverage"] == "known_unsupported"
     assert report["cards"][1]["rules_coverage"] == "not_certified"
+
+
+def test_completeness_report_warns_for_morph() -> None:
+    card = _CompleteCachedCard()
+    card.name = "Willbender"
+    card.oracle_text = "Morph {1}{U}"
+
+    class _ReportRepo:
+        def get_cached_cards_by_names(self, names):  # noqa: ANN001
+            del names
+            return {"willbender": card}
+
+    report = CardService(_ReportRepo()).completeness_report(["Willbender"])
+    assert report["cards"][0]["unsupported_mechanics"] == ["morph"]
+    assert report["cards"][0]["rules_coverage"] == "known_unsupported"

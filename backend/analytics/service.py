@@ -141,7 +141,7 @@ class AnalyticsService:
                     {"deck": label, "card_name": item.get("card_name", ""), "mechanics": mechanics}
                     for label, deck in (("A", deck_a), ("B", deck_b))
                     for item in deck
-                    if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or "")))
+                    if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces")))
                 ],
             },
             "resolved_games": resolved_games,

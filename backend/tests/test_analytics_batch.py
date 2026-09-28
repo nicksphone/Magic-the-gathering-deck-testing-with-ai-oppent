@@ -461,6 +461,19 @@ def test_batch_result_names_known_unsupported_card_without_certifying_others() -
     }
 
 
+def test_batch_result_checks_oracle_for_known_gap() -> None:
+    repo = _DummyRepo()
+    service = AnalyticsService(repo)  # type: ignore[arg-type]
+    deck_a = [{"quantity": 60, "card_name": "Willbender", "oracle_text": "Morph {1}{U}"}]
+    deck_b = [{"quantity": 60, "card_name": "Island"}]
+
+    out = service.run_batch(deck_a, deck_b, matches=1, difficulty="master", max_ticks=1)
+
+    assert out["rules_coverage"]["known_unsupported_cards"] == [
+        {"deck": "A", "card_name": "Willbender", "mechanics": ["morph"]}
+    ]
+
+
 def test_batch_summary_exports_decision_quality_with_honest_unavailable_metrics() -> None:
     repo = _DummyRepo()
     service = AnalyticsService(repo)  # type: ignore[arg-type]
