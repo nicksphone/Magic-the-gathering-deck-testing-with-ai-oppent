@@ -94,6 +94,7 @@ class MatchController:
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
+START_MATCH_LOCK = threading.RLock()
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOBS_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
@@ -276,8 +277,11 @@ def _persist_active_match(repo: Repository | object, match: MatchController) -> 
         Repository(session).save_active_match(match.state.id, state_json, controller_json)
 
 
-def _restore_active_matches(repo: Repository) -> None:
-    for row in repo.list_active_matches():
+def _restore_active_matches(repo: Repository, match_id: str | None = None) -> None:
+    rows = [repo.get_active_match(match_id)] if match_id is not None else repo.list_active_matches()
+    for row in rows:
+        if row is None:
+            continue
         try:
             snapshot = json.loads(row.state_json)
             state = deserialize_match_snapshot(snapshot)
@@ -580,7 +584,29 @@ def tournament_event_summary(event_id: int, repo: Repository = Depends(get_repo)
 
 
 @app.post("/matches/start")
-def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)) -> dict:
+def start_match(payload: StartMatchRequest, request: Request, repo: Repository = Depends(get_repo)) -> dict:
+    key = request.headers.get("Idempotency-Key")
+    if key is not None and not 1 <= len(key) <= 100:
+        raise HTTPException(422, detail={"code": "invalid_start_key", "message": "Idempotency-Key must contain 1-100 characters"})
+    fingerprint = hashlib.sha256(json.dumps(payload.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()
+    with START_MATCH_LOCK:
+        if key is not None:
+            receipt = repo.get_match_start_receipt(key)
+            if receipt is not None:
+                if receipt.request_hash != fingerprint:
+                    raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different match request"})
+                match = ACTIVE_MATCHES.get(receipt.match_id)
+                if match is None:
+                    _restore_active_matches(repo, receipt.match_id)
+                    match = ACTIVE_MATCHES.get(receipt.match_id)
+                if match is None:
+                    raise HTTPException(503, detail={"code": "match_restore_unavailable", "message": "Created match could not be restored"})
+                with match.mutation_lock:
+                    return deepcopy(_serialize_match_controller(match))
+        return _create_match(payload, repo, key, fingerprint)
+
+
+def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None, fingerprint: str) -> dict:
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
     root_seed = payload.seed if payload.seed is not None else secrets.randbits(63)
@@ -614,8 +640,14 @@ def start_match(payload: StartMatchRequest, repo: Repository = Depends(get_repo)
         best_of=payload.best_of,
         root_seed=root_seed,
     )
+    try:
+        with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():
+            _persist_active_match(repo, controller)
+            if key is not None and isinstance(repo, Repository):
+                repo.save_match_start_receipt(key, fingerprint, state.id)
+    except SQLAlchemyError as exc:
+        raise HTTPException(503, detail={"code": "match_storage_unavailable", "message": "Match was not committed; retry with the same start key"}) from exc
     ACTIVE_MATCHES[state.id] = controller
-    _persist_active_match(repo, controller)
     return _serialize_match_controller(controller)
 
 

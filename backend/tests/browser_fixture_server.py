@@ -12,6 +12,17 @@ from sqlmodel import Session
 
 init_db()
 
+
+@app.post("/fixture/start-decks")
+def fixture_start_decks():
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    with Session(engine) as session:
+        repo = Repository(session)
+        a = repo.save_deck("Start retry A", "fixture", deck, [], "Control")
+        b = repo.save_deck("Start retry B", "fixture", deck, [], "Control")
+        return {"a": a.id, "b": b.id}
+
+
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
     if face_kind == "draw_replacement":

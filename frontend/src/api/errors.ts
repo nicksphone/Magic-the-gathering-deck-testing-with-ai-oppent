@@ -15,3 +15,12 @@ export function httpErrorMessage(text: string, status: number): string {
   }
   return text || `HTTP ${status}`;
 }
+
+export class HttpResponseError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}

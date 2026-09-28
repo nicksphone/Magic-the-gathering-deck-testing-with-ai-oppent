@@ -57,3 +57,5 @@ start_backend
 wait_for_services
 echo 'Browser CI: verifying process restart'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs --verify-restart)
+echo 'Browser CI: match creation recovery'
+(cd frontend && timeout 120s node tests/browser-start-recovery.mjs)

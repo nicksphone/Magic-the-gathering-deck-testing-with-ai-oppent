@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type MatchWrite, type SavedMatch } from "./api/client";
+import { api, type MatchWrite, type SavedMatch, type StartMatchPayload } from "./api/client";
+import { HttpResponseError } from "./api/errors";
 import { createMutationGate, newMutationKey } from "./api/mutation-gate";
 import { AnalyticsPanel } from "./components/AnalyticsPanel";
 import { Battlefield } from "./components/Battlefield";
@@ -7,6 +8,29 @@ import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
+
+const PENDING_START_KEY = "mtg.pendingStart";
+type PendingStart = { key: string; payload: StartMatchPayload };
+
+function readPendingStart(): PendingStart | null {
+  try {
+    const raw = localStorage.getItem(PENDING_START_KEY);
+    if (!raw || raw.length > 100000) return null;
+    const value: unknown = JSON.parse(raw);
+    if (value && typeof value === "object" && "key" in value && "payload" in value
+      && typeof value.key === "string" && /^[0-9a-f]{32}$/.test(value.key)
+      && value.payload && typeof value.payload === "object"
+      && "deck_a" in value.payload && "deck_b" in value.payload
+      && Array.isArray(value.payload.deck_a) && Array.isArray(value.payload.deck_b)) {
+      return value as PendingStart;
+    }
+  } catch { /* Optional local recovery data may be unavailable. */ }
+  return null;
+}
+
+function clearPendingStart() {
+  try { localStorage.removeItem(PENDING_START_KEY); } catch { /* Optional storage. */ }
+}
 
 export function App() {
   const [decks, setDecks] = useState<DeckRecord[]>([]);
@@ -83,10 +107,19 @@ export function App() {
         const records = await api.savedMatches();
         if (disposed) return;
         setSavedMatches(records);
+        const pending = readPendingStart();
+        let pendingMatch: MatchState | null = null;
+        if (pending) {
+          try { pendingMatch = await api.startMatch(pending.payload, pending.key); }
+          catch (error) {
+            if (error instanceof HttpResponseError && error.status < 500) clearPendingStart();
+            if (!disposed) setActionError(`Pending match creation could not be recovered: ${String(error)}`);
+          }
+        }
         let id: string | null = null;
-        try { id = localStorage.getItem("mtg.activeMatch"); } catch { /* Optional persistence. */ }
+        try { id = pendingMatch?.id ?? localStorage.getItem("mtg.activeMatch"); } catch { /* Optional persistence. */ }
         if (id) {
-          const data = await api.getMatch(id);
+          const data = pendingMatch ?? await api.getMatch(id);
           const legal = await api.legalMoves(id);
           if (disposed) return;
           if (legal.revision !== undefined && legal.revision !== data.revision) throw new Error("Saved match changed during restore. Resume it again.");
@@ -94,6 +127,11 @@ export function App() {
           setMatch(data); setMode(data.mode ?? "player_vs_ai");
           setLegalPlayerId(legal.player_id); setLegalMoves(legal.moves);
           setAutoProgressPaused(true);
+          if (pendingMatch) {
+            try { localStorage.setItem("mtg.activeMatch", id); } catch { /* Optional persistence. */ }
+            clearPendingStart();
+            try { setSavedMatches(await api.savedMatches()); } catch { /* Match is already restored. */ }
+          }
         }
       } catch (error) {
         if (!disposed) setActionError(error instanceof Error ? error.message : String(error));
@@ -137,7 +175,7 @@ export function App() {
     await gate.current.run(async () => {
       setMutationPending(true);
       try {
-        const data = await api.startMatch({
+        const payload: StartMatchPayload = {
           deck_a: deckA.mainboard,
           deck_b: deckB.mainboard,
           deck_a_sideboard: deckA.sideboard,
@@ -149,8 +187,23 @@ export function App() {
           ai_difficulty: difficulty,
           mode,
           best_of: bestOf,
-        });
-        await applyMatch(data);
+        };
+        const pending = { key: newMutationKey(), payload };
+        try { localStorage.setItem(PENDING_START_KEY, JSON.stringify(pending)); } catch { /* Optional storage. */ }
+        try {
+          await applyMatch(await api.startMatch(payload, pending.key));
+        } catch (error) {
+          if (error instanceof HttpResponseError && error.status < 500) {
+            clearPendingStart();
+            throw error;
+          }
+          try { await applyMatch(await api.startMatch(payload, pending.key)); }
+          catch (retryError) {
+            if (retryError instanceof HttpResponseError && retryError.status < 500) clearPendingStart();
+            throw new Error(`Match creation outcome is uncertain. Refresh to recover it: ${String(retryError)}`, { cause: retryError });
+          }
+        }
+        clearPendingStart();
         setAutoProgressPaused(false);
         setSavedMatches(await api.savedMatches());
       } finally { setMutationPending(false); }

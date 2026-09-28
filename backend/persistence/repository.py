@@ -13,6 +13,7 @@ from persistence.models import (
     CardCache,
     DeckRecord,
     MatchRecord,
+    MatchStartReceipt,
     SimulationJobRecord,
     StatsSnapshot,
     TournamentDeck,
@@ -185,6 +186,13 @@ class Repository:
 
     def get_active_match(self, match_id: str) -> ActiveMatchRecord | None:
         return self.session.get(ActiveMatchRecord, match_id)
+
+    def get_match_start_receipt(self, key: str) -> MatchStartReceipt | None:
+        return self.session.get(MatchStartReceipt, key)
+
+    def save_match_start_receipt(self, key: str, request_hash: str, match_id: str) -> None:
+        self.session.add(MatchStartReceipt(key=key, request_hash=request_hash, match_id=match_id))
+        self._commit_match_write()
 
     def list_active_matches(self) -> list[ActiveMatchRecord]:
         return list(self.session.exec(select(ActiveMatchRecord).order_by(ActiveMatchRecord.updated_at.desc())).all())

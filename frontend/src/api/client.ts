@@ -1,5 +1,5 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
-import { httpErrorMessage } from "./errors";
+import { HttpResponseError, httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
 import { parseMatchState } from "./match-contract";
 import { parseBatchJobStatus } from "./simulation-contract";
@@ -169,7 +169,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(httpErrorMessage(txt, res.status));
+    throw new HttpResponseError(httpErrorMessage(txt, res.status), res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -179,6 +179,19 @@ async function matchReq(path: string, init?: RequestInit): Promise<MatchState> {
 }
 
 export type MatchWrite = { revision: number; key: string };
+export type StartMatchPayload = {
+  deck_a: DeckItem[];
+  deck_b: DeckItem[];
+  deck_a_sideboard?: DeckItem[];
+  deck_b_sideboard?: DeckItem[];
+  deck_a_id?: number;
+  deck_b_id?: number;
+  controller_a: "human" | "ai";
+  controller_b: "human" | "ai";
+  ai_difficulty: string;
+  mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
+  best_of: number;
+};
 const writeHeaders = (write?: MatchWrite): Record<string, string> => write ? { "Content-Type": "application/json", "X-Match-Revision": String(write.revision), "Idempotency-Key": write.key } : { "Content-Type": "application/json" };
 
 export type SavedMatch = { id: string; mode: NonNullable<MatchState["mode"]>; turn: number; game_number: number; revision: number; players: string[] };
@@ -204,19 +217,10 @@ export const api = {
     req<{ deck_id: number; name: string; source: string; report: CardCompletenessReport }[]>("/decks/completeness"),
   deckCompleteness: (deckId: number) =>
     req<{ deck_id: number; name: string; source: string; report: CardCompletenessReport }>(`/decks/${deckId}/card-completeness`),
-  startMatch: (payload: {
-    deck_a: DeckItem[];
-    deck_b: DeckItem[];
-    deck_a_sideboard?: DeckItem[];
-    deck_b_sideboard?: DeckItem[];
-    deck_a_id?: number;
-    deck_b_id?: number;
-    controller_a: "human" | "ai";
-    controller_b: "human" | "ai";
-    ai_difficulty: string;
-    mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
-    best_of: number;
-  }) => matchReq("/matches/start", { method: "POST", body: JSON.stringify(payload) }),
+  startMatch: (payload: StartMatchPayload, key?: string) => matchReq("/matches/start", {
+    method: "POST", headers: key ? { "Content-Type": "application/json", "Idempotency-Key": key } : undefined,
+    body: JSON.stringify(payload),
+  }),
   getMatch: (id: string) => matchReq(`/matches/${id}`),
   savedMatches: () => req<SavedMatch[]>("/matches"),
   legalMoves: (matchId: string, playerId?: number) =>

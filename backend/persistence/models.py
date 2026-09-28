@@ -54,6 +54,15 @@ class ActiveMatchRecord(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class MatchStartReceipt(SQLModel, table=True):
+    """Storage-only receipt for retrying an ambiguous match creation."""
+
+    key: str = Field(primary_key=True)
+    request_hash: str
+    match_id: str = Field(index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class SimulationJobRecord(SQLModel, table=True):
     """Durable status/result row for an asynchronous simulator job."""
 

@@ -1,6 +1,7 @@
 """Source-local database: execute these tests only from disposable source."""
 import json
 from concurrent.futures import ThreadPoolExecutor
+from uuid import uuid4
 
 import pytest
 from sqlmodel import Session
@@ -98,3 +99,62 @@ def test_locked_read_result_does_not_alias_later_live_mutations(game):
     match.state.log.append("test-only later mutation")
     assert view["log"] == logs
     assert view["log"] is not match.state.log
+
+
+def test_start_key_retries_one_durable_match_without_replacing_other_controllers(game):
+    client, original = game
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    payload = {"deck_a": deck, "deck_b": deck, "mode": "human_vs_human", "controller_b": "human"}
+    key = f"start-{uuid4()}"
+
+    def start():
+        return client.post("/matches/start", json=payload, headers={"Idempotency-Key": key})
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(lambda _: start(), range(2)))
+    assert [response.status_code for response in responses] == [200, 200]
+    match_id = responses[0].json()["id"]
+    assert responses[1].json()["id"] == match_id
+    assert main.ACTIVE_MATCHES[original.state.id] is original
+
+    conflict = client.post("/matches/start", json={**payload, "best_of": 5}, headers={"Idempotency-Key": key})
+    assert conflict.status_code == 409
+    assert conflict.json()["detail"]["code"] == "idempotency_conflict"
+
+    created = main.ACTIVE_MATCHES.pop(match_id)
+    assert created.revision == 0
+    restored = start()
+    assert restored.status_code == 200
+    assert restored.json()["id"] == match_id
+    assert main.ACTIVE_MATCHES[original.state.id] is original
+
+
+def test_start_receipt_storage_failure_leaves_no_match_or_receipt(game, monkeypatch):
+    client, original = game
+    before = snapshot(original)
+    ids_before = set(main.ACTIVE_MATCHES)
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    key = f"failing-start-{uuid4()}"
+
+    def fail(self, *_args):
+        raise OperationalError("injected", {}, Exception("test"))
+
+    monkeypatch.setattr(Repository, "save_match_start_receipt", fail)
+    response = client.post("/matches/start", json={"deck_a": deck, "deck_b": deck}, headers={"Idempotency-Key": key})
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "match_storage_unavailable"
+    assert set(main.ACTIVE_MATCHES) == ids_before
+    assert snapshot(original) == before
+    with Session(engine) as session:
+        assert Repository(session).get_match_start_receipt(key) is None
+        assert {row.id for row in Repository(session).list_active_matches()} == ids_before
+
+
+@pytest.mark.parametrize("key", ["", "x" * 101])
+def test_invalid_start_key_rejected_before_creation(game, key):
+    client, original = game
+    before = snapshot(original)
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    response = client.post("/matches/start", json={"deck_a": deck, "deck_b": deck}, headers={"Idempotency-Key": key})
+    assert response.status_code == 422
+    assert snapshot(original) == before
