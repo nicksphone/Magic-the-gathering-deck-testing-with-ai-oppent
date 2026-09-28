@@ -29,7 +29,7 @@ from rules_engine.replacement import (
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
-from rules_engine.zone_actions import put_into_graveyard
+from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 
 
 def _queue_human_damage_replacement_choice(
@@ -500,6 +500,8 @@ def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> N
     del controller, payload
     for player in state.players.values():
         for cid in list(player.graveyard):
+            if is_departed_token(state.cards[cid]):
+                continue
             player.graveyard.remove(cid)
             state.players[state.cards[cid].owner].exile.append(cid)
             state.cards[cid].zone = Zone.EXILE
@@ -685,9 +687,10 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
 
 def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
-    if not player.graveyard:
+    card_id = next((cid for cid in reversed(player.graveyard) if not is_departed_token(state.cards[cid])), None)
+    if card_id is None:
         return
-    card_id = player.graveyard.pop()
+    player.graveyard.remove(card_id)
     player.hand.append(card_id)
     state.cards[card_id].zone = Zone.HAND
     state.log.append(f"{state.cards[card_id].name} returns from graveyard to hand.")
@@ -730,7 +733,7 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
     """
     target = payload.get("target_card_id")
     player = state.players[controller]
-    if not target or target not in player.graveyard or target not in state.cards:
+    if not target or target not in player.graveyard or target not in state.cards or is_departed_token(state.cards[target]):
         return
     card = state.cards[target]
     if not ({"Instant", "Sorcery"} & set(card.types)):
@@ -762,7 +765,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None:
+    if source_graveyard is None or is_departed_token(card):
         return
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
@@ -787,7 +790,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None:
+    if source_graveyard is None or is_departed_token(card):
         return
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
@@ -912,6 +915,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             controller=token_controller,
             zone=Zone.BATTLEFIELD,
             types=types,
+            is_token=True,
             power=p,
             toughness=t,
             summoning_sick="Creature" in types,

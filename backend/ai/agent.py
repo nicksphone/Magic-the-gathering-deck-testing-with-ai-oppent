@@ -13,7 +13,7 @@ from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
-from rules_engine.card_types import is_land_card as _card_looks_like_land
+from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
@@ -3010,7 +3010,7 @@ class AIAgent:
             value = 3.0 + max(0, power) * 1.2 + max(0, toughness) * 0.35
         else:
             value = 5.0 + mana_value(card.mana_cost) * 0.6
-        if "Token" in types:
+        if is_token_card(card):
             value -= 4.0
         if getattr(card, "oracle_text", ""):
             value += 1.0

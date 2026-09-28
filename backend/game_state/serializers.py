@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from game_state.state import CardInstance, MatchState, PlayerState, StackItem, Step, TURN_STEPS, Zone
+from rules_engine.card_types import is_token_card
 
 
 def _tupleize(value):
@@ -32,7 +33,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "counters": dict(card.counters), "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
-        "types": list(card.types), "type_line": card.type_line,
+        "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
         "colors": sorted(card_color_symbols(card)),
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
@@ -131,6 +132,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "controller": card.controller,
                 "zone": card.zone.value,
                 "types": list(card.types),
+                "is_token": is_token_card(card),
                 "mana_cost": card.mana_cost,
                 "power": card.power,
                 "toughness": card.toughness,
@@ -192,7 +194,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         cards[cid] = CardInstance(
             id=str(raw["id"]), name=str(raw["name"]), owner=int(raw["owner"]),
             controller=int(raw["controller"]), zone=Zone(raw["zone"]),
-            types=list(raw.get("types", [])), mana_cost=str(raw.get("mana_cost", "")),
+            types=list(raw.get("types", [])), is_token=bool(raw.get("is_token", is_token_card(raw))),
+            mana_cost=str(raw.get("mana_cost", "")),
             power=raw.get("power"), toughness=raw.get("toughness"), loyalty=raw.get("loyalty"),
             tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
             entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),

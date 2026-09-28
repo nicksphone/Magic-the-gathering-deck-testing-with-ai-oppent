@@ -7,6 +7,11 @@ from collections.abc import Mapping
 _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 
 
+def is_token_card(card) -> bool:
+    field = card.get if isinstance(card, Mapping) else lambda name, default=None: getattr(card, name, default)
+    return bool(field("is_token", False)) or "token" in {str(value).lower() for value in (field("types", []) or [])}
+
+
 def is_land_card(card) -> bool:
     """Use printed types, never a mana ability or a substring in the card name."""
     field = card.get if isinstance(card, Mapping) else lambda name, default=None: getattr(card, name, default)

@@ -80,6 +80,7 @@ class CardInstance:
     chosen_creature_type: str | None = None
     printed_characteristics: dict = field(default_factory=dict)
     colors: list[str] | None = None
+    is_token: bool = False
 
 
 @dataclass

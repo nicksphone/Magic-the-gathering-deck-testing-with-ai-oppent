@@ -3,13 +3,15 @@ from __future__ import annotations
 import re
 
 from game_state.state import Zone
-from rules_engine.zone_actions import put_into_graveyard
+from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 
 
 def dredge_options(state, player_id: int) -> list[dict]:
     player = state.players[player_id]
     result = []
     for cid in player.graveyard:
+        if is_departed_token(state.cards[cid]):
+            continue
         match = re.search(r"\bdredge\s+(\d+)", state.cards[cid].oracle_text or "", re.IGNORECASE)
         if match and len(player.library) >= int(match.group(1)):
             result.append({"card_id": cid, "count": int(match.group(1))})

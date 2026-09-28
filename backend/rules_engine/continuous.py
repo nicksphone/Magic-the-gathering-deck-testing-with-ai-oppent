@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from game_state.state import Zone
+from rules_engine.card_types import is_token_card
 
 PT_STATIC_RE = re.compile(
     r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
@@ -411,7 +412,7 @@ def _subject_matches(state, card_id: str, subject: str) -> bool:
     if s == "creatures":
         return "Creature" in card.types
     if s == "creature tokens":
-        return "Creature" in card.types and "Token" in card.types
+        return "Creature" in card.types and is_token_card(card)
     if s == "artifact creatures":
         return "Creature" in card.types and "Artifact" in card.types
     # "elf creatures"

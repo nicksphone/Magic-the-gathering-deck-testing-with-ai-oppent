@@ -228,7 +228,8 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
     player = state.players[player_id]
-    if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id]) < option.exile_graveyard:
+    from rules_engine.zone_actions import is_departed_token
+    if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
     if player.life <= option.pay_life:
         return False

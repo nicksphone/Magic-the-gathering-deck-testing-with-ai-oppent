@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from rules_engine.continuous import effect_timestamp
+from rules_engine.card_types import is_token_card
 
 
 def _battlefield_oracle_texts(state, controller: int | None = None):
@@ -435,9 +436,8 @@ def graveyard_destination(state, target) -> str:
 def _graveyard_exile_applies(source, text: str, target) -> bool:
     if _ANY_GRAVEYARD_EXILE in text:
         return True
-    is_token = bool(getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])})
     return (
-        not is_token
+        not is_token_card(target)
         and source.controller != target.owner
         and _OPPONENT_CARD_GRAVEYARD_EXILE in text
     )
@@ -453,7 +453,7 @@ def _die_zone_candidates(state, target) -> list[tuple[object, str]]:
 
 
 def _die_exile_applies(text: str, target) -> bool:
-    is_token = bool(getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])})
+    is_token = is_token_card(target)
     if is_token and ("nontoken" in text or "non-token" in text):
         return False
     if _DIE_EXILE_RE.search(text) or _matches_phrase(text, (

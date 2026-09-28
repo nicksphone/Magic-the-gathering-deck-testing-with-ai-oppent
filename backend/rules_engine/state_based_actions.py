@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchState, Zone
+from rules_engine.card_types import is_token_card
 from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.continuous import effective_toughness, has_keyword
@@ -207,7 +208,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
 
 def _cease_nonbattlefield_tokens(state: MatchState) -> None:
     for cid, card in state.cards.items():
-        if "Token" not in card.types or card.zone in {Zone.BATTLEFIELD, Zone.STACK, Zone.CEASED}:
+        if not is_token_card(card) or card.zone in {Zone.BATTLEFIELD, Zone.STACK, Zone.CEASED}:
             continue
         for player in state.players.values():
             for zone in ("library", "hand", "graveyard", "exile"):

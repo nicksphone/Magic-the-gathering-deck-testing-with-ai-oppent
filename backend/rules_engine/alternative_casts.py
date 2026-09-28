@@ -39,7 +39,8 @@ def restore_printed_characteristics(card) -> None:
 
 
 def validate_escape_exiles(state, player_id: int, card_id: str, count: int, selected: list | None) -> list[str] | None:
-    eligible = [cid for cid in state.players[player_id].graveyard if cid != card_id]
+    from rules_engine.zone_actions import is_departed_token
+    eligible = [cid for cid in state.players[player_id].graveyard if cid != card_id and not is_departed_token(state.cards[cid])]
     ids = eligible[:count] if selected is None else selected
     if not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids) or len(ids) != count or len(set(ids)) != count or any(cid not in eligible for cid in ids):
         return None

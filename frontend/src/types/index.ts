@@ -36,6 +36,7 @@ export type CardView = {
   selected_face_index?: number | null;
   loyalty?: number | null;
   types: string[];
+  is_token?: boolean;
 };
 
 export type PlayerView = {
