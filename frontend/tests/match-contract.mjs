@@ -19,6 +19,9 @@ assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: 
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 2: undefined } }), /player 2/);
 assert.equal(parseMatchState({ ...state, sideboarding: { 1: { mainboard: [{ card_name: "Island", quantity: 60 }], sideboard: [], applied: false } } }).id, state.id);
 assert.throws(() => parseMatchState({ ...state, sideboarding: { 1: { mainboard: [], sideboard: "Island", applied: false } } }), /sideboarding inventory/);
+const aiChoice = { ...state, controllers: { 1: "human", 2: "ai" }, pending_mechanic_choice: { kind: "search_library", player_id: 2, label: "AI is making a choice" } };
+assert.equal(parseMatchState(aiChoice), aiChoice);
+assert.throws(() => parseMatchState({ ...aiChoice, pending_mechanic_choice: { ...aiChoice.pending_mechanic_choice, options: ["hidden-card"] } }), /pending mechanic choice/);
 const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
 assert.equal(parseLegalMoves(legal), legal);
 assert.throws(() => parseLegalMoves({ ...legal, player_id: 99 }), /legal-moves response/);

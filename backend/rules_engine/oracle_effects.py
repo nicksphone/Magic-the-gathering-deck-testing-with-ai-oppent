@@ -360,6 +360,8 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     payload: dict[str, Any] = {"contains": contains, "destination": destination}
     if "search your library for up to " in search_clause:
         payload["up_to"] = True
+    if re.search(r"\breveal\b", search_clause):
+        payload["reveal"] = True
     if "onto the battlefield tapped" in oracle:
         payload["tapped"] = True
     if "shuffle" in oracle:

@@ -864,8 +864,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             if limit and len(found) >= limit:
                 break
     if found:
-        joined = ", ".join(found)
-        state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s): {joined}.")
+        public_names = bool(payload.get("reveal")) or destination in {"battlefield", "graveyard", "exile"}
+        detail = f": {', '.join(found)}" if public_names else ""
+        state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s){detail}.")
     if payload.get("shuffle"):
         state.rng.shuffle(player.library)
         state.log.append(f"{player.name} shuffles their library.")

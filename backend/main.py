@@ -1325,6 +1325,12 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
 
 def _serialize_match_controller(match: MatchController) -> dict:
     payload = serialize_match(match.state)
+    pending = match.state.pending_mechanic_choice
+    if pending and match.controllers.get(pending.get("player_id")) == "ai":
+        payload["pending_mechanic_choice"] = {
+            "kind": pending.get("kind"), "player_id": pending.get("player_id"),
+            "label": "AI is making a choice",
+        }
     for pid, controller in match.controllers.items():
         if controller == "ai":
             payload["players"][pid]["hand"] = []

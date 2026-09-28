@@ -44,6 +44,24 @@ def test_entomb_searches_any_card_into_graveyard() -> None:
     assert state.cards[chosen].zone == Zone.GRAVEYARD
 
 
+def test_demonic_tutor_does_not_reveal_hidden_hand_selection_in_log() -> None:
+    state = _state_with_searcher()
+    chosen = state.players[1].library[-1]
+    state.cards[chosen].name = "Lightning Bolt"
+    spell = CardInstance(
+        id="demonic-tutor", name="Demonic Tutor", owner=1, controller=1,
+        zone=Zone.HAND, types=["Sorcery"],
+        oracle_text="Search your library for a card, put that card into your hand, then shuffle.",
+    )
+    effect = build_ability_spec(state, spell, 1).effect
+    assert effect.key == "search_library"
+    assert effect.payload["contains"] == "card"
+    resolve_effect(state, 1, effect.key, {**effect.payload, "selected_card_ids": [chosen]})
+    assert chosen in state.players[1].hand
+    assert any("searched library and found 1 card" in line for line in state.log)
+    assert not any("Lightning Bolt" in line for line in state.log)
+
+
 def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement() -> None:
     state = _state_with_searcher()
     spell = CardInstance(
@@ -246,6 +264,7 @@ def test_cultivate_inference_splits_canonical_land_destinations() -> None:
         "destination": "split_battlefield_hand",
         "count": 2,
         "up_to": True,
+        "reveal": True,
         "shuffle": True,
         "tapped": True,
     }

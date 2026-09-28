@@ -41,6 +41,14 @@ export function parseMatchState(value: unknown): MatchState {
     || !value.attack_bands.every((band) => Array.isArray(band) && band.every((id) => typeof id === "string")))) {
     throw new Error("Invalid match response: attack bands must be card ID arrays");
   }
+  const pending = value.pending_mechanic_choice;
+  if (pending !== undefined && pending !== null && (!record(pending)
+    || typeof pending.kind !== "string" || (pending.player_id !== 1 && pending.player_id !== 2)
+    || (pending.options !== undefined && (!Array.isArray(pending.options) || !pending.options.every((id) => typeof id === "string")))
+    || (record(value.controllers) && value.controllers[String(pending.player_id)] === "ai"
+      && ("options" in pending || "library_ids" in pending || "effect_payload" in pending)))) {
+    throw new Error("Invalid match response: pending mechanic choice");
+  }
   if (value.sideboarding !== undefined && (!record(value.sideboarding)
     || !Object.entries(value.sideboarding).every(([seat, inventory]) => ["1", "2"].includes(seat)
       && record(inventory) && typeof inventory.applied === "boolean"
