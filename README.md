@@ -34,11 +34,11 @@ It is designed for serious deck work:
 - Human controllers can divide combat damage among multiple blockers, or among multiple attackers blocked by one creature, before the damage step resolves. The numeric choice survives snapshots; trample checks lethal damage assigned by all attacking sources in that step before damage reaches the defender. A pending split can be restarted before damage is dealt. AI uses a bounded threat-based allocation, while low-level unattended calls retain a deterministic fallback. First- and double-strike steps request separate choices.
 - Combat-damage events include actual trample damage to a defender and damage dealt by blockers; source-specific player-hit triggers do not fire for another creature's damage. The damage step stages those events with resulting death triggers before a shared APNAP trigger-order choice, and staged triggers survive snapshots. Human death-replacement continuation and broader state-based-action waves still need certification.
 - If a blocker has banding, its defending controller chooses the attacker's supported damage split; if a blocker is blocking an attacker with banding, the active player chooses that blocker's supported split. The UI and AI follow the choice owner. Ordinary banding is inferred from Oracle text in live deck construction, distinct from "bands with other." Human players can select an ordinary attacking band; its legal direct blocks propagate to all live members and persist through snapshots. "Bands with other" remains unsupported, and AI does not yet form bands strategically.
-- Current verification: 1,113 backend tests pass in an isolated source/database copy, including focused combat lifelink replacement, human-choice, death-ordering and snapshot tests; frontend lint, build and unit checks and the full loopback Chromium harness pass. The browser harness covers conditional-land choices, capped draws under Spirit, manual nonland mana, combat choices, recovery and BO3 paths. Earlier seeded Burn/Dimir single-game replays completed without timeout or log drift, including one that played Sacred Foundry and paid 2 life. These checks are not balance, rules-corpus or AI-quality certification.
+- Current verification: 1,115 backend tests pass in an isolated source/database copy, including focused combat lifelink replacement, human-choice, death-ordering and snapshot tests; frontend lint, build and unit checks and the full loopback Chromium harness pass. The browser harness covers conditional-land choices, capped draws under Spirit, manual nonland mana, combat choices, recovery and BO3 paths. Earlier seeded Burn/Dimir single-game replays completed without timeout or log drift, including one that played Sacred Foundry and paid 2 life. These checks are not balance, rules-corpus or AI-quality certification.
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
 - Lands with the supported "pay 2 life or enter tapped" wording offer explicit choices on land plays and resumable choices when effects put them onto the battlefield from hand, library or graveyard. Forced-tapped effects and payment legality share the same pre-entry helper. This is bounded wording support, not general replacement-effect certification.
 - Life-total locks with the supported "can't change" wording now suppress gain/loss and noninfect damage life changes, prevent nonzero life payments, and still allow damage to count for an unlocked opponent's lifelink. Activated and additional costs may pay exactly the remaining life when no lock applies. Other life-payment triggers and broader simultaneous replacement ordering remain unverified.
-- Combat lifelink routes one gain-life event per damaging source through supported gain replacements, including Alhammarret's Archive-style doubling. Human matches can choose between multiple applicable gain replacements; the paused damage step, remaining gains, state-based actions and staged triggers survive snapshots. Broader cross-event replacement ordering remains unverified.
+- Combat lifelink routes one gain-life event per damaging source through supported gain replacements, including Alhammarret's Archive-style doubling and Nefarious Lich-style gain-to-draw conversion. Human matches can choose between multiple applicable gain replacements; the paused damage step, remaining gains, state-based actions and staged triggers survive snapshots. Double-strike damage windows apply gains separately. Broader cross-event replacement ordering remains unverified.
 - Deck archetype estimates use cached layout to distinguish split cards from modal/transform faces; modal front-face cost and type drive curve and creature-density priors. These descriptive estimates do not prove strategic play quality.
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
 - Multiple prevention/replacement candidates use one explicit or deterministic timestamp-ordered choice per event, with source metadata preserved for replay diagnostics
@@ -411,7 +411,14 @@ Current focus:
 - keeping the UI dense and readable during long sessions
 - validating LAN and long-session UX, then adding richer state-by-state replay reconstruction
 
-GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build/hooks lint/unit checks, and a separate loopback Chromium action/recovery flow on pushes and pull requests. The browser job includes a backend-process restart check; it is not a complete-game or deployment test. Local instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
+GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build/hooks lint/unit checks, and a separate loopback Chromium action/recovery flow on pushes and pull requests. The browser job includes backend-process restart and scripted complete BO3 flows; these are not competitive-opponent, long-session or deployment tests. Local instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
+
+## Development Notes
+
+- Gameplay rules live in application code, not in SQL.
+- `README.md` describes the current product state.
+- `CHANGELOG.md` records milestone-level history.
+- `plan.md` tracks the remaining finish work.
 
 ## Known Limitations and Next Upgrades
 
@@ -430,18 +437,11 @@ GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
 - Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.
-- The [life-total-lock audit](docs/audits/2026-09-28-life-total-lock.md) covers a bounded Platinum Emperion-style interaction. Lifelink still uses direct combat life increments rather than the full simultaneous replacement/event model; unusual lock wording and life-payment triggers need broader tests.
-- The [lifelink event audit](docs/audits/2026-09-28-lifelink-events.md) covers per-source gain triggers. Combat still applies the life increment directly after damage assignment, so gain-doubling and human replacement choices are not yet certified even though the gain event is now emitted and staged.
+- The [life-total-lock audit](docs/audits/2026-09-28-life-total-lock.md) covers a bounded Platinum Emperion-style interaction. Combat gains now use the shared replacement handler; unusual lock wording and life-payment triggers still need broader tests.
+- The [lifelink event audit](docs/audits/2026-09-28-lifelink-events.md) covers per-source gain triggers, supported gain doublers, gain-to-draw conversion, human choice continuation and double-strike windows. Nested draw-replacement choices and general simultaneous replacement ordering remain uncertified.
 - Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.
 - The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
 - Master AI can now cast fixed-cost planeswalkers whose later loyalty text mentions X and choose profitable X values for the supported colored-permanent sweep. This is not a general X-loyalty planner or broad decision-quality certification.
 - Larger deterministic replay matrices and longer validation runs would improve confidence in balance and edge-case coverage.
 - Persisted replay inspection is paginated and bounded; state-by-state card highlighting and full long-session/LAN validation remain future work.
 - The UI still has room for more polished long-session deck-testing ergonomics.
-
-## Development Notes
-
-- Gameplay rules live in application code, not in SQL.
-- `README.md` describes the current product state.
-- `CHANGELOG.md` records milestone-level history.
-- `plan.md` tracks the remaining finish work.

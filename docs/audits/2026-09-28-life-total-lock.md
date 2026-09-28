@@ -11,12 +11,12 @@ Verification: 1,104 backend tests passed in an isolated source/database copy. Fr
 ## Shared path
 
 - `rules_engine/replacement.py` recognizes supported controller, opponent and all-player "life total can't change" text. Gain/loss checks and `can_pay_life` use it; paying zero remains allowed and paying exactly current life is allowed without a lock.
-- `effects/handlers.py` already consults the gain/loss checks. `rules_engine/damage_results.py` suppresses the life decrease but retains damage consequences, including poison from infect. `rules_engine/combat.py` suppresses lifelink gain for a locked controller but does not suppress an unlocked opponent's lifelink from damage dealt to the locked player.
+- `effects/handlers.py` consults the gain/loss checks. `rules_engine/damage_results.py` suppresses the life decrease but retains damage consequences, including poison from infect. Combat routes each lifelink gain through that same effect handler, so a locked controller gains no life while an unlocked opponent still can gain life from damage dealt to the locked player.
 - `rules_engine/costs.py` and `rules_engine/entry.py` share payment availability instead of checking life totals separately.
 - Six focused tests exercise the real Platinum Emperion wording, Sacred Foundry's entry payment, Vampire Nighthawk combat damage/lifelink, Glistener Elf's poison damage, Cruel Sadist's activated payment at exactly one life, and a generic additional-cost option. The additional-cost option tests the engine boundary; it is not presented as printed Lightning Bolt text.
 
 ## Still open
 
-- Combat lifelink is still applied through direct life increments, not a generic simultaneous gain-event/replacement pipeline. The lock guard prevents a wrong total but does not certify doubling, trigger batching or multiple replacement ordering.
+- Combat lifelink no longer uses direct life increments: [the follow-up lifelink audit](2026-09-28-lifelink-events.md) covers supported gain doublers, gain-to-draw conversion, human replacement choices and staged gain triggers. This does not certify general simultaneous replacement ordering or unsupported life-change wording.
 - Life-payment triggers and costs outside the audited activated/additional/entry paths need an inventory and golden tests. No arbitrary-card Oracle guarantee follows from four fixtures.
 - Other text families that constrain life totals or set them to a specific value need separate coverage; this audit only supports the listed "can't change" clauses.

@@ -652,8 +652,8 @@
     "hash": "eb82cb90799c82446da2538e26f5d354"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_lifelink_gain_events.py": {
-    "mtime": 1790611211.4785023,
-    "hash": "35e7c7bc6aa37803f71d98a7c7c70546"
+    "mtime": 1790611715.8816519,
+    "hash": "6b143b73f256969ecf8ff4175a81e5fb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_library_permissions.py": {
     "mtime": 1784462496.0321248,
@@ -1100,16 +1100,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790611490.8210611,
-    "hash": "87866c91197c75f56e055114a1e3171e"
+    "mtime": 1790611882.4415617,
+    "hash": "ec401c8710034456c235ffa05fa2a030"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790611184.8269253,
-    "hash": "237e3bffc46d03bddebdfb14b629ef07"
+    "mtime": 1790611743.2851348,
+    "hash": "045f1790e86495d91767af3679996e6b"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790611490.822061,
-    "hash": "6fd96c2654c493af29cf15c71f236ca4"
+    "mtime": 1790611882.4425616,
+    "hash": "473997fa2f26d324a44ed85edb52dafb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1164,16 +1164,16 @@
     "hash": "ed2906024869424314fc0fa1373c2d59"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-lifelink-events.md": {
-    "mtime": 1790611490.822061,
-    "hash": "8f43aa11ee561f64b6b78f4a74d3c0f9"
+    "mtime": 1790611882.4425616,
+    "hash": "f3def400b202c22ae3418e2d1f492d4e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-battlefield-entry-choice.md": {
     "mtime": 1790608861.2924764,
     "hash": "e17bccde68375a20f8a038083d496d89"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-life-total-lock.md": {
-    "mtime": 1790609922.785066,
-    "hash": "53fdac1825996326529d16e6530afb86"
+    "mtime": 1790611743.2841349,
+    "hash": "ab53c641f40f6c114535b346d39790db"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
     "mtime": 1790525223.5599864,

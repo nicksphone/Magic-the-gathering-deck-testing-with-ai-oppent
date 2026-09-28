@@ -230,3 +230,76 @@ def test_separate_lifelink_sources_resume_both_human_choices():
     assert state.players[1].life == 36
     assert len(pridemate_triggers(state)) == 2
     assert not state.trigger_staging
+
+
+def test_lifelink_gain_replaced_by_draw_resumes_remaining_source():
+    state = game()
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name, oracle in (
+        ("reflection", "Boon Reflection", "If you would gain life, you gain twice that much life instead."),
+        (
+            "lich", "Nefarious Lich",
+            "If damage would be dealt to you, exile that many cards from your graveyard instead. "
+            "If you can't, you lose the game.\n"
+            "If you would gain life, draw that many cards instead.\n"
+            "When this enchantment leaves the battlefield, you lose the game.",
+        ),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=oracle,
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+    add_pridemate(state)
+    state.attackers = [add_nighthawk(state, "hawk-1"), add_nighthawk(state, "hawk-2")]
+    hand_size = len(state.players[1].hand)
+    combat.combat_damage(state)
+    assert state.players[1].life == 20
+    assert state.pending_replacement_choice
+
+    engine = RulesEngine()
+    engine.take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "lich"})
+    assert len(state.players[1].hand) == hand_size + 2
+    assert state.pending_replacement_choice
+    assert not pridemate_triggers(state)
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    engine.take_action(state, 1, {"type": "choose_replacement", "replacement_source_id": "reflection"})
+    assert len(state.players[1].hand) == hand_size + 6
+    assert state.players[1].life == 20
+    assert not state.pending_replacement_choice
+    assert not state.trigger_staging
+    assert not pridemate_triggers(state)
+
+
+def test_double_strike_lifelink_replaces_each_damage_window_once():
+    state = game()
+    state.step = Step.DECLARE_BLOCKERS
+    archive = CardInstance(
+        id="archive", name="Alhammarret's Archive", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Legendary", "Artifact"],
+        oracle_text="If you would gain life, you gain twice that much life instead.",
+    )
+    state.cards[archive.id] = archive
+    state.players[1].battlefield.append(archive.id)
+    attacker = add_nighthawk(state, "hawk-1")
+    # Double Cleave can grant double strike to Vampire Nighthawk.
+    state.cards[attacker].keywords.append("double strike")
+    state.attackers = [attacker]
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.combat_damage_stage == "first"
+    assert state.players[1].life == 24 and state.players[2].life == 18
+
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.combat_damage_stage == "regular"
+    assert state.players[1].life == 28 and state.players[2].life == 16
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.step == Step.END_COMBAT
+    assert state.players[1].life == 28

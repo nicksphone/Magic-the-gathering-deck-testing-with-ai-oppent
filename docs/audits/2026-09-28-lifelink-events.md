@@ -17,3 +17,9 @@ The [Magic 2015 release notes](https://magic.wizards.com/en/news/feature/magic-2
 
 - Combat gains now route through the shared life-gain replacement handler, with a serialized continuation for multiple human replacement choices. The former strict Archive expected failure now passes. Focused tests cover separate gains, human choice through a snapshot, and a dying lifelink source whose state-based death waits for the choice. Do not infer general life-gain/replacement fidelity from these bounded examples.
 - Extend golden tests to gain doublers, gain-prevention effects, damage dealt to multiple kinds of recipient, first/double-strike substeps, lock changes during combat and APNAP ordering after death replacements.
+
+## Cross-effect follow-up
+
+Real Nefarious Lich and Boon Reflection Oracle clauses now cover a human choice between gain-to-draw and doubling, including a second lifelink source waiting while the first draw replacement resolves. The selected order changes the draw count; no gain-life trigger fires when Nefarious Lich replaces the gain. A separate double-strike snapshot regression verifies Archive doubles each damage window exactly once. These focused cases do not establish arbitrary replacement-chain or APNAP correctness.
+
+Validation after the cross-effect fixtures: 1,115 backend tests pass in an isolated source/database copy. The preceding frontend lint/build/unit and full Chromium harness pass; no new browser scenario specifically exercises these cards.
