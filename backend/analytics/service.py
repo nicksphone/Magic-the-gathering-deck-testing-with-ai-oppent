@@ -18,6 +18,7 @@ from analytics.replay_tools import classify_first_divergence, first_log_divergen
 from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.coverage import known_unsupported_mechanics
 from game_state.state import MatchFactory
 
 
@@ -134,6 +135,15 @@ class AnalyticsService:
         resolved_games = wins_a + wins_b
         result = {
             "matches": matches,
+            "rules_coverage": {
+                "status": "exploratory",
+                "known_unsupported_cards": [
+                    {"deck": label, "card_name": item.get("card_name", ""), "mechanics": mechanics}
+                    for label, deck in (("A", deck_a), ("B", deck_b))
+                    for item in deck
+                    if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or "")))
+                ],
+            },
             "resolved_games": resolved_games,
             "win_rate_deck_a": round((wins_a / max(1, resolved_games)) * 100, 2),
             "win_rate_deck_b": round((wins_b / max(1, resolved_games)) * 100, 2),

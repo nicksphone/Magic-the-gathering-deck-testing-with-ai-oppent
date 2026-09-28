@@ -7,6 +7,7 @@ from card_data.fallback_cards import fallback_card_payload
 from card_data.search import fuzzy_card_lookup
 from persistence.models import CardCache
 from persistence.repository import Repository
+from rules_engine.coverage import known_unsupported_mechanics
 
 
 class CardService:
@@ -47,7 +48,7 @@ class CardService:
             rulings = json.loads(getattr(card, "rulings_json", "[]") or "[]") if card else []
             oracle_source = "cache" if card and card.oracle_text else ("fallback" if fallback.get("oracle_text") else "missing")
             oracle_text = str((getattr(card, "oracle_text", "") if card else "") or fallback.get("oracle_text") or "")
-            unsupported_mechanics = ["bands with other"] if "bands with other" in oracle_text.lower() else []
+            unsupported_mechanics = known_unsupported_mechanics(oracle_text)
             image_uri = select_display_image_uri(
                 card,
                 name=name,
@@ -61,6 +62,7 @@ class CardService:
                     "oracle": bool((getattr(card, "oracle_text", "") if card else "") or fallback.get("oracle_text")),
                     "oracle_source": oracle_source,
                     "unsupported_mechanics": unsupported_mechanics,
+                    "rules_coverage": "known_unsupported" if unsupported_mechanics else "not_certified",
                     "mana_cost": bool((getattr(card, "mana_cost", "") if card else "") or fallback.get("mana_cost")),
                     "type_line": bool((getattr(card, "type_line", "") if card else "") or fallback.get("type_line")),
                     "legalities": bool(json.loads(getattr(card, "legalities_json", "{}") or "{}")) if card else False,

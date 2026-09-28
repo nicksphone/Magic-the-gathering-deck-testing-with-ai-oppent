@@ -147,3 +147,5 @@ def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
     assert report["unsupported_count"] == 1
     assert report["cards"][0]["unsupported_mechanics"] == ["bands with other"]
     assert report["cards"][1]["unsupported_mechanics"] == []
+    assert report["cards"][0]["rules_coverage"] == "known_unsupported"
+    assert report["cards"][1]["rules_coverage"] == "not_certified"

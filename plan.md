@@ -254,7 +254,7 @@ September 27 engine increment: dedicated core handlers for Infect/Wither/Toxic, 
 - [ ] Reconcile [the knowledge implementation plan](docs/plans/2026-09-09-ai-knowledge-base.md) with current code before carrying forward its historical cache counts.
 - [ ] Implement tactical profiles, AI consumers and measured matchup priors; storage alone does not complete knowledge integration.
 - [ ] Surface unsupported/ambiguous semantics before simulation instead of silently approximating them.
-Partial coverage: deck completeness now warns about "bands with other" across mainboard and sideboard while leaving metadata completeness separate; 982 isolated backend tests pass. This does not classify other unimplemented effects or block unreliable simulations yet.
+Partial coverage: deck completeness distinguishes known unsupported from not certified across mainboard and sideboard. Persisted batch results and the Testing Simulator label win rates exploratory and list detected unsupported cards; 986 isolated backend tests and frontend lint/build/unit pass. This does not classify every unimplemented effect, publish a certified corpus or block unreliable simulations yet.
 
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 

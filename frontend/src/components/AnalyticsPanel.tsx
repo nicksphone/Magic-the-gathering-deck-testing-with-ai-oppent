@@ -37,6 +37,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const anomalyObj = (resultObj?.anomalies as Record<string, unknown> | null) ?? null;
   const balanceAlerts = Array.isArray(resultObj?.balance_alerts) ? resultObj.balance_alerts as Array<Record<string, unknown>> : [];
   const confidenceIntervals = (resultObj?.confidence_intervals as Record<string, Record<string, unknown>> | null) ?? null;
+  const rulesCoverage = resultObj?.rules_coverage as { status?: string; known_unsupported_cards?: { deck: string; card_name: string; mechanics: string[] }[] } | undefined;
 
   async function refreshDiagnosticRuns() {
     try {
@@ -320,6 +321,9 @@ export function AnalyticsPanel({ decks }: Props) {
       </div>
       {resultObj ? (
         <div className="analytics-summary">
+          <p role="note">Rules coverage: exploratory, not certified for rules-exact win rates.
+            {rulesCoverage?.known_unsupported_cards?.length ? ` Known unsupported: ${rulesCoverage.known_unsupported_cards.map((card) => `Deck ${card.deck} ${card.card_name} (${card.mechanics.join(", ")})`).join("; ")}.` : ""}
+          </p>
           <p>
             Win Rate: A {(resultObj.win_rate_deck_a as number | undefined) ?? "-"}% | B {(resultObj.win_rate_deck_b as number | undefined) ?? "-"}% |
             Avg Turns {(resultObj.average_turns as number | undefined) ?? "-"}

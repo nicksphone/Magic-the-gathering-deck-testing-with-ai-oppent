@@ -81,6 +81,7 @@ export type CardCompletenessReport = {
     oracle_source: "cache" | "fallback" | "missing";
     placeholder_image: boolean;
     unsupported_mechanics?: string[];
+    rules_coverage?: "known_unsupported" | "not_certified";
   }[];
 };
 

@@ -189,6 +189,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
           <span>Placeholder art: {completeness.missing.real_image}</span>
           <span>Missing rulings: {completeness.missing.rulings}</span>
           <span>Card data completeness does not guarantee rules support.</span>
+          <span>Rules coverage: {completeness.cards.filter((card) => card.rules_coverage === "known_unsupported").length} known unsupported; {completeness.cards.filter((card) => card.rules_coverage !== "known_unsupported").length} not certified. Match statistics are exploratory.</span>
           {completeness.unsupported_count ? <span role="alert">Unsupported rules in this deck: {completeness.cards.filter((card) => card.unsupported_mechanics?.length).map((card) => `${card.name} (${card.unsupported_mechanics?.join(", ")})`).join("; ")}</span> : null}
         </div>
       )}
