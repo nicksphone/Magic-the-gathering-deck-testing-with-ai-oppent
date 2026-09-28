@@ -1,7 +1,7 @@
-import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
+import type { DeckItem, DeckRecord, MatchState } from "../types";
 import { HttpResponseError, httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
-import { parseMatchState } from "./match-contract";
+import { parseLegalMoves, parseMatchState } from "./match-contract";
 import { parseBatchJobStatus } from "./simulation-contract";
 
 const configuredApi = import.meta.env.VITE_API_BASE_URL;
@@ -224,9 +224,9 @@ export const api = {
   getMatch: (id: string) => matchReq(`/matches/${id}`),
   savedMatches: () => req<SavedMatch[]>("/matches"),
   legalMoves: (matchId: string, playerId?: number) =>
-    req<{ player_id: number; moves: LegalMove[]; revision?: number }>(
+    req<unknown>(
       `/matches/${matchId}/legal-moves${playerId ? `?player_id=${playerId}` : ""}`,
-    ),
+    ).then(parseLegalMoves),
   act: (matchId: string, player_id: number, action: Record<string, unknown>, write?: MatchWrite) =>
     matchReq(`/matches/${matchId}/action`, { method: "POST", headers: writeHeaders(write), body: JSON.stringify({ player_id, action }) }),
   autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => matchReq(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST", headers: writeHeaders(write) }),

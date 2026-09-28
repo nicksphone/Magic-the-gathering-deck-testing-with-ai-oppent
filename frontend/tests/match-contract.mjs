@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { parseMatchState } from "../src/api/match-contract.ts";
+import { parseLegalMoves, parseMatchState } from "../src/api/match-contract.ts";
 
 const mountain = { id: "mountain-1", name: "Mountain", tapped: false, types: ["Land"], power: null, toughness: null, card_faces: [] };
 const state = {
@@ -14,4 +14,10 @@ assert.equal(parseMatchState(state), state);
 assert.throws(() => parseMatchState({ ...state, blocks: { attacker: "blocker-a" } }), /blocks must map/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, power: undefined }] } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 2: undefined } }), /player 2/);
+const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
+assert.equal(parseLegalMoves(legal), legal);
+assert.throws(() => parseLegalMoves({ ...legal, player_id: 99 }), /legal-moves response/);
+assert.throws(() => parseLegalMoves({ ...legal, revision: "0" }), /legal-moves response/);
+assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "cast_spell", card_view: { name: "Broken" } }] }), /legal-moves response/);
+assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "choose_mechanic", options: "not a list" }] }), /legal-moves response/);
 console.log("PASS live match response contract cases");

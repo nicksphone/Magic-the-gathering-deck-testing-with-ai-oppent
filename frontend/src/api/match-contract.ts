@@ -1,4 +1,4 @@
-import type { MatchState } from "../types";
+import type { LegalMove, MatchState } from "../types";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -36,4 +36,18 @@ export function parseMatchState(value: unknown): MatchState {
     throw new Error("Invalid match response: blocks must map attackers to blocker ID arrays");
   }
   return value as MatchState;
+}
+
+export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revision: number };
+
+export function parseLegalMoves(value: unknown): LegalMovesResponse {
+  if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
+    || !Number.isInteger(value.revision) || (value.revision as number) < 0
+    || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
+      && typeof move.type === "string" && move.type.length > 0
+      && (move.card_view === undefined || card(move.card_view))
+      && (move.options === undefined || (Array.isArray(move.options) && move.options.every((id) => typeof id === "string"))))) {
+    throw new Error("Invalid legal-moves response: seat, revision or move shape");
+  }
+  return value as LegalMovesResponse;
 }

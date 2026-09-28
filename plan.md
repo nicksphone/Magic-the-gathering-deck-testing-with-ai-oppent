@@ -200,6 +200,7 @@ Acceptance: repeated seeded interactive series and restarts agree when actions a
 ### 9. Add contract and frontend release gates (P2)
 
 The frontend now checks live match responses for core fields, both player views, required card-view fields and list-valued block assignments. Unit regressions reject malformed payloads, and a backend-serialized match passed the validator. This is partial boundary coverage, not generated OpenAPI types or full response validation.
+Legal-move responses now also validate the acting seat, nonnegative revision, move discriminator and optional card-view/choice-list shapes. Unit tests reject malformed examples, and the loopback browser harness accepts production API responses across its action/recovery paths. Other successful API responses still need boundary contracts.
 The Testing Simulator job-status boundary also validates progress and completed summary metrics, and its `any` result cast is removed. Diagnostic run payloads and other API responses still need generated/shared contracts and selective runtime validation.
 
 A clean-checkout GitHub Actions baseline installs declared Python and locked npm dependencies, then runs the backend suite, frontend build, lint and frontend unit checks. Browser-flow gates are not yet configured in CI. The final frontend `any` casts for Vite environment access and start-mode selection were removed; `ImportMeta` now uses Vite's client declaration. A disposable frontend copy passed `npm ci`, build and unit checks locally; a separate fresh Python venv passed seven API smoke tests.
