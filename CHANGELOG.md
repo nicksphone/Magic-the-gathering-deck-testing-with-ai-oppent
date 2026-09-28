@@ -4,6 +4,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Validate saved-match discovery summaries before recovery uses them; malformed IDs, mode, revision, turn or player names now fail at the API boundary. Unit and browser recovery paths pass.
 - Validate successful legal-move responses at the frontend boundary, rejecting malformed actor, revision, move and card-view fields before they drive UI actions. Unit and browser contract gates pass; generated/shared API types remain open.
 - Reuse a pending match-start key when Start is clicked again after ambiguous failures, preventing a second match before reload. Browser regression covers the repeated-click path.
 - Added durable idempotency for match creation. A start-key receipt and snapshot commit together; same-key retries return the same game after a lost response or backend memory restore, while changed requests conflict. The frontend retains pending creation across reload and browser tests verify one match after one or two dropped successful responses. Extended multi-window and network operation remain open.

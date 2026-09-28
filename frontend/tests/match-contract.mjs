@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { parseLegalMoves, parseMatchState } from "../src/api/match-contract.ts";
+import { parseLegalMoves, parseMatchState, parseSavedMatches } from "../src/api/match-contract.ts";
 
 const mountain = { id: "mountain-1", name: "Mountain", tapped: false, types: ["Land"], power: null, toughness: null, card_faces: [] };
 const state = {
@@ -20,4 +20,9 @@ assert.throws(() => parseLegalMoves({ ...legal, player_id: 99 }), /legal-moves r
 assert.throws(() => parseLegalMoves({ ...legal, revision: "0" }), /legal-moves response/);
 assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "cast_spell", card_view: { name: "Broken" } }] }), /legal-moves response/);
 assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "choose_mechanic", options: "not a list" }] }), /legal-moves response/);
+const saved = [{ id: "match-1", mode: "human_vs_human", turn: 1, game_number: 1, revision: 0, players: ["Player A", "Player B"] }];
+assert.equal(parseSavedMatches(saved), saved);
+assert.throws(() => parseSavedMatches([{ ...saved[0], id: null }]), /saved-matches response/);
+assert.throws(() => parseSavedMatches([{ ...saved[0], players: "Player A" }]), /saved-matches response/);
+assert.throws(() => parseSavedMatches([{ ...saved[0], revision: -1 }]), /saved-matches response/);
 console.log("PASS live match response contract cases");

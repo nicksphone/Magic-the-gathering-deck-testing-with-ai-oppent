@@ -19,7 +19,7 @@ It is designed for serious deck work:
 - Land drops, casting, activated abilities, combat actions, and response windows
 - Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
 - Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
-- Live match responses pass a runtime core-state/card-view/blocks-shape check, and legal-move responses check seat/revision/move shape before entering the UI; broader generated API contracts remain unfinished
+- Live match, legal-move and saved-match discovery responses pass bounded runtime shape checks before entering the UI; broader generated API contracts remain unfinished
 - Public live-match responses hide AI-controlled hands while retaining hand counts; AI legal-move queries cannot expose their playable cards
 - Testing Simulator job responses check status, progress and completed summary metrics at runtime; the result no longer crosses the UI boundary as `any`
 - Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations and match creation

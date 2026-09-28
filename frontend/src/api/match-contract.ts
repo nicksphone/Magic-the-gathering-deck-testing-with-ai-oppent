@@ -1,4 +1,5 @@
 import type { LegalMove, MatchState } from "../types";
+import type { SavedMatch } from "./client";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -50,4 +51,18 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     throw new Error("Invalid legal-moves response: seat, revision or move shape");
   }
   return value as LegalMovesResponse;
+}
+
+export function parseSavedMatches(value: unknown): SavedMatch[] {
+  if (!Array.isArray(value) || !value.every((match) => record(match)
+    && typeof match.id === "string" && match.id.length > 0
+    && typeof match.mode === "string" && ["player_vs_ai", "ai_vs_ai", "human_vs_human"].includes(match.mode)
+    && Number.isInteger(match.turn) && (match.turn as number) >= 1
+    && Number.isInteger(match.game_number) && (match.game_number as number) >= 1
+    && Number.isInteger(match.revision) && (match.revision as number) >= 0
+    && Array.isArray(match.players) && match.players.length === 2
+    && match.players.every((name) => typeof name === "string"))) {
+    throw new Error("Invalid saved-matches response: match summary shape");
+  }
+  return value as SavedMatch[];
 }
