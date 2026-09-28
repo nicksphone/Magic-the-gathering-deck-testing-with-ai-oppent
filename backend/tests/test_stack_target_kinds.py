@@ -6,6 +6,7 @@ from rules_engine.cast_choice import build_cast_hints
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.action_validation import ActionRejected
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _state_with_trigger_and_spell():
@@ -123,3 +124,29 @@ def test_negate_only_counters_noncreature_spells():
     counter_spell(state, 1, payload)
     assert [item.id for item in state.stack] == ["trigger", "creature-stack"]
     assert state.cards["bolt"].zone == Zone.GRAVEYARD
+
+
+def test_negate_cast_path_counters_noncreature_spell():
+    state = _state_with_trigger_and_spell()
+    negate = CardInstance(
+        id="negate", name="Negate", owner=1, controller=1,
+        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
+        oracle_text="Counter target noncreature spell.",
+    )
+    state.cards[negate.id] = negate
+    state.players[1].hand.append(negate.id)
+    for _ in range(2):
+        land_id = state.players[1].library.pop()
+        state.players[1].battlefield.append(land_id)
+        state.cards[land_id].zone = Zone.BATTLEFIELD
+        state.cards[land_id].types = ["Land"]
+    assert any(move.get("card_id") == negate.id for move in RulesEngine().legal_moves(state, 1))
+    RulesEngine().take_action(state, 1, {
+        "type": "cast_spell", "card_id": negate.id,
+        "targets": {"target_stack_id": "spell"},
+    }, reject_invalid=True)
+    assert state.stack[-1].effect_key == "counter_spell"
+    resolve_top_of_stack(state)
+    assert [item.id for item in state.stack] == ["trigger"]
+    assert state.cards["bolt"].zone == Zone.GRAVEYARD
+    assert state.cards["sheoldred"].zone == Zone.BATTLEFIELD
