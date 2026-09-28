@@ -116,3 +116,42 @@ def test_fixed_multi_mana_sources_produce_printed_amount(name, types, text, colo
     assert auto_pay_cost(state, 1, cost)
     assert state.cards[cid].tapped
     assert state.players[1].mana_pool[color] == 1
+
+
+def test_one_flexible_source_cannot_pay_two_distinct_colored_pips() -> None:
+    state = _mana_game()
+    cid = state.players[1].library.pop()
+    source = state.cards[cid]
+    source.name = "Treasure"
+    source.types = ["Artifact", "Token"]
+    source.oracle_text = named_artifact_token("Treasure")["oracle_text"]
+    source.zone = Zone.BATTLEFIELD
+    source.is_token = True
+    state.players[1].battlefield.append(cid)
+    assert not can_pay_with_pool_and_lands(state, 1, "{R}{G}")
+    before = serialize_match_snapshot(state)
+    assert not auto_pay_cost(state, 1, "{R}{G}")
+    assert serialize_match_snapshot(state) == before
+    assert can_pay_with_pool_and_lands(state, 1, "{R}")
+
+
+def test_basic_is_used_before_dual_to_preserve_other_color() -> None:
+    state = _mana_game()
+    dual_id = state.players[1].library.pop()
+    basic_id = state.players[1].library.pop()
+    for cid in (dual_id, basic_id):
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        state.players[1].battlefield.append(cid)
+    dual = state.cards[dual_id]
+    dual.name = "Watery Grave"
+    dual.types = ["Land"]
+    dual.type_line = "Land - Island Swamp"
+    dual.oracle_text = "{T}: Add {U} or {B}."
+    basic = state.cards[basic_id]
+    basic.name = "Island"
+    basic.types = ["Land"]
+    basic.type_line = "Basic Land - Island"
+    basic.oracle_text = "{T}: Add {U}."
+    assert can_pay_with_pool_and_lands(state, 1, "{U}{B}")
+    assert auto_pay_cost(state, 1, "{U}{B}")
+    assert dual.tapped and basic.tapped
