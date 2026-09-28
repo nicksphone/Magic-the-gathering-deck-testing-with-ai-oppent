@@ -36,8 +36,9 @@ BUILTIN_DECKS: dict[str, str] = {
 2 Torrential Gearhulk
 3 The Meathook Massacre
 4 Shark Typhoon
-14 Island
-10 Swamp
+12 Island
+8 Swamp
+4 Underground Sea
 """,
     "Dimir Control": """
 4 Consider
@@ -49,8 +50,9 @@ BUILTIN_DECKS: dict[str, str] = {
 3 The Meathook Massacre
 4 Counterspell
 2 Torrential Gearhulk
-24 Island
-4 Swamp
+16 Island
+8 Swamp
+4 Underground Sea
 """,
     "Burn": """
 4 Goblin Guide
@@ -62,8 +64,9 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Boros Charm
 4 Skullcrack
 4 Searing Blaze
-20 Mountain
-4 Sacred Foundry
+16 Mountain
+4 Plains
+4 Plateau
 """,
     "Midrange": """
 4 Llanowar Elves
@@ -75,9 +78,12 @@ BUILTIN_DECKS: dict[str, str] = {
 3 Sheoldred, the Apocalypse
 3 Bloodtithe Harvester
 3 Abrupt Decay
-9 Forest
-9 Swamp
-9 Mountain
+5 Forest
+5 Swamp
+5 Mountain
+4 Bayou
+4 Badlands
+4 Taiga
 """,
     "Ramp": """
 4 Arboreal Grazer
@@ -148,7 +154,8 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Unholy Heat
 4 Expressive Iteration
 4 Brazen Borrower
-20 Island
-4 Mountain
+12 Island
+8 Mountain
+4 Volcanic Island
 """,
 }

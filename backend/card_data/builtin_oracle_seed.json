@@ -726,6 +726,15 @@
       "scryfall_id": "24dc369c-020a-4115-a4bb-d60a44de64e3",
       "type_line": "Basic Land — Plains"
     },
+    "Plateau": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Plateau",
+      "oracle_text": "({T}: Add {R} or {W}.)",
+      "scryfall_id": "bb979a96-a57d-4fb5-8ebe-0bd398272abe",
+      "type_line": "Land — Mountain Plains"
+    },
     "Priest of Forgotten Gods": {
       "colors": [
         "B"
@@ -966,6 +975,15 @@
       "scryfall_id": "51fe930f-2b5a-4b1e-9007-6ee74fb44715",
       "type_line": "Basic Land — Swamp"
     },
+    "Taiga": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Taiga",
+      "oracle_text": "({T}: Add {R} or {G}.)",
+      "scryfall_id": "0c2c39fc-b564-4ab5-833c-ff029760b7a7",
+      "type_line": "Land — Mountain Forest"
+    },
     "Tarmogoyf": {
       "colors": [
         "G"
@@ -1113,6 +1131,15 @@
       "oracle_text": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
       "scryfall_id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
       "type_line": "Instant"
+    },
+    "Volcanic Island": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Volcanic Island",
+      "oracle_text": "({T}: Add {U} or {R}.)",
+      "scryfall_id": "2f607e7e-30c0-45e9-8f61-bf6e9fe63f2b",
+      "type_line": "Land — Island Mountain"
     },
     "Wedding Announcement": {
       "card_faces": [

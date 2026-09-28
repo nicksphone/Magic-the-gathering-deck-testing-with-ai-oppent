@@ -8,10 +8,10 @@ from rules_engine.land_rules import apply_land_entry
 from rules_engine.mana import _land_colors, parse_mana_cost
 
 
-def test_every_builtin_has_sources_for_its_printed_spell_colors() -> None:
+def test_every_builtin_has_land_sources_for_its_colored_spell_packages() -> None:
     for deck_name, deck_text in BUILTIN_DECKS.items():
         sources: Counter[str] = Counter()
-        required: set[str] = set()
+        spell_copies: Counter[str] = Counter()
         total = 0
         for line in deck_text.splitlines():
             if not line.strip():
@@ -28,19 +28,25 @@ def test_every_builtin_has_sources_for_its_printed_spell_colors() -> None:
                     sources[color] += count
             else:
                 cost = parse_mana_cost(card.get("mana_cost", ""))
-                required.update(color for color in "WUBRG" if cost[color])
+                for color in "WUBRG":
+                    if cost[color]:
+                        spell_copies[color] += count
         assert total == 60, deck_name
-        for color in required:
-            assert sources[color] >= 4, f"{deck_name}: {color} spells have only {sources[color]} land sources"
+        for color, copies in spell_copies.items():
+            minimum = max(4, (copies + 1) // 2)
+            assert sources[color] >= minimum, f"{deck_name}: {copies} {color} spells have only {sources[color]} land sources"
 
 
 def test_builtin_duals_produce_both_colors_without_conditional_entry() -> None:
     expected = {
         "Badlands": {"B", "R"},
         "Bayou": {"B", "G"},
+        "Plateau": {"R", "W"},
         "Savannah": {"G", "W"},
+        "Taiga": {"R", "G"},
         "Tropical Island": {"G", "U"},
         "Underground Sea": {"U", "B"},
+        "Volcanic Island": {"U", "R"},
     }
     for name, colors in expected.items():
         card = fallback_card_payload(name)
