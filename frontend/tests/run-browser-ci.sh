@@ -22,7 +22,7 @@ start_backend
 (cd frontend && exec env VITE_API_BASE_URL=http://127.0.0.1:10199 ./node_modules/.bin/vite --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
-browser=$(command -v chromium || command -v google-chrome)
+browser=$(command -v google-chrome || command -v chromium)
 browser_flags=()
 if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
 "$browser" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
