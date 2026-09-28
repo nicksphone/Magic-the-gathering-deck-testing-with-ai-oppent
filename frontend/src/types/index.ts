@@ -90,6 +90,7 @@ export type MatchState = {
     player_id: number;
     options: string[];
     count?: number;
+    min_count?: number;
     label?: string;
     source_id?: string;
     source_name?: string;
@@ -115,6 +116,7 @@ export type LegalMove = {
   kind?: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library" | "combat_damage";
   player_id?: number;
   count?: number;
+  min_count?: number;
   label?: string;
   source_id?: string;
   source_name?: string;

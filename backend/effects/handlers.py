@@ -824,10 +824,13 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             state.pending_mechanic_choice = {
                 "kind": "search_library", "player_id": controller,
                 "options": eligible, "count": min(limit, len(eligible)) if limit else len(eligible),
+                "min_count": min(limit, len(eligible)) if subtype == "card" and not payload.get("up_to") else 0,
                 "library_ids": list(player.library), "effect_payload": payload,
                 "effect_key": "search_library",
                 "label": ("Search your library: first selection enters tapped, remaining cards go to hand"
-                          if destination == "split_battlefield_hand" else "Search your library (you may fail to find a matching card)"),
+                          if destination == "split_battlefield_hand" else
+                          "Search your library: choose the required card" if subtype == "card" and not payload.get("up_to") else
+                          "Search your library (you may fail to find a matching card)"),
             }
             state.priority_player = controller
             state.passed_priority = set()

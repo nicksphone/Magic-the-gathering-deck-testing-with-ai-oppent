@@ -60,6 +60,7 @@ def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement()
     assert spec.effect.key == "search_library"
     assert spec.effect.payload["count"] == 3
     assert spec.effect.payload["destination"] == "graveyard"
+    assert spec.effect.payload["up_to"] is True
     state.mechanic_choice_players = {1}
     resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
     assert state.pending_mechanic_choice["count"] == 3
@@ -81,6 +82,20 @@ def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement()
     assert creature in replaced.players[1].exile
     assert creature not in replaced.players[1].graveyard
     assert replaced.cards[creature].zone == Zone.EXILE
+
+    optional = _state_with_searcher()
+    optional.cards["rip"] = replaced.cards["rip"]
+    optional.players[2].battlefield.append("rip")
+    optional_creature = optional.players[1].library[-1]
+    optional.cards[optional_creature].types = ["Creature"]
+    optional.cards[optional_creature].type_line = "Creature"
+    optional.mechanic_choice_players = {1}
+    resolve_effect(optional, 1, spec.effect.key, spec.effect.payload)
+    ai_action = AIAgent(archetype="Reanimator").choose_action(optional, RulesEngine().legal_moves(optional, 1), 1).action
+    assert ai_action == {"type": "choose_mechanic", "card_ids": []}
+    RulesEngine().take_action(optional, 1, ai_action, reject_invalid=True)
+    assert optional_creature in optional.players[1].library
+    assert optional_creature not in optional.players[1].exile
 
 
 def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
@@ -108,6 +123,11 @@ def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
             legal = client.get(f"/matches/{state.id}/legal-moves")
             assert legal.status_code == 200
             assert any(chosen in move.get("options", []) for move in legal.json()["moves"])
+            rejected = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 1, "action": {"type": "choose_mechanic", "card_ids": []},
+            })
+            assert rejected.status_code == 422
+            assert ACTIVE_MATCHES[state.id].state.cards[chosen].zone == Zone.LIBRARY
             response = client.post(f"/matches/{state.id}/action", json={
                 "player_id": 1, "action": {"type": "choose_mechanic", "card_ids": [chosen]},
             })
@@ -225,6 +245,7 @@ def test_cultivate_inference_splits_canonical_land_destinations() -> None:
         "contains": "basic_land",
         "destination": "split_battlefield_hand",
         "count": 2,
+        "up_to": True,
         "shuffle": True,
         "tapped": True,
     }

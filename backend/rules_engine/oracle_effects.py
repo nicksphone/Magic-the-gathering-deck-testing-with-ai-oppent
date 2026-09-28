@@ -351,13 +351,15 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
             mv_max = _parse_count_token(mv_match.group(1))
     split_destination = ("put one onto the battlefield tapped" in oracle
                          and ("the other into your hand" in oracle or "the rest into your hand" in oracle))
-    search_clause = oracle.split(".", 1)[0]
+    search_clause = oracle[oracle.index("search your library for"):].split(".", 1)[0]
     destination = (
         "split_battlefield_hand" if split_destination else
         "graveyard" if re.search(r"\bput (?:that card|them|it|those cards?) into your graveyard\b", search_clause) else
         "battlefield" if "onto the battlefield" in search_clause else "hand"
     )
     payload: dict[str, Any] = {"contains": contains, "destination": destination}
+    if "search your library for up to " in search_clause:
+        payload["up_to"] = True
     if "onto the battlefield tapped" in oracle:
         payload["tapped"] = True
     if "shuffle" in oracle:

@@ -60,6 +60,8 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
       && (move.card_view === undefined || card(move.card_view))
+      && (move.min_count === undefined || (Number.isInteger(move.min_count) && (move.min_count as number) >= 0
+        && Number.isInteger(move.count) && (move.min_count as number) <= (move.count as number)))
       && (move.options === undefined || (Array.isArray(move.options) && move.options.every((id) => typeof id === "string"))))) {
     throw new Error("Invalid legal-moves response: seat, revision or move shape");
   }

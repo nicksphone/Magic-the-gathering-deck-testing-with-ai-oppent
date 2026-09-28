@@ -92,10 +92,14 @@ class AIAgent:
                     exile = self._choose_library_search(state, remaining, 1, player_id)
                     selected = hand + exile + [cid for cid in options if cid not in hand + exile]
                 else:
+                    payload = choice.get("effect_payload") or {}
+                    destination = str(payload.get("destination", "hand"))
+                    if kind == "search_library" and destination == "graveyard" and payload.get("up_to"):
+                        candidates = [cid for cid in candidates if graveyard_destination(state, state.cards[cid]) == "graveyard"]
                     selected = self._choose_library_search(
                         state, candidates, int(choice["count"]), player_id,
                         free_battlefield=kind == "topdeck_put",
-                        destination=str((choice.get("effect_payload") or {}).get("destination", "hand")),
+                        destination=destination,
                     )
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]

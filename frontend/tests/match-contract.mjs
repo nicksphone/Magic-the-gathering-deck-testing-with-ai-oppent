@@ -25,6 +25,8 @@ assert.throws(() => parseLegalMoves({ ...legal, player_id: 99 }), /legal-moves r
 assert.throws(() => parseLegalMoves({ ...legal, revision: "0" }), /legal-moves response/);
 assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "cast_spell", card_view: { name: "Broken" } }] }), /legal-moves response/);
 assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "choose_mechanic", options: "not a list" }] }), /legal-moves response/);
+assert.equal(parseLegalMoves({ ...legal, moves: [{ type: "choose_mechanic", kind: "search_library", count: 1, min_count: 1, options: ["forest"] }] }).moves[0].min_count, 1);
+assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: "choose_mechanic", kind: "search_library", count: 1, min_count: 2, options: ["forest"] }] }), /legal-moves response/);
 const saved = [{ id: "match-1", mode: "human_vs_human", turn: 1, game_number: 1, revision: 0, players: ["Player A", "Player B"] }];
 assert.equal(parseSavedMatches(saved), saved);
 assert.throws(() => parseSavedMatches([{ ...saved[0], id: null }]), /saved-matches response/);
