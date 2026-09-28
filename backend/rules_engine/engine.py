@@ -597,6 +597,9 @@ class RulesEngine:
                     leave_exile(state, cid)
                 else:
                     player.hand.remove(cid)
+                if not state.trigger_staging:
+                    state.trigger_staging = True
+                    state.trigger_staging_event = "land_play"
                 apply_cast_face(card, face)
                 apply_entry_choice(state, player_id, card, choice=entry_choice or "tapped")
                 player.battlefield.append(cid)
@@ -778,7 +781,14 @@ class RulesEngine:
                         state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
+                cost_staging = not state.trigger_staging
+                if cost_staging:
+                    state.trigger_staging = True
+                    state.trigger_staging_event = "spell_cast"
                 if not apply_additional_costs(state, player_id, chosen, cid):
+                    if cost_staging:
+                        state.staged_triggers.clear()
+                        state.trigger_staging = False
                     reject("Cannot pay additional casting costs")
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
@@ -906,7 +916,14 @@ class RulesEngine:
                 state.log.append(f"Invalid activation targets: {error}")
                 return
             cost_context: dict = {}
+            cost_staging = not state.trigger_staging
+            if cost_staging:
+                state.trigger_staging = True
+                state.trigger_staging_event = "ability_activation"
             if not apply_activated_costs(state, player_id, cid, cost, context=cost_context):
+                if cost_staging:
+                    state.staged_triggers.clear()
+                    state.trigger_staging = False
                 reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)

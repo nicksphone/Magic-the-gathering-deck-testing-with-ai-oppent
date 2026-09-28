@@ -105,6 +105,10 @@ COUNTER_UNLESS_PAY_RE = re.compile(
     r"counter target (?P<kind>noncreature )?spell unless its controller pays\s+(?P<cost>\{[^}]+\}(?:\{[^}]+\})*)",
     re.IGNORECASE,
 )
+COUNTER_TARGET_SPELL_RE = re.compile(
+    r"\bcounter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\b",
+    re.IGNORECASE,
+)
 
 
 def infer_effect_from_oracle(
@@ -148,7 +152,7 @@ def infer_effect_from_oracle(
             "target_kind": "noncreature" if unless_match.group("kind") else "any",
             "pay_unless_counter": action_targets.get("pay_unless_counter"),
         }
-    if "counter target spell" in oracle or "counter target noncreature spell" in oracle:
+    if COUNTER_TARGET_SPELL_RE.search(oracle):
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
         return "counter_spell", {
             "target_stack_id": target_stack_id,
@@ -510,12 +514,12 @@ def inspect_target_hints(
             "allow_zero": True,
         }
 
-    if ("counter target spell" in oracle or "counter target noncreature spell" in oracle
+    if (COUNTER_TARGET_SPELL_RE.search(oracle)
             or "counter target activated ability" in oracle or "counter target triggered ability" in oracle
             or "counter target activated or triggered ability" in oracle or COPY_STACK_RE.search(oracle)):
         stack_restrictions = infer_target_restrictions(state, oracle, controller)
         allowed_kinds = set()
-        if "counter target spell" in oracle or "counter target noncreature spell" in oracle:
+        if COUNTER_TARGET_SPELL_RE.search(oracle):
             allowed_kinds.add("spell")
         if "counter target activated ability" in oracle:
             allowed_kinds.add("activated")
@@ -739,6 +743,10 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Artifact"]
     elif "target enchantment" in oracle:
         restrictions["allowed_types"] = ["Enchantment"]
+    elif "target instant" in oracle:
+        restrictions["allowed_types"] = ["Instant"]
+    elif "target sorcery" in oracle:
+        restrictions["allowed_types"] = ["Sorcery"]
     elif "target land" in oracle or "target noncreature land" in oracle:
         restrictions["allowed_types"] = ["Land"]
 

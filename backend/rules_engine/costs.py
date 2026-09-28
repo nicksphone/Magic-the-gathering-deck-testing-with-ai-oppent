@@ -144,7 +144,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     if cost.tap_source:
         source.tapped = True
     if cost.pay_life:
-        player.life -= cost.pay_life
+        from rules_engine.replacement import pay_life
+        pay_life(state, player_id, cost.pay_life)
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event
     for _ in range(cost.discard_cards):
@@ -269,7 +270,8 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
     if not can_pay_life(state, player_id, option.pay_life):
         return False
     if option.pay_life:
-        player.life -= option.pay_life
+        from rules_engine.replacement import pay_life
+        pay_life(state, player_id, option.pay_life)
         state.log.append(f"{player.name} pays {option.pay_life} life as an additional cost.")
 
     for _ in range(option.discard_cards):

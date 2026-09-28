@@ -317,6 +317,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "life_gain" and payload.get("player_id") == card.controller and "whenever you gain life" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "life_paid" and payload.get("player_id") == card.controller and "whenever you pay life" in oracle:
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "creature_dies" and _matches_creature_dies_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "permanent_dies" and _matches_permanent_dies_trigger(state, card, oracle, payload):
@@ -895,6 +897,23 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event == "life_paid":
+            counter_match = re.search(
+                r"whenever you pay life, put that many ([+\w/-]+) counters? on this (?:creature|artifact|enchantment|permanent)",
+                oracle,
+            )
+            if counter_match:
+                return {
+                    "source_card_id": source_card_id,
+                    "controller": controller,
+                    "label": default_label,
+                    "effect_key": "add_counters",
+                    "payload": {
+                        "target_card_id": source_card_id,
+                        "counter": counter_match.group(1),
+                        "amount": int(payload.get("amount", 0)),
+                    },
+                }
         source_name = re.escape((source_card.name or "").lower())
         if event == "enters_battlefield" and re.search(
             rf"\bwhen (?:this (?:creature|permanent|artifact|enchantment)|{source_name}) enters(?: the battlefield)?, exile all graveyards\b",

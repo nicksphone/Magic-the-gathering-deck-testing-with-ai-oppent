@@ -1,6 +1,8 @@
 # Changelog
 
-- Audited a separate cost-payment trigger gap using real Font of Agonies and Cruel Sadist text. A strict expected-failure regression shows the life payment occurs but no Font trigger reaches the stack; the [audit](docs/audits/2026-09-28-life-payment-triggers.md) specifies transaction-safe trigger timing before an engine change. Verification: 1,115 isolated backend tests pass with exactly 1 strict xfail. This is a tracked limitation, not a fix.
+- Routed positive activated, additional and land-entry life payments through one amount-bearing event; supported pay-life counter triggers now stage above paid-for spells and abilities and survive snapshots. Repaired generic type-qualified counterspell target inference and validation, exposed by a real Withering Boon regression. The prior Font of Agonies strict xfail is now a passing test. Verification: 1,122 isolated backend tests, frontend lint/build/unit and the full Chromium harness pass. Broader Oracle wording and nested payment/replacement timing are still open.
+
+- Historical audit: real Font of Agonies and Cruel Sadist text reproduced the missing payment trigger with one strict xfail among 1,115 passing tests. The [audit](docs/audits/2026-09-28-life-payment-triggers.md) records that pre-repair finding; the bounded repair above supersedes this status.
 
 - Added real Nefarious Lich/Boon Reflection combat fixtures for gain-to-draw replacement order, multiple lifelink sources, human choice and snapshot continuation. A Vampire Nighthawk granted double strike verifies Archive applies separately in first and regular damage windows without duplicate damage. Verification: 1,115 isolated backend tests pass; the previously run frontend gates and full Chromium harness remain green. Nested draw-replacement choices and broader simultaneous ordering remain open.
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from rules_engine.land_rules import apply_land_entry
-from rules_engine.replacement import can_pay_life
+from rules_engine.replacement import can_pay_life, pay_life
 
 
 def has_two_life_land_entry(card) -> bool:
@@ -53,7 +53,7 @@ def apply_entry_choice(state, controller: int, card, *, choice: str = "tapped", 
         if choice not in land_entry_options(state, controller, card):
             raise ValueError("Unavailable land-entry payment choice")
         if choice == "pay_two_life":
-            state.players[controller].life -= 2
+            pay_life(state, controller, 2)
             state.log.append(f"{state.players[controller].name} pays 2 life as {card.name} enters.")
         card.tapped = effect_tapped or choice == "tapped"
     else:

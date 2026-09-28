@@ -505,6 +505,16 @@ def can_pay_life(state, player_id: int, amount: int) -> bool:
     return amount == 0 or (state.players[player_id].life >= amount and not player_cant_lose_life(state, player_id))
 
 
+def pay_life(state, player_id: int, amount: int) -> bool:
+    if not can_pay_life(state, player_id, amount):
+        return False
+    if amount:
+        state.players[player_id].life -= amount
+        from rules_engine.events import emit_event
+        emit_event(state, "life_paid", {"player_id": player_id, "amount": amount})
+    return True
+
+
 def player_cant_gain_life(state, target_player: int) -> bool:
     if player_life_total_cant_change(state, target_player):
         return True

@@ -56,9 +56,9 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
     if "target player" in text or "target opponent" in text:
         require(targets.get("target_player") is not None, "Announce a target player")
         require("target opponent" not in text or targets["target_player"] != controller, "Target must be an opponent")
-    if re.search(r"\btarget (?:[\w-]+ ){0,4}(?:creature|permanent|land|artifact|enchantment|planeswalker)\b", text) and not re.search(r"up to (?:\d+|one|two|three) target", text):
+    if re.search(r"\btarget (?:[\w-]+ ){0,4}(?:creature|permanent|land|artifact|enchantment|planeswalker)\b(?!\s+spell)", text) and not re.search(r"up to (?:\d+|one|two|three) target", text):
         require(permanent, "Announce a permanent target")
-    if "target spell" in text or "target activated ability" in text or "target triggered ability" in text:
+    if re.search(r"\btarget (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\b", text) or "target activated ability" in text or "target triggered ability" in text:
         require(bool(targets.get("target_stack_id")), "Announce a stack target")
 
 
