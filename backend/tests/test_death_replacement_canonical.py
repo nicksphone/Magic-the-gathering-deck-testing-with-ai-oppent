@@ -5,7 +5,7 @@ from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
 from rules_engine.costs import apply_activated_costs
 from rules_engine.dredge import resolve_dredge
 from rules_engine.engine import RulesEngine
-from rules_engine.replacement import replacement_options
+from rules_engine.replacement import replace_die_zone, replacement_options
 from rules_engine.events import emit_event
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.stack_engine import finish_stack_resolution, resolve_top_of_stack
@@ -23,6 +23,89 @@ REST_IN_PEACE_ORACLE = (
     "When this enchantment enters, exile all graveyards.\n"
     "If a card or token would be put into a graveyard from anywhere, exile it instead."
 )
+LEYLINE_OF_THE_VOID_ORACLE = (
+    "If this card is in your opening hand, you may begin the game with it on the battlefield.\n"
+    "If a card would be put into an opponent's graveyard from anywhere, exile it instead."
+)
+
+
+def _leyline_state():
+    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    state = MatchFactory.from_decks(deck, deck, seed=41)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.cards["leyline"] = CardInstance(
+        id="leyline", name="Leyline of the Void", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
+        oracle_text=LEYLINE_OF_THE_VOID_ORACLE,
+    )
+    state.players[1].battlefield.append("leyline")
+    return state
+
+
+def test_opponent_graveyard_replacement_uses_owner_not_controller() -> None:
+    state = _leyline_state()
+    own_card = state.players[1].hand[0]
+    opposing_card = state.players[2].hand[0]
+    assert discard_selected(state, 1, [own_card])
+    assert discard_selected(state, 2, [opposing_card])
+    assert state.cards[own_card].zone == Zone.GRAVEYARD
+    assert state.cards[opposing_card].zone == Zone.EXILE
+
+    stolen = CardInstance(
+        id="stolen", name="Grizzly Bears", owner=2, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Bear",
+        power=2, toughness=2, counters={"__damage_marked": 2},
+    )
+    state.cards[stolen.id] = stolen
+    state.players[1].battlefield.append(stolen.id)
+    apply_state_based_actions(state)
+    assert stolen.zone == Zone.EXILE
+    assert stolen.id in state.players[2].exile
+
+
+def test_opponent_card_replacement_does_not_apply_to_tokens() -> None:
+    state = _leyline_state()
+    token = CardInstance(
+        id="token", name="Spirit", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature", "Token"], power=1, toughness=1,
+    )
+    state.cards[token.id] = token
+    state.players[2].battlefield.append(token.id)
+    assert replace_die_zone(state, 2, token.id) == "graveyard"
+    assert not any(option["source_id"] == "leyline" for option in replacement_options(state, "die_zone", target_card_id=token.id))
+
+
+def test_opponent_card_replacement_applies_to_resolved_spells_only_for_opponent() -> None:
+    state = _leyline_state()
+    for owner in (1, 2):
+        cid = f"bolt-{owner}"
+        state.cards[cid] = CardInstance(
+            id=cid, name="Lightning Bolt", owner=owner, controller=owner,
+            zone=Zone.STACK, types=["Instant"], type_line="Instant",
+            oracle_text="Lightning Bolt deals 3 damage to any target.",
+        )
+        item = StackItem(
+            id=f"item-{cid}", source_card_id=cid, controller=owner,
+            label="Lightning Bolt", effect_key="deal_damage", payload={},
+        )
+        finish_stack_resolution(state, item, {})
+        assert state.cards[cid].zone == (Zone.GRAVEYARD if owner == 1 else Zone.EXILE)
+
+
+def test_opponent_card_replacement_applies_before_source_leaves_in_same_batch() -> None:
+    state = _leyline_state()
+    state.cards["anthem"] = CardInstance(
+        id="anthem", name="Glorious Anthem", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
+        oracle_text="Creatures you control get +1/+1.",
+    )
+    state.players[2].battlefield.append("anthem")
+
+    destroy_all_enchantments(state, 1, {})
+
+    assert state.cards["leyline"].zone == Zone.GRAVEYARD
+    assert state.cards["anthem"].zone == Zone.EXILE
 
 
 def _rest_in_peace_state():

@@ -97,6 +97,7 @@ It is designed for serious deck work:
 - Shared battlefield-leave events for destruction, exile, sacrifice, lethal combat, and state-based actions, including common leave-trigger resolution
 - Token-aware death replacements that distinguish nontoken clauses from token permanents
 - Canonical Rest in Peace graveyard replacement and ETB exile sweep, with HTTP action and SQLite-restore regressions for damage-spell resolution, suppressed dies triggers, and existing graveyards; interacting replacement choices remain uncertified
+- Owner-scoped opponent-card graveyard replacement for Leyline of the Void wording: opposing cards are exiled from discard, stack and battlefield paths, but tokens and the controller's own cards are not; a resolved opponent spell is HTTP/restore-tested, while Leyline's opening-hand permission remains unsupported
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
 - Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; the shipped 81-card corpus currently has zero parser-fallback or missing-Oracle classifications
 - Fuzzy matching for deck import correction

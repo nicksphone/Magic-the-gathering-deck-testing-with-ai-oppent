@@ -8,7 +8,7 @@ from rules_engine.replacement import graveyard_destination
 def put_into_graveyard(state, cid: str) -> Zone:
     """Move an already-removed card to its actual destination after replacement."""
     card = state.cards[cid]
-    zone = Zone(graveyard_destination(state))
+    zone = Zone(graveyard_destination(state, card))
     destination = getattr(state.players[card.owner], zone.value)
     if cid not in destination:
         destination.append(cid)

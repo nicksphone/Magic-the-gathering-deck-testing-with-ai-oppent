@@ -272,8 +272,8 @@
     "hash": "fa69167fd4d6b5f32e5ff1c63763e452"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_death_replacement_http.py": {
-    "mtime": 1790586264.2320921,
-    "hash": "066a1f9f49df501dc1724c172e1cddba"
+    "mtime": 1790586609.9619315,
+    "hash": "eb9567c097adeac26af293d017302a6c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_sagas.py": {
     "mtime": 1784670468.006627,
@@ -296,8 +296,8 @@
     "hash": "8f358810072dfafbd3d2dbb9ae2d3bd6"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_death_replacement_canonical.py": {
-    "mtime": 1790585509.9955401,
-    "hash": "014e73fb3324f4e680e32f92db62c573"
+    "mtime": 1790586519.3852942,
+    "hash": "41daf39347c9ad7c239ebbdaf9eb32da"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_database_path.py": {
     "mtime": 1784461155.6921108,
@@ -776,8 +776,8 @@
     "hash": "9bffc4e7eef0c6ac281f4acd0debf62f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/replacement.py": {
-    "mtime": 1790585138.8856223,
-    "hash": "334daf542c6a7e70e90326da1bb15fac"
+    "mtime": 1790586461.7171583,
+    "hash": "0a7e348a4ac26039219e4b6356885022"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/priority.py": {
     "mtime": 1777063134.7070613,
@@ -852,8 +852,8 @@
     "hash": "7f2c9ade8fbd866daea4aa6dee197d88"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/zone_actions.py": {
-    "mtime": 1790585138.8876224,
-    "hash": "5137fdd7cdec9925843eee39c0b5a14e"
+    "mtime": 1790586461.7171583,
+    "hash": "dc188dabcd6342ac00b06ea7df5ad455"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/move_generator.py": {
     "mtime": 1790565302.468543,
@@ -1020,16 +1020,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790586296.9996085,
-    "hash": "05bc5fe198eb0fe55e189d34f7612d67"
+    "mtime": 1790586651.267308,
+    "hash": "edcab0ceeb9465260b12b923ea86e00a"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790586297.0006087,
-    "hash": "44232f428deee71c446de00e48e1441d"
+    "mtime": 1790586651.269308,
+    "hash": "b470f66228612d2e020dd2147607051d"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790586374.4034607,
-    "hash": "d7a2da220d18a4f2cc952c12b63a0814"
+    "mtime": 1790586651.266308,
+    "hash": "11c8ca281e3ca1c137b07af62e8e097e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1072,8 +1072,8 @@
     "hash": "7077d1f2bd12d92d6b742f0e78afe690"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-death-replacement-boundary.md": {
-    "mtime": 1790586296.9996085,
-    "hash": "d5d64d360692b1beeb224e7d9afff840"
+    "mtime": 1790586651.2683082,
+    "hash": "2b110fb465a64000218626bbf0831427"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-jev-two-stage-review.md": {
     "mtime": 1790535102.2339525,

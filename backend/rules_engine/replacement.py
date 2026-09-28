@@ -51,6 +51,7 @@ _DIE_EXILE_RE = re.compile(
 )
 _SUBTYPE_DIE_EXILE_RE = re.compile(r"\bif an? ([a-z]+) you control would die, exile it instead\b")
 _ANY_GRAVEYARD_EXILE = "if a card or token would be put into a graveyard from anywhere, exile it instead"
+_OPPONENT_CARD_GRAVEYARD_EXILE = "if a card would be put into an opponent's graveyard from anywhere, exile it instead"
 _DRAW_DOUBLE_RE = re.compile(r"(?:^|\n)if you would draw a card, draw two cards instead\.")
 _DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
     r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
@@ -423,16 +424,31 @@ def replace_die_zone(
     return "graveyard"
 
 
-def graveyard_destination(state) -> str:
+def graveyard_destination(state, target) -> str:
     """Resolve supported replacements for a non-death graveyard move."""
-    return "exile" if any(_ANY_GRAVEYARD_EXILE in text for _, text in _battlefield_oracle_texts(state)) else "graveyard"
+    return "exile" if any(
+        _graveyard_exile_applies(card, text, target)
+        for card, text in _battlefield_oracle_texts(state)
+    ) else "graveyard"
+
+
+def _graveyard_exile_applies(source, text: str, target) -> bool:
+    if _ANY_GRAVEYARD_EXILE in text:
+        return True
+    is_token = bool(getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])})
+    return (
+        not is_token
+        and source.controller != target.owner
+        and _OPPONENT_CARD_GRAVEYARD_EXILE in text
+    )
 
 
 def _die_zone_candidates(state, target) -> list[tuple[object, str]]:
     return [
         (card, text)
         for card, text in _battlefield_oracle_texts(state)
-        if _ANY_GRAVEYARD_EXILE in text or (card.controller == target.controller and _die_exile_applies(text, target))
+        if _graveyard_exile_applies(card, text, target)
+        or (card.controller == target.controller and _die_exile_applies(text, target))
     ]
 
 
