@@ -28,6 +28,8 @@ try {
   await waitFor("window.fixtureState.players['2'].mana_pool.U === 1 && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'mana-treasure')");
   await click("Add 2 C");
   await waitFor("window.fixtureState.players['2'].mana_pool.C === 2 && window.fixtureState.players['2'].battlefield.find(c => c.id === 'mana-ring').tapped");
+  await click("Add 3 R");
+  await waitFor("window.fixtureState.players['2'].mana_pool.R === 3 && window.fixtureState.players['2'].battlefield.find(c => c.id === 'mana-lotus').tapped");
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   console.log("PASS manual creature and Treasure mana activation uses printed costs");
 

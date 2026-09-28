@@ -95,6 +95,7 @@ def test_manual_creature_mana_requires_ready_source_and_valid_color() -> None:
 @pytest.mark.parametrize("name,types,text,color,amount", [
     ("Llanowar Tribe", ["Creature"], "{T}: Add {G}{G}{G}.", "G", 3),
     ("Sol Ring", ["Artifact"], "{T}: Add {C}{C}.", "C", 2),
+    ("Gilded Lotus", ["Artifact"], "{T}: Add three mana of any one color.", "U", 3),
 ])
 def test_fixed_multi_mana_sources_produce_printed_amount(name, types, text, color, amount) -> None:
     state = _mana_game()
@@ -106,8 +107,9 @@ def test_fixed_multi_mana_sources_produce_printed_amount(name, types, text, colo
     source.zone = Zone.BATTLEFIELD
     source.summoning_sick = False
     state.players[1].battlefield.append(cid)
-    assert nonland_mana_outputs(state, cid, source) == {color: amount}
-    assert serialize_card_view(state, cid)["mana_source_amounts"] == {color: amount}
+    expected = {choice: amount for choice in "WUBRG"} if name == "Gilded Lotus" else {color: amount}
+    assert nonland_mana_outputs(state, cid, source) == expected
+    assert serialize_card_view(state, cid)["mana_source_amounts"] == expected
     assert can_pay_with_pool_and_lands(state, 1, "".join("{" + color + "}" for _ in range(amount)))
     manual = checked_action(state, RulesEngine(), 1, {"type": "tap_nonland_for_mana", "card_id": cid, "color": color})
     assert manual.players[1].mana_pool[color] == amount

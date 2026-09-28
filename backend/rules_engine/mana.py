@@ -425,8 +425,14 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
         if getattr(card, "summoning_sick", False) and not has_keyword(state, card_id, "haste"):
             return {}
     effect = ability.group(2).upper()
-    if "ONE MANA OF ANY COLOR" in effect or "MANA OF ANY ONE COLOR" in effect:
-        return {color: 1 for color in "WUBRG"}
+    any_color = re.fullmatch(r"ADD (ONE|TWO|THREE|FOUR|FIVE|SIX|\d+) MANA OF ANY (ONE )?COLOR", effect.strip())
+    if any_color:
+        words = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6}
+        amount = words.get(any_color.group(1), None)
+        amount = amount if amount is not None else int(any_color.group(1))
+        if 1 <= amount <= 20 and (amount == 1 or any_color.group(2)):
+            return {color: amount for color in "WUBRG"}
+        return {}
     symbols = [sym for sym in MANA_SYMBOL_RE.findall(effect) if sym in "WUBRGC"]
     if not symbols:
         return {}
