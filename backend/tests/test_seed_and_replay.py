@@ -163,6 +163,19 @@ def test_classify_timeout_state_distinguishes_long_game_and_stall() -> None:
     assert classify_timeout_state([], False) == "resolved"
 
 
+def test_timeout_ignores_one_normal_conditional_counter_payment() -> None:
+    long_game_log = ['AI TRACE {"turn":44,"action":{"type":"pass_priority"}}'] * 12
+    counter_payment = [
+        "Player A cannot pay {2} for Unholy Heat.",
+        "Unholy Heat was countered.",
+        "Spell Pierce resolves.",
+    ]
+    assert classify_timeout_state(counter_payment + long_game_log, True) == "timeout_long_game"
+    assert classify_timeout_state(counter_payment * 3 + long_game_log, True) == "timeout_long_game"
+    repeated_errors = ["Player A cannot pay spell cost for Unholy Heat."] * 3
+    assert classify_timeout_state(long_game_log + repeated_errors, True) == "timeout_rules_issue"
+
+
 def test_classify_timeout_trace_ignores_instant_speed_holds() -> None:
     response_hold = [
         'AI TRACE {"pid":1,"active_player":2,"step":"Step.UPKEEP","legal_meaningful":true,"action":{"type":"pass_priority"}}'
@@ -193,4 +206,4 @@ def test_match_timeout_attribution_uses_only_timed_out_games() -> None:
     }
     assert _match_termination_status(match) == "timeout_long_game"
     match["games"][0]["log"] = long_log + resolved_error
-    assert _match_termination_status(match) == "timeout_rules_issue"
+    assert _match_termination_status(match) == "timeout_long_game"

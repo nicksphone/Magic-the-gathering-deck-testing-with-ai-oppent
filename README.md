@@ -117,6 +117,7 @@ It is designed for serious deck work:
 - Batch simulation with progress tracking
 - Replay inspection and deterministic regression checks
 - Seeded best-of-3/5/7/9 replay validation with per-game hashes, legal-action traces, and timeout classification
+- Timeout classification distinguishes isolated legal conditional-counter payment failures from repeated recent cost failures; low tick caps can still end legitimate long games
 - Match logs, anomaly output, and training trace export
 - Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
 - Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context

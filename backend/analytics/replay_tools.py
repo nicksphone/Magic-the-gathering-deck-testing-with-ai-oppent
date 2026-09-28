@@ -102,10 +102,15 @@ def classify_timeout_state(log: list[str], timeout: bool) -> str:
     trace_count = sum(1 for line in log if line.startswith("AI TRACE "))
     trace_payloads = [_parse_ai_trace_payload(line) for line in log if line.startswith("AI TRACE ")]
     trace_payloads = [payload for payload in trace_payloads if payload]
-    if trace_count >= 10 and not any(
-        token in " ".join(lowered)
-        for token in ["invalid targets", "cannot pay", "ward tax", "missed land-play window", "land in hand but no land play available"]
-    ):
+    hard_errors = ("invalid targets", "missed land-play window", "land in hand but no land play available")
+    recent = lowered[-200:]
+    payment_errors = sum(
+        ("cannot pay" in line or "ward tax" in line)
+        and not any("was countered" in following for following in recent[index + 1:index + 3])
+        for index, line in enumerate(recent)
+    )
+    rules_issue = any(any(token in line for token in hard_errors) for line in lowered) or payment_errors >= 3
+    if trace_count >= 10 and not rules_issue:
         missed_land_turns = {
             (payload.get("pid"), payload.get("turn"))
             for payload in trace_payloads
@@ -126,7 +131,7 @@ def classify_timeout_state(log: list[str], timeout: bool) -> str:
                     return "likely_stall"
             else:
                 pass_streak = 0
-    if any(token in " ".join(lowered) for token in ["invalid targets", "cannot pay", "ward tax", "missed land-play window", "land in hand but no land play available"]):
+    if rules_issue:
         return "timeout_rules_issue"
     return "timeout_unknown"
 

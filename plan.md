@@ -287,6 +287,7 @@ Acceptance: each AI change has concrete decision evidence and regressions; no st
 
 ### 13. Run seeded matrices and replay/restart gates
 
+- [x] Distinguish legal conditional-counter nonpayment from repeated recent cost failures in timeout labels; one early Spell Pierce counter no longer converts a late tick-cap timeout into `timeout_rules_issue`.
 - [x] Remove automatic combat-damage shortcuts from live and diagnostic turn loops; focused live/replay tests preserve first-strike and regular-damage priority windows. A seeded Tempo/Dimir BO3 finishes without drift or anomalies at 3,000 ticks; this is not a broad matrix or AI-quality result.
 - [ ] Predefine sample sizes, seed schedule, seat balancing and long-game timeout policy.
 - [ ] Run representative then full supported-corpus BO3 matrices, retaining detailed anomalous-game traces.
