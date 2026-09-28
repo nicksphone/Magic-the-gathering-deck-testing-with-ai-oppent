@@ -2131,7 +2131,6 @@ class AIAgent:
             if best_land:
                 targets["target_card_id"] = best_land["id"]
                 targets["target_card_name"] = best_land.get("name") or ""
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_creature_targets = hints.get("graveyard_creature_targets") or []
         if graveyard_creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):

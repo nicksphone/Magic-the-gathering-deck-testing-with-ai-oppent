@@ -56,6 +56,7 @@ It is designed for serious deck work:
 - Supported "when this creature dies" abilities are collected from the departed creature after zone movement; a Doomed Traveler combat regression resolves its 1/1 flying Spirit. Generic colored-token parsing separates the token name from its color, preserves that color across snapshots, and exposes it in the card view and hover preview.
 - Saga chapters can create one-shot next-creature entry counters and transform a double-faced Saga through the stack; pending delayed entries survive snapshots and expire at cleanup.
 - Master+ uses a bounded three-ply strategic search on late, developed boards with a reduced candidate beam; early states retain cheaper search.
+- AI land-only target actions now materialize the selected land without depending on a creature-target candidate; the regression covers a Nissa-style loyalty action. This prevents a simulator crash, not a claim of optimal planeswalker play.
 - Planeswalker loyalty abilities, including X-cost loyalty abilities
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents

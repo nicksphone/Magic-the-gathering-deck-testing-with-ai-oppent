@@ -5,6 +5,29 @@ from ai.matchup_profiles import profile_for
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 
 
+def test_ai_materializes_land_only_target_without_creature_target() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=81)
+    land_id = state.players[1].hand.pop()
+    state.players[1].battlefield.append(land_id)
+    state.cards[land_id].zone = Zone.BATTLEFIELD
+    state.cards[land_id].types = ["Land"]
+    source = CardInstance(
+        id="nissa", name="Nissa, Who Shakes the World", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=5,
+        oracle_text="+1: Put a +1/+1 counter on up to one target land you control. Untap it. It becomes a 0/0 Elemental creature with haste that's still a land.",
+    )
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    move = {
+        "type": "activate_loyalty", "card_id": source.id, "card_name": source.name,
+        "ability_index": 0, "target_hints": {"land_targets": [{"id": land_id, "name": "Forest"}]},
+    }
+    action = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
+    assert action["targets"]["target_card_id"] == land_id
+    assert action["targets"]["target_card_name"] == "Forest"
+
+
 def test_ai_prefers_non_pass_action_when_available() -> None:
     ai = AIAgent(difficulty="master", archetype="Burn")
     moves = [
