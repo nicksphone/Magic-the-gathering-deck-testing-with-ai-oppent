@@ -5,6 +5,7 @@ from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
+from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind
 
 
@@ -113,6 +114,7 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (getattr(card, "types", []) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    oracle = without_reminder_text(oracle)
     mode_text = action_targets.get("mode_text")
     mode_texts = action_targets.get("mode_texts") or []
     x_value = int(action_targets.get("x_value", 0) or 0)
@@ -121,9 +123,9 @@ def infer_effect_from_oracle(
         if target:
             return "transform_card", {"target_card_id": target, "face_index": 1}
     if mode_text:
-        oracle = mode_text.lower()
+        oracle = without_reminder_text(mode_text.lower())
     elif mode_texts:
-        oracle = " ; ".join(str(x).lower() for x in mode_texts)
+        oracle = without_reminder_text(" ; ".join(str(x).lower() for x in mode_texts))
     split_match = SPLIT_NAME_RE.match(name)
     if split_match and not mode_text and not mode_texts:
         # Split cards are represented as a single cached record with aliases in
@@ -452,7 +454,7 @@ def inspect_target_hints(
     action_targets = action_targets or {}
     selected_modes = action_targets.get("mode_texts") or []
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
-    oracle = str(selected_mode or raw_oracle).lower()
+    oracle = without_reminder_text(str(selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
     graveyard_creatures = [
@@ -704,7 +706,7 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     metadata supports target hints, human validation, AI materialization, and
     future stack-resolution rechecks.
     """
-    oracle = (oracle_text or "").lower()
+    oracle = without_reminder_text((oracle_text or "").lower())
     restrictions: dict[str, Any] = {}
     if "nonartifact" in oracle:
         restrictions.setdefault("exclude_types", []).append("Artifact")
@@ -855,7 +857,7 @@ def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
 def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
-    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(card.oracle_text or "")):
+    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(card.oracle_text or ""))):
         cost = match.group(1).strip().upper()
         text = match.group(2).strip()
         # Mana abilities are handled by the mana source model and should not

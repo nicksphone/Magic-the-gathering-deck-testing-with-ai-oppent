@@ -7,6 +7,7 @@ from typing import Any
 
 from game_state.state import MatchState, StackItem
 from rules_engine.card_types import is_token_card
+from rules_engine.oracle_text import without_reminder_text
 
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
@@ -273,7 +274,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         dead_id = payload.get("card_id")
         dead = state.cards.get(dead_id)
         if dead and dead_id not in state.players[dead.controller].battlefield:
-            oracle = (dead.oracle_text or "").lower()
+            oracle = without_reminder_text((dead.oracle_text or "").lower())
             if "when this creature dies" in oracle and _matches_creature_dies_trigger(state, dead, oracle, payload):
                 out.append(_trigger_from_oracle(
                     state, dead.id, dead.controller, oracle,
@@ -282,13 +283,13 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     if event == "attack_declared":
         attacker = state.cards.get(payload.get("card_id"))
         if attacker:
-            for amount in re.findall(r"\bannihilator\s+(\d+)", attacker.oracle_text or "", re.IGNORECASE):
+            for amount in re.findall(r"\bannihilator\s+(\d+)", without_reminder_text(attacker.oracle_text or ""), re.IGNORECASE):
                 out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
     if event == "spell_cast":
         source_card_id = str(payload.get("source_card_id", "") or "")
         source_card = state.cards.get(source_card_id) if source_card_id else None
         cast_controller = int(payload.get("controller", 0) or 0)
-        source_oracle = (getattr(source_card, "oracle_text", "") or "").lower() if source_card else ""
+        source_oracle = without_reminder_text((getattr(source_card, "oracle_text", "") or "").lower()) if source_card else ""
         if source_card is not None and cast_controller == source_card.controller and "when you cast this spell" in source_oracle:
             out.append(
                 _trigger_from_oracle(
@@ -304,7 +305,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     for pid, pstate in state.players.items():
         for cid in list(pstate.battlefield):
             card = state.cards[cid]
-            oracle = (card.oracle_text or "").lower()
+            oracle = without_reminder_text((card.oracle_text or "").lower())
             once_each_turn = "only once each turn" in oracle or "this ability triggers only once each turn" in oracle
             trigger_key = f"{cid}:{event}"
             if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
@@ -392,7 +393,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         event=event,
                         payload=payload,
                     )
-                    if ability["effect_key"] != "gain_life" or ability["payload"].get("amount") != 0:
+                    if ability["effect_key"] != "noop":
                         out.append(ability)
                     elif "prowess" in oracle or "magecraft" in oracle or "gets +1/+1 until end of turn" in oracle:
                         out.append(
@@ -887,6 +888,7 @@ def _trigger_from_oracle(
     event: str,
     payload: dict[str, Any],
 ) -> dict[str, Any]:
+    oracle = without_reminder_text(oracle)
     opponent = 1 if controller == 2 else 2
     gain_amount = _first_number(oracle, r"gain (\d+) life")
     lose_amount = _first_number(oracle, r"lose (\d+) life")
@@ -1069,8 +1071,8 @@ def _trigger_from_oracle(
         "source_card_id": source_card_id,
         "controller": controller,
         "label": default_label,
-        "effect_key": "gain_life",
-        "payload": _maybe_payload(oracle, {"amount": 0}),
+        "effect_key": "noop",
+        "payload": {},
     }
 
 
