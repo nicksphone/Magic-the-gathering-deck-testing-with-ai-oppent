@@ -45,7 +45,7 @@ def _drift_excerpt(drift: dict, drift_label: dict | None) -> dict:
 
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int) -> dict:
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
-    state.library_choice_players = {1, 2}
+    state.mechanic_choice_players = {1, 2}
     engine_rules = RulesEngine()
     ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
     ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))

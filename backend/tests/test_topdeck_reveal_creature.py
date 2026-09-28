@@ -58,7 +58,7 @@ def test_recruitment_officer_uses_mana_value_and_reveals_a_qualifying_creature()
 
 def test_ai_creature_reveal_chooses_at_resolution() -> None:
     state, source, top = setup(RECRUITMENT_TEXT)
-    state.library_choice_players = {1}
+    state.mechanic_choice_players = {1}
     key, payload = infer_effect_from_oracle(state, source, 1)
     resolve_effect(state, 1, key, payload)
     assert state.pending_mechanic_choice["kind"] == "topdeck_reveal_creature"

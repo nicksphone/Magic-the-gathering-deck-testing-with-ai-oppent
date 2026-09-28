@@ -5,6 +5,7 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.zone_actions import discard_selected
+from ai.agent import AIAgent
 
 
 def setup(player_id=1):
@@ -20,6 +21,30 @@ def setup(player_id=1):
     player.hand.append(cid)
     state.cards[cid].zone = Zone.HAND
     return state, RulesEngine()
+
+
+def test_ai_cleanup_discards_excess_land_instead_of_first_spell():
+    state, engine = setup()
+    state.replacement_choice_required = False
+    state.replacement_choice_players = set()
+    state.mechanic_choice_players = {1}
+    player = state.players[1]
+    spell_id = player.hand[0]
+    state.cards[spell_id].name = "Counterspell"
+    state.cards[spell_id].types = ["Instant"]
+    state.cards[spell_id].mana_cost = "{U}{U}"
+    for _ in range(5):
+        cid = player.library.pop()
+        player.battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+    engine.next_step(state)
+    assert state.pending_mechanic_choice["kind"] == "cleanup_discard"
+    action = AIAgent(archetype="Control").choose_action(state, engine.legal_moves(state, 1), 1).action
+    assert action["card_ids"] != [spell_id]
+    engine.take_action(state, 1, action, reject_invalid=True)
+    assert spell_id in player.hand
+    assert len(player.hand) == 7
+    assert state.pending_mechanic_choice is None
 
 
 def test_human_cleanup_choice_is_owned_validated_and_resumable_before_expiry():

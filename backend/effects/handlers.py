@@ -764,7 +764,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     if not subtype:
         return
     if (payload.get("selected_card_ids") is None
-            and (controller in state.library_choice_players
+            and (controller in state.mechanic_choice_players
                  or (state.replacement_choice_required and controller in state.replacement_choice_players))):
         eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
         if eligible:
@@ -913,7 +913,7 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
     if not top_slice:
         return
     if (len(top_slice) >= 2 and payload.get("top_choice_hand_id") is None
-            and (controller in state.library_choice_players
+            and (controller in state.mechanic_choice_players
                  or (state.replacement_choice_required and controller in state.replacement_choice_players))):
         state.pending_mechanic_choice = {
             "kind": "look_top_choose", "player_id": controller,
@@ -1206,7 +1206,7 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
 def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_ids: list[str], eligible: list[str], max_count: int) -> bool:
     if not eligible or payload.get("selected_card_ids") is not None:
         return False
-    if (controller not in state.library_choice_players
+    if (controller not in state.mechanic_choice_players
             and (not state.replacement_choice_required or controller not in state.replacement_choice_players)):
         return False
     state.pending_mechanic_choice = {
@@ -1370,7 +1370,7 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
             if printed_power > int(payload["power_max"]):
                 continue
         eligible.append(cid)
-    if eligible and (controller in state.library_choice_players
+    if eligible and (controller in state.mechanic_choice_players
                      or (state.replacement_choice_required and controller in state.replacement_choice_players)):
         options = list(eligible)
         if payload.get("optional"):

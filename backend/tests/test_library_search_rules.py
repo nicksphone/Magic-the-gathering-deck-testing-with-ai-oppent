@@ -25,7 +25,7 @@ def _state_with_searcher() -> object:
 
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     state = _state_with_searcher()
-    state.library_choice_players = {1}
+    state.mechanic_choice_players = {1}
     state.cards[state.players[1].hand[0]].name = "Counterspell"
     state.cards[state.players[1].hand[0]].mana_cost = "{U}{U}"
     state.cards[state.players[1].hand[0]].types = ["Instant"]
@@ -37,10 +37,13 @@ def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     resolve_effect(state, 1, "search_library", {"contains": "basic_land", "count": 1, "destination": "hand", "shuffle": True})
     assert state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "search_library"
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
-    assert restored.library_choice_players == {1}
+    assert restored.mechanic_choice_players == {1}
     legacy = serialize_match_snapshot(state)
-    legacy["search_choice_players"] = legacy.pop("library_choice_players")
-    assert deserialize_match_snapshot(legacy).library_choice_players == {1}
+    legacy["search_choice_players"] = legacy.pop("mechanic_choice_players")
+    assert deserialize_match_snapshot(legacy).mechanic_choice_players == {1}
+    prior = serialize_match_snapshot(state)
+    prior["library_choice_players"] = prior.pop("mechanic_choice_players")
+    assert deserialize_match_snapshot(prior).mechanic_choice_players == {1}
     legal = RulesEngine().legal_moves(restored, 1)
     decision = AIAgent(archetype="Control").choose_action(restored, legal, 1)
     assert decision.action == {"type": "choose_mechanic", "card_ids": [island]}
@@ -52,7 +55,7 @@ def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
 
 def test_ai_topdeck_put_chooses_stronger_creature_at_resolution() -> None:
     state = _state_with_searcher()
-    state.library_choice_players = {1}
+    state.mechanic_choice_players = {1}
     top = state.players[1].library[-6:]
     for cid, power in ((top[0], 1), (top[2], 2), (top[4], 5)):
         card = state.cards[cid]

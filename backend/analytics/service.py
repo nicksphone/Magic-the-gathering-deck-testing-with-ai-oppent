@@ -57,7 +57,7 @@ class AnalyticsService:
                 state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
             else:
                 state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
-            state.library_choice_players = {1, 2}
+            state.mechanic_choice_players = {1, 2}
             opener_quality_a.append(self._opening_hand_quality(state, 1))
             opener_quality_b.append(self._opening_hand_quality(state, 2))
             a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a))
@@ -297,7 +297,7 @@ class AnalyticsService:
 
             for game_idx in range(matches_per_pair):
                 state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
-                state.library_choice_players = {1, 2}
+                state.mechanic_choice_players = {1, 2}
                 a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(left["mainboard"]))
                 b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(right["mainboard"]))
                 ticks = 0

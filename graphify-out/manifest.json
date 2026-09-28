@@ -4,8 +4,8 @@
     "hash": "aab2b3c60301f3e59dc483db1ec32aba"
   },
   "/home/nick/mtg-deck-testing-lab/backend/main.py": {
-    "mtime": 1790559295.1856124,
-    "hash": "ebaa480cc8af21aff311a0f0c0fa320f"
+    "mtime": 1790559637.0272973,
+    "hash": "2dba0274603723fcf683380cc8d40e45"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/__init__.py": {
     "mtime": 1777063134.7040613,
@@ -28,8 +28,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790559320.9552166,
-    "hash": "3466b005312875b8c9361b4dfb8412de"
+    "mtime": 1790559655.1610122,
+    "hash": "b561974eeda52193f7cd69e356eec8ba"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/log_priors.py": {
     "mtime": 1784164122.9097505,
@@ -72,8 +72,8 @@
     "hash": "c8c75f1e472cf9692ed949a334223d05"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1790559285.2507648,
-    "hash": "4611f171d73120649e27a0b993cd5788"
+    "mtime": 1790559628.4824314,
+    "hash": "5a50199c6148e65df95a486794277ab0"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/build_ai_log_priors.py": {
     "mtime": 1784164092.074253,
@@ -216,8 +216,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/handlers.py": {
-    "mtime": 1790559295.1866124,
-    "hash": "8fa40960bdd88ba3de0660e13148edfe"
+    "mtime": 1790559628.4834316,
+    "hash": "5879b46b9193bf735b324c801788ee69"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/registry.py": {
     "mtime": 1790534281.7639914,
@@ -228,8 +228,8 @@
     "hash": "ebbcd0e1237a43ad793a09febb1dde29"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_expanded_keyword_mechanics.py": {
-    "mtime": 1790534914.3579524,
-    "hash": "528ac0a7942762956a99b146b810468a"
+    "mtime": 1790559599.2318907,
+    "hash": "418f2fe490bd8ef6b98b2916b6c20d21"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_priority_stops.py": {
     "mtime": 1777159492.176964,
@@ -320,8 +320,8 @@
     "hash": "be59eda15967f5f6f9d362104495b276"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_top_card_choices.py": {
-    "mtime": 1790559345.3968403,
-    "hash": "098efd01f33763a18ab97d89ca7e9666"
+    "mtime": 1790559628.4824314,
+    "hash": "92cec26e6081841e9decf04faaecb7ee"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cost_modifiers.py": {
     "mtime": 1784664889.4193473,
@@ -356,8 +356,8 @@
     "hash": "14f1792c9c9f757dfc1d9f61ea36e302"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_library_search_rules.py": {
-    "mtime": 1790559441.2103577,
-    "hash": "8c546fdb994c0c45aa7ac8eeb3656099"
+    "mtime": 1790559691.4094417,
+    "hash": "4f4125f342d28691e469e2d20a399e13"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cast_choice_modes.py": {
     "mtime": 1790544448.2069333,
@@ -432,8 +432,8 @@
     "hash": "5dbba4db3caac95c1769aa4bf9a976b2"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_topdeck_reveal_creature.py": {
-    "mtime": 1790559367.4305003,
-    "hash": "bfae476054abd50938d299f70d997ffd"
+    "mtime": 1790559628.4824314,
+    "hash": "4cb586c22a8a328787e5ef764fb83981"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_trigger_power_damage.py": {
     "mtime": 1784462566.7929602,
@@ -444,8 +444,8 @@
     "hash": "591d6af8c329c5c5042e00f9c2ff290a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cleanup_choices.py": {
-    "mtime": 1790538709.424761,
-    "hash": "065fa717e9fc96f2826adc9b2f98cc84"
+    "mtime": 1790559674.36971,
+    "hash": "e9a51df6ade91bf4b69d849f2cf19c8c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_analytics_batch.py": {
     "mtime": 1789239407.5483398,
@@ -676,20 +676,20 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/game_state/serializers.py": {
-    "mtime": 1790559295.1856124,
-    "hash": "fe0f20d71ae2e1e6c5bbf008a65bb35e"
+    "mtime": 1790559637.0272973,
+    "hash": "4a50a8a58781542b939d8bd5f0678c3c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/game_state/state.py": {
-    "mtime": 1790559285.2527647,
-    "hash": "f7d05825497b76b6afcf0262ba38253d"
+    "mtime": 1790559628.4814315,
+    "hash": "0966348147ee919761016c708986e59b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/analytics/__init__.py": {
     "mtime": 1777063134.7040613,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/analytics/service.py": {
-    "mtime": 1790559285.2507648,
-    "hash": "c84436085172c97461d5163b71efc5ac"
+    "mtime": 1790559628.4804316,
+    "hash": "9e55fc2c33184b5a0b9873c8ced28b62"
   },
   "/home/nick/mtg-deck-testing-lab/backend/analytics/schemas.py": {
     "mtime": 1790541703.6634486,
@@ -792,8 +792,8 @@
     "hash": "b35428a0b0f023391451e13864521854"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/engine.py": {
-    "mtime": 1790549592.4607565,
-    "hash": "62b19afbfbee3a72ab98b30f7f58cca6"
+    "mtime": 1790559637.0292974,
+    "hash": "dd4b6c6b6bcc04796461f5e50d1c571d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/dredge.py": {
     "mtime": 1790534656.1620648,
@@ -952,16 +952,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790559424.875611,
-    "hash": "983675bdaac2c218d315918c64844941"
+    "mtime": 1790559701.477283,
+    "hash": "265381097c65e24a412e447fbcbcb359"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790559424.8766112,
-    "hash": "b9dde553e6ae84e334cf78457c37f809"
+    "mtime": 1790559701.478283,
+    "hash": "eaa061e601aa5dfd4f7441efc37e1cca"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790559424.8766112,
-    "hash": "eda64941da480b00e98dac25a4f61c76"
+    "mtime": 1790559701.4792829,
+    "hash": "a418f4e0cda0876cf3a7ccd2aff4c6ad"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

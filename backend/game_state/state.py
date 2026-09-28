@@ -166,7 +166,7 @@ class MatchState:
     # effects apply. AI/replay runs keep deterministic automatic selection.
     replacement_choice_required: bool = False
     replacement_choice_players: set[int] = field(default_factory=set)
-    library_choice_players: set[int] = field(default_factory=set)
+    mechanic_choice_players: set[int] = field(default_factory=set)
     pending_replacement_choice: dict | None = None
     trigger_order_choice_required: bool = False
     trigger_order_choice_players: set[int] = field(default_factory=set)

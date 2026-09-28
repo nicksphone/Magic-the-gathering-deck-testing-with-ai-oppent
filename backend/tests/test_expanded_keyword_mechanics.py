@@ -132,6 +132,23 @@ def test_annihilator_uses_stack_and_defender_choice_survives_snapshot(state):
     assert len(restored.players[2].graveyard) == 2
 
 
+def test_ai_annihilator_keeps_lands_over_expendable_permanents(state):
+    card(state, "land-a", "Island", controller=2, types=["Land"])
+    card(state, "land-b", "Forest", controller=2, types=["Land"])
+    card(state, "small", "Elvish Mystic", controller=2, types=["Creature"], power=1, toughness=1)
+    card(state, "large", "Craw Wurm", controller=2, types=["Creature"], power=6, toughness=4)
+    card(state, "token", "Elf Token", controller=2, types=["Creature", "Token"], power=1, toughness=1)
+    from rules_engine.keyword_actions import resolve_annihilator
+
+    resolve_annihilator(state, 1, {"target_player": 2, "amount": 2})
+    engine = RulesEngine()
+    action = AIAgent(archetype="Tribal").choose_action(state, engine.legal_moves(state, 2), 2).action
+    assert action["type"] == "choose_mechanic"
+    assert action["card_ids"] == ["token", "small"]
+    engine.take_action(state, 2, action, reject_invalid=True)
+    assert {"land-a", "land-b", "large"} <= set(state.players[2].battlefield)
+
+
 def test_escape_requires_and_exiles_other_graveyard_cards(state):
     ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD, mana_cost="{3}{R}{R}", power=4, toughness=2, oracle_text="Escape\u2014{R}{R}, Exile eight other cards from your graveyard.\nThis creature escapes with a +1/+1 counter on it.")
     for index in range(8):

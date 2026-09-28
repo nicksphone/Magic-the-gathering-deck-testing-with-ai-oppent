@@ -47,7 +47,7 @@ def test_ai_top_three_choice_uses_resolution_time_cards() -> None:
         [{"quantity": 60, "card_name": "Forest"}], seed=21,
     )
     state.pregame_pending = False
-    state.library_choice_players = {1}
+    state.mechanic_choice_players = {1}
     ids = state.players[1].library[-3:]
     for cid, cost in zip(ids, ("{5}", "{1}", "{2}")):
         state.cards[cid].types = ["Sorcery"]

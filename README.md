@@ -65,6 +65,7 @@ It is designed for serious deck work:
 - Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
 - Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
 - AI tutor selection happens at resolution, not by peeking at library candidates during cast; its current ranking is heuristic rather than deep tactical planning
+- AI mechanic choices preserve lands and high-value creatures against Annihilator when expendable permanents exist, and choose cleanup discards from the whole hand instead of dropping the first cards by library order
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support

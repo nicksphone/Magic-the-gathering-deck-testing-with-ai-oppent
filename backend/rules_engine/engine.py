@@ -290,7 +290,7 @@ class RulesEngine:
         discard_count = len(player.hand) - max_hand_size
         human_players = state.replacement_choice_players
         human = state.replacement_choice_required and (not human_players or player_id in human_players)
-        if human:
+        if human or player_id in state.mechanic_choice_players:
             state.pending_mechanic_choice = {"kind": "cleanup_discard", "player_id": player_id, "options": list(player.hand), "count": discard_count, "label": "Discard to maximum hand size"}
             state.priority_player = player_id
         else:

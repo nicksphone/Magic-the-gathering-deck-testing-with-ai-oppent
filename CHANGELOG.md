@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Corrected AI Annihilator sacrifices to prefer expendable tokens and weak creatures over lands or stronger threats. AI cleanup now pauses for a persisted legal discard choice and evaluates the full hand rather than discarding the first cards. The shared mechanic-choice setting retains compatibility with prior snapshot field names.
+
 - Generalized persisted library choices to AI-controlled topdeck battlefield, creature-reveal and hand/exile/bottom effects. Live/replay AI now ranks resolution-time options rather than relying on each effect handler's fixed first/highest-cost fallback. Direct handler calls still have deterministic behavior, and the AI ranking is not expert-level planning.
 
 - AI-controlled live, replay and batch matches now pause supported library searches at resolution and choose legal targets using current hand color demand and a bounded card-value heuristic instead of first-in-library order. Search-choice state survives snapshots; a regression covers selecting an Island needed for a blue spell. This is a tactical improvement, not a broad AI-strength claim.

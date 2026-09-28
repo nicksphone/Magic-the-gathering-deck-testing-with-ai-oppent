@@ -91,8 +91,14 @@ class AIAgent:
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning=f"Choose {kind} cards at resolution")
+            if choice["kind"] == "sacrifice":
+                options.sort(key=lambda cid: (self._sacrifice_loss(state, cid, player_id), cid))
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Sacrifice least valuable permanents")
+            if choice["kind"] == "cleanup_discard":
+                options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
-            return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Choose least costly permanents for mandatory sacrifice")
+            return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
@@ -2934,6 +2940,45 @@ class AIAgent:
                     sources[color] = sources.get(color, 0) + 1
             candidates.remove(chosen)
         return selected
+
+    def _sacrifice_loss(self, state: MatchState, cid: str, player_id: int) -> float:
+        card = state.cards[cid]
+        types = set(card.types)
+        if "Land" in types:
+            demand = self._color_demand(state, player_id)
+            sources = self._current_color_sources(state, player_id)
+            unique_color_need = sum(
+                demand.get(color, 0) for color in self._land_colors(card)
+                if sources.get(color, 0) <= 1
+            )
+            return 20.0 + unique_color_need
+        if "Creature" in types:
+            power, toughness = _effective_combat_stats(state, cid)
+            value = 3.0 + max(0, power) * 1.2 + max(0, toughness) * 0.35
+        else:
+            value = 5.0 + mana_value(card.mana_cost) * 0.6
+        if "Token" in types:
+            value -= 4.0
+        if getattr(card, "oracle_text", ""):
+            value += 1.0
+        return value
+
+    def _hand_retention_value(self, state: MatchState, cid: str, player_id: int) -> float:
+        card = state.cards[cid]
+        player = state.players[player_id]
+        lands_in_play = sum("Land" in state.cards[pid].types for pid in player.battlefield)
+        lands_in_hand = sum("Land" in state.cards[hid].types for hid in player.hand)
+        if "Land" in card.types:
+            if lands_in_play < 3:
+                return 9.0 if lands_in_hand <= 2 else 5.0
+            return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0
+        cost = mana_value(card.mana_cost)
+        value = 5.0 - max(0, cost - lands_in_play - 1) * 0.8
+        if self.archetype == "Reanimator" and "Creature" in card.types and cost > lands_in_play + 2:
+            value -= 2.0
+        if self.archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
+            value += 1.5
+        return value
 
     def _best_land_move(self, state: MatchState, land_moves: list[dict], player_id: int) -> dict:
         demand = self._color_demand(state, player_id)
