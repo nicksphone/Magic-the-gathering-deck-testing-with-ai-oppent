@@ -285,6 +285,7 @@ Combat-choice milestone validation: 964 backend tests pass in a disposable track
 - [ ] Add golden fixtures for full clauses, costs, modes, targets, attachments and zone permissions.
 - [ ] Expand continuous layer/dependency, replacement/prevention ordering and can't-override fidelity.
 - [ ] Cover simultaneous state-based actions, APNAP trigger choices and resumable nested effects.
+Combat-trigger follow-up: trample-to-defender and blocker-to-attacker damage now emit combat-damage events, while self-damage triggers reject another source. Verification: 993 isolated backend tests, frontend lint/build/unit checks and a two-game seeded replay without drift or anomaly labels pass. Collecting all combat-damage triggers simultaneously and ordering them after applicable state-based actions remains open.
 - [ ] Test live HTTP and diagnostics against shared fixtures; parser classification alone cannot satisfy this task.
 
 Acceptance: expected zones, choices, stats, timing, triggers and outcomes match fixtures and replay/restart state.

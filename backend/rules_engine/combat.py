@@ -515,6 +515,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
                 dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
                 if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                     state.players[atk.controller].life += dealt
+                if dealt > 0:
+                    emit_event(
+                        state,
+                        "combat_damage_dealt",
+                        {"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt},
+                    )
 
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
@@ -530,6 +536,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             actual = _mark_creature_damage(state, attacker, blk_power, deathtouch=has_keyword(state, blocker_id, "deathtouch"), source_id=blocker_id)
             if actual > 0 and has_keyword(state, blocker_id, "lifelink"):
                 state.players[blk.controller].life += actual
+            if actual > 0:
+                emit_event(
+                    state,
+                    "combat_damage_dealt",
+                    {"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual},
+                )
 
 
 def _remove_dead_creatures(state: MatchState) -> None:

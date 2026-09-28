@@ -767,7 +767,7 @@ def _matches_combat_damage_trigger(state: MatchState, card, oracle: str, payload
         return False
     if source_id != card.id and "whenever a creature you control deals combat damage" not in oracle and "whenever a creature you control deals combat damage to" not in oracle:
         # Only source-specific combat damage triggers are supported here unless the card explicitly references a creature you control.
-        pass
+        return False
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")
     if target_player is not None:

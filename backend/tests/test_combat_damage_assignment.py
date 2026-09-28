@@ -106,6 +106,64 @@ def test_palace_guard_controller_chooses_which_attacker_takes_its_one_damage() -
     assert state.cards["guard"].zone == Zone.BATTLEFIELD
 
 
+def test_trample_player_damage_triggers_ohran_frostfang() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
+              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
+    _creature(state, "monstrosaur", 1, "Charging Monstrosaur", 5, 5, keywords=["trample", "haste"])
+    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    state.attackers = ["monstrosaur"]
+    state.blocks = {"monstrosaur": ["bears"]}
+
+    combat.combat_damage(state)
+
+    assert state.players[2].life < 20
+    assert any(item.source_card_id == "frostfang" for item in state.stack)
+
+
+def test_other_creatures_combat_damage_does_not_trigger_shadowmage_infiltrator() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "infiltrator", 1, "Shadowmage Infiltrator", 1, 3,
+              oracle_text="Fear\nWhenever this creature deals combat damage to a player, you may draw a card.")
+    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    state.attackers = ["bears"]
+
+    combat.combat_damage(state)
+
+    assert state.players[2].life == 18
+    assert not any(item.source_card_id == "infiltrator" for item in state.stack)
+
+
+def test_shadowmage_infiltrator_still_triggers_on_its_own_combat_damage() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "infiltrator", 1, "Shadowmage Infiltrator", 1, 3,
+              oracle_text="Fear\nWhenever this creature deals combat damage to a player, you may draw a card.")
+    state.attackers = ["infiltrator"]
+
+    combat.combat_damage(state)
+
+    assert state.players[2].life == 19
+    assert any(item.source_card_id == "infiltrator" for item in state.stack)
+
+
+def test_blocker_damage_emits_combat_event_with_actual_amount() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    state.attackers = ["courser"]
+    state.blocks = {"courser": ["bears"]}
+
+    with patch.object(combat, "emit_event", wraps=combat.emit_event) as emitted:
+        combat.combat_damage(state)
+
+    assert any(call.args[1:] == ("combat_damage_dealt", {"source_card_id": "bears", "target_card_id": "courser", "amount": 2})
+               for call in emitted.call_args_list)
+
+
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:
     state = _state()
     _creature(state, "first", 1, "Centaur Courser", 3, 3)
