@@ -149,6 +149,7 @@ export type LegalMove = {
   target_name?: string;
   accept?: boolean;
   target_hints?: {
+    single_target_alternative?: boolean;
     choice_schema?: Record<string, unknown>;
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];

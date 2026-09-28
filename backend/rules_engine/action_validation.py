@@ -33,6 +33,15 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
     require(not hints.get("modes") or bool(modes), "Announce the selected mode")
     text = " ".join(modes).lower() if modes else card.oracle_text.lower()
     permanent = bool(targets.get("target_card_id") or targets.get("target_card_ids") or targets.get("target_distribution"))
+    from rules_engine.targeting import single_player_permanent_alternative
+
+    alternative = single_player_permanent_alternative(text)
+    if alternative:
+        player = targets.get("target_player") is not None
+        require(player != permanent, "Announce exactly one player or permanent target")
+        if player and "opponent" in alternative:
+            require(targets["target_player"] != controller, "Target must be an opponent")
+        return
     if "any target" in text:
         require(permanent or targets.get("target_player") is not None, "Announce a target")
     if "target player" in text or "target opponent" in text:

@@ -1,9 +1,27 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from rules_engine.continuous import has_keyword
 from rules_engine.protection import protection_match_reason
+
+
+_PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
+    r"\btarget (?:(?:player|opponent) or (?:creature|planeswalker|permanent|artifact|enchantment|land)"
+    r"|(?:creature|planeswalker|permanent|artifact|enchantment|land) or (?:player|opponent))\b",
+    re.IGNORECASE,
+)
+
+
+def single_player_permanent_alternative(text: str) -> str | None:
+    """Return the one-target alternative clause, excluding multi-target text."""
+    if len(re.findall(r"\btarget\b", text, re.IGNORECASE)) != 1:
+        return None
+    match = _PLAYER_PERMANENT_ALTERNATIVE_RE.search(text)
+    if not match or re.match(r"\s+[a-z]", text[match.end():], re.IGNORECASE):
+        return None
+    return match.group(0).lower()
 
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
@@ -113,7 +131,7 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_creature_targets", "graveyard_permanent_targets",
-        )) or ("planeswalker_targets" in target_hints and "player_targets" not in target_hints)
+        )) or "planeswalker_targets" in target_hints
         if candidate_surface_present and any(str(cid) not in candidate_ids for cid in selected_card_ids):
             return False, "The selected card is not a legal target for this effect."
 

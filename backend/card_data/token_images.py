@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -13,6 +14,7 @@ from card_data.sync import CACHE_DIR, CACHE_ROUTE_PREFIX
 SCRYFALL_SEARCH_URL = "https://api.scryfall.com/cards/search"
 _TOKEN_IMAGE_CACHE: dict[tuple[str, int, int], str] = {}
 _COLOR_WORDS = {"white", "blue", "black", "red", "green", "colorless"}
+_INDEX_FILE = CACHE_DIR / "token-index.json"
 
 
 def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
@@ -21,14 +23,45 @@ def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
     if cached:
         return cached
 
-    image = _search_scryfall_token_image(name, power, toughness)
-    if image:
-        _TOKEN_IMAGE_CACHE[key] = image
-        return image
+    try:
+        index = json.loads(_INDEX_FILE.read_text(encoding="utf-8"))
+        filename = index.get(_index_key(key)) if isinstance(index, dict) else None
+        if isinstance(filename, str) and filename.startswith("token-") and Path(filename).name == filename and (CACHE_DIR / filename).is_file():
+            image = f"{CACHE_ROUTE_PREFIX}/{filename}"
+            _TOKEN_IMAGE_CACHE[key] = image
+            return image
+    except (OSError, ValueError, TypeError):
+        pass
 
     fallback = ensure_generic_token_image()
     _TOKEN_IMAGE_CACHE[key] = fallback
     return fallback
+
+
+def sync_token_image_uri(name: str, power: int, toughness: int) -> str:
+    """Explicitly fetch token art; gameplay uses only the local index or fallback."""
+    key = ((name or "token").strip().lower(), int(power), int(toughness))
+    image = _search_scryfall_token_image(name, power, toughness)
+    if not image or not image.startswith(f"{CACHE_ROUTE_PREFIX}/"):
+        return resolve_token_image_uri(name, power, toughness)
+    filename = image.rsplit("/", 1)[-1]
+    if not filename.startswith("token-") or not (CACHE_DIR / filename).is_file():
+        return resolve_token_image_uri(name, power, toughness)
+    try:
+        index = json.loads(_INDEX_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        index = {}
+    if not isinstance(index, dict):
+        index = {}
+    index[_index_key(key)] = filename
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    _INDEX_FILE.write_text(json.dumps(index, sort_keys=True), encoding="utf-8")
+    _TOKEN_IMAGE_CACHE[key] = image
+    return image
+
+
+def _index_key(key: tuple[str, int, int]) -> str:
+    return f"{key[0]}|{key[1]}|{key[2]}"
 
 
 def _search_scryfall_token_image(name: str, power: int, toughness: int) -> str | None:
@@ -97,3 +130,14 @@ def _cache_remote_token_image(raw: dict[str, Any], remote_uri: str, client: http
         return f"{CACHE_ROUTE_PREFIX}/{target.name}"
     except Exception:
         return None
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fetch and cache token art outside gameplay")
+    parser.add_argument("name")
+    parser.add_argument("power", type=int)
+    parser.add_argument("toughness", type=int)
+    args = parser.parse_args()
+    print(sync_token_image_uri(args.name, args.power, args.toughness))

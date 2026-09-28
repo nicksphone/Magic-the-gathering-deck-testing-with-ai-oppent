@@ -5,6 +5,7 @@ from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
+from rules_engine.targeting import single_player_permanent_alternative
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -175,6 +176,7 @@ def infer_effect_from_oracle(
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any]]] = []
     for clause in clauses:
+        effects.extend(_infer_turn_restriction_effects(clause, controller))
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
             if (
@@ -185,7 +187,6 @@ def infer_effect_from_oracle(
             ):
                 inferred[1]["animate_land"] = True
             effects.append(inferred)
-    effects.extend(_infer_turn_restriction_effects(oracle, controller))
     if len(effects) >= 2:
         return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
     if len(effects) == 1:
@@ -590,6 +591,17 @@ def inspect_target_hints(
         hints["player_targets"] = [
             {"id": 1, "name": state.players[1].name},
             {"id": 2, "name": state.players[2].name},
+        ]
+    alternative = single_player_permanent_alternative(oracle)
+    if alternative:
+        hints["single_target_alternative"] = True
+        allowed_players = [opponent] if "opponent" in alternative else [1, 2]
+        hints["player_targets"] = [{"id": pid, "name": state.players[pid].name} for pid in allowed_players]
+        kind = next(kind for kind in ("creature", "planeswalker", "permanent", "artifact", "enchantment", "land") if kind in alternative)
+        hints[f"{kind}_targets"] = [
+            {"id": cid, "name": state.cards[cid].name}
+            for player in state.players.values() for cid in player.battlefield
+            if kind == "permanent" or kind.capitalize() in state.cards[cid].types
         ]
     if DIVIDE_RE.search(oracle):
         hints["supports_divide"] = True

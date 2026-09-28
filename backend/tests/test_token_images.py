@@ -35,3 +35,24 @@ def test_create_token_assigns_image_uri() -> None:
     assert len(created) == 1
     cid = created[0]
     assert state.cards[cid].image_uri
+
+
+def test_gameplay_token_image_lookup_never_fetches_network(monkeypatch) -> None:
+    token_images._TOKEN_IMAGE_CACHE.clear()
+    def fail_fetch(*args):
+        raise AssertionError("network during gameplay")
+
+    monkeypatch.setattr(token_images, "_search_scryfall_token_image", fail_fetch)
+    assert resolve_token_image_uri("White Soldier", 1, 1).endswith("generic-token-creature.svg")
+
+
+def test_explicit_token_sync_persists_local_art_for_future_games(monkeypatch, tmp_path) -> None:
+    image = tmp_path / "token-soldier.jpg"
+    image.write_bytes(b"art")
+    monkeypatch.setattr(token_images, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(token_images, "_INDEX_FILE", tmp_path / "token-index.json")
+    monkeypatch.setattr(token_images, "_search_scryfall_token_image", lambda *args: "/card-images/token-soldier.jpg")
+    token_images._TOKEN_IMAGE_CACHE.clear()
+    assert token_images.sync_token_image_uri("White Soldier", 1, 1) == "/card-images/token-soldier.jpg"
+    token_images._TOKEN_IMAGE_CACHE.clear()
+    assert resolve_token_image_uri("White Soldier", 1, 1) == "/card-images/token-soldier.jpg"

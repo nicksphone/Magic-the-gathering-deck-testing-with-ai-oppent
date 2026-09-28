@@ -163,7 +163,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             if f"protection from {color}" in kws:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return
-        if card.toughness is not None and amount > 0:
+        if (card.toughness is not None or "Planeswalker" in card.types) and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount) is not None:
                 if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
@@ -183,8 +183,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             if post <= 0:
                 return
             from rules_engine.damage_results import apply_creature_damage
-            apply_creature_damage(state, target_card_id, int(post), source_card_id)
-            state.log.append(f"{card.name} takes {post} damage.")
+            if card.toughness is not None:
+                apply_creature_damage(state, target_card_id, int(post), source_card_id)
+                state.log.append(f"{card.name} takes {post} damage.")
+            if "Planeswalker" in card.types and card.loyalty is not None:
+                card.loyalty -= int(post)
+                state.log.append(f"{card.name} loses {post} loyalty.")
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
             if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)

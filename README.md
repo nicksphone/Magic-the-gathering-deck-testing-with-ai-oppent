@@ -24,7 +24,7 @@ It is designed for serious deck work:
 - Testing Simulator job responses check status, progress and completed summary metrics at runtime; the result no longer crosses the UI boundary as `any`
 - Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations and match creation
 - Interactive BO3 matches persist a root seed and derive per-game seeds without exposing them during play. The prior game's human loser chooses play or draw between games; AI losers choose play by default. The choice and subsequent game survive match restore.
-- Seeded AI-vs-AI BO3 regressions use real built-in Aggro/Burn and Control/Ramp decklists, restore the controller from SQLite between games, and verify natural match finishes through HTTP; an Aggro/Burn series also finishes through rendered UI controls. Complete human browser BO3 acceptance remains open.
+- Seeded AI-vs-AI BO3 regressions use real built-in Aggro/Burn and Control/Ramp decklists, restore the controller from SQLite between games, and verify natural match finishes through HTTP; an Aggro/Burn series also finishes through rendered UI controls. A scripted human controls Mono Red Aggro through a natural BO3 against a 60-Island AI deck via rendered mulligan, land, cast, attack, pass, trigger-order and next-game controls. These are lifecycle checks, not evidence of competitive AI or broad human-game acceptance.
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
@@ -62,6 +62,7 @@ It is designed for serious deck work:
 - Look-at-top creature reveals with printed mana-value or power limits, optional human selection at resolution, ranked AI selection, and random-order bottom placement where Oracle text requires it
 - Shared cast-choice plumbing for modes, faces, X values, and targets; library-search selection occurs at resolution
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
+- Simple single-target player-or-permanent Oracle alternatives expose both candidate types and use one combined human target selector; damage to a planeswalker reduces loyalty, with prevention and printed clause order respected. Multi-target and more complex alternatives remain unsupported.
 - Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
 - Replacement candidates are queryable through `/matches/{match_id}/replacement-options`, and explicit source IDs can be carried through structured cast choices; deterministic timestamp selection remains the AI/replay default
 - Replacement-option responses identify the deterministic policy as `latest_effect_timestamp` and suppress choices that a supported prevention override makes impossible
@@ -91,7 +92,7 @@ It is designed for serious deck work:
 - Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; the shipped 81-card corpus currently has zero parser-fallback or missing-Oracle classifications
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail
-- Token art fallback handling and face-aware image reuse for double-faced cards
+- Token creation uses cached art or an immediate local fallback, never a network request in the rules path; explicit token-art sync stores local art for later games
 - Diagnostic replay scripts hydrate cards from the local cache before simulation; unknown cards retain unknown characteristics instead of being silently treated as generic 2/2s
 
 ### AI
@@ -287,8 +288,16 @@ The app syncs and caches card data locally.
 - Missing art falls back to local placeholder handling
 - Cached double-faced cards reuse face-level art when the root image is missing
 - Exact cached card names take precedence over face aliases; non-playable art-series records cannot masquerade as a land or other split-face alias
-- Token art resolves when available, with a generic token fallback before blank placeholders
+- Token art resolves from the local index when available, with a generic token fallback before blank placeholders; game actions never wait on Scryfall
 - Fallback card lookups normalize punctuation, spacing, and common transform-face import names
+
+To prefetch a token image explicitly, run from `backend`:
+
+```bash
+python -m card_data.token_images "White Soldier" 1 1
+```
+
+This network operation writes the image and `token-index.json` into the disposable image cache. Without prefetching, newly created tokens use the shipped generic art until a later game loads a synced image. Back up the image cache if retaining token art across installations matters.
 
 ## API Overview
 
@@ -354,8 +363,8 @@ The application currently supports:
 
 Current focus:
 - expanding targeted trigger choices beyond bounded ETB/self-cast clauses, non-damage multi-target rechecks and broader face mechanics
-- full-game browser acceptance, extended match-creation recovery and broader successful-response runtime validation
-- deliberate AI sideboarding, complete interactive BO3 browser coverage and full response-contract acceptance
+- broader human-vs-human/full-game browser acceptance, extended match-creation recovery and broader successful-response runtime validation
+- deliberate AI sideboarding, competitive-opponent BO3 browser coverage and full response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
 - improving replacement, prevention, and layer fidelity in edge cases
 - deepening tactical AI for complex board states and matchup-specific heuristics
@@ -371,8 +380,8 @@ GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build
 - Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Bounded single-target ETB and self-cast triggers choose targets in the ability window, with an optional accept/decline decision at resolution where applicable. Other trigger families, modal/multi-target clauses and multiple ability clauses remain local-beta blockers. See [targeted trigger boundary](docs/testing/targeted-trigger-choices.md).
 - Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Common modal land-face plays and Adventure resolution/exile permission paths are [tested separately](docs/testing/land-adventure-boundary.md). Divided-damage recipients now have bounded resolution-time legality coverage; non-damage multi-target spells, conditional land entries, split-card restrictions and full face-specific restart/browser acceptance remain open. Older cache rows need force-sync to acquire canonical layout.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Match creation now commits a start-key receipt with its snapshot; ambiguous successful responses retry the same key, including after reload. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage. Extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
-- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Human sideboard inventory is visible only between games for human-controlled seats; a swap survives reload and changes the next game's deck in bounded HTTP/browser tests. AI sideboarding strategy, a complete played BO3 browser path, drawn-game policy and legacy seed migration remain open. Existing saved matches without root seeds remain unseeded in later games.
-- Human action browser fixtures cover nineteen paths, including two-step Collected Company, ordered top-library and tutor choices, nested draw/dredge replacement, and both BO3 play/draw choices, but not a complete game or series. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
+- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Human sideboard inventory is visible only between games for human-controlled seats; a swap survives reload and changes the next game's deck in bounded HTTP/browser tests. A scripted human-vs-AI BO3 now completes through the browser against a noncompetitive all-Island opponent; AI sideboarding strategy, drawn-game policy, competitive-opponent and human-vs-human full-series coverage, and legacy seed migration remain open. Existing saved matches without root seeds remain unseeded in later games.
+- Human action browser fixtures cover nineteen focused paths, including two-step Collected Company, ordered top-library and tutor choices, nested draw/dredge replacement, and both BO3 play/draw choices. One additional path plays a complete scripted human-vs-AI series against an all-Island opponent. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
 - Incomplete type metadata for a nonbasic card is no longer guessed to be Land from mana text or a basic-land word in its name. Canonical cache hydration must supply that card's type line; the AI will not bypass missing legal moves by fabricating a land action.
 - Replay timeout labels now inspect the timed-out game alone; a prior game's cost error cannot make a long control game look like a rules failure. Deliberately low tick caps can still truncate legitimate games, so simulator conclusions require the recorded cap, seed and termination status.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.

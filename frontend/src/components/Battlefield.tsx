@@ -472,6 +472,12 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               );
             }
             const hints = move.target_hints;
+            const alternativeTargets = [...new Map([
+              ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
+              ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
+              ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
+            ].map((target) => [target.id, target])).values()];
+            const showAlternativeSelect = Boolean(hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             return (
               <div
                 key={card.id}
@@ -520,7 +526,23 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ))}
                   </select>
                 ) : null}
-                {hints?.player_targets?.length ? (
+                {showAlternativeSelect ? (
+                  <select
+                    value={targets[card.id]?.target_card_id ? `card:${targets[card.id].target_card_id}` : targets[card.id]?.target_player ? `player:${targets[card.id].target_player}` : ""}
+                    onChange={(e) => {
+                      const [kind, value] = e.target.value.split(":", 2);
+                      setTargets((prev) => ({
+                        ...prev,
+                        [card.id]: { ...prev[card.id], target_player: kind === "player" ? Number(value) : undefined, target_card_id: kind === "card" ? value : undefined },
+                      }));
+                    }}
+                  >
+                    <option value="">Choose Target</option>
+                    {hints?.player_targets?.map((target) => <option key={`player-${target.id}`} value={`player:${target.id}`}>{target.name}</option>)}
+                    {alternativeTargets.map((target) => <option key={`card-${target.id}`} value={`card:${target.id}`}>{target.name}</option>)}
+                  </select>
+                ) : null}
+                {!showAlternativeSelect && hints?.player_targets?.length ? (
                   <select
                     onChange={(e) =>
                       setTargets((prev) => ({
@@ -590,7 +612,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     }
                   />
                 ) : null}
-                {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
+                {!showAlternativeSelect && (hints?.creature_targets?.length || hints?.planeswalker_targets?.length) ? (
                   hints.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple

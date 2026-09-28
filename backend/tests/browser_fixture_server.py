@@ -168,6 +168,31 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             state.cards[cid] = card
             getattr(state.players[owner], zone.value).append(cid)
         return publish(state, deck)
+    if face_kind == "alternative_target":
+        from card_data.fallback_cards import fallback_card_payload
+
+        deck = [{"quantity": 60, "card_name": "Mountain"}]
+        state = MatchFactory.from_decks(deck, deck, seed=23)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool["R"] = 1
+        spell = CardInstance(
+            id="lava-spike", name="Lava Spike", owner=2, controller=2, zone=Zone.HAND,
+            types=["Sorcery"], mana_cost="{R}",
+            oracle_text="Lava Spike deals 3 damage to target player or planeswalker.",
+        )
+        walker = CardInstance(
+            id="teferi", name="Teferi, Hero of Dominaria", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=4,
+            type_line="Legendary Planeswalker — Teferi",
+            oracle_text=fallback_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
+        )
+        state.cards.update({spell.id: spell, walker.id: walker})
+        state.players[2].hand.append(spell.id)
+        state.players[1].battlefield.append(walker.id)
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")

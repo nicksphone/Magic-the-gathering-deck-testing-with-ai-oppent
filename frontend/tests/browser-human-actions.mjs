@@ -40,6 +40,17 @@ try {
   await waitFor("window.fixtureState.players['1'].life === 18");
   console.log("PASS permitted exile spell preserves source zone and resolves");
 
+  await click("Alternative Target Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Lava Spike'))");
+  await evaluate("(() => { const select = [...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Choose Target'); if (!select) throw new Error('Missing combined target selector'); select.value = 'player:1'; select.dispatchEvent(new Event('change', { bubbles: true })); select.value = 'card:teferi'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Lava Spike");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions[0].action.targets.target_card_id"), "teferi");
+  assert.equal(await evaluate("window.fixtureActions[0].action.targets.target_player"), undefined);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'teferi' && c.loyalty === 1)");
+  console.log("PASS player-or-planeswalker choice uses one selector and damages loyalty");
+
   await reset();
   await click("Cast Llanowar Elves");
   await waitFor("window.fixtureState.stack.length === 1");
