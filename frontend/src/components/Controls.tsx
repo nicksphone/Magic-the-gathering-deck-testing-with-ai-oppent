@@ -205,7 +205,15 @@ export function Controls(props: Props) {
           <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
           {mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
-          )) : <>
+          )) : mechanicMove.kind === "look_top_choose" ? <>
+            <p>Pick a hand card, then an exile card, then the bottom cards in order.</p>
+            {(mechanicMove.options ?? []).map((cid) => (
+              <button key={cid} disabled={mechanicSelections.includes(cid)} onClick={() => setMechanicSelections((selected) => [...selected, cid])}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
+            ))}
+            <p>{mechanicSelections.map((cid, index) => `${index === 0 ? "Hand" : index === 1 ? "Exile" : `Bottom ${index - 1}`}: ${mechanicMove.option_labels?.[cid] ?? cid}`).join(" | ")}</p>
+            <button onClick={() => setMechanicSelections([])}>Reset Order</button>
+            <button disabled={mechanicSelections.length !== mechanicMove.count} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Order</button>
+          </> : <>
             <p>{mechanicMove.kind === "topdeck_put" ? `Select up to ${mechanicMove.count} card(s).` : `Select exactly ${mechanicMove.count} card(s).`}</p>
             {(mechanicMove.options ?? []).map((cid) => <label key={cid}>
               <input type="checkbox" checked={mechanicSelections.includes(cid)} onChange={(event) => setMechanicSelections((selected) => event.target.checked ? [...selected, cid] : selected.filter((id) => id !== cid))} />

@@ -167,11 +167,7 @@ def infer_effect_from_oracle(
         }
     top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
     if top_choice:
-        payload = {"top_n": _parse_count_token(top_choice.group(1)), "play_exiled_until": state.turn}
-        for key in ("top_choice_hand_id", "top_choice_exile_id", "top_choice_bottom_ids"):
-            if key in action_targets:
-                payload[key] = action_targets[key]
-        return "look_top_choose", payload
+        return "look_top_choose", {"top_n": _parse_count_token(top_choice.group(1))}
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
         return search_effect
@@ -448,16 +444,7 @@ def inspect_target_hints(
 
     top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
     if top_choice:
-        top_n = _parse_count_token(top_choice.group(1))
-        top_cards = list(reversed(state.players[controller].library[-top_n:]))
-        hints["top_choice"] = {
-            "top_n": top_n,
-            "candidates": [
-                {"id": cid, "name": state.cards[cid].name}
-                for cid in top_cards
-                if cid in state.cards
-            ],
-        }
+        hints["top_choice"] = {"top_n": _parse_count_token(top_choice.group(1))}
 
     # The cards are unknown until resolution; never peek during legal-move generation.
     topdeck_effect = _infer_topdeck_creature_put_effect(oracle, {}) or _infer_topdeck_permanent_put_effect(oracle, {})

@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Moved Expressive Iteration-style hand/exile/bottom placement from cast-time library peeking to a resolution-time ordered human choice. Response-window library changes, snapshot/stack continuation and turn-relative exile permission have focused regression coverage; the production Controls/API browser path passes. Library search remains a separate cast-time timing gap.
+
 - Moved supported creature/permanent topdeck battlefield selection from cast-time hidden-library previews to resolution-time pending choices. Human choices survive snapshots and resume stack cleanup; AI retains deterministic selection. Focused Collected Company and Storm the Festival tests cover changed library order, up-to limits and cast-time secrecy; the shared mana-value helper also counts `{C}` correctly for creature eligibility. Expressive Iteration-style and library-search timing remain open.
 
 - Fixed a real Oracle-effect gap found in a full live API match: Recruitment Officer's mana-value-limited top-four ability no longer resolves as a no-op. The reusable creature-reveal handler also covers power limits, optional human choice after snapshot restoration and through HTTP, and random-order bottom placement. Corrected a prior test that used altered Recruitment Officer text. A seeded Ramp/White Weenie scripted-human/AI BO3 completes with zero unresolved-effect lines; this does not establish balance or broad top-library correctness.

@@ -97,16 +97,23 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             state.priority_player = state.active_player
             state.passed_priority = set()
         return True
-    if pending and pending["kind"] == "topdeck_put":
+    if pending and pending["kind"] in {"topdeck_put", "look_top_choose"}:
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
                 or len(ids) > pending["count"] or len(ids) != len(set(ids))
+                or (pending["kind"] == "look_top_choose" and len(ids) != pending["count"])
                 or any(cid not in pending["options"] for cid in ids)
                 or state.players[player_id].library[-len(pending["top_ids"]):] != pending["top_ids"]):
             return False
         from effects.registry import resolve_effect
-        payload = {**pending["effect_payload"], "selected_card_ids": ids}
-        resolve_effect(state, player_id, pending["effect_key"], payload)
+        if pending["kind"] == "look_top_choose":
+            payload = {**pending["effect_payload"], "top_choice_hand_id": ids[0],
+                       "top_choice_exile_id": ids[1], "top_choice_bottom_ids": ids[2:]}
+            effect_key = "look_top_choose"
+        else:
+            payload = {**pending["effect_payload"], "selected_card_ids": ids}
+            effect_key = pending["effect_key"]
+        resolve_effect(state, player_id, effect_key, payload)
         state.pending_mechanic_choice = None
         if pending.get("resolving_item"):
             from game_state.state import StackItem

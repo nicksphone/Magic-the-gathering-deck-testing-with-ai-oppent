@@ -895,6 +895,17 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
     top_slice = player.library[-top_n:]
     if not top_slice:
         return
+    if (len(top_slice) >= 2 and payload.get("top_choice_hand_id") is None
+            and state.replacement_choice_required and controller in state.replacement_choice_players):
+        state.pending_mechanic_choice = {
+            "kind": "look_top_choose", "player_id": controller,
+            "options": list(reversed(top_slice)), "count": len(top_slice),
+            "top_ids": top_slice, "effect_payload": payload,
+            "label": "Choose hand card, exile card, then bottom order",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
 
     explicit_hand = payload.get("top_choice_hand_id")
     explicit_exile = payload.get("top_choice_exile_id")

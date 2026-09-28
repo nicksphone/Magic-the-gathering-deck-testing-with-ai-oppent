@@ -144,6 +144,18 @@ try {
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Ulamog, the Infinite Gyre')");
   console.log("PASS cast-trigger target resolves before its creature spell through the production UI/API");
 
+  await click("Iteration Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'look_top_choose'");
+  const iterationOptions = await evaluate("window.fixtureState.pending_mechanic_choice.options");
+  await click("Counterspell");
+  await click("Lightning Bolt");
+  await click("Llanowar Elves");
+  await click("Confirm Order");
+  await waitFor("window.fixtureState?.pending_mechanic_choice === null && window.fixtureState?.players['2'].hand.some(c => c.name === 'Counterspell')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), [iterationOptions[1], iterationOptions[2], iterationOptions[0]]);
+  assert.equal(await evaluate("window.fixtureState.players['2'].exile_count"), 1);
+  console.log("PASS ordered top-card hand/exile/bottom choice through Controls and API");
+
   await click("BO3 Fixture");
   await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
   await click("P2 Draw First");

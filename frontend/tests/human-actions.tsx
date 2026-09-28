@@ -58,6 +58,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
+    <button onClick={() => reset(false, false, 3, "iteration").catch((failure) => setError(String(failure)))}>Iteration Fixture</button>
     <button onClick={() => reset(false, false, 3, "bo3").catch((failure) => setError(String(failure)))}>BO3 Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
@@ -76,7 +77,7 @@ function Harness() {
       onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}}
       onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
       onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}
-      onChooseMechanic={() => {}}
+      onChooseMechanic={(playerId, action) => { act(playerId, action).catch((failure) => setError(String(failure))); }}
       responseCountdown={null} autoResponsePaused={false} onToggleAutoResponsePause={() => {}}
       legalMoves={moves} match={match} actingPlayerId={actor}
     /> : null}
