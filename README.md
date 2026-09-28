@@ -20,6 +20,7 @@ It is designed for serious deck work:
 - Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
 - Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
 - Live match responses pass a runtime core-state/card-view/blocks-shape check before entering the UI; broader generated API contracts remain unfinished
+- Public live-match responses hide AI-controlled hands while retaining hand counts; AI legal-move queries cannot expose their playable cards
 - Testing Simulator job responses check status, progress and completed summary metrics at runtime; the result no longer crosses the UI boundary as `any`
 - Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations
 - Interactive BO3 matches persist a root seed and derive per-game seeds without exposing them during play. The prior game's human loser chooses play or draw between games; AI losers choose play by default. The choice and subsequent game survive match restore.
@@ -276,6 +277,7 @@ The app syncs and caches card data locally.
 Base backend default: `http://0.0.0.0:9999`
 
 `0.0.0.0` is a bind address; browsers use the host's real address. Operation is currently private, single-user and single-worker. Per-match locks coordinate this process only; they do not provide network authorization or multiworker consistency. Do not expose the dev service to the public internet.
+Human-vs-human mode is a shared-device sandbox, not a private two-account game: both human hands remain available to the same unauthenticated client. Seat authentication and per-viewer redaction are required before claiming hidden-information privacy for separate human players.
 The single-process API admits one batch simulation at a time across synchronous and background-job routes; additional requests receive `429 simulation_busy`. This bounds concurrent batch execution, not job-history retention, cancellation, multiworker coordination or total CPU used by the admitted job. Interrupted jobs are marked failed after backend restart.
 
 Start/batch payloads accept `{quantity, card_name}` entries, resolving gameplay data from the card cache/source rather than arbitrary client Oracle text. Mainboards require 60-250 cards; `sandbox: true` permits 1-250. The upper bound is an application resource limit, not a Magic rule. Sideboards are capped at 15. See [input contracts](docs/api/input-contracts.md) for actions, errors and remaining guarantees.

@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Public match responses now redact AI-controlled hands while retaining hand counts; AI legal-move queries no longer reveal hand card views. HTTP regressions cover human-vs-AI and AI-vs-AI visibility without mutating authoritative state. Separate-client human-vs-human privacy still requires authentication and per-seat views.
+
 - Capped batch simulation admission to one concurrent run in the supported single-process API, shared by synchronous and background-job routes. Busy requests receive structured 429; focused tests cover competing requests and slot release on failure. Queueing, cancellation, retention and multiworker/network controls remain open.
 
 - Testing Simulator job status now validates progress and completed result metrics at runtime and uses a typed record instead of `any`; malformed responses fail before the panel presents them. Build and unit tests pass. This does not validate every analytics field.

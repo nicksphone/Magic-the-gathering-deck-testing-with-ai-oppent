@@ -658,6 +658,10 @@ def get_legal_moves(match_id: str, player_id: Annotated[int | None, Query(ge=1, 
     if player_id is not None and player_id not in (1, 2):
         raise HTTPException(status_code=422, detail="player_id must be 1 or 2")
     pid = player_id or _default_player_for_state(match)
+    if match.controllers.get(pid) != "human":
+        if player_id is not None:
+            raise HTTPException(status_code=403, detail={"code": "ai_controlled_seat", "message": "AI legal moves are not public"})
+        return {"player_id": pid, "moves": [], "revision": match.revision}
     moves = match.rules.legal_moves(match.state, pid)
     for move in moves:
         cid = move.get("card_id")
@@ -1266,6 +1270,9 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
 
 def _serialize_match_controller(match: MatchController) -> dict:
     payload = serialize_match(match.state)
+    for pid, controller in match.controllers.items():
+        if controller == "ai":
+            payload["players"][pid]["hand"] = []
     payload["revision"] = match.revision
     payload["mode"] = match.mode
     payload["controllers"] = {str(pid): controller for pid, controller in match.controllers.items()}
