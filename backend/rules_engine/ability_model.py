@@ -118,7 +118,7 @@ def build_ability_spec(
     # A modal spell with no selected mode is waiting for a choice, not an
     # unsupported Oracle parse. The selected mode is parsed when materialized.
     used_fallback = effect_key == "noop" and bool(oracle) and not static_only and not modes and not event_supported
-    restrictions = infer_target_restrictions(state, oracle, controller)
+    restrictions = infer_target_restrictions(state, str(action_targets.get("mode_text") or oracle), controller)
     if restrictions:
         payload.setdefault("target_restrictions", restrictions)
     for key in ("target_card_id", "target_card_ids", "target_player", "search_card_ids"):

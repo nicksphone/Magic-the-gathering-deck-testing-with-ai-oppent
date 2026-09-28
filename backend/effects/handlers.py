@@ -553,6 +553,14 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             source = state.cards.get(item.source_card_id)
             if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
                 return
+            restrictions = payload.get("target_restrictions") or {}
+            if restrictions:
+                from rules_engine.oracle_effects import _target_id_matches_restrictions
+                if not _target_id_matches_restrictions(
+                    state, item.source_card_id, restrictions, controller,
+                    x_value=int((item.payload or {}).get("x_value", 0) or 0),
+                ):
+                    return
             source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
                 state.log.append(f"{item.label} can't be countered.")

@@ -490,6 +490,7 @@ def inspect_target_hints(
     if ("counter target spell" in oracle or "counter target noncreature spell" in oracle
             or "counter target activated ability" in oracle or "counter target triggered ability" in oracle
             or "counter target activated or triggered ability" in oracle or COPY_STACK_RE.search(oracle)):
+        stack_restrictions = infer_target_restrictions(state, oracle, controller)
         allowed_kinds = set()
         if "counter target spell" in oracle or "counter target noncreature spell" in oracle:
             allowed_kinds.add("spell")
@@ -508,7 +509,10 @@ def inspect_target_hints(
             source = state.cards.get(item.source_card_id)
             if source is None or stack_object_kind(state, item) not in allowed_kinds:
                 continue
-            if "counter target noncreature spell" in oracle and "Creature" in (source.types or []):
+            if stack_restrictions and not _target_id_matches_restrictions(
+                state, source.id, stack_restrictions, controller,
+                x_value=int((item.payload or {}).get("x_value", 0) or 0),
+            ):
                 continue
             stack_targets.append({"id": item.id, "label": item.label})
         hints["stack_targets"] = stack_targets
@@ -730,6 +734,7 @@ def _target_id_matches_restrictions(
     card_id: str,
     restrictions: dict[str, Any],
     controller: int,
+    x_value: int = 0,
 ) -> bool:
     card = state.cards.get(card_id)
     if card is None:
@@ -754,7 +759,7 @@ def _target_id_matches_restrictions(
             or subtype in str(state.cards[cid].type_line or "").lower().split()
         )
     if max_value is not None:
-        cost = parse_mana_cost(card.mana_cost or "")
+        cost = parse_mana_cost(card.mana_cost or "", x_value=x_value)
         mana_value = int(cost.get("generic", 0) or 0) + int(cost.get("C", 0) or 0)
         mana_value += sum(int(cost.get(color, 0) or 0) for color in "WUBRG")
         if mana_value > int(max_value):
