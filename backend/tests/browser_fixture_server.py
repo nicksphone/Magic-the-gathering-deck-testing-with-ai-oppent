@@ -26,6 +26,26 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {"conditional_land", "conditional_land_effect"}:
+        import json
+        from effects.handlers import put_land_from_hand
+        seed = json.loads((Path(__file__).resolve().parents[1] / "card_data/builtin_oracle_seed.json").read_text())["cards"]["Sacred Foundry"]
+        deck = [{"quantity": 1, "card_name": seed["name"], "type_line": seed["type_line"], "oracle_text": seed["oracle_text"]},
+                {"quantity": 59, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        opponent = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(opponent, deck, seed=45)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        cid = next(cid for cid, card in state.cards.items() if card.owner == 2 and card.name == "Sacred Foundry")
+        if cid in state.players[2].library:
+            state.players[2].library.remove(cid)
+            state.players[2].hand.append(cid)
+            state.cards[cid].zone = Zone.HAND
+        if face_kind == "conditional_land_effect":
+            put_land_from_hand(state, 2, {"land_id": cid, "tapped": False})
+        return publish(state, deck)
     if face_kind == "draw_cap":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=37)

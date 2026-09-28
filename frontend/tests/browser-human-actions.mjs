@@ -195,6 +195,26 @@ try {
   assert.equal(await evaluate("window.fixtureActions[0].action.selected_face_index"), 1);
   console.log("PASS human land face bypasses stack and enters tapped");
 
+  await click("Conditional Land Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.hand-row button')].some(b => b.textContent.includes('Sacred Foundry (pay 2 life, untapped)'))");
+  await click("Play Land Sacred Foundry (pay 2 life, untapped)");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Sacred Foundry' && !c.tapped)");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 18);
+  assert.equal(await evaluate("window.fixtureActions[0].action.entry_choice"), "pay_two_life");
+  await click("Conditional Land Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Play Land Sacred Foundry (tapped)");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Sacred Foundry' && c.tapped)");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+  console.log("PASS human conditional land play sends paid and tapped choices through HTTP");
+
+  await click("Conditional Land Effect Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'land_entry'");
+  await click("Pay 2 life to enter untapped");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.players['2'].battlefield.some(c => c.name === 'Sacred Foundry' && !c.tapped)");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 18);
+  console.log("PASS human effect-driven entry choice resumes through HTTP");
+
   await click("Adventure Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && !!document.querySelector('.cast-card-box select')");
   await evaluate("(() => { const select = document.querySelector('.cast-card-box select'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");

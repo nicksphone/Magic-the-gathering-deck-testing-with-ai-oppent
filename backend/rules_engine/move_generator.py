@@ -8,12 +8,18 @@ from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
+from rules_engine.entry import land_entry_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.zone_actions import is_departed_token
+
+
+def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dict]:
+    options = land_entry_options(state, player_id, card)
+    return [{**move, "entry_choice": choice} for choice in options] if options else [move]
 
 
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
@@ -175,7 +181,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and state.active_player == player_id
             and not state.stack
         ):
-            moves.append({"type": "play_land", "card_id": cid})
+            moves.extend(_land_moves(state, player_id, card, {"type": "play_land", "card_id": cid}))
         elif (
             card.zone in {Zone.HAND, Zone.GRAVEYARD}
             and not _is_land_card(card)
@@ -242,7 +248,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and state.active_player == player_id
             and not state.stack
         ):
-            moves.append({"type": "play_land", "card_id": cid, "from_exile": True})
+            moves.extend(_land_moves(state, player_id, card, {"type": "play_land", "card_id": cid, "from_exile": True}))
         elif not _is_land_card(card) and _can_cast_spell(state, card, player_id):
             timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
             if not timing_ok:
@@ -430,8 +436,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if original.layout == "modal_dfc" and original.zone in {Zone.HAND, Zone.EXILE} and state.active_player == player_id and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack:
                     used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn) if player.last_land_play_turn == state.turn else 0
                     if used < compute_max_land_plays_this_turn(state, player_id):
-                        moves.append({"type": "play_land", "card_id": cid, "card_name": face.name,
-                                      "selected_face_index": index, "from_exile": original.zone == Zone.EXILE})
+                        moves.extend(_land_moves(state, player_id, face, {"type": "play_land", "card_id": cid, "card_name": face.name,
+                                      "selected_face_index": index, "from_exile": original.zone == Zone.EXILE}))
                 continue
             if not can_cast_in_current_timing(state, face, player_id)[0]:
                 continue

@@ -6,6 +6,7 @@ import re
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
+from rules_engine.entry import apply_entry_choice, pause_for_land_entries
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import emit_event, emit_event_batch
@@ -750,20 +751,21 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     controller's land-play allowance and the effect may enter the land tapped.
     """
     player = state.players[controller]
-    land_id = next(
-        (cid for cid in player.hand if cid in state.cards and "Land" in state.cards[cid].types and not is_departed_token(state.cards[cid])),
-        None,
-    )
+    eligible = [cid for cid in player.hand if cid in state.cards and "Land" in state.cards[cid].types and not is_departed_token(state.cards[cid])]
+    land_id = payload.get("land_id") if payload.get("land_id") in eligible else next(iter(eligible), None)
     if not land_id:
         state.log.append(f"{player.name} has no land in hand for the effect.")
         return
+    if pause_for_land_entries(state, controller, [land_id], "put_land_from_hand", {**payload, "land_id": land_id}):
+        return
+    land = state.cards[land_id]
+    apply_entry_choice(state, controller, land, choice=(payload.get("__entry_choices") or {}).get(land_id, "tapped"), effect_tapped=bool(payload.get("tapped", False)))
     player.hand.remove(land_id)
     player.battlefield.append(land_id)
-    land = state.cards[land_id]
     land.zone = Zone.BATTLEFIELD
     land.controller = controller
-    land.tapped = bool(payload.get("tapped", True))
     land.entered_turn = state.turn
+    assign_static_order_on_battlefield_entry(state, land_id)
     emit_event(state, "enters_battlefield", {"card_id": land_id, "controller": controller})
     state.log.append(
         f"{player.name} puts {land.name} from hand onto the battlefield"
@@ -839,17 +841,20 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
             break
     if source_graveyard is None or is_departed_token(card):
         return
+    if pause_for_land_entries(state, controller, [target], "return_permanent_from_graveyard_to_battlefield", payload):
+        return
+    apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"))
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
     card.zone = Zone.BATTLEFIELD
     card.controller = controller
-    card.tapped = False
+    card.entered_turn = state.turn
+    assign_static_order_on_battlefield_entry(state, target)
     if "Creature" in card.types:
         card.summoning_sick = True
-        card.entered_turn = state.turn
-        assign_static_order_on_battlefield_entry(state, target)
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
+    emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
 
 
 def search_library(state: MatchState, controller: int, payload: dict) -> None:
@@ -882,34 +887,27 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             state.priority_player = controller
             state.passed_priority = set()
             return
-    found: list[str] = []
     selected = payload.get("selected_card_ids")
     selected_ids = list(selected) if isinstance(selected, list) else None
-
-    def place(cid: str) -> None:
-        zone = ("battlefield" if not found else "hand") if destination == "split_battlefield_hand" else destination
-        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")))
-        found.append(state.cards[cid].name)
-
-    if selected_ids is not None:
-        # Recheck after a pending human choice or direct internal effect call.
-        for cid in selected_ids[:limit or None]:
-            if cid not in player.library or cid not in state.cards:
-                continue
-            card = state.cards[cid]
-            if not search_card_matches(card, subtype, mv_max):
-                continue
-            player.library.remove(cid)
-            place(cid)
-    else:
-        for cid in list(player.library):
-            card = state.cards[cid]
-            if not search_card_matches(card, subtype, mv_max):
-                continue
-            player.library.remove(cid)
-            place(cid)
-            if limit and len(found) >= limit:
+    candidates = selected_ids if selected_ids is not None else list(player.library)
+    chosen = []
+    for cid in candidates:
+        if cid not in player.library or cid not in state.cards or cid in chosen:
+            continue
+        if search_card_matches(state.cards[cid], subtype, mv_max):
+            chosen.append(cid)
+            if limit and len(chosen) >= limit:
                 break
+    entering = chosen[:1] if destination == "split_battlefield_hand" else chosen if destination == "battlefield" else []
+    if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
+        return
+    found: list[str] = []
+    for cid in chosen:
+        zone = ("battlefield" if not found else "hand") if destination == "split_battlefield_hand" else destination
+        choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
+        player.library.remove(cid)
+        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")), entry_choice=choice)
+        found.append(state.cards[cid].name)
     if found:
         public_names = bool(payload.get("reveal")) or destination in {"battlefield", "graveyard", "exile"}
         detail = f": {', '.join(found)}" if public_names else ""
@@ -926,6 +924,7 @@ def _place_searched_card(
     destination: str,
     *,
     tapped: bool = False,
+    entry_choice: str = "tapped",
 ) -> None:
     card = state.cards[card_id]
     player = state.players[controller]
@@ -933,14 +932,16 @@ def _place_searched_card(
         put_into_graveyard(state, card_id)
         return
     if destination == "battlefield":
+        if "Land" in card.types:
+            apply_entry_choice(state, controller, card, choice=entry_choice, effect_tapped=tapped)
         player.battlefield.append(card_id)
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
-        card.tapped = tapped
+        if "Land" not in card.types:
+            card.tapped = tapped
         card.summoning_sick = "Creature" in card.types
         card.entered_turn = state.turn
-        if "Creature" in card.types:
-            assign_static_order_on_battlefield_entry(state, card_id)
+        assign_static_order_on_battlefield_entry(state, card_id)
         emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
         return
     player.hand.append(card_id)
@@ -1495,13 +1496,18 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         chosen = [cid for cid in explicit if cid in eligible_set][:max_permanents]
     else:
         chosen = eligible[:max_permanents]
+    if pause_for_land_entries(state, controller, chosen, "topdeck_put_permanents_battlefield", {**payload, "selected_card_ids": chosen}):
+        return
     chosen_set = set(chosen)
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
     for cid in chosen:
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
-        card.tapped = False
+        if "Land" in card.types:
+            apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(cid, "tapped"))
+        else:
+            card.tapped = False
         card.summoning_sick = "Creature" in card.types
         card.entered_turn = state.turn
         player.battlefield.append(cid)

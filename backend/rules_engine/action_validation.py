@@ -119,7 +119,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         unique_ids(ids, player.hand, state.mulligan_count.get(player_id, 0))
     elif kind == "play_land":
         face = action.get("selected_face_index", 0) or 0
-        require(any(item.get("selected_face_index", 0) == face for item in available), "Selected land face is unavailable")
+        require(any(item.get("selected_face_index", 0) == face and item.get("entry_choice") == action.get("entry_choice") for item in available), "Selected land face or entry choice is unavailable")
     elif kind == "mulligan":
         require(state.mulligan_count.get(player_id, 0) < 7, "Cannot mulligan below zero opening cards")
     elif kind == "choose_mechanic":
@@ -127,7 +127,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         if pending["kind"] == "combat_damage":
             from rules_engine.combat import valid_damage_assignment
             require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
-        elif pending["kind"] == "draw":
+        elif pending["kind"] in {"draw", "land_entry"}:
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
         elif pending["kind"] in {"topdeck_put", "search_library"}:
             unique_ids(action.get("card_ids", []), pending["options"])

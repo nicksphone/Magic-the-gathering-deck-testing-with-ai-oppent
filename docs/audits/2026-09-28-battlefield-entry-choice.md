@@ -1,6 +1,6 @@
 # Battlefield-entry choice boundary (2026-09-28)
 
-Status: direct land play defect reproduced; other entry seams are code-confirmed, not yet end-to-end reproduced. No engine repair is claimed here.
+Status: bounded pay-2-life land-entry repair implemented with focused rules/snapshot, browser/API and seeded replay tests. The defect and inventory below describe the pre-repair baseline. General replacement ordering and broad replay acceptance remain open.
 
 ## Rules boundary
 
@@ -30,4 +30,11 @@ Control changes and cleanup control restoration move a permanent between control
 3. Make the human choice visible and resumable through API/UI snapshots. AI must select a legal option based on life and whether immediate untapped mana matters; it must not always spend life or always decline.
 4. Add golden tests for hand/exile/modal land play, effect entry from hand/library/graveyard, exactly 1/2/20 life, can't-pay-life effects, multiple replacements, simultaneous entries, ETB trigger ordering, snapshot resume and replay equality. Rejected or stale choices must leave full state unchanged.
 
-Do not close this item on a one-card or play-land-only patch. Until the shared entry boundary exists, original duals are used in built-in lists; conditional lands in custom decks remain uncertified.
+Do not close this item on a one-card or play-land-only patch. The supported wording now uses a shared land-capable entry path; original duals remain in built-in lists while other conditional entry families and replacement ordering are uncertified.
+
+## Bounded repair evidence
+
+- `backend/rules_engine/entry.py` recognizes the canonical pay-2-life/tapped Oracle clause by wording and land type, not a named-card branch. It checks available life before payment, preserves forced-tapped effects and stages multi-entry choices before cards move zones.
+- Eight focused tests cover direct and exile land plays, low-life legality, AI paying only for immediately usable mana, hand/library/graveyard/topdeck effect entries, snapshot resume, two simultaneous entries and life-zero state-based-action timing. The isolated suite passed 1,098 tests; a later timestamp adjustment passed 54 focused entry/token/Oracle-effect tests.
+- The loopback Chromium harness passed paid/tapped land-play buttons and a pending effect-entry decision through the real action API, then completed the existing recovery and BO3 scenarios.
+- One seeded Burn versus Dimir Control AI game played Sacred Foundry, paid 2 life, finished without timeout and produced the same log hash on rerun. This is replay consistency for one case, not broad strategic or rules certification.

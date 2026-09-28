@@ -55,6 +55,8 @@ function Harness() {
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
     <button onClick={() => reset(false, false, 3, "land").catch((failure) => setError(String(failure)))}>Land Face Fixture</button>
+    <button onClick={() => reset(false, false, 3, "conditional_land").catch((failure) => setError(String(failure)))}>Conditional Land Fixture</button>
+    <button onClick={() => reset(false, false, 3, "conditional_land_effect").catch((failure) => setError(String(failure)))}>Conditional Land Effect Fixture</button>
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>

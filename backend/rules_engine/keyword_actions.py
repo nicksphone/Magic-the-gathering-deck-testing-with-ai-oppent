@@ -81,6 +81,18 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     if pending and pending["kind"] == "draw":
         from rules_engine.dredge import complete_draw_choice
         return complete_draw_choice(state, player_id, action)
+    if pending and pending["kind"] == "land_entry":
+        choice = action.get("choice_id")
+        if pending["player_id"] != player_id or choice not in pending["options"]:
+            return False
+        from effects.registry import resolve_effect
+        from rules_engine.stack_engine import resume_paused_resolution
+        payload = dict(pending["effect_payload"])
+        payload["__entry_choices"] = {**payload.get("__entry_choices", {}), pending["entry_card_id"]: choice}
+        state.pending_mechanic_choice = None
+        resolve_effect(state, player_id, pending["effect_key"], payload)
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] == "topdeck_reveal_creature":
         ids = action.get("card_ids")
         if pending["player_id"] != player_id or not isinstance(ids, list) or len(ids) != 1 or ids[0] not in pending["options"]:

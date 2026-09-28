@@ -366,8 +366,10 @@ class RulesEngine:
                 return
             from rules_engine.keyword_actions import finish_mechanic_choice
             if kind == "choose_mechanic":
+                choice_kind = state.pending_mechanic_choice["kind"]
                 if finish_mechanic_choice(state, player_id, action):
-                    apply_state_based_actions(state)
+                    if choice_kind != "land_entry" or not (state.pending_mechanic_choice or state.pending_replacement_choice):
+                        apply_state_based_actions(state)
                 else:
                     reject("Invalid mechanic choice")
             return
@@ -572,19 +574,24 @@ class RulesEngine:
                 int(getattr(player, "land_plays_recorded_on_turn", 0)),
             )
             if allowed_source and used_land_plays < max_land_plays and _is_land_card(face):
+                from rules_engine.entry import apply_entry_choice, land_entry_options
+                entry_options = land_entry_options(state, player_id, face)
+                entry_choice = action.get("entry_choice")
+                if (entry_options and entry_choice not in entry_options) or (not entry_options and entry_choice is not None):
+                    reject("Unavailable land-entry choice")
+                    return
                 if from_exile:
                     leave_exile(state, cid)
                 else:
                     player.hand.remove(cid)
                 apply_cast_face(card, face)
+                apply_entry_choice(state, player_id, card, choice=entry_choice or "tapped")
                 player.battlefield.append(cid)
                 player.lands_played_this_turn = used_land_plays + 1
                 player.land_plays_recorded_on_turn = used_land_plays + 1
                 player.last_land_play_turn = state.turn
                 state.cards[cid].zone = Zone.BATTLEFIELD
                 state.cards[cid].summoning_sick = False
-                from rules_engine.land_rules import apply_land_entry
-                apply_land_entry(card)
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})

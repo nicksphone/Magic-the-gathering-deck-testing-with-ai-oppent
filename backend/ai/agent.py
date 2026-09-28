@@ -84,6 +84,10 @@ class AIAgent:
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
                 return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
+            if choice["kind"] == "land_entry":
+                pay = ("pay_two_life" in options and not (choice.get("effect_payload") or {}).get("tapped")
+                       and self._should_pay_two_life_for_land(state, player_id, choice.get("entry_card_id")))
+                return AIDecision(action={"type": "choose_mechanic", "choice_id": "pay_two_life" if pay else "tapped"}, reasoning="Pay life only when untapped mana enables a current play")
             if choice["kind"] in {"search_library", "topdeck_put", "topdeck_reveal_creature", "look_top_choose", "look_top_select_hand"}:
                 kind = choice["kind"]
                 candidates = [cid for cid in options if cid in state.cards]
@@ -3153,9 +3157,41 @@ class AIAgent:
                 if current_sources.get(color, 0) == 0 and demand.get(color, 0) > 0:
                     score += 3.5
             score += len(produced) * 0.15
+            if move.get("entry_choice") == "pay_two_life":
+                score += 0.25 if self._should_pay_two_life_for_land(state, player_id, cid) else -0.25
             return score
 
         return max(land_moves, key=lambda mv: (score_land(mv), self._move_sort_key(mv)))
+
+    def _should_pay_two_life_for_land(self, state: MatchState, player_id: int, card_id: str | None) -> bool:
+        if not card_id or card_id not in state.cards or state.players[player_id].life <= 4:
+            return False
+        simulated = copy.deepcopy(state)
+        player = simulated.players[player_id]
+        if card_id in player.hand:
+            player.hand.remove(card_id)
+        if card_id in player.library:
+            player.library.remove(card_id)
+        if card_id in player.graveyard:
+            player.graveyard.remove(card_id)
+        if card_id in player.exile:
+            player.exile.remove(card_id)
+        if card_id not in player.battlefield:
+            player.battlefield.append(card_id)
+        simulated.cards[card_id].zone = Zone.BATTLEFIELD
+        simulated.cards[card_id].controller = player_id
+        simulated.cards[card_id].tapped = False
+        main_phase = (_step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
+                      and state.active_player == player_id and not state.stack)
+        for cid in player.hand:
+            spell = simulated.cards.get(cid)
+            if not spell or "Land" in spell.types:
+                continue
+            if not main_phase and "Instant" not in spell.types and "flash" not in spell.keywords:
+                continue
+            if not self._can_pay_card_cost(state, player_id, state.cards[cid]) and self._can_pay_card_cost(simulated, player_id, spell):
+                return True
+        return False
 
     def _remaining_land_plays(self, state: MatchState, player_id: int) -> int:
         player = state.players[player_id]

@@ -247,7 +247,7 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" ? <>
             <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : "Pick the bottom cards in order, bottommost first."}</p>
