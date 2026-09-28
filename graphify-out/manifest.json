@@ -508,8 +508,8 @@
     "hash": "fafb076539f29d9fd36272f91badc212"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_combat_damage_assignment.py": {
-    "mtime": 1790581367.3254004,
-    "hash": "9cf26ea3fbd9f2afc3393467741b442a"
+    "mtime": 1790581637.3761458,
+    "hash": "4517bf89ba76a817e6339f455f81e479"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_live_bo3_series.py": {
     "mtime": 1790567908.087219,
@@ -1016,12 +1016,12 @@
     "hash": "5c428e75485e655e2f2ce464079fec99"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790581317.8751771,
-    "hash": "34a14d077aa6bd17629629b2e13f7b54"
+    "mtime": 1790581637.3771458,
+    "hash": "ed066391d39dfb5f553919460e5cbb4b"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790581317.8751771,
-    "hash": "b08d98b694ddec30de3129f881634a66"
+    "mtime": 1790581458.5329657,
+    "hash": "6809cc2d8e77e546e7cedcd4fec8df06"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1058,6 +1058,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/api/input-contracts.md": {
     "mtime": 1790544634.3870015,
     "hash": "48aaef935152075a4adf5cc9e08ee8ef"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-combat-trigger-timing.md": {
+    "mtime": 1790581637.3761458,
+    "hash": "3c4c227e0647a76bb50fcd57b174b93c"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-jev-two-stage-review.md": {
     "mtime": 1790535102.2339525,

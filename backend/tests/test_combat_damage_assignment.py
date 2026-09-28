@@ -190,6 +190,28 @@ def test_simultaneous_player_hits_offer_one_trigger_order_choice() -> None:
     assert sum(item.source_card_id == "frostfang" for item in state.stack) == 2
 
 
+@pytest.mark.xfail(strict=True, reason="combat damage and following death triggers are inserted in separate groups")
+def test_damage_and_death_triggers_share_one_order_choice() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
+              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
+    _creature(state, "haruspex", 1, "Grim Haruspex", 3, 2,
+              oracle_text="Morph {B}\nWhenever another nontoken creature you control dies, draw a card.")
+    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    state.attackers = ["bears", "courser"]
+    state.blocks = {"courser": ["giant"]}
+
+    combat.combat_damage(state)
+
+    assert state.pending_trigger_order is not None
+    assert len(state.pending_trigger_order["groups"]["1"]) == 2
+
+
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:
     state = _state()
     _creature(state, "first", 1, "Centaur Courser", 3, 3)
