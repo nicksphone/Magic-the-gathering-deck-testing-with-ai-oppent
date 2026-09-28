@@ -75,6 +75,8 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal_targets = {}
     state.attackers = legal
     state.combat_damage_resolved = False
+    state.combat_damage_stage = "none"
+    state.first_strike_damage_ids = set()
     state.attack_targets = legal_targets
     if legal:
         names = ", ".join(
@@ -215,33 +217,63 @@ def _add_combat_modifier(card, power: int, toughness: int) -> None:
 
 
 def combat_damage(state: MatchState) -> None:
+    """Resolve both substeps for direct callers that do not manage priority."""
     if state.combat_damage_resolved:
         return
+    if state.combat_damage_stage != "first":
+        begin_combat_damage(state)
+    if state.combat_damage_stage == "first" and not state.pending_replacement_choice and not state.pending_trigger_order:
+        finish_combat_damage(state)
+
+
+def begin_combat_damage(state: MatchState) -> None:
+    if state.combat_damage_stage != "none" or state.combat_damage_resolved:
+        return
+    default_defender = 1 if state.active_player == 2 else 2
+    combatants = set(state.attackers)
+    combatants.update(blocker for blockers in state.blocks.values() for blocker in blockers)
+    first_ids = {
+        cid for cid in combatants
+        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+        and (has_keyword(state, cid, "first strike") or has_keyword(state, cid, "double strike"))
+    }
+    state.first_strike_damage_ids = first_ids
+    if first_ids:
+        state.combat_damage_stage = "first"
+        _combat_damage_step(state, default_defender, first_ids, first_strike_only=True)
+    else:
+        state.combat_damage_stage = "regular"
+        _combat_damage_step(state, default_defender, first_ids, first_strike_only=False)
+        state.combat_damage_resolved = True
+    _remove_dead_creatures(state)
+
+
+def finish_combat_damage(state: MatchState) -> None:
+    if state.combat_damage_stage != "first" or state.combat_damage_resolved:
+        return
+    state.combat_damage_stage = "regular"
     state.combat_damage_resolved = True
     default_defender = 1 if state.active_player == 2 else 2
-    _combat_damage_step(state, default_defender, first_strike_only=True)
-    _remove_dead_creatures(state)
-    _combat_damage_step(state, default_defender, first_strike_only=False)
+    _combat_damage_step(state, default_defender, state.first_strike_damage_ids, first_strike_only=False)
     _remove_dead_creatures(state)
 
 
+def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set[str], first_strike_only: bool) -> None:
+    def assigns_damage(cid: str) -> bool:
+        return cid in first_ids if first_strike_only else cid not in first_ids or has_keyword(state, cid, "double strike")
 
-def _combat_damage_step(state: MatchState, default_defender: int, first_strike_only: bool) -> None:
     for attacker in list(state.attackers):
         if attacker not in state.cards:
             continue
         atk = state.cards[attacker]
         if atk.zone != Zone.BATTLEFIELD:
             continue
-        atk_has_fs = has_keyword(state, attacker, "first strike") or has_keyword(state, attacker, "double strike")
-        if first_strike_only and not atk_has_fs:
-            continue
-        if not first_strike_only and has_keyword(state, attacker, "first strike") and not has_keyword(state, attacker, "double strike"):
-            continue
 
         blocks = [b for b in state.blocks.get(attacker, []) if b in state.cards and state.cards[b].zone == Zone.BATTLEFIELD]
         defender_key = state.attack_targets.get(attacker, f"player:{default_defender}")
         if not blocks:
+            if not assigns_damage(attacker):
+                continue
             # A blocked creature stays blocked when its blockers leave combat.
             if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
                 continue
@@ -256,41 +288,39 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_strike_o
                 )
             continue
 
-        atk_power = effective_power(state, attacker)
-        remaining = atk_power
-        atk_has_deathtouch = has_keyword(state, attacker, "deathtouch")
-        for blocker_id in blocks:
-            if remaining <= 0:
-                break
-            blocker = state.cards[blocker_id]
-            if blocker.toughness is None:
-                continue
-            if _damage_prevented_by_protection(state, attacker, blocker_id):
-                continue
-            lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
-            dealt = min(remaining, lethal)
-            actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
-            if actual > 0 and has_keyword(state, attacker, "lifelink"):
-                state.players[atk.controller].life += actual
-            if actual > 0:
-                emit_event(
-                    state,
-                    "combat_damage_dealt",
-                    {"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual},
-                )
-            remaining -= dealt
+        if assigns_damage(attacker):
+            atk_power = effective_power(state, attacker)
+            remaining = atk_power
+            atk_has_deathtouch = has_keyword(state, attacker, "deathtouch")
+            for blocker_id in blocks:
+                if remaining <= 0:
+                    break
+                blocker = state.cards[blocker_id]
+                if blocker.toughness is None:
+                    continue
+                if _damage_prevented_by_protection(state, attacker, blocker_id):
+                    continue
+                lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
+                dealt = min(remaining, lethal)
+                actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
+                if actual > 0 and has_keyword(state, attacker, "lifelink"):
+                    state.players[atk.controller].life += actual
+                if actual > 0:
+                    emit_event(
+                        state,
+                        "combat_damage_dealt",
+                        {"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual},
+                    )
+                remaining -= dealt
 
-        if has_keyword(state, attacker, "trample") and remaining > 0:
-            dealt = _deal_unblocked_damage(state, defender_key, remaining, source_id=attacker)
-            if dealt > 0 and has_keyword(state, attacker, "lifelink"):
-                state.players[atk.controller].life += dealt
+            if has_keyword(state, attacker, "trample") and remaining > 0:
+                dealt = _deal_unblocked_damage(state, defender_key, remaining, source_id=attacker)
+                if dealt > 0 and has_keyword(state, attacker, "lifelink"):
+                    state.players[atk.controller].life += dealt
 
         for blocker_id in blocks:
             blk = state.cards[blocker_id]
-            blk_has_fs = has_keyword(state, blocker_id, "first strike") or has_keyword(state, blocker_id, "double strike")
-            if first_strike_only and not blk_has_fs:
-                continue
-            if not first_strike_only and has_keyword(state, blocker_id, "first strike") and not has_keyword(state, blocker_id, "double strike"):
+            if not assigns_damage(blocker_id):
                 continue
             blk_power = effective_power(state, blocker_id)
             if _damage_prevented_by_protection(state, blocker_id, attacker):

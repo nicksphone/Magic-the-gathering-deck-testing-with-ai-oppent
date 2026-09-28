@@ -59,6 +59,7 @@ export type MatchState = {
   active_player: number;
   priority_player: number;
   step: string;
+  combat_damage_stage?: "none" | "first" | "regular";
   winner: number | null;
   score: Record<string, number>;
   pregame_pending?: boolean;

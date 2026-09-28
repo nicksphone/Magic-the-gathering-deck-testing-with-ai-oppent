@@ -53,6 +53,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "attackers_declared": state.attackers_declared,
         "blockers_declared": state.blockers_declared,
         "combat_damage_resolved": state.combat_damage_resolved,
+        "combat_damage_stage": state.combat_damage_stage,
+        "first_strike_damage_ids": sorted(state.first_strike_damage_ids),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
         "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
@@ -216,6 +218,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.attackers_declared = bool(payload.get("attackers_declared", False))
     state.blockers_declared = bool(payload.get("blockers_declared", False))
     state.combat_damage_resolved = bool(payload.get("combat_damage_resolved", False))
+    state.combat_damage_stage = str(payload.get("combat_damage_stage", "regular" if state.combat_damage_resolved else "none"))
+    state.first_strike_damage_ids = {str(cid) for cid in payload.get("first_strike_damage_ids", [])}
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))
     state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
     state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))
@@ -286,6 +290,7 @@ def serialize_match(state: MatchState) -> dict:
         "spells_cast_this_turn": state.spells_cast_this_turn,
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
+        "combat_damage_stage": state.combat_damage_stage,
         "pending_replacement_choice": state.pending_replacement_choice,
         "pending_trigger_order": state.pending_trigger_order,
         "priority_stops": {

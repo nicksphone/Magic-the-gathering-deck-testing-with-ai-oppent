@@ -129,6 +129,8 @@ class MatchState:
     attackers_declared: bool = False
     blockers_declared: bool = False
     combat_damage_resolved: bool = False
+    combat_damage_stage: str = "none"
+    first_strike_damage_ids: set[str] = field(default_factory=set)
     cleanup_pending: bool = False
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)

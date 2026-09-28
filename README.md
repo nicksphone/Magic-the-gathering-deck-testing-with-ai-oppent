@@ -28,6 +28,7 @@ It is designed for serious deck work:
 - Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
 - Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
 - Declared attackers deal combat damage automatically on entering the combat-damage step, before priority; an explicit repeated damage action cannot deal it twice
+- Combat with first or double strike uses separate first and regular damage priority windows; participants are recorded for snapshot-safe second-step eligibility, and the UI labels the active window
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
 - Deck archetype estimates use cached layout to distinguish split cards from modal/transform faces; modal front-face cost and type drive curve and creature-density priors. These descriptive estimates do not prove strategic play quality.
 - Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
@@ -217,7 +218,7 @@ Live starts, sideboarding and diagnostics share face-aware cached-card hydration
 
 Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.
 
-These are engine/API foundations, not all-card certification. Full human-game/browser acceptance, complex action choices, interacting replacement choices, Prototype copy/layer edge cases, and split first-strike priority windows still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
+These are engine/API foundations, not all-card certification. Competitive-opponent human-game/browser acceptance, complex action choices, interacting replacement choices, Prototype copy/layer edge cases, and complete combat assignment semantics still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, Banding and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
 
 Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
 
@@ -386,7 +387,7 @@ GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build
 - Incomplete type metadata for a nonbasic card is no longer guessed to be Land from mana text or a basic-land word in its name. Canonical cache hydration must supply that card's type line; the AI will not bypass missing legal moves by fabricating a land action.
 - Replay timeout labels now inspect the timed-out game alone; a prior game's cost error cannot make a long control game look like a rules failure. Deliberately low tick caps can still truncate legitimate games, so simulator conclusions require the recorded cap, seed and termination status.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
-- The engine applies first-strike and normal damage in one combined combat-damage step; a separate first-strike priority window remains to be implemented.
+- First/double-strike priority windows are covered for unblocked and single-blocker examples, including snapshot resume. Multi-block damage assignment, simultaneous replacement choices and unusual keyword changes still need broader rules certification.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
 - Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
 - Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.

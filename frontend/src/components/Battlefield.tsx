@@ -158,6 +158,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           <h2>Battlefield</h2>
           <p>
             Turn {match.turn} | Step {match.step} | Priority: P{match.priority_player}
+            {match.step === "combat_damage" && match.combat_damage_stage === "first" ? " | First-strike damage" : ""}
+            {match.step === "combat_damage" && match.combat_damage_stage === "regular" ? " | Regular damage" : ""}
             {match.game_number ? ` | Game ${match.game_number}` : ""}
             {match.day_night && match.day_night !== "none" ? ` | ${match.day_night}` : ""}
           </p>

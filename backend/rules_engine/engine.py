@@ -50,6 +50,15 @@ class RulesEngine:
             self._apply_step_start_actions(state)
             return
 
+        if state.step == Step.COMBAT_DAMAGE and state.combat_damage_stage == "first":
+            self._clear_mana_pools(state)
+            combat.finish_combat_damage(state)
+            apply_state_based_actions(state)
+            if not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
+                state.priority_player = state.active_player
+                state.passed_priority = set()
+            return
+
         self._clear_mana_pools(state)
         idx = TURN_STEPS.index(state.step)
         if idx == len(TURN_STEPS) - 1:
@@ -81,10 +90,12 @@ class RulesEngine:
             if state.step == Step.DECLARE_ATTACKERS:
                 state.attackers_declared = False
                 state.combat_damage_resolved = False
+                state.combat_damage_stage = "none"
+                state.first_strike_damage_ids = set()
             elif state.step == Step.DECLARE_BLOCKERS:
                 state.blockers_declared = False
             elif state.step == Step.COMBAT_DAMAGE:
-                combat.combat_damage(state)
+                combat.begin_combat_damage(state)
                 apply_state_based_actions(state)
             elif state.step == Step.POSTCOMBAT_MAIN:
                 state.attackers = []

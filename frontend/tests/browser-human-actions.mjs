@@ -51,6 +51,16 @@ try {
   await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'teferi' && c.loyalty === 1)");
   console.log("PASS player-or-planeswalker choice uses one selector and damages loyalty");
 
+  await click("First Strike Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && window.fixtureState.step === 'declare_blockers'");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.combat_damage_stage === 'first' && window.fixtureState.players['2'].life === 19 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("document.querySelector('.battlefield header')?.innerText.includes('First-strike damage')"), true);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.combat_damage_stage === 'regular' && window.fixtureState.players['2'].life === 18 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("document.querySelector('.battlefield header')?.innerText.includes('Regular damage')"), true);
+  console.log("PASS first-strike and regular damage have separate UI priority windows");
+
   await reset();
   await click("Cast Llanowar Elves");
   await waitFor("window.fixtureState.stack.length === 1");

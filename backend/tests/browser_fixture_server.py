@@ -193,6 +193,25 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.players[2].hand.append(spell.id)
         state.players[1].battlefield.append(walker.id)
         return publish(state, deck)
+    if face_kind == "first_strike_window":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=37)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_BLOCKERS
+        swiftblade = CardInstance(
+            id="swiftblade", name="Boros Swiftblade", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
+            keywords=["double strike"], oracle_text="Double strike",
+        )
+        state.cards[swiftblade.id] = swiftblade
+        state.players[1].battlefield.append(swiftblade.id)
+        state.attackers = [swiftblade.id]
+        state.attack_targets = {swiftblade.id: "player:2"}
+        state.attackers_declared = True
+        state.blockers_declared = True
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
