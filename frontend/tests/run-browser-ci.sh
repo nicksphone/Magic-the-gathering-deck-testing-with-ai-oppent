@@ -65,3 +65,5 @@ echo 'Browser CI: natural AI BO3'
 (cd frontend && timeout 180s node tests/browser-live-bo3.mjs)
 echo 'Browser CI: natural human BO3'
 (cd frontend && timeout 240s node tests/browser-human-bo3.mjs)
+echo 'Browser CI: natural human-vs-human BO3'
+(cd frontend && MTG_HUMAN_BO3_OPPONENT=human timeout 360s node tests/browser-human-bo3.mjs)

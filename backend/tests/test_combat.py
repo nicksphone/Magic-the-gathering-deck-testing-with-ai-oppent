@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from game_state.state import MatchFactory, Step
+from card_data.fallback_cards import fallback_card_payload
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 
 
@@ -27,6 +28,35 @@ def test_combat_damage_reduces_life() -> None:
         state.step = Step.COMBAT_DAMAGE
         engine.take_action(state, 1, {"type": "combat_damage"})
     assert state.players[2].life <= 20
+
+
+def test_priority_passes_apply_unblocked_combat_damage_once() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=3)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.DECLARE_ATTACKERS
+    card = CardInstance(
+        id="swiftspear", name="Monastery Swiftspear", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
+        keywords=["haste"], oracle_text=fallback_card_payload("Monastery Swiftspear")["oracle_text"],
+    )
+    state.cards[card.id] = card
+    state.players[1].battlefield.append(card.id)
+    engine = RulesEngine()
+
+    engine.take_action(state, 1, {"type": "attack", "attackers": [card.id]})
+    for _ in range(2):
+        engine.take_action(state, 1, {"type": "pass_priority"})
+        engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.step == Step.COMBAT_DAMAGE
+    assert state.players[2].life == 19
+    assert state.combat_damage_resolved is True
+
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.players[2].life == 19
 
 
 def test_summoning_sickness_cleared_only_for_old_creatures() -> None:

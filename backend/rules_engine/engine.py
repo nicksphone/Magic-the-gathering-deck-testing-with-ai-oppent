@@ -83,6 +83,9 @@ class RulesEngine:
                 state.combat_damage_resolved = False
             elif state.step == Step.DECLARE_BLOCKERS:
                 state.blockers_declared = False
+            elif state.step == Step.COMBAT_DAMAGE:
+                combat.combat_damage(state)
+                apply_state_based_actions(state)
             elif state.step == Step.POSTCOMBAT_MAIN:
                 state.attackers = []
                 state.attack_targets = {}

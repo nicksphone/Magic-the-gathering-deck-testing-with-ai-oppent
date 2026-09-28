@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { openBrowser } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
+const humanOpponent = process.env.MTG_HUMAN_BO3_OPPONENT === 'human';
 const named = await (await fetch(`${backend}/decks/builtin/${encodeURIComponent('Mono Red Aggro')}`)).json();
 const deck = named.deck_text.trim().split('\n').map(line => {
   const [, quantity, card_name] = line.trim().match(/^(\d+) (.+)$/) ?? [];
@@ -12,7 +13,8 @@ const started = await fetch(`${backend}/matches/start`, {
   method: 'POST', headers: { 'content-type': 'application/json' },
   body: JSON.stringify({
     deck_a: deck, deck_b: [{ quantity: 60, card_name: 'Island' }],
-    controller_a: 'human', controller_b: 'ai', mode: 'player_vs_ai', best_of: 3, seed: 73,
+    controller_a: 'human', controller_b: humanOpponent ? 'human' : 'ai',
+    mode: humanOpponent ? 'human_vs_human' : 'player_vs_ai', best_of: 3, seed: 73,
   }),
 });
 if (!started.ok) throw new Error(`Could not start human BO3: ${started.status} ${await started.text()}`);
@@ -39,10 +41,11 @@ try {
   await command('Page.reload');
   await waitFor("document.querySelector('.battlefield') && [...document.querySelectorAll('button')].some(b => b.textContent === 'Resume automatic play')");
   const observed = new Set([1]);
-  for (let step = 0; step < 500 && !state.match_complete; step++) {
+  for (let step = 0; step < (humanOpponent ? 1800 : 500) && !state.match_complete; step++) {
     const revision = state.revision;
     if (state.winner !== null) {
-      await click(state.winner === 1 ? 'Start Next Game' : 'P1 Play First');
+      const chooser = state.next_play_draw_chooser;
+      await click(chooser && state.controllers[String(chooser)] === 'human' ? `P${chooser} Play First` : 'Start Next Game');
       await syncAfter('next-game', revision);
       observed.add(state.game_number);
       continue;
@@ -50,12 +53,23 @@ try {
     const legal = await (await fetch(`${backend}/matches/${id}/legal-moves`)).json();
     if (legal.revision !== revision) { state = await (await fetch(`${backend}/matches/${id}`)).json(); continue; }
     const moves = legal.moves;
+    const choose = type => moves.find(move => move.type === type);
     if (legal.player_id === 2) {
-      await click('AI Step x30');
-      await syncAfter('ai-step', revision);
+      if (!humanOpponent) {
+        await click('AI Step x30');
+        await syncAfter('ai-step', revision);
+      } else if (state.pregame_pending) {
+        await click('Keep Hand');
+        await syncAfter('seat-2-keep', revision);
+      } else if (choose('play_land')) {
+        await click('Play Land Island');
+        await syncAfter('seat-2-land', revision);
+      } else {
+        await click('Pass Priority');
+        await syncAfter('seat-2-pass', revision);
+      }
       continue;
     }
-    const choose = type => moves.find(move => move.type === type);
     if (choose('choose_trigger_order')) {
       await evaluate("document.querySelector('.trigger-order-panel button').click()");
       await syncAfter('trigger-order', revision);
@@ -106,5 +120,5 @@ try {
   assert.ok((counts.mulligan ?? 0) >= 1);
   assert.ok((counts.land ?? 0) >= 2 && (counts.cast ?? 0) >= 2 && (counts.attack ?? 0) >= 1);
   await waitFor("document.querySelector('.sideboard-panel')?.innerText.includes('Match Complete')");
-  console.log(`PASS natural human-vs-AI BO3 through UI controls: ${JSON.stringify(counts)}`);
+  console.log(`PASS natural ${humanOpponent ? 'human-vs-human' : 'human-vs-AI'} BO3 through UI controls: ${JSON.stringify(counts)}`);
 } finally { await close(); }
