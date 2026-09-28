@@ -107,6 +107,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         pending = state.pending_mechanic_choice
         if pending["kind"] == "draw":
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
+        elif pending["kind"] == "topdeck_put":
+            unique_ids(action.get("card_ids", []), pending["options"])
+            require(len(action.get("card_ids", [])) <= pending["count"], "Too many topdeck cards selected")
         else:
             unique_ids(action.get("card_ids", []), pending["options"], pending["count"])
     elif kind == "choose_trigger_order":

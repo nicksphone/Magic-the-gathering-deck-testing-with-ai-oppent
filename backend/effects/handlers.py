@@ -1174,6 +1174,22 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     state.log.append(f"{player.name} discards {discarded}.")
 
 
+def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_ids: list[str], eligible: list[str], max_count: int) -> bool:
+    if not eligible or payload.get("selected_card_ids") is not None:
+        return False
+    if not state.replacement_choice_required or controller not in state.replacement_choice_players:
+        return False
+    state.pending_mechanic_choice = {
+        "kind": "topdeck_put", "player_id": controller, "options": eligible,
+        "count": max_count, "min_count": 0, "top_ids": top_ids,
+        "effect_key": payload["__effect_key"], "effect_payload": {key: value for key, value in payload.items() if key != "__effect_key"},
+        "label": "Put up to the listed number of cards onto the battlefield",
+    }
+    state.priority_player = controller
+    state.passed_priority = set()
+    return True
+
+
 def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 6)))
@@ -1189,23 +1205,16 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         card = state.cards[cid]
         if "Creature" not in card.types:
             return False
-        req = parse_mana_cost(getattr(card, "mana_cost", "") or "")
-        mv = int(req["generic"] + req["W"] + req["U"] + req["B"] + req["R"] + req["G"])
-        return mv <= mv_max
+        return mana_value(card.mana_cost or "") <= mv_max
 
     eligibles = [cid for cid in top_slice if is_eligible(cid)]
+    if _pause_topdeck_put(state, controller, {**payload, "__effect_key": "topdeck_put_creatures_battlefield"}, top_slice, eligibles, max_creatures):
+        return
     eligibles.sort(
         key=lambda cid: (
             state.cards[cid].power or 0,
             state.cards[cid].toughness or 0,
-            -(
-                parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["generic"]
-                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["W"]
-                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["U"]
-                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["B"]
-                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["R"]
-                + parse_mana_cost(getattr(state.cards[cid], "mana_cost", "") or "")["G"]
-            ),
+            -mana_value(state.cards[cid].mana_cost or ""),
         ),
         reverse=True,
     )
@@ -1254,6 +1263,8 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         cid for cid in top_slice
         if set(state.cards[cid].types).intersection(permanent_types) and mana_value_for(cid) <= mv_max
     ]
+    if _pause_topdeck_put(state, controller, {**payload, "__effect_key": "topdeck_put_permanents_battlefield"}, top_slice, eligible, max_permanents):
+        return
     eligible.sort(key=lambda cid: (mana_value_for(cid), state.cards[cid].name), reverse=True)
     explicit = payload.get("selected_card_ids")
     if explicit is not None:
