@@ -5,6 +5,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import ActionRejected, checked_action
 from game_state.serializers import serialize_card_view, serialize_match_snapshot
 from card_data.token_definitions import named_artifact_token
+from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, nonland_mana_outputs
 import pytest
 
 
@@ -89,3 +90,29 @@ def test_manual_creature_mana_requires_ready_source_and_valid_color() -> None:
     result = checked_action(state, RulesEngine(), 1, action)
     assert result.players[1].mana_pool["G"] == 1
     assert result.cards[cid].tapped
+
+
+@pytest.mark.parametrize("name,types,text,color,amount", [
+    ("Llanowar Tribe", ["Creature"], "{T}: Add {G}{G}{G}.", "G", 3),
+    ("Sol Ring", ["Artifact"], "{T}: Add {C}{C}.", "C", 2),
+])
+def test_fixed_multi_mana_sources_produce_printed_amount(name, types, text, color, amount) -> None:
+    state = _mana_game()
+    cid = state.players[1].library.pop()
+    source = state.cards[cid]
+    source.name = name
+    source.types = types
+    source.oracle_text = text
+    source.zone = Zone.BATTLEFIELD
+    source.summoning_sick = False
+    state.players[1].battlefield.append(cid)
+    assert nonland_mana_outputs(state, cid, source) == {color: amount}
+    assert serialize_card_view(state, cid)["mana_source_amounts"] == {color: amount}
+    assert can_pay_with_pool_and_lands(state, 1, "".join("{" + color + "}" for _ in range(amount)))
+    manual = checked_action(state, RulesEngine(), 1, {"type": "tap_nonland_for_mana", "card_id": cid, "color": color})
+    assert manual.players[1].mana_pool[color] == amount
+    assert manual.cards[cid].tapped
+    cost = "".join("{" + color + "}" for _ in range(amount - 1))
+    assert auto_pay_cost(state, 1, cost)
+    assert state.cards[cid].tapped
+    assert state.players[1].mana_pool[color] == 1

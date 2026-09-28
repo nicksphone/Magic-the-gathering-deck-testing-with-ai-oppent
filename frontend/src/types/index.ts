@@ -32,6 +32,7 @@ export type CardView = {
   keywords?: string[];
   colors?: string[];
   mana_source_colors?: string[];
+  mana_source_amounts?: Record<string, number>;
   counters?: Record<string, number>;
   damage_marked?: number;
   selected_face_index?: number | null;

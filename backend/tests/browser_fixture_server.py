@@ -41,6 +41,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             CardInstance(id="mana-treasure", name="Treasure", owner=2, controller=2,
                          zone=Zone.BATTLEFIELD, types=["Artifact", "Token"], is_token=True,
                          oracle_text=named_artifact_token("Treasure")["oracle_text"]),
+            CardInstance(id="mana-ring", name="Sol Ring", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add {C}{C}."),
         )
         for card in sources:
             state.cards[card.id] = card

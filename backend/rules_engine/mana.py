@@ -81,12 +81,12 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
     out: Counter = Counter()
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        colors = _nonland_mana_source_colors(state, cid, card)
-        if not colors:
+        outputs = nonland_mana_outputs(state, cid, card)
+        if not outputs:
             continue
-        for color in colors:
-            out[color] += 1
-        out["ANY"] += 1
+        for color, amount in outputs.items():
+            out[color] += amount
+        out["ANY"] += max(outputs.values())
     return out
 
 
@@ -199,10 +199,13 @@ def auto_pay_cost(
             continue
         nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, "C")
         if nonland_id:
+            amount = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])["C"]
             if not _consume_nonland_mana_source(state, player_id, nonland_id):
                 return False
-            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for C to pay spell cost.")
-            colorless_need -= 1
+            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} C to pay spell cost.")
+            used = min(colorless_need, amount)
+            colorless_need -= used
+            player.mana_pool["C"] += amount - used
             continue
         return False
 
@@ -220,10 +223,13 @@ def auto_pay_cost(
                 continue
             nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, color)
             if nonland_id:
+                amount = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])[color]
                 if not _consume_nonland_mana_source(state, player_id, nonland_id):
                     return False
-                state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {color} to pay spell cost.")
-                req[color] -= 1
+                state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} {color} to pay spell cost.")
+                used = min(req[color], amount)
+                req[color] -= used
+                player.mana_pool[color] += amount - used
                 continue
             return False
 
@@ -260,11 +266,15 @@ def auto_pay_cost(
             continue
         nonland_id = _find_any_untapped_nonland_mana_source(state, player_id)
         if nonland_id:
-            produced = next(iter(_ordered_colors(_nonland_mana_source_colors(state, nonland_id, state.cards[nonland_id]))), "C")
+            outputs = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])
+            produced = next(iter(_ordered_colors(set(outputs))), "C")
+            amount = outputs[produced]
             if not _consume_nonland_mana_source(state, player_id, nonland_id):
                 return False
-            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {produced} to pay spell cost.")
-            generic_need -= 1
+            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} {produced} to pay spell cost.")
+            used = min(generic_need, amount)
+            generic_need -= used
+            player.mana_pool[produced] += amount - used
             continue
         return False
 
@@ -393,28 +403,37 @@ def choose_mana_color_for_player(state: MatchState, player_id: int, preferred: l
 
 
 def _nonland_mana_source_colors(state: MatchState, card_id: str, card) -> Set[str]:
+    return set(nonland_mana_outputs(state, card_id, card))
+
+
+def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int]:
     card_types = set(getattr(card, "types", []) or [])
     if "Land" in card_types:
-        return set()
+        return {}
     if getattr(card, "tapped", False):
-        return set()
+        return {}
     ability = NONLAND_MANA_ABILITY_RE.search(getattr(card, "oracle_text", "") or "")
     if ability is None:
-        return set()
+        return {}
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     cost = parse_activated_cost(ability.group(1))
     if not cost.supported or cost.mana_cost or not activated_cost_available(state, card.controller, card_id, ability.group(1)):
-        return set()
+        return {}
     # Summoning sickness prevents creatures from using tap abilities unless they have haste.
     if "Creature" in card_types:
         if getattr(card, "summoning_sick", False) and not has_keyword(state, card_id, "haste"):
-            return set()
+            return {}
     effect = ability.group(2).upper()
-    colors: Set[str] = set("WUBRG") if "ONE MANA OF ANY COLOR" in effect or "MANA OF ANY ONE COLOR" in effect else set()
-    for sym in MANA_SYMBOL_RE.findall(effect):
-        if sym in {"W", "U", "B", "R", "G", "C"}:
-            colors.add(sym)
-    return colors
+    if "ONE MANA OF ANY COLOR" in effect or "MANA OF ANY ONE COLOR" in effect:
+        return {color: 1 for color in "WUBRG"}
+    symbols = [sym for sym in MANA_SYMBOL_RE.findall(effect) if sym in "WUBRGC"]
+    if not symbols:
+        return {}
+    if len(set(symbols)) == 1:
+        return {symbols[0]: len(symbols)}
+    if " OR " in effect and len(symbols) == len(set(symbols)):
+        return {color: 1 for color in symbols}
+    return {}
 
 
 def _consume_nonland_mana_source(state: MatchState, player_id: int, card_id: str) -> bool:

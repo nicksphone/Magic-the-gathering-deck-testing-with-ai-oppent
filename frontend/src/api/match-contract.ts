@@ -16,6 +16,7 @@ function card(value: unknown): boolean {
     && (value.toughness === null || typeof value.toughness === "number")
     && (value.colors === undefined || (Array.isArray(value.colors) && value.colors.every((color) => typeof color === "string" && /^[WUBRG]$/.test(color))))
     && (value.mana_source_colors === undefined || (Array.isArray(value.mana_source_colors) && value.mana_source_colors.every((color) => typeof color === "string" && /^[WUBRGC]$/.test(color))))
+    && (value.mana_source_amounts === undefined || (record(value.mana_source_amounts) && Object.entries(value.mana_source_amounts).every(([color, amount]) => /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) > 0)))
     && (value.card_faces === undefined || (Array.isArray(value.card_faces) && value.card_faces.every(record)));
 }
 

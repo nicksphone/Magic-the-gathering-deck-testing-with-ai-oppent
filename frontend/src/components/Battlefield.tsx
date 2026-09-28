@@ -285,7 +285,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       onClick={() => onCardAction(viewerSeat, { type: "tap_nonland_for_mana", card_id: card.id, color })}
                       title={`Activate ${card.name} for ${color}`}
                     >
-                      Add {color}
+                      Add {(card.mana_source_amounts?.[color] ?? 1) > 1 ? `${card.mana_source_amounts?.[color]} ` : ""}{color}
                     </button>
                   ))}
                 </div>
