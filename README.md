@@ -96,6 +96,7 @@ It is designed for serious deck work:
 - Generic temporary control-change effects with ownership-safe battlefield movement, cleanup restoration, and snapshot persistence
 - Shared battlefield-leave events for destruction, exile, sacrifice, lethal combat, and state-based actions, including common leave-trigger resolution
 - Token-aware death replacements that distinguish nontoken clauses from token permanents
+- Canonical Rest in Peace graveyard replacement and ETB exile sweep, with HTTP action and SQLite-restore regressions for damage-spell resolution, suppressed dies triggers, and existing graveyards; interacting replacement choices remain uncertified
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
 - Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; the shipped 81-card corpus currently has zero parser-fallback or missing-Oracle classifications
 - Fuzzy matching for deck import correction

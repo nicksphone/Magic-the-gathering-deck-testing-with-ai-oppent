@@ -8,6 +8,7 @@ Status: open. This is a code/data audit, not a claim that replacement effects ar
 - Supported simultaneous death destinations are computed before any permanent leaves. The real Lorcan, Warlock Collector / Arrogant Poet case covers a subtype-scoped replacement source dying in the same batch as its target. This does not freeze multiple human choices across the batch.
 - A shared non-death graveyard destination operation and global "from anywhere" death candidate now support canonical Rest in Peace moves. Its entry trigger uses the stack and an exile-all-graveyards handler. Direct graveyard writes left in the engine are death branches with preselected destinations; unusual replacement interactions still need certification.
 - Five older tests that called an altered or blank fixture `Rest in Peace` now use the canonical Oracle text. Other synthetic named-card fixtures remain a separate audit task.
+- Live HTTP action tests now cast Lightning Bolt on Doomed Traveler under Rest in Peace and cast Rest in Peace into occupied graveyards. The first verifies that no dies-trigger Spirit appears; both verify exile destinations after SQLite controller restore. This does not cover simultaneous human replacement choices.
 
 ## Evidence
 
