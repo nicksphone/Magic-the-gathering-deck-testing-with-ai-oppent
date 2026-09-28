@@ -72,6 +72,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "loyalty_activated_this_turn": sorted(state.loyalty_activated_this_turn),
         "trigger_once_seen_this_turn": sorted(state.trigger_once_seen_this_turn),
         "trigger_staging": state.trigger_staging,
+        "trigger_staging_event": state.trigger_staging_event,
         "staged_triggers": state.staged_triggers,
         "priority_stops": {
             str(key): sorted(step.value for step in value)
@@ -278,6 +279,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.trigger_order_choice_required = bool(payload.get("trigger_order_choice_required", False))
     state.trigger_order_choice_players = {int(value) for value in payload.get("trigger_order_choice_players", [])}
     state.trigger_staging = bool(payload.get("trigger_staging", False))
+    state.trigger_staging_event = str(payload.get("trigger_staging_event") or "combat_damage_step")
     state.staged_triggers = list(payload.get("staged_triggers", []))
     state.pending_trigger_order = payload.get("pending_trigger_order")
     state.pending_mechanic_choice = payload.get("pending_mechanic_choice")

@@ -91,7 +91,7 @@ def flush_staged_triggers(state: MatchState) -> None:
     triggers = state.staged_triggers
     state.staged_triggers = []
     state.trigger_staging = False
-    _push_triggers(state, "combat_damage_step", triggers)
+    _push_triggers(state, state.trigger_staging_event, triggers)
 
 
 def _append_trigger_groups(

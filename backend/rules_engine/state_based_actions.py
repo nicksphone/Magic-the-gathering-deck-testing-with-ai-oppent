@@ -122,6 +122,24 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
 def apply_state_based_actions(state: MatchState) -> None:
     if state.pending_mechanic_choice:
         return
+    if not state.trigger_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "state_based_actions"
+    # A source leaving the battlefield can make another permanent illegal or
+    # lethal. No trigger gets a stack position until those waves stabilize.
+    for _ in range(len(state.cards) + 1):
+        before = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
+        _apply_state_based_actions_once(state)
+        if state.pending_replacement_choice:
+            return
+        after = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
+        if after == before:
+            break
+    from rules_engine.events import flush_staged_triggers
+    flush_staged_triggers(state)
+
+
+def _apply_state_based_actions_once(state: MatchState) -> None:
     from rules_engine.alternative_casts import restore_printed_characteristics
     state.adventure_permissions = {cid: pid for cid, pid in state.adventure_permissions.items()
                                    if cid in state.cards and state.cards[cid].zone == Zone.EXILE}
@@ -176,10 +194,10 @@ def apply_state_based_actions(state: MatchState) -> None:
                 emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
 
     _apply_legend_rule(state)
+    if state.pending_replacement_choice:
+        return
     _apply_saga_state_actions(state)
     _apply_attachment_state_checks(state)
-    from rules_engine.events import flush_staged_triggers
-    flush_staged_triggers(state)
 
 
 def _apply_saga_state_actions(state: MatchState) -> None:

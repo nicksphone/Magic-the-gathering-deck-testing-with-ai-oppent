@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from game_state.state import MatchFactory, Step, Zone
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
@@ -156,6 +157,58 @@ def test_opponent_static_minus_kills_x1_creature() -> None:
     victim = _setup_creature(state, 2, "Token", 1, 1, [])
     apply_state_based_actions(state)
     assert state.cards[victim].zone == Zone.GRAVEYARD
+
+
+def test_state_actions_repeat_when_a_lord_dies_and_its_buff_disappears() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=9)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+
+    lord = _setup_creature(state, 1, "Elvish Clancaller", 1, 1)
+    state.cards[lord].type_line = "Creature - Elf Warrior"
+    state.cards[lord].oracle_text = "Other Elf creatures you control get +1/+1."
+    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
+    state.cards[elf].type_line = "Creature - Elf Druid"
+    state.cards[lord].counters["-1/-1"] = 1
+    state.cards[elf].counters["-1/-1"] = 1
+
+    assert effective_toughness(state, elf) == 1
+    apply_state_based_actions(state)
+
+    assert state.cards[lord].zone == Zone.GRAVEYARD
+    assert state.cards[elf].zone == Zone.GRAVEYARD
+    assert not state.trigger_staging
+
+
+def test_cascading_death_triggers_share_one_order_choice_after_restore() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=9)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+
+    lord = _setup_creature(state, 1, "Elvish Clancaller", 1, 1)
+    state.cards[lord].type_line = "Creature - Elf Warrior"
+    state.cards[lord].oracle_text = "Other Elf creatures you control get +1/+1."
+    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
+    state.cards[elf].type_line = "Creature - Elf Druid"
+    watcher = _setup_creature(state, 1, "Grim Haruspex", 3, 2)
+    state.cards[watcher].oracle_text = "Whenever another nontoken creature you control dies, draw a card."
+    state.cards[lord].counters["-1/-1"] = 1
+    state.cards[elf].counters["-1/-1"] = 1
+
+    apply_state_based_actions(state)
+    pending = state.pending_trigger_order
+    assert pending is not None
+    assert len(pending["groups"]["1"]) == 2
+    assert not state.stack
+    assert state.cards[elf].zone == Zone.GRAVEYARD
+
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.pending_trigger_order == pending
+    assert restored.cards[elf].zone == Zone.GRAVEYARD
 
 
 def test_indestructible_grant_prevents_combat_lethal_death() -> None:

@@ -304,6 +304,7 @@ def _offer_damage_assignment(state: MatchState) -> None:
 
 def _resolve_damage_step(state: MatchState) -> None:
     state.trigger_staging = True
+    state.trigger_staging_event = "combat_damage_step"
     first_only = state.combat_damage_stage == "first"
     defender = 1 if state.active_player == 2 else 2
     _combat_damage_step(state, defender, state.first_strike_damage_ids, first_strike_only=first_only)
