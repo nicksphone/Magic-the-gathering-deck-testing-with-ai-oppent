@@ -2,6 +2,7 @@ import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
 import { parseMatchState } from "./match-contract";
+import { parseBatchJobStatus } from "./simulation-contract";
 
 const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
 const API = apiBase(configuredApi);
@@ -111,7 +112,7 @@ export type BatchSimulationJobStatus = {
   started_at: number;
   finished_at?: number | null;
   error?: string | null;
-  result?: any;
+  result?: Record<string, unknown> | null;
 };
 
 export type DiagnosticRunSummary = {
@@ -250,8 +251,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
-  getSimulateBatchJob: (jobId: string) =>
-    req<BatchSimulationJobStatus>(`/simulate/batch/${encodeURIComponent(jobId)}`),
+  getSimulateBatchJob: async (jobId: string) =>
+    parseBatchJobStatus(await req<unknown>(`/simulate/batch/${encodeURIComponent(jobId)}`)),
   listDiagnosticRuns: (limit = 20) =>
     req<{ runs: DiagnosticRunSummary[] }>(`/diagnostics/runs?limit=${limit}`),
   getDiagnosticRun: (runName: string) =>

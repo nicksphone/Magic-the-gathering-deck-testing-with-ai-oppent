@@ -160,7 +160,7 @@ export function AnalyticsPanel({ decks }: Props) {
           `Status: ${job.status} | ${job.completed_matches}/${job.total_matches} matches (${pct}%) | ${elapsedSec}s elapsed`,
         );
         if (job.status === "completed") {
-          setResultObj((job.result ?? null) as Record<string, unknown> | null);
+          setResultObj(job.result ?? null);
           setResult(JSON.stringify(job.result ?? {}, null, 2));
           setRunning(false);
           setJobId(null);
