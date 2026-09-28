@@ -197,14 +197,14 @@ The Testing Simulator job-status boundary also validates progress and completed 
 
 A clean-checkout GitHub Actions baseline installs declared Python and locked npm dependencies, then runs the backend suite, frontend build, lint and frontend unit checks. Browser-flow gates are not yet configured in CI. The final frontend `any` casts for Vite environment access and start-mode selection were removed; `ImportMeta` now uses Vite's client declaration. A disposable frontend copy passed `npm ci`, build and unit checks locally; a separate fresh Python venv passed seven API smoke tests.
 
-Hosted run `36369185983` passed both baseline jobs. ESLint now checks TypeScript and React hooks in `src`, with the shared autoplay, response-pass, deck-refresh and legal-move dependencies corrected rather than suppressed. A fresh `npm ci` copy passes lint, build and unit checks; the local Chromium harness passes 19 action paths plus App refresh, ambiguous-write recovery and backend-process restart. The lint step is added to CI, but that updated hosted run and browser CI are not yet verified.
+ESLint checks TypeScript and React hooks in `src`, with the shared autoplay, response-pass, deck-refresh and legal-move dependencies corrected rather than suppressed. A fresh `npm ci` copy passes lint, build and unit checks; the local browser harness passes 19 action paths plus App refresh, ambiguous-write recovery and backend-process restart. The updated hosted gates are verified below.
 
-A separate browser CI job now uses the existing production Controls/API and App recovery fixtures against a temporary backend copy, including an actual process restart. The reusable runner passed all 19 action paths and three recovery checks locally. Hosted browser execution remains to be observed; it is still not a complete human game or BO3.
+A separate browser CI job uses the existing production Controls/API and App recovery fixtures against a temporary backend copy, including an actual process restart. Hosted run `36370371065` passed 918 backend tests, frontend build/lint/unit checks, all 19 browser action paths and three recovery checks. Chrome is used on the hosted runner because its Chromium binary did not expose the CDP port. This is not a complete human game or BO3.
 
 - [ ] Generate/share OpenAPI types and validate response payloads at runtime where needed.
 - [x] Correct block assignments to list-valued mappings and remove broad simulator/action `any` types.
-- [ ] Configure ESLint with React-hooks checks, component tests and browser smoke tests.
-- [ ] Add clean-checkout CI for backend tests, frontend build/lint/tests and an HTTP/UI flow.
+- [x] Configure ESLint with React-hooks checks and production-component browser smoke tests.
+- [x] Add clean-checkout CI for backend tests, frontend build/lint/tests and an HTTP/UI flow.
 
 Acceptance: malformed block/card-view payloads fail contract tests; regressions cover steps 1-8. Do not add a redundant task to enable existing TypeScript strict mode.
 
