@@ -44,6 +44,12 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
+    if state.trigger_staging:
+        state.staged_triggers.extend(
+            {**trigger, "payload": {**trigger["payload"], "__trigger_event": event}}
+            for trigger in triggers
+        )
+        return
     if state.cleanup_pending:
         state.cleanup_deferred_triggers.extend({**trigger, "payload": {**trigger["payload"], "__trigger_event": event}} for trigger in triggers)
         return
@@ -77,6 +83,15 @@ def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]
                 return
 
     _append_trigger_groups(state, event, groups, controller_order, {})
+
+
+def flush_staged_triggers(state: MatchState) -> None:
+    if not state.trigger_staging or state.pending_replacement_choice:
+        return
+    triggers = state.staged_triggers
+    state.staged_triggers = []
+    state.trigger_staging = False
+    _push_triggers(state, "combat_damage_step", triggers)
 
 
 def _append_trigger_groups(

@@ -180,7 +180,7 @@ def test_simultaneous_player_hits_offer_one_trigger_order_choice() -> None:
 
     assert state.players[2].life == 15
     assert state.pending_trigger_order is not None
-    assert state.pending_trigger_order["event"] == "combat_damage_dealt"
+    assert state.pending_trigger_order["event"] == "combat_damage_step"
     assert len(state.pending_trigger_order["groups"]["1"]) == 2
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     order = next(move["trigger_order"] for move in RulesEngine().legal_moves(state, 1)
@@ -190,7 +190,6 @@ def test_simultaneous_player_hits_offer_one_trigger_order_choice() -> None:
     assert sum(item.source_card_id == "frostfang" for item in state.stack) == 2
 
 
-@pytest.mark.xfail(strict=True, reason="combat damage and following death triggers are inserted in separate groups")
 def test_damage_and_death_triggers_share_one_order_choice() -> None:
     state = _state()
     state.mechanic_choice_players = set()
@@ -210,6 +209,47 @@ def test_damage_and_death_triggers_share_one_order_choice() -> None:
 
     assert state.pending_trigger_order is not None
     assert len(state.pending_trigger_order["groups"]["1"]) == 2
+
+
+def test_combat_damage_triggers_from_both_controllers_use_apnap_order() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
+              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
+    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "phage", 2, "Phage the Untouchable", 4, 4,
+              oracle_text="Whenever Phage deals combat damage to a creature, destroy that creature. It can't be regenerated.")
+    state.attackers = ["bears", "courser"]
+    state.blocks = {"courser": ["phage"]}
+
+    combat.combat_damage(state)
+
+    assert [item.source_card_id for item in state.stack] == ["frostfang", "phage"]
+
+
+def test_staged_combat_triggers_survive_snapshot_before_flush() -> None:
+    state = _state()
+    state.trigger_staging = True
+    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
+              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
+    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    from rules_engine.events import emit_event
+    emit_event(state, "combat_damage_dealt", {"source_card_id": "bears", "target_player": 2, "amount": 2})
+    assert not state.stack
+    state.pending_replacement_choice = {"resume_kind": "combat_die", "player_id": 1}
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.trigger_staging and len(state.staged_triggers) == 1
+
+    from rules_engine.state_based_actions import apply_state_based_actions
+    apply_state_based_actions(state)
+    assert state.trigger_staging and not state.stack
+    state.pending_replacement_choice = None
+    apply_state_based_actions(state)
+
+    assert not state.trigger_staging
+    assert not state.staged_triggers
+    assert [item.source_card_id for item in state.stack] == ["frostfang"]
 
 
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:

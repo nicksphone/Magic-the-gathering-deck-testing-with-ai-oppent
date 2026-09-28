@@ -303,12 +303,16 @@ def _offer_damage_assignment(state: MatchState) -> None:
 
 
 def _resolve_damage_step(state: MatchState) -> None:
+    state.trigger_staging = True
     first_only = state.combat_damage_stage == "first"
     defender = 1 if state.active_player == 2 else 2
     _combat_damage_step(state, defender, state.first_strike_damage_ids, first_strike_only=first_only)
     if not first_only:
         state.combat_damage_resolved = True
     _remove_dead_creatures(state)
+    if not state.pending_replacement_choice:
+        from rules_engine.state_based_actions import apply_state_based_actions
+        apply_state_based_actions(state)
     if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
         state.priority_player = state.active_player
         state.passed_priority = set()

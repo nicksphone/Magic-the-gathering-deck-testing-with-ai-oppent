@@ -176,6 +176,8 @@ class MatchState:
     pending_replacement_choice: dict | None = None
     trigger_order_choice_required: bool = False
     trigger_order_choice_players: set[int] = field(default_factory=set)
+    trigger_staging: bool = False
+    staged_triggers: list[dict] = field(default_factory=list)
     pending_trigger_order: dict | None = None
     pending_mechanic_choice: dict | None = None
 

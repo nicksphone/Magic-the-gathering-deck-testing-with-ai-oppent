@@ -178,6 +178,8 @@ def apply_state_based_actions(state: MatchState) -> None:
     _apply_legend_rule(state)
     _apply_saga_state_actions(state)
     _apply_attachment_state_checks(state)
+    from rules_engine.events import flush_staged_triggers
+    flush_staged_triggers(state)
 
 
 def _apply_saga_state_actions(state: MatchState) -> None:
