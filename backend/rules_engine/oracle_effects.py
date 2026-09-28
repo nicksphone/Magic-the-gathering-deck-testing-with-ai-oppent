@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone
+from card_data.token_definitions import named_artifact_token
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind
@@ -30,6 +31,7 @@ TOKEN_NAME_RE = re.compile(
     r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
     re.IGNORECASE,
 )
+TOKEN_CREATURE_ABILITY_RE = re.compile(r"creature tokens? with [\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
 TOKEN_COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
 TOKEN_COLOR_RE = re.compile(r"^(white|blue|black|red|green|colorless)(?: and (white|blue|black|red|green))?\s+(.+)$", re.IGNORECASE)
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
@@ -1183,6 +1185,9 @@ def _infer_clause_effect(
             "keywords": token_keywords,
             "colors": token_colors,
         }
+        quoted_ability = TOKEN_CREATURE_ABILITY_RE.search(getattr(card, "source_oracle_text", card.oracle_text or ""))
+        if quoted_ability:
+            out["oracle_text"] = quoted_ability.group(1).strip()
         if SAC_AT_EOT_RE.search(oracle):
             out["sacrifice_next_end_step"] = True
         return "create_token", out
@@ -1190,7 +1195,8 @@ def _infer_clause_effect(
     named_token = NAMED_ARTIFACT_TOKEN_RE.search(oracle)
     source_oracle = getattr(card, "source_oracle_text", card.oracle_text or "")
     reminder_ability = TOKEN_REMINDER_ABILITY_RE.search(source_oracle)
-    if named_token and reminder_ability and " instead" not in oracle:
+    token_definition = named_artifact_token(named_token.group(2)) if named_token else None
+    if named_token and (reminder_ability or token_definition) and " instead" not in oracle:
         token_name = named_token.group(2).title()
         amount = _parse_count_token(named_token.group(1))
         conditional = SAC_TOUGHNESS_TOKEN_RE.search(without_reminder_text(source_oracle))
@@ -1200,7 +1206,8 @@ def _infer_clause_effect(
             amount = _parse_count_token(conditional.group(2))
         return "create_token", {
             "name": token_name, "amount": amount, "types": ["Artifact", "Token"],
-            "oracle_text": reminder_ability.group(1).strip(),
+            "type_line": token_definition["type_line"] if token_definition else f"Token Artifact - {token_name}",
+            "oracle_text": reminder_ability.group(1).strip() if reminder_ability else token_definition["oracle_text"],
         }
 
     counters_match = COUNTER_RE.search(oracle)

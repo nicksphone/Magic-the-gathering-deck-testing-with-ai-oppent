@@ -10,6 +10,7 @@ from rules_engine.hooks import CostContext, apply_cost_modifiers
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
+NONLAND_MANA_ABILITY_RE = re.compile(r"(?m)^([^:\n]*\{T\}[^:\n]*):\s*(Add[^\n.]*)", re.IGNORECASE)
 DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
     "hallowed fountain": {"W", "U"},
     "sacred foundry": {"R", "W"},
@@ -198,7 +199,8 @@ def auto_pay_cost(
             continue
         nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, "C")
         if nonland_id:
-            state.cards[nonland_id].tapped = True
+            if not _consume_nonland_mana_source(state, player_id, nonland_id):
+                return False
             state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for C to pay spell cost.")
             colorless_need -= 1
             continue
@@ -218,7 +220,8 @@ def auto_pay_cost(
                 continue
             nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, color)
             if nonland_id:
-                state.cards[nonland_id].tapped = True
+                if not _consume_nonland_mana_source(state, player_id, nonland_id):
+                    return False
                 state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {color} to pay spell cost.")
                 req[color] -= 1
                 continue
@@ -258,7 +261,8 @@ def auto_pay_cost(
         nonland_id = _find_any_untapped_nonland_mana_source(state, player_id)
         if nonland_id:
             produced = next(iter(_ordered_colors(_nonland_mana_source_colors(state, nonland_id, state.cards[nonland_id]))), "C")
-            state.cards[nonland_id].tapped = True
+            if not _consume_nonland_mana_source(state, player_id, nonland_id):
+                return False
             state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {produced} to pay spell cost.")
             generic_need -= 1
             continue
@@ -394,15 +398,26 @@ def _nonland_mana_source_colors(state: MatchState, card_id: str, card) -> Set[st
         return set()
     if getattr(card, "tapped", False):
         return set()
-    oracle = (getattr(card, "oracle_text", "") or "").upper()
-    if "{T}" not in oracle or "ADD" not in oracle:
+    ability = NONLAND_MANA_ABILITY_RE.search(getattr(card, "oracle_text", "") or "")
+    if ability is None:
+        return set()
+    from rules_engine.costs import activated_cost_available, parse_activated_cost
+    cost = parse_activated_cost(ability.group(1))
+    if not cost.supported or cost.mana_cost or not activated_cost_available(state, card.controller, card_id, ability.group(1)):
         return set()
     # Summoning sickness prevents creatures from using tap abilities unless they have haste.
     if "Creature" in card_types:
         if getattr(card, "summoning_sick", False) and not has_keyword(state, card_id, "haste"):
             return set()
-    colors: Set[str] = set()
-    for sym in MANA_SYMBOL_RE.findall(oracle):
+    effect = ability.group(2).upper()
+    colors: Set[str] = set("WUBRG") if "ONE MANA OF ANY COLOR" in effect or "MANA OF ANY ONE COLOR" in effect else set()
+    for sym in MANA_SYMBOL_RE.findall(effect):
         if sym in {"W", "U", "B", "R", "G", "C"}:
             colors.add(sym)
     return colors
+
+
+def _consume_nonland_mana_source(state: MatchState, player_id: int, card_id: str) -> bool:
+    from rules_engine.costs import apply_activated_costs
+    ability = NONLAND_MANA_ABILITY_RE.search(state.cards[card_id].oracle_text or "")
+    return bool(ability and apply_activated_costs(state, player_id, card_id, ability.group(1)))

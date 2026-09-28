@@ -823,13 +823,14 @@ def _matches_attack_trigger(state: MatchState, card, oracle: str, payload: dict[
     attacking_card = state.cards[attacking_id]
     if attacking_card.controller != card.controller:
         return False
-    if "whenever this creature attacks" in oracle:
+    if "whenever this creature attacks" in oracle or "whenever this token attacks" in oracle:
         return attacking_id == card.id
     named_attack = re.search(r"whenever\s+(.+?)\s+attacks", oracle)
     if named_attack:
         named_source = re.sub(r"\s+\([^)]*\)", "", named_attack.group(1)).strip()
         if named_source not in {
             "this creature",
+            "this token",
             "a creature",
             "another creature",
             "a creature you control",

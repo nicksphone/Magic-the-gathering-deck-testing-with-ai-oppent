@@ -1,0 +1,20 @@
+{
+  "Blood": {
+    "scryfall_id": "92a3afe7-bd9f-43f9-adc3-4819e60dc7a5",
+    "name": "Blood",
+    "type_line": "Token Artifact — Blood",
+    "oracle_text": "{1}, {T}, Discard a card, Sacrifice this token: Draw a card."
+  },
+  "Food": {
+    "scryfall_id": "da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37",
+    "name": "Food",
+    "type_line": "Token Artifact — Food",
+    "oracle_text": "{2}, {T}, Sacrifice this token: You gain 3 life."
+  },
+  "Treasure": {
+    "scryfall_id": "03992f88-7a15-4234-9bed-b7617d7ff09c",
+    "name": "Treasure",
+    "type_line": "Token Artifact — Treasure",
+    "oracle_text": "{T}, Sacrifice this token: Add one mana of any color."
+  }
+}
