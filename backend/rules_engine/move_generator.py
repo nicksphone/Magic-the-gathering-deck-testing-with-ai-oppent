@@ -13,6 +13,7 @@ from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timing
+from rules_engine.zone_actions import is_departed_token
 
 
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
@@ -135,6 +136,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     for cid in list(player.hand) + list(player.graveyard):
         card = state.cards[cid]
+        if is_departed_token(card):
+            continue
         cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
         if cycle_cost and cid in player.hand:
             x_values = range(0, 21) if cycling_is_variable(cycle_cost) else range(1)
@@ -409,6 +412,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     from rules_engine.card_faces import select_cast_face
     for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]
+        if is_departed_token(original):
+            continue
         if original.layout not in {"modal_dfc", "adventure"}:
             continue
         for index in range(1, len(original.card_faces)):

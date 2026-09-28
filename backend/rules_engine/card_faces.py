@@ -3,6 +3,7 @@ from copy import copy
 
 from game_state.state import _infer_keywords
 from game_state.state import Zone
+from rules_engine.card_types import is_token_card
 
 CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery", "Kindred"}
 FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "keywords", "image_uri", "selected_face_index")
@@ -47,7 +48,7 @@ def apply_transform_face(card, index):
 
 def exile_permission(state, player_id, card_id, face_index=0):
     card = state.cards.get(card_id)
-    if card is None or card.zone != Zone.EXILE:
+    if card is None or card.zone != Zone.EXILE or is_token_card(card):
         return False
     player = state.players[player_id]
     temporary = card_id in player.exile and player.exile_play_until.get(card_id, 0) >= state.turn

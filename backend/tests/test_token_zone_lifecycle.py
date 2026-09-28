@@ -3,13 +3,16 @@ from effects.handlers import (
     return_creature_from_graveyard_to_battlefield,
     return_from_graveyard, return_permanent_from_graveyard_to_battlefield,
     return_permanent_to_hand,
+    put_land_from_hand,
 )
 from game_state.serializers import deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.alternative_casts import validate_escape_exiles
 from rules_engine.zone_actions import discard_selected
 from rules_engine.card_types import is_token_card
+from rules_engine.costs import activated_cost_available, apply_activated_costs
+from rules_engine.move_generator import legal_moves
 from tests.test_death_replacement_canonical import REST_IN_PEACE_ORACLE
 
 
@@ -121,3 +124,31 @@ def test_token_identity_survives_type_changes_and_legacy_snapshots():
     apply_state_based_actions(restored)
     assert restored.cards[token_id].zone == Zone.CEASED
     assert not any(item.source_card_id == "haruspex" for item in restored.stack)
+
+
+def test_bounced_token_cannot_pay_discard_cost_or_be_put_into_play():
+    state, token_id = _state(False)
+    for cid in list(state.players[2].hand):
+        state.players[2].hand.remove(cid)
+        state.players[2].library.append(cid)
+        state.cards[cid].zone = Zone.LIBRARY
+    state.cards[token_id].types = ["Land", "Token"]
+    return_permanent_to_hand(state, 1, {"target_card_id": token_id})
+    assert state.players[2].hand == [token_id]
+
+    state.cards["imp"] = CardInstance(
+        id="imp", name="Putrid Imp", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
+        oracle_text="Discard a card: This creature gains flying until end of turn.",
+    )
+    state.players[2].battlefield.append("imp")
+    assert not activated_cost_available(state, 2, "imp", "Discard a card")
+    assert not apply_activated_costs(state, 2, "imp", "Discard a card")
+
+    state.active_player = 2
+    state.priority_player = 2
+    state.step = Step.PRECOMBAT_MAIN
+    assert not any(move.get("card_id") == token_id for move in legal_moves(state, 2))
+    put_land_from_hand(state, 2, {})
+    assert state.cards[token_id].zone == Zone.HAND
+    assert token_id in state.players[2].hand

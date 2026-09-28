@@ -23,7 +23,8 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     card_id = action.get("card_id")
     return_id = action.get("return_card_id")
     player = state.players[player_id]
-    if card_id not in player.hand or return_id not in ninjutsu_attackers(state, player_id):
+    from rules_engine.zone_actions import is_departed_token
+    if card_id not in player.hand or return_id not in ninjutsu_attackers(state, player_id) or is_departed_token(state.cards[card_id]):
         return False
     card = state.cards[card_id]
     cost = ninjutsu_cost(card)
@@ -45,7 +46,8 @@ def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
     from rules_engine.events import emit_event
     card_id = payload.get("__source_card_id")
     player = state.players[controller]
-    if card_id not in player.hand:
+    from rules_engine.zone_actions import is_departed_token
+    if card_id not in player.hand or is_departed_token(state.cards[card_id]):
         return
     player.hand.remove(card_id)
     player.battlefield.append(card_id)
@@ -180,12 +182,15 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
 
 
 def ninjutsu_moves(state, player_id: int) -> list[dict]:
+    from rules_engine.zone_actions import is_departed_token
     attackers = ninjutsu_attackers(state, player_id)
     if not attackers:
         return []
     moves = []
     for cid in state.players[player_id].hand:
         card = state.cards[cid]
+        if is_departed_token(card):
+            continue
         cost = ninjutsu_cost(card)
         if cost and can_pay_with_pool_and_lands(state, player_id, cost, card_name=card.name):
             for return_id in attackers:

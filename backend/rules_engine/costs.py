@@ -7,7 +7,7 @@ from typing import Any
 from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.replacement import replace_die_zone
-from rules_engine.zone_actions import put_into_graveyard
+from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
@@ -119,7 +119,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     player = state.players[player_id]
     if cost.tap_source and source.tapped:
         return False
-    if player.life <= cost.pay_life or len(player.hand) < cost.discard_cards:
+    if player.life <= cost.pay_life or sum(not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
         return False
     creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind)
     if cost.sacrifice_source:
@@ -146,7 +146,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event
     for _ in range(cost.discard_cards):
-        discard_id = next((cid for cid in player.hand if cid != source_id), None)
+        discard_id = _first_discardable_card(state, player_id, exclude={source_id})
         if discard_id is None:
             return False
         player.hand.remove(discard_id)
@@ -228,12 +228,11 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
     player = state.players[player_id]
-    from rules_engine.zone_actions import is_departed_token
     if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
     if player.life <= option.pay_life:
         return False
-    if len(player.hand) - int(card.id in player.hand) < option.discard_cards:
+    if sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in player.hand) < option.discard_cards:
         return False
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
@@ -297,7 +296,7 @@ def _join_costs(a: str, b: str) -> str:
 
 def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]) -> str | None:
     for cid in state.players[player_id].hand:
-        if cid not in exclude:
+        if cid not in exclude and not is_departed_token(state.cards[cid]):
             return cid
     return None
 

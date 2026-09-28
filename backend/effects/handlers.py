@@ -704,7 +704,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     """
     player = state.players[controller]
     land_id = next(
-        (cid for cid in player.hand if cid in state.cards and "Land" in state.cards[cid].types),
+        (cid for cid in player.hand if cid in state.cards and "Land" in state.cards[cid].types and not is_departed_token(state.cards[cid])),
         None,
     )
     if not land_id:
@@ -1126,6 +1126,7 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
             cid
             for cid in player.hand
             if cid in state.cards
+            and not is_departed_token(state.cards[cid])
             and "Creature" in state.cards[cid].types
             and "{G}" in (state.cards[cid].mana_cost or "").upper()
         ),
