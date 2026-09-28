@@ -202,7 +202,7 @@ Bounded sideboard transition: the API now shows current mainboard/sideboard quan
 
 A seeded HTTP regression now completes natural AI-vs-AI BO3 matches for both Mono Red Aggro/Burn and Blue Control/Ramp, restoring each controller from SQLite between games. A browser path restores an Aggro/Burn series, advances it through the rendered `AI Step x30` control, and verifies match completion. These cover series lifecycle and score progression without forced wins; none exercises a full human browser game or implements AI sideboarding. The combined checkbox remains open.
 
-Verification: 932 backend tests passed in an isolated tracked-source/database copy, including both seeded live-series pairs; frontend lint, production build and unit checks passed; the browser harness passed its existing action/recovery/sideboard scenarios plus the complete natural Aggro/Burn BO3. The first increment's hosted CI run `36375696141` passed all three jobs; the extended backend matrix awaits its own hosted run after push.
+Verification: 932 backend tests passed in an isolated tracked-source/database copy, including both seeded live-series pairs; frontend lint, production build and unit checks passed; the browser harness passed its existing action/recovery/sideboard scenarios plus the complete natural Aggro/Burn BO3. Hosted CI runs `36375696141` and `36376066903` each passed backend, browser and frontend jobs.
 
 Verification: 923 backend tests passed in an isolated source/database copy. Frontend build, lint and unit checks passed. The loopback browser harness passed its existing action/recovery paths plus the new sideboard transition and seat-switch draft-clearing checks. Hosted CI run `36372772663` passed all three jobs.
 
