@@ -11,6 +11,8 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, mana_source_colors: ["G"] }] } } }).id, state.id);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, mana_source_colors: ["green"] }] } } }), /card view/);
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, colors: ["W"] }] } } }).id, state.id);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, colors: ["white"] }] } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, blocks: { attacker: "blocker-a" } }), /blocks must map/);

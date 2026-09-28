@@ -107,6 +107,21 @@ def test_invalid_query_and_wrong_priority_are_rejected(game):
     assert rejected(client, controller, {"type": "pass_priority"}).status_code == 403
 
 
+def test_http_manual_nonland_mana_respects_priority_and_sacrifices_token(game):
+    client, controller = game
+    token = add_card(controller, "treasure-manual", "Treasure", Zone.BATTLEFIELD, ["Artifact", "Token"], text="{T}, Sacrifice this token: Add one mana of any color.")
+    token.is_token = True
+    persist(controller)
+    before = snapshot(controller)
+    rejected(client, controller, {"type": "tap_nonland_for_mana", "card_id": token.id, "color": "C"})
+    rejected(client, controller, {"type": "tap_nonland_for_mana", "card_id": token.id, "color": "U"}, player_id=2)
+    assert snapshot(controller) == before
+    response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "tap_nonland_for_mana", "card_id": token.id, "color": "U"}})
+    assert response.status_code == 200, response.text
+    assert response.json()["players"]["1"]["mana_pool"]["U"] == 1
+    assert token.id not in controller.state.players[1].battlefield
+
+
 def add_card(controller, cid, name, zone, types, cost="", text="", power=None, toughness=None, loyalty=None, owner=1, keywords=None):
     card = CardInstance(id=cid, name=name, owner=owner, controller=owner, zone=zone, types=types, mana_cost=cost, oracle_text=text, power=power, toughness=toughness, loyalty=loyalty, summoning_sick=False, keywords=keywords or [])
     controller.state.cards[cid] = card

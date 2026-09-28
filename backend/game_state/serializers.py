@@ -15,6 +15,7 @@ def _tupleize(value):
 def serialize_card_view(state: MatchState, cid: str) -> dict:
     from rules_engine.continuous import effective_combat_stats, effective_keywords
     from rules_engine.colors import card_color_symbols
+    from rules_engine.mana import _nonland_mana_source_colors
     card = state.cards[cid]
     creature = "Creature" in card.types and card.zone == Zone.BATTLEFIELD
     def numeric(value):
@@ -35,6 +36,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
         "colors": sorted(card_color_symbols(card)),
+        "mana_source_colors": sorted(_nonland_mana_source_colors(state, cid, card)) if card.zone == Zone.BATTLEFIELD else [],
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
         "layout": card.layout,

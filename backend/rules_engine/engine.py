@@ -601,6 +601,17 @@ class RulesEngine:
                 player.mana_pool[color] += amount
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
 
+        elif kind == "tap_nonland_for_mana":
+            from rules_engine.mana import _consume_nonland_mana_source, _nonland_mana_source_colors
+
+            cid = action["card_id"]
+            color = action["color"]
+            if cid in player.battlefield and color in _nonland_mana_source_colors(state, cid, state.cards[cid]):
+                name = state.cards[cid].name
+                if _consume_nonland_mana_source(state, player_id, cid):
+                    player.mana_pool[color] += 1
+                    state.log.append(f"{player.name} activates {name} for {color}.")
+
         elif kind == "tap_lands_bulk":
             land_name = str(action.get("land_name", "")).strip().lower()
             count = max(0, int(action.get("count", 0)))

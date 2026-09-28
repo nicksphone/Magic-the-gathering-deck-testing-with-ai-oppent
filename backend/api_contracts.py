@@ -127,6 +127,11 @@ class TapAction(CardAction):
     color: Literal["W", "U", "B", "R", "G", "C"] | None = None
 
 
+class NonlandManaAction(CardAction):
+    type: Literal["tap_nonland_for_mana"]
+    color: Literal["W", "U", "B", "R", "G", "C"]
+
+
 class BulkTapAction(InputModel):
     type: Literal["tap_lands_bulk"]
     land_name: Annotated[str, Field(min_length=1, max_length=200)]
@@ -181,7 +186,7 @@ class OptionalEffectChoice(InputModel):
     accept: StrictBool
 
 
-Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
+Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | NonlandManaAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
 
 
 class ActionRequest(InputModel):

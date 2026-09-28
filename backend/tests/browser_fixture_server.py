@@ -26,6 +26,26 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "nonland_mana":
+        from card_data.token_definitions import named_artifact_token
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=36)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        sources = (
+            CardInstance(id="mana-creature", name="Llanowar Elves", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Creature"], oracle_text="{T}: Add {G}.",
+                         power=1, toughness=1, summoning_sick=False),
+            CardInstance(id="mana-treasure", name="Treasure", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Artifact", "Token"], is_token=True,
+                         oracle_text=named_artifact_token("Treasure")["oracle_text"]),
+        )
+        for card in sources:
+            state.cards[card.id] = card
+            state.players[2].battlefield.append(card.id)
+        return publish(state, deck)
     if face_kind == "draw_replacement":
         from effects.registry import resolve_effect
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]

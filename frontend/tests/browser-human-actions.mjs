@@ -20,6 +20,15 @@ try {
   assert.equal(await evaluate("window.fixtureActions[0].player_id"), 2);
   console.log("PASS seat-2 land uses seat 2 and reaches battlefield");
 
+  await click("Nonland Mana Fixture");
+  await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.id === 'mana-treasure') && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Add G");
+  await waitFor("window.fixtureState.players['2'].mana_pool.G === 1 && window.fixtureState.players['2'].battlefield.find(c => c.id === 'mana-creature').tapped");
+  await click("Add U");
+  await waitFor("window.fixtureState.players['2'].mana_pool.U === 1 && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'mana-treasure')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS manual creature and Treasure mana activation uses printed costs");
+
   await reset();
   await evaluate("(() => { const select = document.querySelector('[aria-label=\"Ability target player\"]'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Activate Prodigal Pyromancer");

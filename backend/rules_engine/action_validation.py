@@ -76,7 +76,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.priority_player == player_id, "This player does not have priority")
     moves = rules.legal_moves(state, player_id)
     available = [move for move in moves if move["type"] == kind]
-    if kind in {"tap_land_for_mana", "tap_lands_bulk"}:
+    if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana"}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
         validate_tap(state, player_id, action)
@@ -173,7 +173,14 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
 
 def validate_tap(state, player_id: int, action: dict) -> None:
     from rules_engine.engine import _land_colors_from_metadata
+    from rules_engine.mana import _nonland_mana_source_colors
     player = state.players[player_id]
+    if action["type"] == "tap_nonland_for_mana":
+        cid = action["card_id"]
+        require(cid in player.battlefield, "Mana source must be a permanent you control")
+        colors = _nonland_mana_source_colors(state, cid, state.cards[cid])
+        require(action["color"] in colors, "Mana source cannot produce the selected color now")
+        return
     if action["type"] == "tap_land_for_mana":
         ids = [action["card_id"]]
     else:

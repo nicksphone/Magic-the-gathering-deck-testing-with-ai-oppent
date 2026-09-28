@@ -115,7 +115,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
-  const canManualTapP1 = humanActor && match.priority_player === viewerSeat && !match.pending_mechanic_choice;
+  const canManualTap = humanActor && match.priority_player === viewerSeat && !match.pregame_pending
+    && !match.pending_mechanic_choice && !match.pending_replacement_choice && !match.pending_trigger_order
+    && match.step !== "cleanup";
   const playableCards = [...new Map([...p1.hand, ...legalMoves.filter((move) => move.card_view && (move.type === "cast_spell" || move.type === "play_land")).map((move) => move.card_view!)].map((card) => [card.id, card])).values()];
 
   function previewFromCard(card: MatchState["players"]["1"]["battlefield"][number] | MatchState["players"]["1"]["hand"][number]): HoverPreview {
@@ -275,6 +277,19 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
               {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
+              {canManualTap && card.mana_source_colors?.length ? (
+                <div className="row" style={{ marginBottom: 0 }}>
+                  {card.mana_source_colors.map((color) => (
+                    <button
+                      key={`${card.id}-mana-${color}`}
+                      onClick={() => onCardAction(viewerSeat, { type: "tap_nonland_for_mana", card_id: card.id, color })}
+                      title={`Activate ${card.name} for ${color}`}
+                    >
+                      Add {color}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </article>
           ))}
         </div>
@@ -291,7 +306,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 <div>
                   <strong>{pile.name}</strong>
                   <p>{pile.total}x | Ready {pile.untapped} | Tapped {pile.tapped}</p>
-                  {canManualTapP1 && pile.untapped > 0 ? (
+                  {canManualTap && pile.untapped > 0 ? (
                     <div className="row" style={{ marginBottom: 0 }}>
                       <select
                         value={landTapCounts[pile.key] ?? 1}
