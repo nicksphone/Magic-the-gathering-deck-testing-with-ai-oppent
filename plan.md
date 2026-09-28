@@ -195,8 +195,10 @@ Acceptance: repeated seeded interactive series and restarts agree when actions a
 The frontend now checks live match responses for core fields, both player views, required card-view fields and list-valued block assignments. Unit regressions reject malformed payloads, and a backend-serialized match passed the validator. This is partial boundary coverage, not generated OpenAPI types or full response validation.
 The Testing Simulator job-status boundary also validates progress and completed summary metrics, and its `any` result cast is removed. Diagnostic run payloads and other API responses still need generated/shared contracts and selective runtime validation.
 
+A clean-checkout GitHub Actions baseline now installs declared Python and locked npm dependencies, then runs the backend suite, frontend build and frontend unit checks. The remaining lint and browser-flow gates are not yet configured in CI. The final frontend `any` casts for Vite environment access and start-mode selection were removed; `ImportMeta` now uses Vite's client declaration. A disposable frontend copy passed `npm ci`, build and unit checks locally; a separate fresh Python venv passed seven API smoke tests. The hosted workflow has not yet been observed.
+
 - [ ] Generate/share OpenAPI types and validate response payloads at runtime where needed.
-- [ ] Correct block assignments to list-valued mappings and remove broad simulator/action `any` types.
+- [x] Correct block assignments to list-valued mappings and remove broad simulator/action `any` types.
 - [ ] Configure ESLint with React-hooks checks, component tests and browser smoke tests.
 - [ ] Add clean-checkout CI for backend tests, frontend build/lint/tests and an HTTP/UI flow.
 

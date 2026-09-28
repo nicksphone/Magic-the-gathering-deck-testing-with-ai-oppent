@@ -360,6 +360,8 @@ Current focus:
 - keeping the UI dense and readable during long sessions
 - validating LAN and long-session UX, then adding richer state-by-state replay reconstruction
 
+GitHub Actions runs a clean-checkout backend test suite and frontend `npm ci`, build and unit checks on pushes and pull requests. Lint, browser-flow CI and hosted-run verification are still pending; local browser fixture instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
+
 ## Known Limitations and Next Upgrades
 
 - The supported look-at-top creature-reveal pattern is tested with Recruitment Officer and Militia Bugler text. Creature/permanent topdeck battlefield, Expressive Iteration-style placement, and supported library-search choices now occur at resolution, with browser-tested human controls. Storm the Festival's random-order bottom clause and Collected Company's two-step human "any order" choice are snapshot-tested; other search wordings and full Oracle clause fidelity need further coverage. A successful parser match is not proof of correct resolution.

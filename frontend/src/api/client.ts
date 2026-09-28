@@ -4,7 +4,7 @@ import { apiBase, cardMediaUrl } from "./routing";
 import { parseMatchState } from "./match-contract";
 import { parseBatchJobStatus } from "./simulation-contract";
 
-const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+const configuredApi = import.meta.env.VITE_API_BASE_URL;
 const API = apiBase(configuredApi);
 
 export const API_BASE = API;

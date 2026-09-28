@@ -7,8 +7,8 @@ type Props = {
   selectedB: number | null;
   setSelectedA: (id: number) => void;
   setSelectedB: (id: number) => void;
-  startMode: string;
-  setStartMode: (mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human") => void;
+  startMode: NonNullable<MatchState["mode"]>;
+  setStartMode: (mode: NonNullable<MatchState["mode"]>) => void;
   difficulty: string;
   setDifficulty: (d: string) => void;
   bestOf: number;
@@ -155,7 +155,12 @@ export function Controls(props: Props) {
         </select>
       </div>
       <div className="row">
-        <select value={props.startMode} onChange={(e) => props.setStartMode(e.target.value as any)}>
+        <select value={props.startMode} onChange={(e) => {
+          const mode = e.currentTarget.value;
+          if (mode === "player_vs_ai" || mode === "ai_vs_ai" || mode === "human_vs_human") {
+            props.setStartMode(mode);
+          }
+        }}>
           <option value="player_vs_ai">Player vs AI</option>
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
