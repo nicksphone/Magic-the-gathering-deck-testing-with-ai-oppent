@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
+from card_data.fallback_cards import fallback_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine.engine import RulesEngine
 
 
 def test_ai_materializes_land_only_target_without_creature_target() -> None:
@@ -26,6 +28,40 @@ def test_ai_materializes_land_only_target_without_creature_target() -> None:
     action = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
     assert action["targets"]["target_card_id"] == land_id
     assert action["targets"]["target_card_name"] == "Forest"
+
+
+def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
+    forest = {"quantity": 60, "card_name": "Forest", "type_line": "Basic Land — Forest"}
+    state = MatchFactory.from_decks([forest], [forest], seed=101)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 30
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    player = state.players[1]
+    player.lands_played_this_turn = 1
+    for _ in range(8):
+        land_id = player.library.pop()
+        player.battlefield.append(land_id)
+        state.cards[land_id].zone = Zone.BATTLEFIELD
+    oracle = fallback_card_payload("Ugin, the Spirit Dragon")
+    assert oracle is not None
+    ugin = CardInstance(
+        id="ugin", name=oracle["name"], owner=1, controller=1,
+        zone=Zone.HAND, types=["Planeswalker"], type_line=oracle["type_line"],
+        mana_cost=oracle["mana_cost"], oracle_text=oracle["oracle_text"], loyalty=7,
+    )
+    state.cards[ugin.id] = ugin
+    player.hand = [ugin.id]
+
+    moves = RulesEngine().legal_moves(state, 1)
+    assert any(move.get("type") == "cast_spell" and move.get("card_id") == ugin.id for move in moves)
+    decision = AIAgent(difficulty="master", archetype="Ramp").choose_action(state, moves, 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == ugin.id
+    assert not decision.action.get("_invalid_ai_choice")
+    RulesEngine().take_action(state, 1, decision.action)
+    assert any(item.source_card_id == ugin.id for item in state.stack)
 
 
 def test_ai_prefers_non_pass_action_when_available() -> None:

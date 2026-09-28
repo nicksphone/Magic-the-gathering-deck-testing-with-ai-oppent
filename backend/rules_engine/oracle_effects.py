@@ -20,7 +20,7 @@ LOSE_COUNT_RE = re.compile(r"loses?\s+life\s+equal\s+to\s+the\s+number\s+of\s+([
 GAIN_CONTROL_RE = re.compile(r"gain control of\s+target\s+(creature|artifact|enchantment|permanent|planeswalker|land)", re.IGNORECASE)
 PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
-COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(creature|land|permanent)")
+COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(?:noncreature )?(creature|land|permanent)")
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
@@ -216,9 +216,11 @@ def infer_effect_from_oracle(
                 inferred[0] == "add_counters"
                 and inferred[1].get("target_card_id")
                 and "becomes a 0/0" in oracle
-                and "target land" in oracle
+                and ("target land" in oracle or "target noncreature land" in oracle)
             ):
                 inferred[1]["animate_land"] = True
+                inferred[1]["animate_keywords"] = [keyword for keyword in ("vigilance", "haste") if keyword in oracle]
+                inferred[1]["animate_untap"] = "untap it" in oracle
             effects.append(inferred)
     if len(effects) >= 2:
         return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
@@ -557,8 +559,8 @@ def inspect_target_hints(
             and ("nonlegendary creature" not in oracle or not _is_legendary_target(state.cards[cid]))
             and ("another target" not in oracle or cid != getattr(card, "id", None))
         ]
-    if re.search(r"target (?:basic |nonbasic )?land", oracle):
-        land_players = [controller] if re.search(r"target (?:basic |nonbasic )?land you control", oracle) else [opponent] if re.search(r"target (?:basic |nonbasic )?land (?:an opponent|your opponent) controls", oracle) else [1, 2]
+    if re.search(r"target (?:(?:basic|nonbasic|noncreature) )?land", oracle):
+        land_players = [controller] if re.search(r"target (?:(?:basic|nonbasic|noncreature) )?land you control", oracle) else [opponent] if re.search(r"target (?:(?:basic|nonbasic|noncreature) )?land (?:an opponent|your opponent) controls", oracle) else [1, 2]
         hints["land_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in land_players
@@ -737,7 +739,7 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Artifact"]
     elif "target enchantment" in oracle:
         restrictions["allowed_types"] = ["Enchantment"]
-    elif "target land" in oracle:
+    elif "target land" in oracle or "target noncreature land" in oracle:
         restrictions["allowed_types"] = ["Land"]
 
     max_match = TARGET_MV_MAX_RE.search(oracle)
@@ -832,7 +834,7 @@ def _split_clauses(oracle: str) -> list[str]:
 
 
 def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
-    oracle = card.oracle_text or ""
+    oracle = (card.oracle_text or "").replace("\u2212", "-")
     out: list[dict[str, Any]] = []
     for match in LOYALTY_ABILITY_RE.finditer(oracle):
         raw_delta = match.group(1).strip()
@@ -1027,6 +1029,11 @@ def _infer_clause_effect(
         return "exile_all_creatures", {}
     if "exile all graveyards" in oracle:
         return "exile_all_graveyards", {}
+    if re.fullmatch(
+        r"exile each permanent with mana value x or less that(?:'s| is) one or more colors\.?",
+        oracle.strip(),
+    ):
+        return "exile_colored_permanents_mana_value_at_most", {"mv_max": x_value}
 
     if "exile target" in oracle and "artifact" in oracle and "enchantment" in oracle:
         target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
@@ -1227,6 +1234,8 @@ def _infer_clause_effect(
                 "counter": "+1/+1",
                 "amount": amount,
                 "animate_land": counters_match.group(2).lower() == "land" and "becomes a 0/0" in oracle,
+                "animate_keywords": [keyword for keyword in ("vigilance", "haste") if keyword in oracle],
+                "animate_untap": "untap it" in oracle,
             }
 
     if "put a green creature card from your hand onto the battlefield" in oracle:

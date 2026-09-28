@@ -532,6 +532,24 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> No
     state.log.append(f"Exile all creatures resolves: {moved} creature(s) exiled.")
 
 
+def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: int, payload: dict) -> None:
+    del controller
+    mv_max = int(payload["mv_max"])
+    affected = [
+        cid for player in state.players.values() for cid in player.battlefield
+        if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
+    ]
+    leaves = []
+    for cid in affected:
+        card = state.cards[cid]
+        state.players[card.controller].battlefield.remove(cid)
+        state.players[card.owner].exile.append(cid)
+        card.zone = Zone.EXILE
+        leaves.append({"card_id": cid, "controller": card.controller})
+    emit_event_batch(state, "leaves_battlefield", leaves)
+    state.log.append(f"Exile colored permanents with mana value {mv_max} or less: {len(affected)} exiled.")
+
+
 def destroy_all_artifacts(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
     _destroy_all_permanents_of_types(state, {"Artifact"}, "All artifacts are destroyed.")
@@ -1195,10 +1213,12 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
             card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))
             card.power = 0
             card.toughness = 0
-            card.tapped = False
-            if "haste" not in {str(x).lower() for x in card.keywords}:
-                card.keywords.append("haste")
-            state.log.append(f"{card.name} becomes a 0/0 Elemental creature with haste.")
+            if payload.get("animate_untap"):
+                card.tapped = False
+            for keyword in payload.get("animate_keywords", []):
+                if keyword not in {str(x).lower() for x in card.keywords}:
+                    card.keywords.append(keyword)
+            state.log.append(f"{card.name} becomes a 0/0 Elemental creature.")
         # PT delta from counters is computed dynamically by effective_power/toughness
 
 

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from game_state.state import CardInstance, MatchFactory, Zone
+from card_data.fallback_cards import fallback_card_payload
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.registry import resolve_effect
+from rules_engine.continuous import effective_power, effective_toughness
+from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_effects import inspect_target_hints
@@ -1017,6 +1020,47 @@ def test_nissa_loyalty_lines_animate_land_and_put_green_creature() -> None:
     resolve_effect(state, 1, key, payload)
     assert creature_id in p1.battlefield
     assert creature.summoning_sick
+
+
+def test_real_noncreature_land_loyalty_clause_uses_legal_target_and_keywords() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land — Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=57)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    land_id, animated_id = state.players[1].hand[:2]
+    for cid in (land_id, animated_id):
+        state.players[1].hand.remove(cid)
+        state.players[1].battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+    state.cards[land_id].tapped = True
+    state.cards[animated_id].types.append("Creature")
+    oracle = fallback_card_payload("Nissa, Who Shakes the World")
+    assert oracle is not None
+    nissa = CardInstance(
+        id="nissa", name=oracle["name"], owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=5,
+        mana_cost=oracle["mana_cost"], oracle_text=oracle["oracle_text"],
+    )
+    state.cards[nissa.id] = nissa
+    state.players[1].battlefield.append(nissa.id)
+
+    rules = RulesEngine()
+    move = next(m for m in rules.legal_moves(state, 1) if m.get("type") == "activate_loyalty" and m.get("ability_index") == 0)
+    assert [item["id"] for item in move["target_hints"]["land_targets"]] == [land_id]
+    rules.take_action(state, 1, {"type": "activate_loyalty", "card_id": nissa.id, "ability_index": 0, "targets": {"target_card_id": land_id}})
+    assert state.stack[-1].effect_key == "add_counters"
+    resolve_top_of_stack(state)
+
+    land = state.cards[land_id]
+    assert nissa.loyalty == 6
+    assert land.counters["+1/+1"] == 3
+    assert effective_power(state, land_id) == effective_toughness(state, land_id) == 3
+    assert {"Land", "Creature"}.issubset(set(land.types))
+    assert {"vigilance", "haste"}.issubset(set(land.keywords))
+    assert not land.tapped
+    assert not any("Oracle effect not inferred" in line for line in state.log)
 
 
 def test_storm_the_festival_style_puts_permanents_from_top() -> None:

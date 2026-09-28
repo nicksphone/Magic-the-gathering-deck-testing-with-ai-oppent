@@ -2221,12 +2221,8 @@ class AIAgent:
             else:
                 targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card) or 0
 
-        requires_x = bool(hints.get("requires_x_value"))
-        if card:
-            mana_text = (getattr(card, "mana_cost", "") or "").upper()
-            oracle_text = (getattr(card, "oracle_text", "") or "").lower()
-            if "{X}" in mana_text or (" x " in f" {oracle_text} " and "target" in oracle_text):
-                requires_x = True
+        # The whole Oracle text may contain X in an unrelated activated ability.
+        requires_x = bool(hints.get("requires_x_value")) or "{X}" in mana_cost.upper()
 
         if requires_x:
             try:
