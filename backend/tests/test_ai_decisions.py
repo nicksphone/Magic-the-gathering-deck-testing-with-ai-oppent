@@ -64,6 +64,68 @@ def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
     assert any(item.source_card_id == ugin.id for item in state.stack)
 
 
+def test_ai_uses_board_value_to_choose_x_loyalty_sweep() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land — Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=103)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 12
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    state.players[1].lands_played_this_turn = 1
+    state.players[1].last_land_play_turn = state.turn
+
+    def add(name: str, owner: int) -> CardInstance:
+        data = fallback_card_payload(name)
+        assert data is not None
+        card = CardInstance(
+            id=f"{name}-{owner}", name=data["name"], owner=owner, controller=owner,
+            zone=Zone.BATTLEFIELD, mana_cost=data["mana_cost"],
+            oracle_text=data["oracle_text"], type_line=data["type_line"],
+            types=[kind for kind in ("Creature", "Enchantment", "Artifact", "Planeswalker") if kind in data["type_line"]],
+            power=int(data.get("power", 0) or 0), toughness=int(data.get("toughness", 0) or 0),
+            loyalty=int(data.get("loyalty", 0) or 0), colors=data.get("colors"),
+        )
+        state.cards[card.id] = card
+        state.players[owner].battlefield.append(card.id)
+        return card
+
+    ugin = add("Ugin, the Spirit Dragon", 1)
+    meathook = add("The Meathook Massacre", 1)
+    gearhulk = add("Torrential Gearhulk", 2)
+    sheoldred = add("Sheoldred, the Apocalypse", 2)
+    ai = AIAgent(difficulty="master", archetype="Ramp")
+    state.players[2].life = 3
+    lethal = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert lethal.action == {"type": "activate_loyalty", "card_id": ugin.id, "ability_index": 0, "targets": {"target_player": 2}}
+    state.players[2].life = 20
+    decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action == {"type": "activate_loyalty", "card_id": ugin.id, "ability_index": 1, "targets": {"x_value": 6}}
+    RulesEngine().take_action(state, 1, decision.action, reject_invalid=True)
+    from rules_engine.stack_engine import resolve_top_of_stack
+    assert resolve_top_of_stack(state)
+    assert {gearhulk.zone, sheoldred.zone, meathook.zone} == {Zone.EXILE}
+    assert ugin.zone == Zone.BATTLEFIELD and ugin.loyalty == 1
+
+
+def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=104)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    data = fallback_card_payload("Ugin, the Spirit Dragon")
+    assert data is not None
+    ugin = CardInstance(id="ugin", name=data["name"], owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Planeswalker"], oracle_text=data["oracle_text"], mana_cost=data["mana_cost"], loyalty=7)
+    mystic = CardInstance(id="mystic", name="Elvish Mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{G}", power=1, toughness=1, colors=["G"])
+    for card in (ugin, mystic):
+        state.cards[card.id] = card
+        state.players[card.controller].battlefield.append(card.id)
+    ai = AIAgent(difficulty="master", archetype="Ramp")
+    assert ai._tactical_loyalty_action(state, RulesEngine().legal_moves(state, 1), 1) is None
+
+
 def test_ai_announces_only_one_target_for_any_target_damage() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck, seed=102)
@@ -90,6 +152,10 @@ def test_ai_announces_only_one_target_for_any_target_damage() -> None:
     action = AIAgent(difficulty="master", archetype="Burn")._materialize_action(state, move, 1)
     assert action["targets"]["target_player"] == 2
     assert "target_card_id" not in action["targets"]
+    creature.toughness = 1
+    state.players[2].life = 3
+    action = AIAgent(difficulty="master", archetype="Burn")._materialize_action(state, move, 1)
+    assert action["targets"] == {"target_player": 2}
 
 
 def test_ai_prefers_non_pass_action_when_available() -> None:

@@ -14,6 +14,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
+from rules_engine.colors import card_color_names
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
@@ -129,6 +130,10 @@ class AIAgent:
         if forced_stabilize is not None:
             return AIDecision(action=forced_stabilize, reasoning="Burn matchup stabilization: remove pressure before value lines")
 
+        tactical_loyalty = self._tactical_loyalty_action(state, legal_moves, player_id)
+        if tactical_loyalty is not None:
+            return AIDecision(action=tactical_loyalty, reasoning="Choose immediate lethal or a profitable X-loyalty sweep")
+
         stack_interaction = self._forced_stack_interaction(state, legal_moves, player_id)
         if stack_interaction is not None:
             return AIDecision(action=stack_interaction, reasoning="Answer threatening stack item with available interaction")
@@ -229,6 +234,73 @@ class AIAgent:
             elif defender is not None:
                 allocation[defender] += remaining
         return allocation
+
+    def _tactical_loyalty_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        from types import SimpleNamespace
+        from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
+        from rules_engine.stack_engine import resolve_top_of_stack
+        from rules_engine.state_based_actions import apply_state_based_actions
+
+        x_moves = [
+            move for move in legal_moves
+            if move.get("type") == "activate_loyalty" and move.get("ability_x_cost") and move.get("ability_x_sign") == -1
+        ]
+        if not x_moves:
+            return None
+        opponent = 1 if player_id == 2 else 2
+        base = evaluate_board(state, player_id)
+        best: tuple[float, int, dict] | None = None
+        for move in legal_moves:
+            if move.get("type") != "activate_loyalty" or move.get("ability_x_cost"):
+                continue
+            if opponent not in {target.get("id") for target in (move.get("target_hints") or {}).get("player_targets", [])}:
+                continue
+            damage = re.search(r"\bdeals?\s+(\d+)\s+damage\b", str(move.get("ability_label") or "").lower())
+            if damage is None or state.players[opponent].life > int(damage.group(1)):
+                continue
+            action = {"type": "activate_loyalty", "card_id": move["card_id"], "ability_index": move["ability_index"], "targets": {"target_player": opponent}}
+            try:
+                sim = copy.deepcopy(state)
+                self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                if sim.stack and resolve_top_of_stack(sim):
+                    apply_state_based_actions(sim)
+                    if sim.winner == player_id:
+                        return action
+            except Exception:
+                continue
+        for move in x_moves:
+            source = state.cards.get(move.get("card_id"))
+            if source is None or int(source.loyalty or 0) < 1:
+                continue
+            abilities = extract_loyalty_abilities(source)
+            index = int(move.get("ability_index", -1))
+            if not 0 <= index < len(abilities):
+                continue
+            proxy = SimpleNamespace(name=source.name, oracle_text=abilities[index]["text"], mana_cost="", types=[])
+            parse_state = copy.deepcopy(state)
+            effect_key, _ = infer_effect_from_oracle(parse_state, proxy, player_id, {"x_value": 1})
+            if effect_key != "exile_colored_permanents_mana_value_at_most":
+                continue
+            x_values = sorted({
+                max(1, mana_value(state.cards[cid].mana_cost or ""))
+                for cid in state.players[opponent].battlefield
+                if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= source.loyalty
+            })
+            for x_value in x_values:
+                action = {"type": "activate_loyalty", "card_id": source.id, "ability_index": index, "targets": {"x_value": x_value}}
+                try:
+                    sim = copy.deepcopy(state)
+                    self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                    if not sim.stack or not resolve_top_of_stack(sim):
+                        continue
+                    apply_state_based_actions(sim)
+                    score = evaluate_board(sim, player_id) - base
+                except Exception:
+                    continue
+                candidate = (score, -x_value, action)
+                if best is None or candidate[:2] > best[:2]:
+                    best = candidate
+        return best[2] if best is not None and best[0] >= 4.0 else None
 
     def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.difficulty not in {"master", "master_plus"}:
@@ -2110,12 +2182,15 @@ class AIAgent:
             damage_match = re.search(r"\bdeals?\s+(\d+)\s+damage\b", target_text)
             if damage_match and player_targets and "any number of targets" not in target_text:
                 amount = int(damage_match.group(1))
-                creature_targets = [
-                    target for target in creature_targets
-                    if amount + int(state.cards[target["id"]].counters.get("__damage_marked", 0))
-                    >= _effective_combat_stats(state, target["id"])[1]
-                    and not has_keyword(state, target["id"], "indestructible")
-                ]
+                if state.players[opponent].life <= amount:
+                    creature_targets = []
+                else:
+                    creature_targets = [
+                        target for target in creature_targets
+                        if amount + int(state.cards[target["id"]].counters.get("__damage_marked", 0))
+                        >= _effective_combat_stats(state, target["id"])[1]
+                        and not has_keyword(state, target["id"], "indestructible")
+                    ]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(
                 creature_targets,
