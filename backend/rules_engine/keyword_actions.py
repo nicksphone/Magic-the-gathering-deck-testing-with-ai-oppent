@@ -97,13 +97,14 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             state.priority_player = state.active_player
             state.passed_priority = set()
         return True
-    if pending and pending["kind"] in {"topdeck_put", "look_top_choose"}:
+    if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "search_library"}:
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
                 or len(ids) > pending["count"] or len(ids) != len(set(ids))
                 or (pending["kind"] == "look_top_choose" and len(ids) != pending["count"])
                 or any(cid not in pending["options"] for cid in ids)
-                or state.players[player_id].library[-len(pending["top_ids"]):] != pending["top_ids"]):
+                or (pending.get("top_ids") is not None and state.players[player_id].library[-len(pending["top_ids"]):] != pending["top_ids"])
+                or (pending.get("library_ids") is not None and state.players[player_id].library != pending["library_ids"])):
             return False
         from effects.registry import resolve_effect
         if pending["kind"] == "look_top_choose":

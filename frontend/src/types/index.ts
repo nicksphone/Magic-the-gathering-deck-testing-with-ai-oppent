@@ -81,7 +81,7 @@ export type MatchState = {
   sideboard_sizes?: Record<string, number>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "look_top_choose";
+    kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "look_top_choose" | "search_library";
     player_id: number;
     options: string[];
     count?: number;
@@ -103,7 +103,7 @@ export type MatchState = {
 
 export type LegalMove = {
   selected_face_index?: number;
-  kind?: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "look_top_choose";
+  kind?: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "look_top_choose" | "search_library";
   player_id?: number;
   count?: number;
   label?: string;

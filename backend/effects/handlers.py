@@ -763,14 +763,32 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     if not subtype:
         return
+    if (payload.get("selected_card_ids") is None and state.replacement_choice_required
+            and controller in state.replacement_choice_players):
+        eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
+        if eligible:
+            state.pending_mechanic_choice = {
+                "kind": "search_library", "player_id": controller,
+                "options": eligible, "count": min(limit, len(eligible)) if limit else len(eligible),
+                "library_ids": list(player.library), "effect_payload": payload,
+                "effect_key": "search_library",
+                "label": ("Search your library: first selection enters tapped, remaining cards go to hand"
+                          if destination == "split_battlefield_hand" else "Search your library (you may fail to find a matching card)"),
+            }
+            state.priority_player = controller
+            state.passed_priority = set()
+            return
     found: list[str] = []
     selected = payload.get("selected_card_ids")
     selected_ids = list(selected) if isinstance(selected, list) else None
 
+    def place(cid: str) -> None:
+        zone = ("battlefield" if not found else "hand") if destination == "split_battlefield_hand" else destination
+        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")))
+        found.append(state.cards[cid].name)
+
     if selected_ids is not None:
-        # The cast-choice validator checks the selection before the spell is
-        # put on the stack. Re-check it here because the library may change
-        # before the search resolves.
+        # Recheck after a pending human choice or direct internal effect call.
         for cid in selected_ids[:limit or None]:
             if cid not in player.library or cid not in state.cards:
                 continue
@@ -778,16 +796,14 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             if not search_card_matches(card, subtype, mv_max):
                 continue
             player.library.remove(cid)
-            _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
-            found.append(card.name)
+            place(cid)
     else:
         for cid in list(player.library):
             card = state.cards[cid]
             if not search_card_matches(card, subtype, mv_max):
                 continue
             player.library.remove(cid)
-            _place_searched_card(state, controller, cid, destination, tapped=bool(payload.get("tapped")))
-            found.append(card.name)
+            place(cid)
             if limit and len(found) >= limit:
                 break
     if found:

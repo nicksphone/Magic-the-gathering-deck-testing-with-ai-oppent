@@ -511,6 +511,12 @@ def test_oracle_search_library_for_artifact_card_uses_type_based_filtering() -> 
     )
     state.cards[artifact.id] = artifact
     state.players[1].library.append(artifact.id)
+    second = CardInstance(
+        id="second-artifact-library", name="Arcane Signet", owner=1,
+        controller=1, zone=Zone.LIBRARY, types=["Artifact"], oracle_text="",
+    )
+    state.cards[second.id] = second
+    state.players[1].library.append(second.id)
     card = CardInstance(
         id="tutor",
         name="Fabricate",
@@ -524,9 +530,10 @@ def test_oracle_search_library_for_artifact_card_uses_type_based_filtering() -> 
     effect_key, payload = infer_effect_from_oracle(state, card, 1)
     assert effect_key == "search_library"
     assert payload["contains"] == "artifact"
+    assert payload["count"] == 1
     resolve_effect(state, 1, effect_key, payload)
-    assert artifact.id in state.players[1].hand
-    assert artifact.id not in state.players[1].library
+    assert sum(cid in state.players[1].hand for cid in (artifact.id, second.id)) == 1
+    assert sum(cid in state.players[1].library for cid in (artifact.id, second.id)) == 1
 
 
 def test_oracle_search_library_can_put_creature_onto_battlefield() -> None:

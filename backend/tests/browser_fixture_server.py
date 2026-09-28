@@ -31,6 +31,24 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             card.name, card.mana_cost, card.types = name, cost, types
         resolve_effect(state, 2, "look_top_choose", {"top_n": 3})
         return publish(state, deck)
+    if face_kind == "search":
+        from effects.registry import resolve_effect
+        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
+        state = MatchFactory.from_decks(deck, deck, seed=33)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.replacement_choice_required = True
+        state.replacement_choice_players = {2}
+        for cid, name, cost, power in zip(state.players[2].library[-2:],
+            ["Llanowar Elves", "Grizzly Bears"], ["{G}", "{1}{G}"], [1, 2]):
+            card = state.cards[cid]
+            card.name, card.mana_cost, card.types = name, cost, ["Creature"]
+            card.type_line = "Creature"
+            card.power = card.toughness = power
+        resolve_effect(state, 2, "search_library", {"contains": "creature", "destination": "hand", "count": 1, "shuffle": True})
+        return publish(state, deck)
     if face_kind == "bo3":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=31)

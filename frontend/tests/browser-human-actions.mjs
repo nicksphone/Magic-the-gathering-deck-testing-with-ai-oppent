@@ -156,6 +156,14 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].exile_count"), 1);
   console.log("PASS ordered top-card hand/exile/bottom choice through Controls and API");
 
+  await click("Search Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'search_library'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState?.pending_mechanic_choice === null && window.fixtureState?.players['2'].hand.some(c => c.name === 'Grizzly Bears')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.card_ids.length"), 1);
+  console.log("PASS resolution-time library search choice through Controls and API");
+
   await click("BO3 Fixture");
   await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
   await click("P2 Draw First");

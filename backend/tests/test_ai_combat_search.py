@@ -121,7 +121,7 @@ def test_block_search_uses_blocker_controller_when_attacker_has_priority() -> No
     assert action == {attacker.id: blocker.id}
 
 
-def test_ai_materializes_required_library_search_choice() -> None:
+def test_ai_does_not_choose_hidden_library_cards_before_search_resolves() -> None:
     state = MatchFactory.from_decks(
         [{"quantity": 60, "card_name": "Forest"}],
         [{"quantity": 60, "card_name": "Forest"}],
@@ -144,7 +144,7 @@ def test_ai_materializes_required_library_search_choice() -> None:
         },
     }
     materialized = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
-    assert materialized["targets"]["search_card_ids"] == [state.players[1].library[0], state.players[1].library[1]]
+    assert "search_card_ids" not in materialized.get("targets", {})
 
 
 def test_ai_materializes_graveyard_spell_target_for_recursion() -> None:

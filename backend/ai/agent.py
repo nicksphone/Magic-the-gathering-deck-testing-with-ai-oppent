@@ -2132,48 +2132,6 @@ class AIAgent:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
-        library_search = hints.get("library_search") or {}
-        search_candidates = list(library_search.get("candidates") or [])
-        if search_candidates and not targets.get("search_card_ids"):
-            # Search choices are now validated by the rules engine. Select the
-            # strongest legal count rather than retrying the same invalid cast.
-            max_count = int(library_search.get("max_count", 0) or 0)
-            selected_count = max_count if max_count > 0 else 1
-            selected_count = min(selected_count, len(search_candidates))
-            ordered = sorted(search_candidates, key=lambda item: (str(item.get("name") or ""), str(item.get("id") or "")))
-            targets["search_card_ids"] = [item["id"] for item in ordered[:selected_count]]
-
-        topdeck_choice = hints.get("topdeck_choice") or {}
-        topdeck_candidates = [item for item in topdeck_choice.get("candidates") or [] if item.get("id") in state.cards]
-        if topdeck_candidates and "topdeck_card_ids" not in targets:
-            ordered = sorted(
-                topdeck_candidates,
-                key=lambda item: (
-                    effective_power(state, item["id"]) if "Creature" in state.cards[item["id"]].types else 0,
-                    int(item.get("mana_value", 0) or 0),
-                    str(item.get("name") or ""),
-                ),
-                reverse=True,
-            )
-            max_count = int(topdeck_choice.get("max_count", 0) or 0)
-            targets["topdeck_card_ids"] = [item["id"] for item in ordered[:max_count]]
-
-        top_choice = hints.get("top_choice") or {}
-        top_candidates = [item for item in top_choice.get("candidates") or [] if item.get("id") in state.cards]
-        if top_candidates and not targets.get("top_choice_hand_id"):
-            ordered = sorted(
-                top_candidates,
-                key=lambda item: (
-                    mana_value(getattr(state.cards[item["id"]], "mana_cost", "") or ""),
-                    str(item.get("name") or ""),
-                ),
-                reverse=True,
-            )
-            targets["top_choice_hand_id"] = ordered[0]["id"]
-            if len(ordered) > 1:
-                targets["top_choice_exile_id"] = ordered[1]["id"]
-                targets["top_choice_bottom_ids"] = [item["id"] for item in ordered[2:]]
-
         if hints.get("supports_divide") and not targets.get("target_distribution"):
             if creature_targets:
                 # Start with one recipient, then use the rules-derived budget.

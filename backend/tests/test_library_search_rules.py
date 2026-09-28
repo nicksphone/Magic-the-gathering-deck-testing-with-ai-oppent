@@ -3,6 +3,11 @@ from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
 
+CULTIVATE_TEXT = (
+    "Search your library for up to two basic land cards, reveal those cards, "
+    "put one onto the battlefield tapped and the other into your hand, then shuffle."
+)
+
 
 def _state_with_searcher() -> object:
     deck = [{"quantity": 60, "card_name": "Forest"}]
@@ -15,7 +20,7 @@ def _state_with_searcher() -> object:
     return state
 
 
-def test_cultivate_inference_searches_up_to_two_basic_lands_to_hand() -> None:
+def test_cultivate_inference_splits_canonical_land_destinations() -> None:
     state = _state_with_searcher()
     spell = CardInstance(
         id="cultivate",
@@ -24,7 +29,7 @@ def test_cultivate_inference_searches_up_to_two_basic_lands_to_hand() -> None:
         controller=1,
         zone=Zone.HAND,
         types=["Sorcery"],
-        oracle_text="Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle.",
+        oracle_text=CULTIVATE_TEXT,
     )
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
@@ -32,14 +37,17 @@ def test_cultivate_inference_searches_up_to_two_basic_lands_to_hand() -> None:
     assert spec.effect.key == "search_library"
     assert spec.effect.payload == {
         "contains": "basic_land",
-        "destination": "hand",
+        "destination": "split_battlefield_hand",
         "count": 2,
         "shuffle": True,
+        "tapped": True,
     }
     before = len(state.players[1].hand)
     resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
-    assert len(state.players[1].hand) == before + 2
-    assert all("Basic" in state.cards[cid].type_line for cid in state.players[1].hand[-2:])
+    assert len(state.players[1].hand) == before + 1
+    assert len(state.players[1].battlefield) == 1
+    assert state.cards[state.players[1].battlefield[0]].tapped
+    assert "Basic" in state.cards[state.players[1].hand[-1]].type_line
     assert any("shuffles their library" in line.lower() for line in state.log)
 
 
@@ -63,7 +71,7 @@ def test_migration_path_puts_basic_lands_onto_battlefield_tapped() -> None:
     assert all(state.cards[cid].tapped for cid in found)
 
 
-def test_library_search_exposes_candidates_and_honors_explicit_selection() -> None:
+def test_library_search_hides_candidates_until_resolution_and_honors_choice() -> None:
     state = _state_with_searcher()
     state.players[1].library[-1], state.players[1].library[-2] = (
         state.players[1].library[-2],
@@ -76,21 +84,51 @@ def test_library_search_exposes_candidates_and_honors_explicit_selection() -> No
         controller=1,
         zone=Zone.HAND,
         types=["Sorcery"],
-        oracle_text="Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle.",
+        oracle_text=CULTIVATE_TEXT,
     )
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
-    candidates = hints["library_search"]["candidates"]
-    assert len(candidates) == len(state.players[1].library)
-    chosen = [candidates[-1]["id"]]
+    assert hints["library_search"]["max_count"] == 2
+    assert "candidates" not in hints["library_search"]
+    chosen = [state.players[1].library[-1]]
     ok, error = validate_cast_choice(hints, {"search_card_ids": chosen})
-    assert ok is True, error
+    assert ok is False and "when the search resolves" in error
 
-    spec = build_ability_spec(state, spell, 1, action_targets={"search_card_ids": chosen})
-    assert spec.effect.payload["selected_card_ids"] == chosen
+    spec = build_ability_spec(state, spell, 1)
+    assert "selected_card_ids" not in spec.effect.payload
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
     resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
-    assert chosen[0] in state.players[1].hand
+    assert state.pending_mechanic_choice["kind"] == "search_library"
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from rules_engine.engine import RulesEngine
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": chosen}, reject_invalid=True)
+    assert chosen[0] in state.players[1].battlefield
+    assert state.cards[chosen[0]].tapped
     assert state.cards[chosen[0]].type_line.startswith("Basic Land")
+
+
+def test_cultivate_human_choice_orders_battlefield_then_hand() -> None:
+    from rules_engine.engine import RulesEngine
+
+    state = _state_with_searcher()
+    first, second = state.players[1].library[-2:]
+    state.cards[first].name = "Plains"
+    state.cards[first].type_line = "Basic Land - Plains"
+    state.cards[second].name = "Island"
+    state.cards[second].type_line = "Basic Land - Island"
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    resolve_effect(state, 1, "search_library", {
+        "contains": "basic_land", "destination": "split_battlefield_hand",
+        "count": 2, "tapped": True, "shuffle": True,
+    })
+    assert state.pending_mechanic_choice["count"] == 2
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": [second, first]}, reject_invalid=True)
+    assert second in state.players[1].battlefield and state.cards[second].tapped
+    assert first in state.players[1].hand
+    assert state.pending_mechanic_choice is None
 
 
 def test_library_search_rejects_nonmatching_explicit_selection() -> None:
@@ -105,13 +143,13 @@ def test_library_search_rejects_nonmatching_explicit_selection() -> None:
         controller=1,
         zone=Zone.HAND,
         types=["Sorcery"],
-        oracle_text="Search your library for up to two basic land cards, reveal those cards, put them into your hand, then shuffle.",
+        oracle_text=CULTIVATE_TEXT,
     )
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     ok, error = validate_cast_choice(hints, {"search_card_ids": [nonbasic]})
     assert ok is False
-    assert "search restriction" in error.lower()
+    assert "when the search resolves" in error.lower()
 
 
 def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
@@ -300,3 +338,36 @@ def test_http_topdeck_put_choice_is_offered_only_after_resolution() -> None:
             assert any(card["id"] == top[-1] for card in selected.json()["players"]["1"]["battlefield"])
         finally:
             ACTIVE_MATCHES.pop(state.id, None)
+
+
+def test_library_search_uses_resolution_library_and_resumes_stack_after_snapshot() -> None:
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from rules_engine.engine import RulesEngine
+    from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
+
+    state = _state_with_searcher()
+    player = state.players[1]
+    spell = CardInstance(
+        id="cultivate-stack", name="Cultivate", owner=1, controller=1,
+        zone=Zone.STACK, types=["Sorcery"],
+        oracle_text=CULTIVATE_TEXT,
+    )
+    state.cards[spell.id] = spell
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    spec = build_ability_spec(state, spell, 1)
+    add_to_stack(state, spell.id, 1, spell.name, spec.effect.key, spec.effect.payload)
+    removed = player.library.pop()
+    player.hand.append(removed)
+    state.cards[removed].zone = Zone.HAND
+    resolve_top_of_stack(state)
+    pending = state.pending_mechanic_choice
+    assert pending and pending["kind"] == "search_library"
+    assert removed not in pending["options"]
+    chosen = pending["options"][-1]
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(restored, 1, {"type": "choose_mechanic", "card_ids": [chosen]}, reject_invalid=True)
+    assert chosen in restored.players[1].battlefield
+    assert restored.cards[chosen].tapped
+    assert spell.id in restored.players[1].graveyard
+    assert restored.pending_mechanic_choice is None and not restored.stack

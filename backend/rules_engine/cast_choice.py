@@ -71,14 +71,6 @@ def build_cast_hints(
     }
     if hints.get("up_to_target_count"):
         hints["choice_schema"]["target_card_ids"] = {"type": "array", "required": False, "max_items": hints["up_to_target_count"]}
-    if hints.get("library_search"):
-        search = hints["library_search"]
-        hints["choice_schema"]["search_card_ids"] = {
-            "type": "array",
-            "required": not bool(search.get("allow_zero")),
-            "max_items": int(search.get("max_count", 0) or len(search.get("candidates") or [])),
-            "items": {"type": "string", "enum": [item["id"] for item in search.get("candidates", [])]},
-        }
     return hints
 
 
@@ -94,21 +86,8 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
             return False, "Selected face index must be a valid integer."
         if selected < 0 or selected >= len(face_names):
             return False, "Selected face index is out of range."
-    search = hints.get("library_search") or {}
-    if search:
-        selected = action_targets.get("search_card_ids")
-        if selected is None:
-            selected = []
-        if not isinstance(selected, list):
-            return False, "Library search choices must be a list of card IDs."
-        candidate_ids = {str(item.get("id")) for item in (search.get("candidates") or [])}
-        if any(str(cid) not in candidate_ids for cid in selected):
-            return False, "A selected library card does not match the search restriction."
-        max_count = int(search.get("max_count", 0) or 0)
-        if max_count and len(selected) > max_count:
-            return False, f"Too many library cards selected (max {max_count})."
-        if not search.get("allow_zero") and not selected and candidate_ids:
-            return False, "A library card must be selected."
+    if hints.get("library_search") and action_targets.get("search_card_ids") is not None:
+        return False, "Library cards are chosen when the search resolves, not when it is cast."
     if hints.get("topdeck_choice") and action_targets.get("topdeck_card_ids") is not None:
         return False, "Topdeck cards are chosen when the effect resolves, not when it is cast."
     if hints.get("top_choice") and any(action_targets.get(key) is not None for key in ("top_choice_hand_id", "top_choice_exile_id", "top_choice_bottom_ids")):

@@ -29,7 +29,7 @@ CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOT
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-]\s*(.+))?", re.IGNORECASE | re.DOTALL)
 DIVIDE_RE = re.compile(r"(?:divid[^.]*damage|damage[^.]*divid)[^.]*among[^.]*targets", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
-SEARCH_UP_TO_RE = re.compile(r"search your library for up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
+SEARCH_COUNT_RE = re.compile(r"search your library for (?:up to\s+)?(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
 SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
 TARGET_MV_MAX_RE = re.compile(r"mana value\s+(?:less than or equal to\s+)?(\d+)\s+or less", re.IGNORECASE)
 TARGET_MV_GRAVEYARD_RE = re.compile(
@@ -333,14 +333,18 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
         elif "permanent card" in oracle:
             contains = "permanent"
     if count is None:
-        count_match = SEARCH_UP_TO_RE.search(oracle)
+        count_match = SEARCH_COUNT_RE.search(oracle)
         if count_match:
             count = _parse_count_token(count_match.group(1))
+        else:
+            count = 1
     if mv_max is None:
         mv_match = SEARCH_MV_MAX_RE.search(oracle)
         if mv_match:
             mv_max = _parse_count_token(mv_match.group(1))
-    destination = "battlefield" if "onto the battlefield" in oracle else "hand"
+    split_destination = ("put one onto the battlefield tapped" in oracle
+                         and ("the other into your hand" in oracle or "the rest into your hand" in oracle))
+    destination = "split_battlefield_hand" if split_destination else "battlefield" if "onto the battlefield" in oracle else "hand"
     payload: dict[str, Any] = {"contains": contains, "destination": destination}
     if "onto the battlefield tapped" in oracle:
         payload["tapped"] = True
@@ -350,9 +354,6 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
         payload["count"] = int(count)
     if mv_max is not None:
         payload["mv_max"] = int(mv_max)
-    selected = action_targets.get("search_card_ids")
-    if selected is not None:
-        payload["selected_card_ids"] = list(selected or [])
     return "search_library", payload
 
 
@@ -579,12 +580,7 @@ def inspect_target_hints(
             "contains": contains,
             "destination": search_payload.get("destination", "hand"),
             "max_count": int(search_payload.get("count", 0) or 0),
-            "allow_zero": bool("up to" in oracle),
-            "candidates": [
-                {"id": cid, "name": state.cards[cid].name}
-                for cid in state.players[controller].library
-                if cid in state.cards and search_card_matches(state.cards[cid], contains, mv_max)
-            ],
+            "allow_zero": True,
         }
     if "any target" in oracle or "target player" in oracle or "deals" in oracle:
         hints["player_targets"] = [
@@ -1036,14 +1032,18 @@ def _infer_clause_effect(
             elif "permanent card" in oracle:
                 contains = "permanent"
         if count is None:
-            count_match = SEARCH_UP_TO_RE.search(oracle)
+            count_match = SEARCH_COUNT_RE.search(oracle)
             if count_match:
                 count = _parse_count_token(count_match.group(1))
+            else:
+                count = 1
         if mv_max is None:
             mv_match = SEARCH_MV_MAX_RE.search(oracle)
             if mv_match:
                 mv_max = _parse_count_token(mv_match.group(1))
-        destination = "battlefield" if "onto the battlefield" in oracle else "hand"
+        split_destination = ("put one onto the battlefield tapped" in oracle
+                             and ("the other into your hand" in oracle or "the rest into your hand" in oracle))
+        destination = "split_battlefield_hand" if split_destination else "battlefield" if "onto the battlefield" in oracle else "hand"
         payload: dict[str, Any] = {"contains": contains, "destination": destination}
         if "onto the battlefield tapped" in oracle:
             payload["tapped"] = True

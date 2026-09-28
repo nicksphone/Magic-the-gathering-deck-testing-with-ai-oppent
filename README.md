@@ -48,15 +48,15 @@ It is designed for serious deck work:
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
 - Supported topdeck creature/permanent battlefield effects now inspect and choose cards at resolution: legal cast hints reveal only counts, human choices can select up to the limit after a response window and snapshot restore, and unattended play selects deterministically. Other top-library choice families remain under review.
-- Explicit library-search candidates and validated player-selected tutor choices, with deterministic fallback selection for AI/replay callers
-- Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, and tapped battlefield placement
+- Resolution-time library-search candidates and validated player-selected tutor choices, with deterministic fallback selection for AI/replay callers
+- Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, tapped battlefield placement, and Cultivate's first-to-battlefield/second-to-hand split
 - Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
 - Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
 - Generic named self-counter triggers for common cast/combat/ETB payoff patterns
 - Resolution-time counted creature-type effects for tribal ETB payoffs
 - Structured top-card hand/exile/bottom choices with temporary play permissions
 - Look-at-top creature reveals with printed mana-value or power limits, optional human selection at resolution, deterministic AI selection, and random-order bottom placement where Oracle text requires it
-- Shared cast-choice plumbing for modes, faces, X values, targets, and library-search selections across human and AI actions
+- Shared cast-choice plumbing for modes, faces, X values, and targets; library-search selection occurs at resolution
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
 - Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
 - Replacement candidates are queryable through `/matches/{match_id}/replacement-options`, and explicit source IDs can be carried through structured cast choices; deterministic timestamp selection remains the AI/replay default
@@ -64,7 +64,7 @@ It is designed for serious deck work:
 - Generic noncombat-damage replacement to -1/-1 counters, power-based death triggers, self-cast X triggers, and X-counter entry handling
 - Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
 - Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
-- AI tutor decisions now materialize validated library-search selections instead of retrying malformed search casts
+- AI tutor resolution uses a deterministic search selection rather than peeking at library candidates during cast
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
 - Manual and autoplay-driven best-of-three matches with sideboarding support
@@ -196,7 +196,7 @@ The harness writes only to the disposable backend copy, uses a temporary self-si
 
 The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
 
-The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects inspect the current library at resolution; a human orders the inspected cards as hand, exile, then library bottom through a pending choice, while AI uses a deterministic fallback. Invalid or incomplete choices are rejected without changing state. Library-search effects still need the same timing audit.
+The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects inspect the current library at resolution; a human orders the inspected cards as hand, exile, then library bottom through a pending choice, while AI uses a deterministic fallback. Supported library searches likewise expose eligible cards only when the search resolves. Invalid or incomplete choices are rejected without changing state. Broader search wordings and strategic AI tutor selection remain to be verified.
 
 Common tempo bounce is also handled through the rules engine: nonland-permanent and creature returns use legal target hints, preserve ownership for stolen cards, emit battlefield-leave events, and return the permanent to its owner's hand. Master AI additionally evaluates small-board attack subsets through blocker search and combat resolution before committing attackers.
 
@@ -360,12 +360,12 @@ Current focus:
 
 ## Known Limitations and Next Upgrades
 
-- The supported look-at-top creature-reveal pattern is tested with Recruitment Officer and Militia Bugler text. Creature/permanent topdeck battlefield and Expressive Iteration-style placement choices now occur at resolution, including a browser-tested ordered human choice. Library search still exposes cast-time choices. Random-order bottom placement and full Oracle clause fidelity need further coverage; a successful parser match is not proof of correct resolution.
+- The supported look-at-top creature-reveal pattern is tested with Recruitment Officer and Militia Bugler text. Creature/permanent topdeck battlefield, Expressive Iteration-style placement, and supported library-search choices now occur at resolution, with browser-tested human controls. Other search wordings, random-order bottom placement, and full Oracle clause fidelity need further coverage; a successful parser match is not proof of correct resolution.
 - Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Bounded single-target ETB and self-cast triggers choose targets in the ability window, with an optional accept/decline decision at resolution where applicable. Other trigger families, modal/multi-target clauses and multiple ability clauses remain local-beta blockers. See [targeted trigger boundary](docs/testing/targeted-trigger-choices.md).
 - Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Common modal land-face plays and Adventure resolution/exile permission paths are [tested separately](docs/testing/land-adventure-boundary.md). Divided-damage recipients now have bounded resolution-time legality coverage; non-damage multi-target spells, conditional land entries, split-card restrictions and full face-specific restart/browser acceptance remain open. Older cache rows need force-sync to acquire canonical layout.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage; match creation is not yet idempotent and extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
 - New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Existing saved matches without root seeds remain unseeded in later games; sideboard strategy, full BO3 browser coverage and drawn-game policy remain open.
-- Human action browser fixtures cover sixteen paths, including an ordered top-library choice and both BO3 play/draw choices, but not a complete game or series. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
+- Human action browser fixtures cover seventeen paths, including ordered top-library and tutor choices plus both BO3 play/draw choices, but not a complete game or series. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
 - Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
