@@ -96,6 +96,7 @@ class MatchController:
 ACTIVE_MATCHES: dict[str, MatchController] = {}
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOBS_LOCK = threading.Lock()
+SIM_WORK_SLOT = threading.BoundedSemaphore(1)
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
 
 
@@ -838,19 +839,22 @@ def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repos
 
 @app.post("/simulate/batch")
 def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
-    return AnalyticsService(repo).run_batch(
-        _validated_deck_cards(repo, payload.deck_a),
-        _validated_deck_cards(repo, payload.deck_b),
-        payload.matches,
-        payload.difficulty,
-        max_ticks=payload.max_ticks,
-    )
+    deck_a = _validated_deck_cards(repo, payload.deck_a)
+    deck_b = _validated_deck_cards(repo, payload.deck_b)
+    if not SIM_WORK_SLOT.acquire(blocking=False):
+        raise HTTPException(status_code=429, detail={"code": "simulation_busy", "message": "A batch simulation is already running"})
+    try:
+        return AnalyticsService(repo).run_batch(deck_a, deck_b, payload.matches, payload.difficulty, max_ticks=payload.max_ticks)
+    finally:
+        SIM_WORK_SLOT.release()
 
 
 @app.post("/simulate/batch/start", response_model=BatchSimulationJobStartResponse)
 def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
+    if not SIM_WORK_SLOT.acquire(blocking=False):
+        raise HTTPException(status_code=429, detail={"code": "simulation_busy", "message": "A batch simulation is already running"})
     job_id = str(uuid.uuid4())
     job = {
         "job_id": job_id,
@@ -863,16 +867,12 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
         "result": None,
         "request": payload.model_dump(),
     }
-    with SIM_JOBS_LOCK:
-        SIM_JOBS[job_id] = job
-    _persist_job(job)
-
     def _runner() -> None:
-        with SIM_JOBS_LOCK:
-            if job_id in SIM_JOBS:
-                SIM_JOBS[job_id]["status"] = "running"
-                _persist_job(SIM_JOBS[job_id])
         try:
+            with SIM_JOBS_LOCK:
+                if job_id in SIM_JOBS:
+                    SIM_JOBS[job_id]["status"] = "running"
+                    _persist_job(SIM_JOBS[job_id])
             with Session(engine) as session:
                 thread_repo = Repository(session)
                 def _progress(done: int, total: int) -> None:
@@ -904,9 +904,20 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["error"] = str(exc)
                     _persist_job(SIM_JOBS[job_id])
+        finally:
+            SIM_WORK_SLOT.release()
 
-    t = threading.Thread(target=_runner, daemon=True)
-    t.start()
+    try:
+        with SIM_JOBS_LOCK:
+            SIM_JOBS[job_id] = job
+        _persist_job(job)
+        t = threading.Thread(target=_runner, daemon=True)
+        t.start()
+    except Exception:
+        with SIM_JOBS_LOCK:
+            SIM_JOBS.pop(job_id, None)
+        SIM_WORK_SLOT.release()
+        raise
     return {"job_id": job_id, "status": "queued"}
 
 

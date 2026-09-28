@@ -254,6 +254,8 @@ Acceptance: health/import/start/action/media work under both documented deployme
 
 ### 15. Bound jobs and concurrent mutations
 
+Single-process batch admission now shares one slot across synchronous and background-job routes. A second request gets structured 429, and failure paths release the slot. This does not provide a queue, cancellation, retention, multiworker coordination or network authorization; the larger job-control checkbox remains open.
+
 - [ ] Define single-process local topology and network exposure policy explicitly.
 - [ ] Add bounded job queues/quotas, cancellation, retention and documented crash/restart behavior.
 - [ ] Add per-match locking/versioning and stale-write checks; test simultaneous actions.

@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Capped batch simulation admission to one concurrent run in the supported single-process API, shared by synchronous and background-job routes. Busy requests receive structured 429; focused tests cover competing requests and slot release on failure. Queueing, cancellation, retention and multiworker/network controls remain open.
+
 - Testing Simulator job status now validates progress and completed result metrics at runtime and uses a typed record instead of `any`; malformed responses fail before the panel presents them. Build and unit tests pass. This does not validate every analytics field.
 
 - Added a runtime match-response boundary on all live match API calls. It rejects malformed player/card views and non-list block assignments instead of trusting the TypeScript cast; unit cases and one backend-serialized match pass. Generated OpenAPI types and full response-contract coverage remain open.

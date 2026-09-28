@@ -276,6 +276,7 @@ The app syncs and caches card data locally.
 Base backend default: `http://0.0.0.0:9999`
 
 `0.0.0.0` is a bind address; browsers use the host's real address. Operation is currently private, single-user and single-worker. Per-match locks coordinate this process only; they do not provide network authorization or multiworker consistency. Do not expose the dev service to the public internet.
+The single-process API admits one batch simulation at a time across synchronous and background-job routes; additional requests receive `429 simulation_busy`. This bounds concurrent batch execution, not job-history retention, cancellation, multiworker coordination or total CPU used by the admitted job. Interrupted jobs are marked failed after backend restart.
 
 Start/batch payloads accept `{quantity, card_name}` entries, resolving gameplay data from the card cache/source rather than arbitrary client Oracle text. Mainboards require 60-250 cards; `sandbox: true` permits 1-250. The upper bound is an application resource limit, not a Magic rule. Sideboards are capped at 15. See [input contracts](docs/api/input-contracts.md) for actions, errors and remaining guarantees.
 
