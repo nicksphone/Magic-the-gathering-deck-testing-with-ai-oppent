@@ -134,9 +134,12 @@ def infer_effect_from_oracle(
             "target_kind": "noncreature" if unless_match.group("kind") else "any",
             "pay_unless_counter": action_targets.get("pay_unless_counter"),
         }
-    if "counter target spell" in oracle:
+    if "counter target spell" in oracle or "counter target noncreature spell" in oracle:
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
-        return "counter_spell", {"target_stack_id": target_stack_id}
+        return "counter_spell", {
+            "target_stack_id": target_stack_id,
+            "target_kind": "noncreature" if "counter target noncreature spell" in oracle else "any",
+        }
     if ("counter target activated ability" in oracle or "counter target triggered ability" in oracle
             or "counter target activated or triggered ability" in oracle):
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)

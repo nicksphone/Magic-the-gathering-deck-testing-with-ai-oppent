@@ -216,8 +216,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/handlers.py": {
-    "mtime": 1790591982.4121358,
-    "hash": "b04c045bc28b91970c843de620a99ca8"
+    "mtime": 1790592505.1269417,
+    "hash": "2592b607dcde33e7af62ec30317571e1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/registry.py": {
     "mtime": 1790585406.1247954,
@@ -356,8 +356,8 @@
     "hash": "5d7105a4db8f04fb6a471c980ae55b11"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_stack_target_kinds.py": {
-    "mtime": 1790592309.053357,
-    "hash": "da5caccb5a3d286fcfeebf4c5f2d2a2a"
+    "mtime": 1790592505.1279418,
+    "hash": "f60a8d1bd4a743220f8094fd828fec97"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_expansion_top_decks_catalog.py": {
     "mtime": 1777217187.3236232,
@@ -880,8 +880,8 @@
     "hash": "6616db3f5572060abcb5fc204e27b5d4"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/oracle_effects.py": {
-    "mtime": 1790591982.411136,
-    "hash": "54c6a2f92611198f26ec9e74f405370c"
+    "mtime": 1790592505.1269417,
+    "hash": "29ffb7eb7e4bc6248647905b63945564"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/colors.py": {
     "mtime": 1790583329.0735095,
@@ -1028,16 +1028,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790592279.5418737,
-    "hash": "1e04673ca76e1ea92f03a956f33114b8"
+    "mtime": 1790592539.6603432,
+    "hash": "fb3f24a3b1a3339d79c8e208f7ce2113"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790592279.5428739,
-    "hash": "4c17fb7262ec32d2075ace6afb1aec8a"
+    "mtime": 1790592539.662343,
+    "hash": "77862eb5eee01ca4bdf5dc1f3bcf3d16"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790592279.5428739,
-    "hash": "1546bfe63bfca8f63e55474af8d3e1c7"
+    "mtime": 1790592539.661343,
+    "hash": "7315d7f2f805501ec6009ac2b0517e84"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

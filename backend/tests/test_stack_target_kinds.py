@@ -97,3 +97,29 @@ def test_stifle_targets_abilities_not_spells_or_their_sources():
     assert [item.id for item in state.stack] == ["spell"]
     assert state.cards["sheoldred"].zone == Zone.BATTLEFIELD
     assert state.players[2].battlefield == ["sheoldred", "ballista"]
+
+
+def test_negate_only_counters_noncreature_spells():
+    state = _state_with_trigger_and_spell()
+    creature = CardInstance(
+        id="creature-spell", name="Elvish Mystic", owner=2, controller=2,
+        zone=Zone.STACK, types=["Creature"], oracle_text="{T}: Add {G}.",
+    )
+    state.cards[creature.id] = creature
+    state.stack.append(StackItem("creature-stack", creature.id, 2, creature.name, "noop", {}))
+    negate = CardInstance(
+        id="negate", name="Negate", owner=1, controller=1,
+        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
+        oracle_text="Counter target noncreature spell.",
+    )
+    state.cards[negate.id] = negate
+    assert [item["id"] for item in build_cast_hints(state, negate, 1)["stack_targets"]] == ["spell"]
+    effect_key, payload = infer_effect_from_oracle(state, negate, 1, {"target_stack_id": "spell"})
+    assert (effect_key, payload) == ("counter_spell", {"target_stack_id": "spell", "target_kind": "noncreature"})
+    counter_spell(state, 1, {**payload, "target_stack_id": "creature-stack"})
+    counter_spell_unless_pay(state, 1, {**payload, "target_stack_id": "creature-stack", "unless_cost": "{2}", "pay_unless_counter": False})
+    assert state.cards[creature.id].zone == Zone.STACK
+    assert [item.id for item in state.stack] == ["trigger", "spell", "creature-stack"]
+    counter_spell(state, 1, payload)
+    assert [item.id for item in state.stack] == ["trigger", "creature-stack"]
+    assert state.cards["bolt"].zone == Zone.GRAVEYARD
