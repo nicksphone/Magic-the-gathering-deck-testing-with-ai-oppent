@@ -1110,7 +1110,7 @@ def test_destroy_permanent_respects_die_to_exile_replacement() -> None:
         controller=1,
         zone=Zone.BATTLEFIELD,
         types=["Enchantment"],
-        oracle_text="If a creature you control would die, exile it instead.",
+        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     state.players[1].battlefield.append(replacement.id)
@@ -1155,7 +1155,7 @@ def test_destroy_permanent_respects_nontoken_die_replacement_variant() -> None:
     assert cid not in state.players[1].graveyard
 
 
-def test_destroy_permanent_respects_noncreature_permanent_die_replacement_variant() -> None:
+def test_destroy_permanent_respects_rest_in_peace_for_artifact() -> None:
     state = _state()
     replacement = CardInstance(
         id="rep",
@@ -1164,7 +1164,7 @@ def test_destroy_permanent_respects_noncreature_permanent_die_replacement_varian
         controller=1,
         zone=Zone.BATTLEFIELD,
         types=["Enchantment"],
-        oracle_text="If a permanent you control would die, exile it instead.",
+        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     state.players[1].battlefield.append(replacement.id)

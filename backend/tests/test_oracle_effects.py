@@ -749,7 +749,7 @@ def test_oracle_destroy_target_artifact_or_enchantment_prefers_matching_permanen
         controller=2,
         zone=Zone.BATTLEFIELD,
         types=["Enchantment"],
-        oracle_text="",
+        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[artifact.id] = artifact
     state.cards[enchantment.id] = enchantment

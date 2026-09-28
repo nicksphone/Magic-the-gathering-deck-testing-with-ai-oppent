@@ -191,7 +191,7 @@ def test_combat_death_replacement_exiles_creature_instead_of_graveyard() -> None
         controller=2,
         zone=Zone.BATTLEFIELD,
         types=["Enchantment"],
-        oracle_text="If a creature you control would die, exile it instead.",
+        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     state.players[2].battlefield.append(replacement.id)

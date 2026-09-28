@@ -52,7 +52,7 @@ def test_sacrifice_additional_cost_respects_die_replacement() -> None:
         controller=1,
         zone=Zone.BATTLEFIELD,
         types=["Enchantment"],
-        oracle_text="If a creature you control would die, exile it instead.",
+        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     p1.battlefield.append(replacement.id)

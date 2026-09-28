@@ -22,6 +22,7 @@ from rules_engine.targeting import validate_hexproof_shroud_targets, validate_pr
 from rules_engine.events import emit_event, resume_trigger_order, resume_trigger_target
 from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
+from rules_engine.zone_actions import put_into_graveyard
 from rules_engine.attachments import attach_if_legal
 from effects.registry import resolve_effect
 
@@ -795,8 +796,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             player.hand.remove(cid)
-            player.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
+            put_into_graveyard(state, cid)
             state.log.append(f"{player.name} cycles {card.name}.")
             add_to_stack(
                 state,

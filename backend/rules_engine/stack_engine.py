@@ -8,6 +8,7 @@ from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 from rules_engine.library_permissions import choose_type_for_realmwalker
 from rules_engine.replacement import replacement_options, replacement_source_used
+from rules_engine.zone_actions import put_into_graveyard
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
@@ -197,8 +198,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                 card.zone = Zone.EXILE
                 state.adventure_permissions[card.id] = item.controller
             else:
-                owner.graveyard.append(card.id)
-                card.zone = Zone.GRAVEYARD
+                put_into_graveyard(state, card.id)
             from rules_engine.alternative_casts import restore_printed_characteristics
             restore_printed_characteristics(card)
         else:
@@ -243,9 +243,8 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):
                     battlefield_player.battlefield.remove(card.id)
-                    owner.graveyard.append(card.id)
-                    card.zone = Zone.GRAVEYARD
-                    state.log.append(f"{card.name} has no legal attachment target and is put into graveyard.")
+                    zone = put_into_graveyard(state, card.id)
+                    state.log.append(f"{card.name} has no legal attachment target and is put into {zone.value}.")
                     state.log.append(f"{item.label} resolves.")
                     return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})

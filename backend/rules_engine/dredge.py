@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from game_state.state import Zone
+from rules_engine.zone_actions import put_into_graveyard
 
 
 def dredge_options(state, player_id: int) -> list[dict]:
@@ -25,8 +26,7 @@ def resolve_dredge(state, controller: int, payload: dict) -> None:
     player = state.players[player_id]
     for _ in range(option["count"]):
         cid = player.library.pop()
-        player.graveyard.append(cid)
-        state.cards[cid].zone = Zone.GRAVEYARD
+        put_into_graveyard(state, cid)
         emit_event(state, "mill", {"card_id": cid, "controller": player_id})
     player.graveyard.remove(card_id)
     player.hand.append(card_id)

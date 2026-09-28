@@ -29,6 +29,7 @@ from rules_engine.replacement import (
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
+from rules_engine.zone_actions import put_into_graveyard
 
 
 def _queue_human_damage_replacement_choice(
@@ -125,8 +126,8 @@ def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id in battlefield_owner.battlefield:
-        battlefield_owner.battlefield.remove(card_id)
         destination = replace_die_zone(state, card.controller, card_id)
+        battlefield_owner.battlefield.remove(card_id)
         if destination == "exile":
             zone_owner.exile.append(card_id)
             card.zone = Zone.EXILE
@@ -369,9 +370,9 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
-        destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
         if destination == "exile":
             zone_owner.exile.append(target)
             card.zone = Zone.EXILE
@@ -415,6 +416,11 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
     leaves: list[dict] = []
     permanent_deaths: list[dict] = []
     creature_deaths: list[dict] = []
+    destinations = {
+        cid: replace_die_zone(state, card.controller, cid)
+        for cid, card in state.cards.items()
+        if "Creature" in card.types and cid in state.players[card.controller].battlefield
+    }
     for cid, card in list(state.cards.items()):
         if "Creature" not in card.types:
             continue
@@ -424,7 +430,7 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
             event_payload = {"card_id": cid, "controller": card.controller}
             leaves.append(event_payload)
             battlefield_owner.battlefield.remove(cid)
-            destination = replace_die_zone(state, card.controller, cid)
+            destination = destinations[cid]
             if destination == "exile":
                 zone_owner.exile.append(cid)
                 card.zone = Zone.EXILE
@@ -452,6 +458,11 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
     leaves: list[dict] = []
     permanent_deaths: list[dict] = []
     creature_deaths: list[dict] = []
+    destinations = {
+        cid: replace_die_zone(state, card.controller, cid)
+        for cid, card in state.cards.items()
+        if allowed_types.intersection(set(card.types or [])) and cid in state.players[card.controller].battlefield
+    }
     for cid, card in list(state.cards.items()):
         if not allowed_types.intersection(set(card.types or [])):
             continue
@@ -461,7 +472,7 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
             event_payload = {"card_id": cid, "controller": card.controller}
             leaves.append(event_payload)
             battlefield_owner.battlefield.remove(cid)
-            destination = replace_die_zone(state, card.controller, cid)
+            destination = destinations[cid]
             if destination == "exile":
                 zone_owner.exile.append(cid)
                 card.zone = Zone.EXILE
@@ -483,6 +494,16 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
     emit_event_batch(state, "creature_dies", creature_deaths)
     if destroyed:
         state.log.append(log_label)
+
+
+def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> None:
+    del controller, payload
+    for player in state.players.values():
+        for cid in list(player.graveyard):
+            player.graveyard.remove(cid)
+            state.players[state.cards[cid].owner].exile.append(cid)
+            state.cards[cid].zone = Zone.EXILE
+    state.log.append("All graveyards are exiled.")
 
 
 def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
@@ -532,10 +553,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
             if card:
-                owner_state = state.players[getattr(card, "owner", card.controller)]
-                if card.id not in owner_state.graveyard:
-                    owner_state.graveyard.append(card.id)
-                card.zone = Zone.GRAVEYARD
+                put_into_graveyard(state, card.id)
             state.log.append(f"{item.label} was countered.")
             return
 
@@ -1139,17 +1157,17 @@ def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None
 def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
+        card = state.cards[target]
+        destination = replace_die_zone(state, card.controller, target)
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": controller})
         state.players[controller].battlefield.remove(target)
-        card = state.cards[target]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if "Creature" in card.types:
-            destination = replace_die_zone(state, card.controller, target)
-            if destination == "exile":
-                zone_owner.exile.append(target)
-                card.zone = Zone.EXILE
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                return
+        if destination == "exile":
+            zone_owner.exile.append(target)
+            card.zone = Zone.EXILE
+            state.log.append(f"{card.name} is exiled instead of dying.")
+            emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
+            return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
         if "Creature" in card.types:

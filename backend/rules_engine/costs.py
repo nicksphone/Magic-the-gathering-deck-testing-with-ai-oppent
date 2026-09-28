@@ -7,6 +7,7 @@ from typing import Any
 from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.replacement import replace_die_zone
+from rules_engine.zone_actions import put_into_graveyard
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
@@ -149,8 +150,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         if discard_id is None:
             return False
         player.hand.remove(discard_id)
-        player.graveyard.append(discard_id)
-        state.cards[discard_id].zone = Zone.GRAVEYARD
+        put_into_graveyard(state, discard_id)
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for {source.name}.")
         emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
     sacrifice_ids: list[str] = []
@@ -158,13 +158,17 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         sacrifice_ids.append(source_id)
     sacrifice_ids.extend(cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind) if cid != source_id)
     needed = cost.sacrifice_creatures
+    destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids[:needed]}
     for sac_id in sacrifice_ids[:needed]:
         if sac_id in player.battlefield:
             player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
         owner = state.players[getattr(card, "owner", player_id)]
-        owner.graveyard.append(sac_id)
-        card.zone = Zone.GRAVEYARD
+        if destinations[sac_id] == "exile":
+            owner.exile.append(sac_id)
+            card.zone = Zone.EXILE
+        else:
+            put_into_graveyard(state, sac_id)
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
         emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
     return True
@@ -258,8 +262,7 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         if not discard_id:
             return False
         player.hand.remove(discard_id)
-        player.graveyard.append(discard_id)
-        state.cards[discard_id].zone = Zone.GRAVEYARD
+        put_into_graveyard(state, discard_id)
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for additional cost.")
         from rules_engine.events import emit_event
 
@@ -269,17 +272,16 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         sac_id = _first_sacrificable_creature(state, player_id, option.sacrifice_kind)
         if not sac_id:
             return False
+        destination = replace_die_zone(state, player_id, sac_id)
         player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
         zone_owner = state.players[getattr(card, "owner", player_id)]
-        destination = replace_die_zone(state, player_id, sac_id)
         if destination == "exile":
             zone_owner.exile.append(sac_id)
             card.zone = Zone.EXILE
             state.log.append(f"{player.name} sacrifices {card.name} for additional cost, but it is exiled instead of dying.")
         else:
-            zone_owner.graveyard.append(sac_id)
-            card.zone = Zone.GRAVEYARD
+            put_into_graveyard(state, sac_id)
             state.log.append(f"{player.name} sacrifices {card.name} for additional cost.")
         from rules_engine.events import emit_event
 

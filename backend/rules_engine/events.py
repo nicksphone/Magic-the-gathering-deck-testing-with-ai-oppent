@@ -892,6 +892,18 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        source_name = re.escape((source_card.name or "").lower())
+        if event == "enters_battlefield" and re.search(
+            rf"\bwhen (?:this (?:creature|permanent|artifact|enchantment)|{source_name}) enters(?: the battlefield)?, exile all graveyards\b",
+            oracle,
+        ):
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "exile_all_graveyards",
+                "payload": {},
+            }
         if event in {"spell_cast", "spell_copy"} and "when you cast this spell" in oracle and "gain half x life" in oracle and "draw half x cards" in oracle:
             raw_x = payload.get("x_value", payload.get("stack_payload", {}).get("x_value", 0))
             try:

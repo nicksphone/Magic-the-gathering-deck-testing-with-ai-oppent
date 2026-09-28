@@ -50,6 +50,7 @@ _DIE_EXILE_RE = re.compile(
     r"|if an? artifact or enchantment you control would die, exile it instead"
 )
 _SUBTYPE_DIE_EXILE_RE = re.compile(r"\bif an? ([a-z]+) you control would die, exile it instead\b")
+_ANY_GRAVEYARD_EXILE = "if a card or token would be put into a graveyard from anywhere, exile it instead"
 _DRAW_DOUBLE_RE = re.compile(r"(?:^|\n)if you would draw a card, draw two cards instead\.")
 _DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
     r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
@@ -124,12 +125,7 @@ def replacement_options(
         from rules_engine.dredge import dredge_options
         candidates.extend((state.cards[option["card_id"]], state.cards[option["card_id"]].oracle_text) for option in dredge_options(state, target_player))
     elif event_key in {"die_zone", "dies"} and target_card_id in state.cards:
-        target = state.cards[target_card_id]
-        candidates = [
-            (card, text)
-            for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-            if _die_exile_applies(text, target)
-        ]
+        candidates = _die_zone_candidates(state, state.cards[target_card_id])
     return [
         {
             "source_id": str(card.id),
@@ -421,13 +417,23 @@ def replace_die_zone(
 ) -> str:
     """Return destination zone for a dying permanent: 'graveyard' or 'exile'."""
     target = state.cards.get(card_id)
-    candidates: list[tuple[object, str]] = []
-    for card, text in _battlefield_oracle_texts(state, controller=controller):
-        if target and _die_exile_applies(text, target):
-            candidates.append((card, text))
+    candidates = _die_zone_candidates(state, target) if target else []
     if _choose_replacement_candidate(state, candidates, replacement_source_id, "die zone") is not None:
         return "exile"
     return "graveyard"
+
+
+def graveyard_destination(state) -> str:
+    """Resolve supported replacements for a non-death graveyard move."""
+    return "exile" if any(_ANY_GRAVEYARD_EXILE in text for _, text in _battlefield_oracle_texts(state)) else "graveyard"
+
+
+def _die_zone_candidates(state, target) -> list[tuple[object, str]]:
+    return [
+        (card, text)
+        for card, text in _battlefield_oracle_texts(state)
+        if _ANY_GRAVEYARD_EXILE in text or (card.controller == target.controller and _die_exile_applies(text, target))
+    ]
 
 
 def _die_exile_applies(text: str, target) -> bool:

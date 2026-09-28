@@ -5,6 +5,7 @@ from rules_engine.attachments import attached_to, attachment_target_is_legal, is
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.continuous import effective_toughness, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
+from rules_engine.zone_actions import put_into_graveyard
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -26,9 +27,9 @@ def _move_lethal_creature(state: MatchState, card_id: str, replacement_source_id
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id not in battlefield_owner.battlefield:
         return
+    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
     emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
     battlefield_owner.battlefield.remove(card_id)
-    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
     if destination == "exile":
         zone_owner.exile.append(card_id)
         card.zone = Zone.EXILE
@@ -58,10 +59,10 @@ def resume_legend_rule_replacement(
         return
     player = state.players[player_id]
     owner = state.players[getattr(card, "owner", card.controller)]
+    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
     if card_id in player.battlefield:
         emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
         player.battlefield.remove(card_id)
-    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
     if destination == "exile":
         owner.exile.append(card_id)
         card.zone = Zone.EXILE
@@ -188,14 +189,13 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
     for cid, card in list(state.cards.items()):
         if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
             battlefield_owner = state.players[card.controller]
-            zone_owner = state.players[getattr(card, "owner", card.controller)]
             if cid in battlefield_owner.battlefield:
                 emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
                 battlefield_owner.battlefield.remove(cid)
-                zone_owner.graveyard.append(cid)
-                card.zone = Zone.GRAVEYARD
-                state.log.append(f"State-based action: {card.name} is put into graveyard due to 0 loyalty.")
-                emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
+                zone = put_into_graveyard(state, cid)
+                state.log.append(f"State-based action: {card.name} is put into {zone.value} due to 0 loyalty.")
+                if zone == Zone.GRAVEYARD:
+                    emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
 
     _apply_legend_rule(state)
     if state.pending_replacement_choice:
@@ -214,13 +214,11 @@ def _apply_saga_state_actions(state: MatchState) -> None:
         if any(item.source_card_id == cid for item in state.stack):
             continue
         battlefield = state.players[card.controller]
-        owner = state.players[getattr(card, "owner", card.controller)]
         if cid not in battlefield.battlefield:
             continue
         emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
         battlefield.battlefield.remove(cid)
-        owner.graveyard.append(cid)
-        card.zone = Zone.GRAVEYARD
+        put_into_graveyard(state, cid)
         state.log.append(f"State-based action: {card.name} is sacrificed after its final chapter.")
 
 
@@ -300,9 +298,8 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
                     owner.battlefield.remove(cid)
-                    owner.graveyard.append(cid)
-                    card.zone = Zone.GRAVEYARD
-                    state.log.append(f"State-based action: {card.name} has no legal attachment and is put into graveyard.")
+                    zone = put_into_graveyard(state, cid)
+                    state.log.append(f"State-based action: {card.name} has no legal attachment and is put into {zone.value}.")
             continue
         target = state.cards.get(target_id)
         if not attachment_target_is_legal(state, card, target_id):
@@ -310,9 +307,8 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
                     owner.battlefield.remove(cid)
-                    owner.graveyard.append(cid)
-                    card.zone = Zone.GRAVEYARD
-                    state.log.append(f"State-based action: {card.name} loses attachment and is put into graveyard.")
+                    zone = put_into_graveyard(state, cid)
+                    state.log.append(f"State-based action: {card.name} loses attachment and is put into {zone.value}.")
             elif is_equipment(card):
                 card.attached_to = None
                 state.log.append(f"State-based action: {card.name} becomes unattached.")

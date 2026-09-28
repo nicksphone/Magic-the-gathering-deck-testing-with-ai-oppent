@@ -947,6 +947,8 @@ def _infer_clause_effect(
         return "destroy_all_enchantments", {}
     if "exile all creatures" in oracle:
         return "exile_all_creatures", {}
+    if "exile all graveyards" in oracle:
+        return "exile_all_graveyards", {}
 
     if "exile target" in oracle and "artifact" in oracle and "enchantment" in oracle:
         target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
