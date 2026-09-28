@@ -1016,12 +1016,12 @@
     "hash": "f435a7d9afd42e88cc107c3ac4f9c028"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790583745.3229744,
-    "hash": "4aaa2155ce4488baf2fc9494102f83cc"
+    "mtime": 1790584185.4457145,
+    "hash": "e11551345aef47643fe2bc0bc9e1f72b"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790583745.3219745,
-    "hash": "03d2f982e8a4d01ea517c3ada7ffcae2"
+    "mtime": 1790584000.406128,
+    "hash": "27d5368a87ccb5eb0fe005b69cbac067"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1062,6 +1062,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-combat-trigger-timing.md": {
     "mtime": 1790582320.1733325,
     "hash": "7077d1f2bd12d92d6b742f0e78afe690"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-death-replacement-boundary.md": {
+    "mtime": 1790584185.4447145,
+    "hash": "14f3ac9f3d3c41fe6078198bf92c4946"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-jev-two-stage-review.md": {
     "mtime": 1790535102.2339525,
