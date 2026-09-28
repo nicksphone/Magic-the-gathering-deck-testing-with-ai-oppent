@@ -92,6 +92,8 @@ class RulesEngine:
                 state.combat_damage_resolved = False
                 state.combat_damage_stage = "none"
                 state.first_strike_damage_ids = set()
+                state.combat_damage_assignments = {}
+                state.combat_assignment_queue = []
             elif state.step == Step.DECLARE_BLOCKERS:
                 state.blockers_declared = False
             elif state.step == Step.COMBAT_DAMAGE:
@@ -103,6 +105,8 @@ class RulesEngine:
                 state.blocks = {}
                 state.attackers_declared = False
                 state.blockers_declared = False
+                state.combat_damage_assignments = {}
+                state.combat_assignment_queue = []
 
         self._apply_step_start_actions(state)
         if not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
@@ -349,6 +353,12 @@ class RulesEngine:
                 if kind == "choose_mechanic":
                     if not self.choose_cleanup_discards(state, player_id, action):
                         reject("Invalid cleanup discard selection")
+                return
+            if state.pending_mechanic_choice["kind"] == "combat_damage":
+                if kind == "choose_mechanic" and combat.finish_damage_assignment(state, player_id, action):
+                    apply_state_based_actions(state)
+                else:
+                    reject("Invalid combat damage assignment")
                 return
             from rules_engine.keyword_actions import finish_mechanic_choice
             if kind == "choose_mechanic":

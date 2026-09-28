@@ -61,6 +61,18 @@ try {
   assert.equal(await evaluate("document.querySelector('.battlefield header')?.innerText.includes('Regular damage')"), true);
   console.log("PASS first-strike and regular damage have separate UI priority windows");
 
+  await click("Damage Assignment Fixture");
+  await waitFor("window.fixtureState.step === 'declare_blockers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'combat_damage' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.id === 'giant')"), true);
+  await evaluate("(() => { const input = document.querySelector('[aria-label=\"Damage to Hill Giant giant\"]'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '3'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent === 'Assign Damage' && !b.disabled)");
+  await click("Assign Damage");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'giant')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.damage_assignment"), { bears: 0, giant: 3 });
+  console.log("PASS human assigns all combat damage to the later blocker through UI and API");
+
   await reset();
   await click("Cast Llanowar Elves");
   await waitFor("window.fixtureState.stack.length === 1");

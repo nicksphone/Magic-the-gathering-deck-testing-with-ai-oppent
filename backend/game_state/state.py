@@ -131,6 +131,8 @@ class MatchState:
     combat_damage_resolved: bool = False
     combat_damage_stage: str = "none"
     first_strike_damage_ids: set[str] = field(default_factory=set)
+    combat_damage_assignments: dict[str, dict[str, int]] = field(default_factory=dict)
+    combat_assignment_queue: list[str] = field(default_factory=list)
     cleanup_pending: bool = False
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)

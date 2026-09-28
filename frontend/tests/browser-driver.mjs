@@ -31,8 +31,8 @@ export async function openBrowser(url) {
     if (response.exceptionDetails) throw new Error(JSON.stringify(response.exceptionDetails));
     return response.result.value;
   }
-  async function waitFor(expression) {
-    const deadline = Date.now() + 15000;
+  async function waitFor(expression, timeoutMs = 15000) {
+    const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       if (await evaluate(`document.body && (${expression})`)) return;
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -42,5 +42,6 @@ export async function openBrowser(url) {
   async function click(prefix) {
     await evaluate(`(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)})); if (!button || button.disabled) throw new Error('Missing/enabled button: ' + ${JSON.stringify(prefix)}); button.click(); })()`);
   }
+  await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
   return {command, evaluate, waitFor, click, onIntercept: handler => { intercept = handler; }, async close() { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
 }

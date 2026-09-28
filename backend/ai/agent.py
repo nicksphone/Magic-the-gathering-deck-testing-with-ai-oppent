@@ -12,7 +12,7 @@ from ai.matchup_profiles import profile_for
 from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
-from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
@@ -72,6 +72,11 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] == "combat_damage":
+                return AIDecision(
+                    action={"type": "choose_mechanic", "damage_assignment": self._choose_combat_damage_allocation(state, choice)},
+                    reasoning="Assign combat damage to maximize trades and trample pressure",
+                )
             if choice["kind"] == "draw":
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
@@ -103,6 +108,7 @@ class AIAgent:
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
+
         if _step_key(getattr(state, "step", "")) == "declare_attackers" and getattr(state, "active_player", player_id) == player_id:
             forced_attack = self._forced_progress_attack(state, legal_moves, player_id)
             if forced_attack is not None:
@@ -169,6 +175,36 @@ class AIAgent:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _choose_combat_damage_allocation(self, state: MatchState, choice: dict) -> dict[str, int]:
+        source = state.cards[choice["source_id"]]
+        options = list(choice["options"])
+        allocation = {target: 0 for target in options}
+        remaining = int(choice["count"])
+        defender = next((target for target in options if target.startswith(("player:", "planeswalker:", "battle:"))), None)
+        creatures = [target for target in options if target != defender and target in state.cards]
+
+        def threat(target: str) -> float:
+            card = state.cards[target]
+            power, toughness = _effective_combat_stats(state, target)
+            return max(0, power) * 1.5 + max(0, toughness) + mana_value(card.mana_cost) * 0.5
+
+        creatures.sort(key=lambda target: (-threat(target), target))
+        for target in creatures:
+            lethal = 1 if has_keyword(state, source.id, "deathtouch") else max(
+                1, _effective_combat_stats(state, target)[1] - int(state.cards[target].counters.get("__damage_marked", 0))
+            )
+            if remaining >= lethal:
+                allocation[target] = lethal
+                remaining -= lethal
+        if remaining > 0:
+            if defender is not None and all(allocation[target] > 0 for target in creatures):
+                allocation[defender] += remaining
+            elif creatures:
+                allocation[creatures[0]] += remaining
+            elif defender is not None:
+                allocation[defender] += remaining
+        return allocation
 
     def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.difficulty not in {"master", "master_plus"}:

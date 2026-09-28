@@ -2,14 +2,26 @@
 
 Current rules source: [Magic Foundations update bulletin](https://magic.wizards.com/en/news/announcements/foundations-update-bulletin). Damage assignment order was removed in 2024. A controller may divide a creature's combat damage among the creatures it is fighting without assigning lethal damage first, except that trample still requires lethal damage assigned to all blockers before excess reaches the defender.
 
-## Verified Current Behavior
+## Implemented Boundary (2026-09-28)
+
+- Live matches collect persisted numeric damage splits from the relevant controller before dealing a damage step. Attackers facing multiple blockers, tramplers, and blockers facing multiple attackers receive a choice. The UI/API reject a wrong actor, unknown recipient, negative amount, incorrect total or stale step without persisting an action.
+- First/double-strike steps collect their own choices. AI ranks threats and assigns a legal bounded split; direct low-level calls without configured choice players retain deterministic allocation. Source power is captured before damage from that step is applied.
+- Focused fixtures cover a 3/3 choosing the later 3/3 blocker, Palace Guard splitting one damage between two attackers, trample to a player or planeswalker, snapshot continuation and a browser numeric submission.
+
+## Remaining Fidelity Risks
+
+- Trample validation currently checks each source independently against marked damage. Current rules also permit considering damage assigned by *other* creatures in the same step; this needs a controller-wide assignment/validation pass.
+- Damage is applied source-by-source after assignments are collected. Simultaneous replacement/prevention interactions, banding controller overrides and unusual continuous/keyword changes need golden fixtures before full rules certification.
+- The AI's damage split is a bounded threat heuristic, not a globally optimized combat search. Wider AI-vs-AI and restart replay matrices are still needed.
+
+## Pre-implementation Findings (Historical)
 
 - `rules_engine/combat.py` applies damage automatically on entry to a combat-damage step. A blocker shared across attackers now has one effective-power budget per step; this prevents illegal duplicated damage.
 - A multiply blocked attacker assigns damage in blocker-list order, generally assigning lethal damage to each before moving on. A blocker shared across attackers assigns all its damage to the first attacker. Both defaults are legal assignments in ordinary cases, but neither gives the controller the choice required by current rules.
 - `RulesEngine.next_step` enters combat damage and resolves it before priority. That timing is correct only after all required damage-assignment decisions have been collected. The first-strike and regular steps need separate assignments.
 - `choose_mechanic` currently accepts card IDs or one choice ID. It has no validated numeric distribution. The UI therefore cannot display or submit a damage split, and AI cannot compare legal alternatives.
 
-## Required Implementation
+## Original Acceptance Design
 
 1. Before applying combat damage, compute all combatants, their effective power, eligible recipients, first/double-strike membership and trample constraints from one stable pre-damage state. Do not reveal or apply any damage while a required assignment remains pending.
 2. Add a durable pending combat-assignment record with the acting controller, source creature, eligible recipients, power budget and damage-step identity. Expose typed legal moves and a bounded action containing a non-negative integer amount for each recipient. Reject missing, extra, duplicate, wrong-seat, stale-step and over-budget assignments without changing state or SQLite.
@@ -25,4 +37,4 @@ Current rules source: [Magic Foundations update bulletin](https://magic.wizards.
 - First-strike and regular damage assignments are separate choice windows. A legal response between them may change recipients, power, toughness or keyword eligibility as current rules permit.
 - Invalid or stale assignments return structured 4xx with identical authoritative memory, snapshot and database state. A pending choice survives backend restart and yields the same later game state and replay hash.
 
-This is a rules-fidelity release gate, not a cosmetic UI task. The current deterministic fallback remains intentionally documented until these fixtures pass through live HTTP and browser controls.
+This is a rules-fidelity release gate, not a cosmetic UI task. The ordinary numeric-choice fixtures now pass through live HTTP and browser controls; the remaining fidelity risks above keep broader certification open.

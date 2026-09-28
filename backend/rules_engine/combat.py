@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from game_state.state import MatchState, Zone
+from game_state.state import MatchState, Step, Zone
 from rules_engine.colors import card_color_names
 from rules_engine.continuous import effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event
@@ -222,14 +222,117 @@ def combat_damage(state: MatchState) -> None:
         return
     if state.combat_damage_stage != "first":
         begin_combat_damage(state)
-    if state.combat_damage_stage == "first" and not state.pending_replacement_choice and not state.pending_trigger_order:
+    if state.combat_damage_stage == "first" and not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
         finish_combat_damage(state)
+
+
+def _assigns_damage(state: MatchState, cid: str, first_only: bool) -> bool:
+    return cid in state.first_strike_damage_ids if first_only else cid not in state.first_strike_damage_ids or has_keyword(state, cid, "double strike")
+
+
+def _assignment_options(state: MatchState, cid: str, first_only: bool) -> list[str]:
+    card = state.cards.get(cid)
+    if not card or card.zone != Zone.BATTLEFIELD or not _assigns_damage(state, cid, first_only):
+        return []
+    if cid in state.attackers:
+        blockers = [bid for bid in state.blocks.get(cid, []) if bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD]
+        if len(blockers) > 1 or (blockers and has_keyword(state, cid, "trample")):
+            defender = 1 if state.active_player == 2 else 2
+            return blockers + ([state.attack_targets.get(cid, f"player:{defender}")] if has_keyword(state, cid, "trample") else [])
+        return []
+    attackers = [aid for aid in state.attackers if cid in state.blocks.get(aid, []) and aid in state.cards and state.cards[aid].zone == Zone.BATTLEFIELD]
+    return attackers if len(attackers) > 1 else []
+
+
+def _offer_damage_assignment(state: MatchState) -> None:
+    source = state.combat_assignment_queue[0]
+    card = state.cards[source]
+    options = _assignment_options(state, source, state.combat_damage_stage == "first")
+    labels = {cid: state.cards[cid].name if cid in state.cards else _defender_label(state, cid) for cid in options}
+    state.pending_mechanic_choice = {
+        "kind": "combat_damage", "player_id": card.controller, "source_id": source,
+        "source_name": card.name, "stage": state.combat_damage_stage,
+        "options": options, "option_labels": labels,
+        "count": max(0, effective_power(state, source)),
+        "label": f"Assign {card.name}'s combat damage",
+    }
+    state.priority_player = card.controller
+    state.passed_priority = set()
+
+
+def _resolve_damage_step(state: MatchState) -> None:
+    first_only = state.combat_damage_stage == "first"
+    defender = 1 if state.active_player == 2 else 2
+    _combat_damage_step(state, defender, state.first_strike_damage_ids, first_strike_only=first_only)
+    if not first_only:
+        state.combat_damage_resolved = True
+    _remove_dead_creatures(state)
+    if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
+        state.priority_player = state.active_player
+        state.passed_priority = set()
+
+
+def _prepare_damage_step(state: MatchState) -> None:
+    state.combat_damage_assignments = {}
+    first_only = state.combat_damage_stage == "first"
+    blockers = list(dict.fromkeys(bid for bids in state.blocks.values() for bid in bids))
+    sources = list(state.attackers) + blockers
+    state.combat_assignment_queue = [
+        cid for cid in sources
+        if cid in state.cards and state.cards[cid].controller in state.mechanic_choice_players
+        and effective_power(state, cid) > 0 and _assignment_options(state, cid, first_only)
+    ]
+    if state.combat_assignment_queue:
+        _offer_damage_assignment(state)
+    else:
+        _resolve_damage_step(state)
+
+
+def valid_damage_assignment(state: MatchState, player_id: int, amounts: dict | None) -> bool:
+    pending = state.pending_mechanic_choice
+    if not pending or pending.get("kind") != "combat_damage" or pending.get("player_id") != player_id:
+        return False
+    if state.step != Step.COMBAT_DAMAGE or state.combat_damage_stage != pending.get("stage"):
+        return False
+    source = pending.get("source_id")
+    if source not in state.cards or state.cards[source].zone != Zone.BATTLEFIELD:
+        return False
+    options = _assignment_options(state, source, state.combat_damage_stage == "first")
+    if not isinstance(amounts, dict) or set(amounts) != set(options):
+        return False
+    if any(type(amount) is not int or amount < 0 for amount in amounts.values()):
+        return False
+    power = max(0, effective_power(state, source))
+    if sum(amounts.values()) != power or power != pending.get("count"):
+        return False
+    if source in state.attackers and has_keyword(state, source, "trample"):
+        defender_key = options[-1]
+        if amounts[defender_key] > 0:
+            for blocker_id in options[:-1]:
+                lethal = 1 if has_keyword(state, source, "deathtouch") else _remaining_lethal_damage(state, blocker_id)
+                if amounts[blocker_id] < lethal:
+                    return False
+    return True
+
+
+def finish_damage_assignment(state: MatchState, player_id: int, action: dict) -> bool:
+    amounts = action.get("damage_assignment")
+    if not valid_damage_assignment(state, player_id, amounts):
+        return False
+    source = state.pending_mechanic_choice["source_id"]
+    state.combat_damage_assignments[source] = dict(amounts)
+    state.combat_assignment_queue.pop(0)
+    state.pending_mechanic_choice = None
+    if state.combat_assignment_queue:
+        _offer_damage_assignment(state)
+    else:
+        _resolve_damage_step(state)
+    return True
 
 
 def begin_combat_damage(state: MatchState) -> None:
     if state.combat_damage_stage != "none" or state.combat_damage_resolved:
         return
-    default_defender = 1 if state.active_player == 2 else 2
     combatants = set(state.attackers)
     combatants.update(blocker for blockers in state.blocks.values() for blocker in blockers)
     first_ids = {
@@ -240,28 +343,28 @@ def begin_combat_damage(state: MatchState) -> None:
     state.first_strike_damage_ids = first_ids
     if first_ids:
         state.combat_damage_stage = "first"
-        _combat_damage_step(state, default_defender, first_ids, first_strike_only=True)
     else:
         state.combat_damage_stage = "regular"
-        _combat_damage_step(state, default_defender, first_ids, first_strike_only=False)
-        state.combat_damage_resolved = True
-    _remove_dead_creatures(state)
+    _prepare_damage_step(state)
 
 
 def finish_combat_damage(state: MatchState) -> None:
     if state.combat_damage_stage != "first" or state.combat_damage_resolved:
         return
     state.combat_damage_stage = "regular"
-    state.combat_damage_resolved = True
-    default_defender = 1 if state.active_player == 2 else 2
-    _combat_damage_step(state, default_defender, state.first_strike_damage_ids, first_strike_only=False)
-    _remove_dead_creatures(state)
+    _prepare_damage_step(state)
 
 
 def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set[str], first_strike_only: bool) -> None:
     def assigns_damage(cid: str) -> bool:
-        return cid in first_ids if first_strike_only else cid not in first_ids or has_keyword(state, cid, "double strike")
+        return _assigns_damage(state, cid, first_strike_only)
 
+    # All sources assign damage from the same pre-damage game state.
+    attacker_power = {
+        cid: max(0, effective_power(state, cid))
+        for cid in state.attackers
+        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+    }
     blocker_damage_remaining = {
         cid: max(0, effective_power(state, cid))
         for blockers in state.blocks.values() for cid in blockers
@@ -282,7 +385,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             # A blocked creature stays blocked when its blockers leave combat.
             if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
                 continue
-            dealt = _deal_unblocked_damage(state, defender_key, effective_power(state, attacker), source_id=attacker)
+            dealt = _deal_unblocked_damage(state, defender_key, attacker_power[attacker], source_id=attacker)
             if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                 state.players[atk.controller].life += dealt
             if dealt > 0:
@@ -294,19 +397,23 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             continue
 
         if assigns_damage(attacker):
-            atk_power = effective_power(state, attacker)
-            remaining = atk_power
+            remaining = attacker_power[attacker]
             atk_has_deathtouch = has_keyword(state, attacker, "deathtouch")
+            allocation = state.combat_damage_assignments.get(attacker)
+            if allocation is None:
+                allocation = {}
+                for blocker_id in blocks:
+                    dealt = min(remaining, 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id))
+                    allocation[blocker_id] = dealt
+                    remaining -= dealt
+                if has_keyword(state, attacker, "trample"):
+                    allocation[defender_key] = remaining
+                elif blocks and remaining > 0:
+                    allocation[blocks[0]] += remaining
             for blocker_id in blocks:
-                if remaining <= 0:
-                    break
-                blocker = state.cards[blocker_id]
-                if blocker.toughness is None:
+                dealt = allocation.get(blocker_id, 0)
+                if dealt <= 0 or _damage_prevented_by_protection(state, attacker, blocker_id):
                     continue
-                if _damage_prevented_by_protection(state, attacker, blocker_id):
-                    continue
-                lethal = 1 if atk_has_deathtouch else _remaining_lethal_damage(state, blocker_id)
-                dealt = min(remaining, lethal)
                 actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
                 if actual > 0 and has_keyword(state, attacker, "lifelink"):
                     state.players[atk.controller].life += actual
@@ -316,10 +423,8 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
                         "combat_damage_dealt",
                         {"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual},
                     )
-                remaining -= dealt
-
-            if has_keyword(state, attacker, "trample") and remaining > 0:
-                dealt = _deal_unblocked_damage(state, defender_key, remaining, source_id=attacker)
+            if has_keyword(state, attacker, "trample") and allocation.get(defender_key, 0) > 0:
+                dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
                 if dealt > 0 and has_keyword(state, attacker, "lifelink"):
                     state.players[atk.controller].life += dealt
 
@@ -327,8 +432,9 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             blk = state.cards[blocker_id]
             if not assigns_damage(blocker_id):
                 continue
-            blk_power = blocker_damage_remaining.get(blocker_id, 0)
-            blocker_damage_remaining[blocker_id] = 0
+            assigned = state.combat_damage_assignments.get(blocker_id)
+            blk_power = assigned.get(attacker, 0) if assigned is not None else blocker_damage_remaining.get(blocker_id, 0)
+            blocker_damage_remaining[blocker_id] = max(0, blocker_damage_remaining.get(blocker_id, 0) - blk_power)
             if blk_power <= 0:
                 continue
             if _damage_prevented_by_protection(state, blocker_id, attacker):

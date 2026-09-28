@@ -114,7 +114,10 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.mulligan_count.get(player_id, 0) < 7, "Cannot mulligan below zero opening cards")
     elif kind == "choose_mechanic":
         pending = state.pending_mechanic_choice
-        if pending["kind"] == "draw":
+        if pending["kind"] == "combat_damage":
+            from rules_engine.combat import valid_damage_assignment
+            require(valid_damage_assignment(state, player_id, action.get("damage_assignment")), "Invalid combat damage assignment")
+        elif pending["kind"] == "draw":
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
         elif pending["kind"] in {"topdeck_put", "search_library"}:
             unique_ids(action.get("card_ids", []), pending["options"])

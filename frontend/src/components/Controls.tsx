@@ -59,8 +59,10 @@ export function Controls(props: Props) {
   useEffect(() => setBottomCards([]), [props.match?.id, pregameActor, bottomCount]);
   const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
-  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}`;
+  const [damageAmounts, setDamageAmounts] = useState<Record<string, number>>({});
+  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}`;
   useEffect(() => setMechanicSelections([]), [mechanicKey]);
+  useEffect(() => setDamageAmounts({}), [mechanicKey]);
   const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);
   const stepOptions = [
     "untap",
@@ -213,7 +215,29 @@ export function Controls(props: Props) {
       {mechanicMove ? (
         <div className="block-panel">
           <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
-          {mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
+          {mechanicMove.kind === "combat_damage" ? <>
+            <p>Assign exactly {mechanicMove.count} damage in the {mechanicMove.stage} damage step.</p>
+            {(mechanicMove.options ?? []).map((target) => <label key={target}>
+              {mechanicMove.option_labels?.[target] ?? target} ({target})
+              <input
+                type="number" min={0} max={mechanicMove.count ?? 0}
+                aria-label={`Damage to ${mechanicMove.option_labels?.[target] ?? target} ${target}`}
+                value={damageAmounts[target] ?? 0}
+                onChange={(event) => setDamageAmounts((current) => ({
+                  ...current,
+                  [target]: Math.max(0, Math.min(mechanicMove.count ?? 0, Number(event.target.value) || 0)),
+                }))}
+              />
+            </label>)}
+            <p>{Object.values(damageAmounts).reduce((sum, amount) => sum + amount, 0)} / {mechanicMove.count} assigned</p>
+            <button
+              disabled={Object.values(damageAmounts).reduce((sum, amount) => sum + amount, 0) !== mechanicMove.count}
+              onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
+                type: "choose_mechanic",
+                damage_assignment: Object.fromEntries((mechanicMove.options ?? []).map((target) => [target, damageAmounts[target] ?? 0])),
+              })}
+            >Assign Damage</button>
+          </> : mechanicMove.kind === "draw" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" ? <>
             <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : "Pick the bottom cards in order, bottommost first."}</p>

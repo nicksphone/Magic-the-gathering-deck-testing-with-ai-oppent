@@ -1445,6 +1445,12 @@ def _ensure_expansion_top_decks(repo: Repository) -> None:
 
 def _human_priority_pause(match: MatchController, player_id: int) -> bool:
     state = match.state
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get("player_id") == player_id:
+        return True
+    if state.pending_replacement_choice and state.pending_replacement_choice.get("player_id") == player_id:
+        return True
+    if state.pending_trigger_order and state.pending_trigger_order.get("current_controller") == player_id:
+        return True
     legal = match.rules.legal_moves(state, player_id)
     has_non_pass = any(m.get("type") != "pass_priority" for m in legal)
     has_land_play = any(m.get("type") == "play_land" for m in legal)

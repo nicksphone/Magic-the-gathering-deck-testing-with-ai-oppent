@@ -55,6 +55,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "combat_damage_resolved": state.combat_damage_resolved,
         "combat_damage_stage": state.combat_damage_stage,
         "first_strike_damage_ids": sorted(state.first_strike_damage_ids),
+        "combat_damage_assignments": {source: dict(amounts) for source, amounts in state.combat_damage_assignments.items()},
+        "combat_assignment_queue": list(state.combat_assignment_queue),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
         "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
@@ -220,6 +222,11 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.combat_damage_resolved = bool(payload.get("combat_damage_resolved", False))
     state.combat_damage_stage = str(payload.get("combat_damage_stage", "regular" if state.combat_damage_resolved else "none"))
     state.first_strike_damage_ids = {str(cid) for cid in payload.get("first_strike_damage_ids", [])}
+    state.combat_damage_assignments = {
+        str(source): {str(target): int(amount) for target, amount in amounts.items()}
+        for source, amounts in payload.get("combat_damage_assignments", {}).items()
+    }
+    state.combat_assignment_queue = [str(cid) for cid in payload.get("combat_assignment_queue", [])]
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))
     state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
     state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))

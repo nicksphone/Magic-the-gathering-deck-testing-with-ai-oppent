@@ -212,6 +212,29 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.attackers_declared = True
         state.blockers_declared = True
         return publish(state, deck)
+    if face_kind == "combat_damage_assignment":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=83)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.mechanic_choice_players = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_BLOCKERS
+        state.blockers_declared = True
+        for cid, name, owner, power, toughness in (
+            ("courser", "Centaur Courser", 1, 3, 3),
+            ("bears", "Grizzly Bears", 2, 2, 2),
+            ("giant", "Hill Giant", 2, 3, 3),
+        ):
+            card = CardInstance(
+                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
+                types=["Creature"], power=power, toughness=toughness, summoning_sick=False,
+            )
+            state.cards[cid] = card
+            state.players[owner].battlefield.append(cid)
+        state.attackers = ["courser"]
+        state.blocks = {"courser": ["bears", "giant"]}
+        return publish(state, deck)
     if modal or face_kind:
         import json
         name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")

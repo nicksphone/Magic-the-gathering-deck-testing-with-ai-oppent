@@ -83,11 +83,14 @@ export type MatchState = {
   sideboarding?: Record<string, { mainboard: DeckItem[]; sideboard: DeckItem[]; applied: boolean }>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library";
+    kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library" | "combat_damage";
     player_id: number;
     options: string[];
     count?: number;
     label?: string;
+    source_id?: string;
+    source_name?: string;
+    stage?: "first" | "regular";
   } | null;
   pending_replacement_choice?: {
     event: string;
@@ -105,10 +108,13 @@ export type MatchState = {
 
 export type LegalMove = {
   selected_face_index?: number;
-  kind?: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library";
+  kind?: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library" | "combat_damage";
   player_id?: number;
   count?: number;
   label?: string;
+  source_id?: string;
+  source_name?: string;
+  stage?: "first" | "regular";
   option_labels?: Record<string, string>;
   type: string;
   card_id?: string;

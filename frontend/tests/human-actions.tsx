@@ -60,6 +60,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "alternative_target").catch((failure) => setError(String(failure)))}>Alternative Target Fixture</button>
     <button onClick={() => reset(false, false, 3, "first_strike_window").catch((failure) => setError(String(failure)))}>First Strike Fixture</button>
+    <button onClick={() => reset(false, false, 3, "combat_damage_assignment").catch((failure) => setError(String(failure)))}>Damage Assignment Fixture</button>
     <button onClick={() => reset(false, false, 3, "iteration").catch((failure) => setError(String(failure)))}>Iteration Fixture</button>
     <button onClick={() => reset(false, false, 3, "company").catch((failure) => setError(String(failure)))}>Company Fixture</button>
     <button onClick={() => reset(false, false, 3, "search").catch((failure) => setError(String(failure)))}>Search Fixture</button>

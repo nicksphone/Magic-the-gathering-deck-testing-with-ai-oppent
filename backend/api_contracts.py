@@ -149,11 +149,12 @@ class MechanicChoice(InputModel):
     type: Literal["choose_mechanic"]
     card_ids: CardIDs | None = None
     choice_id: CardID | None = None
+    damage_assignment: Annotated[dict[CardID, Nonnegative], Field(max_length=250)] | None = None
 
     @model_validator(mode="after")
     def selection(self):
-        if (self.card_ids is None) == (self.choice_id is None):
-            raise ValueError("Supply either card_ids or choice_id")
+        if sum(value is not None for value in (self.card_ids, self.choice_id, self.damage_assignment)) != 1:
+            raise ValueError("Supply exactly one mechanic choice payload")
         return self
 
 
