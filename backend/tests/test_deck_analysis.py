@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from ai.deck_analysis import analyze_deck, guess_archetype
 
 
@@ -41,6 +44,23 @@ def test_deck_land_count_ignores_mana_creatures_and_land_text() -> None:
         {"quantity": 1, "card_name": "Growth Spiral", "card_metadata": {"name": "Growth Spiral", "type_line": "Instant", "mana_cost": "{G}{U}", "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield."}},
     ]
     assert analyze_deck(deck)["land_count_estimate"] == 1
+
+
+def test_modal_back_face_types_do_not_distort_front_face_deck_shape() -> None:
+    fixtures = json.loads((Path(__file__).parent / "fixtures" / "modal_spell_faces.json").read_text())
+    names = (
+        "Valki, God of Lies // Tibalt, Cosmic Impostor",
+        "Delver of Secrets // Insectile Aberration",
+        "Bala Ged Recovery // Bala Ged Sanctuary",
+    )
+    deck = [{"quantity": 4, "card_name": "Forest", "card_metadata": {"name": "Forest", "type_line": "Basic Land — Forest"}}]
+    deck.extend({"quantity": 4, "card_name": name, "card_metadata": fixtures[name]} for name in names)
+    analysis = analyze_deck(deck)
+    assert analysis["land_count_estimate"] == 4
+    assert analysis["creature_density_estimate"] == 0.5
+    assert analysis["split_card_count_estimate"] == 0
+    assert analysis["avg_cmc_estimate"] == 1.5
+    assert analysis["scores"].get("Burn", 0) >= 1
 
 
 def test_guess_archetype_detects_tokens_from_metadata_and_text() -> None:

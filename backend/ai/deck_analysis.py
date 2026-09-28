@@ -47,9 +47,9 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     texts = " ".join(f"{card['name']} {card['type_line']} {card['oracle_text']}".lower() for card in expanded_cards)
     total_cards = max(1, len(expanded_cards))
     land_count = sum(1 for card in expanded_cards if is_land_card(card))
-    creature_like = sum(1 for card in expanded_cards if "creature" in card["type_line"].lower() or _looks_like_creature_name(card["name"]))
+    creature_like = sum(1 for card in expanded_cards if "creature" in card["type_line"].split("//", 1)[0].lower() or _looks_like_creature_name(card["name"]))
     avg_cmc = sum(_cmc(card["mana_cost"]) for card in expanded_cards) / total_cards
-    cheap_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) <= 2 and "land" not in card["type_line"].lower())
+    cheap_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) <= 2 and not is_land_card(card))
     expensive_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) >= 5)
     draw_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["draw", "scry", "impulse", "consider", "memory deluge"]))
     counter_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["counter target", "counterspell", "drown in the loch"]))
@@ -211,13 +211,14 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
         if face_mana:
             face_mana_costs.append(face_mana)
     if len(face_names) > 1:
-        split_like = " // " in name
+        layout = str(meta.get("layout") or "").lower()
+        split_like = layout == "split" or (not layout and " // " in name)
     if face_types:
         type_line = " // ".join([part for part in [type_line, " | ".join(face_types)] if part]).strip()
     if face_oracles:
         oracle_text = " ".join([part for part in [oracle_text, " ".join(face_oracles)] if part]).strip()
     if not mana_cost and face_mana_costs:
-        mana_cost = _derive_face_based_mana_cost(name, face_mana_costs, split_like)
+        mana_cost = _derive_face_based_mana_cost(face_mana_costs, split_like)
     if not name and face_names:
         name = " // ".join(face_names)
     face_stats = {
@@ -227,10 +228,10 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
     return name, type_line, oracle_text, mana_cost, face_stats
 
 
-def _derive_face_based_mana_cost(name: str, face_mana_costs: list[str], split_like: bool) -> str:
+def _derive_face_based_mana_cost(face_mana_costs: list[str], split_like: bool) -> str:
     costs = [cost.strip() for cost in face_mana_costs if cost.strip()]
     if not costs:
         return ""
-    if split_like or " // " in name:
+    if split_like:
         return " ".join(costs).strip()
     return costs[0]
