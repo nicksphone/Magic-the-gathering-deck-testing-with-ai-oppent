@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from rules_engine.land_rules import apply_land_entry
-from rules_engine.replacement import player_cant_lose_life
+from rules_engine.replacement import can_pay_life
 
 
 def has_two_life_land_entry(card) -> bool:
@@ -20,7 +20,7 @@ def land_entry_options(state, controller: int, card) -> list[str]:
     if not has_two_life_land_entry(card):
         return []
     options = ["tapped"]
-    if state.players[controller].life >= 2 and not player_cant_lose_life(state, controller):
+    if can_pay_life(state, controller, 2):
         options.append("pay_two_life")
     return options
 

@@ -8,7 +8,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
+from rules_engine.replacement import damage_cant_be_prevented, player_cant_gain_life, replace_die_zone
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -477,7 +477,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if state.blocks.get(attacker) and not has_keyword(state, attacker, "trample"):
                 continue
             dealt = _deal_unblocked_damage(state, defender_key, attacker_power[attacker], source_id=attacker)
-            if dealt > 0 and has_keyword(state, attacker, "lifelink"):
+            if dealt > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
                 state.players[atk.controller].life += dealt
             if dealt > 0:
                 damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
@@ -502,13 +502,13 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
                 if dealt <= 0 or _damage_prevented_by_protection(state, attacker, blocker_id):
                     continue
                 actual = _mark_creature_damage(state, blocker_id, dealt, deathtouch=atk_has_deathtouch, source_id=attacker)
-                if actual > 0 and has_keyword(state, attacker, "lifelink"):
+                if actual > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
                     state.players[atk.controller].life += actual
                 if actual > 0:
                     damage_events.append({"source_card_id": attacker, "target_card_id": blocker_id, "amount": actual})
             if has_keyword(state, attacker, "trample") and allocation.get(defender_key, 0) > 0:
                 dealt = _deal_unblocked_damage(state, defender_key, allocation[defender_key], source_id=attacker)
-                if dealt > 0 and has_keyword(state, attacker, "lifelink"):
+                if dealt > 0 and has_keyword(state, attacker, "lifelink") and not player_cant_gain_life(state, atk.controller):
                     state.players[atk.controller].life += dealt
                 if dealt > 0:
                     damage_events.append({"source_card_id": attacker, "target_key": defender_key, "target_player": int(defender_key.split(":", 1)[1]) if defender_key.startswith("player:") else None, "amount": dealt})
@@ -525,7 +525,7 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             if _damage_prevented_by_protection(state, blocker_id, attacker):
                 continue
             actual = _mark_creature_damage(state, attacker, blk_power, deathtouch=has_keyword(state, blocker_id, "deathtouch"), source_id=blocker_id)
-            if actual > 0 and has_keyword(state, blocker_id, "lifelink"):
+            if actual > 0 and has_keyword(state, blocker_id, "lifelink") and not player_cant_gain_life(state, blk.controller):
                 state.players[blk.controller].life += actual
             if actual > 0:
                 damage_events.append({"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual})

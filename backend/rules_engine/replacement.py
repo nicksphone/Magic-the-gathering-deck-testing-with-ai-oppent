@@ -477,7 +477,37 @@ def _die_exile_applies(text: str, target) -> bool:
     return match.group(1) in subtypes
 
 
+def player_life_total_cant_change(state, target_player: int) -> bool:
+    for pid in state.players:
+        for cid in state.players[pid].battlefield:
+            card = state.cards[cid]
+            text = (card.oracle_text or "").lower()
+            if any(clause in text for clause in (
+                "players' life totals can't change", "players' life totals cannot change",
+                "each player's life total can't change", "each player's life total cannot change",
+            )):
+                return True
+            if card.controller == target_player and any(clause in text for clause in (
+                "your life total can't change", "your life total cannot change",
+            )):
+                return True
+            if card.controller != target_player and any(clause in text for clause in (
+                "your opponents' life totals can't change", "your opponents' life totals cannot change",
+                "your opponent's life total can't change", "your opponent's life total cannot change",
+            )):
+                return True
+    return False
+
+
+def can_pay_life(state, player_id: int, amount: int) -> bool:
+    if amount < 0:
+        return False
+    return amount == 0 or (state.players[player_id].life >= amount and not player_cant_lose_life(state, player_id))
+
+
 def player_cant_gain_life(state, target_player: int) -> bool:
+    if player_life_total_cant_change(state, target_player):
+        return True
     if int(target_player) in set(getattr(state, "turn_cant_gain_life", set()) or set()):
         return True
     for pid in state.players:
@@ -499,6 +529,8 @@ def player_cant_gain_life(state, target_player: int) -> bool:
 
 
 def player_cant_lose_life(state, target_player: int) -> bool:
+    if player_life_total_cant_change(state, target_player):
+        return True
     for pid in state.players:
         for cid in state.players[pid].battlefield:
             card = state.cards[cid]

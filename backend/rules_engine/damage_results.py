@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from rules_engine.continuous import has_keyword
+from rules_engine.replacement import player_cant_lose_life
 
 
 def apply_player_damage(state, player_id: int, amount: int, source_id: str | None, *, combat: bool = False) -> None:
@@ -13,7 +14,7 @@ def apply_player_damage(state, player_id: int, amount: int, source_id: str | Non
     if source_id in state.cards and has_keyword(state, source_id, "infect"):
         player.poison += amount
         state.log.append(f"{player.name} gets {amount} poison counters from infect.")
-    else:
+    elif not player_cant_lose_life(state, player_id):
         player.life -= amount
     if combat and source_id in state.cards:
         toxic = sum(int(value) for value in re.findall(r"\btoxic\s+(\d+)", state.cards[source_id].oracle_text, re.IGNORECASE))

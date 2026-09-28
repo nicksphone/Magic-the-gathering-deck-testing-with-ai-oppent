@@ -6,7 +6,7 @@ from typing import Any
 
 from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
-from rules_engine.replacement import replace_die_zone
+from rules_engine.replacement import can_pay_life, replace_die_zone
 from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
@@ -121,7 +121,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     player = state.players[player_id]
     if cost.tap_source and source.tapped:
         return False
-    if player.life <= cost.pay_life or sum(not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
+    if not can_pay_life(state, player_id, cost.pay_life) or sum(not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
         return False
     creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind)
     if cost.sacrifice_source:
@@ -243,7 +243,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     player = state.players[player_id]
     if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
-    if player.life <= option.pay_life:
+    if not can_pay_life(state, player_id, option.pay_life):
         return False
     if sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in player.hand) < option.discard_cards:
         return False
@@ -266,6 +266,8 @@ def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> 
 
 def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str) -> bool:
     player = state.players[player_id]
+    if not can_pay_life(state, player_id, option.pay_life):
+        return False
     if option.pay_life:
         player.life -= option.pay_life
         state.log.append(f"{player.name} pays {option.pay_life} life as an additional cost.")
