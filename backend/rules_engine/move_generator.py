@@ -12,7 +12,7 @@ from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
-from rules_engine.restrictions import card_cant_attack, can_cast_in_current_timing
+from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.zone_actions import is_departed_token
 
 
@@ -340,6 +340,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     for cid in player.battlefield:
         card = state.cards[cid]
         for ability in extract_activated_abilities(card):
+            if not can_activate_in_current_timing(state, ability["text"], player_id):
+                continue
             cost = ability["mana_cost"]
             parsed_cost = parse_activated_cost(cost)
             if not parsed_cost.supported or not activated_cost_available(state, player_id, cid, cost):

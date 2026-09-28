@@ -34,6 +34,15 @@ def card_cant_attack_alone(state, card_id: str) -> bool:
     return "can't attack alone" in text or "cannot attack alone" in text
 
 
+def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> bool:
+    text = (ability_text or "").lower()
+    if "activate only as a sorcery" in text or "activate only any time you could cast a sorcery" in text:
+        return (state.active_player == player_id
+                and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
+                and not state.stack)
+    return True
+
+
 def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
     text = (card.oracle_text or "").lower()
     step = state.step

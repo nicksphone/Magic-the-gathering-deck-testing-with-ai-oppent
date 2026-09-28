@@ -20,7 +20,7 @@ from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
 from rules_engine.events import emit_event, resume_trigger_order, resume_trigger_target
-from rules_engine.restrictions import can_cast_in_current_timing
+from rules_engine.restrictions import can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.zone_actions import put_into_graveyard
 from rules_engine.attachments import attach_if_legal
@@ -839,6 +839,9 @@ class RulesEngine:
             ability = next((item for item in abilities if item["index"] == ability_index), None)
             if ability is None:
                 apply_state_based_actions(state)
+                return
+            if not can_activate_in_current_timing(state, ability["text"], player_id):
+                reject("Ability can only be activated at sorcery speed")
                 return
             cost = ability["mana_cost"]
             if "{X}" in cost.upper():
