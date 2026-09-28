@@ -1,5 +1,6 @@
 from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine import combat
 
 
 def test_master_block_search_prevents_lethal_damage_when_trade_is_available() -> None:
@@ -29,6 +30,46 @@ def test_master_block_search_prevents_lethal_damage_when_trade_is_available() ->
     )
 
     assert action == {attacker.id: blocker.id}
+
+
+def test_large_board_fallback_blocks_legal_band_member_not_unblockable_flyer() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}],
+        seed=664,
+    )
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.DECLARE_BLOCKERS
+    state.active_player = 1
+    state.priority_player = 2
+    state.players[2].life = 5
+    for cid, name, owner, power, toughness, keywords in (
+        ("hero", "Benalish Hero", 1, 1, 1, ["banding"]),
+        ("angel", "Serra Angel", 1, 4, 4, ["flying", "vigilance"]),
+        ("elf-1", "Llanowar Elves", 1, 1, 1, []),
+        ("elf-2", "Llanowar Elves", 1, 1, 1, []),
+        ("elf-3", "Llanowar Elves", 1, 1, 1, []),
+        ("bears", "Grizzly Bears", 2, 2, 2, []),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
+            types=["Creature"], power=power, toughness=toughness,
+            keywords=keywords, summoning_sick=False,
+        )
+        state.cards[cid] = card
+        state.players[owner].battlefield.append(cid)
+    state.attackers = ["hero", "angel", "elf-1", "elf-2", "elf-3"]
+    state.attack_bands = [["hero", "angel"]]
+
+    action = AIAgent(difficulty="master", archetype="Control")._choose_blocks(
+        state,
+        [{"id": cid, "name": state.cards[cid].name} for cid in state.attackers],
+        [{"id": "bears", "name": "Grizzly Bears"}],
+    )
+    assert action == {"hero": "bears"}
+    combat.declare_blockers(state, action)
+    assert state.blocks == {"hero": ["bears"], "angel": ["bears"]}
 
 
 def test_master_block_search_avoids_safe_life_chump_block() -> None:

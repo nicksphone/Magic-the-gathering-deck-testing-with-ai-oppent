@@ -15,6 +15,7 @@ from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land
 from rules_engine.land_rules import compute_max_land_plays_this_turn
+from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
 
@@ -2280,9 +2281,18 @@ class AIAgent:
         role = self._board_role(state, player_id)
         lethal_pressure = incoming_total >= life
         prevented = 0
+        covered_attackers: set[str] = set()
+        band_members = {
+            cid: [member for member in band if member in state.attackers]
+            for band in getattr(state, "attack_bands", [])
+            for cid in band
+        }
+        def prevented_by_block(aid: str) -> set[str]:
+            return set(band_members.get(aid, [aid])) - covered_attackers
+
         sorted_attackers = sorted(
             [a for a in attackers if a.get("id") in state.cards],
-            key=lambda a: _effective_combat_stats(state, a["id"])[0],
+            key=lambda a: sum(_effective_combat_stats(state, cid)[0] for cid in band_members.get(a["id"], [a["id"]])),
             reverse=True,
         )
         for a in sorted_attackers:
@@ -2293,6 +2303,7 @@ class AIAgent:
             atk_pow, atk_tgh = _effective_combat_stats(state, aid)
             atk_has_trample = "trample" in set(effective_keywords(state, aid))
             atk_has_deathtouch = "deathtouch" in set(effective_keywords(state, aid))
+            protected_power = sum(max(0, _effective_combat_stats(state, cid)[0]) for cid in prevented_by_block(aid))
             required_blockers = 2 if self._requires_two_or_more_blockers(state, atk) else 1
             best_bid = None
             best_score = -999.0
@@ -2301,10 +2312,15 @@ class AIAgent:
                 blk = state.cards.get(bid)
                 if not blk:
                     continue
+                if isinstance(state, MatchState) and (
+                    blk.zone != Zone.BATTLEFIELD or blk.tapped or card_cant_block(state, bid)
+                    or not combat._can_block_attacker(state, atk, blk)
+                ):
+                    continue
                 blk_pow, blk_tgh = _effective_combat_stats(state, bid)
                 score = 0.0
                 # Primary value: prevent face damage.
-                score += (atk_pow or 0) * 1.15
+                score += protected_power * 1.15
                 if blk_pow >= atk_tgh:
                     score += 2.2
                 if blk_tgh > atk_pow:
@@ -2355,7 +2371,8 @@ class AIAgent:
                 if pair_score <= threshold * 2:
                     continue
                 assignments[aid] = pair
-                prevented += max(0, atk_pow)
+                prevented += protected_power
+                covered_attackers.update(band_members.get(aid, [aid]))
                 for bid in pair:
                     if bid in available:
                         available.remove(bid)
@@ -2368,7 +2385,8 @@ class AIAgent:
 
             if best_bid is not None and best_score > threshold:
                 assignments[aid] = best_bid
-                prevented += max(0, atk_pow)
+                prevented += protected_power
+                covered_attackers.update(band_members.get(aid, [aid]))
                 available.remove(best_bid)
                 if not available:
                     break
