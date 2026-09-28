@@ -81,7 +81,7 @@ export type MatchState = {
   sideboard_sizes?: Record<string, number>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "cleanup_discard" | "sacrifice" | "draw";
+    kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature";
     player_id: number;
     options: string[];
     count?: number;

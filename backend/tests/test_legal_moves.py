@@ -254,7 +254,7 @@ def test_engine_rejects_play_land_when_player_is_not_active() -> None:
 
 
 def test_recruitment_officer_style_activated_ability_is_legal_and_resolves() -> None:
-    deck = [{"quantity": 60, "card_name": "Forest"}]
+    deck = [{"quantity": 60, "card_name": "Plains"}]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -268,18 +268,19 @@ def test_recruitment_officer_style_activated_ability_is_legal_and_resolves() -> 
         p1.battlefield.append(cid)
         state.cards[cid].zone = Zone.BATTLEFIELD
         state.cards[cid].types = ["Land"]
-        state.cards[cid].name = "Forest"
+        state.cards[cid].name = "Plains"
     officer_id = p1.library.pop()
     officer = state.cards[officer_id]
     officer.zone = Zone.BATTLEFIELD
     officer.types = ["Creature"]
     officer.name = "Recruitment Officer"
-    officer.oracle_text = "{4}: Look at the top four cards of your library. You may reveal a creature card with power 2 or less from among them and put it into your hand."
+    officer.oracle_text = "{3}{W}: Look at the top four cards of your library. You may reveal a creature card with mana value 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
     p1.battlefield.append(officer_id)
     top_id = p1.library[-1]
     state.cards[top_id].types = ["Creature"]
-    state.cards[top_id].power = 2
-    state.cards[top_id].name = "Recruitable Creature"
+    state.cards[top_id].power = 1
+    state.cards[top_id].mana_cost = "{1}{W}{W}"
+    state.cards[top_id].name = "Adeline, Resplendent Cathar"
 
     moves = RulesEngine().legal_moves(state, 1)
     ability_moves = [m for m in moves if m.get("type") == "activate_ability" and m.get("card_id") == officer_id]

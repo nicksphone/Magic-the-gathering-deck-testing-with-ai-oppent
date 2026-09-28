@@ -79,6 +79,24 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     if pending and pending["kind"] == "draw":
         from rules_engine.dredge import complete_draw_choice
         return complete_draw_choice(state, player_id, action)
+    if pending and pending["kind"] == "topdeck_reveal_creature":
+        ids = action.get("card_ids")
+        if pending["player_id"] != player_id or not isinstance(ids, list) or len(ids) != 1 or ids[0] not in pending["options"]:
+            return False
+        from effects.handlers import finish_topdeck_reveal_creature
+        chosen = None if ids[0] == "__none__" else ids[0]
+        if not finish_topdeck_reveal_creature(state, player_id, pending["top_ids"], chosen, pending["bottom_random"]):
+            return False
+        state.pending_mechanic_choice = None
+        if pending.get("resolving_item"):
+            from game_state.state import StackItem
+            from rules_engine.stack_engine import finish_stack_resolution
+            item = StackItem(**pending["resolving_item"])
+            finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+        if not state.pending_trigger_order and not state.pending_replacement_choice:
+            state.priority_player = state.active_player
+            state.passed_priority = set()
+        return True
     if not pending or pending["player_id"] != player_id or pending["kind"] != "sacrifice":
         return False
     ids = action.get("card_ids", [])

@@ -1283,22 +1283,62 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
 def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 4)))
-    power_max = int(payload.get("power_max", 2))
-    top_slice = player.library[-top_n:]
-    eligible = [
-        cid for cid in top_slice
-        if "Creature" in state.cards[cid].types and int(state.cards[cid].power or 0) <= power_max
-    ]
-    chosen = eligible[0] if eligible else None
-    player.library = [cid for cid in player.library if cid not in set(top_slice)]
+    top_slice = list(player.library[-top_n:])
+    eligible = []
     for cid in top_slice:
-        if cid == chosen:
-            state.cards[cid].zone = Zone.HAND
-            player.hand.append(cid)
-        else:
-            state.cards[cid].zone = Zone.LIBRARY
-            player.library.insert(0, cid)
-    if chosen:
+        card = state.cards[cid]
+        if "Creature" not in card.types:
+            continue
+        if "mv_max" in payload and mana_value(card.mana_cost or "") > int(payload["mv_max"]):
+            continue
+        if "power_max" in payload:
+            try:
+                printed_power = int(card.power)
+            except (TypeError, ValueError):
+                continue
+            if printed_power > int(payload["power_max"]):
+                continue
+        eligible.append(cid)
+    if eligible and state.replacement_choice_required and controller in state.replacement_choice_players:
+        options = list(eligible)
+        if payload.get("optional"):
+            options.append("__none__")
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_reveal_creature", "player_id": controller,
+            "options": options, "count": 1, "top_ids": top_slice,
+            "bottom_random": bool(payload.get("bottom_random")),
+            "option_labels": {"__none__": "Reveal none"},
+            "label": "Reveal a qualifying creature",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    def value(cid: str) -> tuple[int, int]:
+        card = state.cards[cid]
+        try:
+            power = int(card.power or 0)
+        except (TypeError, ValueError):
+            power = 0
+        return mana_value(card.mana_cost or ""), power
+
+    chosen = max(eligible, key=value) if eligible else None
+    finish_topdeck_reveal_creature(state, controller, top_slice, chosen, bool(payload.get("bottom_random")))
+
+
+def finish_topdeck_reveal_creature(state: MatchState, controller: int, top_ids: list[str], chosen: str | None, bottom_random: bool) -> bool:
+    player = state.players[controller]
+    if not top_ids or player.library[-len(top_ids):] != top_ids or (chosen is not None and chosen not in top_ids):
+        return False
+    del player.library[-len(top_ids):]
+    remaining = [cid for cid in top_ids if cid != chosen]
+    if chosen is not None:
+        state.cards[chosen].zone = Zone.HAND
+        player.hand.append(chosen)
+    if bottom_random:
+        state.rng.shuffle(remaining)
+    player.library[:0] = remaining
+    if chosen is not None:
         state.log.append(f"{player.name} reveals and puts {state.cards[chosen].name} into hand.")
     else:
-        state.log.append(f"{player.name} reveals the top {len(top_slice)} cards and finds no qualifying creature.")
+        state.log.append(f"{player.name} looks at the top {len(top_ids)} cards and reveals none.")
+    return True

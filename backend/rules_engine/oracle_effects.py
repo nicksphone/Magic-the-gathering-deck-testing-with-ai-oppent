@@ -58,7 +58,7 @@ LOOK_TOP_CHOICE_RE = re.compile(
     re.IGNORECASE,
 )
 LOOK_CREATURE_TO_HAND_RE = re.compile(
-    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?creature card with power\s+(\d+)\s+or less.*?put it into your hand",
+    r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?creature card with\s+(power|mana value)\s+(\d+)\s+or less.*?put it into your hand",
     re.IGNORECASE,
 )
 PUT_CREATURES_FROM_TOP_RE = re.compile(
@@ -151,10 +151,13 @@ def infer_effect_from_oracle(
         return topdeck_permanents
     creature_to_hand = LOOK_CREATURE_TO_HAND_RE.search(oracle)
     if creature_to_hand:
-        return "topdeck_reveal_creature_to_hand", {
+        payload = {
             "top_n": _parse_count_token(creature_to_hand.group(1)),
-            "power_max": int(creature_to_hand.group(2)),
+            "bottom_random": "bottom" in oracle and "random order" in oracle,
+            "optional": "may reveal" in oracle,
         }
+        payload["power_max" if creature_to_hand.group(2) == "power" else "mv_max"] = int(creature_to_hand.group(3))
+        return "topdeck_reveal_creature_to_hand", payload
     exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
     if exile_playable:
         return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
