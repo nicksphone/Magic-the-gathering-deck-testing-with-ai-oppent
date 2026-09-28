@@ -38,6 +38,24 @@
       "toughness": "3",
       "type_line": "Creature — Sloth Beast"
     },
+    "Badlands": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Badlands",
+      "oracle_text": "({T}: Add {B} or {R}.)",
+      "scryfall_id": "73403d04-fe97-4830-8b80-16dd1a1a6cc1",
+      "type_line": "Land — Swamp Mountain"
+    },
+    "Bayou": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Bayou",
+      "oracle_text": "({T}: Add {B} or {G}.)",
+      "scryfall_id": "bd7567df-b4d8-41a8-8eac-c05afa784bfe",
+      "type_line": "Land — Swamp Forest"
+    },
     "Blood Artist": {
       "colors": [
         "B"
@@ -777,6 +795,15 @@
       "scryfall_id": "8b4e2642-3c87-4708-b9b4-2e7f7359ac7d",
       "type_line": "Land — Mountain Plains"
     },
+    "Savannah": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Savannah",
+      "oracle_text": "({T}: Add {G} or {W}.)",
+      "scryfall_id": "b0d161fc-4a2a-4f1d-82b4-a746552552df",
+      "type_line": "Land — Forest Plains"
+    },
     "Searing Blaze": {
       "colors": [
         "R"
@@ -1038,6 +1065,15 @@
       "toughness": "6",
       "type_line": "Artifact Creature — Construct"
     },
+    "Tropical Island": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Tropical Island",
+      "oracle_text": "({T}: Add {G} or {U}.)",
+      "scryfall_id": "47033ba4-8f26-4a6b-97bd-5b366327325e",
+      "type_line": "Land — Forest Island"
+    },
     "Ugin, the Spirit Dragon": {
       "layout": "",
       "loyalty": "7",
@@ -1046,6 +1082,15 @@
       "oracle_text": "+2: Ugin deals 3 damage to any target.\n−X: Exile each permanent with mana value X or less that's one or more colors.\n−10: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
       "scryfall_id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
       "type_line": "Legendary Planeswalker — Ugin"
+    },
+    "Underground Sea": {
+      "colors": [],
+      "layout": "",
+      "mana_cost": "",
+      "name": "Underground Sea",
+      "oracle_text": "({T}: Add {U} or {B}.)",
+      "scryfall_id": "26cee543-6eab-494e-a803-33a5d48d7d74",
+      "type_line": "Land — Island Swamp"
     },
     "Unholy Heat": {
       "colors": [

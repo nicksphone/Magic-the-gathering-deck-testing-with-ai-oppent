@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 
 from decks.bootstrap import ensure_builtin_decks
 from decks.parser import DeckParser
@@ -8,17 +9,20 @@ from decks.parser import DeckParser
 
 @dataclass
 class _DeckRow:
+    id: int
     name: str
     source: str
+    mainboard_json: str
+    sideboard_json: str = "[]"
 
 
 class _FakeSession:
     def __init__(self) -> None:
-        self.deleted: list[_DeckRow] = []
+        self.added: list[_DeckRow] = []
         self.committed = 0
 
-    def delete(self, row: _DeckRow) -> None:
-        self.deleted.append(row)
+    def add(self, row: _DeckRow) -> None:
+        self.added.append(row)
 
     def commit(self) -> None:
         self.committed += 1
@@ -32,7 +36,7 @@ class _FakeRecord:
 class _FakeRepo:
     def __init__(self) -> None:
         self.session = _FakeSession()
-        self._rows = [_DeckRow(name="Tempo", source="builtin")]
+        self._rows = [_DeckRow(42, "Tempo", "builtin", json.dumps([{"quantity": 60, "card_name": "Island"}]))]
         self.saved: list[dict] = []
         self._next_id = 1
 
@@ -52,15 +56,16 @@ class _FakeRepo:
         return []
 
 
-def test_ensure_builtin_decks_reimports_current_builtin_list() -> None:
+def test_ensure_builtin_decks_refreshes_current_list_without_changing_ids() -> None:
     repo = _FakeRepo()
 
     ensure_builtin_decks(repo)  # type: ignore[arg-type]
 
-    assert repo.session.deleted, "Expected stale builtin rows to be removed before refresh"
-    tempo = next(item for item in repo.saved if item["name"] == "Tempo")
-    mainboard_names = {entry["card_name"] for entry in tempo["mainboard"]}
+    tempo = repo._rows[0]
+    assert tempo.id == 42 and repo.session.added == [tempo]
+    mainboard_names = {entry["card_name"] for entry in json.loads(tempo.mainboard_json)}
     assert "Mountain" in mainboard_names
+    assert all(item["name"] != "Tempo" for item in repo.saved)
 
 
 def test_deck_parser_accepts_common_sideboard_headers() -> None:

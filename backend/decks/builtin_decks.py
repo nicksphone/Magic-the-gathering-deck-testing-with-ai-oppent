@@ -92,8 +92,10 @@ BUILTIN_DECKS: dict[str, str] = {
 2 Ugin, the Spirit Dragon
 1 Hydroid Krasis
 1 Storm the Festival
-14 Forest
-8 Swamp
+10 Forest
+4 Swamp
+4 Tropical Island
+4 Underground Sea
 """,
     "Drain Deck": """
 4 Cauldron Familiar
@@ -105,7 +107,9 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Claim the Firstborn
 4 Dreadhorde Butcher
 4 Priest of Forgotten Gods
-24 Swamp
+16 Swamp
+4 Mountain
+4 Badlands
 """,
     "Tokens": """
 4 Raise the Alarm
@@ -117,7 +121,9 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Adeline, Resplendent Cathar
 2 Secure the Wastes
 4 Brutal Cathar
-28 Plains
+20 Plains
+4 Forest
+4 Savannah
 """,
     "Tribal": """
 4 Elvish Mystic
@@ -128,7 +134,9 @@ BUILTIN_DECKS: dict[str, str] = {
 4 Collected Company
 4 Realmwalker
 4 Shaman of the Pack
-28 Forest
+20 Forest
+4 Swamp
+4 Bayou
 """,
     "Tempo": """
 4 Delver of Secrets
