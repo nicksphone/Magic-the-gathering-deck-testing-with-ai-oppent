@@ -61,4 +61,17 @@ try {
   assert.equal(afterReload.size, beforeReload.size + 1);
   assert.equal(afterReload.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
   console.log('PASS reload recovers ambiguous start without creating another match');
+
+  await selectDecks();
+  const beforeClickRetry = await matchIds();
+  const droppedForClick = await startWithDroppedResponses(2);
+  await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
+  await command('Fetch.disable');
+  assert.equal(droppedForClick(), 2);
+  await click('Start Best-of-3 Match');
+  await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')");
+  const afterClickRetry = await matchIds();
+  assert.equal(afterClickRetry.size, beforeClickRetry.size + 1);
+  assert.equal(afterClickRetry.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
+  console.log('PASS repeated Start click recovers pending match without creating another');
 } finally { await close(); }

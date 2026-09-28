@@ -169,26 +169,27 @@ export function App() {
 
   async function startMatch() {
     if (restoring) return;
+    const previousPending = readPendingStart();
     const deckA = decks.find((d) => d.id === selectedA);
     const deckB = decks.find((d) => d.id === selectedB);
-    if (!deckA || !deckB) return;
+    if (!previousPending && (!deckA || !deckB)) return;
     await gate.current.run(async () => {
       setMutationPending(true);
       try {
-        const payload: StartMatchPayload = {
-          deck_a: deckA.mainboard,
-          deck_b: deckB.mainboard,
-          deck_a_sideboard: deckA.sideboard,
-          deck_b_sideboard: deckB.sideboard,
-          deck_a_id: deckA.id,
-          deck_b_id: deckB.id,
+        const payload: StartMatchPayload = previousPending?.payload ?? {
+          deck_a: deckA?.mainboard ?? [],
+          deck_b: deckB?.mainboard ?? [],
+          deck_a_sideboard: deckA?.sideboard,
+          deck_b_sideboard: deckB?.sideboard,
+          deck_a_id: deckA?.id,
+          deck_b_id: deckB?.id,
           controller_a: mode === "ai_vs_ai" ? "ai" : "human",
           controller_b: mode === "human_vs_human" ? "human" : "ai",
           ai_difficulty: difficulty,
           mode,
           best_of: bestOf,
         };
-        const pending = { key: newMutationKey(), payload };
+        const pending = previousPending ?? { key: newMutationKey(), payload };
         try { localStorage.setItem(PENDING_START_KEY, JSON.stringify(pending)); } catch { /* Optional storage. */ }
         try {
           await applyMatch(await api.startMatch(payload, pending.key));
