@@ -52,7 +52,8 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
                     out["card_faces"] = faces
                     if out["layout"] in {"modal_dfc", "transform", "adventure", "reversible_card"}:
                         for key in ("oracle_text", "mana_cost", "type_line", "power", "toughness", "loyalty"):
-                            if key in faces[0]:
+                            current = out.get(key)
+                            if key in faces[0] and (current is None or current == "" or isinstance(current, str) and " // " in current):
                                 out[key] = faces[0][key]
             out["image_uri"] = select_display_image_uri(row, name=name, type_line=str(out.get("type_line") or ""))
         elif fallback:

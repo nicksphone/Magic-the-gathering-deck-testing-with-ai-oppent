@@ -13,8 +13,7 @@ from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
 from analytics.decision_quality import build_trace_payload
 from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
-from card_data.display import select_display_image_uri
-from card_data.fallback_cards import fallback_card_payload
+from card_data.hydration import hydrate_deck_cards as hydrate_deck
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from game_state.state import MatchFactory
 from persistence.db import engine, init_db
@@ -69,31 +68,6 @@ def load_named_deck(repo: Repository, name: str) -> list[dict]:
             return json.loads(r.mainboard_json)
     names = sorted({r.name for r in rows})
     raise SystemExit(f"Deck not found: {name}. Available: {', '.join(names)}")
-
-
-def hydrate_deck(repo: Repository, deck: list[dict]) -> list[dict]:
-    names = [item["card_name"] for item in deck]
-    cached = repo.get_cached_cards_by_names(names)
-    out: list[dict] = []
-    for item in deck:
-        row = cached.get(item["card_name"].lower())
-        card = dict(item)
-        fallback = fallback_card_payload(item["card_name"])
-        if row:
-            card["oracle_text"] = row.oracle_text or (fallback or {}).get("oracle_text")
-            card["mana_cost"] = row.mana_cost or (fallback or {}).get("mana_cost")
-            card["type_line"] = row.type_line or (fallback or {}).get("type_line")
-            card["power"] = row.power or (fallback or {}).get("power")
-            card["toughness"] = row.toughness or (fallback or {}).get("toughness")
-            if getattr(row, "loyalty", None) is not None:
-                card["loyalty"] = row.loyalty
-            elif fallback and fallback.get("loyalty") is not None:
-                card["loyalty"] = fallback["loyalty"]
-            card["image_uri"] = select_display_image_uri(row, name=card["card_name"], type_line=card.get("type_line") or "")
-        elif fallback:
-            card.update({k: v for k, v in fallback.items() if v is not None})
-        out.append(card)
-    return out
 
 
 def main() -> int:

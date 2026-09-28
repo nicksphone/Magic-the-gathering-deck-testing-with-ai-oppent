@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import re
 
 from card_data.fallback_cards import fallback_card_payload
+from decks.builtin_decks import BUILTIN_DECKS
 from main import _hydrate_deck_cards
+from scripts.debug_head_to_head import hydrate_deck as hydrate_diagnostic_deck
 
 
 def test_control_ramp_fallback_catalog_contains_core_fields() -> None:
@@ -35,7 +38,26 @@ def test_control_ramp_fallback_catalog_contains_core_fields() -> None:
 
     delver = fallback_card_payload("Delver of Secrets // Insectile Aberration")
     assert delver is not None
-    assert "transform Delver of Secrets" in delver["oracle_text"]
+    assert "transform this creature" in delver["oracle_text"]
+    assert len(delver["card_faces"]) == 2
+
+
+def test_every_builtin_card_has_provenance_backed_offline_oracle_data() -> None:
+    names = {
+        re.sub(r"^\d+\s+", "", line.strip())
+        for deck in BUILTIN_DECKS.values()
+        for line in deck.splitlines()
+        if line.strip()
+    }
+    for name in names:
+        payload = fallback_card_payload(name)
+        assert payload is not None, name
+        assert payload["scryfall_id"], name
+        assert payload["oracle_text"], name
+        assert payload["type_line"], name
+    assert "Choose one" in fallback_card_payload("Drown in the Loch")["oracle_text"]
+    assert "controller's graveyard" in fallback_card_payload("Drown in the Loch")["oracle_text"]
+    assert len(fallback_card_payload("Brutal Cathar")["card_faces"]) == 2
 
 
 def test_hydrate_deck_cards_uses_fallback_when_cache_unavailable() -> None:
@@ -93,5 +115,7 @@ def test_hydrate_deck_cards_uses_face_image_when_root_image_missing() -> None:
                 )
             }
 
-    hydrated = _hydrate_deck_cards(FakeRepo(), [{"quantity": 1, "card_name": "Delver of Secrets"}])
+    deck = [{"quantity": 1, "card_name": "Delver of Secrets"}]
+    hydrated = _hydrate_deck_cards(FakeRepo(), deck)
     assert hydrated[0]["image_uri"] == "/card-images/delver-front.png"
+    assert hydrate_diagnostic_deck(FakeRepo(), deck) == hydrated
