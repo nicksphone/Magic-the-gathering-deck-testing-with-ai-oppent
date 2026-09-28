@@ -4,7 +4,7 @@ from sqlmodel import Session
 
 from ai.agent import AIAgent, AIDecision
 from game_state.state import MatchFactory
-from main import ACTIVE_MATCHES, MatchController, autoplay_tick
+from main import ACTIVE_MATCHES, MatchController, _force_ai_land_action, autoplay_tick
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -132,6 +132,30 @@ def test_autoplay_land_guard_overrides_ai_pass_when_land_is_legal() -> None:
     assert p1.lands_played_this_turn == 1
 
 
+def test_land_guard_returns_offered_move_when_ai_names_another_card() -> None:
+    class WrongLandAI:
+        def choose_action(self, state, legal_moves, player_id):
+            return AIDecision(action={"type": "play_land", "card_id": "not-in-hand"}, reasoning="bad card id")
+
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = state.step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    rules = RulesEngine()
+    match = MatchController(
+        state=state, rules=rules, controllers={1: "ai", 2: "ai"},
+        ai={1: WrongLandAI(), 2: WrongLandAI()}, mode="ai_vs_ai",
+        deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1,
+        current_game_recorded=False, match_complete=False, best_of=3,
+    )
+    offered = [move for move in rules.legal_moves(state, 1) if move["type"] == "play_land"]
+    assert offered
+    assert _force_ai_land_action(match, 1, offered) in offered
+
+
 def test_autoplay_land_guard_overrides_ai_cast_when_land_is_legal() -> None:
     class CastOnlyAI:
         def choose_action(self, state, legal_moves, player_id):
@@ -174,7 +198,7 @@ def test_autoplay_land_guard_overrides_ai_cast_when_land_is_legal() -> None:
     assert p1.lands_played_this_turn == 1
 
 
-def test_autoplay_land_guard_recovers_when_legal_moves_omit_play_land() -> None:
+def test_autoplay_does_not_invent_land_move_when_rules_omit_it() -> None:
     class LegalDropsLandRuleProxy:
         def __init__(self, wrapped: RulesEngine) -> None:
             self._wrapped = wrapped
@@ -224,8 +248,8 @@ def test_autoplay_land_guard_recovers_when_legal_moves_omit_play_land() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before + 1
-    assert p1.lands_played_this_turn == 1
+    assert len(p1.battlefield) == battlefield_before
+    assert p1.lands_played_this_turn == 0
 
 
 def test_autoplay_land_guard_ignores_stale_land_counter_drift() -> None:

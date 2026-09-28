@@ -277,22 +277,13 @@ def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_tex
         line = type_line.lower()
         out = []
         for t in ["land", "creature", "instant", "sorcery", "enchantment", "artifact", "planeswalker"]:
-            if t in line:
+            if re.search(rf"\b{t}\b", line):
                 out.append(t.capitalize())
         if out:
             return out
-    oracle = (oracle_text or "").lower()
-    # Metadata can occasionally be incomplete during early cache hydrate.
-    # Only treat mana-text as land signal when mana cost is empty.
-    if not (mana_cost or "").strip() and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
-        return ["Land"]
-    # Last-resort heuristic for no-cost cards with no explicit type line.
-    if not (mana_cost or "").strip():
-        n = name.lower()
-        if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp"]):
-            return ["Land"]
     n = name.lower()
-    if n in {
+    if not (mana_cost or "").strip() and n in {
+        "plains", "island", "swamp", "mountain", "forest", "wastes",
         "hallowed fountain",
         "sacred foundry",
         "watery grave",
@@ -304,8 +295,6 @@ def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_tex
         "godless shrine",
         "temple garden",
     }:
-        return ["Land"]
-    if any(k in n for k in ["island", "mountain", "forest", "plains", "swamp"]):
         return ["Land"]
     if any(k in n for k in ["teferi", "nissa", "ugin", "emperor"]):
         return ["Planeswalker"]

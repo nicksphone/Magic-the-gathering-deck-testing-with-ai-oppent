@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 
 from rules_engine.mana import mana_value, parse_mana_cost
+from rules_engine.card_types import is_land_card
 
 ARCHETYPES = [
     "Aggro",
@@ -45,7 +46,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     names = " ".join(card["name"].lower() for card in expanded_cards)
     texts = " ".join(f"{card['name']} {card['type_line']} {card['oracle_text']}".lower() for card in expanded_cards)
     total_cards = max(1, len(expanded_cards))
-    land_count = sum(1 for card in expanded_cards if _looks_like_land(card["name"], card["type_line"], card["oracle_text"]))
+    land_count = sum(1 for card in expanded_cards if is_land_card(card))
     creature_like = sum(1 for card in expanded_cards if "creature" in card["type_line"].lower() or _looks_like_creature_name(card["name"]))
     avg_cmc = sum(_cmc(card["mana_cost"]) for card in expanded_cards) / total_cards
     cheap_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) <= 2 and "land" not in card["type_line"].lower())
@@ -171,13 +172,6 @@ def analyze_deck(mainboard: list[dict]) -> dict:
 
 def _cmc(mana_cost: str) -> int:
     return int(mana_value(mana_cost or ""))
-
-
-def _looks_like_land(name: str, type_line: str, oracle_text: str) -> bool:
-    text = f"{name} {type_line} {oracle_text}".lower()
-    if "land" in text:
-        return True
-    return any(k in text for k in ["{t}: add", "add one mana", "add {w}", "add {u}", "add {b}", "add {r}", "add {g}"])
 
 
 def _looks_like_creature_name(name: str) -> bool:

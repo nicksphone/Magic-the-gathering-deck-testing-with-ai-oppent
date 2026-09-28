@@ -4,7 +4,7 @@ from ai.agent import AIAgent
 from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, get_match_replay
 from rules_engine.engine import RulesEngine
-from scripts.regression_matrix_replay import _normalize_log_line, classify_first_divergence, classify_log_line, run_match
+from scripts.regression_matrix_replay import _match_termination_status, _normalize_log_line, classify_first_divergence, classify_log_line, run_match
 from analytics.replay_tools import classify_timeout_state
 
 
@@ -168,8 +168,29 @@ def test_classify_timeout_trace_ignores_instant_speed_holds() -> None:
         'AI TRACE {"pid":1,"active_player":2,"step":"Step.UPKEEP","legal_meaningful":true,"action":{"type":"pass_priority"}}'
     ] * 12
     main_phase_pass = [
-        'AI TRACE {"pid":1,"active_player":1,"step":"Step.PRECOMBAT_MAIN","legal_meaningful":true,"action":{"type":"pass_priority"}}'
+        f'AI TRACE {{"pid":1,"active_player":1,"turn":{turn},"step":"Step.PRECOMBAT_MAIN","legal_action_types":["play_land","pass_priority"],"action":{{"type":"pass_priority"}}}}'
+        for turn in range(1, 13)
+    ]
+    single_hold = [
+        'AI TRACE {"pid":1,"active_player":1,"turn":5,"step":"Step.PRECOMBAT_MAIN","legal_action_types":["cast_spell","pass_priority"],"action":{"type":"pass_priority"}}'
     ] * 12
 
     assert classify_timeout_state(response_hold, True) == "timeout_long_game"
     assert classify_timeout_state(main_phase_pass, True) == "likely_stall"
+    assert classify_timeout_state(single_hold, True) == "timeout_long_game"
+
+
+def test_match_timeout_attribution_uses_only_timed_out_games() -> None:
+    long_log = ['AI TRACE {"turn":44,"action":{"type":"pass_priority"}}'] * 12
+    resolved_error = ["Player A cannot pay {2} for Unholy Heat."]
+    match = {
+        "timeout": True,
+        "log": long_log + resolved_error,
+        "games": [
+            {"timeout": True, "log": long_log},
+            {"timeout": False, "log": resolved_error},
+        ],
+    }
+    assert _match_termination_status(match) == "timeout_long_game"
+    match["games"][0]["log"] = long_log + resolved_error
+    assert _match_termination_status(match) == "timeout_rules_issue"

@@ -13,6 +13,7 @@ from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+from rules_engine.card_types import is_land_card as _card_looks_like_land
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 
@@ -644,19 +645,7 @@ class AIAgent:
         land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
         if land_moves:
             return self._best_land_move(state, land_moves, player_id)
-        player = state.players[player_id]
-        if self._remaining_land_plays(state, player_id) <= 0:
-            return None
-        # Defensive fallback for legal-move omissions.
-        if not land_moves:
-            # Defensive fallback for legal-move omissions: derive land plays from hand.
-            for cid in list(getattr(player, "hand", [])):
-                card = state.cards.get(cid)
-                if card and _card_looks_like_land(card):
-                    land_moves.append({"type": "play_land", "card_id": cid})
-        if not land_moves:
-            return None
-        return self._best_land_move(state, land_moves, player_id)
+        return None
 
     def choose_mulligan_action(self, state: MatchState, player_id: int) -> AIDecision:
         player = state.players[player_id]
@@ -3693,21 +3682,3 @@ def _step_key(step) -> str:
     if s.startswith("Step."):
         s = s.split(".", 1)[1]
     return s.lower()
-
-
-def _card_looks_like_land(card) -> bool:
-    if "Land" in getattr(card, "types", []):
-        return True
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "land" in type_line:
-        return True
-    oracle = (getattr(card, "oracle_text", "") or "").lower()
-    mana_cost = (getattr(card, "mana_cost", "") or "").strip()
-    nonland_typed = any(
-        t in set(getattr(card, "types", []))
-        for t in ["Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker"]
-    )
-    if not mana_cost and not nonland_typed and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
-        return True
-    name = (getattr(card, "name", "") or "").strip().lower()
-    return any(basic in name for basic in ["island", "swamp", "mountain", "forest", "plains"])

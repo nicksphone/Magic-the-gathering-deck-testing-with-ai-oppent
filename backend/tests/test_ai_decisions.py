@@ -1419,7 +1419,7 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
     assert decision.action["card_id"] == "island-1"
 
 
-def test_ai_forces_land_drop_even_when_legal_moves_omit_play_land() -> None:
+def test_ai_does_not_invent_land_drop_when_legal_moves_omit_it() -> None:
     ai = AIAgent(difficulty="master", archetype="Tribal")
     moves = [
         {"type": "pass_priority"},
@@ -1443,8 +1443,8 @@ def test_ai_forces_land_drop_even_when_legal_moves_omit_play_land() -> None:
         }
 
     decision = ai.choose_action(FakeState(), moves, 1)
-    assert decision.action["type"] == "play_land"
-    assert decision.action["card_id"] == "forest-1"
+    assert decision.action["type"] in {move["type"] for move in moves}
+    assert decision.action["type"] != "play_land"
 
 
 def test_ai_forces_legal_land_drop_even_if_land_counter_is_desynced() -> None:

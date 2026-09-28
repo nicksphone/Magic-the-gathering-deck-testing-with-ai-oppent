@@ -53,7 +53,7 @@ def test_noninstant_spells_use_sorcery_timing_by_default() -> None:
     assert all(move.get("type") != "cast_spell" for move in moves)
 
 
-def test_land_named_card_is_not_offered_as_cast_spell_even_if_mistyped() -> None:
+def test_nonland_with_basic_land_word_in_name_is_not_playable_as_land() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
@@ -64,18 +64,17 @@ def test_land_named_card_is_not_offered_as_cast_spell_even_if_mistyped() -> None
     engine = RulesEngine()
 
     cid = state.players[1].hand[0]
-    state.cards[cid].name = "Forest"
-    state.cards[cid].types = ["Sorcery"]  # simulate bad hydration/type inference
-    state.cards[cid].type_line = ""
+    state.cards[cid].name = "Island Sanctuary"
+    state.cards[cid].types = ["Enchantment"]
+    state.cards[cid].type_line = "Enchantment"
+    state.cards[cid].mana_cost = "{1}{W}"
 
     moves = engine.legal_moves(state, 1)
-    cast_for_cid = [m for m in moves if m.get("type") == "cast_spell" and m.get("card_id") == cid]
     land_for_cid = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == cid]
-    assert cast_for_cid == []
-    assert len(land_for_cid) == 1
+    assert land_for_cid == []
 
 
-def test_mana_ability_oracle_marks_land_playable_when_type_metadata_missing() -> None:
+def test_mana_ability_does_not_make_untyped_card_a_land() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
@@ -86,21 +85,18 @@ def test_mana_ability_oracle_marks_land_playable_when_type_metadata_missing() ->
     engine = RulesEngine()
 
     cid = state.players[1].hand[0]
-    state.cards[cid].name = "Misty Bog"
-    state.cards[cid].types = []  # simulate bad hydration/type inference
+    state.cards[cid].name = "Llanowar Elves"
+    state.cards[cid].types = []  # simulate incomplete metadata
     state.cards[cid].type_line = ""
     state.cards[cid].mana_cost = ""
     state.cards[cid].oracle_text = "{T}: Add {B}."
 
     moves = engine.legal_moves(state, 1)
-    play_land = [m for m in moves if m.get("type") == "play_land" and m.get("card_id") == cid]
-    cast_spell = [m for m in moves if m.get("type") == "cast_spell" and m.get("card_id") == cid]
-    assert len(play_land) == 1
-    assert cast_spell == []
+    assert all(m.get("type") != "play_land" or m.get("card_id") != cid for m in moves)
 
     engine.take_action(state, 1, {"type": "play_land", "card_id": cid})
-    assert cid in state.players[1].battlefield
-    assert cid not in state.players[1].hand
+    assert cid in state.players[1].hand
+    assert cid not in state.players[1].battlefield
 
 
 def test_mana_creature_is_not_misclassified_as_land_from_oracle_text() -> None:

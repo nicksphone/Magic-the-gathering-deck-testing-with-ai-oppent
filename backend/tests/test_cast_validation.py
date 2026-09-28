@@ -62,7 +62,7 @@ def test_land_named_card_cannot_be_cast_as_spell() -> None:
 
     cid = p1.hand[0]
     state.cards[cid].name = "Forest"
-    state.cards[cid].types = ["Sorcery"]  # simulate incorrect type hydration
+    state.cards[cid].types = []  # exact basic name fallback when type metadata is missing
     state.cards[cid].type_line = ""
 
     engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid})

@@ -5,6 +5,7 @@ import uuid
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
+from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
@@ -1122,24 +1123,6 @@ def _land_colors_from_metadata(name: str, oracle_text: str = "") -> set[str]:
     if not colors:
         colors.add("C")
     return colors
-
-
-def _is_land_card(card) -> bool:
-    if "Land" in getattr(card, "types", []):
-        return True
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "land" in type_line:
-        return True
-    oracle = (getattr(card, "oracle_text", "") or "").lower()
-    mana_cost = (getattr(card, "mana_cost", "") or "").strip()
-    nonland_typed = any(
-        t in set(getattr(card, "types", []))
-        for t in ["Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker"]
-    )
-    if not mana_cost and not nonland_typed and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
-        return True
-    name = (getattr(card, "name", "") or "").strip().lower()
-    return name in {"island", "swamp", "mountain", "forest", "plains"}
 
 
 def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: set[str] | None = None) -> list[str]:

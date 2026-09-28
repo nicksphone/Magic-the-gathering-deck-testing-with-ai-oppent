@@ -106,13 +106,15 @@ def classify_timeout_state(log: list[str], timeout: bool) -> str:
         token in " ".join(lowered)
         for token in ["invalid targets", "cannot pay", "ward tax", "missed land-play window", "land in hand but no land play available"]
     ):
-        if any(
-            payload.get("legal_meaningful", payload.get("legal_non_pass"))
+        missed_land_turns = {
+            (payload.get("pid"), payload.get("turn"))
+            for payload in trace_payloads
+            if (payload.get("legal_has_land") or "play_land" in (payload.get("legal_action_types") or []))
             and (payload.get("action") or {}).get("type") == "pass_priority"
             and str(payload.get("step", "")).split(".")[-1].lower() in {"precombat_main", "postcombat_main"}
-            and int(payload.get("active_player", -1)) == int(payload.get("pid", -2))
-            for payload in trace_payloads
-        ):
+            and payload.get("active_player") == payload.get("pid")
+        }
+        if len(missed_land_turns) >= 3:
             return "likely_stall"
         return "timeout_long_game"
     if any("passes priority" in line for line in lowered):

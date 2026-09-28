@@ -13,6 +13,13 @@ def test_control_ramp_name_fallback_types_are_not_misclassified_as_creatures() -
     assert _infer_types("Shark Typhoon") == ["Enchantment"]
 
 
+def test_mana_abilities_and_land_words_do_not_infer_land_type() -> None:
+    assert _infer_types("Llanowar Elves", oracle_text="{T}: Add {G}.") == ["Creature"]
+    assert _infer_types("Island Sanctuary", type_line="Enchantment", mana_cost="{1}{W}") == ["Enchantment"]
+    assert "Land" not in _infer_types("Island Fish Jasconius", type_line="Creature — Fish", mana_cost="{4}{U}{U}{U}")
+    assert _infer_types("Wastes") == ["Land"]
+
+
 def test_named_dual_land_without_type_line_still_provides_expected_colors() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

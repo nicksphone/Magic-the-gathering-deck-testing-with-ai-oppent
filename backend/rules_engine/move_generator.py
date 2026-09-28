@@ -4,6 +4,7 @@ from itertools import permutations
 
 from game_state.state import MatchState, Step, Zone
 from rules_engine.cast_choice import build_cast_hints
+from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
@@ -456,24 +457,6 @@ def _has_any_target_options(hints: dict) -> bool:
             "land_targets", "noncreature_permanent_targets",
         ]
     )
-
-
-def _is_land_card(card) -> bool:
-    if "Land" in getattr(card, "types", []):
-        return True
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "land" in type_line:
-        return True
-    oracle = (getattr(card, "oracle_text", "") or "").lower()
-    mana_cost = (getattr(card, "mana_cost", "") or "").strip()
-    nonland_typed = any(
-        t in set(getattr(card, "types", []))
-        for t in ["Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker"]
-    )
-    if not mana_cost and not nonland_typed and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
-        return True
-    name = (getattr(card, "name", "") or "").strip().lower()
-    return name in {"island", "swamp", "mountain", "forest", "plains"}
 
 
 def _extract_equip_cost(oracle_text: str) -> str:

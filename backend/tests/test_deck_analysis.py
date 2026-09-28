@@ -33,6 +33,16 @@ def test_guess_archetype_uses_metadata_for_control_shell() -> None:
     assert out["land_count_estimate"] >= 25
 
 
+def test_deck_land_count_ignores_mana_creatures_and_land_text() -> None:
+    deck = [
+        {"quantity": 1, "card_name": "Forest", "card_metadata": {"name": "Forest", "type_line": "Basic Land — Forest", "mana_cost": ""}},
+        {"quantity": 1, "card_name": "Llanowar Elves", "card_metadata": {"name": "Llanowar Elves", "type_line": "Creature — Elf Druid", "mana_cost": "{G}", "oracle_text": "{T}: Add {G}."}},
+        {"quantity": 1, "card_name": "Island Sanctuary", "card_metadata": {"name": "Island Sanctuary", "type_line": "Enchantment", "mana_cost": "{1}{W}"}},
+        {"quantity": 1, "card_name": "Growth Spiral", "card_metadata": {"name": "Growth Spiral", "type_line": "Instant", "mana_cost": "{G}{U}", "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield."}},
+    ]
+    assert analyze_deck(deck)["land_count_estimate"] == 1
+
+
 def test_guess_archetype_detects_tokens_from_metadata_and_text() -> None:
     deck = [
         {"quantity": 24, "card_name": "Plains", "card_metadata": {"name": "Plains", "type_line": "Basic Land - Plains", "mana_cost": ""}},

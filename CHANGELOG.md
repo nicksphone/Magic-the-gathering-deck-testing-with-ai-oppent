@@ -4,6 +4,8 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Corrected replay timeout attribution to inspect only timed-out games in a BO3 and require repeated missed legal land drops before labeling a stall. A fixed-seed Tempo/Dimir game timed out at a deliberately low 1,200-tick cap but resolved at 1,836 ticks under a 3,000-tick cap; a separate resolved-game cost error no longer contaminates its timeout label.
+- Unified game-state, rules, AI and deck-analysis land classification around explicit front-face types/type lines and exact basic-name fallback. Removed AI/backend land-action fabrication when legal moves omit a land, and hardened the backend guard against AI-selected card IDs not present in offered moves. Replaced obsolete tests that treated mana creatures and a made-up land as lands.
 - Show human-controlled mainboard/sideboard inventory between games, prevent post-match and AI-seat manual swaps, clear draft swaps on seat changes, and verify a swap survives reload into game two through HTTP and browser tests. Deliberate AI sideboarding and a complete played BO3 remain open.
 - Validate saved-match discovery summaries before recovery uses them; malformed IDs, mode, revision, turn or player names now fail at the API boundary. Unit and browser recovery paths pass.
 - Validate successful legal-move responses at the frontend boundary, rejecting malformed actor, revision, move and card-view fields before they drive UI actions. Unit and browser contract gates pass; generated/shared API types remain open.

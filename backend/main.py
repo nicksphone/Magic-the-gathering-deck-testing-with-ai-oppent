@@ -1484,38 +1484,15 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
         return None
     land_moves = [m for m in legal_moves if m.get("type") == "play_land"]
     if not land_moves:
-        # Defensive fallback: if legal-move generation misses land actions,
-        # derive them directly from hand card identities.
-        for cid in list(player.hand):
-            card = state.cards.get(cid)
-            if card and _card_looks_like_land(card):
-                land_moves.append({"type": "play_land", "card_id": cid})
-    if not land_moves:
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
-    # Hard-fallback to first legal play_land if AI returns a non-land action.
+    # Return an offered move, not an unverified card ID from the AI.
     picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
     if picked.get("type") == "play_land":
-        return picked
+        for move in land_moves:
+            if move.get("card_id") == picked.get("card_id") and move.get("selected_face_index") == picked.get("selected_face_index"):
+                return move
     return land_moves[0]
-
-
-def _card_looks_like_land(card) -> bool:
-    if "Land" in getattr(card, "types", []):
-        return True
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "land" in type_line:
-        return True
-    oracle = (getattr(card, "oracle_text", "") or "").lower()
-    mana_cost = (getattr(card, "mana_cost", "") or "").strip()
-    nonland_typed = any(
-        t in set(getattr(card, "types", []))
-        for t in ["Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker"]
-    )
-    if not mana_cost and not nonland_typed and (("{t}:" in oracle and "add {" in oracle) or "add one mana of any color" in oracle):
-        return True
-    name = (getattr(card, "name", "") or "").strip().lower()
-    return any(basic in name for basic in ["island", "swamp", "mountain", "forest", "plains"])
 
 
 def _step_key(step_obj) -> str:

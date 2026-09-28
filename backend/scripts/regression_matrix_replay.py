@@ -43,6 +43,13 @@ def _drift_excerpt(drift: dict, drift_label: dict | None) -> dict:
     }
 
 
+def _match_termination_status(match: dict) -> str:
+    timed_out = [game for game in match.get("games", []) if game.get("timeout")]
+    if timed_out:
+        return classify_timeout_state([line for game in timed_out for line in game.get("log", [])], True)
+    return classify_timeout_state(match.get("log", []), bool(match.get("timeout")))
+
+
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int) -> dict:
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
     state.mechanic_choice_players = {1, 2}
@@ -185,6 +192,9 @@ def main() -> None:
             else:
                 drift = None
                 drift_label = None
+            termination_status = _match_termination_status(a)
+            if termination_status != "resolved":
+                anomaly_counts[termination_status] += 1
             pair["games"].append({
                 "seed": seed,
                 "winner": a["winner"],
@@ -192,7 +202,7 @@ def main() -> None:
                 "games_played": a["games_played"],
                 "wins": a["wins"],
                 "timeout": a["timeout"],
-                "termination_status": classify_timeout_state(a.get("log", []), bool(a["timeout"])),
+                "termination_status": termination_status,
                 "deterministic": deterministic_ok,
                 "drift": drift,
                 "drift_label": drift_label,
