@@ -996,16 +996,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790574066.3909335,
-    "hash": "0047b4480278af98dadf0b6a3567dab3"
+    "mtime": 1790574440.033265,
+    "hash": "16b95f0d1441dd07913e7813d2163518"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790574066.3929336,
-    "hash": "9be595f58e8811429030e9cc034d3f21"
+    "mtime": 1790574440.034265,
+    "hash": "cb4202943d9779bc81f71b4040409931"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790574066.3919337,
-    "hash": "c2f7d42d0b476a743a1fef11583ce655"
+    "mtime": 1790574324.616034,
+    "hash": "8936af5f1b9151421fe1fa4a4fa9d558"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1034,6 +1034,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/rules/expanded-keywords.md": {
     "mtime": 1790538609.689391,
     "hash": "1021a8552722ffaab2a2fceabdd67c60"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/rules/combat-damage-assignment-audit.md": {
+    "mtime": 1790574440.033265,
+    "hash": "dfd7f012dba6ef2956144b30c00b161a"
   },
   "/home/nick/mtg-deck-testing-lab/docs/api/input-contracts.md": {
     "mtime": 1790544634.3870015,
