@@ -49,6 +49,7 @@ _DIE_EXILE_RE = re.compile(
     r"if a (?:non-token|nontoken|another )?(?:creature|permanent|artifact|enchantment|artifact or enchantment) you control would die, exile it instead"
     r"|if an? artifact or enchantment you control would die, exile it instead"
 )
+_DRAW_DOUBLE_RE = re.compile(r"(?:^|\n)if you would draw a card, draw two cards instead\.")
 
 
 def replacement_options(
@@ -99,7 +100,7 @@ def replacement_options(
         candidates = [
             (card, text)
             for card, text in _battlefield_oracle_texts(state, controller=target_player)
-            if "if you would draw a card, gain 1 life instead" in text
+            if "if you would draw a card, gain 1 life instead" in text or _DRAW_DOUBLE_RE.search(text)
         ]
         from rules_engine.dredge import dredge_options
         candidates.extend((state.cards[option["card_id"]], state.cards[option["card_id"]].oracle_text) for option in dredge_options(state, target_player))
@@ -360,11 +361,21 @@ def replace_draw_cards(
         (card, text)
         for card, text in _battlefield_oracle_texts(state, controller=target_player)
         if str(getattr(card, "id", "")) not in used
-        and "if you would draw a card, gain 1 life instead" in text
+        and ("if you would draw a card, gain 1 life instead" in text or _DRAW_DOUBLE_RE.search(text))
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "card draw")
     if card is not None:
         next_used = sorted(used | {str(card.id)})
+        if _DRAW_DOUBLE_RE.search((card.oracle_text or "").lower()):
+            return (
+                "draw_cards",
+                {
+                    "target_player": target_player,
+                    "amount": 2,
+                    "__replacement_source": card.name,
+                    "__used_replacement_source_ids": next_used,
+                },
+            )
         return (
             "gain_life",
             {

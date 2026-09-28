@@ -381,6 +381,18 @@ class RulesEngine:
                 reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
+            if pending.get("resume_kind") == "draw_event":
+                from rules_engine.stack_engine import resume_paused_resolution
+
+                state.pending_replacement_choice = None
+                state.log.append(f"{state.players[player_id].name} chooses replacement source {chosen_id}.")
+                resolve_effect(
+                    state, int(pending["controller"]), "draw_cards",
+                    {**pending["draw_payload"], "__replacement_source_id": chosen_id},
+                )
+                resume_paused_resolution(state, pending)
+                apply_state_based_actions(state)
+                return
             if pending.get("resume_kind") == "state_based_die":
                 from rules_engine.state_based_actions import resume_state_based_die_replacement
 
@@ -389,6 +401,8 @@ class RulesEngine:
                     f"{state.players[player_id].name} chooses replacement source {chosen_id}."
                 )
                 resume_state_based_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
+                from rules_engine.stack_engine import resume_paused_resolution
+                resume_paused_resolution(state, pending)
                 apply_state_based_actions(state)
                 if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
@@ -402,6 +416,8 @@ class RulesEngine:
                     f"{state.players[player_id].name} chooses replacement source {chosen_id}."
                 )
                 resume_combat_die_replacement(state, str(pending.get("target_card_id", "")), chosen_id)
+                from rules_engine.stack_engine import resume_paused_resolution
+                resume_paused_resolution(state, pending)
                 apply_state_based_actions(state)
                 if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
@@ -420,6 +436,8 @@ class RulesEngine:
                     str(pending.get("target_card_id", "")),
                     chosen_id,
                 )
+                from rules_engine.stack_engine import resume_paused_resolution
+                resume_paused_resolution(state, pending)
                 apply_state_based_actions(state)
                 if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
@@ -444,6 +462,8 @@ class RulesEngine:
                         + [chosen_id],
                     },
                 )
+                from rules_engine.stack_engine import resume_paused_resolution
+                resume_paused_resolution(state, pending)
                 apply_state_based_actions(state)
                 if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player

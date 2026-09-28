@@ -14,6 +14,32 @@ init_db()
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "draw_replacement":
+        from effects.registry import resolve_effect
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=35)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.turn = 2
+        state.step = Step.DRAW
+        state.replacement_choice_required = True
+        state.replacement_choice_players = {2}
+        reflection = CardInstance(
+            id="reflection", name="Thought Reflection", owner=2, controller=2,
+            zone=Zone.BATTLEFIELD, types=["Enchantment"],
+            oracle_text="If you would draw a card, draw two cards instead.",
+        )
+        dredger = CardInstance(
+            id="stinkweed", name="Stinkweed Imp", owner=2, controller=2,
+            zone=Zone.GRAVEYARD, types=["Creature"],
+            oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
+        )
+        state.cards.update({reflection.id: reflection, dredger.id: dredger})
+        state.players[2].battlefield.append(reflection.id)
+        state.players[2].graveyard.append(dredger.id)
+        resolve_effect(state, 2, "draw_cards", {"amount": 1})
+        return publish(state, deck)
     if face_kind == "company":
         from rules_engine.ability_model import build_ability_spec
         from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack

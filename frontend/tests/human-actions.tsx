@@ -61,6 +61,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "iteration").catch((failure) => setError(String(failure)))}>Iteration Fixture</button>
     <button onClick={() => reset(false, false, 3, "company").catch((failure) => setError(String(failure)))}>Company Fixture</button>
     <button onClick={() => reset(false, false, 3, "search").catch((failure) => setError(String(failure)))}>Search Fixture</button>
+    <button onClick={() => reset(false, false, 3, "draw_replacement").catch((failure) => setError(String(failure)))}>Draw Replacement Fixture</button>
     <button onClick={() => reset(false, false, 3, "bo3").catch((failure) => setError(String(failure)))}>BO3 Fixture</button>
     <button onClick={async () => { try { if (!match) return; const next = await act(match.priority_player, { type: "pass_priority" }); await act(next.priority_player, { type: "pass_priority" }); } catch (failure) { setError(String(failure)); } }}>Resolve Stack</button>
     {error ? <p role="alert">{error}</p> : null}
@@ -76,7 +77,7 @@ function Harness() {
       autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
       onSubmitBlocks={() => {}} onSubmitAttack={() => {}}
       onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
-      onChooseReplacement={() => {}} onChooseTriggerOrder={() => {}}
+      onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }} onChooseTriggerOrder={() => {}}
       onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
       onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}
       onChooseMechanic={(playerId, action) => { act(playerId, action).catch((failure) => setError(String(failure))); }}

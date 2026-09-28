@@ -9,7 +9,9 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from rules_engine.engine import RulesEngine
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
-from rules_engine.replacement import replacement_options, replace_die_zone
+from rules_engine.replacement import replacement_options, replace_die_zone, replace_draw_cards
+from fastapi.testclient import TestClient
+from main import ACTIVE_MATCHES, MatchController, app
 
 
 def _state() -> object:
@@ -66,6 +68,196 @@ def test_transformed_draw_life_replacements_consume_each_source_once() -> None:
 
     assert state.players[1].life == before + 3
     assert len(state.players[1].hand) == hand_before
+
+
+def _thought_reflection(state, cid: str) -> None:
+    card = CardInstance(
+        id=cid, name="Thought Reflection", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text="If you would draw a card, draw two cards instead.",
+    )
+    state.cards[cid] = card
+    state.players[1].battlefield.append(cid)
+
+
+def test_unconditional_draw_doubling_applies_once_per_source_and_original_draw() -> None:
+    state = _state()
+    _thought_reflection(state, "reflection-one")
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 3})
+    assert len(state.players[1].hand) == before + 6
+    _thought_reflection(state, "reflection-two")
+    before = len(state.players[1].hand)
+    assert replace_draw_cards(state, 1, 1)[1]["__used_replacement_source_ids"] == ["reflection-two"]
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    assert len(state.players[1].hand) == before + 4
+    assert {o["source_id"] for o in replacement_options(state, "card_draw", target_player=1)} == {
+        "reflection-one", "reflection-two",
+    }
+
+
+def test_draw_step_uses_unconditional_draw_doubling() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 2
+    state.step = Step.UPKEEP
+    _thought_reflection(state, "reflection")
+    before = len(state.players[1].hand)
+    RulesEngine().next_step(state)
+    assert state.step == Step.DRAW
+    assert len(state.players[1].hand) == before + 2
+
+
+def test_human_stack_choice_between_draw_doublers_is_resumable() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    _thought_reflection(state, "reflection-one")
+    _thought_reflection(state, "reflection-two")
+    spell = CardInstance(
+        id="ancestral", name="Ancestral Recall", owner=1, controller=1,
+        zone=Zone.STACK, types=["Instant"],
+        oracle_text="Target player draws three cards.",
+    )
+    state.cards[spell.id] = spell
+    add_to_stack(state, spell.id, 1, spell.name, "draw_cards", {"target_player": 1, "amount": 3})
+    before = len(state.players[1].hand)
+    resolve_top_of_stack(state)
+    assert state.pending_replacement_choice is not None
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    for index in range(3):
+        assert restored.pending_replacement_choice is not None
+        assert restored.cards[spell.id].zone == Zone.STACK
+        RulesEngine().take_action(restored, 1, {
+            "type": "choose_replacement", "replacement_source_id": "reflection-one" if index != 1 else "reflection-two",
+        }, reject_invalid=True)
+        if index == 0:
+            restored = deserialize_match_snapshot(serialize_match_snapshot(restored))
+    assert restored.pending_replacement_choice is None
+    assert len(restored.players[1].hand) == before + 12
+    assert restored.cards[spell.id].zone == Zone.GRAVEYARD
+
+
+def test_dredge_choices_preserve_draw_replacement_context_across_pause() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    _thought_reflection(state, "reflection")
+    dredger = CardInstance(
+        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
+        zone=Zone.GRAVEYARD, types=["Creature"],
+        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
+    )
+    state.cards[dredger.id] = dredger
+    state.players[1].graveyard.append(dredger.id)
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    engine = RulesEngine()
+    for index in range(3):
+        assert state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "draw"
+        engine.take_action(state, 1, {"type": "choose_mechanic", "choice_id": "draw"}, reject_invalid=True)
+        if index == 0:
+            state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.pending_mechanic_choice is None
+    assert len(state.players[1].hand) == before + 2
+
+
+def test_human_draw_replacement_choice_can_select_dredge_or_doubling() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    _thought_reflection(state, "reflection")
+    dredger = CardInstance(
+        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
+        zone=Zone.GRAVEYARD, types=["Creature"],
+        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
+    )
+    state.cards[dredger.id] = dredger
+    state.players[1].graveyard.append(dredger.id)
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 1})
+    assert {option["source_id"] for option in state.pending_replacement_choice["options"]} == {
+        "reflection", "stinkweed",
+    }
+    RulesEngine().take_action(state, 1, {
+        "type": "choose_replacement", "replacement_source_id": "stinkweed",
+    }, reject_invalid=True)
+    assert state.pending_replacement_choice is None
+    assert dredger.id in state.players[1].hand
+    assert len(state.players[1].hand) == before + 1
+
+
+def test_draw_replacement_pauses_preserve_later_effect_clauses() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    _thought_reflection(state, "reflection-one")
+    _thought_reflection(state, "reflection-two")
+    before_hand = len(state.players[1].hand)
+    before_life = state.players[1].life
+    resolve_effect(state, 1, "effect_sequence", {"effects": [
+        {"effect_key": "draw_cards", "payload": {"amount": 2}},
+        {"effect_key": "gain_life", "payload": {"amount": 3}},
+    ]})
+    assert state.pending_replacement_choice is not None
+    assert state.players[1].life == before_life
+    engine = RulesEngine()
+    for index in range(2):
+        engine.take_action(state, 1, {
+            "type": "choose_replacement", "replacement_source_id": "reflection-one",
+        }, reject_invalid=True)
+        if index == 0:
+            assert state.pending_replacement_choice is not None
+            assert state.players[1].life == before_life
+    assert state.pending_replacement_choice is None
+    assert len(state.players[1].hand) == before_hand + 8
+    assert state.players[1].life == before_life + 3
+
+
+def test_http_draw_step_replacement_choice_resumes() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1, 2}
+    state.turn = 2
+    state.step = Step.UPKEEP
+    _thought_reflection(state, "reflection-one")
+    _thought_reflection(state, "reflection-two")
+    RulesEngine().next_step(state)
+    assert state.pending_replacement_choice is not None
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={},
+        mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = match
+        try:
+            legal = client.get(f"/matches/{state.id}/legal-moves", params={"player_id": 1})
+            assert legal.status_code == 200
+            assert {move["replacement_source_id"] for move in legal.json()["moves"]} == {
+                "reflection-one", "reflection-two",
+            }
+            before = len(state.players[1].hand)
+            response = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 1,
+                "action": {"type": "choose_replacement", "replacement_source_id": "reflection-one"},
+            })
+            assert response.status_code == 200
+            assert response.json()["pending_replacement_choice"] is None
+            assert len(ACTIVE_MATCHES[state.id].state.players[1].hand) == before + 4
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
 
 
 def test_skullcrack_style_turn_restrictions_apply_and_expire_at_cleanup() -> None:
@@ -246,6 +438,7 @@ def test_human_damage_replacement_chain_prompts_for_remaining_source() -> None:
     assert state.pending_replacement_choice is None
     assert choice_count == 2
     assert state.players[1].life == 19
+    assert state.cards[source.id].zone == Zone.GRAVEYARD
 
 
 def test_human_permanent_damage_replacement_chain_prompts_for_remaining_source() -> None:

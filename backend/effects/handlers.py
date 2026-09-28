@@ -217,18 +217,42 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
         return
     if amount > 1:
         for index in range(amount):
-            draw_cards(state, controller, {**payload, "amount": 1})
-            if state.pending_mechanic_choice:
-                state.pending_mechanic_choice["remaining_draws"] = amount - index - 1
+            single = {**payload, "amount": 1}
+            if index:
+                single.pop("__replacement_source_id", None)
+                single.pop("__skip_dredge_choice", None)
+            draw_cards(state, controller, single)
+            pending = state.pending_mechanic_choice or state.pending_replacement_choice
+            if pending:
+                remaining = amount - index - 1
+                if remaining:
+                    rest = {**payload, "amount": remaining}
+                    rest.pop("__replacement_source_id", None)
+                    rest.pop("__skip_dredge_choice", None)
+                    pending.setdefault("draw_continuation_queue", []).append(rest)
                 return
             if state.winner is not None:
                 return
         return
+    selected_source_id = payload.get("__replacement_source_id")
+    if (not selected_source_id and state.replacement_choice_required
+            and target_player in state.replacement_choice_players):
+        options = replacement_options(state, "card_draw", target_player=target_player)
+        used = {str(value) for value in (payload.get("__used_replacement_source_ids") or [])}
+        options = [option for option in options if str(option["source_id"]) not in used]
+        if len(options) > 1:
+            state.pending_replacement_choice = {
+                "resume_kind": "draw_event", "player_id": target_player,
+                "controller": controller, "draw_payload": dict(payload),
+                "options": options, "event": "card_draw",
+            }
+            state.priority_player = target_player
+            state.passed_priority = set()
+            return
     from rules_engine.dredge import offer_dredge_choice
     if offer_dredge_choice(state, controller, payload):
         return
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
-    selected_source_id = payload.get("__replacement_source_id")
     replaced = replace_draw_cards(
         state,
         target_player,

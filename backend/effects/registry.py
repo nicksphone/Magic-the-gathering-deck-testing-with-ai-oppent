@@ -79,14 +79,15 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
             if not key:
                 continue
             resolve_effect(state, controller, key, data)
-            if state.pending_mechanic_choice:
+            pending = state.pending_mechanic_choice or state.pending_replacement_choice
+            if pending:
                 remaining = []
                 for next_effect in effects[index + 1:]:
                     next_data = dict(next_effect.get("payload", {}))
                     if source_card_id:
                         next_data.setdefault("__source_card_id", source_card_id)
                     remaining.append({**next_effect, "payload": next_data})
-                state.pending_mechanic_choice.setdefault("continuation_effects", []).extend(remaining)
+                pending.setdefault("continuation_effects", []).extend(remaining)
                 return
         return
     handler = EFFECT_HANDLERS.get(effect_key)

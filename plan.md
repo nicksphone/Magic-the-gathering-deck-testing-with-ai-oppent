@@ -96,7 +96,7 @@ Acceptance: UI and engine agree before and after reload for each fixture.
 
 ### 4. Share draw/discard event paths and choices (P1)
 
-- [ ] Route turn draws, spell draws and cycling through replacement-aware shared operations.
+- [x] Route turn draws, spell draws and cycling through replacement-aware shared operations.
 - [x] Route cleanup discards through event-aware, ownership-correct operations.
 - [x] Let humans choose cleanup discards and resume pending choices after snapshots.
 - [x] Discard before damage removal/end-of-turn expiration, perform simultaneous cleanup, then handle state-based actions, triggers, priority and repeated cleanup.
@@ -104,6 +104,10 @@ Acceptance: UI and engine agree before and after reload for each fixture.
 - [ ] Expand interacting draw/discard replacement and APNAP/replacement-order fixtures; complete process-restart and browser interaction acceptance.
 
 Evidence: `test_cleanup_choices.py` covers seat-2 ownership, rejected choices leaving snapshots unchanged, choice reload, damage/pump clearing without an intervening SBA, shared discard ownership and trigger-driven repeated cleanup. A React server-render probe confirms all three mechanic-choice controls render for seat 2 and block priority advancement; it is not browser E2E. The deterministic replay runner now initializes its database before querying decks and runs independently of prior API/tests.
+
+Draw-path evidence: turn draws call `draw_cards`; spell draws and cycling reach the same handler. Canonical Thought Reflection fixtures now cover one/two unconditional draw-doubling sources, per-original-draw choices, draw-step/HTTP choices, nested dredge pauses, snapshot resume and later effect clauses. Existing cycling replacement tests also pass. Conditional doubling (for example, excluding the first draw in a draw step), alternative win/empty-library replacement families, APNAP combinations and a complete browser/restart flow remain open under the second unchecked item.
+
+Latest draw-replacement validation: 914 backend tests pass in an isolated source/database copy; a seeded two-game replay reports no timeout or determinism drift. Frontend build and unit checks pass. The loopback-only browser harness passes 19 paths, including a human choosing Thought Reflection over Stinkweed Imp and then choosing both nested draws. This is not a complete-game/browser-restart certificate.
 
 Validation: full existing suite 762 passed after the final engine change; the five cleanup fixtures also pass, including the subsequently added cascading-SBA case. Frontend build passes. Clean standalone seeded BO3 (Aetherdrift Aggro/Karlov Manor Control) completes without timeout or drift. No arbitrary-card or balance certification is inferred.
 

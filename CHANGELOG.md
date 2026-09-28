@@ -4,6 +4,9 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Added reusable unconditional draw-doubling replacement handling for canonical Thought Reflection wording. Each source applies once per draw event; replacement-created draws can encounter other sources without infinite loops. Human draw-step and per-draw stack choices, nested dredge pauses, snapshots and later spell clauses retain ordered continuations. Conditional draw-replacement families remain open.
+- The production Controls/API browser harness now covers a draw replacement followed by nested dredge decisions (19 passing scenarios). Paused damage replacement chains also finish their originating stack item after the final choice.
+
 - Corrected AI Annihilator sacrifices to prefer expendable tokens and weak creatures over lands or stronger threats. AI cleanup now pauses for a persisted legal discard choice and evaluates the full hand rather than discarding the first cards. The shared mechanic-choice setting retains compatibility with prior snapshot field names.
 
 - Generalized persisted library choices to AI-controlled topdeck battlefield, creature-reveal and hand/exile/bottom effects. Live/replay AI now ranks resolution-time options rather than relying on each effect handler's fixed first/highest-cost fallback. Direct handler calls still have deterministic behavior, and the AI ranking is not expert-level planning.

@@ -49,9 +49,6 @@ def offer_dredge_choice(state, controller: int, payload: dict) -> bool:
 
 def complete_draw_choice(state, player_id: int, action: dict) -> bool:
     from effects.handlers import draw_cards
-    from effects.registry import resolve_effect
-    from game_state.state import StackItem
-    from rules_engine.stack_engine import finish_stack_resolution
     pending = state.pending_mechanic_choice
     chosen = action.get("choice_id")
     if not pending or pending["kind"] != "draw" or pending["player_id"] != player_id or chosen not in pending["options"]:
@@ -65,21 +62,6 @@ def complete_draw_choice(state, player_id: int, action: dict) -> bool:
     else:
         payload["__replacement_source_id"] = chosen
     draw_cards(state, pending["controller"], payload)
-    continuation_started = False
-    if pending["remaining_draws"] and not state.pending_mechanic_choice:
-        draw_cards(state, pending["controller"], {"target_player": player_id, "amount": pending["remaining_draws"]})
-    if not state.pending_mechanic_choice and pending.get("continuation_effects"):
-        continuation_started = True
-        resolve_effect(state, pending["controller"], "effect_sequence", {"effects": pending["continuation_effects"]})
-    if state.pending_mechanic_choice:
-        if "resolving_item" in pending:
-            state.pending_mechanic_choice["resolving_item"] = pending["resolving_item"]
-        if not continuation_started:
-            state.pending_mechanic_choice.setdefault("continuation_effects", []).extend(pending.get("continuation_effects", []))
-    elif pending.get("resolving_item"):
-        item = StackItem(**pending["resolving_item"])
-        finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
-    if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
-        state.priority_player = state.active_player
-        state.passed_priority = set()
+    from rules_engine.stack_engine import resume_paused_resolution
+    resume_paused_resolution(state, pending)
     return True

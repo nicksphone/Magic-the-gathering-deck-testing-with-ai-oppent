@@ -177,6 +177,19 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.card_ids.length"), 1);
   console.log("PASS resolution-time library search choice through Controls and API");
 
+  await click("Draw Replacement Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.event === 'card_draw'");
+  const drawHandBefore = await evaluate("window.fixtureState.players['2'].hand_count");
+  await click("Thought Reflection");
+  for (let index = 0; index < 2; index++) {
+    await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'draw'");
+    await click("Draw normally");
+  }
+  await waitFor("window.fixtureState?.pending_replacement_choice === null && window.fixtureState?.pending_mechanic_choice === null");
+  assert.equal(await evaluate("window.fixtureState.players['2'].hand_count"), drawHandBefore + 2);
+  assert.equal(await evaluate("window.fixtureActions[0].action.replacement_source_id"), "reflection");
+  console.log("PASS draw replacement and nested dredge choices through Controls and API");
+
   await click("BO3 Fixture");
   await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
   await click("P2 Draw First");

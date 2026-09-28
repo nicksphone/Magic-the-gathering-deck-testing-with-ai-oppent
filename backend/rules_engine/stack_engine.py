@@ -175,9 +175,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     is_trigger = bool(payload.get("__trigger_event"))
     payload["__source_card_id"] = item.source_card_id
     resolve_effect(state, item.controller, item.effect_key, payload)
-    if state.pending_mechanic_choice:
+    pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
+    if pending_choice:
         from dataclasses import asdict
-        state.pending_mechanic_choice["resolving_item"] = asdict(item)
+        pending_choice["resolving_item"] = asdict(item)
         return False
     return finish_stack_resolution(state, item, payload)
 
@@ -248,3 +249,40 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     if not state.pending_mechanic_choice:
         state.log.append(f"{item.label} does not resolve because its target is illegal." if payload.get("__failed_to_resolve") else f"{item.label} resolves.")
     return True
+
+
+def resume_paused_resolution(state: MatchState, pending: dict) -> None:
+    from effects.handlers import draw_cards
+
+    controller = int(
+        pending.get("controller")
+        or (pending.get("resolving_item") or {}).get("controller")
+        or pending["player_id"]
+    )
+    queue = list(pending.get("draw_continuation_queue") or [])
+    if not queue and pending.get("remaining_draws"):
+        queue = [pending.get("remaining_draw_payload") or {
+            "target_player": pending["player_id"], "amount": pending["remaining_draws"],
+        }]
+    next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
+    while queue and not next_pending and state.winner is None:
+        draw_cards(state, controller, queue.pop(0))
+        next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
+    if next_pending:
+        next_pending.setdefault("draw_continuation_queue", []).extend(queue)
+        if pending.get("resolving_item"):
+            next_pending["resolving_item"] = pending["resolving_item"]
+        next_pending.setdefault("continuation_effects", []).extend(pending.get("continuation_effects", []))
+        return
+    if pending.get("continuation_effects") and state.winner is None:
+        resolve_effect(state, controller, "effect_sequence", {"effects": pending["continuation_effects"]})
+    next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
+    if next_pending:
+        if pending.get("resolving_item"):
+            next_pending["resolving_item"] = pending["resolving_item"]
+    elif pending.get("resolving_item"):
+        item = StackItem(**pending["resolving_item"])
+        finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+    if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
+        state.priority_player = state.active_player
+        state.passed_priority = set()
