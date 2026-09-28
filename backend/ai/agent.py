@@ -190,6 +190,17 @@ class AIAgent:
             return max(0, power) * 1.5 + max(0, toughness) + mana_value(card.mana_cost) * 0.5
 
         creatures.sort(key=lambda target: (-threat(target), target))
+        if choice.get("player_id") != source.controller:
+            for target in creatures:
+                toughness = _effective_combat_stats(state, target)[1]
+                marked = int(state.cards[target].counters.get("__damage_marked", 0))
+                safe = max(0, toughness - marked - 1)
+                allocated = min(remaining, safe)
+                allocation[target] = allocated
+                remaining -= allocated
+            if remaining and creatures:
+                allocation[min(creatures, key=lambda target: (threat(target), target))] += remaining
+            return allocation
         lethal_needs: dict[str, int] = {}
         for target in creatures:
             prior = sum(amounts.get(target, 0) for cid, amounts in state.combat_damage_assignments.items() if cid in state.attackers)

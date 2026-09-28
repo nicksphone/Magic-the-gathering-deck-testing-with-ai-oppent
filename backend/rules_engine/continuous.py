@@ -46,6 +46,7 @@ PT_AND_KW_REMOVE_RE = re.compile(
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
+    "banding",
     "trample",
     "first strike",
     "double strike",

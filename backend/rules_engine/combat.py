@@ -244,20 +244,33 @@ def _assignment_options(state: MatchState, cid: str, first_only: bool) -> list[s
     return attackers if len(attackers) > 1 else []
 
 
+def _assignment_controller(state: MatchState, cid: str) -> int:
+    source = state.cards[cid]
+    if cid in state.attackers:
+        blockers = state.blocks.get(cid, [])
+        if any(bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD and has_keyword(state, bid, "banding") for bid in blockers):
+            return 1 if state.active_player == 2 else 2
+    elif any(aid in state.cards and state.cards[aid].zone == Zone.BATTLEFIELD and has_keyword(state, aid, "banding")
+             for aid in state.attackers if cid in state.blocks.get(aid, [])):
+        return state.active_player
+    return source.controller
+
+
 def _offer_damage_assignment(state: MatchState) -> None:
     source = state.combat_assignment_queue[0]
     card = state.cards[source]
+    chooser = _assignment_controller(state, source)
     options = _assignment_options(state, source, state.combat_damage_stage == "first")
     labels = {cid: state.cards[cid].name if cid in state.cards else _defender_label(state, cid) for cid in options}
     state.pending_mechanic_choice = {
-        "kind": "combat_damage", "player_id": card.controller, "source_id": source,
+        "kind": "combat_damage", "player_id": chooser, "source_id": source,
         "source_name": card.name, "stage": state.combat_damage_stage,
         "options": options, "option_labels": labels,
         "count": max(0, effective_power(state, source)),
-        "can_restart": card.controller == state.active_player and bool(state.combat_damage_assignments),
+        "can_restart": any(_assignment_controller(state, cid) == chooser for cid in state.combat_damage_assignments),
         "label": f"Assign {card.name}'s combat damage",
     }
-    state.priority_player = card.controller
+    state.priority_player = state.pending_mechanic_choice["player_id"]
     state.passed_priority = set()
 
 
@@ -280,7 +293,7 @@ def _prepare_damage_step(state: MatchState) -> None:
     sources = list(state.attackers) + blockers
     state.combat_assignment_queue = [
         cid for cid in sources
-        if cid in state.cards and state.cards[cid].controller in state.mechanic_choice_players
+        if cid in state.cards and _assignment_controller(state, cid) in state.mechanic_choice_players
         and effective_power(state, cid) > 0 and _assignment_options(state, cid, first_only)
     ]
     if state.combat_assignment_queue:
@@ -351,7 +364,19 @@ def finish_damage_assignment(state: MatchState, player_id: int, action: dict) ->
     if not valid_damage_assignment(state, player_id, action):
         return False
     if action.get("choice_id") == "restart":
-        _prepare_damage_step(state)
+        state.combat_damage_assignments = {
+            cid: amounts for cid, amounts in state.combat_damage_assignments.items()
+            if _assignment_controller(state, cid) != player_id
+        }
+        blockers = list(dict.fromkeys(bid for bids in state.blocks.values() for bid in bids))
+        first_only = state.combat_damage_stage == "first"
+        state.combat_assignment_queue = [
+            cid for cid in list(state.attackers) + blockers
+            if cid in state.cards and cid not in state.combat_damage_assignments
+            and _assignment_controller(state, cid) in state.mechanic_choice_players
+            and effective_power(state, cid) > 0 and _assignment_options(state, cid, first_only)
+        ]
+        _offer_damage_assignment(state)
         return True
     amounts = action["damage_assignment"]
     source = state.pending_mechanic_choice["source_id"]

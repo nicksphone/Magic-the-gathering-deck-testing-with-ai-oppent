@@ -99,6 +99,16 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.id === 'guard')"), false);
   console.log("PASS shared trample assignment can restart and resolves only after both players assign damage");
 
+  await click("Banding Damage Fixture");
+  await waitFor("window.fixtureState.step === 'declare_blockers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.source_id === 'courser' && window.fixtureState.pending_mechanic_choice?.player_id === 2 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await assignDamage({ "Benalish Hero hero": 3 });
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'hero')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.id === 'bears')"), true);
+  console.log("PASS banding blocker transfers attacker's damage choice to defending human seat");
+
   await reset();
   await click("Cast Llanowar Elves");
   await waitFor("window.fixtureState.stack.length === 1");

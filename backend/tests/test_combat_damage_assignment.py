@@ -96,6 +96,7 @@ def test_palace_guard_controller_chooses_which_attacker_takes_its_one_damage() -
     combat.declare_blockers(state, {"elves": ["guard"], "mystic": ["guard"]})
     _enter_damage(state)
     assert state.pending_mechanic_choice["player_id"] == 2
+    assert state.priority_player == 2
     assert state.players[2].life == 20
     state = checked_action(state, RulesEngine(), 2, {
         "type": "choose_mechanic", "damage_assignment": {"elves": 0, "mystic": 1},
@@ -226,6 +227,92 @@ def test_ai_second_trampler_spills_after_first_assigned_lethal_to_shared_blocker
     state = checked_action(state, engine, 1, second)
     state = _finish_shared_blocker_choice(state)
     assert state.players[2].life == 14
+
+
+def test_banding_blocker_lets_defender_assign_attackers_damage() -> None:
+    state = _state()
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
+    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    state.attackers = ["courser"]
+    combat.declare_blockers(state, {"courser": ["hero", "bears"]})
+    _enter_damage(state)
+    assert state.pending_mechanic_choice["player_id"] == 2
+    assert state.priority_player == 2
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {
+            "type": "choose_mechanic", "damage_assignment": {"hero": 3, "bears": 0},
+        })
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "damage_assignment": {"hero": 3, "bears": 0},
+    })
+    assert state.cards["hero"].zone == Zone.GRAVEYARD
+    assert state.cards["bears"].zone == Zone.BATTLEFIELD
+
+
+def test_banding_attacker_lets_active_player_assign_multi_blockers_damage() -> None:
+    state = _state()
+    _creature(state, "hero", 1, "Benalish Hero", 1, 1, ["banding"])
+    _creature(state, "elf", 1, "Llanowar Elves", 1, 1)
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["hero", "elf"]
+    combat.declare_blockers(state, {"hero": ["guard"], "elf": ["guard"]})
+    _enter_damage(state)
+    assert state.pending_mechanic_choice["player_id"] == 1
+    assert state.priority_player == 1
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 2, {
+            "type": "choose_mechanic", "damage_assignment": {"hero": 0, "elf": 1},
+        })
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"hero": 0, "elf": 1},
+    })
+    assert state.cards["hero"].zone == Zone.BATTLEFIELD
+    assert state.cards["elf"].zone == Zone.GRAVEYARD
+
+
+def test_ai_defender_with_banding_blocks_trample_to_life() -> None:
+    state = _state()
+    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
+    state.attackers = ["trampler"]
+    combat.declare_blockers(state, {"trampler": ["hero"]})
+    _enter_damage(state)
+    assert state.pending_mechanic_choice["player_id"] == 2
+    decision = AIAgent(difficulty="master").choose_action(state, RulesEngine().legal_moves(state, 2), 2)
+    assert decision.action["damage_assignment"] == {"hero": 5, "player:2": 0}
+    state = checked_action(state, RulesEngine(), 2, decision.action)
+    assert state.players[2].life == 20
+
+
+def test_restart_preserves_other_players_banding_damage_assignment() -> None:
+    state = _state()
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
+    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
+    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    state.attackers = ["courser", "first", "second"]
+    combat.declare_blockers(state, {
+        "courser": ["hero", "bears"], "first": ["guard"], "second": ["guard"],
+    })
+    _enter_damage(state)
+    assert state.pending_mechanic_choice["player_id"] == 2
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "damage_assignment": {"hero": 3, "bears": 0},
+    })
+    assert state.pending_mechanic_choice["source_id"] == "first"
+    assert state.pending_mechanic_choice["can_restart"] is False
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "damage_assignment": {"guard": 4, "player:2": 1},
+    })
+    assert state.pending_mechanic_choice["source_id"] == "second"
+    assert state.pending_mechanic_choice["can_restart"] is True
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "choice_id": "restart"})
+    assert state.pending_mechanic_choice["source_id"] == "first"
+    assert state.combat_damage_assignments == {"courser": {"hero": 3, "bears": 0}}
+    assert state.priority_player == 1
 
 
 def test_trample_assignment_to_planeswalker_reduces_loyalty() -> None:
