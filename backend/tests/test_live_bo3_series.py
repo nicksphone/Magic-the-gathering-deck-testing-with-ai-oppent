@@ -1,6 +1,7 @@
 """Natural seeded BO3 through the public match API, including a process-style restore."""
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -17,15 +18,19 @@ def _built_in(name: str) -> list[dict]:
     ]
 
 
-def test_seeded_live_ai_bo3_finishes_after_between_game_restore() -> None:
+@pytest.mark.parametrize("deck_a,deck_b,seed", [
+    ("Mono Red Aggro", "Burn", 73),
+    ("Blue Control", "Ramp", 73),
+])
+def test_seeded_live_ai_bo3_finishes_after_between_game_restore(deck_a: str, deck_b: str, seed: int) -> None:
     payload = {
-        "deck_a": _built_in("Mono Red Aggro"),
-        "deck_b": _built_in("Burn"),
+        "deck_a": _built_in(deck_a),
+        "deck_b": _built_in(deck_b),
         "controller_a": "ai",
         "controller_b": "ai",
         "mode": "ai_vs_ai",
         "best_of": 3,
-        "seed": 73,
+        "seed": seed,
     }
     with TestClient(app) as client:
         started = client.post("/matches/start", json=payload)
@@ -44,7 +49,7 @@ def test_seeded_live_ai_bo3_finishes_after_between_game_restore() -> None:
                     ACTIVE_MATCHES.pop(match_id)
                     with Session(engine) as session:
                         _restore_active_matches(Repository(session), match_id)
-                    assert ACTIVE_MATCHES[match_id].root_seed == 73
+                    assert ACTIVE_MATCHES[match_id].root_seed == seed
                     assert client.get(f"/matches/{match_id}").json()["score"] == state["score"]
                     restored = True
                 if state["match_complete"]:
