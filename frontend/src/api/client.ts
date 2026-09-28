@@ -1,6 +1,7 @@
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
+import { parseMatchState } from "./match-contract";
 
 const configuredApi = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
 const API = apiBase(configuredApi);
@@ -172,6 +173,10 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function matchReq(path: string, init?: RequestInit): Promise<MatchState> {
+  return parseMatchState(await req<unknown>(path, init));
+}
+
 export type MatchWrite = { revision: number; key: string };
 const writeHeaders = (write?: MatchWrite): Record<string, string> => write ? { "Content-Type": "application/json", "X-Match-Revision": String(write.revision), "Idempotency-Key": write.key } : { "Content-Type": "application/json" };
 
@@ -210,26 +215,26 @@ export const api = {
     ai_difficulty: string;
     mode: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
     best_of: number;
-  }) => req<MatchState>("/matches/start", { method: "POST", body: JSON.stringify(payload) }),
-  getMatch: (id: string) => req<MatchState>(`/matches/${id}`),
+  }) => matchReq("/matches/start", { method: "POST", body: JSON.stringify(payload) }),
+  getMatch: (id: string) => matchReq(`/matches/${id}`),
   savedMatches: () => req<SavedMatch[]>("/matches"),
   legalMoves: (matchId: string, playerId?: number) =>
     req<{ player_id: number; moves: LegalMove[]; revision?: number }>(
       `/matches/${matchId}/legal-moves${playerId ? `?player_id=${playerId}` : ""}`,
     ),
   act: (matchId: string, player_id: number, action: Record<string, unknown>, write?: MatchWrite) =>
-    req<MatchState>(`/matches/${matchId}/action`, { method: "POST", headers: writeHeaders(write), body: JSON.stringify({ player_id, action }) }),
-  autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => req<MatchState>(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST", headers: writeHeaders(write) }),
+    matchReq(`/matches/${matchId}/action`, { method: "POST", headers: writeHeaders(write), body: JSON.stringify({ player_id, action }) }),
+  autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => matchReq(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST", headers: writeHeaders(write) }),
   sideboard: (matchId: string, player_id: number, cards_out: DeckItem[], cards_in: DeckItem[], write?: MatchWrite) =>
-    req<MatchState>(`/matches/${matchId}/sideboard`, {
+    matchReq(`/matches/${matchId}/sideboard`, {
       method: "POST",
       headers: writeHeaders(write),
       body: JSON.stringify({ player_id, cards_out, cards_in }),
     }),
   nextGame: (matchId: string, choice: { player_id: number; play_first: boolean } | null, write?: MatchWrite) =>
-    req<MatchState>(`/matches/${matchId}/next-game`, { method: "POST", headers: writeHeaders(write), body: choice ? JSON.stringify(choice) : undefined }),
+    matchReq(`/matches/${matchId}/next-game`, { method: "POST", headers: writeHeaders(write), body: choice ? JSON.stringify(choice) : undefined }),
   setPriorityStops: (matchId: string, player_id: number, stops: string[], write?: MatchWrite) =>
-    req<MatchState>(`/matches/${matchId}/priority-stops`, {
+    matchReq(`/matches/${matchId}/priority-stops`, {
       method: "POST",
       headers: writeHeaders(write),
       body: JSON.stringify({ player_id, stops }),

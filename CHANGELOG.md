@@ -2,6 +2,10 @@
 
 This file tracks milestone-level changes. The root README stays focused on the current product state.
 
+## 2026-09-28
+
+- Added a runtime match-response boundary on all live match API calls. It rejects malformed player/card views and non-list block assignments instead of trusting the TypeScript cast; unit cases and one backend-serialized match pass. Generated OpenAPI types and full response-contract coverage remain open.
+
 ## 2026-09-27
 
 - Production frontend routing now defaults to same-origin `/api` rather than guessing an HTTP backend on port `9999`; card-image routing follows the same deployment policy. A separate backend remains configurable through `VITE_API_BASE_URL`. Build and routing unit tests pass; actual HTTPS/reverse-proxy acceptance remains open.

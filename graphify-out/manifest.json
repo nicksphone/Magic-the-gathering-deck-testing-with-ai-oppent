@@ -868,8 +868,8 @@
     "hash": "f56946159671c8fa02066c293021819b"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/client.ts": {
-    "mtime": 1790553436.276859,
-    "hash": "116db53a06a1f7b5288fe6b8a279f9d3"
+    "mtime": 1790553593.1630337,
+    "hash": "83574c3454e16026cebe514245299700"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/routing.ts": {
     "mtime": 1790553436.275859,
@@ -878,6 +878,10 @@
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/errors.ts": {
     "mtime": 1790541646.5603578,
     "hash": "b22cfff11b648ec7e593ca94f1b3f9c8"
+  },
+  "/home/nick/mtg-deck-testing-lab/frontend/src/api/match-contract.ts": {
+    "mtime": 1790553593.1620338,
+    "hash": "0090576e6e6c69c778753a281b351877"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/api-routing.mjs": {
     "mtime": 1790553436.276859,
@@ -907,6 +911,10 @@
     "mtime": 1790541646.5613577,
     "hash": "a2ad4a342f76188846bf38545820e10e"
   },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/match-contract.mjs": {
+    "mtime": 1790553593.1630337,
+    "hash": "aa004ae6bc7e3cbbfe1f7fa7262191f8"
+  },
   "/home/nick/mtg-deck-testing-lab/FIXES.md": {
     "mtime": 1777489940.342248,
     "hash": "e25dcaa76c3eb69ddb578b90ff58a952"
@@ -916,16 +924,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790553477.2281184,
-    "hash": "f93de6ef81ba3fde826b3942a9421dc6"
+    "mtime": 1790553644.6201138,
+    "hash": "86ddee962a3c7f024821174a173b018e"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790553477.2291183,
-    "hash": "0fddb276f0a462fcbbc3f19a3c25d5f5"
+    "mtime": 1790553644.6201138,
+    "hash": "fca69fb95cea1db59114bb37b1dfac71"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790553477.2301183,
-    "hash": "dcf883467fc9ad30e1b499d1aa6407c7"
+    "mtime": 1790553653.7739503,
+    "hash": "fd34f0053fdb9641bec24d454a7e87fc"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,

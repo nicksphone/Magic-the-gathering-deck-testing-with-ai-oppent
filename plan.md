@@ -184,6 +184,8 @@ Acceptance: repeated seeded interactive series and restarts agree when actions a
 
 ### 9. Add contract and frontend release gates (P2)
 
+The frontend now checks live match responses for core fields, both player views, required card-view fields and list-valued block assignments. Unit regressions reject malformed payloads, and a backend-serialized match passed the validator. This is partial boundary coverage, not generated OpenAPI types or full response validation.
+
 - [ ] Generate/share OpenAPI types and validate response payloads at runtime where needed.
 - [ ] Correct block assignments to list-valued mappings and remove broad simulator/action `any` types.
 - [ ] Configure ESLint with React-hooks checks, component tests and browser smoke tests.
