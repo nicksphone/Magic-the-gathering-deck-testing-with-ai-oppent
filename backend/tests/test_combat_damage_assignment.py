@@ -58,6 +58,22 @@ def _finish_shared_blocker_choice(state):
     })
 
 
+def test_simultaneous_combat_deaths_use_shared_state_actions() -> None:
+    state = _state()
+    state.mechanic_choice_players = set()
+    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    state.attackers = ["courser"]
+    state.blocks = {"courser": ["giant"]}
+
+    combat.combat_damage(state)
+
+    assert state.cards["courser"].zone == Zone.GRAVEYARD
+    assert state.cards["giant"].zone == Zone.GRAVEYARD
+    assert sum("State-based action:" in line for line in state.log) == 2
+    assert not state.trigger_staging
+
+
 def test_multi_blocked_attacker_can_assign_all_damage_to_later_blocker_after_snapshot() -> None:
     state = _state()
     _creature(state, "courser", 1, "Centaur Courser", 3, 3)

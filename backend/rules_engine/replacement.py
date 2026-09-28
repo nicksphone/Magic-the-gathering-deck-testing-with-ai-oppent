@@ -49,6 +49,7 @@ _DIE_EXILE_RE = re.compile(
     r"if a (?:non-token|nontoken|another )?(?:creature|permanent|artifact|enchantment|artifact or enchantment) you control would die, exile it instead"
     r"|if an? artifact or enchantment you control would die, exile it instead"
 )
+_SUBTYPE_DIE_EXILE_RE = re.compile(r"\bif an? ([a-z]+) you control would die, exile it instead\b")
 _DRAW_DOUBLE_RE = re.compile(r"(?:^|\n)if you would draw a card, draw two cards instead\.")
 _DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
     r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
@@ -124,15 +125,10 @@ def replacement_options(
         candidates.extend((state.cards[option["card_id"]], state.cards[option["card_id"]].oracle_text) for option in dredge_options(state, target_player))
     elif event_key in {"die_zone", "dies"} and target_card_id in state.cards:
         target = state.cards[target_card_id]
-        is_token = bool(
-            getattr(target, "is_token", False)
-            or "token" in {str(t).lower() for t in (target.types or [])}
-        )
         candidates = [
             (card, text)
             for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-            if not (is_token and ("nontoken" in text or "non-token" in text))
-            and _DIE_EXILE_RE.search(text)
+            if _die_exile_applies(text, target)
         ]
     return [
         {
@@ -425,31 +421,34 @@ def replace_die_zone(
 ) -> str:
     """Return destination zone for a dying permanent: 'graveyard' or 'exile'."""
     target = state.cards.get(card_id)
-    is_token = bool(target and (getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])}))
     candidates: list[tuple[object, str]] = []
     for card, text in _battlefield_oracle_texts(state, controller=controller):
-        if is_token and ("nontoken" in text or "non-token" in text):
-            continue
-        if _matches_phrase(
-            text,
-            (
-                "if a permanent you control would die, exile it instead",
-                "if a non-token permanent you control would die, exile it instead",
-                "if a nontoken permanent you control would die, exile it instead",
-                "if a permanent would die, exile it instead",
-                "if a creature you control would die, exile it instead",
-                "if another creature you control would die, exile it instead",
-                "if a nontoken creature you control would die, exile it instead",
-                "if a non-token creature you control would die, exile it instead",
-            ),
-        ):
-            candidates.append((card, text))
-            continue
-        if _DIE_EXILE_RE.search(text):
+        if target and _die_exile_applies(text, target):
             candidates.append((card, text))
     if _choose_replacement_candidate(state, candidates, replacement_source_id, "die zone") is not None:
         return "exile"
     return "graveyard"
+
+
+def _die_exile_applies(text: str, target) -> bool:
+    is_token = bool(getattr(target, "is_token", False) or "token" in {str(t).lower() for t in (target.types or [])})
+    if is_token and ("nontoken" in text or "non-token" in text):
+        return False
+    if _DIE_EXILE_RE.search(text) or _matches_phrase(text, (
+        "if a permanent would die, exile it instead",
+        "if a non-token permanent you control would die, exile it instead",
+        "if a nontoken permanent you control would die, exile it instead",
+        "if another creature you control would die, exile it instead",
+        "if a non-token creature you control would die, exile it instead",
+        "if a nontoken creature you control would die, exile it instead",
+    )):
+        return True
+    match = _SUBTYPE_DIE_EXILE_RE.search(text)
+    if not match:
+        return False
+    subtype_text = re.split(r"\s+[—-]\s+", str(getattr(target, "type_line", "") or ""), maxsplit=1)
+    subtypes = set(re.findall(r"[a-z]+", subtype_text[1].lower())) if len(subtype_text) > 1 else set()
+    return match.group(1) in subtypes
 
 
 def player_cant_gain_life(state, target_player: int) -> bool:

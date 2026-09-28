@@ -8,7 +8,7 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, replacement_options
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -311,9 +311,6 @@ def _resolve_damage_step(state: MatchState) -> None:
     if not first_only:
         state.combat_damage_resolved = True
     _remove_dead_creatures(state)
-    if not state.pending_replacement_choice:
-        from rules_engine.state_based_actions import apply_state_based_actions
-        apply_state_based_actions(state)
     if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
         state.priority_player = state.active_player
         state.passed_priority = set()
@@ -536,49 +533,9 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
 
 
 def _remove_dead_creatures(state: MatchState) -> None:
-    dead: list[str] = []
-    for cid, card in state.cards.items():
-        if card.zone != Zone.BATTLEFIELD or "Creature" not in card.types:
-            continue
-        if _creature_is_lethally_damaged(state, cid):
-            dead.append(cid)
-    for cid in dead:
-        card = state.cards[cid]
-        battlefield_owner = state.players[card.controller]
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if cid in battlefield_owner.battlefield:
-            choice_players = set(getattr(state, "replacement_choice_players", set()) or set())
-            human_choice = getattr(state, "replacement_choice_required", False) and (
-                not choice_players or card.controller in choice_players
-            )
-            options = replacement_options(state, "die_zone", target_card_id=cid)
-            if human_choice and len(options) > 1:
-                state.pending_replacement_choice = {
-                    "resume_kind": "combat_die",
-                    "player_id": card.controller,
-                    "event": "die_zone",
-                    "target_card_id": cid,
-                    "options": options,
-                }
-                state.priority_player = card.controller
-                state.passed_priority = set()
-                state.log.append(
-                    f"Replacement choice required for combat death; {state.players[card.controller].name} must choose one of {len(options)} effects."
-                )
-                return
-            emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
-            battlefield_owner.battlefield.remove(cid)
-            destination = replace_die_zone(state, card.controller, cid)
-            if destination == "exile":
-                zone_owner.exile.append(cid)
-                card.zone = Zone.EXILE
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                continue
-            zone_owner.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
-            state.log.append(f"{card.name} dies in combat.")
-            emit_event(state, "permanent_dies", {"card_id": cid, "controller": card.controller})
-            emit_event(state, "creature_dies", {"card_id": cid, "controller": card.controller})
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    apply_state_based_actions(state)
 
 
 def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_source_id: str) -> None:
@@ -791,19 +748,3 @@ def _remaining_lethal_damage(state: MatchState, card_id: str) -> int:
     toughness = effective_toughness(state, card_id)
     marked = int(card.counters.get(DMG_MARK_KEY, 0))
     return max(1, toughness - marked)
-
-
-def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
-    card = state.cards[card_id]
-    if card.toughness is None:
-        return False
-    if effective_toughness(state, card_id) <= 0:
-        return True
-    if has_keyword(state, card_id, "indestructible"):
-        return False
-    marked = int(card.counters.get(DMG_MARK_KEY, 0))
-    if marked >= int(effective_toughness(state, card_id)):
-        return True
-    if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
-        return True
-    return False

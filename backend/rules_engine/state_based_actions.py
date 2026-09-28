@@ -94,6 +94,10 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
         {"card_id": cid, "controller": state.cards[cid].controller}
         for cid in valid_ids
     ]
+    destinations = {
+        cid: replace_die_zone(state, state.cards[cid].controller, cid)
+        for cid in valid_ids
+    }
     emit_event_batch(state, "leaves_battlefield", leave_events)
     for cid in valid_ids:
         card = state.cards[cid]
@@ -104,7 +108,7 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
     for cid in valid_ids:
         card = state.cards[cid]
         owner = state.players[getattr(card, "owner", card.controller)]
-        destination = replace_die_zone(state, card.controller, cid)
+        destination = destinations[cid]
         if destination == "exile":
             owner.exile.append(cid)
             card.zone = Zone.EXILE
