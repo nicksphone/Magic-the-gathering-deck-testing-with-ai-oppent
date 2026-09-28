@@ -4,6 +4,8 @@ The harness renders the production Battlefield and Controls components and invok
 
 This is not a complete App onboarding/game/recovery test or a rules certification. Fixtures use named real cards with only relevant clauses, never add cards to the gameplay corpus, and cannot be launched from the live Git checkout. The crew path asserts that tapping pays its cost before the Vehicle gains creature type on stack resolution; see [crew timing checks](crew-stack-timing.md).
 
+CI runs `bash frontend/tests/run-browser-ci.sh` in a separate Ubuntu browser job. The script copies the backend to a temporary directory, starts loopback API/Vite/Chromium, runs all action paths and the App recovery scenarios, restarts only the copied backend, then verifies restored state. For local runs needing an unsandboxed test browser, set `MTG_BROWSER_NO_SANDBOX=1`; keep that unset on ordinary-user CI runners.
+
 Requirements: installed backend dependencies, installed frontend dependencies, Node 22 with built-in WebSocket, and Chromium with remote debugging. Use three separate terminals; all services bind loopback. The copied backend owns its database/cache; changing only cwd is not isolation.
 
 ```bash

@@ -360,7 +360,7 @@ Current focus:
 - keeping the UI dense and readable during long sessions
 - validating LAN and long-session UX, then adding richer state-by-state replay reconstruction
 
-GitHub Actions runs a clean-checkout backend test suite and frontend `npm ci`, build, hooks lint and unit checks on pushes and pull requests. Browser-flow CI is still pending; local browser fixture instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
+GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build/hooks lint/unit checks, and a separate loopback Chromium action/recovery flow on pushes and pull requests. The browser job includes a backend-process restart check; it is not a complete-game or deployment test. Local instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
 
 ## Known Limitations and Next Upgrades
 

@@ -199,6 +199,8 @@ A clean-checkout GitHub Actions baseline installs declared Python and locked npm
 
 Hosted run `36369185983` passed both baseline jobs. ESLint now checks TypeScript and React hooks in `src`, with the shared autoplay, response-pass, deck-refresh and legal-move dependencies corrected rather than suppressed. A fresh `npm ci` copy passes lint, build and unit checks; the local Chromium harness passes 19 action paths plus App refresh, ambiguous-write recovery and backend-process restart. The lint step is added to CI, but that updated hosted run and browser CI are not yet verified.
 
+A separate browser CI job now uses the existing production Controls/API and App recovery fixtures against a temporary backend copy, including an actual process restart. The reusable runner passed all 19 action paths and three recovery checks locally. Hosted browser execution remains to be observed; it is still not a complete human game or BO3.
+
 - [ ] Generate/share OpenAPI types and validate response payloads at runtime where needed.
 - [x] Correct block assignments to list-valued mappings and remove broad simulator/action `any` types.
 - [ ] Configure ESLint with React-hooks checks, component tests and browser smoke tests.
