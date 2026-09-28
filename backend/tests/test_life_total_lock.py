@@ -124,6 +124,36 @@ def test_life_payment_cost_can_use_exact_remaining_life_without_lock():
     assert state.players[1].life == 20 and not card.tapped
 
 
+@pytest.mark.xfail(strict=True, reason="Life payment has no staged trigger event after activation completes")
+def test_font_of_agonies_triggers_after_cruel_sadist_life_payment():
+    state = game()
+    font = CardInstance(
+        id="font", name="Font of Agonies", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.\n"
+                    "{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
+    )
+    sadist = CardInstance(
+        id="sadist", name="Cruel Sadist", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
+        oracle_text="{B}, {T}, Pay 1 life: Put a +1/+1 counter on this creature.\n"
+                    "{2}{B}, {T}, Remove X +1/+1 counters from this creature: It deals X damage to target creature.",
+        summoning_sick=False,
+    )
+    for card in (font, sadist):
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+    state.players[1].mana_pool["B"] = 1
+    engine = RulesEngine()
+    action = next(
+        move for move in engine.legal_moves(state, 1)
+        if move["type"] == "activate_ability" and move.get("card_id") == sadist.id and move.get("ability_index") == 0
+    )
+    engine.take_action(state, 1, action)
+    assert state.players[1].life == 19
+    assert [item.source_card_id for item in state.stack] == [sadist.id, font.id]
+
+
 def test_additional_cost_uses_the_same_life_payment_legality():
     state = game()
     spell = CardInstance(

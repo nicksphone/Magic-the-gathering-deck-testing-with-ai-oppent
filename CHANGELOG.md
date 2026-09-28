@@ -1,5 +1,7 @@
 # Changelog
 
+- Audited a separate cost-payment trigger gap using real Font of Agonies and Cruel Sadist text. A strict expected-failure regression shows the life payment occurs but no Font trigger reaches the stack; the [audit](docs/audits/2026-09-28-life-payment-triggers.md) specifies transaction-safe trigger timing before an engine change. Verification: 1,115 isolated backend tests pass with exactly 1 strict xfail. This is a tracked limitation, not a fix.
+
 - Added real Nefarious Lich/Boon Reflection combat fixtures for gain-to-draw replacement order, multiple lifelink sources, human choice and snapshot continuation. A Vampire Nighthawk granted double strike verifies Archive applies separately in first and regular damage windows without duplicate damage. Verification: 1,115 isolated backend tests pass; the previously run frontend gates and full Chromium harness remain green. Nested draw-replacement choices and broader simultaneous ordering remain open.
 
 - Combat lifelink gains now use the shared life-gain replacement handler instead of direct life mutation. Archive and Boon Reflection-style doublers apply to each source's event; human replacement choice can pause combat and resume after a snapshot before death state-based actions. The previous strict expected failure is removed. Verification: 1,113 isolated backend tests, frontend lint/build/unit and the full Chromium harness pass. Broader cross-event ordering remains open.
