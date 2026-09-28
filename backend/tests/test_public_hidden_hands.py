@@ -77,3 +77,34 @@ def test_public_match_hides_ai_library_search_options_and_order():
             assert state.pending_mechanic_choice["library_ids"] == state.players[2].library
         finally:
             ACTIVE_MATCHES.pop(state.id, None)
+
+
+def test_public_log_does_not_reveal_unrevealed_top_card_put_into_hand():
+    deck = [{"quantity": 60, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
+    state = MatchFactory.from_decks(deck, deck, seed=33)
+    state.pregame_pending = False
+    hand_card, exile_card, bottom_card = state.players[2].library[-3:]
+    for cid, name in ((hand_card, "Lightning Bolt"), (exile_card, "Counterspell"), (bottom_card, "Forest")):
+        state.cards[cid].name = name
+    resolve_effect(state, 2, "look_top_choose", {
+        "top_n": 3, "top_choice_hand_id": hand_card,
+        "top_choice_exile_id": exile_card, "top_choice_bottom_ids": [bottom_card],
+    })
+    controller = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "ai"}, ai={},
+        mode="player_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = controller
+        try:
+            response = client.get(f"/matches/{state.id}")
+            assert response.status_code == 200
+            public = response.json()
+            assert public["players"]["2"]["hand"] == []
+            assert hand_card in state.players[2].hand
+            assert any("Counterspell" in entry for entry in public["log"])
+            assert not any("Lightning Bolt" in entry or "Forest" in entry for entry in public["log"])
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)

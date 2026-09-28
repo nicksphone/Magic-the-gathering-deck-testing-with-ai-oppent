@@ -1022,7 +1022,7 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[cid].zone = Zone.LIBRARY
         player.library.insert(0, cid)
     state.log.append(
-        f"{player.name} looks at the top {len(top_slice)} cards, puts {state.cards[hand_card].name} into hand"
+        f"{player.name} looks at the top {len(top_slice)} cards, puts one card into hand"
         + (f", exiles {state.cards[exile_card].name} with permission to play it" if exile_card else "")
         + ", and puts the rest on the bottom of the library."
     )

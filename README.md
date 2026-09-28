@@ -21,7 +21,7 @@ It is designed for serious deck work:
 - Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
 - Live match, legal-move and saved-match discovery responses pass bounded runtime shape checks before entering the UI; broader generated API contracts remain unfinished
 - Public live-match responses hide AI-controlled hands while retaining hand counts; AI legal-move queries cannot expose their playable cards
-- Unrevealed hand-tutor results are omitted from the public match log; AI-owned pending mechanic choices expose only a generic status, not hidden library options or order. Shared-device human-vs-human still lacks per-seat authorization.
+- Unrevealed hand-tutor and top-card hand-choice results are omitted from the public match log; publicly exiled cards remain named. AI-owned pending mechanic choices expose only a generic status, not hidden library options or order. Shared-device human-vs-human still lacks per-seat authorization.
 - Testing Simulator job responses check status, progress and completed summary metrics at runtime; the result no longer crosses the UI boundary as `any`
 - Batch results and the Testing Simulator label win rates `exploratory`, never rules-certified; they list detected unsupported mechanics in the input decks. This does not block a run or certify cards with no warning.
 - Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations and match creation
