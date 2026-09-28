@@ -100,14 +100,19 @@ export function Controls(props: Props) {
   const [sbPlayer, setSbPlayer] = useState(1);
   const [sbOut, setSbOut] = useState("");
   const [sbIn, setSbIn] = useState("");
+  useEffect(() => { setSbOut(""); setSbIn(""); }, [props.match?.id, props.match?.game_number]);
   const [stopPlayer, setStopPlayer] = useState(1);
   const matchComplete = Boolean(props.match?.match_complete);
   const betweenGames = Boolean(props.match?.winner && !matchComplete);
+  const humanSeats = [1, 2].filter((pid) => props.match?.controllers?.[String(pid)] === "human");
+  const selectedSbPlayer = humanSeats.includes(sbPlayer) ? sbPlayer : humanSeats[0];
+  const sideboardInventory = props.match?.sideboarding?.[String(selectedSbPlayer)];
+  useEffect(() => { setSbOut(""); setSbIn(""); }, [selectedSbPlayer]);
   const gamesNeeded = props.match?.games_needed ?? Math.floor((props.match?.best_of ?? 3) / 2) + 1;
   const p1Score = props.match?.score?.["1"] ?? 0;
   const p2Score = props.match?.score?.["2"] ?? 0;
   const scoreText = props.match ? `${p1Score}-${p2Score}` : "0-0";
-  const sideboardStatus = betweenGames ? "Sideboarding open" : matchComplete ? "Match complete" : "Sideboarding locked";
+  const sideboardStatus = betweenGames ? (humanSeats.length ? "Sideboarding open" : "No human sideboarding") : matchComplete ? "Match complete" : "Sideboarding locked";
   const stackSize = props.match?.stack?.length ?? 0;
   const currentController = props.match?.controllers?.[String(props.match?.priority_player ?? 1)] ?? "human";
   const interruptWindowLive = props.responseCountdown !== null;
@@ -478,26 +483,33 @@ export function Controls(props: Props) {
       {betweenGames ? (
         <div className="sideboard-panel">
           <h3>Between Games</h3>
-          <p className="status-line">
-            Game complete. Sideboarding is open until you start the next game.
-          </p>
+          <p className="status-line">Game complete. Human-controlled seats may sideboard once before the next game.</p>
           <div className="row">
-            <select value={sbPlayer} onChange={(e) => setSbPlayer(Number(e.target.value))}>
-              <option value={1}>Player 1</option>
-              <option value={2}>Player 2</option>
-            </select>
-            <button
-              onClick={() => props.onApplySideboard(sbPlayer, parseDeckLines(sbOut), parseDeckLines(sbIn))}
-            >
-              Apply Sideboard Swaps
-            </button>
+            {humanSeats.length > 0 ? <>
+              <select aria-label="Sideboarding player" value={selectedSbPlayer} onChange={(e) => setSbPlayer(Number(e.target.value))}>
+                {humanSeats.map((pid) => <option key={pid} value={pid}>Player {pid}</option>)}
+              </select>
+              <button disabled={sideboardInventory?.applied} onClick={() => props.onApplySideboard(selectedSbPlayer, parseDeckLines(sbOut), parseDeckLines(sbIn))}>
+                {sideboardInventory?.applied ? "Sideboard Applied" : "Apply Sideboard Swaps"}
+              </button>
+            </> : <span className="status-line">AI sideboarding strategy is not implemented.</span>}
             {props.match?.next_play_draw_chooser && props.match.controllers?.[String(props.match.next_play_draw_chooser)] === "human" ? <>
               <button onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
               <button onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
             </> : <button onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
           </div>
-          <textarea rows={3} value={sbOut} onChange={(e) => setSbOut(e.target.value)} placeholder="Cards out: e.g. 2 Shock" />
-          <textarea rows={3} value={sbIn} onChange={(e) => setSbIn(e.target.value)} placeholder="Cards in: e.g. 2 Negate" />
+          {sideboardInventory ? <div className="sideboard-inventory">
+            <details><summary>Current mainboard ({sideboardInventory.mainboard.reduce((n, card) => n + card.quantity, 0)})</summary>
+              <ul>{sideboardInventory.mainboard.map((card) => <li key={card.card_name}>{card.quantity} {card.card_name}</li>)}</ul>
+            </details>
+            <details open><summary>Available sideboard ({sideboardInventory.sideboard.reduce((n, card) => n + card.quantity, 0)})</summary>
+              <ul>{sideboardInventory.sideboard.map((card) => <li key={card.card_name}>{card.quantity} {card.card_name}</li>)}</ul>
+            </details>
+          </div> : null}
+          {humanSeats.length > 0 ? <>
+            <textarea aria-label="Cards out" rows={3} disabled={sideboardInventory?.applied} value={sbOut} onChange={(e) => setSbOut(e.target.value)} placeholder="Cards out: e.g. 2 Shock" />
+            <textarea aria-label="Cards in" rows={3} disabled={sideboardInventory?.applied} value={sbIn} onChange={(e) => setSbIn(e.target.value)} placeholder="Cards in: e.g. 2 Negate" />
+          </> : null}
         </div>
       ) : props.match?.winner && matchComplete ? (
         <div className="sideboard-panel">

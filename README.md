@@ -69,7 +69,7 @@ It is designed for serious deck work:
 - AI mechanic choices preserve lands and high-value creatures against Annihilator when expendable permanents exist, and choose cleanup discards from the whole hand instead of dropping the first cards by library order
 - Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
 - Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
-- Manual and autoplay-driven best-of-three matches with sideboarding support
+- Manual and autoplay-driven best-of-three matches; human seats can inspect current mainboard/sideboard counts and submit one sideboard swap between games
 
 ### Card Data
 - Local card cache synced from live card data
@@ -351,8 +351,8 @@ The application currently supports:
 
 Current focus:
 - expanding targeted trigger choices beyond bounded ETB/self-cast clauses, non-damage multi-target rechecks and broader face mechanics
-- full-game browser acceptance, new-match creation recovery and successful-response runtime validation
-- sideboard-aware interactive BO3 browser coverage and full response-contract acceptance
+- full-game browser acceptance, extended match-creation recovery and broader successful-response runtime validation
+- deliberate AI sideboarding, complete interactive BO3 browser coverage and full response-contract acceptance
 - expanding Oracle coverage for older and unusual cards
 - improving replacement, prevention, and layer fidelity in edge cases
 - deepening tactical AI for complex board states and matchup-specific heuristics
@@ -368,7 +368,7 @@ GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build
 - Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Bounded single-target ETB and self-cast triggers choose targets in the ability window, with an optional accept/decline decision at resolution where applicable. Other trigger families, modal/multi-target clauses and multiple ability clauses remain local-beta blockers. See [targeted trigger boundary](docs/testing/targeted-trigger-choices.md).
 - Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Common modal land-face plays and Adventure resolution/exile permission paths are [tested separately](docs/testing/land-adventure-boundary.md). Divided-damage recipients now have bounded resolution-time legality coverage; non-damage multi-target spells, conditional land entries, split-card restrictions and full face-specific restart/browser acceptance remain open. Older cache rows need force-sync to acquire canonical layout.
 - Guarded match writes persist history/snapshots together and restore memory on storage faults. Match creation now commits a start-key receipt with its snapshot; ambiguous successful responses retry the same key, including after reload. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage. Extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
-- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Existing saved matches without root seeds remain unseeded in later games; sideboard strategy, full BO3 browser coverage and drawn-game policy remain open.
+- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Human sideboard inventory is visible only between games for human-controlled seats; a swap survives reload and changes the next game's deck in bounded HTTP/browser tests. AI sideboarding strategy, a complete played BO3 browser path, drawn-game policy and legacy seed migration remain open. Existing saved matches without root seeds remain unseeded in later games.
 - Human action browser fixtures cover nineteen paths, including two-step Collected Company, ordered top-library and tutor choices, nested draw/dredge replacement, and both BO3 play/draw choices, but not a complete game or series. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; variable activated mana costs remain explicitly unsupported.
 - Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
 - Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.

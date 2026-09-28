@@ -1,4 +1,5 @@
 """Loopback-only browser fixtures; never mount these routes in production."""
+from collections import Counter
 from pathlib import Path
 if (Path(__file__).resolve().parents[2] / ".git").exists():
     raise RuntimeError("Run browser fixtures only from an isolated source copy, not the live Git checkout")
@@ -119,15 +120,20 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             card.power = card.toughness = power
         resolve_effect(state, 2, "search_library", {"contains": "creature", "destination": "hand", "count": 1, "shuffle": True})
         return publish(state, deck)
-    if face_kind == "bo3":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+    if face_kind in {"bo3", "bo3_sideboard"}:
+        deck = ([{"quantity": 45, "card_name": "Island", "type_line": "Basic Land - Island"},
+                 {"quantity": 15, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
+                if face_kind == "bo3_sideboard" else
+                [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}])
         state = MatchFactory.from_decks(deck, deck, seed=31)
-        state.winner = 1
-        state.score = {1: 1, 2: 0}
+        state.winner = 2 if face_kind == "bo3_sideboard" else 1
+        state.score = {1: 0, 2: 1} if face_kind == "bo3_sideboard" else {1: 1, 2: 0}
         publish(state, deck)
         match = ACTIVE_MATCHES[state.id]
         match.current_game_recorded = True
         match.root_seed = 31
+        if face_kind == "bo3_sideboard":
+            match.sideboards[1] = [{"quantity": 15, "card_name": "Forest"}]
         with Session(engine) as session:
             _persist_active_match(Repository(session), match)
         return get_match(state.id)
@@ -213,3 +219,10 @@ def publish(state, deck):
     with Session(engine) as session:
         _persist_active_match(Repository(session), ACTIVE_MATCHES[state.id])
     return get_match(state.id)
+
+
+@app.get("/fixture/sideboard-pool/{match_id}")
+def fixture_sideboard_pool(match_id: str):
+    match = ACTIVE_MATCHES[match_id]
+    player = match.state.players[1]
+    return dict(Counter(match.state.cards[cid].name for cid in player.hand + player.library))

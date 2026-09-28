@@ -36,6 +36,14 @@ export function parseMatchState(value: unknown): MatchState {
     || !Object.values(value.blocks).every((ids) => Array.isArray(ids) && ids.every((id) => typeof id === "string")))) {
     throw new Error("Invalid match response: blocks must map attackers to blocker ID arrays");
   }
+  if (value.sideboarding !== undefined && (!record(value.sideboarding)
+    || !Object.entries(value.sideboarding).every(([seat, inventory]) => ["1", "2"].includes(seat)
+      && record(inventory) && typeof inventory.applied === "boolean"
+      && [inventory.mainboard, inventory.sideboard].every((items) => Array.isArray(items)
+        && items.every((item) => record(item) && typeof item.card_name === "string"
+          && Number.isInteger(item.quantity) && (item.quantity as number) > 0))))) {
+    throw new Error("Invalid match response: sideboarding inventory");
+  }
   return value as MatchState;
 }
 

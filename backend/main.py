@@ -846,8 +846,12 @@ def apply_sideboard(match_id: str, payload: SideboardRequest, repo: Repository =
         raise HTTPException(status_code=404, detail="Match not found")
     if payload.player_id not in [1, 2]:
         raise HTTPException(status_code=400, detail="Invalid player_id")
+    if match.match_complete:
+        raise HTTPException(status_code=400, detail="Match is complete.")
     if match.state.winner is None:
         raise HTTPException(status_code=400, detail="Current game still in progress.")
+    if match.controllers.get(payload.player_id) != "human":
+        raise HTTPException(status_code=403, detail="Only a human-controlled seat may submit sideboard swaps.")
     if payload.player_id in match.sideboarded_players:
         raise HTTPException(status_code=400, detail="Player has already sideboarded for the next game.")
     try:
@@ -1341,6 +1345,15 @@ def _serialize_match_controller(match: MatchController) -> dict:
         "1": sum(x["quantity"] for x in match.sideboards.get(1, [])),
         "2": sum(x["quantity"] for x in match.sideboards.get(2, [])),
     }
+    if match.state.winner is not None and not match.match_complete:
+        payload["sideboarding"] = {
+            str(pid): {
+                "mainboard": [{"card_name": card["card_name"], "quantity": card["quantity"]} for card in match.mainboards[pid]],
+                "sideboard": [{"card_name": card["card_name"], "quantity": card["quantity"]} for card in match.sideboards[pid]],
+                "applied": pid in match.sideboarded_players,
+            }
+            for pid, controller in match.controllers.items() if controller == "human"
+        }
     return payload
 
 

@@ -193,6 +193,10 @@ Acceptance: refresh, backend restart, disconnect, double-click and autoplay/manu
 - [x] Let the previous game's human loser choose play or draw; AI losers choose play by default. Validate the chooser before transition and expose both human choices in the GUI.
 - [ ] Validate sideboard transitions end to end; implement deliberate AI sideboarding or label its absence. Add full-browser BO3, drawn-game policy and explicit legacy-seed migration tests.
 
+Bounded sideboard transition: the API now shows current mainboard/sideboard quantities for human-controlled seats only between games, rejects completed-match and AI-seat manual swaps, and preserves an applied swap through restore into game two. The UI displays that inventory, limits manual selection to human seats and disables duplicate submission. An HTTP regression checks exact next-game card counts and rejected writes against memory/database snapshots; a loopback browser path submits a real basic-land swap, reloads and verifies game two. This is not a complete played BO3 or AI sideboarding strategy, so the combined checkbox remains open.
+
+Verification: 923 backend tests passed in an isolated source/database copy. Frontend build, lint and unit checks passed. The loopback browser harness passed its existing action/recovery paths plus the new sideboard transition and seat-switch draft-clearing checks. Hosted CI for this increment remains pending until pushed.
+
 BO3 increment evidence: 875 backend tests pass in a fresh isolated source/database copy (102.62 seconds, 812 deprecation warnings), including helper and HTTP choice/restore tests. Frontend TypeScript/Vite build and unit checks pass; fifteen isolated Chromium paths pass, including both play/draw buttons against the API. A two-game seeded Mono Red Aggro/Dimir Control diagnostic replay has no timeout, anomaly label or determinism drift; it does not exercise an entire interactive series or sideboard strategy.
 
 Acceptance: repeated seeded interactive series and restarts agree when actions agree; game-two starts follow the documented policy and sideboards remain legal.

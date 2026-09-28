@@ -4,6 +4,7 @@ This file tracks milestone-level changes. The root README stays focused on the c
 
 ## 2026-09-28
 
+- Show human-controlled mainboard/sideboard inventory between games, prevent post-match and AI-seat manual swaps, clear draft swaps on seat changes, and verify a swap survives reload into game two through HTTP and browser tests. Deliberate AI sideboarding and a complete played BO3 remain open.
 - Validate saved-match discovery summaries before recovery uses them; malformed IDs, mode, revision, turn or player names now fail at the API boundary. Unit and browser recovery paths pass.
 - Validate successful legal-move responses at the frontend boundary, rejecting malformed actor, revision, move and card-view fields before they drive UI actions. Unit and browser contract gates pass; generated/shared API types remain open.
 - Reuse a pending match-start key when Start is clicked again after ambiguous failures, preventing a second match before reload. Browser regression covers the repeated-click path.

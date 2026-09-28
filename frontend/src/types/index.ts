@@ -79,6 +79,7 @@ export type MatchState = {
   match_complete?: boolean;
   day_night?: "none" | "day" | "night";
   sideboard_sizes?: Record<string, number>;
+  sideboarding?: Record<string, { mainboard: DeckItem[]; sideboard: DeckItem[]; applied: boolean }>;
   log: string[];
   pending_mechanic_choice?: {
     kind: "cleanup_discard" | "sacrifice" | "draw" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "search_library";

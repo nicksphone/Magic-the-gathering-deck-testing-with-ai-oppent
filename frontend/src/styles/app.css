@@ -717,6 +717,26 @@ button:hover {
   padding-top: 10px;
 }
 
+.sideboard-inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.sideboard-inventory details {
+  border: 1px solid #365f6c;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.sideboard-inventory ul {
+  max-height: 180px;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
 h3 {
   margin: 0 0 8px;
   color: var(--gold);
