@@ -3,7 +3,29 @@ from __future__ import annotations
 from analytics.service import AnalyticsService
 from analytics.replay_tools import classify_first_divergence
 from collections import Counter
+import json
 from scripts.anomaly_cluster_report import classify
+from scripts.debug_head_to_head import build_debug_trace_payload
+from analytics.decision_quality import DecisionQualityAccumulator
+from game_state.state import MatchFactory, Step
+from rules_engine.engine import RulesEngine
+
+
+def test_head_to_head_trace_provides_all_decision_quality_evidence() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=91)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.UPKEEP
+    lines = []
+    for pid in (1, 2):
+        state.priority_player = pid
+        legal = RulesEngine().legal_moves(state, pid)
+        trace = build_debug_trace_payload(state, pid, legal, {"type": "pass_priority"}, "No legal action")
+        lines.append("AI TRACE " + json.dumps(trace))
+    accumulator = DecisionQualityAccumulator()
+    accumulator.consume_row({"log": lines})
+    assert all(all(available for available in metrics.values()) for metrics in accumulator.finish()["availability"].values())
 
 
 class FakeRepo:

@@ -11,6 +11,7 @@ from pathlib import Path
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
+from analytics.decision_quality import build_trace_payload
 from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
@@ -26,46 +27,27 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
 
 
-def hand_snapshot(state, pid: int) -> list[str]:
-    names = [state.cards[cid].name for cid in state.players[pid].hand]
-    names.sort()
-    return names
-
-
-def battlefield_snapshot(state, pid: int) -> list[dict]:
-    out: list[dict] = []
-    for cid in state.players[pid].battlefield:
-        card = state.cards[cid]
-        out.append(
-            {
-                "id": cid,
-                "name": card.name,
-                "types": list(getattr(card, "types", []) or []),
-                "tapped": bool(getattr(card, "tapped", False)),
-                "power": getattr(card, "power", None),
-                "toughness": getattr(card, "toughness", None),
-                "keywords": list(getattr(card, "keywords", []) or []),
-                "loyalty": getattr(card, "loyalty", None),
-                "selected_face_index": getattr(card, "selected_face_index", None),
-            }
-        )
-    return sorted(out, key=lambda x: (x["name"], x["id"]))
-
-
-def compact_action(action: dict) -> dict:
-    out = {"type": action.get("type")}
-    for k in ["card_id", "card_name", "ability_index", "selected_face_index", "x_value"]:
-        if k in action:
-            out[k] = action[k]
-    if isinstance(action.get("attackers"), list):
-        out["attackers"] = list(action["attackers"])
-    if isinstance(action.get("blocks"), dict):
-        out["blocks"] = {str(key): value for key, value in action["blocks"].items()}
-    if isinstance(action.get("targets"), dict) and action.get("targets"):
-        out["targets"] = action["targets"]
-    if isinstance(action.get("cost_choice"), dict) and action.get("cost_choice"):
-        out["cost_choice"] = action["cost_choice"]
-    return out
+def build_debug_trace_payload(state, pid: int, legal: list[dict], action: dict, reasoning: str) -> dict:
+    opponent = 1 if pid == 2 else 2
+    trace = build_trace_payload(state, pid, legal, action, reasoning)
+    trace.update({
+        "graveyard_count": len(state.players[pid].graveyard),
+        "opp_graveyard_count": len(state.players[opponent].graveyard),
+        "library_count": len(state.players[pid].library),
+        "opp_library_count": len(state.players[opponent].library),
+        "legal_non_pass_count": sum(1 for move in legal if is_actionable_move(move)),
+        "legal_action_types": sorted({str(move.get("type")) for move in legal if is_actionable_move(move)}),
+        "reason_code": decision_reason_code(
+            action, reasoning,
+            legal_non_pass=has_actionable_move(legal),
+            meaningful_non_pass=has_meaningful_move(legal),
+            active_player=state.active_player,
+            player_id=pid,
+            step=state.step,
+            stack_empty=not bool(state.stack),
+        ),
+    })
+    return trace
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--matches", type=int, default=10)
     p.add_argument("--difficulty", default="master")
     p.add_argument("--max-ticks", type=int, default=6000)
+    p.add_argument("--seed", type=int, default=None, help="Reproducible root seed; game N uses seed + N - 1")
     p.add_argument("--out-dir", default="diagnostics")
     return p.parse_args()
 
@@ -140,7 +123,8 @@ def main() -> int:
 
         with games_path.open("w", encoding="utf-8") as out:
             for game_idx in range(args.matches):
-                state = MatchFactory.from_decks(deck_a, deck_b, player_a_name=args.deck_a, player_b_name=args.deck_b)
+                game_seed = args.seed + game_idx if args.seed is not None else None
+                state = MatchFactory.from_decks(deck_a, deck_b, player_a_name=args.deck_a, player_b_name=args.deck_b, seed=game_seed)
                 a_agent = AIAgent(difficulty=args.difficulty, archetype=a_arch)
                 b_agent = AIAgent(difficulty=args.difficulty, archetype=b_arch)
                 ticks = 0
@@ -157,43 +141,7 @@ def main() -> int:
                         action = decision.action
                         reasoning = decision.reasoning
 
-                    trace = {
-                        "trace": True,
-                        "pid": pid,
-                        "turn": state.turn,
-                        "step": str(state.step),
-                        "active_player": getattr(state, "active_player", None),
-                        "priority_player": getattr(state, "priority_player", None),
-                        "hand": hand_snapshot(state, pid),
-                        "opp_hand": hand_snapshot(state, 1 if pid == 2 else 2),
-                        "battlefield": battlefield_snapshot(state, pid),
-                        "opp_battlefield": battlefield_snapshot(state, 1 if pid == 2 else 2),
-                        "graveyard_count": len(state.players[pid].graveyard),
-                        "opp_graveyard_count": len(state.players[1 if pid == 2 else 2].graveyard),
-                        "library_count": len(state.players[pid].library),
-                        "opp_library_count": len(state.players[1 if pid == 2 else 2].library),
-                        "life": {
-                            "self": state.players[pid].life,
-                            "opp": state.players[1 if pid == 2 else 2].life,
-                        },
-                        "mana_pool": dict(state.players[pid].mana_pool),
-                        "legal_non_pass": has_actionable_move(legal),
-                        "legal_non_pass_count": sum(1 for move in legal if is_actionable_move(move)),
-                        "legal_action_types": sorted({str(m.get("type")) for m in legal if is_actionable_move(m)}),
-                        "legal_has_land": any(m.get("type") == "play_land" for m in legal),
-                        "action": compact_action(action),
-                        "reason_code": decision_reason_code(
-                            action,
-                            reasoning,
-                            legal_non_pass=has_actionable_move(legal),
-                            meaningful_non_pass=has_meaningful_move(legal),
-                            active_player=getattr(state, "active_player", None),
-                            player_id=pid,
-                            step=state.step,
-                            stack_empty=not bool(state.stack),
-                        ),
-                        "reasoning": reasoning,
-                    }
+                    trace = build_debug_trace_payload(state, pid, legal, action, reasoning)
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")
 
                     engine_rules.take_action(state, pid, action)
@@ -206,6 +154,7 @@ def main() -> int:
 
                 record = {
                     "game": game_idx + 1,
+                    "seed": game_seed,
                     "winner": state.winner,
                     "turns": state.turn,
                     "ticks": ticks,
@@ -220,6 +169,7 @@ def main() -> int:
         "deck_b": args.deck_b,
         "matches": args.matches,
         "difficulty": args.difficulty,
+        "root_seed": args.seed,
         "wins": {"deck_a": wins[1], "deck_b": wins[2], "timeout": wins["timeout"]},
         "output": {
             "run_dir": str(run_dir),

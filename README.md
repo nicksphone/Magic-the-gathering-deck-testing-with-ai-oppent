@@ -251,9 +251,12 @@ Farewell-style mass exile of creatures is handled separately from destruction: o
 ```bash
 cd backend
 python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Blue Control" --matches 1
+python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Dimir Control" --matches 1 --seed 849124 --out-dir diagnostics
+python3 scripts/card_play_analytics.py --games-jsonl diagnostics/RUN_DIR/games.jsonl --out diagnostics/card-play.json
 python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2
 python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
 ```
+The head-to-head runner records full hand/board decisions, effective keywords and marked damage. Its trace uses the shared five-metric decision-quality evidence path. `--seed` records per-game seeds for reruns; generated stack IDs can still differ in raw logs, so compare normalized actions rather than raw bytes. Replace `RUN_DIR` with the run directory printed by the preceding head-to-head command. Metrics may remain unavailable when a complex combat line cannot be validated.
 
 The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.
 

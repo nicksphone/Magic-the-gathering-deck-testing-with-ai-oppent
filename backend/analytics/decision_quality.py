@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
-from rules_engine.continuous import effective_power, effective_toughness
+from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
 from game_state.state import Zone
 
@@ -62,6 +62,8 @@ def _battlefield_snapshot(state: Any, pid: int) -> list[dict[str, Any]]:
             "tapped": bool(getattr(state.cards[cid], "tapped", False)),
             "power": effective_power(state, cid),
             "toughness": effective_toughness(state, cid),
+            "keywords": effective_keywords(state, cid),
+            "damage_marked": int(state.cards[cid].counters.get("__damage_marked", 0)),
         }
         for cid in state.players[pid].battlefield
     ]

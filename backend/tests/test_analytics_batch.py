@@ -108,6 +108,21 @@ def test_trace_payload_counts_ordinary_losing_block_from_resolved_combat() -> No
     assert payload["bad_blocks"] == 1
 
 
+def test_trace_board_includes_effective_keywords_and_marked_damage() -> None:
+    state, attacker_id, blocker_id = _block_trace_state(
+        attacker_power=1, attacker_toughness=1, attacker_keywords=["deathtouch"],
+        blocker_power=4, blocker_toughness=5,
+    )
+    state.cards[blocker_id].counters["__damage_marked"] = 2
+
+    payload = build_trace_payload(state, 2, RulesEngine().legal_moves(state, 2), {"type": "pass_priority"})
+
+    own = next(card for card in payload["battlefield"] if card["id"] == blocker_id)
+    opponent = next(card for card in payload["opp_battlefield"] if card["id"] == attacker_id)
+    assert own["damage_marked"] == 2
+    assert "deathtouch" in opponent["keywords"]
+
+
 def test_trace_payload_does_not_call_lethal_preventing_chump_a_bad_block() -> None:
     state, attacker_id, blocker_id = _block_trace_state(attacker_power=5, attacker_toughness=5)
     state.players[2].life = 5
