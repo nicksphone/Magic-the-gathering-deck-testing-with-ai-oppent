@@ -1084,16 +1084,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790606727.949964,
-    "hash": "df6a6febccc780180ad837aacd6500cd"
+    "mtime": 1790607217.122072,
+    "hash": "7733cd41ef41fc037a1f456950e7ff38"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790606296.2772553,
-    "hash": "87bae0d24377a046565741f09dc72d03"
+    "mtime": 1790607210.481204,
+    "hash": "1234638ca3de1fe3cf872d62d8f2bb38"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790606282.0925763,
-    "hash": "81d5d736dedba269887c7394675adb86"
+    "mtime": 1790607229.0908344,
+    "hash": "40a0dccdb57ff75c6809ab99fac0be39"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1146,6 +1146,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-api-validation-jev.md": {
     "mtime": 1790543570.155747,
     "hash": "ed2906024869424314fc0fa1373c2d59"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-battlefield-entry-choice.md": {
+    "mtime": 1790607190.8145947,
+    "hash": "2bbdbaafd2fc2c4713d3016e4e7bf09b"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
     "mtime": 1790525223.5599864,
