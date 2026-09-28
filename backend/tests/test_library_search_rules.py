@@ -118,6 +118,41 @@ def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
             ACTIVE_MATCHES.pop(state.id, None)
 
 
+def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
+    state = _state_with_searcher()
+    swamp, griselbrand = state.players[1].library[-2:]
+    state.cards[swamp].name = "Swamp"
+    state.cards[swamp].type_line = "Basic Land — Swamp"
+    threat = state.cards[griselbrand]
+    threat.name = "Griselbrand"
+    threat.type_line = "Legendary Creature — Demon"
+    threat.types = ["Creature"]
+    threat.mana_cost = "{4}{B}{B}{B}{B}"
+    threat.power = threat.toughness = 7
+    threat.oracle_text = "Flying, lifelink\nPay 7 life: Draw seven cards."
+    state.cards["reanimate"] = CardInstance(
+        id="reanimate", name="Reanimate", owner=1, controller=1, zone=Zone.HAND,
+        types=["Sorcery"], mana_cost="{B}",
+        oracle_text="Put target creature card from a graveyard onto the battlefield under your control. You lose life equal to its mana value.",
+    )
+    state.players[1].hand.append("reanimate")
+    state.mechanic_choice_players = {1}
+    resolve_effect(state, 1, "search_library", {"contains": "card", "count": 1, "destination": "graveyard", "shuffle": True})
+    legal = RulesEngine().legal_moves(state, 1)
+    decision = AIAgent(archetype="Reanimator").choose_action(state, legal, 1)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": [griselbrand]}
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert AIAgent(archetype="Midrange").choose_action(restored, RulesEngine().legal_moves(restored, 1), 1).action["card_ids"] == [griselbrand]
+
+    state.cards["rip"] = CardInstance(
+        id="rip", name="Rest in Peace", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=REST_IN_PEACE_ORACLE,
+    )
+    state.players[2].battlefield.append("rip")
+    replacement_decision = AIAgent(archetype="Reanimator").choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert griselbrand not in replacement_decision.action["card_ids"]
+
+
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     state = _state_with_searcher()
     state.mechanic_choice_players = {1}

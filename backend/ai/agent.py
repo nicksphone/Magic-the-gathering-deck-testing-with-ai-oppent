@@ -17,6 +17,7 @@ from rules_engine.card_types import is_land_card as _card_looks_like_land, is_to
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
+from rules_engine.replacement import graveyard_destination
 
 
 def _has_counter_spell_text(text: str) -> bool:
@@ -94,6 +95,7 @@ class AIAgent:
                     selected = self._choose_library_search(
                         state, candidates, int(choice["count"]), player_id,
                         free_battlefield=kind == "topdeck_put",
+                        destination=str((choice.get("effect_payload") or {}).get("destination", "hand")),
                     )
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]
@@ -2962,7 +2964,7 @@ class AIAgent:
         top = ranked[: min(3, len(ranked))]
         return top[0]
 
-    def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int, *, free_battlefield: bool = False) -> list[str]:
+    def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int, *, free_battlefield: bool = False, destination: str = "hand") -> list[str]:
         demand = self._color_demand(state, player_id)
         sources = self._current_color_sources(state, player_id)
         available_mana = len(state.players[player_id].battlefield)
@@ -2971,6 +2973,15 @@ class AIAgent:
         while candidates and len(selected) < count:
             def score(cid: str) -> tuple[float, str]:
                 card = state.cards[cid]
+                if destination == "graveyard":
+                    text = str(getattr(card, "oracle_text", "") or "").lower()
+                    if graveyard_destination(state, card) != "graveyard":
+                        return (-self._closure_spell_score(card, text), card.name)
+                    if "Creature" in card.types:
+                        return (self._graveyard_creature_reanimation_score(state, cid, player_id), card.name)
+                    if any(keyword in text for keyword in ("flashback", "escape", "jump-start", "retrace")):
+                        return (3.0 + self._closure_spell_score(card, text), card.name)
+                    return (-1.0 if "Land" in card.types else 0.0, card.name)
                 if "Land" in card.types:
                     colors = self._land_colors(card)
                     fixing = sum((3.5 if sources.get(color, 0) == 0 else 0.0) +
