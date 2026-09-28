@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from game_state.state import Zone
 from rules_engine.continuous import has_keyword
 from rules_engine.protection import protection_match_reason
 
@@ -12,6 +13,13 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
     r"|(?:creature|planeswalker|permanent|artifact|enchantment|land) or (?:player|opponent))\b",
     re.IGNORECASE,
 )
+
+
+def stack_object_kind(state: Any, item: Any) -> str:
+    if (item.payload or {}).get("__trigger_event"):
+        return "triggered"
+    source = state.cards.get(item.source_card_id)
+    return "spell" if source is not None and source.zone == Zone.STACK else "activated"
 
 
 def single_player_permanent_alternative(text: str) -> str | None:

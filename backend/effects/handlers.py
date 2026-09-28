@@ -544,9 +544,12 @@ def destroy_all_artifacts_and_enchantments(state: MatchState, controller: int, p
 
 
 def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.targeting import stack_object_kind
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
+            if stack_object_kind(state, item) != "spell":
+                return
             source = state.cards.get(item.source_card_id)
             source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
@@ -572,6 +575,9 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
     item = next((entry for entry in state.stack if entry.id == target_stack_id), None)
     if item is None:
         return
+    from rules_engine.targeting import stack_object_kind
+    if stack_object_kind(state, item) != "spell":
+        return
     source = state.cards.get(item.source_card_id)
     source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
     if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
@@ -595,10 +601,14 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
 
 
 def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.targeting import stack_object_kind
     del controller
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
+            kind = stack_object_kind(state, item)
+            if kind == "spell" or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
+                return
             source = state.cards.get(item.source_card_id)
             source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:

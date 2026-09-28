@@ -90,11 +90,12 @@ def test_oracle_counter_ability_parsing() -> None:
         controller=1,
         zone=Zone.HAND,
         types=["Instant"],
-        oracle_text="Counter target activated ability.",
+        oracle_text="Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
     )
     effect_key, payload = infer_effect_from_oracle(state, card, 1)
     assert effect_key == "counter_ability"
     assert payload["target_stack_id"] == "stack-ability"
+    assert payload["target_kind"] == "ability"
 
 
 def test_oracle_target_hints_include_artifact_and_enchantment_targets() -> None:

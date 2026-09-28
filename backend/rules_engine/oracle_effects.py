@@ -5,7 +5,7 @@ from typing import Any
 
 from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
-from rules_engine.targeting import single_player_permanent_alternative
+from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -137,9 +137,16 @@ def infer_effect_from_oracle(
     if "counter target spell" in oracle:
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
         return "counter_spell", {"target_stack_id": target_stack_id}
-    if "counter target activated ability" in oracle or "counter target triggered ability" in oracle:
+    if ("counter target activated ability" in oracle or "counter target triggered ability" in oracle
+            or "counter target activated or triggered ability" in oracle):
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
-        return "counter_ability", {"target_stack_id": target_stack_id}
+        kind = "ability" if "counter target activated or triggered ability" in oracle else (
+            "activated" if "counter target activated ability" in oracle else "triggered"
+        )
+        return "counter_ability", {
+            "target_stack_id": target_stack_id,
+            "target_kind": kind,
+        }
     copy_match = COPY_STACK_RE.search(oracle)
     if copy_match and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
@@ -477,11 +484,26 @@ def inspect_target_hints(
             "allow_zero": True,
         }
 
-    if "counter target spell" in oracle or "counter target noncreature spell" in oracle or "counter target activated ability" in oracle or "counter target triggered ability" in oracle or COPY_STACK_RE.search(oracle):
+    if ("counter target spell" in oracle or "counter target noncreature spell" in oracle
+            or "counter target activated ability" in oracle or "counter target triggered ability" in oracle
+            or "counter target activated or triggered ability" in oracle or COPY_STACK_RE.search(oracle)):
+        allowed_kinds = set()
+        if "counter target spell" in oracle or "counter target noncreature spell" in oracle:
+            allowed_kinds.add("spell")
+        if "counter target activated ability" in oracle:
+            allowed_kinds.add("activated")
+        if "counter target triggered ability" in oracle:
+            allowed_kinds.add("triggered")
+        if "counter target activated or triggered ability" in oracle:
+            allowed_kinds.update(("activated", "triggered"))
+        allowed_kinds.update(
+            "spell" if match.group(1) == "spell" else match.group(1).split()[0]
+            for match in COPY_STACK_RE.finditer(oracle)
+        )
         stack_targets = []
         for item in state.stack:
             source = state.cards.get(item.source_card_id)
-            if source is None:
+            if source is None or stack_object_kind(state, item) not in allowed_kinds:
                 continue
             if "counter target noncreature spell" in oracle and "Creature" in (source.types or []):
                 continue
