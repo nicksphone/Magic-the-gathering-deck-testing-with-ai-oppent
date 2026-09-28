@@ -25,7 +25,7 @@ def _state_with_searcher() -> object:
 
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     state = _state_with_searcher()
-    state.search_choice_players = {1}
+    state.library_choice_players = {1}
     state.cards[state.players[1].hand[0]].name = "Counterspell"
     state.cards[state.players[1].hand[0]].mana_cost = "{U}{U}"
     state.cards[state.players[1].hand[0]].types = ["Instant"]
@@ -37,7 +37,10 @@ def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     resolve_effect(state, 1, "search_library", {"contains": "basic_land", "count": 1, "destination": "hand", "shuffle": True})
     assert state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "search_library"
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
-    assert restored.search_choice_players == {1}
+    assert restored.library_choice_players == {1}
+    legacy = serialize_match_snapshot(state)
+    legacy["search_choice_players"] = legacy.pop("library_choice_players")
+    assert deserialize_match_snapshot(legacy).library_choice_players == {1}
     legal = RulesEngine().legal_moves(restored, 1)
     decision = AIAgent(archetype="Control").choose_action(restored, legal, 1)
     assert decision.action == {"type": "choose_mechanic", "card_ids": [island]}
@@ -45,6 +48,29 @@ def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     assert island in restored.players[1].hand
     assert swamp in restored.players[1].library
     assert restored.pending_mechanic_choice is None
+
+
+def test_ai_topdeck_put_chooses_stronger_creature_at_resolution() -> None:
+    state = _state_with_searcher()
+    state.library_choice_players = {1}
+    top = state.players[1].library[-6:]
+    for cid, power in ((top[0], 1), (top[2], 2), (top[4], 5)):
+        card = state.cards[cid]
+        card.types = ["Creature"]
+        card.type_line = "Creature — Elf"
+        card.power = power
+        card.toughness = power
+        card.mana_cost = "{2}{G}"
+    resolve_effect(state, 1, "topdeck_put_creatures_battlefield", {
+        "top_n": 6, "max_creatures": 2, "mv_max": 3, "bottom_any_order": True,
+    })
+    assert state.pending_mechanic_choice["kind"] == "topdeck_put"
+    legal = RulesEngine().legal_moves(state, 1)
+    action = AIAgent(archetype="Tribal").choose_action(state, legal, 1).action
+    assert set(action["card_ids"]) == {top[2], top[4]}
+    RulesEngine().take_action(state, 1, action, reject_invalid=True)
+    assert {top[2], top[4]} <= set(state.players[1].battlefield)
+    assert state.pending_mechanic_choice is None
 
 
 def test_cultivate_inference_splits_canonical_land_destinations() -> None:

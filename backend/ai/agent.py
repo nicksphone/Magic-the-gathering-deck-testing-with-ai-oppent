@@ -75,9 +75,22 @@ class AIAgent:
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
                 return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
-            if choice["kind"] == "search_library":
-                selected = self._choose_library_search(state, options, int(choice["count"]), player_id)
-                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Search for useful cards at resolution")
+            if choice["kind"] in {"search_library", "topdeck_put", "topdeck_reveal_creature", "look_top_choose"}:
+                kind = choice["kind"]
+                candidates = [cid for cid in options if cid in state.cards]
+                if kind == "look_top_choose":
+                    hand = self._choose_library_search(state, candidates, 1, player_id)
+                    remaining = [cid for cid in candidates if cid not in hand]
+                    exile = self._choose_library_search(state, remaining, 1, player_id)
+                    selected = hand + exile + [cid for cid in options if cid not in hand + exile]
+                else:
+                    selected = self._choose_library_search(
+                        state, candidates, int(choice["count"]), player_id,
+                        free_battlefield=kind == "topdeck_put",
+                    )
+                    if kind == "topdeck_reveal_creature" and not selected:
+                        selected = ["__none__"]
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning=f"Choose {kind} cards at resolution")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Choose least costly permanents for mandatory sacrifice")
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
@@ -2890,7 +2903,7 @@ class AIAgent:
         top = ranked[: min(3, len(ranked))]
         return top[0]
 
-    def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int) -> list[str]:
+    def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int, *, free_battlefield: bool = False) -> list[str]:
         demand = self._color_demand(state, player_id)
         sources = self._current_color_sources(state, player_id)
         available_mana = len(state.players[player_id].battlefield)
@@ -2907,7 +2920,10 @@ class AIAgent:
                 cost = mana_value(card.mana_cost)
                 text = str(getattr(card, "oracle_text", "") or "").lower()
                 value = self._closure_spell_score(card, text)
-                value += 2.0 if cost <= available_mana + 1 else -0.5 * (cost - available_mana - 1)
+                if free_battlefield:
+                    value += 1.5 + 0.35 * cost
+                else:
+                    value += 2.0 if cost <= available_mana + 1 else -0.5 * (cost - available_mana - 1)
                 return (value, card.name)
 
             chosen = max(candidates, key=lambda cid: (score(cid), cid))

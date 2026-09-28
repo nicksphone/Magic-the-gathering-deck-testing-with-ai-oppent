@@ -2,6 +2,8 @@ from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
 from effects.registry import resolve_effect
+from ai.agent import AIAgent
+from rules_engine.engine import RulesEngine
 
 
 def test_top_three_hand_exile_bottom_choice_has_temporary_play_permission() -> None:
@@ -37,6 +39,28 @@ def test_top_three_hand_exile_bottom_choice_has_temporary_play_permission() -> N
     assert ids[2] in player.exile
     assert player.exile_play_until[ids[2]] == state.turn
     assert ids[0] in player.library
+
+
+def test_ai_top_three_choice_uses_resolution_time_cards() -> None:
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Forest"}],
+        [{"quantity": 60, "card_name": "Forest"}], seed=21,
+    )
+    state.pregame_pending = False
+    state.library_choice_players = {1}
+    ids = state.players[1].library[-3:]
+    for cid, cost in zip(ids, ("{5}", "{1}", "{2}")):
+        state.cards[cid].types = ["Sorcery"]
+        state.cards[cid].mana_cost = cost
+        state.cards[cid].oracle_text = "Draw a card."
+    resolve_effect(state, 1, "look_top_choose", {"top_n": 3})
+    assert state.pending_mechanic_choice["kind"] == "look_top_choose"
+    action = AIAgent(archetype="Control").choose_action(state, RulesEngine().legal_moves(state, 1), 1).action
+    assert action["card_ids"][:2] == [ids[1], ids[2]]
+    RulesEngine().take_action(state, 1, action, reject_invalid=True)
+    assert ids[1] in state.players[1].hand
+    assert ids[2] in state.players[1].exile
+    assert state.pending_mechanic_choice is None
 
 
 def test_top_three_choice_accepts_explicit_human_order() -> None:

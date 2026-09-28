@@ -7,6 +7,7 @@ from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from effects.registry import resolve_effect
+from ai.agent import AIAgent
 from rules_engine.stack_engine import resolve_top_of_stack
 from main import ACTIVE_MATCHES, MatchController, app
 
@@ -53,6 +54,19 @@ def test_recruitment_officer_uses_mana_value_and_reveals_a_qualifying_creature()
     resolve_effect(state, 1, key, payload)
     assert top[1] in state.players[1].hand  # MV 3, despite power 4.
     assert top[2] not in state.players[1].hand  # MV 4 is not eligible.
+
+
+def test_ai_creature_reveal_chooses_at_resolution() -> None:
+    state, source, top = setup(RECRUITMENT_TEXT)
+    state.library_choice_players = {1}
+    key, payload = infer_effect_from_oracle(state, source, 1)
+    resolve_effect(state, 1, key, payload)
+    assert state.pending_mechanic_choice["kind"] == "topdeck_reveal_creature"
+    action = AIAgent(archetype="Midrange").choose_action(state, RulesEngine().legal_moves(state, 1), 1).action
+    assert action == {"type": "choose_mechanic", "card_ids": [top[1]]}
+    RulesEngine().take_action(state, 1, action, reject_invalid=True)
+    assert top[1] in state.players[1].hand
+    assert state.pending_mechanic_choice is None
     assert set(state.players[1].library[:3]) == set(top) - {top[1]}
     assert not any("not inferred" in line for line in state.log)
 

@@ -84,7 +84,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "replacement_choice_required": state.replacement_choice_required,
         "replacement_choice_players": sorted(state.replacement_choice_players),
-        "search_choice_players": sorted(state.search_choice_players),
+        "library_choice_players": sorted(state.library_choice_players),
         "pending_replacement_choice": state.pending_replacement_choice,
         "trigger_order_choice_required": state.trigger_order_choice_required,
         "trigger_order_choice_players": sorted(state.trigger_order_choice_players),
@@ -246,7 +246,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
     state.replacement_choice_required = bool(payload.get("replacement_choice_required", False))
     state.replacement_choice_players = {int(value) for value in payload.get("replacement_choice_players", [])}
-    state.search_choice_players = {int(value) for value in payload.get("search_choice_players", [])}
+    state.library_choice_players = {int(value) for value in payload.get("library_choice_players", payload.get("search_choice_players", []))}
     state.pending_replacement_choice = payload.get("pending_replacement_choice")
     state.trigger_order_choice_required = bool(payload.get("trigger_order_choice_required", False))
     state.trigger_order_choice_players = {int(value) for value in payload.get("trigger_order_choice_players", [])}

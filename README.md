@@ -47,7 +47,7 @@ It is designed for serious deck work:
 - Explicit `{C}` mana handling separate from generic mana
 - Ownership-aware zone movement for stolen permanents
 - Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
-- Supported topdeck creature/permanent battlefield effects now inspect and choose cards at resolution: legal cast hints reveal only counts, human choices can select up to the limit after a response window and snapshot restore, and unattended play selects deterministically. Random-order bottom clauses consume the persisted match RNG; supported "any order" clauses offer a second ordered human choice.
+- Supported topdeck creature/permanent battlefield effects inspect and choose cards at resolution: legal cast hints reveal only counts, human choices can select up to the limit after a response window and snapshot restore, and live/simulator AI uses contextual ranking. Direct effect calls without a match chooser retain deterministic fallback. Random-order bottom clauses consume the persisted match RNG; supported "any order" clauses offer a second ordered human choice.
 - Resolution-time library-search candidates and validated choices for human and AI controllers. AI searches rank mana fixing and near-term card value; direct low-level effect calls retain deterministic fallback selection.
 - Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, tapped battlefield placement, and Cultivate's first-to-battlefield/second-to-hand split
 - Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
@@ -55,7 +55,7 @@ It is designed for serious deck work:
 - Generic named self-counter triggers for common cast/combat/ETB payoff patterns
 - Resolution-time counted creature-type effects for tribal ETB payoffs
 - Structured top-card hand/exile/bottom choices with temporary play permissions
-- Look-at-top creature reveals with printed mana-value or power limits, optional human selection at resolution, deterministic AI selection, and random-order bottom placement where Oracle text requires it
+- Look-at-top creature reveals with printed mana-value or power limits, optional human selection at resolution, ranked AI selection, and random-order bottom placement where Oracle text requires it
 - Shared cast-choice plumbing for modes, faces, X values, and targets; library-search selection occurs at resolution
 - Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
 - Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
