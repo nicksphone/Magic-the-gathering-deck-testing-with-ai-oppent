@@ -181,23 +181,31 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:
-    from rules_engine.alternative_casts import escape_cost, prototype_characteristics
+    from rules_engine.alternative_casts import escape_cost, flashback_cost, prototype_characteristics
     oracle = (card.oracle_text or "").lower()
     base = CostOption(id="base", label="Base Cost", mana_cost=card.mana_cost or "")
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
-    if card.zone == Zone.GRAVEYARD and escape is None:
-        return []
-    options = [CostOption(id="escape", label="Escape", mana_cost=escape[0], exile_graveyard=escape[1])] if escape else [base]
+    flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
+    if card.zone == Zone.GRAVEYARD:
+        options = []
+        if escape:
+            options.append(CostOption(id="escape", label="Escape", mana_cost=escape[0], exile_graveyard=escape[1]))
+        if flashback:
+            options.append(CostOption(id="flashback", label="Flashback", mana_cost=flashback))
+        if not options:
+            return []
+    else:
+        options = [base]
     prototype = prototype_characteristics(card)
-    if prototype and not escape:
+    if prototype and card.zone != Zone.GRAVEYARD:
         options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
 
     alt = ALT_COST_RE.search(card.oracle_text or "")
-    if alt and not escape:
+    if alt and card.zone != Zone.GRAVEYARD:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
     kicker = KICKER_RE.search(card.oracle_text or "")
-    if kicker and not escape:
+    if kicker and card.zone != Zone.GRAVEYARD:
         options.append(CostOption(id="kicker", label=f"Kicker {kicker.group(1)}", mana_cost=_join_costs(base.mana_cost, kicker.group(1))))
 
     life_match = PAY_LIFE_RE.search(card.oracle_text or "")

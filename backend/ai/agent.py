@@ -83,7 +83,7 @@ class AIAgent:
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
                 return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
-            if choice["kind"] in {"search_library", "topdeck_put", "topdeck_reveal_creature", "look_top_choose"}:
+            if choice["kind"] in {"search_library", "topdeck_put", "topdeck_reveal_creature", "look_top_choose", "look_top_select_hand"}:
                 kind = choice["kind"]
                 candidates = [cid for cid in options if cid in state.cards]
                 if kind == "look_top_choose":

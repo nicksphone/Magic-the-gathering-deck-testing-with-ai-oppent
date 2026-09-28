@@ -53,6 +53,12 @@ ACTIVATED_ABILITY_RE = re.compile(
 )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+LOOK_TOP_MANA_SPENT_HAND_RE = re.compile(
+    r"look at the top x cards of your library, where x is the amount of mana spent to cast this spell\.\s*"
+    r"put (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) of them into your hand "
+    r"and the rest on the bottom of your library in a random order",
+    re.IGNORECASE,
+)
 LOOK_TOP_CHOICE_RE = re.compile(
     r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?"
     r"(?:put\s+)?one(?: of them)? into your hand.*?"
@@ -177,6 +183,13 @@ def infer_effect_from_oracle(
     if REVEAL_DEFENDING_TOP_LAND_RE.search(oracle):
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
+        }
+    mana_spent_hand = LOOK_TOP_MANA_SPENT_HAND_RE.search(oracle)
+    if mana_spent_hand:
+        return "look_top_select_hand", {
+            "hand_count": _parse_count_token(mana_spent_hand.group(1)),
+            "top_n_source": "mana_spent_to_cast",
+            "bottom_random": True,
         }
     top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
     if top_choice:

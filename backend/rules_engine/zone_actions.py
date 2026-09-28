@@ -23,6 +23,14 @@ def put_into_graveyard(state, cid: str) -> Zone:
     return zone
 
 
+def exile_flashback_spell(state, cid: str) -> None:
+    card = state.cards[cid]
+    owner = state.players[card.owner]
+    if cid not in owner.exile:
+        owner.exile.append(cid)
+    card.zone = Zone.EXILE
+
+
 def discard_selected(state, player_id: int, card_ids: list[str]) -> bool:
     """Validate a simultaneous discard before moving any card or emitting events."""
     player = state.players[player_id]

@@ -753,6 +753,8 @@ class RulesEngine:
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                if effect_key == "look_top_select_hand":
+                    payload["mana_spent_to_cast"] = mana_value(adjusted_cost, x_value=x_value)
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)
 
@@ -767,6 +769,8 @@ class RulesEngine:
                 apply_cast_face(card, face_card)
                 if chosen.id == "escape":
                     payload["__escaped"] = True
+                if chosen.id == "flashback":
+                    payload["__flashback"] = True
                 if from_exile:
                     leave_exile(state, cid)
                 else:

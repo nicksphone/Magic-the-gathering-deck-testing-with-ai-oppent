@@ -16,6 +16,11 @@ def escape_cost(card) -> tuple[str, int] | None:
     return (match.group(1), count) if count is not None else None
 
 
+def flashback_cost(card) -> str | None:
+    match = re.search(r"\bflashback\s+((?:\{[^}]+\})+)", card.oracle_text or "", re.IGNORECASE)
+    return match.group(1) if match else None
+
+
 def prototype_characteristics(card) -> dict | None:
     match = re.search(r"\bprototype\s+((?:\{[^}]+\})+)\s*[\u2014-]\s*(\d+)/(\d+)", card.oracle_text or "", re.IGNORECASE)
     return {"mana_cost": match.group(1), "power": int(match.group(2)), "toughness": int(match.group(3))} if match else None

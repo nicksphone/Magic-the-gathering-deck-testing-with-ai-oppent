@@ -118,12 +118,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             state.priority_player = state.active_player
             state.passed_priority = set()
         return True
-    if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "search_library"}:
+    if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "look_top_select_hand", "search_library"}:
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
                 or len(ids) > pending["count"] or len(ids) != len(set(ids))
                 or (pending["kind"] == "search_library" and len(ids) < pending.get("min_count", 0))
                 or (pending["kind"] == "look_top_choose" and len(ids) != pending["count"])
+                or (pending["kind"] == "look_top_select_hand" and len(ids) != pending["count"])
                 or any(cid not in pending["options"] for cid in ids)
                 or (pending.get("top_ids") is not None and state.players[player_id].library[-len(pending["top_ids"]):] != pending["top_ids"])
                 or (pending.get("library_ids") is not None and state.players[player_id].library != pending["library_ids"])):

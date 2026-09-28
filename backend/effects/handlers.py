@@ -29,7 +29,7 @@ from rules_engine.replacement import (
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
-from rules_engine.zone_actions import is_departed_token, put_into_graveyard
+from rules_engine.zone_actions import exile_flashback_spell, is_departed_token, put_into_graveyard
 
 
 def _queue_human_damage_replacement_choice(
@@ -568,7 +568,10 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
             if card:
-                put_into_graveyard(state, card.id)
+                if (popped.payload or {}).get("__flashback"):
+                    exile_flashback_spell(state, card.id)
+                else:
+                    put_into_graveyard(state, card.id)
             state.log.append(f"{item.label} was countered.")
             return
 
@@ -987,6 +990,45 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
         cards.append(state.cards[cid].name)
     if cards:
         state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
+
+
+def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    top_n = max(0, int(payload.get("mana_spent_to_cast", 0) or 0))
+    top_slice = player.library[-top_n:] if top_n else []
+    if not top_slice:
+        return
+    count = min(len(top_slice), max(0, int(payload.get("hand_count", 0) or 0)))
+    if payload.get("selected_card_ids") is None:
+        state.pending_mechanic_choice = {
+            "kind": "look_top_select_hand", "player_id": controller,
+            "options": list(reversed(top_slice)), "count": count,
+            "top_ids": top_slice, "effect_payload": payload,
+            "effect_key": "look_top_select_hand", "label": f"Choose {count} card(s) for your hand",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+
+    explicit = payload.get("selected_card_ids")
+    if (isinstance(explicit, list) and len(explicit) == count
+            and len(set(explicit)) == count and set(explicit).issubset(top_slice)):
+        chosen = list(explicit)
+    else:
+        chosen = sorted(
+            top_slice,
+            key=lambda cid: (mana_value(state.cards[cid].mana_cost or ""), state.cards[cid].name),
+            reverse=True,
+        )[:count]
+    player.library = player.library[:-len(top_slice)]
+    for cid in chosen:
+        state.cards[cid].zone = Zone.HAND
+        player.hand.append(cid)
+    rest = [cid for cid in top_slice if cid not in set(chosen)]
+    if payload.get("bottom_random"):
+        state.rng.shuffle(rest)
+    player.library[:0] = rest
+    state.log.append(f"{player.name} looks at {len(top_slice)} cards and puts {len(chosen)} into hand.")
 
 
 def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:

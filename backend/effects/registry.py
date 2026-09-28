@@ -42,6 +42,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "create_shark_token": handlers.create_shark_token,
     "exile_top_cards_playable": handlers.exile_top_cards_playable,
     "look_top_choose": handlers.look_top_choose,
+    "look_top_select_hand": handlers.look_top_select_hand,
     "transform_if_top_matches": handlers.transform_if_top_matches,
     "transform_card": handlers.transform_card,
     "reveal_defending_top_land": handlers.reveal_defending_top_land,
