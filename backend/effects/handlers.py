@@ -878,6 +878,9 @@ def _place_searched_card(
 ) -> None:
     card = state.cards[card_id]
     player = state.players[controller]
+    if destination == "graveyard":
+        put_into_graveyard(state, card_id)
+        return
     if destination == "battlefield":
         player.battlefield.append(card_id)
         card.zone = Zone.BATTLEFIELD

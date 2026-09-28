@@ -337,6 +337,8 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
             contains = "land"
         elif "permanent card" in oracle:
             contains = "permanent"
+        elif re.search(r"search your library for (?:up to )?(?:a|an|one|\d+) card(?:,|\.)", oracle):
+            contains = "card"
     if count is None:
         count_match = SEARCH_COUNT_RE.search(oracle)
         if count_match:
@@ -349,7 +351,12 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
             mv_max = _parse_count_token(mv_match.group(1))
     split_destination = ("put one onto the battlefield tapped" in oracle
                          and ("the other into your hand" in oracle or "the rest into your hand" in oracle))
-    destination = "split_battlefield_hand" if split_destination else "battlefield" if "onto the battlefield" in oracle else "hand"
+    search_clause = oracle.split(".", 1)[0]
+    destination = (
+        "split_battlefield_hand" if split_destination else
+        "graveyard" if re.search(r"\bput (?:that card|them|it|those cards?) into your graveyard\b", search_clause) else
+        "battlefield" if "onto the battlefield" in search_clause else "hand"
+    )
     payload: dict[str, Any] = {"contains": contains, "destination": destination}
     if "onto the battlefield tapped" in oracle:
         payload["tapped"] = True
@@ -371,7 +378,9 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
     type_line = str(getattr(card, "type_line", "") or "").lower()
     type_line_parts = [part.strip() for part in re.split(r"\s*[—-]\s*", type_line, maxsplit=1)]
     subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
-    if needle == "basic_land":
+    if needle == "card":
+        matched = True
+    elif needle == "basic_land":
         matched = "basic" in type_line_parts[0].split() and "land" in card_types
     elif needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land"}:
         matched = needle in card_types

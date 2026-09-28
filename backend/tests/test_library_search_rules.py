@@ -5,6 +5,7 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.engine import RulesEngine
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
+from tests.test_death_replacement_canonical import REST_IN_PEACE_ORACLE
 
 CULTIVATE_TEXT = (
     "Search your library for up to two basic land cards, reveal those cards, "
@@ -21,6 +22,100 @@ def _state_with_searcher() -> object:
         state.cards[cid].types = ["Land"]
         state.cards[cid].type_line = "Basic Land — Forest"
     return state
+
+
+def test_entomb_searches_any_card_into_graveyard() -> None:
+    state = _state_with_searcher()
+    spell = CardInstance(
+        id="entomb", name="Entomb", owner=1, controller=1, zone=Zone.HAND,
+        types=["Instant"],
+        oracle_text="Search your library for a card, put that card into your graveyard, then shuffle.",
+    )
+    state.cards[spell.id] = spell
+    effect = build_ability_spec(state, spell, 1).effect
+    key, payload = effect.key, effect.payload
+    assert key == "search_library"
+    assert payload["contains"] == "card"
+    assert payload["destination"] == "graveyard"
+    chosen = state.players[1].library[-1]
+    resolve_effect(state, 1, key, {**payload, "selected_card_ids": [chosen]})
+    assert chosen in state.players[1].graveyard
+    assert chosen not in state.players[1].hand
+    assert state.cards[chosen].zone == Zone.GRAVEYARD
+
+
+def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement() -> None:
+    state = _state_with_searcher()
+    spell = CardInstance(
+        id="buried-alive", name="Buried Alive", owner=1, controller=1, zone=Zone.HAND,
+        types=["Sorcery"],
+        oracle_text="Search your library for up to three creature cards, put them into your graveyard, then shuffle.",
+    )
+    state.cards[spell.id] = spell
+    chosen = state.players[1].library[-3:]
+    for cid in chosen:
+        state.cards[cid].types = ["Creature"]
+        state.cards[cid].type_line = "Creature"
+    spec = build_ability_spec(state, spell, 1)
+    assert spec.effect.key == "search_library"
+    assert spec.effect.payload["count"] == 3
+    assert spec.effect.payload["destination"] == "graveyard"
+    state.mechanic_choice_players = {1}
+    resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
+    assert state.pending_mechanic_choice["count"] == 3
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    RulesEngine().take_action(restored, 1, {"type": "choose_mechanic", "card_ids": chosen}, reject_invalid=True)
+    assert set(chosen) <= set(restored.players[1].graveyard)
+    assert all(restored.cards[cid].zone == Zone.GRAVEYARD for cid in chosen)
+
+    replaced = _state_with_searcher()
+    replaced.cards["rip"] = CardInstance(
+        id="rip", name="Rest in Peace", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=REST_IN_PEACE_ORACLE,
+    )
+    replaced.players[2].battlefield.append("rip")
+    creature = replaced.players[1].library[-1]
+    replaced.cards[creature].types = ["Creature"]
+    replaced.cards[creature].type_line = "Creature"
+    resolve_effect(replaced, 1, spec.effect.key, {**spec.effect.payload, "selected_card_ids": [creature]})
+    assert creature in replaced.players[1].exile
+    assert creature not in replaced.players[1].graveyard
+    assert replaced.cards[creature].zone == Zone.EXILE
+
+
+def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
+    from fastapi.testclient import TestClient
+    from main import ACTIVE_MATCHES, MatchController, app
+
+    state = _state_with_searcher()
+    state.mechanic_choice_players = {1}
+    effect = build_ability_spec(state, CardInstance(
+        id="entomb", name="Entomb", owner=1, controller=1, zone=Zone.STACK,
+        types=["Instant"], oracle_text="Search your library for a card, put that card into your graveyard, then shuffle.",
+    ), 1).effect
+    resolve_effect(state, 1, effect.key, effect.payload)
+    chosen = state.players[1].library[-1]
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "ai"}, ai={},
+        mode="player_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = match
+        try:
+            legal = client.get(f"/matches/{state.id}/legal-moves")
+            assert legal.status_code == 200
+            assert any(chosen in move.get("options", []) for move in legal.json()["moves"])
+            response = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 1, "action": {"type": "choose_mechanic", "card_ids": [chosen]},
+            })
+            assert response.status_code == 200
+            assert response.json()["players"]["1"]["graveyard_count"] == 1
+            assert ACTIVE_MATCHES[state.id].state.cards[chosen].zone == Zone.GRAVEYARD
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
 
 
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
