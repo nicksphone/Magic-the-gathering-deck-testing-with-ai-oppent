@@ -29,4 +29,6 @@ That historical audit ran 1,115 passing tests and one strict xfail in an isolate
 
 Focused tests now cover the listed payment paths, separate amounts, human trigger ordering, a snapshot, life-total lock and real Withering Boon target restrictions. Generic type-qualified counterspell recognition was repaired as part of that fixture. The full-suite result is recorded in the README and changelog.
 
+A live FastAPI regression also checks that legal moves offer the creature spell as Withering Boon's target and that the action response reports the paid life and Font trigger above the spell. This covers public HTTP serialization, not a full browser or arbitrary-card counterspell matrix.
+
 Effect-driven multi-land entries now stage payment and ETB triggers across the pre-entry choices, including a snapshot and one four-trigger human ordering fixture. Still open: alternate Oracle wording, competing replacement effects, nested replacement choices during resolution, and broader seeded replay coverage. Trigger staging does not by itself make multi-part cost payment atomic on every failure path.

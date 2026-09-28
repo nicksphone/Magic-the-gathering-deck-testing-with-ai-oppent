@@ -708,8 +708,8 @@
     "hash": "e927b5e4b9554abb574688d08666525c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_api_input_contracts.py": {
-    "mtime": 1790598020.1763701,
-    "hash": "34a4aad35989bca5cb44c2e9d7a583a9"
+    "mtime": 1790631486.8424177,
+    "hash": "e334e3f7869720b1990930701a8f8eb7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_card_image_sync.py": {
     "mtime": 1790580588.4695883,
@@ -1100,16 +1100,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790631398.5878537,
-    "hash": "65e06f0c615ae8615cbd8aecd73bb3b5"
+    "mtime": 1790638421.2603033,
+    "hash": "8f5a789f95e1ef8a9abff63bf478b54f"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
     "mtime": 1790631088.066902,
     "hash": "9d5d73e34412f00fb0fbe00bd4e0da4d"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790631398.625853,
-    "hash": "fb853003ba8b44a8c8f22b9544c1398a"
+    "mtime": 1790638421.3283021,
+    "hash": "7d045db39defe2d09fa2f6438f9fae9f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1172,8 +1172,8 @@
     "hash": "6d078bed270fb83fefb701f924dd0e31"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-life-payment-triggers.md": {
-    "mtime": 1790631088.1399007,
-    "hash": "dad1e0db720072b970a80f784deab716"
+    "mtime": 1790638421.3663015,
+    "hash": "c454789789802c346f88e993652ba575"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-28-life-total-lock.md": {
     "mtime": 1790611743.2841349,

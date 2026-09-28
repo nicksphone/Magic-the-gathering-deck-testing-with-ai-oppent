@@ -11,7 +11,7 @@ from sqlmodel import Session
 import main
 from card_data.fallback_cards import fallback_card_payload
 from game_state.serializers import serialize_match_snapshot
-from game_state.state import CardInstance, Step, Zone
+from game_state.state import CardInstance, StackItem, Step, Zone
 from persistence.db import DATABASE_PATH, engine
 from persistence.repository import Repository
 
@@ -174,6 +174,42 @@ def test_noncreature_target_surfaces_offer_and_accept_casts(game, name, cost, te
     assert any(move.get("card_id") == "removal" and move["type"] == "cast_spell" for move in moves)
     response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "removal", "targets": {"target_card_id": "victim"}}})
     assert response.status_code == 200, response.text
+
+
+def test_life_cost_counterspell_exposes_typed_stack_target_and_payment_trigger(game):
+    client, controller = game
+    state = controller.state
+    add_card(
+        controller, "font", "Font of Agonies", Zone.BATTLEFIELD, ["Enchantment"],
+        text="Whenever you pay life, put that many blood counters on this enchantment.",
+    )
+    add_card(
+        controller, "boon", "Withering Boon", Zone.HAND, ["Instant"], "{1}{B}",
+        "As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.",
+    )
+    bear = CardInstance(
+        "bear", "Grizzly Bears", 2, 2, Zone.STACK, ["Creature"],
+        mana_cost="{1}{G}", power=2, toughness=2,
+    )
+    state.cards[bear.id] = bear
+    state.stack.append(StackItem("bear-spell", bear.id, 2, bear.name, "noop", {}))
+    state.players[1].mana_pool.update({"B": 1, "C": 1})
+    persist(controller)
+
+    match_id = state.id
+    moves_response = client.get(f"/matches/{match_id}/legal-moves?player_id=1")
+    assert moves_response.status_code == 200
+    move = next(move for move in moves_response.json()["moves"] if move.get("card_id") == "boon" and move["type"] == "cast_spell")
+    assert [item["id"] for item in move["target_hints"]["stack_targets"]] == ["bear-spell"]
+
+    response = client.post(
+        f"/matches/{match_id}/action",
+        json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "boon", "targets": {"target_stack_id": "bear-spell"}}},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["players"]["1"]["life"] == 17
+    assert [item["label"] for item in body["stack"]] == ["Grizzly Bears", "Withering Boon", "Font of Agonies trigger"]
 
 
 def test_x_cost_failure_and_unknown_cost_face_or_zone_are_atomic(game):
