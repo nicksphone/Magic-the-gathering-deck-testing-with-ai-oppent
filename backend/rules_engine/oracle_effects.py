@@ -13,6 +13,7 @@ from rules_engine.targeting import single_player_permanent_alternative, stack_ob
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
 X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+EACH_PLAYER_DRAW_RE = re.compile(r"each player draws? (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+|x) cards?\.?", re.IGNORECASE)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
@@ -1030,6 +1031,14 @@ def _infer_clause_effect(
             target_player = opponent
         return "deal_damage", {"target_player": target_player, "amount": amount}
 
+    each_draw = EACH_PLAYER_DRAW_RE.fullmatch(oracle.strip())
+    if each_draw:
+        raw = each_draw.group(1)
+        amount = max(0, x_value) if raw.lower() == "x" else _parse_count_token(raw)
+        return "effect_sequence", {"effects": [
+            {"effect_key": "draw_cards", "payload": {"target_player": pid, "amount": amount}}
+            for pid in (state.active_player, 1 if state.active_player == 2 else 2)
+        ]}
     draw_match = DRAW_RE.search(oracle)
     loot_match = LOOT_RE.search(oracle)
     if loot_match:
