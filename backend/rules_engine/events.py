@@ -72,7 +72,7 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     if event == "leaves_battlefield":
         for payload in payloads:
             capture_last_known_battlefield(state, payload.get("card_id"))
-    departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event == "permanent_dies" else []
+    departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event in {"permanent_dies", "creature_dies"} else []
     for payload in payloads:
         event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
         for trigger in _collect_triggers(state, event, event_payload):
@@ -387,19 +387,6 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    if event == "creature_dies":
-        dead_id = payload.get("card_id")
-        dead = _departed_card_view(state, dead_id)
-        if dead and dead_id not in state.players[dead.controller].battlefield:
-            oracle = without_reminder_text((dead.oracle_text or "").lower())
-            self_oracle = _creature_self_reference(dead, oracle)
-            if ("when this creature dies" in self_oracle or "whenever this creature or another creature dies" in self_oracle) and _matches_creature_dies_trigger(state, dead, oracle, payload):
-                if "power" not in payload and dead.last_known_battlefield:
-                    payload = {**payload, "power": dead.last_known_battlefield["power"]}
-                out.append(_trigger_from_oracle(
-                    state, dead.id, dead.controller, oracle,
-                    default_label=f"{dead.name} trigger", event=event, payload=payload,
-                ))
     if event == "attack_declared":
         attacker = state.cards.get(payload.get("card_id"))
         if attacker:
@@ -424,7 +411,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             )
     for pid, pstate in state.players.items():
         source_ids = list(pstate.battlefield)
-        if event == "permanent_dies":
+        if event in {"permanent_dies", "creature_dies"}:
             departed_ids = payload.get("__simultaneous_source_ids", [payload.get("card_id")])
             source_ids.extend(
                 cid for cid in departed_ids
@@ -474,7 +461,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "life_paid" and payload.get("player_id") == card.controller and "whenever you pay life" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "creature_dies" and _matches_creature_dies_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+                death_payload = payload
+                if cid == payload.get("card_id") and "power" not in payload and card.last_known_battlefield:
+                    death_payload = {**payload, "power": card.last_known_battlefield["power"]}
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=death_payload))
             elif event == "permanent_dies" and _matches_permanent_dies_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
@@ -676,7 +666,13 @@ def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload
         return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types and not is_token_card(dead_card)
     if "whenever one or more creatures you control die" in oracle:
         return bool(dead_card) and dead_card.controller == card.controller and "Creature" in dead_types
-    if "whenever a creature dies" in oracle or "whenever another creature dies" in oracle:
+    if "whenever another nontoken creature dies" in oracle:
+        return dead_id != card.id and "Creature" in dead_types and not is_token_card(dead_card)
+    if "whenever another creature dies" in oracle:
+        return dead_id != card.id
+    if "whenever a nontoken creature dies" in oracle:
+        return "Creature" in dead_types and not is_token_card(dead_card)
+    if "whenever a creature dies" in oracle:
         return True
     if "whenever one or more creatures die" in oracle:
         return True
