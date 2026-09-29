@@ -283,6 +283,8 @@ Day/night ordering follow-up: upkeep start stages the day/night change, resultin
 
 Transforming Saga follow-up: the supported final-chapter wording now exiles the Saga and returns its back face as a new permanent rather than transforming in place. Fable of the Mirror-Breaker coverage verifies reset lore/other counters, creature entry and summoning sickness, enter-transformed rather than transform triggers, snapshots and nonowner control. Verification: 1,365 isolated backend tests and frontend lint/build/unit pass; browser play and matchup replay were not rerun. Wider re-entry replacement interactions and other Saga wordings remain unverified.
 
+Live Saga route follow-up: a names-and-quantities HTTP deck hydrates Fable's two faces, its final chapter persists through SQLite restore, and public priority-pass actions return the back-face card view with its printed types and stats. Verification: 1,366 isolated backend tests, frontend lint/build/unit and the full isolated Chromium harness pass. The test prepares the chapter-ready battlefield after starting the match; the browser harness does not specifically play Fable. Broader live-route and diagnostic parity remains open.
+
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 
 ### 11. Validate semantics across rule families
