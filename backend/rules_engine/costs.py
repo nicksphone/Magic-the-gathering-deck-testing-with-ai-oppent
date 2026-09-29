@@ -157,7 +157,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         from rules_engine.replacement import pay_life
         pay_life(state, player_id, cost.pay_life)
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
-    from rules_engine.events import emit_event
+    from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, was_creature_on_battlefield
     for _ in range(cost.discard_cards):
         discard_id = _first_discardable_card(state, player_id, exclude={source_id})
         if discard_id is None:
@@ -171,25 +171,37 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         sacrifice_ids.append(source_id)
     sacrifice_ids.extend(cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind) if cid != source_id)
     needed = cost.sacrifice_creatures
-    destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids[:needed]}
-    for sac_id in sacrifice_ids[:needed]:
-        from rules_engine.events import capture_last_known_battlefield
-        capture_last_known_battlefield(state, sac_id)
+    sacrifice_ids = sacrifice_ids[:needed]
+    destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids}
+    events = [{"card_id": cid, "controller": player_id} for cid in sacrifice_ids]
+    started_staging = bool(events) and not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "ability_activation"
+    for sac_id in sacrifice_ids:
         if context is not None and "Creature" in state.cards[sac_id].types:
             from rules_engine.continuous import effective_toughness
             context["__sacrificed_toughness"] = effective_toughness(state, sac_id)
+    emit_event_batch(state, "leaves_battlefield", events)
+    for sac_id in sacrifice_ids:
         if sac_id in player.battlefield:
             player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
         owner = state.players[getattr(card, "owner", player_id)]
-        if destinations[sac_id] == "exile":
-            owner.exile.append(sac_id)
-            card.zone = Zone.EXILE
-        else:
-            put_into_graveyard(state, sac_id)
+        zone = Zone.EXILE if destinations[sac_id] == "exile" else Zone.GRAVEYARD
+        getattr(owner, zone.value).append(sac_id)
+        card.zone = zone
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
-        emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
-        card.reset_zone_counters(card.zone)
+    emit_event_batch(state, "sacrifice", events)
+    died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
+    emit_event_batch(state, "permanent_dies", died)
+    emit_event_batch(state, "creature_dies", [event for event in died if was_creature_on_battlefield(state.cards[event["card_id"]])])
+    for event in events:
+        card = state.cards[event["card_id"]]
+        if card.zone == Zone.EXILE:
+            card.reset_zone_counters(Zone.EXILE)
+    if started_staging:
+        flush_staged_triggers(state)
     return True
 
 

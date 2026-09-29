@@ -1243,6 +1243,18 @@ def _trigger_from_oracle(
             "effect_key": "draw_cards",
             "payload": _maybe_payload(oracle, {"amount": 1}),
         }
+    drain = re.search(r"\beach opponent loses (\d+) life and you gain (\d+) life\b", oracle)
+    if event == "creature_dies" and drain:
+        return {
+            "source_card_id": source_card_id,
+            "controller": controller,
+            "label": default_label,
+            "effect_key": "effect_sequence",
+            "payload": {"effects": [
+                {"effect_key": "lose_life", "payload": {"target_player": opponent, "amount": int(drain.group(1))}},
+                {"effect_key": "gain_life", "payload": {"target_player": controller, "amount": int(drain.group(2))}},
+            ]},
+        }
     if "gain 1 life" in oracle or "gain life" in oracle:
         return {
             "source_card_id": source_card_id,
