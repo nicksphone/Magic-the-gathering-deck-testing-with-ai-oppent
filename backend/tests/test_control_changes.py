@@ -1,7 +1,7 @@
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.registry import resolve_effect
-from effects.handlers import destroy_permanent, return_creature_from_graveyard_to_battlefield
+from effects.handlers import deal_damage, destroy_permanent, return_creature_from_graveyard_to_battlefield
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.engine import RulesEngine
 
@@ -86,3 +86,23 @@ def test_temporary_control_does_not_follow_reanimated_new_permanent() -> None:
     RulesEngine()._apply_step_start_actions(state)
     assert state.cards[creature.id].controller == 1
     assert creature.id in state.players[1].battlefield
+
+
+def test_lethal_spell_damage_ends_temporary_control_before_reanimation() -> None:
+    state = _state()
+    creature = CardInstance("creature", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+                            type_line="Creature — Bear", power=2, toughness=2)
+    state.cards[creature.id] = creature
+    state.players[2].battlefield.append(creature.id)
+    resolve_effect(state, 1, "change_control", {
+        "target_card_id": creature.id, "new_controller": 1, "until_end_of_turn": True,
+    })
+    deal_damage(state, 2, {"target_card_id": creature.id, "amount": 2})
+    assert creature.zone == Zone.GRAVEYARD
+    assert creature.id not in state.temporary_control_changes
+
+    return_creature_from_graveyard_to_battlefield(state, 1, {"target_card_id": creature.id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    state.step = Step.CLEANUP
+    RulesEngine()._apply_step_start_actions(state)
+    assert state.cards[creature.id].controller == 1

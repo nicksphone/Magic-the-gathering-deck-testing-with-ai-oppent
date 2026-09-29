@@ -41,6 +41,8 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
     card = state.cards.get(card_id) if card_id else None
     if card is None:
         return
+    if card.zone.value == "exile":
+        card.reset_zone_counters(card.zone)
     state.temporary_control_changes.pop(card_id, None)
     from rules_engine.alternative_casts import restore_printed_characteristics
     restore_printed_characteristics(card)

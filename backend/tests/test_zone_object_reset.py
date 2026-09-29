@@ -1,6 +1,6 @@
 """A card returning to the battlefield is a new object, not its old permanent."""
 
-from effects.handlers import destroy_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, transform_card
+from effects.handlers import destroy_permanent, exile_all_creatures, exile_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, transform_card
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.attachments import attach_if_legal
@@ -133,3 +133,52 @@ def test_equipment_and_target_leave_break_old_attachment():
     assert attach_if_legal(state, sword.id, bear.id)
     return_permanent_to_hand(state, 2, {"target_card_id": bear.id})
     assert sword.attached_to is None
+
+
+def test_single_exile_clears_old_counters_and_combat_state():
+    state = _state()
+    spider = CardInstance(
+        "spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+        power=2, toughness=4,
+        counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 3},
+    )
+    state.cards[spider.id] = spider
+    state.players[1].battlefield.append(spider.id)
+    exile_permanent(state, 2, {"target_card_id": spider.id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.cards[spider.id].zone == Zone.EXILE
+    assert state.cards[spider.id].counters == {}
+
+
+def test_batch_exile_collects_old_state_then_resets_new_zone(monkeypatch):
+    state = _state()
+    skullbriar = CardInstance(
+        "skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD,
+        ["Creature"], power=1, toughness=1,
+        oracle_text="Counters remain on Skullbriar as it moves to any zone other than a player's hand or library.",
+        counters={"+1/+1": 2, "__damage_marked": 1},
+    )
+    spider = CardInstance(
+        "spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+        power=2, toughness=4, counters={"+1/+1": 1, "__eot_toughness": 2},
+    )
+    for card in (skullbriar, spider):
+        state.cards[card.id] = card
+        state.players[card.controller].battlefield.append(card.id)
+
+    import rules_engine.events as events
+    collect = events._collect_triggers
+    observed = {}
+
+    def capture(state, event, payload):
+        if event == "leaves_battlefield":
+            observed[payload["card_id"]] = dict(state.cards[payload["card_id"]].counters)
+        return collect(state, event, payload)
+
+    monkeypatch.setattr(events, "_collect_triggers", capture)
+    exile_all_creatures(state, 1, {})
+    assert observed[skullbriar.id]["+1/+1"] == 2
+    assert observed[spider.id]["__eot_toughness"] == 2
+    assert skullbriar.zone == spider.zone == Zone.EXILE
+    assert skullbriar.counters == {"+1/+1": 2}
+    assert spider.counters == {}

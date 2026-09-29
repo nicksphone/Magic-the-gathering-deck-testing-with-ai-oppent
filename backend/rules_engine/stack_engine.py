@@ -197,7 +197,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                 exile_flashback_spell(state, card.id)
             elif card.layout == "adventure" and (card.selected_face_index or 0) > 0 and not payload.get("__failed_to_resolve"):
                 owner.exile.append(card.id)
-                card.zone = Zone.EXILE
+                card.move_to_zone(Zone.EXILE)
                 state.adventure_permissions[card.id] = item.controller
             else:
                 put_into_graveyard(state, card.id)

@@ -804,7 +804,7 @@ class RulesEngine:
                 for exile_id in escape_ids:
                     player.graveyard.remove(exile_id)
                     player.exile.append(exile_id)
-                    state.cards[exile_id].zone = Zone.EXILE
+                    state.cards[exile_id].move_to_zone(Zone.EXILE)
                 if chosen.id == "prototype":
                     from rules_engine.alternative_casts import apply_prototype
                     apply_prototype(card)

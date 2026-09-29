@@ -128,10 +128,11 @@ def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id in battlefield_owner.battlefield:
         destination = replace_die_zone(state, card.controller, card_id)
+        emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
         battlefield_owner.battlefield.remove(card_id)
         if destination == "exile":
             zone_owner.exile.append(card_id)
-            card.zone = Zone.EXILE
+            card.move_to_zone(Zone.EXILE)
             state.log.append(f"{card.name} is exiled instead of dying.")
         else:
             zone_owner.graveyard.append(card_id)
@@ -397,7 +398,7 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
         battlefield_owner.battlefield.remove(target)
         if destination == "exile":
             zone_owner.exile.append(target)
-            card.zone = Zone.EXILE
+            card.move_to_zone(Zone.EXILE)
             state.log.append(f"{card.name} is exiled instead of dying.")
             return
         zone_owner.graveyard.append(target)
@@ -526,7 +527,7 @@ def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> N
                 continue
             player.graveyard.remove(cid)
             state.players[state.cards[cid].owner].exile.append(cid)
-            state.cards[cid].zone = Zone.EXILE
+            state.cards[cid].move_to_zone(Zone.EXILE)
     state.log.append("All graveyards are exiled.")
 
 
@@ -726,7 +727,7 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
         zone_owner.exile.append(target)
-        card.zone = Zone.EXILE
+        card.move_to_zone(Zone.EXILE)
         state.log.append(f"{card.name} is exiled.")
 
 
@@ -1052,7 +1053,7 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
     for _ in range(min(amount, len(player.library))):
         cid = player.library.pop()
         player.exile.append(cid)
-        state.cards[cid].zone = Zone.EXILE
+        state.cards[cid].move_to_zone(Zone.EXILE)
         player.exile_play_until[cid] = state.turn + 1
         cards.append(state.cards[cid].name)
     if cards:
@@ -1147,7 +1148,7 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
     player.hand.append(hand_card)
     if exile_card is not None:
         player.exile.append(exile_card)
-        state.cards[exile_card].zone = Zone.EXILE
+        state.cards[exile_card].move_to_zone(Zone.EXILE)
         player.exile_play_until[exile_card] = int(payload.get("play_exiled_until", state.turn) or state.turn)
     for cid in ordered[2:] if exile_card is not None else ordered[1:]:
         state.cards[cid].move_to_zone(Zone.LIBRARY)
@@ -1327,6 +1328,7 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
             card.zone = Zone.EXILE
             state.log.append(f"{card.name} is exiled instead of dying.")
             emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
+            card.reset_zone_counters(Zone.EXILE)
             return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD

@@ -33,7 +33,7 @@ def _move_lethal_creature(state: MatchState, card_id: str, replacement_source_id
     battlefield_owner.battlefield.remove(card_id)
     if destination == "exile":
         zone_owner.exile.append(card_id)
-        card.zone = Zone.EXILE
+        card.move_to_zone(Zone.EXILE)
         state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
         return
     zone_owner.graveyard.append(card_id)
@@ -66,7 +66,7 @@ def resume_legend_rule_replacement(
         player.battlefield.remove(card_id)
     if destination == "exile":
         owner.exile.append(card_id)
-        card.zone = Zone.EXILE
+        card.move_to_zone(Zone.EXILE)
         state.log.append(
             f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is exiled by a replacement effect (legend rule)."
         )
@@ -113,7 +113,7 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
         destination = destinations[cid]
         if destination == "exile":
             owner.exile.append(cid)
-            card.zone = Zone.EXILE
+            card.move_to_zone(Zone.EXILE)
             state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
             continue
         owner.graveyard.append(cid)

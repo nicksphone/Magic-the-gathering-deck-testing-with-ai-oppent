@@ -566,7 +566,7 @@ def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_s
     destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
     if destination == "exile":
         zone_owner.exile.append(card_id)
-        card.zone = Zone.EXILE
+        card.move_to_zone(Zone.EXILE)
         state.log.append(f"{card.name} is exiled instead of dying in combat.")
         return
     zone_owner.graveyard.append(card_id)

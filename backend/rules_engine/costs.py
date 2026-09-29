@@ -179,6 +179,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
             put_into_graveyard(state, sac_id)
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
         emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
+        if destinations[sac_id] == "exile":
+            card.reset_zone_counters(Zone.EXILE)
     return True
 
 
@@ -312,6 +314,8 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         from rules_engine.events import emit_event
 
         emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
+        if destination == "exile":
+            card.reset_zone_counters(Zone.EXILE)
 
     return True
 

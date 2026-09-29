@@ -47,6 +47,11 @@ TURN_STEPS: list[Step] = [
     Step.CLEANUP,
 ]
 
+COUNTER_PERSISTENCE_RE = re.compile(
+    r"\bcounters remain on .+? as it moves to any zone other than a player's hand or library\b",
+    re.IGNORECASE,
+)
+
 
 @dataclass
 class CardInstance:
@@ -82,9 +87,17 @@ class CardInstance:
     colors: list[str] | None = None
     is_token: bool = False
 
-    def move_to_zone(self, zone: Zone) -> None:
-        if zone != self.zone and zone in {Zone.HAND, Zone.LIBRARY}:
+    def reset_zone_counters(self, zone: Zone) -> None:
+        if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
+            self.counters = {key: value for key, value in self.counters.items() if not key.startswith("__")}
+        else:
             self.counters.clear()
+
+    def move_to_zone(self, zone: Zone) -> None:
+        # Battlefield deaths defer this reset until their die triggers have
+        # consumed last-known counters and combat state.
+        if zone != self.zone and zone in {Zone.HAND, Zone.LIBRARY, Zone.EXILE}:
+            self.reset_zone_counters(zone)
         self.zone = zone
 
 
@@ -287,10 +300,7 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
         return
     # Printed counter-persistence text is the exception; damage and temporary
     # modifiers still belong to the old object, not the entering permanent.
-    if re.search(r"\bcounters remain on .+? as it moves to any zone other than a player's hand or library\b", card.oracle_text or "", re.IGNORECASE):
-        card.counters = {key: value for key, value in card.counters.items() if not key.startswith("__")}
-    else:
-        card.counters.clear()
+    card.reset_zone_counters(Zone.BATTLEFIELD)
     timestamp = max(
         int(getattr(state, "next_effect_timestamp", 1) or 1),
         int(getattr(state, "next_static_order", 1) or 1),

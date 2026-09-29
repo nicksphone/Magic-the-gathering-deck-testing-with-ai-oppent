@@ -19,7 +19,7 @@ def put_into_graveyard(state, cid: str) -> Zone:
     destination = getattr(state.players[card.owner], zone.value)
     if cid not in destination:
         destination.append(cid)
-    card.zone = zone
+    card.move_to_zone(zone)
     return zone
 
 
@@ -28,7 +28,7 @@ def exile_flashback_spell(state, cid: str) -> None:
     owner = state.players[card.owner]
     if cid not in owner.exile:
         owner.exile.append(cid)
-    card.zone = Zone.EXILE
+    card.move_to_zone(Zone.EXILE)
 
 
 def discard_selected(state, player_id: int, card_ids: list[str]) -> bool:

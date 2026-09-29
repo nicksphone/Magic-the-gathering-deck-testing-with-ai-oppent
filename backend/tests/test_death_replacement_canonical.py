@@ -132,12 +132,14 @@ def test_rest_in_peace_exiles_a_dying_creature() -> None:
     card.name = "Grizzly Bears"
     card.type_line = "Creature — Bear"
     card.power = card.toughness = 2
-    card.counters["__damage_marked"] = 2
+    card.counters["+1/+1"] = 1
+    card.counters["__damage_marked"] = 3
 
     apply_state_based_actions(state)
 
     assert card.zone == Zone.EXILE
     assert cid in state.players[2].exile
+    assert card.counters == {}
 
 
 def test_rest_in_peace_exiles_a_discarded_card() -> None:
