@@ -4,6 +4,8 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from rules_engine.prevention import add_card_prevention_shield
+from rules_engine.state_based_actions import apply_state_based_actions
 from tests.test_permanent_spell_context import state
 
 
@@ -115,3 +117,63 @@ def test_player_recipient_still_gets_announced_share_when_card_target_leaves():
     resolve_top_of_stack(game)
     assert game.players[2].life == 17
     assert game.cards["first"].counters.get("__damage_marked", 0) == 0
+
+
+def test_divided_damage_defers_lethal_checks_until_all_shares_are_dealt():
+    game = _setup()
+    game.cards["first"].toughness = game.cards["second"].toughness = 2
+    game = _cast(game)
+    assert resolve_top_of_stack(game)
+    assert game.cards["first"].counters["__damage_marked"] == 2
+    assert game.cards["second"].counters["__damage_marked"] == 2
+    apply_state_based_actions(game)
+    assert game.cards["first"].zone == game.cards["second"].zone == Zone.GRAVEYARD
+
+
+def test_divided_damage_lifelink_counts_only_unprevented_damage_once():
+    game = _setup()
+    game.cards["pyrotechnics"].keywords.append("lifelink")
+    add_card_prevention_shield(game.cards["second"], 1)
+    pridemate = CardInstance(
+        id="pridemate", name="Ajani's Pridemate", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
+        oracle_text="Whenever you gain life, put a +1/+1 counter on Ajani's Pridemate.",
+    )
+    game.cards[pridemate.id] = pridemate
+    game.players[1].battlefield.append(pridemate.id)
+    game = _cast(game)
+    assert resolve_top_of_stack(game)
+    assert game.cards["first"].counters["__damage_marked"] == 2
+    assert game.cards["second"].counters["__damage_marked"] == 1
+    assert game.players[1].life == 23
+    assert len([item for item in game.stack if item.source_card_id == pridemate.id]) == 1
+
+
+def test_divided_damage_replacement_choice_preserves_first_share_after_snapshot():
+    game = _setup()
+    game.cards["pyrotechnics"].keywords.append("lifelink")
+    game.replacement_choice_required = True
+    game.replacement_choice_players = {2}
+    for index in (1, 2):
+        ward = CardInstance(
+            id=f"hekma-{index}", name="Protection of the Hekma", owner=2, controller=2,
+            zone=Zone.BATTLEFIELD, types=["Enchantment"],
+            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+        )
+        game.cards[ward.id] = ward
+        game.players[2].battlefield.append(ward.id)
+    game = checked_action(game, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": "pyrotechnics",
+        "targets": {"target_distribution": {"first": 2, "2": 2}},
+    })
+    assert not resolve_top_of_stack(game)
+    assert game.pending_replacement_choice["resume_kind"] == "damage_batch"
+    assert game.cards["first"].counters["__damage_marked"] == 2
+    game = deserialize_match_snapshot(serialize_match_snapshot(game))
+    for _ in range(2):
+        move = next(move for move in RulesEngine().legal_moves(game, 2) if move["type"] == "choose_replacement")
+        RulesEngine().take_action(game, 2, move, reject_invalid=True)
+    assert game.pending_replacement_choice is None
+    assert game.cards["first"].counters["__damage_marked"] == 2
+    assert game.players[2].life == 20
+    assert game.players[1].life == 22

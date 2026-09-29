@@ -12,6 +12,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "set_turn_restriction": handlers.set_turn_restriction,
     "deal_damage": handlers.deal_damage,
     "deal_damage_multi": handlers.deal_damage_multi,
+    "deal_damage_batch": handlers.deal_damage_batch,
     "damage_each_creature_and_player": handlers.damage_each_creature_and_player,
     "draw_cards": handlers.draw_cards,
     "cycle_draw": handlers.cycle_draw,

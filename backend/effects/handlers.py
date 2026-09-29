@@ -1794,33 +1794,33 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None:
-    distribution = payload.get("target_distribution", {})
-    for target, amount in distribution.items():
-        if str(target).isdigit():
-            deal_damage(state, controller, {"target_player": int(target), "amount": int(amount)})
-        else:
-            deal_damage(state, controller, {"target_card_id": target, "amount": int(amount)})
+    recipients = [
+        {("target_player" if str(target).isdigit() else "target_card_id"):
+             int(target) if str(target).isdigit() else target, "amount": int(amount)}
+        for target, amount in (payload.get("target_distribution") or {}).items()
+    ]
+    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id")})
 
 
 def damage_each_creature_and_player(state: MatchState, controller: int, payload: dict) -> None:
     amount = max(0, int(payload.get("amount", 0)))
     if not amount:
         return
+    recipients = [
+        {"target_card_id": cid, "amount": amount}
+        for player in state.players.values() for cid in list(player.battlefield)
+        if "Creature" in state.cards[cid].types
+    ]
+    recipients.extend({"target_player": pid, "amount": amount} for pid in state.players)
+    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id")})
+
+
+def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None:
     source_id = payload.get("__source_card_id")
     lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
-    if "recipients" in payload:
-        recipients = list(payload["recipients"])
-    else:
-        recipients = [
-            {"target_card_id": cid, "amount": amount, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
-            for player in state.players.values() for cid in list(player.battlefield)
-            if "Creature" in state.cards[cid].types
-        ]
-        recipients.extend(
-            {"target_player": pid, "amount": amount, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
-            for pid in state.players
-        )
+    recipients = list(payload.get("recipients") or [])
     for index, recipient in enumerate(recipients):
+        recipient = {**recipient, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
         target_id = recipient.get("target_card_id")
         affected = state.cards[target_id].controller if target_id else recipient.get("target_player")
         event = "damage_to_permanent" if target_id else "damage_to_player"
@@ -1836,11 +1836,11 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
                 state.pending_replacement_choice = {
                     "resume_kind": "damage_batch", "player_id": affected, "event": event,
                     "target_player": recipient.get("target_player"), "target_card_id": target_id,
-                    "amount": amount, "controller": controller, "source_card_id": source_id,
+                    "amount": recipient["amount"], "controller": controller, "source_card_id": source_id,
                     "options": options, "combat_damage_needs_sba": True,
                     "continuation_effects": [{
-                        "effect_key": "damage_each_creature_and_player",
-                        "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id,
+                        "effect_key": "deal_damage_batch",
+                        "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
                                     "lifelink_total": lifelink_total},
                     }],
                 }
@@ -1852,8 +1852,8 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
         if pending:
             pending["combat_damage_needs_sba"] = True
             pending.setdefault("continuation_effects", []).append({
-                "effect_key": "damage_each_creature_and_player",
-                "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id,
+                "effect_key": "deal_damage_batch",
+                "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
                             "lifelink_total": lifelink_total},
             })
             return

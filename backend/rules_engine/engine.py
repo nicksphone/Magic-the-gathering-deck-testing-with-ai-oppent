@@ -544,7 +544,7 @@ class RulesEngine:
                     source_id = pending.get("source_card_id")
                     if dealt and source_id in state.cards and has_keyword(state, source_id, "lifelink"):
                         for item in pending.get("continuation_effects", []):
-                            if item.get("effect_key") == "damage_each_creature_and_player":
+                            if item.get("effect_key") == "deal_damage_batch":
                                 item["payload"]["lifelink_total"] = int(item["payload"].get("lifelink_total", 0)) + dealt
                                 break
                 from rules_engine.stack_engine import resume_paused_resolution
