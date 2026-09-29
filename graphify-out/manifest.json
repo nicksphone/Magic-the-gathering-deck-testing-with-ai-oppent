@@ -400,8 +400,8 @@
     "hash": "22c148af76bc5b732564f7142c0d83d4"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_cast_choice_modes.py": {
-    "mtime": 1790666748.6244776,
-    "hash": "8d372bad145e975ced4a296fa27cfd4d"
+    "mtime": 1790668168.5036614,
+    "hash": "ed2b3182bd22ff5cbd243c0bdd84a7ce"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_restrictions.py": {
     "mtime": 1778926770.408371,
@@ -972,8 +972,8 @@
     "hash": "4c609de48addfe3c9c8e363e694f8e32"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/oracle_effects.py": {
-    "mtime": 1790666781.285954,
-    "hash": "f33168ab2941adf1b98d5f23cc054d40"
+    "mtime": 1790668183.554404,
+    "hash": "846530fe95bb9fe20012b9d650d29af7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/colors.py": {
     "mtime": 1790583329.0735095,
@@ -1124,16 +1124,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790667919.244944,
-    "hash": "a113ed971097a4aa00fa591fe860b4e9"
+    "mtime": 1790668280.5967476,
+    "hash": "8ecbb8c2f871487c0a458ff58d5ea4dc"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790667919.246944,
-    "hash": "1b5f724e5ec7e2d8ada673e449f9d31c"
+    "mtime": 1790668280.5977478,
+    "hash": "78c3278e2f439c5ddd875cf30374bf93"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790667919.245944,
-    "hash": "6fb8fe5357c10cb3dde4ac37018f8353"
+    "mtime": 1790668280.5987477,
+    "hash": "0403fe777c45e769b261165c319f0efc"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1232,8 +1232,8 @@
     "hash": "b90818210f3413e8f4e8ae08bff36c5b"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/modal-spell-faces.md": {
-    "mtime": 1790667919.246944,
-    "hash": "69dd35f637136090cb152dc26a431038"
+    "mtime": 1790668280.5977478,
+    "hash": "f2be70f7ce5c5fc40fb79624f3c4aeef"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/index.html": {
     "mtime": 1777063134.7080612,

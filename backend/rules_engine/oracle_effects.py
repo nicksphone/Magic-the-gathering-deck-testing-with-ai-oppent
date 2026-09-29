@@ -136,7 +136,14 @@ def infer_effect_from_oracle(
     if mode_text:
         oracle = without_reminder_text(mode_text.lower())
     elif mode_texts:
-        oracle = without_reminder_text(" ; ".join(str(x).lower() for x in mode_texts))
+        effects = []
+        for selected_mode in mode_texts:
+            key, payload = infer_effect_from_oracle(
+                state, card, controller,
+                {**action_targets, "mode_text": selected_mode, "mode_texts": []},
+            )
+            effects.extend(payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}])
+        return "effect_sequence", {"effects": effects}
     split_match = SPLIT_NAME_RE.match(name)
     if split_match and not mode_text and not mode_texts:
         # Split cards are represented as a single cached record with aliases in

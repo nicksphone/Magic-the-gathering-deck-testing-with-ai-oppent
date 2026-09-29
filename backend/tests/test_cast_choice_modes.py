@@ -3,7 +3,7 @@ from __future__ import annotations
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
 from rules_engine.ability_model import build_ability_spec
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -292,6 +292,81 @@ def test_cryptic_command_can_choose_two_untargeted_modes_without_targets() -> No
     assert after.cards[enemy_creature].tapped
     assert not after.cards[own_creature].tapped
     assert len(after.players[1].hand) == hand_before + 1
+
+
+def test_cryptic_command_counter_then_draw_resolves_both_modes() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool = {"U": 4}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Cryptic Command"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{1}{U}{U}{U}"
+    card.oracle_text = (
+        "Choose two —\n"
+        "• Counter target spell.\n"
+        "• Return target permanent to its owner's hand.\n"
+        "• Tap all creatures your opponents control.\n"
+        "• Draw a card."
+    )
+    target_id = state.players[2].hand.pop()
+    state.cards[target_id].name = "Lightning Bolt"
+    state.cards[target_id].zone = Zone.STACK
+    state.cards[target_id].types = ["Instant"]
+    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    modes = ["Counter target spell", "Draw a card"]
+    action = {"type": "cast_spell", "card_id": card.id, "targets": {"mode_texts": modes, "target_stack_id": "bolt"}}
+
+    after = checked_action(state, RulesEngine(), 1, action)
+    assert [effect["effect_key"] for effect in after.stack[-1].payload["effects"]] == ["counter_spell", "draw_cards"]
+    hand_before = len(after.players[1].hand)
+    life_before = after.players[1].life
+    assert resolve_top_of_stack(after)
+    assert not after.stack
+    assert target_id in after.players[2].graveyard
+    assert len(after.players[1].hand) == hand_before + 1
+    assert after.players[1].life == life_before
+
+
+def test_cryptic_command_draw_mode_fizzles_when_its_only_target_disappears() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool = {"U": 4}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Cryptic Command"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{1}{U}{U}{U}"
+    card.oracle_text = (
+        "Choose two —\n"
+        "• Counter target spell.\n"
+        "• Return target permanent to its owner's hand.\n"
+        "• Tap all creatures your opponents control.\n"
+        "• Draw a card."
+    )
+    target_id = state.players[2].hand.pop()
+    state.cards[target_id].name = "Lightning Bolt"
+    state.cards[target_id].zone = Zone.STACK
+    state.cards[target_id].types = ["Instant"]
+    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    action = {"type": "cast_spell", "card_id": card.id, "targets": {
+        "mode_texts": ["Counter target spell", "Draw a card"], "target_stack_id": "bolt",
+    }}
+
+    after = checked_action(state, RulesEngine(), 1, action)
+    after.stack = [item for item in after.stack if item.id != "bolt"]
+    after.cards[target_id].zone = Zone.GRAVEYARD
+    after.players[2].graveyard.append(target_id)
+    hand_before = len(after.players[1].hand)
+    assert resolve_top_of_stack(after)
+    assert len(after.players[1].hand) == hand_before
 
 
 def test_choose_one_mode_with_no_target_remains_castable() -> None:
