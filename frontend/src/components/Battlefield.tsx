@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveCardMediaUrl } from "../api/client";
 import type { LegalMove, MatchState } from "../types";
 import { PermanentActions } from "./PermanentActions";
@@ -116,6 +116,16 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
+  useEffect(() => {
+    setTargets({});
+    setCostChoice({});
+    setHybridChoice({});
+    setFaceChoices({});
+    setCycleChoices({});
+    setDivideInputs({});
+    setLandTapCounts({});
+    setHoverPreview(null);
+  }, [match.id]);
   const canManualTap = humanActor && match.priority_player === viewerSeat && !match.pregame_pending
     && !match.pending_mechanic_choice && !match.pending_replacement_choice && !match.pending_trigger_order
     && match.step !== "cleanup";
@@ -606,7 +616,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       onChange={(e) => setHybridChoice((prev) => ({ ...prev, [`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`]: e.target.value }))}
                     >
                       <option value="">Auto</option>
-                      {symbol.choices.map((branch) => <option key={`${symbol.symbol}-${branch}`} value={branch}>{branch === "2" ? "2 generic mana" : branch}</option>)}
+                      {symbol.choices.map((branch) => <option key={`${symbol.symbol}-${branch}`} value={branch}>{branch === "2" ? "2 generic mana" : branch === "P" ? "Pay 2 life" : branch}</option>)}
                     </select>
                   </label>
                 ))}

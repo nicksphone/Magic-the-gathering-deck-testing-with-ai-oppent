@@ -28,6 +28,22 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['1'].battlefield.filter(card => card.name === 'Plains' && card.tapped).length"), 3);
   console.log("PASS human hybrid branches reach the API and pay the printed white cost");
 
+  await click("Phyrexian Payment Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Mutagenic Growth'))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Mutagenic Growth'));
+    const payment = box.querySelector('[aria-label^="Pay hybrid symbol"]');
+    const target = [...box.querySelectorAll('select')].find(s => [...s.options].some(o => o.value === 'phyrexian-target'));
+    if (!payment || !target) throw new Error('Missing Phyrexian payment or target control');
+    payment.value = 'P'; payment.dispatchEvent(new Event('change', { bubbles: true }));
+    target.value = 'phyrexian-target'; target.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Cast Mutagenic Growth");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Mutagenic Growth')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.hybrid_choices"), ["P"]);
+  assert.equal(await evaluate("window.fixtureState.players['1'].life"), 18);
+  console.log("PASS human Phyrexian life branch and target reach the API");
+
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);

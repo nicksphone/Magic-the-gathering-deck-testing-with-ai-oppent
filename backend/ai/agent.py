@@ -37,7 +37,9 @@ def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
 
 def _supported_hybrid_symbol(symbol: str) -> bool:
     parts = symbol.split("/")
-    return len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts)
+    return (len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts)) or (
+        len(parts) in {2, 3} and parts[-1] == "P" and all(part in {"W", "U", "B", "R", "G"} for part in parts[:-1])
+    )
 
 
 def _effective_combat_stats(state: MatchState, card_id: str) -> tuple[int, int]:
@@ -3859,10 +3861,10 @@ class AIAgent:
                     continue
                 parts = symbol.split("/")
                 options = [part for part in parts if part in demand]
-                if len(options) == 2 and len(parts) == 2:
+                if len(options) == 2:
                     for color in options:
                         demand[color] += weight * 0.5
-                elif len(options) == 1 and len(parts) == 2:
+                elif len(options) == 1:
                     demand[options[0]] += weight * 0.25
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
             if _has_counter_spell_text(text):

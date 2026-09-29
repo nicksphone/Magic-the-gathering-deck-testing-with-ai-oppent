@@ -26,6 +26,25 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "phyrexian_payment":
+        deck = [{"quantity": 60, "card_name": "Forest"}]
+        state = MatchFactory.from_decks(deck, deck, seed=922)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name, spell.types, spell.type_line = "Mutagenic Growth", ["Instant"], "Instant"
+        spell.mana_cost = "{G/P}"
+        spell.oracle_text = "Target creature gets +2/+2 until end of turn."
+        creature = CardInstance(
+            id="phyrexian-target", name="Llanowar Elves", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
+        )
+        state.cards[creature.id] = creature
+        state.players[1].battlefield.append(creature.id)
+        return publish(state, deck)
     if face_kind == "hybrid_payment":
         deck = [{"quantity": 60, "card_name": "Plains"}]
         state = MatchFactory.from_decks(deck, deck, seed=921)

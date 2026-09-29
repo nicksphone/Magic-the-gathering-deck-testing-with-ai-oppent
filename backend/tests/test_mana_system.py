@@ -130,6 +130,95 @@ def test_hybrid_choices_are_exposed_for_exile_and_top_library_casts() -> None:
     assert library_move["cost_options"][0]["hybrid_symbols"] == [{"symbol": "R/W", "choices": ["R", "W"]}]
 
 
+def test_phyrexian_payment_and_life_reservation_use_shared_planner() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=107)
+    assert mana_value("{G/P}{G/U/P}") == 2
+    assert hybrid_payment_symbols("{G/P}{G/U/P}") == [
+        {"symbol": "G/P", "choices": ["G", "P"]},
+        {"symbol": "G/U/P", "choices": ["G", "U", "P"]},
+    ]
+    assert can_pay_with_pool_and_lands(state, 1, "{G/P}", hybrid_choices=["P"])
+    assert not can_pay_with_pool_and_lands(state, 1, "{G/P}", hybrid_choices=["G"])
+    state.players[1].life = 3
+    assert not can_pay_with_pool_and_lands(state, 1, "{G/P}", hybrid_choices=["P"], reserved_life=2)
+    assert not auto_pay_cost(state, 1, "{G/P}", hybrid_choices=["P"], reserved_life=2)
+    assert state.players[1].life == 3
+    assert auto_pay_cost(state, 1, "{G/U/P}", hybrid_choices=["P"])
+    assert state.players[1].life == 1
+    assert not can_pay_with_pool_and_lands(state, 1, "{G/P}", hybrid_choices=["P"])
+
+
+def test_activated_phyrexian_cost_reserves_separate_life_payment() -> None:
+    from rules_engine.costs import activated_cost_available, apply_activated_costs
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=109)
+    source = CardInstance(
+        id="cost-probe", name="Cost probe", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"],
+    )
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    state.players[1].life = 3
+    cost = "{B/P}, Pay 2 life"
+    assert not activated_cost_available(state, 1, source.id, cost)
+    assert not apply_activated_costs(state, 1, source.id, cost)
+    assert state.players[1].life == 3
+    state.players[1].life = 5
+    assert activated_cost_available(state, 1, source.id, cost)
+    assert apply_activated_costs(state, 1, source.id, cost)
+    assert state.players[1].life == 1
+
+
+def test_mutagenic_growth_phyrexian_life_trigger_is_above_spell() -> None:
+    from copy import deepcopy
+    from ai.agent import AIAgent
+    from rules_engine.stack_engine import resolve_top_of_stack
+
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=108)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    spell_id = state.players[1].hand[0]
+    spell = state.cards[spell_id]
+    spell.name, spell.types, spell.type_line = "Mutagenic Growth", ["Instant"], "Instant"
+    spell.mana_cost = "{G/P}"
+    spell.oracle_text = "Target creature gets +2/+2 until end of turn."
+    creature = CardInstance(
+        id="elf-phyrexian", name="Llanowar Elves", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
+    )
+    font = CardInstance(
+        id="font-phyrexian", name="Font of Agonies", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Enchantment"],
+        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
+    )
+    for card in (creature, font):
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+    move = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == spell_id and move["type"] == "cast_spell")
+    assert move["cost_options"][0]["hybrid_symbols"] == [{"symbol": "G/P", "choices": ["G", "P"]}]
+    danger = deepcopy(state)
+    danger.players[1].life = 2
+    ai_move = AIAgent(archetype="Aggro").choose_action(danger, RulesEngine().legal_moves(danger, 1), 1).action
+    assert ai_move.get("type") != "cast_spell" or ai_move.get("card_id") != spell_id
+    action = {"type": "cast_spell", "card_id": spell_id, "cost_choice": {"id": move["cost_options"][0]["id"]},
+              "targets": {"target_card_id": creature.id}}
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["G"]})
+    assert state.players[1].life == 20 and spell_id in state.players[1].hand
+    paid = checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["P"]})
+    assert paid.players[1].life == 18
+    assert [item.source_card_id for item in paid.stack] == [spell_id, font.id]
+    assert resolve_top_of_stack(paid)
+    assert paid.cards[font.id].counters.get("blood") == 2
+    paid.players[1].life = 1
+    assert not can_pay_with_pool_and_lands(paid, 1, "{G/P}", hybrid_choices=["P"])
+
+
 def test_generic_reduction_applies_after_monocolored_hybrid_choice(monkeypatch) -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=103)

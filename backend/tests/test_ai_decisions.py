@@ -780,10 +780,10 @@ def test_hybrid_spells_do_not_create_false_opening_color_miss() -> None:
 
     hybrid = ai._opening_hand_profile(lands + [spell("{W/U}"), spell("{W/U}")])
     fixed_white = ai._opening_hand_profile(lands + [spell("{W}"), spell("{W}")])
-    unsupported_phyrexian = ai._opening_hand_profile(lands + [spell("{B/P}"), spell("{B/P}")])
+    phyrexian = ai._opening_hand_profile(lands + [spell("{B/P}"), spell("{B/P}")])
     assert not hybrid["missing_primary_color"]
     assert fixed_white["missing_primary_color"]
-    assert unsupported_phyrexian["missing_primary_color"]
+    assert not phyrexian["missing_primary_color"]
 
     cards = {str(i): card for i, card in enumerate(lands + [spell("{W/U}") for _ in range(5)])}
     state = SimpleNamespace(cards=cards, players={1: SimpleNamespace(hand=list(cards))}, mulligan_count={1: 0})

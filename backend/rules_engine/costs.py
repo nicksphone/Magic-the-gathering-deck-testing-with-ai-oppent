@@ -132,7 +132,9 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         creatures.remove(source_id)
     if len(creatures) < max(0, cost.sacrifice_creatures - (1 if cost.sacrifice_source else 0)):
         return False
-    return not cost.mana_cost or can_pay_with_pool_and_lands(state, player_id, cost.mana_cost, card_name=source.name)
+    return not cost.mana_cost or can_pay_with_pool_and_lands(
+        state, player_id, cost.mana_cost, card_name=source.name, reserved_life=cost.pay_life,
+    )
 
 
 def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None) -> bool:
@@ -141,7 +143,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
-    if cost.mana_cost and not _pay_activated_mana(state, player_id, cost.mana_cost, source.name):
+    if cost.mana_cost and not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life):
         return False
     if cost.tap_source:
         source.tapped = True
@@ -183,10 +185,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     return True
 
 
-def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str) -> bool:
+def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0) -> bool:
     from rules_engine.mana import auto_pay_cost
 
-    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name)
+    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life)
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:
@@ -261,6 +263,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     return can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in card.types),
         card_name=card.name, x_value=x_value, spell_types=set(card.types),
+        reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
     )
 
 

@@ -781,12 +781,20 @@ class RulesEngine:
                         target_ids.append(target_id)
                 ward_tax = ward_tax_for_targets(state, player_id, target_ids)
                 adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
+                cost_staging = not state.trigger_staging
+                if cost_staging:
+                    state.trigger_staging = True
+                    state.trigger_staging_event = "spell_cast"
                 paid = auto_pay_cost(
                     state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
                     hybrid_choices=action.get("hybrid_choices"),
+                    reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                 )
                 if not paid:
+                    if cost_staging:
+                        state.staged_triggers.clear()
+                        state.trigger_staging = False
                     reject("Cannot pay spell cost and ward tax")
                     if ward_tax > 0:
                         state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")
@@ -794,10 +802,6 @@ class RulesEngine:
                         state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                cost_staging = not state.trigger_staging
-                if cost_staging:
-                    state.trigger_staging = True
-                    state.trigger_staging_event = "spell_cast"
                 if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value):
                     if cost_staging:
                         state.staged_triggers.clear()
@@ -850,7 +854,14 @@ class RulesEngine:
                 state.log.append(f"Invalid cycling X value for {card.name}.")
                 apply_state_based_actions(state)
                 return
+            cost_staging = not state.trigger_staging
+            if cost_staging:
+                state.trigger_staging = True
+                state.trigger_staging_event = "discard"
             if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value):
+                if cost_staging:
+                    state.staged_triggers.clear()
+                    state.trigger_staging = False
                 reject("Cannot pay cycling cost")
                 state.log.append(f"{player.name} cannot pay cycling cost for {card.name}.")
                 apply_state_based_actions(state)

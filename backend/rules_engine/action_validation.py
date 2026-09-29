@@ -198,6 +198,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 state, player_id, option.mana_cost, card_name=face_card.name,
                 x_value=int(targets.get("x_value") or 0), spell_types=set(face_card.types),
                 hybrid_choices=hybrid_choices,
+                reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:
             require("{X}" in face_card.mana_cost.upper() or any(option.pay_life_x for option in options), "This casting cost does not have a chosen X")

@@ -32,7 +32,7 @@ function Harness() {
     setReady(false);
     window.fixtureActions?.push({ player_id: playerId, action });
     const response = await fetch(`${BASE}/matches/${match.id}/action`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ player_id: playerId, action }) });
-    if (!response.ok) throw new Error(`Action HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Action HTTP ${response.status}: ${await response.text()}`);
     const next = await response.json();
     await load(next);
     return next as MatchState;
@@ -62,6 +62,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "despise").catch((failure) => setError(String(failure)))}>Despise Fixture</button>
     <button onClick={() => reset(false, false, 3, "appetite").catch((failure) => setError(String(failure)))}>Appetite Fixture</button>
     <button onClick={() => reset(false, false, 3, "hybrid_payment").catch((failure) => setError(String(failure)))}>Hybrid Payment Fixture</button>
+    <button onClick={() => reset(false, false, 3, "phyrexian_payment").catch((failure) => setError(String(failure)))}>Phyrexian Payment Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
