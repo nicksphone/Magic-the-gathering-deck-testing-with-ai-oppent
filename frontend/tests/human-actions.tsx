@@ -55,6 +55,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "modal_two_targets").catch((failure) => setError(String(failure)))}>Modal Two Targets Fixture</button>
     <button onClick={() => reset(false, false, 3, "modal_same_kind").catch((failure) => setError(String(failure)))}>Modal Same Kind Fixture</button>
     <button onClick={() => reset(false, false, 3, "each_player_discard").catch((failure) => setError(String(failure)))}>Each Player Discard Fixture</button>
+    <button onClick={() => reset(false, false, 3, "revealed_discard").catch((failure) => setError(String(failure)))}>Revealed Discard Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>

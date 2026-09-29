@@ -119,9 +119,11 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             return False, "An Aura target is required."
         if str(target_id) not in allowed:
             return False, "The selected Aura target is not legal."
-    if target_hints.get("player_targets") and ("target player" in mode_oracle or "any target" in mode_oracle):
+    if target_hints.get("player_targets") and ("target player" in mode_oracle or "target opponent" in mode_oracle or "any target" in mode_oracle):
         if action_targets.get("target_player") is None and not action_targets.get("target_card_id"):
             return False, "A player or permanent target is required."
+    if target_hints.get("requires_opponent_target") and action_targets.get("target_player") is None:
+        return False, "An opponent target is required."
 
     selected_player = action_targets.get("target_player")
     if selected_player is not None:

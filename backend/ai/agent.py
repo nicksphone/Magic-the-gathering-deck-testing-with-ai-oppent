@@ -77,6 +77,10 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] == "choose_revealed_discard":
+                target = int(choice["target_player"])
+                options.sort(key=lambda cid: (-self._hand_retention_value(state, cid, target), cid))
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:1]}, reasoning="Discard the opponent's most useful revealed card")
             if choice["kind"] == "combat_damage":
                 return AIDecision(
                     action={"type": "choose_mechanic", "damage_assignment": self._choose_combat_damage_allocation(state, choice)},

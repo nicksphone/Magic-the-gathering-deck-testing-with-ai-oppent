@@ -86,6 +86,10 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
     re.IGNORECASE,
 )
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
+REVEAL_CHOOSE_DISCARD_RE = re.compile(
+    r"target opponent reveals (?:their|his or her) hand\. you choose a card from it\. "
+    r"that player discards that card\.?", re.IGNORECASE,
+)
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
 SHARK_TOKEN_RE = re.compile(
     r"create (?:a|an) (?:blue )?x/x(?: blue)? shark creature token with flying",
@@ -167,6 +171,10 @@ def infer_effect_from_oracle(
         return "counter_spell", {
             "target_stack_id": target_stack_id,
             "target_kind": "noncreature" if "counter target noncreature spell" in oracle else "any",
+        }
+    if REVEAL_CHOOSE_DISCARD_RE.fullmatch(oracle.strip()):
+        return "choose_revealed_discard", {
+            "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
         }
     if ("counter target activated ability" in oracle or "counter target triggered ability" in oracle
             or "counter target activated or triggered ability" in oracle):
@@ -684,6 +692,9 @@ def inspect_target_hints(
             {"id": 1, "name": state.players[1].name},
             {"id": 2, "name": state.players[2].name},
         ]
+    elif "target opponent" in oracle:
+        hints["player_targets"] = [{"id": opponent, "name": state.players[opponent].name}]
+        hints["requires_opponent_target"] = True
     alternative = single_player_permanent_alternative(oracle)
     if alternative:
         hints["single_target_alternative"] = True

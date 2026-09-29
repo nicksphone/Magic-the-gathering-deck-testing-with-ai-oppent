@@ -26,6 +26,22 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "revealed_discard":
+        deck = [{"quantity": 60, "card_name": "Swamp"}]
+        state = MatchFactory.from_decks(deck, deck, seed=919)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        state.players[1].mana_pool.update({"B": 1, "C": 2})
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name = "Coercion"
+        spell.types = ["Sorcery"]
+        spell.type_line = "Sorcery"
+        spell.mana_cost = "{2}{B}"
+        spell.oracle_text = "Target opponent reveals their hand. You choose a card from it. That player discards that card."
+        return publish(state, deck)
     if face_kind == "each_player_discard":
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=818)

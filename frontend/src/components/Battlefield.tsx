@@ -604,6 +604,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 ) : null}
                 {!perModeSelected && !showAlternativeSelect && hints?.player_targets?.length ? (
                   <select
+                    aria-label="Player target"
                     onChange={(e) =>
                       setTargets((prev) => ({
                         ...prev,

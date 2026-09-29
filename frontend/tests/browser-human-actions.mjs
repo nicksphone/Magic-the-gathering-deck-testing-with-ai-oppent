@@ -163,6 +163,22 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.length"), 3);
   console.log("PASS both human seats privately choose before simultaneous discard resolves");
 
+  await click("Revealed Discard Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Coercion'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]').options.length"), 2);
+  await evaluate("(() => { const select = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Coercion");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Coercion')");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'choose_revealed_discard'");
+  assert.equal(await evaluate("window.fixtureState.pending_mechanic_choice.player_id"), 1);
+  await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand')).querySelector('input[type=checkbox]').click()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");
+  assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.length"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
+  console.log("PASS Coercion caster targets opponent and chooses from revealed hand");
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");

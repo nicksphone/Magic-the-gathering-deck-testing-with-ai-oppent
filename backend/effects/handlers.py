@@ -1477,6 +1477,27 @@ def each_player_discard(state: MatchState, controller: int, payload: dict) -> No
         state.log.append(f"{state.players[pid].name} discards {len(selected[str(pid)])}.")
 
 
+def choose_revealed_discard(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.zone_actions import discard_selected, is_departed_token
+
+    target = int(payload["target_player"])
+    options = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
+    if not options:
+        return
+    state.log.append(f"{state.players[target].name} reveals their hand.")
+    if controller in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            "kind": "choose_revealed_discard", "player_id": controller,
+            "target_player": target, "options": options, "count": 1,
+            "label": "Choose a card from the revealed hand to discard",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    chosen = min(options, key=lambda cid: (state.cards[cid].mana_cost or "", cid))
+    discard_selected(state, target, [chosen])
+
+
 def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_ids: list[str], eligible: list[str], max_count: int) -> bool:
     if not eligible or payload.get("selected_card_ids") is not None:
         return False

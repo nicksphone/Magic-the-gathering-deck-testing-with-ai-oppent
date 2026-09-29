@@ -64,6 +64,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "prevent_damage": handlers.prevent_damage,
     "discard_cards": handlers.discard_cards,
     "each_player_discard": handlers.each_player_discard,
+    "choose_revealed_discard": handlers.choose_revealed_discard,
     "topdeck_put_creatures_battlefield": handlers.topdeck_put_creatures_battlefield,
     "topdeck_put_permanents_battlefield": handlers.topdeck_put_permanents_battlefield,
     "topdeck_reveal_creature_to_hand": handlers.topdeck_reveal_creature_to_hand,
