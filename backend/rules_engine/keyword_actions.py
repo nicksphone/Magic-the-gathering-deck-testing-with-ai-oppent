@@ -183,6 +183,10 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         card.zone = zone
         state.log.append(f"{state.players[player_id].name} sacrifices {card.name}.")
     emit_event_batch(state, "sacrifice", events)
+    for event in events:
+        card = state.cards[event["card_id"]]
+        if card.zone == Zone.EXILE:
+            card.reset_zone_counters(Zone.EXILE)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
     emit_event_batch(state, "permanent_dies", died)
     emit_event_batch(state, "creature_dies", [event for event in died if "Creature" in state.cards[event["card_id"]].types])

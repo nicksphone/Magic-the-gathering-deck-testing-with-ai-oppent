@@ -96,7 +96,8 @@ class CardInstance:
     def move_to_zone(self, zone: Zone) -> None:
         # Battlefield deaths defer this reset until their die triggers have
         # consumed last-known counters and combat state.
-        if zone != self.zone and zone in {Zone.HAND, Zone.LIBRARY, Zone.EXILE}:
+        if zone != self.zone and (zone in {Zone.HAND, Zone.LIBRARY, Zone.EXILE}
+                                  or zone == Zone.GRAVEYARD and self.zone != Zone.BATTLEFIELD):
             self.reset_zone_counters(zone)
         self.zone = zone
 

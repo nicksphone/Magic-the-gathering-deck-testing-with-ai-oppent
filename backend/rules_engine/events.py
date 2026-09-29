@@ -5,7 +5,7 @@ import re
 from copy import copy
 from typing import Any
 
-from game_state.state import MatchState, StackItem
+from game_state.state import MatchState, StackItem, Zone
 from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
 
@@ -15,6 +15,8 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     _push_triggers(state, event, triggers)
     if event == "leaves_battlefield":
         _finish_battlefield_exit(state, payload.get("card_id"))
+    elif event in {"permanent_dies", "creature_dies"}:
+        _finish_death_event(state, event, payload.get("card_id"))
 
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
@@ -35,6 +37,15 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     if event == "leaves_battlefield":
         for payload in payloads:
             _finish_battlefield_exit(state, payload.get("card_id"))
+    elif event in {"permanent_dies", "creature_dies"}:
+        for payload in payloads:
+            _finish_death_event(state, event, payload.get("card_id"))
+
+
+def _finish_death_event(state: MatchState, event: str, card_id: str | None) -> None:
+    card = state.cards.get(card_id) if card_id else None
+    if card and card.zone == Zone.GRAVEYARD and (event == "creature_dies" or "Creature" not in card.types):
+        card.reset_zone_counters(Zone.GRAVEYARD)
 
 
 def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:

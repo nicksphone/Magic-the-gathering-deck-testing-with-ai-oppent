@@ -403,9 +403,6 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
             return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
-        card.counters.pop("__damage_marked", None)
-        card.counters.pop("__deathtouch_damaged", None)
-        card.counters.pop("__prevent_damage_shield", None)
         state.log.append(f"{card.name} is destroyed.")
         emit_event(state, "permanent_dies", {"card_id": target, "controller": card.controller})
         if "Creature" in card.types:
@@ -462,9 +459,6 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
                 continue
             zone_owner.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
-            card.counters.pop("__damage_marked", None)
-            card.counters.pop("__deathtouch_damaged", None)
-            card.counters.pop("__prevent_damage_shield", None)
             destroyed = True
             state.log.append(f"{card.name} is destroyed.")
             permanent_deaths.append(event_payload)
@@ -504,9 +498,6 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
                 continue
             zone_owner.graveyard.append(cid)
             card.zone = Zone.GRAVEYARD
-            card.counters.pop("__damage_marked", None)
-            card.counters.pop("__deathtouch_damaged", None)
-            card.counters.pop("__prevent_damage_shield", None)
             destroyed = True
             state.log.append(f"{card.name} is destroyed.")
             permanent_deaths.append(event_payload)
@@ -1335,6 +1326,7 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
         if "Creature" in card.types:
             emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
+        card.reset_zone_counters(Zone.GRAVEYARD)
 
 
 def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None:

@@ -462,13 +462,14 @@ def test_you_or_permanent_you_control_damage_prevention_applies_to_player_and_pe
     card.zone = Zone.BATTLEFIELD
     card.types = ["Creature"]
     card.power = 2
-    card.toughness = 2
+    card.toughness = 3
 
     before_life = state.players[1].life
     deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
     assert state.players[1].life == before_life - 2
 
     deal_damage(state, controller=2, payload={"target_card_id": cid, "amount": 3})
+    assert card.zone == Zone.BATTLEFIELD
     assert card.counters.get("__damage_marked", 0) == 2
 
 
@@ -627,13 +628,14 @@ def test_you_or_creature_you_control_damage_prevention_applies_to_player_and_per
     card.zone = Zone.BATTLEFIELD
     card.types = ["Creature"]
     card.power = 2
-    card.toughness = 2
+    card.toughness = 3
 
     before_life = state.players[1].life
     deal_damage(state, controller=2, payload={"target_player": 1, "amount": 3})
     assert state.players[1].life == before_life - 2
 
     deal_damage(state, controller=2, payload={"target_card_id": cid, "amount": 3})
+    assert card.zone == Zone.BATTLEFIELD
     assert card.counters.get("__damage_marked", 0) == 2
 
 

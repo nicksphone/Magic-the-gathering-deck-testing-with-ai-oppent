@@ -1,12 +1,13 @@
 """A card returning to the battlefield is a new object, not its old permanent."""
 
-from effects.handlers import destroy_permanent, exile_all_creatures, exile_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, transform_card
+from effects.handlers import destroy_all_creatures, destroy_permanent, exile_all_creatures, exile_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, sacrifice, transform_card
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.attachments import attach_if_legal
 from rules_engine.continuous import effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from rules_engine.zone_actions import put_into_graveyard
 
 
 def _state():
@@ -182,3 +183,103 @@ def test_batch_exile_collects_old_state_then_resets_new_zone(monkeypatch):
     assert skullbriar.zone == spider.zone == Zone.EXILE
     assert skullbriar.counters == {"+1/+1": 2}
     assert spider.counters == {}
+
+
+def test_death_triggers_see_old_counters_before_graveyard_reset(monkeypatch):
+    state = _state()
+    spider = CardInstance(
+        "spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+        power=2, toughness=4,
+        counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 1},
+    )
+    skullbriar = CardInstance(
+        "skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD,
+        ["Creature"], power=1, toughness=1,
+        oracle_text="Counters remain on Skullbriar as it moves to any zone other than a player's hand or library.",
+        counters={"+1/+1": 2, "__damage_marked": 1},
+    )
+    chalice = CardInstance(
+        "chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, ["Artifact"],
+        type_line="Artifact", counters={"charge": 2},
+    )
+    for card in (spider, skullbriar, chalice):
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+
+    import rules_engine.events as events
+    collect = events._collect_triggers
+    observed = {}
+
+    def capture(state, event, payload):
+        if event in {"permanent_dies", "creature_dies"}:
+            observed[(event, payload["card_id"])] = dict(state.cards[payload["card_id"]].counters)
+        return collect(state, event, payload)
+
+    monkeypatch.setattr(events, "_collect_triggers", capture)
+    for card in (spider, skullbriar, chalice):
+        destroy_permanent(state, 2, {"target_card_id": card.id})
+    assert observed[("creature_dies", spider.id)] == {"+1/+1": 1, "__eot_power": 2, "__damage_marked": 1}
+    assert observed[("creature_dies", skullbriar.id)]["+1/+1"] == 2
+    assert observed[("permanent_dies", chalice.id)] == {"charge": 2}
+
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.cards[spider.id].counters == {}
+    assert state.cards[skullbriar.id].counters == {"+1/+1": 2}
+    assert state.cards[chalice.id].counters == {}
+
+
+def test_countered_spell_loses_stack_counters_in_graveyard():
+    state = _state()
+    bolt = CardInstance(
+        "bolt", "Lightning Bolt", 1, 1, Zone.STACK, ["Instant"],
+        mana_cost="{R}", counters={"time": 2},
+    )
+    state.cards[bolt.id] = bolt
+    put_into_graveyard(state, bolt.id)
+    assert bolt.zone == Zone.GRAVEYARD
+    assert bolt.counters == {}
+
+
+def test_sacrificed_artifact_loses_old_charge_counters():
+    state = _state()
+    chalice = CardInstance(
+        "chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD,
+        ["Artifact"], type_line="Artifact", counters={"charge": 2},
+    )
+    state.cards[chalice.id] = chalice
+    state.players[1].battlefield.append(chalice.id)
+    sacrifice(state, 1, {"target_card_id": chalice.id})
+    assert chalice.zone == Zone.GRAVEYARD
+    assert chalice.counters == {}
+
+
+def test_batch_deaths_collect_all_old_counters_before_reset(monkeypatch):
+    state = _state()
+    creatures = [
+        CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+                     power=2, toughness=2, counters={"+1/+1": 1, "__damage_marked": 1}),
+        CardInstance("spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+                     power=2, toughness=4, counters={"+1/+1": 2, "__damage_marked": 2}),
+    ]
+    for card in creatures:
+        state.cards[card.id] = card
+        state.players[card.controller].battlefield.append(card.id)
+
+    import rules_engine.events as events
+    collect = events._collect_triggers
+    observed = {}
+
+    def capture(state, event, payload):
+        if event == "creature_dies":
+            observed[payload["card_id"]] = {
+                card.id: dict(state.cards[card.id].counters) for card in creatures
+            }
+        return collect(state, event, payload)
+
+    monkeypatch.setattr(events, "_collect_triggers", capture)
+    destroy_all_creatures(state, 1, {})
+    assert set(observed) == {card.id for card in creatures}
+    for snapshot in observed.values():
+        assert snapshot["bear"] == {"+1/+1": 1, "__damage_marked": 1}
+        assert snapshot["spider"] == {"+1/+1": 2, "__damage_marked": 2}
+    assert all(card.zone == Zone.GRAVEYARD and card.counters == {} for card in creatures)
