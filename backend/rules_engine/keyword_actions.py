@@ -78,6 +78,30 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending["kind"] == "copy_target":
+        from rules_engine.stack_engine import resume_paused_resolution
+        ids = action.get("card_ids")
+        if (pending["player_id"] != player_id or not isinstance(ids, list)
+                or len(ids) != 1 or ids[0] not in pending["options"]):
+            return False
+        copied = next((item for item in state.stack if item.id == pending["stack_id"]), None)
+        if copied is None:
+            return False
+        chosen = ids[0]
+        if chosen != "keep":
+            key, raw_value = chosen.split(":", 1)
+            value = int(raw_value) if key == "target_player" else raw_value
+            announced = copied.payload["__announced_targets"]
+            for old_key in ("target_player", "target_card_id", "target_stack_id"):
+                announced.pop(old_key, None)
+                copied.payload.pop(old_key, None)
+            announced[key] = value
+            copied.payload[key] = value
+            copied.targets = [str(value)]
+            state.log.append(f"{state.players[player_id].name} changes {copied.label}'s target.")
+        state.pending_mechanic_choice = None
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:
         from rules_engine.stack_engine import resume_paused_resolution
         from rules_engine.zone_actions import discard_selected, exile_selected_from_hand

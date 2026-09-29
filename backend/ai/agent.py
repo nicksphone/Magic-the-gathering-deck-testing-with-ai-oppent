@@ -92,6 +92,16 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] == "copy_target":
+                copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
+                opponent = 3 - player_id
+                selected = "keep"
+                if copied and copied.effect_key == "deal_damage" and f"target_player:{opponent}" in options:
+                    selected = f"target_player:{opponent}"
+                elif copied and copied.effect_key == "gain_life" and f"target_player:{player_id}" in options:
+                    selected = f"target_player:{player_id}"
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]},
+                                  reasoning="Choose a legal copy target")
             if choice["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:
                 target = int(choice["target_player"])
                 target_archetype = self.opponent_archetype if target != player_id else self.archetype

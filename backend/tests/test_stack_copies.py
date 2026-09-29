@@ -234,6 +234,8 @@ def test_twincast_cast_resolves_copy_before_original_after_priority_passes() -> 
     rules.take_action(state, 1, {"type": "pass_priority"})
     rules.take_action(state, 2, {"type": "pass_priority"})
     assert state.stack[-1].payload["__stack_copy_kind"] == "spell"
+    assert state.pending_mechanic_choice["kind"] == "copy_target"
+    state = checked_action(state, rules, 1, {"type": "choose_mechanic", "card_ids": ["keep"]})
     assert state.cards[card.id].zone == Zone.GRAVEYARD
     assert state.players[2].life == 20
     rules.take_action(state, 1, {"type": "pass_priority"})
@@ -284,5 +286,109 @@ def test_http_twincast_action_exposes_copy_on_stack_before_resolution() -> None:
             assert len(body["stack"]) == 2
             assert body["stack"][-1]["label"] == "Lightning Bolt (copy)"
             assert body["players"]["2"]["life"] == 20
+            assert body["pending_mechanic_choice"]["kind"] == "copy_target"
+            response = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 1, "action": {"type": "choose_mechanic", "card_ids": ["target_player:1"]},
+            })
+            assert response.status_code == 200
+            assert response.json()["stack"][-1]["targets"] == ["1"]
+            assert response.json()["pending_mechanic_choice"] is None
         finally:
             ACTIVE_MATCHES.pop(state.id, None)
+
+
+def test_copy_target_choice_retargets_only_copy_across_snapshot() -> None:
+    state = _state()
+    _bolt(state)
+    copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["options"] == ["keep", "target_player:1"]
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    rules = RulesEngine()
+    restored = checked_action(restored, rules, 2, {
+        "type": "choose_mechanic", "card_ids": ["target_player:1"],
+    })
+    assert restored.pending_mechanic_choice is None
+    assert restored.stack[-1].payload["__announced_targets"]["target_player"] == 1
+    assert restored.stack[0].payload["target_player"] == 2
+    assert resolve_top_of_stack(restored)
+    assert (restored.players[1].life, restored.players[2].life) == (17, 20)
+    assert resolve_top_of_stack(restored)
+    assert (restored.players[1].life, restored.players[2].life) == (17, 17)
+
+
+def test_ai_chooses_opponent_as_new_damage_target() -> None:
+    from ai.agent import AIAgent
+
+    state = _state()
+    _bolt(state)
+    copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
+    ai = AIAgent(archetype="Burn")
+    decision = ai.choose_action(state, RulesEngine().legal_moves(state, 2), 2)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": ["target_player:1"]}
+
+
+def test_copy_target_choice_rejects_unoffered_target_without_mutation() -> None:
+    import pytest
+
+    state = _state()
+    _bolt(state)
+    copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
+    before = serialize_match_snapshot(state)
+    with pytest.raises(Exception):
+        checked_action(state, RulesEngine(), 2, {
+            "type": "choose_mechanic", "card_ids": ["target_player:99"],
+        })
+    assert serialize_match_snapshot(state) == before
+
+
+def test_copy_without_target_does_not_pause_for_retargeting() -> None:
+    state = _state()
+    _bolt(state)
+    state.stack[0].payload = {"amount": 3}
+    copy_spell(state, 1, {"target_stack_id": "original", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice is None
+
+
+def test_counterspell_copy_cannot_target_itself() -> None:
+    state = _state()
+    _bolt(state)
+    counter = CardInstance(
+        id="counter", name="Counterspell", owner=2, controller=2,
+        zone=Zone.STACK, types=["Instant"], mana_cost="{U}{U}",
+        oracle_text="Counter target spell.",
+    )
+    state.cards[counter.id] = counter
+    state.stack.append(StackItem(
+        id="counter-original", source_card_id=counter.id, controller=2,
+        label="Counterspell", effect_key="counter_spell",
+        payload={"target_stack_id": "original", "__announced_targets": {"target_stack_id": "original"}},
+    ))
+    copy_spell(state, 2, {"target_stack_id": "counter-original", "may_choose_new_targets": True})
+    assert state.stack[-1].id != "counter-original"
+    assert state.pending_mechanic_choice["options"] == ["keep", "target_stack_id:counter-original"]
+    assert f"target_stack_id:{state.stack[-1].id}" not in state.pending_mechanic_choice["options"]
+
+
+def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
+    state = _state()
+    _bolt(state)
+    spell = state.cards["bolt"]
+    spell.name = "Murder"
+    spell.oracle_text = "Destroy target creature."
+    state.stack[0].label = "Murder"
+    state.stack[0].effect_key = "destroy_permanent"
+    for card_id, types in (("first", ["Creature"]), ("second", ["Creature"]), ("land", ["Land"])):
+        card = CardInstance(id=card_id, name=card_id, owner=1, controller=1,
+                            zone=Zone.BATTLEFIELD, types=types)
+        state.cards[card_id] = card
+        state.players[1].battlefield.append(card_id)
+    state.stack[0].payload = {
+        "target_card_id": "first", "__announced_targets": {"target_card_id": "first"},
+    }
+    copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["options"] == ["keep", "target_card_id:second"]
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:second"],
+    })
+    assert state.stack[-1].payload["target_card_id"] == "second"
+    assert state.stack[0].payload["target_card_id"] == "first"

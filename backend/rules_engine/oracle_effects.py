@@ -211,7 +211,8 @@ def infer_effect_from_oracle(
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         kind = str(copy_match.group(1) or "spell").strip().lower()
         effect_key = "copy_spell" if kind.endswith("spell") else "copy_ability"
-        return effect_key, {"target_stack_id": target_stack_id, "copy_kind": kind}
+        return effect_key, {"target_stack_id": target_stack_id, "copy_kind": kind,
+                            "may_choose_new_targets": "you may choose new targets for the copy" in oracle}
     topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
     if topdeck_creatures is not None:
         return topdeck_creatures

@@ -725,7 +725,58 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     state.priority_player = controller
     state.passed_priority = set()
     state.log.append(f"{state.players[controller].name} copies {effect_label} {item.label}.")
+    if payload.get("may_choose_new_targets") and effect_label == "spell":
+        _offer_copy_target_choice(state, controller, copied_item)
     return copied_item
+
+
+def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -> None:
+    from rules_engine.cast_choice import build_cast_hints
+    from rules_engine.targeting import validate_cast_targets
+
+    announced = copied_item.payload.get("__announced_targets") or {}
+    target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
+    if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
+            or copied_item.effect_key == "effect_sequence"):
+        return
+    source = state.cards.get(copied_item.source_card_id)
+    if source is None:
+        return
+    copied_card = copy.copy(source)
+    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
+        setattr(copied_card, key, copy.deepcopy(value))
+    hints = build_cast_hints(state, copied_card, controller, announced)
+    options = ["keep"]
+    labels = {"keep": "Keep original target"}
+    candidate_keys = {
+        "player_targets": "target_player", "creature_targets": "target_card_id",
+        "planeswalker_targets": "target_card_id", "permanent_targets": "target_card_id",
+        "land_targets": "target_card_id", "artifact_targets": "target_card_id",
+        "enchantment_targets": "target_card_id", "noncreature_permanent_targets": "target_card_id",
+        "graveyard_creature_targets": "target_card_id", "graveyard_permanent_targets": "target_card_id",
+        "stack_targets": "target_stack_id",
+    }
+    for surface, target_key in candidate_keys.items():
+        for candidate in hints.get(surface, []):
+            value = candidate["id"]
+            if target_key == "target_stack_id" and value == copied_item.id:
+                continue
+            option = f"{target_key}:{value}"
+            if option in options or (target_key == target_keys[0] and str(value) == str(announced[target_keys[0]])):
+                continue
+            proposed = {key: value for key, value in announced.items() if key not in target_keys}
+            proposed[target_key] = value
+            if not validate_cast_targets(hints, proposed)[0]:
+                continue
+            options.append(option)
+            labels[option] = candidate.get("name") or candidate.get("label") or str(value)
+    if len(options) > 1:
+        state.pending_mechanic_choice = {
+            "kind": "copy_target", "player_id": controller, "count": 1,
+            "options": options, "option_labels": labels,
+            "label": f"Choose a new target for {copied_item.label} or keep its target",
+            "stack_id": copied_item.id,
+        }
 
 
 def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
