@@ -5,6 +5,7 @@ from ai.matchup_profiles import profile_for
 from card_data.fallback_cards import fallback_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from rules_engine.stack_engine import add_to_stack
 
 
 def test_ai_materializes_land_only_target_without_creature_target() -> None:
@@ -669,6 +670,56 @@ def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_press
 
     decision = ai.choose_action(FakeState(), moves, 1)
     assert decision.action["type"] == "pass_priority"
+
+
+def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
+    island = {"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}
+    bolt = fallback_card_payload("Lightning Bolt")
+    assert bolt
+    for counter_name in ("Spell Pierce", "Counterspell"):
+        counter = fallback_card_payload(counter_name)
+        assert counter
+        state = MatchFactory.from_decks([island], [island], seed=935713)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.step = Step.PRECOMBAT_MAIN
+        state.active_player = state.priority_player = 1
+        state.players[1].lands_played_this_turn = 1
+        for _ in range(2):
+            land_id = state.players[1].library.pop()
+            state.cards[land_id].zone = Zone.BATTLEFIELD
+            state.players[1].battlefield.append(land_id)
+        own_bolt = CardInstance(
+            "own-bolt", "Lightning Bolt", 1, 1, Zone.STACK, ["Instant"],
+            mana_cost=bolt["mana_cost"], oracle_text=bolt["oracle_text"], type_line=bolt["type_line"],
+        )
+        state.cards[own_bolt.id] = own_bolt
+        add_to_stack(state, own_bolt.id, 1, own_bolt.name, "deal_damage", {"target_player": 2, "amount": 3})
+        held_counter = CardInstance(
+            "held-counter", counter_name, 1, 1, Zone.HAND, ["Instant"],
+            mana_cost=counter["mana_cost"], oracle_text=counter["oracle_text"], type_line=counter["type_line"],
+        )
+        state.cards[held_counter.id] = held_counter
+        state.players[1].hand.append(held_counter.id)
+        legal = RulesEngine().legal_moves(state, 1)
+        assert any(move["type"] == "cast_spell" and move.get("card_id") == held_counter.id for move in legal)
+        decision = AIAgent(difficulty="master", archetype="Tempo").choose_action(state, legal, 1)
+        assert decision.action["type"] == "pass_priority", (counter_name, decision)
+
+        enemy_counter = CardInstance(
+            "enemy-counter", "Counterspell", 2, 2, Zone.STACK, ["Instant"],
+            mana_cost="{U}{U}", oracle_text="Counter target spell.", type_line="Instant",
+        )
+        state.cards[enemy_counter.id] = enemy_counter
+        opposing_spell = add_to_stack(
+            state, enemy_counter.id, 2, enemy_counter.name, "counter_spell",
+            {"target_stack_id": state.stack[0].id},
+        )
+        state.priority_player = 1
+        legal = RulesEngine().legal_moves(state, 1)
+        decision = AIAgent(difficulty="master", archetype="Tempo").choose_action(state, legal, 1)
+        assert decision.action["type"] == "cast_spell", (counter_name, decision)
+        assert decision.action["targets"]["target_stack_id"] == opposing_spell.id
 
 
 def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:

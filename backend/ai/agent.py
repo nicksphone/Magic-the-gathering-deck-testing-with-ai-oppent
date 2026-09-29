@@ -25,7 +25,7 @@ from rules_engine.oracle_effects import EACH_PLAYER_DRAW_RE, _parse_count_token
 
 def _has_counter_spell_text(text: str) -> bool:
     normalized = str(text or "").lower()
-    return "counter target spell" in normalized or "counter target noncreature spell" in normalized or "counterspell" in normalized
+    return "counterspell" in normalized or bool(re.search(r"\bcounter target(?: [a-z -]{0,45})?\b(?:spell|ability)\b", normalized))
 
 
 def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
@@ -2279,8 +2279,12 @@ class AIAgent:
         if stack_targets and not targets.get("target_stack_id"):
             # For counters/interaction, target the most threatening spell on stack.
             if "counter" in tags:
-                best = self._choose_best_stack_target_id(state, player_id, stack_targets)
-                targets["target_stack_id"] = best or stack_targets[-1]["id"]
+                allow_friendly = bool(re.search(r"counter target[^.\n]{0,60}(?:spell|ability) you control", card.oracle_text.lower()))
+                best = self._choose_best_stack_target_id(state, player_id, stack_targets, allow_friendly=allow_friendly)
+                if best is None:
+                    out["_invalid_ai_choice"] = True
+                    return out
+                targets["target_stack_id"] = best
             else:
                 # Default to top-of-stack for most non-counter interactions.
                 targets["target_stack_id"] = stack_targets[-1]["id"]
@@ -2484,10 +2488,15 @@ class AIAgent:
                     text = mode.lower()
                     stack_options = mode_hints.get("stack_targets") or []
                     if stack_options:
-                        choice["target_stack_id"] = (
-                            self._choose_best_stack_target_id(state, player_id, stack_options)
-                            if "counter" in text else stack_options[-1]["id"]
-                        )
+                        if "counter" in text:
+                            allow_friendly = bool(re.search(r"counter target[^.\n]{0,60}(?:spell|ability) you control", text))
+                            best = self._choose_best_stack_target_id(state, player_id, stack_options, allow_friendly=allow_friendly)
+                            if best is None:
+                                out["_invalid_ai_choice"] = True
+                                return out
+                            choice["target_stack_id"] = best
+                        else:
+                            choice["target_stack_id"] = stack_options[-1]["id"]
                     elif "any target" in text:
                         damage_match = re.search(r"deals? (\d+) damage", text)
                         damage = int(damage_match.group(1)) if damage_match else 0
@@ -4049,13 +4058,16 @@ class AIAgent:
             score += 0.4
         return score
 
-    def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict]) -> str | None:
+    def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict], *, allow_friendly: bool = False) -> str | None:
         best_id = None
         best_score = -999.0
         best_tiebreak = ""
         for c in candidates:
             sid = c.get("id")
             if not sid:
+                continue
+            item = next((item for item in getattr(state, "stack", []) if item.id == sid), None)
+            if item is None or (getattr(item, "controller", None) == player_id and not allow_friendly):
                 continue
             score = self._stack_item_threat_score(state, sid, player_id)
             tiebreak = str(c.get("label") or c.get("name") or sid)
