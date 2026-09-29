@@ -16,6 +16,8 @@ class DeckRow:
     name: str
     source: str
     mainboard_json: str
+    sideboard_json: str = "[]"
+    archetype_guess: str = "Ramp"
 
 
 class Session:
@@ -47,7 +49,7 @@ def test_saved_expansion_templates_refresh_in_place_without_touching_user_decks(
     old_ramp = [{"quantity": 4, "card_name": "Forest"}]
     aggro = [{"quantity": 20, "card_name": "Mountain"}]
     stale = DeckRow(31, ramp_entry["deck_name"], "expansion_top:USG", json.dumps(old_ramp))
-    unchanged = DeckRow(32, aggro_entry["deck_name"], "expansion_top:LEA", json.dumps(aggro))
+    unchanged = DeckRow(32, aggro_entry["deck_name"], "expansion_top:LEA", json.dumps(aggro), archetype_guess="Aggro")
     user = DeckRow(33, "My Ramp", "user", json.dumps(old_ramp))
     repo = Repo([
         DeckRow(1, "Ramp", "builtin", json.dumps(current_ramp)),
@@ -87,3 +89,24 @@ def test_template_refresh_preserves_real_sqlite_deck_ids(tmp_path, monkeypatch) 
         assert any(item["card_name"] == "Tropical Island" for item in json.loads(rows["builtin"].mainboard_json))
         assert json.loads(rows["builtin"].mainboard_json) == json.loads(rows["expansion_top:USG"].mainboard_json)
         assert json.loads(rows["user"].mainboard_json) == old
+
+
+def test_tournament_refresh_renames_by_source_without_changing_id(tmp_path, monkeypatch) -> None:
+    tournament = next(item for item in EXPANSION_TOP_DECKS if item["code"] == "OTJ")
+    monkeypatch.setattr(bootstrap, "EXPANSION_TOP_DECKS", [tournament])
+    db = create_engine(f"sqlite:///{tmp_path / 'decks.sqlite'}")
+    SQLModel.metadata.create_all(db)
+    with SqlSession(db) as session:
+        repo = Repository(session)
+        old = repo.save_deck("Outlaws of Thunder Junction Top Midrange", "expansion_top:OTJ", [{"quantity": 60, "card_name": "Forest"}], [], "Midrange")
+        user = repo.save_deck("My Midrange", "user", [{"quantity": 60, "card_name": "Forest"}], [], "Midrange")
+        bootstrap.ensure_expansion_top_decks(repo)
+        refreshed = next(row for row in repo.list_decks() if row.source == "expansion_top:OTJ")
+        assert refreshed.id == old.id
+        assert refreshed.name == tournament["deck_name"]
+        assert refreshed.archetype_guess == "Ramp"
+        assert sum(item["quantity"] for item in json.loads(refreshed.mainboard_json)) == 60
+        assert sum(item["quantity"] for item in json.loads(refreshed.sideboard_json)) == 15
+        assert next(row for row in repo.list_decks() if row.source == "user").id == user.id
+        bootstrap.ensure_expansion_top_decks(repo)
+        assert len([row for row in repo.list_decks() if row.source == "expansion_top:OTJ"]) == 1

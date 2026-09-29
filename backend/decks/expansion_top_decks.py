@@ -14,16 +14,55 @@ def _entry(
         "code": code.upper(),
         "expansion": expansion,
         "release_year": int(release_year),
-        "deck_name": f"{expansion} Top {archetype}",
+        "deck_name": f"{expansion} Archetype Template - {archetype}",
         "archetype": archetype,
+        "kind": "archetype_template",
+        "format": None,
+        "event_name": None,
+        "player_name": None,
+        "finish": None,
+        "decklist_source_url": None,
+        "event_source_url": None,
         "deck_text": BUILTIN_DECKS[builtin_name].strip(),
         "reference_builtin": builtin_name,
     }
 
 
-# Curated expansion-testing catalog.
-# Each expansion points to a strong archetype profile that is currently supported
-# by the simulator rules/AI and can be run in large regression suites.
+# Expansion templates are simulator archetypes, not historical decklists.
+OTJ_DOMAIN_RAMP = """4 Archangel of Wrath
+4 Topiary Stomper
+3 Atraxa, Grand Unifier
+1 Imodane's Recruiter
+1 Long Goodbye
+3 Sunfall
+1 Glimpse the Core
+4 Herd Migration
+3 Depopulate
+1 Cartographer's Survey
+4 Leyline Binding
+3 Up the Beanstalk
+2 Spelunking
+1 Boseiju, Who Endures
+4 Jetmir's Garden
+3 Forest
+1 Island
+4 Spara's Headquarters
+4 Cavern of Souls
+4 Ziatora's Proving Ground
+3 Plains
+1 Swamp
+1 Raffine's Tower
+
+Sideboard:
+2 Rest in Peace
+1 Nissa, Ascended Animist
+3 Negate
+3 Long Goodbye
+2 Tranquil Frillback
+2 Chrome Host Seedshark
+2 Temporary Lockdown"""
+
+
 EXPANSION_TOP_DECKS: list[dict] = [
     _entry("LEA", "Limited Edition Alpha", 1993, "Mono Red Aggro", "Aggro"),
     _entry("ARN", "Arabian Nights", 1993, "Tempo", "Tempo"),
@@ -72,7 +111,22 @@ EXPANSION_TOP_DECKS: list[dict] = [
     _entry("WOE", "Wilds of Eldraine", 2023, "Tempo", "Tempo"),
     _entry("LCI", "The Lost Caverns of Ixalan", 2023, "Tribal", "Tribal"),
     _entry("MKM", "Murders at Karlov Manor", 2024, "Dimir Control", "Control"),
-    _entry("OTJ", "Outlaws of Thunder Junction", 2024, "Midrange", "Midrange"),
+    {
+        "code": "OTJ",
+        "expansion": "Outlaws of Thunder Junction",
+        "release_year": 2024,
+        "deck_name": "Yoshihiko Ikawa - Domain Ramp (Pro Tour Thunder Junction 2024)",
+        "archetype": "Ramp",
+        "kind": "tournament",
+        "format": "Standard (2024-04-26)",
+        "event_name": "Pro Tour Thunder Junction",
+        "player_name": "Yoshihiko Ikawa",
+        "finish": "1st",
+        "decklist_source_url": "https://mtgdecks.net/Standard/domain-ramp-decklist-by-yoshihiko-ikawa-2021543",
+        "event_source_url": "https://magic.wizards.com/en/news/mtg-arena/mtg-arena-announcements-april-29-2024",
+        "deck_text": OTJ_DOMAIN_RAMP,
+        "reference_builtin": None,
+    },
     _entry("BLB", "Bloomburrow", 2024, "Tokens", "Tokens"),
     _entry("DSK", "Duskmourn: House of Horror", 2024, "Tempo", "Tempo"),
     _entry("FDN", "Foundations", 2024, "White Weenie", "Aggro"),

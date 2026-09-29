@@ -497,6 +497,13 @@ def get_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> d
         "name": item["deck_name"],
         "archetype": item["archetype"],
         "deck_text": item["deck_text"],
+        "kind": item["kind"],
+        "format": item["format"],
+        "event_name": item["event_name"],
+        "player_name": item["player_name"],
+        "finish": item["finish"],
+        "decklist_source_url": item["decklist_source_url"],
+        "event_source_url": item["event_source_url"],
     }
 
 

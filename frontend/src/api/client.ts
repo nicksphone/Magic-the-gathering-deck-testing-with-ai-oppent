@@ -91,12 +91,16 @@ export type ExpansionTopDeckMeta = {
   release_year: number;
   deck_name: string;
   archetype: string;
+  kind: "tournament" | "archetype_template";
+  format: string | null;
+  event_name: string | null;
+  player_name: string | null;
+  finish: string | null;
+  decklist_source_url: string | null;
+  event_source_url: string | null;
 };
 
-export type ExpansionTopDeckPayload = {
-  code: string;
-  expansion: string;
-  release_year: number;
+export type ExpansionTopDeckPayload = Omit<ExpansionTopDeckMeta, "deck_name"> & {
   name: string;
   archetype: string;
   deck_text: string;

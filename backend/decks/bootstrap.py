@@ -39,24 +39,34 @@ def ensure_expansion_top_decks(repo: Repository) -> None:
         (row.name.strip().lower(), (row.source or "").strip().lower()): row
         for row in rows
     }
+    by_source = {
+        (row.source or "").strip().lower(): row
+        for row in rows if (row.source or "").lower().startswith("expansion_top:")
+    }
     service = DeckService(repo)
     updated = False
     for item in EXPANSION_TOP_DECKS:
         name = item["deck_name"]
         source = f"expansion_top:{item['code']}".lower()
-        key = (name.strip().lower(), source)
-        row = existing.get(key)
+        row = by_source.get(source)
         if row is not None:
-            reference = existing.get((item["reference_builtin"].strip().lower(), "builtin"))
+            reference_name = item.get("reference_builtin")
+            reference = existing.get((reference_name.strip().lower(), "builtin")) if reference_name else None
             if reference is not None:
                 expected = json.loads(reference.mainboard_json)
+                sideboard = json.loads(reference.sideboard_json)
             else:
                 parsed = service.parser.parse(item["deck_text"])
                 if parsed.errors:
-                    raise ValueError(f"Invalid expansion template {name}: {parsed.errors}")
+                    raise ValueError(f"Invalid expansion deck {name}: {parsed.errors}")
                 expected = parsed.mainboard
-            if json.loads(row.mainboard_json) != expected:
+                sideboard = parsed.sideboard
+            if (row.name != name or json.loads(row.mainboard_json) != expected
+                    or json.loads(row.sideboard_json) != sideboard or row.archetype_guess != item["archetype"]):
+                row.name = name
                 row.mainboard_json = json.dumps(expected)
+                row.sideboard_json = json.dumps(sideboard)
+                row.archetype_guess = item["archetype"]
                 repo.session.add(row)
                 updated = True
             continue

@@ -34,6 +34,13 @@ class DeckService:
                     "release_year": item["release_year"],
                     "deck_name": item["deck_name"],
                     "archetype": item["archetype"],
+                    "kind": item["kind"],
+                    "format": item["format"],
+                    "event_name": item["event_name"],
+                    "player_name": item["player_name"],
+                    "finish": item["finish"],
+                    "decklist_source_url": item["decklist_source_url"],
+                    "event_source_url": item["event_source_url"],
                 }
             )
         return out

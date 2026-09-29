@@ -19,6 +19,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
   const [status, setStatus] = useState("");
   const [completeness, setCompleteness] = useState<CardCompletenessReport | null>(null);
   const [importAnalysis, setImportAnalysis] = useState<DeckImportResponse | null>(null);
+  const selectedExpansion = expansionDecks.find((deck) => deck.code === selectedExpansionCode);
 
   const refreshDeckData = useCallback(async () => {
     const [builtinsRes, expansionRes, decksRes] = await Promise.allSettled([
@@ -94,7 +95,9 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     const data = await api.getExpansionTopDeck(selectedExpansionCode);
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
-    setStatus(`Loaded ${data.expansion} (${data.code}) ${data.archetype}`);
+    setStatus(data.kind === "tournament"
+      ? `Loaded ${data.player_name}'s ${data.format} ${data.event_name} deck; historical list, current legality and rules support not certified. Source: ${data.decklist_source_url}`
+      : `Loaded ${data.expansion} archetype template; not a historical or format-legal tournament list.`);
   }
 
   async function importSelectedExpansionTopDeck() {
@@ -110,7 +113,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(loaded.name);
     setDeckText(loaded.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
-    setStatus(`Imported expansion top deck #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
+    setStatus(`Imported ${loaded.kind === "tournament" ? "historical tournament deck" : "archetype template"} #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
     await showCompleteness([...imported.mainboard, ...imported.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
@@ -153,10 +156,10 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       </div>
       <div className="row">
         <select value={selectedExpansionCode} onChange={(e) => setSelectedExpansionCode(e.target.value)}>
-          <option value="">Top Decks by Expansion</option>
+          <option value="">Historical Decks and Archetype Templates</option>
           {expansionDecks.map((d) => (
             <option key={d.code} value={d.code}>
-              {d.release_year} {d.code} - {d.expansion} ({d.archetype})
+              {d.release_year} {d.code} - {d.expansion} ({d.kind === "tournament" ? `Tournament: ${d.player_name}` : `Template: ${d.archetype}`})
             </option>
           ))}
         </select>
@@ -164,6 +167,14 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
         <button onClick={importSelectedExpansionTopDeck}>Import Expansion Deck</button>
         <button onClick={importAllExpansionTopDecks}>Import All Expansions</button>
       </div>
+      {selectedExpansion?.kind === "tournament" && (
+        <p className="status">
+          Historical {selectedExpansion.format} list: {selectedExpansion.player_name}, {selectedExpansion.finish} at {selectedExpansion.event_name}.{" "}
+          <a href={selectedExpansion.decklist_source_url ?? undefined} target="_blank" rel="noopener noreferrer">Decklist</a>
+          {selectedExpansion.event_source_url && <> | <a href={selectedExpansion.event_source_url} target="_blank" rel="noopener noreferrer">Event result</a></>}
+          . Current-format legality and full rules support are not certified.
+        </p>
+      )}
       <input placeholder="Deck Name" value={deckName} onChange={(e) => setDeckName(e.target.value)} />
       <textarea
         value={deckText}

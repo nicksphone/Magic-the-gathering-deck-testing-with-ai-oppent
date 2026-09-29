@@ -25,3 +25,14 @@ def test_parse_unknown_card_suggests() -> None:
     text = "4 Lightnign Bolt\n56 Island"
     parsed = parser.parse(text)
     assert parsed.suggestions
+
+
+def test_front_face_name_resolves_to_canonical_multiface_card() -> None:
+    class FaceRepo(FakeRepo):
+        def list_card_knowledge_names(self):
+            return ["Imodane's Recruiter // Train Troops"]
+
+    parsed = DeckParser(FaceRepo()).parse("1 Imodane's Recruiter\n59 Island")
+    assert not parsed.errors
+    assert not parsed.suggestions
+    assert parsed.mainboard[0]["card_name"] == "Imodane's Recruiter // Train Troops"

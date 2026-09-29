@@ -35,6 +35,10 @@ class DeckParser:
         knowledge_names = self.repo.list_card_knowledge_names() if hasattr(self.repo, "list_card_knowledge_names") else []
         names = [*(card.name for card in cards), *knowledge_names]
         known_names = {normalize_card_lookup_name(name).lower(): name for name in names}
+        for name in names:
+            if " // " in name:
+                front_name = normalize_card_lookup_name(name.split(" // ", 1)[0]).lower()
+                known_names.setdefault(front_name, name)
 
         for idx, raw in enumerate(deck_text.splitlines(), start=1):
             line = raw.strip()
