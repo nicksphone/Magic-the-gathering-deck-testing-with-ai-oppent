@@ -287,6 +287,8 @@ class RulesEngine:
         for p in state.players.values():
             for color in p.mana_pool:
                 p.mana_pool[color] = 0
+            for color in p.snow_mana_pool:
+                p.snow_mana_pool[color] = 0
 
     def _clear_marked_damage(self, state: MatchState) -> None:
         for card in state.cards.values():
@@ -616,6 +618,7 @@ class RulesEngine:
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
 
         elif kind == "tap_land_for_mana":
+            from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
             if cid in player.battlefield and not state.cards[cid].tapped and "Land" in state.cards[cid].types:
                 state.cards[cid].tapped = True
@@ -625,11 +628,11 @@ class RulesEngine:
                     requested_color=action.get("color"),
                 )
                 amount = land_mana_amount(state, player_id, cid)
-                player.mana_pool[color] += amount
+                add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
 
         elif kind == "tap_nonland_for_mana":
-            from rules_engine.mana import _consume_nonland_mana_source, nonland_mana_outputs
+            from rules_engine.mana import _consume_nonland_mana_source, add_mana_to_pool, nonland_mana_outputs
 
             cid = action["card_id"]
             color = action["color"]
@@ -637,10 +640,11 @@ class RulesEngine:
             if color in outputs:
                 name = state.cards[cid].name
                 if _consume_nonland_mana_source(state, player_id, cid):
-                    player.mana_pool[color] += outputs[color]
+                    add_mana_to_pool(state, player_id, color, outputs[color], source_id=cid)
                     state.log.append(f"{player.name} activates {name} for {outputs[color]} {color}.")
 
         elif kind == "tap_lands_bulk":
+            from rules_engine.mana import add_mana_to_pool
             land_name = str(action.get("land_name", "")).strip().lower()
             count = max(0, int(action.get("count", 0)))
             if land_name and count > 0:
@@ -662,7 +666,7 @@ class RulesEngine:
                         requested_color=action.get("color"),
                     )
                     amount = land_mana_amount(state, player_id, cid)
-                    player.mana_pool[color] += amount
+                    add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                     produced = color
                     produced_total += amount
                     tapped += 1

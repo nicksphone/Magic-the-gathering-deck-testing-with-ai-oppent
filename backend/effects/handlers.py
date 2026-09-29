@@ -1226,9 +1226,10 @@ def reveal_defending_top_land(state: MatchState, controller: int, payload: dict)
 
 
 def add_mana(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.mana import add_mana_to_pool
     color = payload.get("color", "C")
     amount = int(payload.get("amount", 1))
-    state.players[controller].mana_pool[color] += amount
+    add_mana_to_pool(state, controller, color, amount, source_id=payload.get("__source_card_id"))
 
 
 def add_counters(state: MatchState, controller: int, payload: dict) -> None:

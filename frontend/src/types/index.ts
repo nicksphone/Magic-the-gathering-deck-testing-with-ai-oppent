@@ -54,6 +54,7 @@ export type PlayerView = {
   exile: CardView[];
   exile_count: number;
   mana_pool: Record<string, number>;
+  snow_mana_pool?: Record<string, number>;
 };
 
 export type MatchState = {

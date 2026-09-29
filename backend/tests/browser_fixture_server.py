@@ -26,6 +26,26 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {"snow_payment", "non_snow_payment"}:
+        deck = [{"quantity": 60, "card_name": "Forest"}]
+        state = MatchFactory.from_decks(deck, deck, seed=930)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        land_id = state.players[1].library.pop()
+        land = state.cards[land_id]
+        land.name = "Snow-Covered Forest" if face_kind == "snow_payment" else "Forest"
+        land.type_line = "Basic Snow Land - Forest" if face_kind == "snow_payment" else "Basic Land - Forest"
+        land.zone = Zone.BATTLEFIELD
+        state.players[1].battlefield.append(land_id)
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name = "Icehide Golem"
+        spell.types, spell.type_line = ["Artifact", "Creature"], "Snow Artifact Creature - Golem"
+        spell.mana_cost, spell.power, spell.toughness = "{S}", 2, 2
+        spell.oracle_text = "({S} can be paid with one mana from a snow source.)"
+        return publish(state, deck)
     if face_kind == "compleated_payment":
         deck = [{"quantity": 60, "card_name": "Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=925)

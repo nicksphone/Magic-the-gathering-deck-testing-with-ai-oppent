@@ -11,6 +11,9 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 2 }, snow_mana_pool: { U: 1 } } } }).id, state.id);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 1 }, snow_mana_pool: { U: 2 } } } }), /snow mana pool/);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 1 }, snow_mana_pool: { U: -1 } } } }), /snow mana pool/);
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, mana_source_colors: ["G"] }] } } }).id, state.id);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, mana_source_colors: ["green"] }] } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, mana_source_amounts: { C: -1 } }] } } }), /card view/);

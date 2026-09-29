@@ -121,6 +121,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "exile": list(player.exile),
                 "exile_play_until": dict(player.exile_play_until),
                 "mana_pool": dict(player.mana_pool),
+                "snow_mana_pool": dict(player.snow_mana_pool),
                 "prevent_damage_shield": player.prevent_damage_shield,
                 "max_land_plays_this_turn": player.max_land_plays_this_turn,
                 "lands_played_this_turn": player.lands_played_this_turn,
@@ -189,6 +190,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             setattr(player, key, list(raw.get(key, [])))
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
         player.mana_pool = {str(key): int(value) for key, value in raw.get("mana_pool", {}).items()}
+        player.snow_mana_pool = {str(key): int(value) for key, value in raw.get("snow_mana_pool", {}).items()}
         for key in (
             "prevent_damage_shield", "max_land_plays_this_turn", "lands_played_this_turn",
             "last_land_play_turn", "land_plays_recorded_on_turn",
@@ -356,6 +358,7 @@ def serialize_match(state: MatchState) -> dict:
                 "exile": [serialize_card_view(state, cid) for cid in p.exile if not state.cards[cid].exile_face_down],
                 "exile_count": len(p.exile),
                 "mana_pool": p.mana_pool,
+                "snow_mana_pool": p.snow_mana_pool,
             }
             for pid, p in state.players.items()
         },

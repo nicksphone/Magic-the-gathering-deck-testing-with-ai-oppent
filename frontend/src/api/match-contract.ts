@@ -37,6 +37,19 @@ export function parseMatchState(value: unknown): MatchState {
       || !Number.isInteger(player.exile_count) || (player.exile_count as number) < player.exile.length) {
       throw new Error(`Invalid match response: player ${seat} card view`);
     }
+    if (player.snow_mana_pool !== undefined) {
+      const snowPool = player.snow_mana_pool;
+      const pool = player.mana_pool;
+      if (!record(snowPool) || !record(pool)
+        || !Object.entries(snowPool).every(([color, amount]) => {
+          const total = pool[color];
+          return /^[WUBRGC]$/.test(color) && typeof amount === "number"
+            && Number.isInteger(amount) && amount >= 0
+            && typeof total === "number" && amount <= total;
+        })) {
+        throw new Error(`Invalid match response: player ${seat} snow mana pool`);
+      }
+    }
   }
   if (value.blocks !== undefined && (!record(value.blocks)
     || !Object.values(value.blocks).every((ids) => Array.isArray(ids) && ids.every((id) => typeof id === "string")))) {

@@ -11,6 +11,7 @@ from rules_engine.hooks import CostContext, apply_cost_modifiers
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
+MANA_COLORS = ("C", "W", "U", "B", "R", "G")
 NONLAND_MANA_ABILITY_RE = re.compile(r"(?m)^([^:\n]*\{T\}[^:\n]*):\s*(Add[^\n.]*)", re.IGNORECASE)
 DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
     "hallowed fountain": {"W", "U"},
@@ -29,15 +30,15 @@ DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
 def parse_mana_cost(mana_cost: str, is_land: bool = False, x_value: int = 0) -> dict[str, int]:
     """Return a single cost estimate; payment alternatives use _payment_requirements."""
     if is_land:
-        return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+        return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0, "S": 0}
     if not mana_cost:
-        return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+        return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0, "S": 0}
 
-    req = {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+    req = {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0, "S": 0}
     for sym in MANA_SYMBOL_RE.findall(mana_cost.upper()):
         if sym.isdigit():
             req["generic"] += int(sym)
-        elif sym in {"W", "U", "B", "R", "G"}:
+        elif sym in {"W", "U", "B", "R", "G", "S"}:
             req[sym] += 1
         elif sym == "C":
             req["C"] += 1
@@ -113,7 +114,7 @@ def can_pay_with_pool_and_lands(
     from rules_engine.replacement import can_pay_life
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and _plan_mana_sources(state, player_id, req) is not None
+        and _plan_payment(state, player_id, req) is not None
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices)
     )
 
@@ -141,7 +142,7 @@ def _payment_requirements(
         or any(choice not in symbol["choices"] for choice, symbol in zip(hybrid_choices, hybrid_symbols))
     ):
         return []
-    keys = ("generic", "W", "U", "B", "R", "G", "C", "life")
+    keys = ("generic", "W", "U", "B", "R", "G", "C", "S", "life")
     choices: list[dict[str, int]] = [{key: 0 for key in keys}]
     hybrid_index = 0
     for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
@@ -172,13 +173,30 @@ def _payment_requirements(
     return choices
 
 
-def _plan_mana_sources(state: MatchState, player_id: int, req: dict[str, int]) -> list[tuple[str, str, int, bool]] | None:
-    colors = ("C", "W", "U", "B", "R", "G")
-    pool = state.players[player_id].mana_pool
+def is_snow_source(card) -> bool:
+    type_line = re.split(r"\s+[—–-]\s+", card.type_line or "", maxsplit=1)[0]
+    return "Snow" in card.types or bool(re.search(r"\bsnow\b", type_line, re.IGNORECASE))
+
+
+def add_mana_to_pool(state: MatchState, player_id: int, color: str, amount: int, *, source_id: str | None = None) -> None:
+    player = state.players[player_id]
+    player.mana_pool[color] = player.mana_pool.get(color, 0) + amount
+    if source_id in state.cards and is_snow_source(state.cards[source_id]):
+        player.snow_mana_pool[color] = player.snow_mana_pool.get(color, 0) + amount
+
+
+def _plan_mana_sources(
+    state: MatchState, player_id: int, req: dict[str, int], *,
+    pool_override: dict[str, int] | None = None, excluded_sources: set[str] | None = None,
+) -> list[tuple[str, str, int, bool]] | None:
+    colors = MANA_COLORS
+    pool = pool_override if pool_override is not None else state.players[player_id].mana_pool
     needs = tuple(max(0, req[color] - max(0, pool.get(color, 0))) for color in colors)
     spare = sum(max(0, pool.get(color, 0) - req[color]) for color in colors)
     sources: list[tuple[str, dict[str, int], bool]] = []
     for cid in state.players[player_id].battlefield:
+        if cid in (excluded_sources or set()):
+            continue
         card = state.cards[cid]
         land = "Land" in card.types
         if land and not card.tapped:
@@ -236,6 +254,67 @@ def _plan_mana_sources(state: MatchState, player_id: int, req: dict[str, int]) -
     return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
+def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tuple[list[tuple[str, str, int, bool]], dict[str, int]] | None:
+    snow_needed = req.get("S", 0)
+    if not snow_needed:
+        plan = _plan_mana_sources(state, player_id, req)
+        return (plan, {}) if plan is not None else None
+
+    player = state.players[player_id]
+    pool = {color: max(0, player.mana_pool.get(color, 0)) for color in MANA_COLORS}
+    snow = {color: min(pool[color], max(0, player.snow_mana_pool.get(color, 0))) for color in MANA_COLORS}
+    sources = []
+    for cid in player.battlefield:
+        card = state.cards[cid]
+        if not is_snow_source(card):
+            continue
+        land = "Land" in card.types
+        if land and not card.tapped:
+            amount = land_mana_amount(state, player_id, cid)
+            outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
+        else:
+            outputs = nonland_mana_outputs(state, cid, card)
+        if outputs:
+            sources.append((cid, outputs, land))
+
+    def solve(remaining: int, totals: dict[str, int], snow_left: dict[str, int],
+              selected: list[tuple[str, str, int, bool]], spent: dict[str, int]):
+        if remaining == 0:
+            ordinary = _plan_mana_sources(state, player_id, req, pool_override=totals,
+                                          excluded_sources={entry[0] for entry in selected})
+            return (selected + ordinary, spent) if ordinary is not None else None
+        for color in MANA_COLORS:
+            if snow_left[color] <= 0:
+                continue
+            next_totals, next_snow, next_spent = totals.copy(), snow_left.copy(), spent.copy()
+            next_totals[color] -= 1
+            next_snow[color] -= 1
+            next_spent[color] = next_spent.get(color, 0) + 1
+            found = solve(remaining - 1, next_totals, next_snow, selected, next_spent)
+            if found is not None:
+                return found
+        if len(selected) >= snow_needed:
+            return None
+        used = {entry[0] for entry in selected}
+        for cid, outputs, land in sources:
+            if cid in used:
+                continue
+            for color in MANA_COLORS:
+                if not outputs.get(color):
+                    continue
+                amount = outputs[color]
+                next_totals, next_snow = totals.copy(), snow_left.copy()
+                next_totals[color] += amount
+                next_snow[color] += amount
+                found = solve(remaining, next_totals, next_snow,
+                              selected + [(cid, color, amount, land)], spent)
+                if found is not None:
+                    return found
+        return None
+
+    return solve(snow_needed, pool, snow, [], {})
+
+
 def auto_pay_cost(
     state: MatchState,
     player_id: int,
@@ -257,12 +336,12 @@ def auto_pay_cost(
         ((req, plan) for req in _payment_requirements(
             context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices,
         ) if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and (plan := _plan_mana_sources(state, player_id, req)) is not None),
+        and (plan := _plan_payment(state, player_id, req)) is not None),
         None,
     )
     if payment is None:
         return False
-    req, plan = payment
+    req, (plan, snow_spent) = payment
     player = state.players[player_id]
     if payment_details is not None:
         payment_details["phyrexian_life_symbols"] = req.get("life", 0) // 2
@@ -270,23 +349,32 @@ def auto_pay_cost(
         if not pay_life(state, player_id, req["life"]):
             return False
         state.log.append(f"{player.name} pays {req['life']} life for Phyrexian mana.")
-    for color in ("C", "W", "U", "B", "R", "G"):
+    for color in MANA_COLORS:
         player.mana_pool.setdefault(color, 0)
     for cid, color, amount, land in plan:
         if land:
             state.cards[cid].tapped = True
         elif not _consume_nonland_mana_source(state, player_id, cid):
             return False
-        player.mana_pool[color] += amount
+        add_mana_to_pool(state, player_id, color, amount, source_id=cid)
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay spell cost.")
-    for color in ("C", "W", "U", "B", "R", "G"):
-        player.mana_pool[color] -= req[color]
+    for color, amount in snow_spent.items():
+        player.snow_mana_pool[color] -= amount
+        player.mana_pool[color] -= amount
+    for color in MANA_COLORS:
+        _spend_pool_color(player, color, req[color])
     generic_need = req["generic"]
-    for color in ("C", "W", "U", "B", "R", "G"):
+    for color in MANA_COLORS:
         paid = min(generic_need, player.mana_pool[color])
-        player.mana_pool[color] -= paid
+        _spend_pool_color(player, color, paid)
         generic_need -= paid
     return True
+
+
+def _spend_pool_color(player, color: str, amount: int) -> None:
+    ordinary = player.mana_pool[color] - player.snow_mana_pool.get(color, 0)
+    player.snow_mana_pool[color] = max(0, player.snow_mana_pool.get(color, 0) - max(0, amount - ordinary))
+    player.mana_pool[color] -= amount
 
 
 def mana_value(mana_cost: str, is_land: bool = False, x_value: int = 0) -> int:

@@ -130,6 +130,7 @@ class PlayerState:
     exile: list[str] = field(default_factory=list)
     exile_play_until: dict[str, int] = field(default_factory=dict)
     mana_pool: dict[str, int] = field(default_factory=lambda: {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0})
+    snow_mana_pool: dict[str, int] = field(default_factory=lambda: {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0})
     prevent_damage_shield: int = 0
     max_land_plays_this_turn: int = 1
     lands_played_this_turn: int = 0

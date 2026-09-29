@@ -8,6 +8,115 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_p
 import pytest
 
 
+def test_snow_cost_requires_source_provenance_and_survives_pool_snapshot() -> None:
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=926)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    source_id = state.players[1].library.pop()
+    source = state.cards[source_id]
+    source.zone = Zone.BATTLEFIELD
+    source.types = ["Land"]
+    source.type_line = "Basic Land - Forest"
+    state.players[1].battlefield.append(source_id)
+    assert not can_pay_with_pool_and_lands(state, 1, "{S}")
+    assert not auto_pay_cost(state, 1, "{S}")
+    assert not source.tapped
+
+    source.name = "Snow-Covered Forest"
+    source.type_line = "Basic Snow Land - Forest"
+    assert can_pay_with_pool_and_lands(state, 1, "{S}")
+    tapped = checked_action(state, RulesEngine(), 1, {"type": "tap_land_for_mana", "card_id": source_id})
+    assert tapped.players[1].mana_pool["G"] == 1
+    assert tapped.players[1].snow_mana_pool["G"] == 1
+    restored = deserialize_match_snapshot(serialize_match_snapshot(tapped))
+    cleared = deserialize_match_snapshot(serialize_match_snapshot(tapped))
+    RulesEngine()._clear_mana_pools(cleared)
+    assert cleared.players[1].mana_pool["G"] == cleared.players[1].snow_mana_pool["G"] == 0
+    assert not can_pay_with_pool_and_lands(cleared, 1, "{S}")
+    assert can_pay_with_pool_and_lands(restored, 1, "{S}")
+    assert auto_pay_cost(restored, 1, "{S}", card_name="Icehide Golem")
+    assert restored.players[1].mana_pool["G"] == 0
+    assert restored.players[1].snow_mana_pool["G"] == 0
+
+
+def test_snow_mana_cannot_pay_two_costs_at_once_and_preserves_color() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=927)
+    state.players[1].mana_pool["U"] = 1
+    state.players[1].snow_mana_pool["U"] = 1
+    assert can_pay_with_pool_and_lands(state, 1, "{S}")
+    assert not can_pay_with_pool_and_lands(state, 1, "{U}{S}")
+    state.players[1].mana_pool["U"] = 2
+    assert can_pay_with_pool_and_lands(state, 1, "{U}{S}")
+    assert auto_pay_cost(state, 1, "{U}{S}")
+    assert state.players[1].mana_pool["U"] == 0
+    assert state.players[1].snow_mana_pool["U"] == 0
+
+
+def test_snow_source_autopayment_and_nonland_colorless_provenance() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=928)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    land_id = state.players[1].library.pop()
+    land = state.cards[land_id]
+    land.name, land.type_line, land.zone = "Snow-Covered Forest", "Basic Snow Land - Forest", Zone.BATTLEFIELD
+    state.players[1].battlefield.append(land_id)
+    assert auto_pay_cost(state, 1, "{S}", card_name="Icehide Golem")
+    assert land.tapped
+    assert state.players[1].mana_pool["G"] == state.players[1].snow_mana_pool["G"] == 0
+
+    source_id = state.players[1].library.pop()
+    source = state.cards[source_id]
+    source.name = "Boreal Druid"
+    source.types, source.type_line = ["Creature"], "Snow Creature - Elf Druid"
+    source.oracle_text = "{T}: Add {C}."
+    source.zone, source.summoning_sick = Zone.BATTLEFIELD, False
+    state.players[1].battlefield.append(source_id)
+    tapped = checked_action(state, RulesEngine(), 1, {"type": "tap_nonland_for_mana", "card_id": source_id, "color": "C"})
+    assert tapped.players[1].mana_pool["C"] == tapped.players[1].snow_mana_pool["C"] == 1
+    assert auto_pay_cost(tapped, 1, "{S}", card_name="Icehide Golem")
+    assert tapped.players[1].mana_pool["C"] == tapped.players[1].snow_mana_pool["C"] == 0
+
+
+def test_colored_payment_keeps_snow_provenance_when_ordinary_mana_is_available() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=929)
+    state.players[1].mana_pool["U"] = 2
+    state.players[1].snow_mana_pool["U"] = 1
+    assert auto_pay_cost(state, 1, "{U}")
+    assert state.players[1].mana_pool["U"] == state.players[1].snow_mana_pool["U"] == 1
+    assert auto_pay_cost(state, 1, "{S}")
+    state.players[1].mana_pool["U"] = 2
+    state.players[1].snow_mana_pool["U"] = 1
+    assert auto_pay_cost(state, 1, "{1}")
+    assert state.players[1].mana_pool["U"] == state.players[1].snow_mana_pool["U"] == 1
+    assert auto_pay_cost(state, 1, "{S}")
+
+
+def test_snow_payment_search_preserves_colored_snow_pool_for_colored_cost() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=931)
+    state.players[1].mana_pool["U"] = 1
+    state.players[1].snow_mana_pool["U"] = 1
+    land_id = state.players[1].library.pop()
+    land = state.cards[land_id]
+    land.name, land.type_line, land.zone = "Snow-Covered Forest", "Basic Snow Land - Forest", Zone.BATTLEFIELD
+    state.players[1].battlefield.append(land_id)
+    assert can_pay_with_pool_and_lands(state, 1, "{U}{S}")
+    assert auto_pay_cost(state, 1, "{U}{S}")
+    assert land.tapped
+    assert all(value == 0 for value in state.players[1].mana_pool.values())
+    assert all(value == 0 for value in state.players[1].snow_mana_pool.values())
+
+
 def test_spectral_procession_hybrid_cost_uses_white_or_generic_mana() -> None:
     cost = "{2/W}{2/W}{2/W}"
     assert mana_value(cost) == 6

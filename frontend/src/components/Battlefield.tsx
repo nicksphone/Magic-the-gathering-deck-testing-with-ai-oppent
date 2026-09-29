@@ -81,10 +81,10 @@ function manaSummary(lands: LandPile[]): string {
     .join("  ");
 }
 
-function manaPoolPips(pool: Record<string, number>): { symbol: ManaSymbol; count: number }[] {
+function manaPoolPips(pool: Record<string, number>, snowPool: Record<string, number> = {}): { symbol: ManaSymbol; count: number; snow: number }[] {
   const order: ManaSymbol[] = ["W", "U", "B", "R", "G", "C"];
   return order
-    .map((symbol) => ({ symbol, count: Number(pool[symbol] ?? 0) }))
+    .map((symbol) => ({ symbol, count: Number(pool[symbol] ?? 0), snow: Number(snowPool[symbol] ?? 0) }))
     .filter((entry) => entry.count > 0);
 }
 
@@ -97,8 +97,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const p2 = match.players[String(opponentSeat)];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
-  const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool), [p1.mana_pool]);
-  const p2ManaPool = useMemo(() => manaPoolPips(p2.mana_pool), [p2.mana_pool]);
+  const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool, p1.snow_mana_pool), [p1.mana_pool, p1.snow_mana_pool]);
+  const p2ManaPool = useMemo(() => manaPoolPips(p2.mana_pool, p2.snow_mana_pool), [p2.mana_pool, p2.snow_mana_pool]);
   const battlefieldCount = p1Groups.nonLands.length + p1Groups.lands.length + p2Groups.nonLands.length + p2Groups.lands.length;
   const battlefieldDensityClass =
     battlefieldCount >= 16 ? "battlefield-packed" : battlefieldCount >= 9 ? "battlefield-dense" : battlefieldCount >= 5 ? "battlefield-comfort" : "battlefield-open";
@@ -235,7 +235,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {p2ManaPool.map((entry) => (
                   <span key={`p2-${entry.symbol}`} className={`mana-pip mana-pip-${entry.symbol.toLowerCase()}`}>
                     {entry.symbol}
-                    <small>{entry.count}</small>
+                    <small>{entry.count}{entry.snow ? ` (${entry.snow}S)` : ""}</small>
                   </span>
                 ))}
               </span>
@@ -298,7 +298,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {p1ManaPool.map((entry) => (
                   <span key={`p1-${entry.symbol}`} className={`mana-pip mana-pip-${entry.symbol.toLowerCase()}`}>
                     {entry.symbol}
-                    <small>{entry.count}</small>
+                    <small>{entry.count}{entry.snow ? ` (${entry.snow}S)` : ""}</small>
                   </span>
                 ))}
               </span>

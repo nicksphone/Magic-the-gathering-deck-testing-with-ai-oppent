@@ -79,6 +79,21 @@ try {
   }
   console.log("PASS compleated life and mana branches display correct resolved loyalty through the API");
 
+  await click("Non-Snow Payment Fixture");
+  await waitFor("window.fixtureState.players['1'].hand.some(card => card.name === 'Icehide Golem')");
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Icehide Golem'))"), false);
+  await click("Snow Payment Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Icehide Golem'))");
+  await click("Add G");
+  await waitFor("window.fixtureState.players['1'].snow_mana_pool.G === 1");
+  assert.equal(await evaluate("[...document.querySelectorAll('.mana-pip-g')].some(pip => pip.textContent.includes('(1S)'))"), true);
+  await click("Cast Icehide Golem");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Icehide Golem')");
+  assert.equal(await evaluate("window.fixtureState.players['1'].snow_mana_pool.G"), 0);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].battlefield.some(card => card.name === 'Icehide Golem')");
+  console.log("PASS snow-source provenance gates Icehide Golem and appears in the mana pool UI");
+
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);
