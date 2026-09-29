@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from ai.agent import AIAgent
-from effects.handlers import discard_cards
+from effects.handlers import copy_spell, discard_cards
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -91,6 +91,94 @@ def test_same_kind_modal_targets_resolve_independently(remove_ring: bool, remove
     assert "ring" in after.players[2].graveyard
     assert "bear" in after.players[2].graveyard
     assert ("Kolaghan's Command resolves." in after.log) is resolves
+
+
+def test_modal_copy_retargets_each_mode_without_changing_original() -> None:
+    state, spell_id = _setup()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {
+            "mode_texts": [DESTROY, DAMAGE],
+            "mode_targets": {DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"}},
+        },
+    })
+    spare = CardInstance("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"])
+    state.cards[spare.id] = spare
+    state.players[2].battlefield.append(spare.id)
+    original = state.stack[-1]
+    copy_spell(state, 1, {"target_stack_id": original.id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["mode_target_text"] == DESTROY
+    assert "target_card_id:spare-ring" in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:spare-ring"],
+    })
+    assert state.pending_mechanic_choice["mode_target_text"] == DAMAGE
+    assert "target_player:2" in state.pending_mechanic_choice["options"]
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_player:2"],
+    })
+    assert state.pending_mechanic_choice is None
+    assert state.stack[0].payload["__announced_targets"]["mode_targets"] == {
+        DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"},
+    }
+    assert [effect["payload"] for effect in state.stack[-1].payload["effects"]] == [
+        {"target_card_id": "spare-ring"}, {"target_player": 2, "amount": 2},
+    ]
+    assert resolve_top_of_stack(state)
+    assert "spare-ring" in state.players[2].graveyard
+    assert state.players[2].life == 18
+    assert "ring" in state.players[2].battlefield
+    assert resolve_top_of_stack(state)
+    assert "ring" in state.players[2].graveyard
+    assert "bear" in state.players[2].graveyard
+
+
+def test_modal_copy_can_keep_now_illegal_original_target() -> None:
+    state, spell_id = _setup()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {
+            "mode_texts": [DESTROY, DAMAGE],
+            "mode_targets": {DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"}},
+        },
+    })
+    state.players[2].battlefield.remove("ring")
+    put_into_graveyard(state, "ring")
+    copy_spell(state, 1, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["mode_target_text"] == DAMAGE
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["keep"],
+    })
+    assert resolve_top_of_stack(state)
+    assert "bear" in state.players[2].graveyard
+
+
+def test_ai_copy_redirects_removal_away_from_its_own_permanents() -> None:
+    state, spell_id = _setup()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {
+            "mode_texts": [DESTROY, DAMAGE],
+            "mode_targets": {DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"}},
+        },
+    })
+    enemy_ring = CardInstance("enemy-ring", "Sol Ring", 1, 1, Zone.BATTLEFIELD, ["Artifact"])
+    state.cards[enemy_ring.id] = enemy_ring
+    state.players[1].battlefield.append(enemy_ring.id)
+    copy_spell(state, 2, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
+    ai = AIAgent(difficulty="master", archetype="Midrange")
+    rules = RulesEngine()
+    decision = ai.choose_action(state, rules.legal_moves(state, 2), 2)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": ["target_card_id:enemy-ring"]}
+    state = checked_action(state, rules, 2, decision.action)
+    decision = ai.choose_action(state, rules.legal_moves(state, 2), 2)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": ["target_player:1"]}
+    state = checked_action(state, rules, 2, decision.action)
+    assert resolve_top_of_stack(state)
+    assert "enemy-ring" in state.players[1].graveyard
+    assert state.players[1].life == 18
+    assert "ring" in state.players[2].battlefield
 
 
 def _graveyard_pair():

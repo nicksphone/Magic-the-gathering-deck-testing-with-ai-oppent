@@ -84,6 +84,41 @@ def test_ai_materializes_both_target_classes_for_selected_modes() -> None:
     assert checked_action(state, RulesEngine(), 1, action).stack[-1].source_card_id == cryptic_id
 
 
+def test_modal_copy_can_retarget_stack_mode_without_changing_permanent_mode() -> None:
+    from effects.handlers import copy_spell
+
+    state, cryptic_id, bolt_id, forest_id = _setup_counter_and_return()
+    counter_mode = "Counter target spell"
+    return_mode = "Return target permanent to its owner's hand"
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": cryptic_id,
+        "targets": {
+            "mode_texts": [counter_mode, return_mode],
+            "mode_targets": {
+                counter_mode: {"target_stack_id": "bolt"},
+                return_mode: {"target_card_id": forest_id},
+            },
+        },
+    })
+    original_id = state.stack[-1].id
+    copy_spell(state, 1, {"target_stack_id": original_id, "may_choose_new_targets": True})
+    pending = state.pending_mechanic_choice
+    assert f"target_stack_id:{original_id}" in pending["options"]
+    assert f"target_stack_id:{state.stack[-1].id}" not in pending["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": [f"target_stack_id:{original_id}"],
+    })
+    if state.pending_mechanic_choice:
+        state = checked_action(state, RulesEngine(), 1, {
+            "type": "choose_mechanic", "card_ids": ["keep"],
+        })
+    assert resolve_top_of_stack(state)
+    assert not any(item.id == original_id for item in state.stack)
+    assert any(item.id == "bolt" for item in state.stack)
+    assert forest_id in state.players[2].hand
+    assert state.cards[bolt_id].zone == Zone.STACK
+
+
 def test_restored_modal_spell_skips_permanent_that_gained_shroud() -> None:
     state, bolt_id, forest_id = _cast_counter_and_return()
     state.cards[forest_id].keywords.append("shroud")

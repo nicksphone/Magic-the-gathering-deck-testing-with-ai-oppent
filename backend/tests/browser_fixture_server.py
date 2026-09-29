@@ -26,6 +26,49 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "modal_copy_target":
+        from effects.handlers import copy_spell
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=933)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        destroy = "Destroy target artifact"
+        damage = "Kolaghan's Command deals 2 damage to any target"
+        spell = CardInstance(
+            id="modal-command", name="Kolaghan's Command", owner=1, controller=1,
+            zone=Zone.STACK, types=["Instant"], mana_cost="{1}{B}{R}",
+            oracle_text="Choose two —\n• Return target creature card from your graveyard to your hand.\n"
+                        "• Target player discards a card.\n• Destroy target artifact.\n"
+                        "• Kolaghan's Command deals 2 damage to any target.",
+        )
+        state.cards[spell.id] = spell
+        for cid, name, types, power, toughness in (
+            ("modal-ring", "Sol Ring", ["Artifact"], None, None),
+            ("modal-spare", "Sol Ring", ["Artifact"], None, None),
+            ("modal-bear", "Grizzly Bears", ["Creature"], 2, 2),
+        ):
+            card = CardInstance(cid, name, 2, 2, Zone.BATTLEFIELD, types, power=power, toughness=toughness)
+            state.cards[cid] = card
+            state.players[2].battlefield.append(cid)
+        state.stack.append(StackItem(
+            id="original-command", source_card_id=spell.id, controller=1,
+            label=spell.name, effect_key="effect_sequence",
+            payload={
+                "effects": [
+                    {"effect_key": "destroy_permanent", "payload": {"target_card_id": "modal-ring"}, "mode_text": destroy},
+                    {"effect_key": "deal_damage", "payload": {"target_card_id": "modal-bear", "amount": 2}, "mode_text": damage},
+                ],
+                "__announced_targets": {
+                    "mode_texts": [destroy, damage],
+                    "mode_targets": {destroy: {"target_card_id": "modal-ring"}, damage: {"target_card_id": "modal-bear"}},
+                },
+            },
+        ))
+        copy_spell(state, 1, {"target_stack_id": "original-command", "may_choose_new_targets": True})
+        return publish(state, deck)
     if face_kind == "divided_copy_target":
         from effects.handlers import copy_spell
         deck = [{"quantity": 60, "card_name": "Island"}]

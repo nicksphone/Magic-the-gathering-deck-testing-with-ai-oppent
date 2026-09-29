@@ -88,6 +88,37 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if copied is None:
             return False
         chosen = ids[0]
+        if pending.get("mode_target_text") is not None:
+            from effects.handlers import _offer_modal_copy_target_choice
+
+            mode = pending["mode_target_text"]
+            announced = copied.payload.get("__announced_targets") or {}
+            selected = (announced.get("mode_targets") or {}).get(mode) or {}
+            effects = [effect for effect in copied.payload.get("effects", []) if effect.get("mode_text") == mode]
+            if len(selected) != 1 or len(effects) != 1:
+                return False
+            old_key, old_value = next(iter(selected.items()))
+            if effects[0].get("payload", {}).get(old_key) != old_value:
+                return False
+            if chosen != "keep":
+                key, raw_value = chosen.split(":", 1)
+                value = int(raw_value) if key == "target_player" else raw_value
+                announced["mode_targets"][mode] = {key: value}
+                effects[0]["payload"].pop(old_key)
+                effects[0]["payload"][key] = value
+                copied.targets = [
+                    str(target)
+                    for mode_targets in announced["mode_targets"].values()
+                    for target in mode_targets.values()
+                ]
+                state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
+            state.pending_mechanic_choice = None
+            _offer_modal_copy_target_choice(
+                state, player_id, copied, remaining_modes=pending["remaining_modes"],
+                slot_number=pending["target_slot_number"] + 1,
+            )
+            resume_paused_resolution(state, pending)
+            return True
         if pending.get("distribution_target") is not None:
             from effects.handlers import _offer_divided_copy_target_choice
 

@@ -96,7 +96,35 @@ class AIAgent:
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 opponent = 3 - player_id
                 selected = "keep"
-                if copied and copied.effect_key in {"deal_damage", "deal_damage_multi"} and f"target_player:{opponent}" in options:
+                if copied and choice.get("mode_target_text"):
+                    mode = choice["mode_target_text"]
+                    effects = [effect for effect in copied.payload.get("effects", []) if effect.get("mode_text") == mode]
+                    original = (copied.payload.get("__announced_targets", {}).get("mode_targets", {}).get(mode) or {})
+                    if len(effects) == 1 and len(original) == 1:
+                        effect = effects[0]
+                        old_key, old_value = next(iter(original.items()))
+
+                        def score_target(option: str) -> float:
+                            key, value = (old_key, str(old_value)) if option == "keep" else option.split(":", 1)
+                            if key == "target_player":
+                                if effect["effect_key"] == "deal_damage":
+                                    amount = int(effect.get("payload", {}).get("amount", 0) or 0)
+                                    return 100.0 if int(value) == opponent and state.players[opponent].life <= amount else 3.0 if int(value) == opponent else -100.0
+                                return 5.0 if int(value) == opponent else -5.0
+                            card = state.cards.get(value)
+                            if card is None:
+                                return -100.0
+                            if effect["effect_key"] == "destroy_permanent":
+                                return self._noncreature_permanent_threat_score(state, value, player_id)
+                            if effect["effect_key"] == "deal_damage":
+                                if card.controller == player_id:
+                                    return -100.0
+                                amount = int(effect.get("payload", {}).get("amount", 0) or 0)
+                                return 5.0 + self._creature_threat_score(state, value, player_id) if "Creature" in card.types and int(card.toughness or 0) <= amount else 0.0
+                            return 0.0
+
+                        selected = max(options, key=score_target)
+                elif copied and copied.effect_key in {"deal_damage", "deal_damage_multi"} and f"target_player:{opponent}" in options:
                     selected = f"target_player:{opponent}"
                 elif copied and copied.effect_key == "gain_life" and f"target_player:{player_id}" in options:
                     selected = f"target_player:{player_id}"

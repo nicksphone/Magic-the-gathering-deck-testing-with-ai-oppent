@@ -748,6 +748,9 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     if is_spell and copied_item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
         _offer_divided_copy_target_choice(state, controller, copied_item)
         return
+    if is_spell and copied_item.effect_key == "effect_sequence" and announced.get("mode_targets"):
+        _offer_modal_copy_target_choice(state, controller, copied_item)
+        return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):
@@ -860,6 +863,66 @@ def _offer_divided_copy_target_choice(
                 "distribution_target": old_id,
                 "remaining_distribution_targets": remaining[offset + 1:],
                 "target_slot_number": number, "target_slot_total": total,
+            }
+            return
+
+
+def _offer_modal_copy_target_choice(
+    state: MatchState, controller: int, copied_item,
+    remaining_modes: list[str] | None = None, slot_number: int = 1,
+) -> None:
+    from rules_engine.oracle_effects import inspect_target_hints
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+
+    announced = copied_item.payload["__announced_targets"]
+    modes = list(remaining_modes) if remaining_modes is not None else list(announced.get("mode_texts") or [])
+    source = state.cards.get(copied_item.source_card_id)
+    if source is None:
+        return
+    copied_card = copy.copy(source)
+    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
+        setattr(copied_card, key, copy.deepcopy(value))
+    surfaces = {
+        "player_targets": "target_player", "creature_targets": "target_card_id",
+        "planeswalker_targets": "target_card_id", "permanent_targets": "target_card_id",
+        "land_targets": "target_card_id", "artifact_targets": "target_card_id",
+        "enchantment_targets": "target_card_id", "noncreature_permanent_targets": "target_card_id",
+        "graveyard_creature_targets": "target_card_id", "graveyard_permanent_targets": "target_card_id",
+        "stack_targets": "target_stack_id",
+    }
+    for offset, mode in enumerate(modes):
+        selected = (announced.get("mode_targets") or {}).get(mode) or {}
+        target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if selected.get(key) is not None]
+        effects = [effect for effect in copied_item.payload.get("effects", []) if effect.get("mode_text") == mode]
+        if len(target_keys) != 1 or len(effects) != 1:
+            continue
+        key = target_keys[0]
+        if str(effects[0].get("payload", {}).get(key)) != str(selected[key]):
+            continue
+        hints = inspect_target_hints(state, copied_card, controller, {"mode_text": mode})
+        options = ["keep"]
+        labels = {"keep": f"Keep {mode} on {selected[key]}"}
+        for surface, target_key in surfaces.items():
+            for candidate in hints.get(surface, []):
+                value = candidate["id"]
+                if (target_key == key and str(value) == str(selected[key])) or value == copied_item.id:
+                    continue
+                proposed = {"mode_text": mode, target_key: value}
+                if not (validate_cast_targets(hints, proposed)[0]
+                        and validate_protection_targets(state, copied_card, proposed)[0]
+                        and validate_hexproof_shroud_targets(state, controller, proposed)[0]):
+                    continue
+                option = f"{target_key}:{value}"
+                if option not in options:
+                    options.append(option)
+                    labels[option] = candidate.get("name") or candidate.get("label") or str(value)
+        if len(options) > 1:
+            state.pending_mechanic_choice = {
+                "kind": "copy_target", "player_id": controller, "count": 1,
+                "options": options, "option_labels": labels, "stack_id": copied_item.id,
+                "label": f"Choose target for {mode} on {copied_item.label}",
+                "mode_target_text": mode, "remaining_modes": modes[offset + 1:],
+                "target_slot_number": slot_number + offset,
             }
             return
 

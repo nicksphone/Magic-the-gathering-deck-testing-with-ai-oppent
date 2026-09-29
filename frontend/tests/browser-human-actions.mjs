@@ -45,6 +45,23 @@ try {
   await waitFor("window.fixtureState.players['1'].life === 19 && window.fixtureState.players['2'].life === 14");
   console.log("PASS divided spell copy keeps damage allocation across two human target choices");
 
+  await click("Modal Copy Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 1");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Sol Ring')); if (!label) throw new Error('Missing spare artifact target'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 2");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_card_id:modal-spare"]);
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player B')); if (!label) throw new Error('Missing modal player target'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets.includes('modal-spare')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_player:2"]);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].life === 18 && window.fixtureState.players['2'].graveyard.some(card => card.id === 'modal-spare')");
+  assert.ok(await evaluate("window.fixtureState.players['2'].battlefield.some(card => card.id === 'modal-ring')"));
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard.some(card => card.id === 'modal-ring') && window.fixtureState.players['2'].graveyard.some(card => card.id === 'modal-bear')");
+  console.log("PASS modal spell copy retargets each mode through human controls");
+
   await click("Hybrid Payment Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Spectral Procession'))");
   assert.equal(await evaluate("document.querySelectorAll('[aria-label^=\"Pay hybrid symbol\"]').length"), 3);
