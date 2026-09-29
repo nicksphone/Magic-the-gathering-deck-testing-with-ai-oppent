@@ -56,6 +56,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "temporary_pt_buff_all": handlers.temporary_pt_buff_all,
     "sacrifice": handlers.sacrifice,
     "tap": handlers.tap_card,
+    "tap_all_opponent_creatures": handlers.tap_all_opponent_creatures,
     "untap": handlers.untap_card,
     "crew_vehicle": handlers.crew_vehicle,
     "continuous_buff": handlers.continuous_buff,

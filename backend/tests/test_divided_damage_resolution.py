@@ -35,6 +35,25 @@ def _cast(game):
     })
 
 
+def test_divided_damage_requires_a_recipient_when_players_have_shroud():
+    game = _setup()
+    for cid in ("first", "second"):
+        game.players[2].battlefield.remove(cid)
+        game.cards[cid].zone = Zone.GRAVEYARD
+        game.players[2].graveyard.append(cid)
+    for player_id in (1, 2):
+        shield = CardInstance(
+            id=f"mask-{player_id}", name="Ivory Mask", owner=player_id, controller=player_id,
+            zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text="You have shroud.",
+        )
+        game.cards[shield.id] = shield
+        game.players[player_id].battlefield.append(shield.id)
+    assert not any(
+        move.get("type") == "cast_spell" and move.get("card_id") == "pyrotechnics"
+        for move in RulesEngine().legal_moves(game, 1)
+    )
+
+
 def test_one_illegal_target_keeps_original_damage_split():
     game = _cast(_setup())
     game.players[2].battlefield.remove("first")

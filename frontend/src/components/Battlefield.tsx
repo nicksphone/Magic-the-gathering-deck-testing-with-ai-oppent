@@ -586,6 +586,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {hints?.modes?.length ? (
                   hints.choose_two_modes ? (
                     <select
+                      aria-label="Spell modes"
                       multiple
                       onChange={(e) =>
                         setTargets((prev) => ({
@@ -597,7 +598,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                         }))
                       }
                     >
-                      {hints.modes.map((m, i) => (
+                      {(hints.available_modes ?? hints.modes).map((m, i) => (
                         <option key={`${card.id}-mode2-${i}`} value={m}>
                           {m}
                         </option>
@@ -605,6 +606,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </select>
                   ) : (
                     <select
+                      aria-label="Spell mode"
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
@@ -614,7 +616,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       defaultValue=""
                     >
                       <option value="">Choose Mode</option>
-                      {hints.modes.map((m, i) => (
+                      {(hints.available_modes ?? hints.modes).map((m, i) => (
                         <option key={`${card.id}-mode-${i}`} value={m}>
                           {m}
                         </option>

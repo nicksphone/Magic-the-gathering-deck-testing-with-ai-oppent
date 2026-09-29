@@ -3,7 +3,11 @@ from __future__ import annotations
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
 from rules_engine.ability_model import build_ability_spec
-from game_state.state import CardInstance, MatchFactory, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine.engine import RulesEngine
+from rules_engine.action_validation import checked_action
+from rules_engine.stack_engine import resolve_top_of_stack
+from ai.agent import AIAgent
 from rules_engine.cast_choice import enrich_divide_total
 from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
 from effects.registry import resolve_effect
@@ -238,6 +242,107 @@ def test_build_cast_hints_exposes_face_selection_schema() -> None:
     schema = hints["choice_schema"]["selected_face_index"]
     assert schema["minimum"] == 0
     assert schema["maximum"] == 1
+
+
+def test_cryptic_command_can_choose_two_untargeted_modes_without_targets() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool = {"U": 4}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Cryptic Command"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{1}{U}{U}{U}"
+    card.oracle_text = (
+        "Choose two —\n"
+        "• Counter target spell.\n"
+        "• Return target permanent to its owner's hand.\n"
+        "• Tap all creatures your opponents control.\n"
+        "• Draw a card."
+    )
+
+    cast = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == card.id and move["type"] == "cast_spell")
+    assert cast["target_hints"]["available_modes"] == [
+        "Tap all creatures your opponents control", "Draw a card",
+    ]
+    selected = {"mode_texts": list(cast["target_hints"]["available_modes"])}
+    assert build_cast_hints(state, card, 1, selected)["action_has_target_text"] is False
+    assert validate_cast_choice(build_cast_hints(state, card, 1, selected), selected)[0]
+    assert not validate_cast_choice(build_cast_hints(state, card, 1, {"mode_texts": ["Counter target spell", "Draw a card"]}), {"mode_texts": ["Counter target spell", "Draw a card"]})[0]
+    ai_action = AIAgent(difficulty="master", archetype="Control")._materialize_action(state, cast, 1)
+    assert set(ai_action["targets"]["mode_texts"]) == set(selected["mode_texts"])
+    after = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": card.id, "targets": selected})
+    assert any(item.source_card_id == card.id for item in after.stack)
+    reversed_modes = {"mode_texts": list(reversed(selected["mode_texts"]))}
+    reversed_cast = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": card.id, "targets": reversed_modes})
+    assert [effect["effect_key"] for effect in reversed_cast.stack[-1].payload["effects"]] == [
+        "tap_all_opponent_creatures", "draw_cards",
+    ]
+    own_creature = after.players[1].hand.pop()
+    enemy_creature = after.players[2].hand.pop()
+    for player_id, cid in ((1, own_creature), (2, enemy_creature)):
+        after.players[player_id].battlefield.append(cid)
+        after.cards[cid].zone = Zone.BATTLEFIELD
+        after.cards[cid].types = ["Creature"]
+    hand_before = len(after.players[1].hand)
+    assert resolve_top_of_stack(after)
+    assert after.cards[enemy_creature].tapped
+    assert not after.cards[own_creature].tapped
+    assert len(after.players[1].hand) == hand_before + 1
+
+
+def test_choose_one_mode_with_no_target_remains_castable() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool = {"U": 1, "R": 1}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Izzet Charm"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{U}{R}"
+    card.oracle_text = (
+        "Choose one —\n"
+        "• Counter target noncreature spell unless its controller pays {2}.\n"
+        "• Izzet Charm deals 2 damage to target creature.\n"
+        "• Draw two cards, then discard two cards."
+    )
+
+    cast = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == card.id and move["type"] == "cast_spell")
+    assert cast["target_hints"]["available_modes"] == ["Draw two cards, then discard two cards"]
+    action = AIAgent(difficulty="master", archetype="Tempo")._materialize_action(state, cast, 1)
+    assert action["targets"]["mode_text"] == "Draw two cards, then discard two cards"
+    after = checked_action(state, RulesEngine(), 1, action)
+    assert any(item.source_card_id == card.id for item in after.stack)
+    hand_before = len(after.players[1].hand)
+    assert resolve_top_of_stack(after)
+    assert len(after.players[1].hand) == hand_before
+
+
+def test_choose_one_spell_with_no_legal_mode_is_not_offered() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool = {"U": 1, "B": 1}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Drown in the Loch"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{U}{B}"
+    card.oracle_text = (
+        "Choose one —\n"
+        "• Counter target spell with mana value less than or equal to the number of cards in its controller's graveyard.\n"
+        "• Destroy target creature with mana value less than or equal to the number of cards in its controller's graveyard."
+    )
+
+    assert not any(move.get("card_id") == card.id and move["type"] == "cast_spell" for move in RulesEngine().legal_moves(state, 1))
 
 
 def test_validate_cast_choice_rejects_out_of_range_face_index() -> None:

@@ -1364,6 +1364,14 @@ def tap_card(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[target].tapped = True
 
 
+def tap_all_opponent_creatures(state: MatchState, controller: int, payload: dict) -> None:
+    for player_id, player in state.players.items():
+        if player_id != controller:
+            for cid in player.battlefield:
+                if "Creature" in state.cards[cid].types:
+                    state.cards[cid].tapped = True
+
+
 def untap_card(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards:

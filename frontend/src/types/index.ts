@@ -184,6 +184,7 @@ export type LegalMove = {
     stack_targets?: { id: string; label: string }[];
     face_names?: string[];
     modes?: string[];
+    available_modes?: string[];
     choose_two_modes?: boolean;
     requires_x_value?: boolean;
     x_value_max?: number;

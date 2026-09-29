@@ -6,10 +6,34 @@ from typing import Any
 
 from game_state.state import CardInstance, MatchState
 from rules_engine.oracle_effects import DIVIDE_RE, inspect_target_hints
+from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import validate_cast_targets
 
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-])?", re.IGNORECASE)
 FIXED_DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage", re.IGNORECASE)
+TARGET_KEYS = (
+    "player_targets", "creature_targets", "planeswalker_targets", "stack_targets",
+    "graveyard_spell_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+    "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
+    "land_targets", "noncreature_permanent_targets",
+)
+
+
+def _needs_target(text: str) -> bool:
+    text = without_reminder_text(text.lower())
+    text = re.sub(r"\bup to (?:one|two|three|\d+) targets?\b", "", text)
+    return bool(re.search(r"\btargets?\b", text))
+
+
+def _has_target_options(hints: dict[str, Any]) -> bool:
+    return any(hints.get(key) for key in TARGET_KEYS)
+
+
+def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
+    if hints.get("modes"):
+        required = 2 if hints.get("choose_two_modes") else 1
+        return len(hints.get("available_modes", [])) >= required
+    return not hints.get("action_has_target_text") or _has_target_options(hints)
 
 
 def build_cast_hints(
@@ -27,7 +51,17 @@ def build_cast_hints(
             card = copy(card)
             card.oracle_text = ""
     hints = inspect_target_hints(state, card, controller, action_targets)
-    hints["action_has_target_text"] = "target" in (card.oracle_text or "").lower()
+    selected_modes = (action_targets or {}).get("mode_texts") or []
+    selected_text = " ".join(selected_modes) or (action_targets or {}).get("mode_text") or card.oracle_text or ""
+    hints["action_has_target_text"] = _needs_target(selected_text)
+    if hints.get("modes"):
+        selected = set(selected_modes or ([action_targets["mode_text"]] if action_targets and action_targets.get("mode_text") else []))
+        hints["available_modes"] = [
+            mode for mode in hints["modes"]
+            if (not selected or mode in selected)
+            and (not _needs_target(mode)
+                 or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode})))
+        ]
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
     if face_names:
@@ -41,9 +75,9 @@ def build_cast_hints(
         hints["choose_two_modes"] = True
     if hints.get("modes"):
         if hints.get("choose_two_modes"):
-            hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["modes"]}
+            hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["available_modes"]}
         else:
-            hints["choice_schema"]["mode_text"] = {"type": "string", "required": False, "enum": hints["modes"]}
+            hints["choice_schema"]["mode_text"] = {"type": "string", "required": False, "enum": hints["available_modes"]}
     if hints.get("requires_x_value"):
         hints["choice_schema"]["x_value"] = {"type": "integer", "required": True, "minimum": 0}
     if hints.get("player_targets"):
@@ -78,6 +112,9 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
     ok, err = validate_cast_targets(hints, action_targets)
     if not ok:
         return ok, err
+    selected_modes = (action_targets.get("mode_texts") or []) + ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
+    if "available_modes" in hints and any(mode not in hints["available_modes"] for mode in selected_modes):
+        return False, "Selected mode has no legal target."
     face_names = hints.get("face_names") or []
     if face_names and action_targets.get("selected_face_index") is not None:
         try:

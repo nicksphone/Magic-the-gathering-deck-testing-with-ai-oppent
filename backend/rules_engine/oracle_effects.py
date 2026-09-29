@@ -127,7 +127,7 @@ def infer_effect_from_oracle(
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(oracle)
     mode_text = action_targets.get("mode_text")
-    mode_texts = action_targets.get("mode_texts") or []
+    mode_texts = _printed_mode_order(oracle, action_targets.get("mode_texts") or [])
     x_value = int(action_targets.get("x_value", 0) or 0)
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = action_targets.get("target_card_id") or action_targets.get("source_card_id")
@@ -465,9 +465,9 @@ def inspect_target_hints(
 ) -> dict[str, Any]:
     raw_oracle = card.oracle_text or ""
     action_targets = action_targets or {}
-    selected_modes = action_targets.get("mode_texts") or []
+    selected_modes = _printed_mode_order(raw_oracle, action_targets.get("mode_texts") or [])
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
-    oracle = without_reminder_text(str(selected_mode or raw_oracle).lower())
+    oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
     graveyard_creatures = [
@@ -665,7 +665,7 @@ def inspect_target_hints(
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
         }
-    if "any target" in oracle or "target player" in oracle or "deals" in oracle:
+    if "any target" in oracle or "any number of targets" in oracle or "target player" in oracle:
         hints["player_targets"] = [
             {"id": 1, "name": state.players[1].name},
             {"id": 2, "name": state.players[2].name},
@@ -854,6 +854,11 @@ def _extract_modes(oracle: str) -> list[str]:
         if cleaned:
             out.append(cleaned)
     return out
+
+
+def _printed_mode_order(oracle: str, selected: list[str]) -> list[str]:
+    positions = {mode.casefold(): index for index, mode in enumerate(_extract_modes(oracle))}
+    return sorted(selected, key=lambda mode: positions.get(str(mode).casefold(), len(positions)))
 
 
 def _split_clauses(oracle: str) -> list[str]:
@@ -1120,6 +1125,9 @@ def _infer_clause_effect(
         target = target_card_id or _first_creature(state, opponent)
         return "exile", {"target_card_id": target}
 
+    if "tap all creatures your opponents control" in oracle:
+        return "tap_all_opponent_creatures", {}
+
     if "tap target" in oracle:
         if "nonland permanent" in oracle:
             target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
@@ -1308,7 +1316,7 @@ def _infer_clause_effect(
             amount = 2
         if "three cards" in oracle:
             amount = 3
-        if "you discard" in oracle:
+        if "you discard" in oracle or oracle.startswith("discard "):
             return "discard_cards", {"target_player": controller, "amount": amount}
         return "discard_cards", {"target_player": target_player or opponent, "amount": amount}
 

@@ -26,6 +26,27 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "modal_targetless":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=912)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool.update({"U": 1, "R": 1})
+        card = CardInstance(
+            id="izzet-charm", name="Izzet Charm", owner=2, controller=2,
+            zone=Zone.HAND, types=["Instant"], mana_cost="{U}{R}",
+            oracle_text=(
+                "Choose one —\n"
+                "• Counter target noncreature spell unless its controller pays {2}.\n"
+                "• Izzet Charm deals 2 damage to target creature.\n"
+                "• Draw two cards, then discard two cards."
+            ),
+        )
+        state.cards[card.id] = card
+        state.players[2].hand.append(card.id)
+        return publish(state, deck)
     if face_kind == "player_hexproof":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=911)

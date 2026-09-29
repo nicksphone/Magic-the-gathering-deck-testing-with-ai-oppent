@@ -14,6 +14,16 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Modal Targetless Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')); const mode = box.querySelector('[aria-label=\"Spell mode\"]'); mode.value = 'Draw two cards, then discard two cards'; mode.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Izzet Charm");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Izzet Charm')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_text"), "Draw two cards, then discard two cards");
+  console.log("PASS modal UI offers only the available mode and casts it without a target");
+
+  await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.id === 'forest')");

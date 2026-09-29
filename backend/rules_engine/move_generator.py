@@ -3,7 +3,7 @@ from __future__ import annotations
 from itertools import permutations
 
 from game_state.state import MatchState, Step, Zone
-from rules_engine.cast_choice import build_cast_hints
+from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
@@ -203,7 +203,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not available_options:
                 continue
             hints = build_cast_hints(state, card, player_id)
-            if hints.get("action_has_target_text") and not _has_any_target_options(hints):
+            if not has_available_targets_for_action(hints):
                 continue
             moves.append(
                 {
@@ -259,7 +259,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not available_options:
                 continue
             hints = build_cast_hints(state, card, player_id)
-            if hints.get("action_has_target_text") and not _has_any_target_options(hints):
+            if not has_available_targets_for_action(hints):
                 continue
             moves.append(
                 {
@@ -285,7 +285,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         timing_ok, _ = can_cast_in_current_timing(state, top_card, player_id)
         options = collect_cost_options(state, player_id, top_card)
         available_options = [o for o in options if check_cost_option_available(state, player_id, top_card, o)]
-        if timing_ok and available_options:
+        hints = build_cast_hints(state, top_card, player_id)
+        if timing_ok and available_options and has_available_targets_for_action(hints):
             moves.append(
                 {
                     "type": "cast_spell",
@@ -306,7 +307,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         }
                         for o in available_options
                     ],
-                    "target_hints": build_cast_hints(state, top_card, player_id),
+                    "target_hints": hints,
                 }
             )
 
@@ -328,6 +329,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     continue
                 hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id)
+                if not has_available_targets_for_action(hints):
+                    continue
                 if ability.get("x_cost"):
                     hints["requires_x_value"] = True
                 moves.append(
@@ -356,9 +359,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
             hints = build_cast_hints(state, proxy, player_id)
-            if ("creature_targets" in hints and not hints["creature_targets"]
-                    and "target" in ability["text"].lower() and "creature" in ability["text"].lower()
-                    and not hints.get("player_targets") and not hints.get("permanent_targets")):
+            if not has_available_targets_for_action(hints):
                 continue
             moves.append(
                 {
@@ -446,7 +447,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             options = [option for option in collect_cost_options(state, player_id, face)
                        if check_cost_option_available(state, player_id, face, option)]
             hints = build_cast_hints(state, face, player_id)
-            if not options or (hints.get("action_has_target_text") and not _has_any_target_options(hints)):
+            if not options or not has_available_targets_for_action(hints):
                 continue
             moves.append({"type": "cast_spell", "card_id": cid, "card_name": face.name,
                           "selected_face_index": index, "mana_cost": face.mana_cost,
@@ -464,18 +465,6 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
     if has_keyword(state, card.id, "flash"):
         return True
     return False
-
-
-def _has_any_target_options(hints: dict) -> bool:
-    return any(
-        bool(hints.get(key))
-        for key in [
-            "player_targets", "creature_targets", "planeswalker_targets", "stack_targets",
-            "graveyard_spell_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
-            "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
-            "land_targets", "noncreature_permanent_targets",
-        ]
-    )
 
 
 def _extract_equip_cost(oracle_text: str) -> str:

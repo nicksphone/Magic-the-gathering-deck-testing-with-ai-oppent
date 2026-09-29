@@ -12,6 +12,12 @@ Use the isolated backend/browser procedure in [human actions](human-actions-brow
 
 `backend/tests/test_modal_spell_faces.py` covers layout/front hydration, codec restart with a selected spell on stack, graveyard restoration, Tibalt's selected planeswalker characteristics, independent affordable-face admission, AI payload materialization, repeatable old-cache migration and rejection of Delver's transform-only back face without mutation. Fixtures preserve actual Oracle IDs and bulk provenance; they never populate the gameplay card cache. These tests are boundary tests, not full semantics certification for the fixtures' entire Oracle text.
 
+## Textual Spell Modes
+
+Textual modal spells are distinct from modal double-faced cards. The shared cast-hint path now checks mandatory targets per `Choose one`/`Choose two` mode and exposes only currently available modes to the human picker and AI; it does not require targets belonging to unchosen modes. Selected modes resolve in printed order, even if the action lists them in another order. Cryptic Command's untargeted tap-all/draw pair and Izzet Charm's untargeted draw/discard mode are covered by cast-and-resolution tests, with a loopback UI cast for Izzet Charm. Drown in the Loch is not offered when neither mode has a legal target. [Wizards' Cryptic Command notes](https://magic.wizards.com/en/news/feature/modern-masters-2015-edition-release-notes-2015-05-12) and [modal-mode guidance](https://magic.wizards.com/en/news/feature/commander-masters-release-notes) ground that boundary. Repeated modes, combinations requiring multiple independently announced targets, and general modal Oracle interpretation remain open.
+
+Verification for this increment: 1,187 backend tests in a disposable checkout, frontend lint/build/unit, the complete loopback Chromium harness and a resolved three-game seeded replay without timeout or determinism drift. A Pyrotechnics fixture guards mandatory plural-target admission. The browser proves selecting/casting Izzet Charm's untargeted mode, not full human resolution of every modal clause.
+
 ## Limits Still Open
 
 - Older cached rows get an empty layout from schema migration. Force-sync affected cards to obtain canonical layout; the migration does not guess semantics from names or face count. Historical snapshots without layout retain the legacy compatibility path.

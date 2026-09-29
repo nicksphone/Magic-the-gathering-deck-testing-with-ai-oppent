@@ -2176,10 +2176,11 @@ class AIAgent:
         # versus destroy), so selecting targets from the unselected union can
         # create invalid or strategically incoherent actions.
         if hints.get("modes") and not targets.get("mode_text") and not targets.get("mode_texts"):
+            available_modes = list(hints.get("available_modes", hints["modes"]))
             if hints.get("choose_two_modes"):
-                targets["mode_texts"] = self._select_mode_texts(state, card, list(hints["modes"]), player_id)
+                targets["mode_texts"] = self._select_mode_texts(state, card, available_modes, player_id)
             else:
-                targets["mode_text"] = self._select_mode_text(state, card, list(hints["modes"]), player_id)
+                targets["mode_text"] = self._select_mode_text(state, card, available_modes, player_id)
         if targets.get("mode_text") or targets.get("mode_texts"):
             from rules_engine.cast_choice import build_cast_hints
 
