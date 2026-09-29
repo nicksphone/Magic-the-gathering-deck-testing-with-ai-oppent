@@ -142,7 +142,8 @@ def infer_effect_from_oracle(
                 state, card, controller,
                 {**action_targets, "mode_text": selected_mode, "mode_texts": []},
             )
-            effects.extend(payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}])
+            for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
+                effects.append({**effect, "mode_text": selected_mode})
         return "effect_sequence", {"effects": effects}
     split_match = SPLIT_NAME_RE.match(name)
     if split_match and not mode_text and not mode_texts:
@@ -1112,8 +1113,11 @@ def _infer_clause_effect(
         if target:
             return "exile", {"target_card_id": target}
 
-    if "return target" in oracle and "to its owner's hand" in oracle and "nonland permanent" in oracle:
-        target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
+    if "return target" in oracle and "to its owner's hand" in oracle and "permanent" in oracle:
+        target = _choose_any_permanent_target(
+            state, controller, action_targets,
+            exclude_types={"Land"} if "nonland permanent" in oracle else set(),
+        )
         if target:
             return "return_permanent_to_hand", {"target_card_id": target}
     if "return target" in oracle and "to its owner's hand" in oracle and "creature" in oracle:

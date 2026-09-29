@@ -494,8 +494,12 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             }
             const hints = move.target_hints;
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
+            const chosenModes = targets[card.id]?.mode_texts;
+            const chosenMode = targets[card.id]?.mode_text;
+            const targetingText = Array.isArray(chosenModes) && chosenModes.length
+              ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
             const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
-            const alternativeTargets = [...new Map([
+            const alternativeTargets = !/\btargets?\b/i.test(targetingText) ? [] : [...new Map([
               ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
@@ -638,8 +642,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     }
                   />
                 ) : null}
-                {!showAlternativeSelect && (hints?.creature_targets?.length || hints?.planeswalker_targets?.length) ? (
-                  hints.up_to_target_count && hints.up_to_target_count > 1 ? (
+                {!showAlternativeSelect && alternativeTargets.length ? (
+                  hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple
                       onChange={(e) =>
@@ -652,14 +656,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                         }))
                       }
                     >
-                      {(hints.creature_targets ?? []).map((t) => (
+                      {alternativeTargets.map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
-                        </option>
-                      ))}
-                      {(hints.planeswalker_targets ?? []).map((t) => (
-                        <option key={`pw-multi-${t.id}`} value={t.id}>
-                          {t.name} (Planeswalker)
                         </option>
                       ))}
                     </select>
@@ -673,15 +672,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       }
                       value={String(targets[card.id]?.target_card_id ?? "")}
                     >
-                      <option value="">Target Creature</option>
-                      {(hints.creature_targets ?? []).map((t) => (
+                      <option value="">{hints?.permanent_targets?.length ? "Target Permanent" : "Target Creature"}</option>
+                      {alternativeTargets.map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
-                        </option>
-                      ))}
-                      {(hints.planeswalker_targets ?? []).map((t) => (
-                        <option key={`pw-${t.id}`} value={t.id}>
-                          {t.name} (Planeswalker)
                         </option>
                       ))}
                     </select>

@@ -102,9 +102,34 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     target_count = (len(announced.get("target_card_ids") or []) + len(announced.get("target_distribution") or {})
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
     legal_distribution = None
+    legal_effects = None
     if card and card.zone == Zone.STACK and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
         legal_distribution = _legal_divided_damage_targets(state, item, card, announced)
         if not legal_distribution:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    elif card and card.zone == Zone.STACK and target_count > 1 and item.effect_key == "effect_sequence" and announced.get("mode_texts"):
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+
+        legal_effects = []
+        any_legal_target = False
+        for effect in item.payload.get("effects", []):
+            selected = {key: effect.get("payload", {}).get(key) for key in ("target_card_id", "target_stack_id", "target_player")
+                        if effect.get("payload", {}).get(key) is not None}
+            mode_text = effect.get("mode_text")
+            if not selected or not mode_text:
+                legal_effects.append(effect)
+                continue
+            targets = {"mode_text": mode_text, **selected}
+            hints = inspect_target_hints(state, card, item.controller, targets)
+            legal = (validate_cast_targets(hints, targets)[0]
+                     and validate_protection_targets(state, card, targets)[0]
+                     and validate_hexproof_shroud_targets(state, item.controller, targets)[0])
+            if legal:
+                any_legal_target = True
+                legal_effects.append(effect)
+        if not any_legal_target:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     elif card and card.zone == Zone.STACK and target_count == 1:
@@ -173,6 +198,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    if legal_effects is not None:
+        payload["effects"] = legal_effects
     if legal_distribution is not None:
         payload["target_distribution"] = legal_distribution
         ignored = len(announced["target_distribution"]) - len(legal_distribution)

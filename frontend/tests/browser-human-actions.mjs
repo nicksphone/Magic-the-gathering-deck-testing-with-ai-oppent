@@ -23,6 +23,31 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_text"), "Draw two cards, then discard two cards");
   console.log("PASS modal UI offers only the available mode and casts it without a target");
 
+  await click("Modal Two Targets Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Cryptic Command'))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Cryptic Command'));
+    const modes = box.querySelector('[aria-label="Spell modes"]');
+    for (const option of modes.options) option.selected = option.value === 'Counter target spell' || option.value === "Return target permanent to its owner's hand";
+    modes.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await waitFor("[...document.querySelectorAll('.cast-card-box select')].some(s => s.options[0].text === 'Target Permanent')");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Cryptic Command'));
+    const permanent = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Permanent');
+    const stack = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item');
+    if (!permanent || !stack) throw new Error('Missing modal target controls');
+    permanent.value = 'forest'; permanent.dispatchEvent(new Event('change', { bubbles: true }));
+    stack.value = 'bolt-stack'; stack.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Cast Cryptic Command");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Cryptic Command')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_card_id"), "forest");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_stack_id"), "bolt-stack");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].hand.some(c => c.id === 'forest')");
+  console.log("PASS modal UI announces stack and permanent targets and resolves both modes");
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");

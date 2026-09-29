@@ -5,7 +5,7 @@ if (Path(__file__).resolve().parents[2] / ".git").exists():
     raise RuntimeError("Run browser fixtures only from an isolated source copy, not the live Git checkout")
 from main import app, ACTIVE_MATCHES, MatchController, get_match, _persist_active_match
 from ai.agent import AIAgent
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
 from rules_engine.engine import RulesEngine
 from persistence.db import init_db, engine
 from persistence.repository import Repository
@@ -26,6 +26,32 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "modal_two_targets":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=913)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool["U"] = 4
+        cards = (
+            CardInstance(id="cryptic", name="Cryptic Command", owner=2, controller=2,
+                         zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}{U}{U}",
+                         oracle_text=("Choose two —\n• Counter target spell.\n"
+                                      "• Return target permanent to its owner's hand.\n"
+                                      "• Tap all creatures your opponents control.\n• Draw a card.")),
+            CardInstance(id="bolt", name="Lightning Bolt", owner=1, controller=1,
+                         zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
+                         oracle_text="Lightning Bolt deals 3 damage to any target."),
+            CardInstance(id="forest", name="Forest", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, types=["Land"], type_line="Basic Land — Forest"),
+        )
+        for card in cards:
+            state.cards[card.id] = card
+            if card.zone != Zone.STACK:
+                getattr(state.players[card.owner], card.zone.value).append(card.id)
+        state.stack.append(StackItem("bolt-stack", "bolt", 1, "Lightning Bolt", "deal_damage", {"target_player": 2, "amount": 3}))
+        return publish(state, deck)
     if face_kind == "modal_targetless":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=912)

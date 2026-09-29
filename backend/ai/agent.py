@@ -2313,6 +2313,18 @@ class AIAgent:
                 targets["target_card_id"] = best["id"]
                 targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
+        if hints.get("permanent_targets") and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            best = max(
+                hints["permanent_targets"],
+                key=lambda t: (
+                    int(state.cards[t["id"]].controller != player_id),
+                    self._creature_threat_score(state, t["id"], player_id)
+                    if "Creature" in state.cards[t["id"]].types
+                    else self._noncreature_permanent_threat_score(state, t["id"], player_id),
+                ),
+            )
+            targets["target_card_id"] = best["id"]
+
         if "any target" in target_text and target_text.count("target") == 1 and targets.get("target_card_id"):
             targets.pop("target_player", None)
 
