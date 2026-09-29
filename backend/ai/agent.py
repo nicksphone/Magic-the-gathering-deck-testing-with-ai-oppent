@@ -1791,7 +1791,7 @@ class AIAgent:
                     sim_state.players[player_id].library.remove(second)
                     sim_state.players[player_id].hand.append(second)
                     land2 = sim_state.cards[second]
-                    land2.zone = Zone.HAND
+                    land2.move_to_zone(Zone.HAND)
                     land2.controller = player_id
 
     def _spell_tags(self, card) -> set[str]:

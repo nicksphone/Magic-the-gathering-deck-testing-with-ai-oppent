@@ -1119,7 +1119,7 @@ class RulesEngine:
             while player.hand:
                 cid = player.hand.pop()
                 player.library.append(cid)
-                state.cards[cid].zone = Zone.LIBRARY
+                state.cards[cid].move_to_zone(Zone.LIBRARY)
             rng = getattr(state, "rng", None)
             if rng is not None and hasattr(rng, "shuffle"):
                 rng.shuffle(player.library)
@@ -1145,7 +1145,7 @@ class RulesEngine:
                 if cid in player.hand:
                     player.hand.remove(cid)
                     player.library.insert(0, cid)
-                    state.cards[cid].zone = Zone.LIBRARY
+                    state.cards[cid].move_to_zone(Zone.LIBRARY)
             state.kept_hands.add(player_id)
             state.log.append(f"{player.name} keeps hand.")
             if len(state.kept_hands) == 2:

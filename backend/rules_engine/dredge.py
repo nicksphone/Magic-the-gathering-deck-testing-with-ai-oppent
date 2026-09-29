@@ -32,7 +32,7 @@ def resolve_dredge(state, controller: int, payload: dict) -> None:
         emit_event(state, "mill", {"card_id": cid, "controller": player_id})
     player.graveyard.remove(card_id)
     player.hand.append(card_id)
-    state.cards[card_id].zone = Zone.HAND
+    state.cards[card_id].move_to_zone(Zone.HAND)
     state.log.append(f"{player.name} dredges {state.cards[card_id].name}, milling {option['count']} instead of drawing.")
 
 

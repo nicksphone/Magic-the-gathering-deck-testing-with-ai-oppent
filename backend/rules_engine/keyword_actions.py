@@ -35,7 +35,7 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     emit_event(state, "leaves_battlefield", {"card_id": return_id, "controller": player_id})
     player.battlefield.remove(return_id)
     state.players[returned.owner].hand.append(return_id)
-    returned.zone = Zone.HAND
+    returned.move_to_zone(Zone.HAND)
     state.attackers.remove(return_id)
     state.attack_targets.pop(return_id, None)
     add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu", {"attack_target": target}, is_spell=False)

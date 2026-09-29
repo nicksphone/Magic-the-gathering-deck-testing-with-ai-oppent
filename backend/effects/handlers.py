@@ -743,7 +743,7 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
     emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
     battlefield_controller.battlefield.remove(target)
     owner.hand.append(target)
-    card.zone = Zone.HAND
+    card.move_to_zone(Zone.HAND)
     card.controller = getattr(card, "owner", card.controller)
     card.tapped = False
     card.summoning_sick = False
@@ -757,7 +757,7 @@ def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> 
         return
     player.graveyard.remove(card_id)
     player.hand.append(card_id)
-    state.cards[card_id].zone = Zone.HAND
+    state.cards[card_id].move_to_zone(Zone.HAND)
     state.log.append(f"{state.cards[card_id].name} returns from graveyard to hand.")
 
 
@@ -962,7 +962,7 @@ def _place_searched_card(
         emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
         return
     player.hand.append(card_id)
-    card.zone = Zone.HAND
+    card.move_to_zone(Zone.HAND)
 
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
@@ -1089,7 +1089,7 @@ def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> N
         )[:count]
     player.library = player.library[:-len(top_slice)]
     for cid in chosen:
-        state.cards[cid].zone = Zone.HAND
+        state.cards[cid].move_to_zone(Zone.HAND)
         player.hand.append(cid)
     rest = [cid for cid in top_slice if cid not in set(chosen)]
     if payload.get("bottom_random"):
@@ -1143,14 +1143,14 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
         exile_card = ordered[1] if len(ordered) > 1 else None
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
 
-    state.cards[hand_card].zone = Zone.HAND
+    state.cards[hand_card].move_to_zone(Zone.HAND)
     player.hand.append(hand_card)
     if exile_card is not None:
         player.exile.append(exile_card)
         state.cards[exile_card].zone = Zone.EXILE
         player.exile_play_until[exile_card] = int(payload.get("play_exiled_until", state.turn) or state.turn)
     for cid in ordered[2:] if exile_card is not None else ordered[1:]:
-        state.cards[cid].zone = Zone.LIBRARY
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
         player.library.insert(0, cid)
     state.log.append(
         f"{player.name} looks at the top {len(top_slice)} cards, puts one card into hand"
@@ -1210,7 +1210,7 @@ def reveal_defending_top_land(state: MatchState, controller: int, payload: dict)
     if "Land" in card.types:
         player.library.pop()
         player.hand.append(cid)
-        card.zone = Zone.HAND
+        card.move_to_zone(Zone.HAND)
         state.log.append(f"{player.name} puts {card.name} into their hand.")
 
 
@@ -1486,7 +1486,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     if payload.get("bottom_random"):
         state.rng.shuffle(rest)
     for cid in rest:
-        state.cards[cid].zone = Zone.LIBRARY
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
     if payload.get("bottom_random"):
         player.library[:0] = rest
     else:
@@ -1549,7 +1549,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
     if payload.get("bottom_random"):
         state.rng.shuffle(rest)
     for cid in rest:
-        state.cards[cid].zone = Zone.LIBRARY
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
     if payload.get("bottom_random"):
         player.library[:0] = rest
     else:
@@ -1620,7 +1620,7 @@ def finish_topdeck_reveal_creature(state: MatchState, controller: int, top_ids: 
     del player.library[-len(top_ids):]
     remaining = [cid for cid in top_ids if cid != chosen]
     if chosen is not None:
-        state.cards[chosen].zone = Zone.HAND
+        state.cards[chosen].move_to_zone(Zone.HAND)
         player.hand.append(chosen)
     if bottom_random:
         state.rng.shuffle(remaining)

@@ -82,6 +82,11 @@ class CardInstance:
     colors: list[str] | None = None
     is_token: bool = False
 
+    def move_to_zone(self, zone: Zone) -> None:
+        if zone != self.zone and zone in {Zone.HAND, Zone.LIBRARY}:
+            self.counters.clear()
+        self.zone = zone
+
 
 @dataclass
 class StackItem:
@@ -267,7 +272,7 @@ def draw_card(state: MatchState, player_id: int, count: int = 1) -> None:
             return
         cid = player.library.pop()
         card = state.cards[cid]
-        card.zone = Zone.HAND
+        card.move_to_zone(Zone.HAND)
         player.hand.append(cid)
         if not state.pregame_pending:
             state.draws_this_turn[player_id] = state.draws_this_turn.get(player_id, 0) + 1
@@ -280,10 +285,12 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card = state.cards.get(card_id)
     if not card:
         return
-    # A returning permanent is a new object; old until-end-of-turn modifiers
-    # must not carry into its new battlefield existence.
-    card.counters.pop("__eot_power", None)
-    card.counters.pop("__eot_toughness", None)
+    # Printed counter-persistence text is the exception; damage and temporary
+    # modifiers still belong to the old object, not the entering permanent.
+    if re.search(r"\bcounters remain on .+? as it moves to any zone other than a player's hand or library\b", card.oracle_text or "", re.IGNORECASE):
+        card.counters = {key: value for key, value in card.counters.items() if not key.startswith("__")}
+    else:
+        card.counters.clear()
     timestamp = max(
         int(getattr(state, "next_effect_timestamp", 1) or 1),
         int(getattr(state, "next_static_order", 1) or 1),
