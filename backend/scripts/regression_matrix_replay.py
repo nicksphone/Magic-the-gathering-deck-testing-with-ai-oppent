@@ -44,6 +44,8 @@ def _drift_excerpt(drift: dict, drift_label: dict | None) -> dict:
 
 
 def _match_termination_status(match: dict) -> str:
+    if match.get("draw_cap_reached"):
+        return "draw_cap"
     timed_out = [game for game in match.get("games", []) if game.get("timeout")]
     if timed_out:
         return classify_timeout_state([line for game in timed_out for line in game.get("log", [])], True)
@@ -114,14 +116,19 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
     wins = {1: 0, 2: 0}
     games: list[dict] = []
     needed = best_of // 2 + 1
-    for game_index in range(best_of):
+    # Only resolved draws add game slots; unresolved timeouts retain the normal match bound.
+    counted_games = 0
+    for game_index in range(best_of * 2):
         game = run_game(deck_a, deck_b, seed + game_index, difficulty, max_ticks)
         games.append(game)
+        if game["winner"] != 0:
+            counted_games += 1
         if game["winner"] in wins:
             wins[game["winner"]] += 1
-        if max(wins.values()) >= needed:
+        if max(wins.values()) >= needed or counted_games >= best_of:
             break
     winner = 1 if wins[1] >= needed else (2 if wins[2] >= needed else None)
+    draw_cap_reached = winner is None and len(games) == best_of * 2 and not any(game["timeout"] for game in games)
     match_hash = hashlib.sha256(
         "\n".join(game["log_hash"] for game in games).encode("utf-8")
     ).hexdigest()
@@ -130,6 +137,7 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
         "wins": {"deck_a": wins[1], "deck_b": wins[2]},
         "games_played": len(games),
         "timeout": any(game["timeout"] for game in games),
+        "draw_cap_reached": draw_cap_reached,
         "turns": sum(int(game["turn"] or 0) for game in games),
         "log_hash": match_hash,
         "log": [line for game in games for line in game["log"]],

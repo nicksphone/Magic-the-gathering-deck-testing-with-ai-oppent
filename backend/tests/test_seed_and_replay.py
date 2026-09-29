@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import scripts.regression_matrix_replay as replay_matrix
+
 from ai.agent import AIAgent
 from game_state.state import MatchFactory
 from main import ACTIVE_MATCHES, MatchController, get_match_replay
@@ -42,6 +44,35 @@ def test_best_of_replay_aggregates_games_deterministically() -> None:
     assert first["winner"] == second["winner"]
     assert first["wins"] == second["wins"]
     assert first["log_hash"] == second["log_hash"]
+
+
+def test_replay_draws_do_not_count_toward_match_wins(monkeypatch) -> None:
+    outcomes = iter((0, 1, 2, 1))
+    seeds = []
+
+    def fake_game(_deck_a, _deck_b, seed, _difficulty, _max_ticks):
+        seeds.append(seed)
+        winner = next(outcomes)
+        return {"winner": winner, "turn": 4, "log_hash": str(seed), "log": [], "timeout": False}
+
+    monkeypatch.setattr(replay_matrix, "run_game", fake_game)
+    result = replay_matrix.run_match([], [], seed=20, difficulty="master", max_ticks=10, best_of=3)
+    assert seeds == [20, 21, 22, 23]
+    assert result["games_played"] == 4
+    assert result["wins"] == {"deck_a": 2, "deck_b": 1}
+    assert result["winner"] == 1
+    assert not result["draw_cap_reached"]
+
+
+def test_replay_all_draws_hit_explicit_cap(monkeypatch) -> None:
+    monkeypatch.setattr(replay_matrix, "run_game", lambda *_args: {
+        "winner": 0, "turn": 4, "log_hash": "draw", "log": [], "timeout": False,
+    })
+    result = replay_matrix.run_match([], [], seed=20, difficulty="master", max_ticks=10, best_of=3)
+    assert result["games_played"] == 6
+    assert result["winner"] is None
+    assert result["draw_cap_reached"]
+    assert replay_matrix._match_termination_status(result) == "draw_cap"
 
 
 def test_replay_endpoint_returns_entries() -> None:

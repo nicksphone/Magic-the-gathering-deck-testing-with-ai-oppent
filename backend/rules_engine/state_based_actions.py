@@ -153,13 +153,19 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
         if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
             restore_printed_characteristics(card)
     _cease_nonbattlefield_tokens(state)
-    for pid, player in state.players.items():
-        if player.poison >= 10:
-            state.winner = 1 if pid == 2 else 2
-            state.log.append(f"{player.name} has ten or more poison counters and loses.")
-        if player.life <= 0:
-            state.winner = 1 if pid == 2 else 2
-            state.log.append(f"{player.name} has 0 or less life and loses.")
+    if state.winner is None:
+        losing_players = set()
+        for pid, player in state.players.items():
+            if player.poison >= 10:
+                losing_players.add(pid)
+                state.log.append(f"{player.name} has ten or more poison counters and loses.")
+            if player.life <= 0:
+                losing_players.add(pid)
+                state.log.append(f"{player.name} has 0 or less life and loses.")
+        if losing_players:
+            state.winner = 0 if len(losing_players) == 2 else (2 if 1 in losing_players else 1)
+            if state.winner == 0:
+                state.log.append("Both players lose simultaneously; the game is a draw.")
 
     lethal_ids: list[str] = []
     for cid, card in list(state.cards.items()):

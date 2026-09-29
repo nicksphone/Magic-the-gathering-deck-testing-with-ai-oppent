@@ -588,6 +588,13 @@ try {
   await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 2 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   assert.equal(await evaluate("window.fixtureState.root_seed"), null);
   console.log("PASS human loser chooses play through Controls and the production next-game API");
+
+  await click("BO3 Draw Fixture");
+  await waitFor("window.fixtureState?.winner === 0 && window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
+  await click("P2 Draw First");
+  await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 1 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.deepEqual(await evaluate("window.fixtureState.score"), { 1: 1, 2: 0 });
+  console.log("PASS drawn BO3 game preserves score and previous chooser through UI and API");
 } finally {
   await close();
 }

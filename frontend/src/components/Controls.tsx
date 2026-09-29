@@ -112,7 +112,7 @@ export function Controls(props: Props) {
   useEffect(() => { setSbOut(""); setSbIn(""); }, [props.match?.id, props.match?.game_number]);
   const [stopPlayer, setStopPlayer] = useState(1);
   const matchComplete = Boolean(props.match?.match_complete);
-  const betweenGames = Boolean(props.match?.winner && !matchComplete);
+  const betweenGames = props.match?.winner != null && !matchComplete;
   const humanSeats = [1, 2].filter((pid) => props.match?.controllers?.[String(pid)] === "human");
   const selectedSbPlayer = humanSeats.includes(sbPlayer) ? sbPlayer : humanSeats[0];
   const sideboardInventory = props.match?.sideboarding?.[String(selectedSbPlayer)];
@@ -557,7 +557,7 @@ export function Controls(props: Props) {
             <textarea aria-label="Cards in" rows={3} disabled={sideboardInventory?.applied} value={sbIn} onChange={(e) => setSbIn(e.target.value)} placeholder="Cards in: e.g. 2 Negate" />
           </> : null}
         </div>
-      ) : props.match?.winner && matchComplete ? (
+      ) : props.match?.winner != null && matchComplete ? (
         <div className="sideboard-panel">
           <h3>Match Complete</h3>
           <p className="status-line">The match is finished. Start a new match to sideboard again.</p>

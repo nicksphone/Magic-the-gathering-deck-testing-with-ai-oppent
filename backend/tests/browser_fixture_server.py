@@ -412,18 +412,20 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             card.power = card.toughness = power
         resolve_effect(state, 2, "search_library", {"contains": "creature", "destination": "hand", "count": 1, "shuffle": True})
         return publish(state, deck)
-    if face_kind in {"bo3", "bo3_sideboard"}:
+    if face_kind in {"bo3", "bo3_sideboard", "bo3_draw"}:
         deck = ([{"quantity": 45, "card_name": "Island", "type_line": "Basic Land - Island"},
                  {"quantity": 15, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
                 if face_kind == "bo3_sideboard" else
                 [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}])
         state = MatchFactory.from_decks(deck, deck, seed=31)
-        state.winner = 2 if face_kind == "bo3_sideboard" else 1
+        state.winner = 2 if face_kind == "bo3_sideboard" else (0 if face_kind == "bo3_draw" else 1)
         state.score = {1: 0, 2: 1} if face_kind == "bo3_sideboard" else {1: 1, 2: 0}
         publish(state, deck)
         match = ACTIVE_MATCHES[state.id]
         match.current_game_recorded = True
         match.root_seed = 31
+        if face_kind == "bo3_draw":
+            match.play_draw_chooser = 2
         if face_kind == "bo3_sideboard":
             match.sideboards[1] = [{"quantity": 15, "card_name": "Forest"}]
         with Session(engine) as session:

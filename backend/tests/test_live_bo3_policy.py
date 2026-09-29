@@ -5,15 +5,17 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from ai.agent import AIAgent
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory
 from main import (
     ACTIVE_MATCHES, MatchController, NextGameRequest, _controller_snapshot,
-    _restore_active_matches, _serialize_match_controller,
+    _post_step_finalize, _persist_active_match, _restore_active_matches, _serialize_match_controller,
     _start_next_game_state, app, next_game,
 )
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.state_based_actions import apply_state_based_actions
 
 
 DECK = [{"quantity": 30, "card_name": "Island"}, {"quantity": 30, "card_name": "Mountain"}]
@@ -36,6 +38,52 @@ def _hands(game):
         pid: [game.cards[cid].name for cid in game.players[pid].hand]
         for pid in (1, 2)
     }
+
+
+def test_simultaneous_player_losses_are_a_draw():
+    state = MatchFactory.from_decks(DECK, DECK, seed=101)
+    state.players[1].life = 0
+    state.players[2].poison = 10
+    apply_state_based_actions(state)
+    assert state.winner == 0
+    assert sum("loses" in line for line in state.log) == 2
+    assert any("game is a draw" in line for line in state.log)
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.winner == 0
+    apply_state_based_actions(state)
+    assert sum("game is a draw" in line for line in state.log) == 1
+
+
+def test_drawn_game_keeps_score_and_previous_chooser_after_restore():
+    init_db()
+    match = _match(winner=0)
+    match.play_draw_chooser = 2
+    match.state.score = {1: 1, 2: 0}
+    match.current_game_recorded = False
+    with Session(engine) as session:
+        repo = Repository(session)
+        _post_step_finalize(match, repo)
+        assert match.current_game_recorded and not match.match_complete
+        assert match.state.score == {1: 1, 2: 0}
+        _persist_active_match(repo, match)
+        ACTIVE_MATCHES.pop(match.state.id, None)
+        _restore_active_matches(repo, match.state.id)
+    restored = ACTIVE_MATCHES[match.state.id]
+    try:
+        assert restored.play_draw_chooser == 2
+        with TestClient(app) as client:
+            url = f"/matches/{restored.state.id}"
+            assert client.get(url).json()["next_play_draw_chooser"] == 2
+            assert client.post(f"{url}/next-game", json={"player_id": 1, "play_first": True}).status_code == 422
+            result = client.post(f"{url}/next-game", json={"player_id": 2, "play_first": False})
+            assert result.status_code == 200, result.text
+            view = result.json()
+            assert view["game_number"] == 2
+            assert view["active_player"] == 1
+            assert view["score"] == {"1": 1, "2": 0}
+            assert restored.play_draw_chooser == 2
+    finally:
+        ACTIVE_MATCHES.pop(match.state.id, None)
 
 
 def test_loser_plays_game_two_with_replayable_seed():

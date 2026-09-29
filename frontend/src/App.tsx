@@ -312,7 +312,7 @@ export function App() {
       : match.priority_player;
     const actingController = controllers[String(actingPlayer)] ?? (uiAiVsAi ? "ai" : "human");
     const bothAi = ((controllers["1"] ?? "human") === "ai" && (controllers["2"] ?? "human") === "ai") || uiAiVsAi;
-    const shouldAutoRun = actingController === "ai" || (bothAi && !!match.winner && !match.match_complete);
+    const shouldAutoRun = actingController === "ai" || (bothAi && match.winner !== null && !match.match_complete);
     if (!shouldAutoRun) return;
 
     const timer = window.setTimeout(async () => {
