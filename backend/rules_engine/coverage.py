@@ -11,6 +11,10 @@ _UNSUPPORTED_PATTERNS = (
     ("mutate", re.compile(r"\bmutat(?:e|ed|ing)\b", re.IGNORECASE)),
     ("craft", re.compile(r"\bcraft\b", re.IGNORECASE)),
     ("discover", re.compile(r"\bdiscover\b", re.IGNORECASE)),
+    ("kicker", re.compile(r"\bkicker\b", re.IGNORECASE)),
+    ("multikicker", re.compile(r"\bmultikicker\b", re.IGNORECASE)),
+    ("domain", re.compile(r"\bdomain\s*[—-]", re.IGNORECASE)),
+    ("incubate", re.compile(r"\bincubat(?:e|es|ed|ing)\b", re.IGNORECASE)),
 )
 
 

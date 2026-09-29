@@ -12,6 +12,15 @@ def test_known_unsupported_mechanics_are_conservative_and_deduplicated() -> None
     assert known_unsupported_mechanics("", [{"oracle_text": "Morph {2}"}, {"oracle_text": "Morph {3}"}]) == ["morph"]
 
 
+def test_known_unsupported_otj_mechanics_are_reported_from_root_and_faces() -> None:
+    assert known_unsupported_mechanics(
+        "Domain — Create a Beast for each basic land type. Incubate X.",
+        [{"oracle_text": "Kicker {B} and/or {R}."}],
+    ) == ["kicker", "domain", "incubate"]
+    assert known_unsupported_mechanics("Multikicker {1}. Incubated tokens transform.") == ["multikicker", "incubate"]
+    assert known_unsupported_mechanics("Draw a card.") == []
+
+
 def test_deck_pair_coverage_reports_faces_before_simulation() -> None:
     deck_a = [{"card_name": "Willbender", "oracle_text": "", "card_faces": [{"oracle_text": "Morph {1}{U}"}]}]
     deck_b = [{"card_name": "Island", "oracle_text": "{T}: Add {U}."}]

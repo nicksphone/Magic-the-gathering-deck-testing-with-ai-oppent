@@ -273,6 +273,7 @@ Divided-damage copy follow-up: supported `deal_damage_multi` stack copies now pa
 - [ ] Surface unsupported/ambiguous semantics before simulation instead of silently approximating them.
 Partial coverage: deck completeness distinguishes known unsupported from not certified across mainboard and sideboard. Persisted batch results and the Testing Simulator label win rates exploratory and list detected unsupported cards; 986 isolated backend tests and frontend lint/build/unit pass. This does not classify every unimplemented effect, publish a certified corpus or block unreliable simulations yet.
 Follow-up: the shared detector also flags Morph, Manifest, Suspend, Mutate, Craft and Discover from root/face Oracle text. Verification: 989 isolated backend tests plus frontend lint/build/unit checks pass. It is intentionally conservative, still lacks a certified supported corpus, and does not make those mechanics playable.
+OTJ corpus follow-up: the shared detector also flags kicker, multikicker, Domain and Incubate, which appear in the sourced 2024 Domain Ramp list but lack general engine implementations. Warnings do not prove complete detection; preflight still cannot certify a deck as rules-accurate.
 
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 
