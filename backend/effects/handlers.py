@@ -1492,10 +1492,11 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
     previous_face = getattr(card, "selected_face_index", None)
     apply_transform_face(card, index)
     state.log.append(f"{card.name} transforms.")
-    emit_event(state, "transformed", {
-        "card_id": target_id, "controller": card.controller,
-        "from_face_index": previous_face, "to_face_index": index,
-    })
+    if not payload.get("__defer_transform_event"):
+        emit_event(state, "transformed", {
+            "card_id": target_id, "controller": card.controller,
+            "from_face_index": previous_face, "to_face_index": index,
+        })
 
 
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:

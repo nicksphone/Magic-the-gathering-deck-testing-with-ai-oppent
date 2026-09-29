@@ -19,7 +19,7 @@ from rules_engine.priority import pass_priority
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
-from rules_engine.events import emit_event, resume_trigger_order, resume_trigger_target
+from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, resume_trigger_order, resume_trigger_target
 from rules_engine.restrictions import can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.zone_actions import put_into_graveyard
@@ -124,8 +124,14 @@ class RulesEngine:
                 state.cards[cid].tapped = False
             state.log.append(f"{player.name} untaps.")
         elif state.step == Step.UPKEEP:
+            staged_here = not state.trigger_staging
+            if staged_here:
+                state.trigger_staging = True
+                state.trigger_staging_event = "begin_step"
             self._update_day_night(state)
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
+            if staged_here:
+                flush_staged_triggers(state)
         elif state.step == Step.DRAW and state.turn > 1:
             state.draws_in_current_draw_step[state.active_player] = 0
             before = len(player.hand)
@@ -263,12 +269,19 @@ class RulesEngine:
             return
         state.day_night = next_state
         state.log.append(f"The game becomes {next_state}.")
+        staged_here = not state.trigger_staging
+        if staged_here:
+            state.trigger_staging = True
+            state.trigger_staging_event = "day_night_changed"
         emit_event(state, "day_night_changed", {"from": previous, "to": next_state, "spell_count": cast_count})
         self._transform_day_night_permanents(state, next_state)
+        if staged_here:
+            flush_staged_triggers(state)
 
     def _transform_day_night_permanents(self, state: MatchState, current: str) -> None:
         target_marker = "daybound" if current == "night" else "nightbound"
         target_face = 1 if current == "night" else 0
+        transformed_events = []
         for player in state.players.values():
             for cid in list(player.battlefield):
                 card = state.cards[cid]
@@ -276,12 +289,19 @@ class RulesEngine:
                     continue
                 if target_face >= len(card.card_faces):
                     continue
+                previous_face = card.selected_face_index
                 resolve_effect(
                     state,
                     card.controller,
                     "transform_card",
-                    {"target_card_id": cid, "face_index": target_face},
+                    {"target_card_id": cid, "face_index": target_face, "__defer_transform_event": True},
                 )
+                if card.selected_face_index != previous_face:
+                    transformed_events.append({
+                        "card_id": cid, "controller": card.controller,
+                        "from_face_index": previous_face, "to_face_index": target_face,
+                    })
+        emit_event_batch(state, "transformed", transformed_events)
 
     def _clear_mana_pools(self, state: MatchState) -> None:
         for p in state.players.values():
