@@ -125,6 +125,7 @@ It is designed for serious deck work:
 
 ### Card Data
 - Local card cache synced from live card data
+- When the all-Oracle Scryfall bulk import has populated `CardKnowledge`, deck import and live match start lazily materialize previously uncached cards into the gameplay cache without a network request. Existing cached printings and local art are not replaced by this path. Exact bulk names also participate in import validation and fuzzy suggestions. This supplies Oracle text, costs, layout, faces, legalities and available image URLs; it does not download every image or verify missing rulings, and metadata coverage is not rules-engine support.
 - Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
 - Double-faced, split, modal, adventure, and token-aware card handling
 - Double-faced type lines use the front face until a legal transform selects the back face, avoiding premature creature/land characteristics from combined metadata

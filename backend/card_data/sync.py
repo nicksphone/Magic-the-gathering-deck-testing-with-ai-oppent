@@ -36,7 +36,7 @@ class ScryfallSyncService:
             "mana_cost": raw.get("mana_cost") or (face.get("mana_cost") if face else "") or "",
             "type_line": type_line,
             "layout": raw.get("layout", ""),
-            "colors": ",".join(raw.get("colors", [])),
+            "colors": ",".join(raw.get("colors") or (face.get("colors", []) if face else [])),
             "power": raw.get("power") or (face.get("power") if face else None),
             "toughness": raw.get("toughness") or (face.get("toughness") if face else None),
             "image_uri": image_uri,
@@ -71,6 +71,31 @@ class ScryfallSyncService:
             if uri:
                 return uri
         return None
+
+    def sync_card_from_local_knowledge(self, name: str) -> bool:
+        """Materialize a canonical bulk card without making a network request."""
+        row = self.repository.get_card_knowledge(name)
+        if row is None or row.oracle_source != "scryfall":
+            return False
+        try:
+            profile = json.loads(row.profiles_json)
+        except (TypeError, ValueError):
+            return False
+        raw = profile.get("card_data") if isinstance(profile, dict) else None
+        if not isinstance(raw, dict) or raw.get("object") != "card":
+            return False
+        if not raw.get("id") or raw["id"] != row.scryfall_id or (not raw.get("type_line") and not raw.get("card_faces")):
+            return False
+        if str(raw.get("name", "")).casefold() != name.strip().casefold():
+            return False
+        cached = self.repository.get_cached_card_by_name(name)
+        local_image = cached.image_uri if cached and cached.scryfall_id == raw["id"] and self._cached_image_available(cached.image_uri) else None
+        rulings = profile.get("rulings") if profile.get("rulings_verified") is True else []
+        if not isinstance(rulings, list):
+            rulings = []
+        payload = self._normalize_payload(raw, local_image or self._extract_remote_image_uri(raw), rulings)
+        self.repository.upsert_card(payload)
+        return True
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)

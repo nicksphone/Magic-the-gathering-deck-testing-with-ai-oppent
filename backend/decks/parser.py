@@ -32,7 +32,9 @@ class DeckParser:
         errors: list[str] = []
         suggestions: list[dict[str, Any]] = []
         cards = self.repo.list_cards()
-        known_names = {normalize_card_lookup_name(c.name).lower(): c.name for c in cards}
+        knowledge_names = self.repo.list_card_knowledge_names() if hasattr(self.repo, "list_card_knowledge_names") else []
+        names = [*(card.name for card in cards), *knowledge_names]
+        known_names = {normalize_card_lookup_name(name).lower(): name for name in names}
 
         for idx, raw in enumerate(deck_text.splitlines(), start=1):
             line = raw.strip()
@@ -56,7 +58,7 @@ class DeckParser:
             if canonical is None:
                 from card_data.search import fuzzy_card_lookup
 
-                suggestion, score = fuzzy_card_lookup(normalized_name, cards)
+                suggestion, score = fuzzy_card_lookup(normalized_name, names)
                 suggestions.append({"line": idx, "input": name, "suggestion": suggestion, "score": score})
                 canonical = suggestion or name
             item = {"quantity": qty, "card_name": canonical}

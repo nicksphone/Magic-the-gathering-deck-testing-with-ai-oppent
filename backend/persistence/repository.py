@@ -86,6 +86,13 @@ class Repository:
                 query = query.where(func.lower(CardKnowledge.name).in_(normalized))
         return list(self.session.exec(query).all())
 
+    def list_card_knowledge_names(self) -> list[str]:
+        query = select(CardKnowledge.name).where(
+            CardKnowledge.oracle_source == "scryfall",
+            ~CardKnowledge.name.like("% [oracle:%]"),
+        )
+        return list(self.session.exec(query).all())
+
     def get_cached_card_by_name(self, name: str) -> CardCache | None:
         normalized = name.strip().lower()
         if not normalized:

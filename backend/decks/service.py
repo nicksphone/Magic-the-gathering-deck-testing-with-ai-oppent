@@ -5,6 +5,7 @@ import json
 from ai.deck_analysis import analyze_deck
 from card_data.display import select_display_image_uri
 from card_data.hydration import is_playable_deck_card
+from card_data.sync import ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
@@ -129,7 +130,14 @@ class DeckService:
         return color_map
 
     def _resolve_card_metadata(self, items: list[dict]) -> list[dict]:
-        cache = self.repo.get_cached_cards_by_names([item["card_name"] for item in items])
+        names = [item["card_name"] for item in items]
+        cache = self.repo.get_cached_cards_by_names(names)
+        missing = {name for name in names if name.lower() not in cache}
+        if missing and hasattr(self.repo, "get_card_knowledge"):
+            sync = ScryfallSyncService(self.repo)
+            for name in sorted(missing):
+                sync.sync_card_from_local_knowledge(name)
+            cache = self.repo.get_cached_cards_by_names(names)
         resolved: list[dict] = []
         for item in items:
             card = cache.get(item["card_name"].lower())

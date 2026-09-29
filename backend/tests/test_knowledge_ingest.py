@@ -69,6 +69,97 @@ def test_bulk_import_is_idempotent_and_does_not_claim_rulings_or_playability(rep
     assert profile["card_data"]["legalities"] == {"modern": "legal"}
 
 
+def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeypatch):
+    from decks.service import DeckService
+    from main import _hydrate_deck_cards
+
+    island = {
+        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
+        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.",
+        "mana_cost": "", "colors": [], "color_identity": ["U"],
+    }
+    import_cards(repo, [bolt, island], {"source": "scryfall", "updated_at": "2026-09-27"})
+    def no_network(*args, **kwargs):
+        pytest.fail("Offline bulk-backed import attempted a Scryfall request")
+    monkeypatch.setattr("card_data.sync.get_with_backoff", no_network)
+
+    imported = DeckService(repo).import_deck_text("Offline Burn", "4 Lightning Bolt\n56 Island")
+    assert imported["deck_id"] is not None
+    assert imported["resolved_mainboard_cards"][0]["card_metadata"]["oracle_text"] == bolt["oracle_text"]
+    assert imported["mana_curve"]["1"] == 4
+    assert imported["mana_curve"]["lands"] == 56
+    hydrated = _hydrate_deck_cards(repo, imported["mainboard"])
+    assert hydrated[0]["oracle_text"] == bolt["oracle_text"]
+    assert repo.get_cached_card_by_name("Lightning Bolt").scryfall_id == bolt["id"]
+    assert repo.get_cached_card_by_name("Island").scryfall_id == island["id"]
+    assert json.loads(repo.get_cached_card_by_name("Lightning Bolt").rulings_json) == []
+
+
+def test_live_hydration_materializes_bulk_faces_without_prior_deck_import(repo, bolt, monkeypatch):
+    from main import _hydrate_deck_cards
+
+    delver = {
+        **bolt, "id": "printing-delver", "oracle_id": "oracle-delver",
+        "name": "Delver of Secrets // Insectile Aberration", "type_line": "Creature — Human Wizard // Creature — Human Insect",
+        "layout": "transform", "mana_cost": "{U}",
+        "card_faces": [
+            {"name": "Delver of Secrets", "mana_cost": "{U}", "type_line": "Creature — Human Wizard", "power": "1", "toughness": "1", "colors": ["U"]},
+            {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "power": "3", "toughness": "2", "oracle_text": "Flying"},
+        ],
+    }
+    import_cards(repo, [delver], {"source": "scryfall"})
+    monkeypatch.setattr("card_data.sync.get_with_backoff", lambda *args, **kwargs: pytest.fail("Network request"))
+    cards = _hydrate_deck_cards(repo, [{"card_name": delver["name"], "quantity": 4}])
+    assert [face["name"] for face in cards[0]["card_faces"]] == ["Delver of Secrets", "Insectile Aberration"]
+    assert cards[0]["power"] == "1"
+    assert cards[0]["colors"] == ["U"]
+    assert json.loads(repo.get_cached_card_by_name(delver["name"]).card_faces_json)[1]["power"] == "3"
+
+
+def test_unverified_manual_knowledge_is_not_materialized(repo, bolt):
+    repo.upsert_card_knowledge({"name": "Lightning Bolt", "oracle_source": "manual", "profiles": {"card_data": bolt}})
+    from card_data.sync import ScryfallSyncService
+
+    assert ScryfallSyncService(repo).sync_card_from_local_knowledge("Lightning Bolt") is False
+    assert repo.get_cached_card_by_name("Lightning Bolt") is None
+
+
+def test_http_match_start_uses_bulk_only_cards_offline(tmp_path, bolt, monkeypatch):
+    from fastapi.testclient import TestClient
+    import main
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'cards.db'}", connect_args={"check_same_thread": False})
+    SQLModel.metadata.create_all(engine)
+    session = Session(engine)
+    repo = Repository(session)
+    island = {
+        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
+        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.",
+        "mana_cost": "", "colors": [], "color_identity": ["U"],
+    }
+    import_cards(repo, [bolt, island], {"source": "scryfall"})
+    monkeypatch.setattr("card_data.sync.get_with_backoff", lambda *args, **kwargs: pytest.fail("Network request"))
+    main.app.dependency_overrides[main.get_repo] = lambda: repo
+    match_id = None
+    try:
+        with TestClient(main.app) as client:
+            response = client.post("/matches/start", json={
+                "deck_a": [{"quantity": 4, "card_name": "Lightning Bolt"}, {"quantity": 56, "card_name": "Island"}],
+                "deck_b": [{"quantity": 60, "card_name": "Island"}],
+                "controller_a": "human", "controller_b": "human", "mode": "human_vs_human", "seed": 51,
+            })
+        assert response.status_code == 200, response.text
+        match_id = response.json()["id"]
+        state = main.ACTIVE_MATCHES[match_id].state
+        assert any(card.name == "Lightning Bolt" and card.oracle_text == bolt["oracle_text"] for card in state.cards.values())
+        assert repo.get_cached_card_by_name("Lightning Bolt").scryfall_id == bolt["id"]
+    finally:
+        main.app.dependency_overrides.pop(main.get_repo, None)
+        if match_id:
+            main.ACTIVE_MATCHES.pop(match_id, None)
+        session.close()
+
+
 def test_bulk_preserves_distinct_oracle_variants_with_same_printed_name(repo, bolt):
     variant = copy.deepcopy(bolt)
     variant["id"] = "other-printing"
@@ -78,6 +169,7 @@ def test_bulk_preserves_distinct_oracle_variants_with_same_printed_name(repo, bo
     assert first["name_collisions"] == 1
     assert second["unchanged"] == 2
     assert len(repo.list_card_knowledge()) == 2
+    assert repo.list_card_knowledge_names() == ["Lightning Bolt"]
     assert {json.loads(row.profiles_json)["oracle_id"] for row in repo.list_card_knowledge()} == {"oracle-bolt", "other-oracle"}
 
 

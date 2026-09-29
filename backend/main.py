@@ -1408,7 +1408,8 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             sync = ScryfallSyncService(repo)
             for name in to_sync:
                 try:
-                    sync.sync_card_by_name(name)
+                    if not sync.sync_card_from_local_knowledge(name):
+                        sync.sync_card_by_name(name)
                 except Exception:
                     # Match start should still proceed if external sync is unavailable.
                     continue

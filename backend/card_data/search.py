@@ -18,15 +18,16 @@ def normalize_card_lookup_name(name: str) -> str:
     return text
 
 
-def fuzzy_card_lookup(name: str, cards: list[CardCache], threshold: int = 72) -> tuple[str | None, int]:
+def fuzzy_card_lookup(name: str, cards: list[CardCache | str], threshold: int = 72) -> tuple[str | None, int]:
     normalized_name = normalize_card_lookup_name(name).lower()
     best_score = 0
     best_name = None
     for card in cards:
-        score = fuzz.ratio(normalized_name, normalize_card_lookup_name(card.name).lower())
+        candidate = card if isinstance(card, str) else card.name
+        score = fuzz.ratio(normalized_name, normalize_card_lookup_name(candidate).lower())
         if score > best_score:
             best_score = score
-            best_name = card.name
+            best_name = candidate
     if best_score < threshold:
         return None, best_score
     return best_name, best_score
