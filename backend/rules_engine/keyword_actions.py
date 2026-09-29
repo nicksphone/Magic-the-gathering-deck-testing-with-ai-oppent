@@ -78,9 +78,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
-    if pending and pending["kind"] == "choose_revealed_discard":
+    if pending and pending["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:
         from rules_engine.stack_engine import resume_paused_resolution
-        from rules_engine.zone_actions import discard_selected
+        from rules_engine.zone_actions import discard_selected, exile_selected_from_hand
         ids = action.get("card_ids")
         target = pending["target_player"]
         if (pending["player_id"] != player_id or not isinstance(ids, list)
@@ -88,7 +88,8 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 or ids[0] not in state.players[target].hand):
             return False
         state.pending_mechanic_choice = None
-        if not discard_selected(state, target, ids):
+        move = exile_selected_from_hand if pending["kind"] == "choose_revealed_exile" else discard_selected
+        if not move(state, target, ids):
             state.pending_mechanic_choice = pending
             return False
         resume_paused_resolution(state, pending)

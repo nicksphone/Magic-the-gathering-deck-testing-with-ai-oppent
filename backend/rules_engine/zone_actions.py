@@ -35,6 +35,20 @@ def discard_selected(state, player_id: int, card_ids: list[str]) -> bool:
     return discard_simultaneous(state, {player_id: card_ids})
 
 
+def exile_selected_from_hand(state, player_id: int, card_ids: list[str]) -> bool:
+    hand = state.players[player_id].hand
+    if (len(set(card_ids)) != len(card_ids)
+            or any(cid not in hand or state.cards[cid].zone != Zone.HAND for cid in card_ids)):
+        return False
+    for cid in card_ids:
+        card = state.cards[cid]
+        hand.remove(cid)
+        state.players[card.owner].exile.append(cid)
+        card.move_to_zone(Zone.EXILE)
+        state.log.append(f"{state.players[player_id].name} exiles {card.name} from their hand.")
+    return True
+
+
 def discard_simultaneous(state, selections: dict[int, list[str]]) -> bool:
     """Validate every hand before any card moves, then emit one discard event batch."""
     for player_id, card_ids in selections.items():

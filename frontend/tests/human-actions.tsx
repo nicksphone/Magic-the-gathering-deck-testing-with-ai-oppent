@@ -60,6 +60,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "duress").catch((failure) => setError(String(failure)))}>Duress Fixture</button>
     <button onClick={() => reset(false, false, 3, "inquisition").catch((failure) => setError(String(failure)))}>Inquisition Fixture</button>
     <button onClick={() => reset(false, false, 3, "despise").catch((failure) => setError(String(failure)))}>Despise Fixture</button>
+    <button onClick={() => reset(false, false, 3, "appetite").catch((failure) => setError(String(failure)))}>Appetite Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>

@@ -26,7 +26,7 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
-    if face_kind in {"thoughtseize", "duress", "inquisition", "despise"}:
+    if face_kind in {"thoughtseize", "duress", "inquisition", "despise", "appetite"}:
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=920)
         state.pregame_pending = False
@@ -39,6 +39,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spell.name = {
             "thoughtseize": "Thoughtseize", "duress": "Duress",
             "inquisition": "Inquisition of Kozilek", "despise": "Despise",
+            "appetite": "Appetite for Brains",
         }[face_kind]
         spell.types, spell.type_line, spell.mana_cost = ["Sorcery"], "Sorcery", "{B}"
         spell.oracle_text = {
@@ -50,6 +51,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
                            "That player discards that card.",
             "despise": "Target opponent reveals their hand. You choose a creature or planeswalker card from it. "
                        "That player discards that card.",
+            "appetite": "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater "
+                        "and exile that card.",
         }[face_kind]
         hand = state.players[2].hand
         forest = state.cards[hand[0]]
@@ -61,7 +64,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         elf.name, elf.types, elf.type_line, elf.mana_cost = "Llanowar Elves", ["Creature"], "Creature - Elf Druid", "{G}"
         elf.power, elf.toughness, elf.oracle_text = 1, 1, "{T}: Add {G}."
         fourth = state.cards[hand[3]]
-        if face_kind == "inquisition":
+        if face_kind in {"inquisition", "appetite"}:
             fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
                 "Serra Angel", ["Creature"], "Creature - Angel", "{3}{W}{W}",
             )

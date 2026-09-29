@@ -236,6 +236,99 @@ def test_despise_offers_creature_or_planeswalker_only():
     assert cards["bolt"] in state.players[2].hand
 
 
+def test_appetite_exiles_only_expensive_revealed_card_across_snapshot():
+    from rules_engine.zone_actions import discard_selected
+
+    state, spell_id, cards = _selective_state(
+        "Appetite for Brains",
+        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+    )
+    expensive_id = state.players[2].hand[3]
+    expensive = state.cards[expensive_id]
+    expensive.name, expensive.types, expensive.type_line = "Serra Angel", ["Creature"], "Creature - Angel"
+    expensive.mana_cost = "{3}{W}{W}"
+    caress = CardInstance("caress", "Liliana's Caress", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
+                          oracle_text="Whenever an opponent discards a card, that player loses 2 life.")
+    state.cards[caress.id] = caress
+    state.players[1].battlefield.append(caress.id)
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell_id, "targets": {}})
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    assert state.stack[-1].effect_key == "choose_revealed_exile"
+    assert not resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["kind"] == "choose_revealed_exile"
+    assert state.pending_mechanic_choice["options"] == [expensive_id]
+    assert any("Forest" in line and "Lightning Bolt" in line and "Serra Angel" in line for line in state.log)
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [cards["bolt"]]})
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [expensive_id]})
+    assert expensive_id in state.players[2].exile
+    assert expensive_id not in state.players[2].hand
+    assert state.cards[expensive_id].zone == Zone.EXILE
+    assert not state.players[2].graveyard
+    assert not any("discards Serra Angel" in line for line in state.log)
+    assert state.cards[spell_id].zone == Zone.GRAVEYARD
+    assert state.pending_mechanic_choice is None and not state.stack
+    assert discard_selected(state, 2, [cards["bolt"]])
+    assert any("Liliana's Caress" in item.label for item in state.stack)
+
+
+def test_appetite_with_no_expensive_cards_reveals_but_does_not_exile():
+    state, spell_id, _ = _selective_state(
+        "Appetite for Brains",
+        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+    )
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    assert resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice is None
+    assert not state.players[2].exile
+    assert any("reveals their hand: Forest" in line for line in state.log)
+
+
+def test_appetite_fizzles_when_its_only_target_gains_hexproof():
+    state, spell_id, _ = _selective_state(
+        "Appetite for Brains",
+        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+    )
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    shield = CardInstance("shield", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
+                          oracle_text="You have hexproof.")
+    state.cards[shield.id] = shield
+    state.players[2].battlefield.append(shield.id)
+    assert resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice is None
+    assert not state.players[2].exile
+    assert not any("reveals their hand:" in line for line in state.log)
+
+
+def test_ai_completes_revealed_exile_choice():
+    state, spell_id, _ = _selective_state(
+        "Appetite for Brains",
+        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+    )
+    expensive_id = state.players[2].hand[3]
+    expensive = state.cards[expensive_id]
+    expensive.name, expensive.types, expensive.type_line, expensive.mana_cost = (
+        "Serra Angel", ["Creature"], "Creature - Angel", "{3}{W}{W}",
+    )
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    assert not resolve_top_of_stack(state)
+    agent = AIAgent(difficulty="master", archetype="Midrange", opponent_archetype="Midrange")
+    decision = agent.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": [expensive_id]}
+    state = checked_action(state, RulesEngine(), 1, decision.action)
+    assert expensive_id in state.players[2].exile
+
+
 def test_thoughtseize_loses_life_even_when_target_has_only_lands():
     state, spell_id, _ = _selective_state(
         "Thoughtseize",

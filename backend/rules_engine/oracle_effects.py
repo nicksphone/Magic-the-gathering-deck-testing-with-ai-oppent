@@ -86,11 +86,12 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
     re.IGNORECASE,
 )
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
-REVEAL_CHOOSE_DISCARD_RE = re.compile(
+REVEAL_CHOOSE_HAND_RE = re.compile(
     r"target (?P<target_kind>opponent|player) reveals (?:their|his or her) hand\. "
     r"you choose a (?P<restriction>noncreature, nonland |nonland |creature or planeswalker )?card from it"
-    r"(?: with mana value (?P<mv_max>\d+) or less)?\. "
-    r"that player discards that card\.(?: you lose (?P<life>\d+) life\.)?", re.IGNORECASE,
+    r"(?: with mana value (?P<mv>\d+) or (?P<comparison>less|greater))?"
+    r"(?:\. that player discards that card\.|(?P<exile> and exile that card\.))"
+    r"(?: you lose (?P<life>\d+) life\.)?", re.IGNORECASE,
 )
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
 SHARK_TOKEN_RE = re.compile(
@@ -174,18 +175,21 @@ def infer_effect_from_oracle(
             "target_stack_id": target_stack_id,
             "target_kind": "noncreature" if "counter target noncreature spell" in oracle else "any",
         }
-    revealed_discard = REVEAL_CHOOSE_DISCARD_RE.fullmatch(oracle.strip())
-    if revealed_discard:
-        restriction = (revealed_discard.group("restriction") or "").lower()
-        effect = {"effect_key": "choose_revealed_discard", "payload": {
+    revealed_choice = REVEAL_CHOOSE_HAND_RE.fullmatch(oracle.strip())
+    if revealed_choice:
+        restriction = (revealed_choice.group("restriction") or "").lower()
+        destination = "exile" if revealed_choice.group("exile") else "discard"
+        effect = {"effect_key": f"choose_revealed_{destination}", "payload": {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
             "excluded_types": (["Creature"] if "noncreature" in restriction else [])
                               + (["Land"] if "nonland" in restriction else []),
             "allowed_types": ["Creature", "Planeswalker"] if "creature or planeswalker" in restriction else [],
+            "destination": destination,
         }}
-        if revealed_discard.group("mv_max"):
-            effect["payload"]["mv_max"] = int(revealed_discard.group("mv_max"))
-        life = revealed_discard.group("life")
+        if revealed_choice.group("mv"):
+            bound = "mv_max" if revealed_choice.group("comparison").lower() == "less" else "mv_min"
+            effect["payload"][bound] = int(revealed_choice.group("mv"))
+        life = revealed_choice.group("life")
         if life:
             return "effect_sequence", {"effects": [effect, {
                 "effect_key": "lose_life", "payload": {"target_player": controller, "amount": int(life)},
@@ -710,7 +714,7 @@ def inspect_target_hints(
     elif "target opponent" in oracle:
         hints["player_targets"] = [{"id": opponent, "name": state.players[opponent].name}]
         hints["requires_opponent_target"] = True
-    if REVEAL_CHOOSE_DISCARD_RE.fullmatch(raw_oracle.strip()):
+    if REVEAL_CHOOSE_HAND_RE.fullmatch(raw_oracle.strip()):
         hints["requires_reveal_target"] = True
     alternative = single_player_permanent_alternative(oracle)
     if alternative:

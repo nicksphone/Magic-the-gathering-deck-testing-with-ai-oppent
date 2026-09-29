@@ -1477,34 +1477,40 @@ def each_player_discard(state: MatchState, controller: int, payload: dict) -> No
         state.log.append(f"{state.players[pid].name} discards {len(selected[str(pid)])}.")
 
 
-def choose_revealed_discard(state: MatchState, controller: int, payload: dict) -> None:
+def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.card_types import is_land_card
     from rules_engine.zone_actions import discard_selected, is_departed_token
 
     target = int(payload["target_player"])
     excluded = set(payload.get("excluded_types") or [])
     allowed = set(payload.get("allowed_types") or [])
+    destination = payload.get("destination", "discard")
     revealed = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
     options = [cid for cid in revealed
                if ("Land" not in excluded or not is_land_card(state.cards[cid]))
                and ("Creature" not in excluded or "Creature" not in state.cards[cid].types)
                and (not allowed or allowed.intersection(state.cards[cid].types))
-               and ("mv_max" not in payload or mana_value(state.cards[cid].mana_cost or "") <= int(payload["mv_max"]))]
+               and ("mv_max" not in payload or mana_value(state.cards[cid].mana_cost or "") <= int(payload["mv_max"]))
+               and ("mv_min" not in payload or mana_value(state.cards[cid].mana_cost or "") >= int(payload["mv_min"]))]
     names = ", ".join(state.cards[cid].name for cid in revealed) or "(empty)"
     state.log.append(f"{state.players[target].name} reveals their hand: {names}.")
     if not options:
         return
     if controller in state.mechanic_choice_players:
         state.pending_mechanic_choice = {
-            "kind": "choose_revealed_discard", "player_id": controller,
+            "kind": f"choose_revealed_{destination}", "player_id": controller,
             "target_player": target, "options": options, "count": 1,
-            "label": "Choose a card from the revealed hand to discard",
+            "label": f"Choose a card from the revealed hand to {destination}",
         }
         state.priority_player = controller
         state.passed_priority = set()
         return
     chosen = min(options, key=lambda cid: (state.cards[cid].mana_cost or "", cid))
-    discard_selected(state, target, [chosen])
+    if destination == "exile":
+        from rules_engine.zone_actions import exile_selected_from_hand
+        exile_selected_from_hand(state, target, [chosen])
+    else:
+        discard_selected(state, target, [chosen])
 
 
 def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_ids: list[str], eligible: list[str], max_count: int) -> bool:
