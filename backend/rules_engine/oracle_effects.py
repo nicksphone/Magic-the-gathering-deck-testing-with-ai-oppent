@@ -126,7 +126,7 @@ COUNTER_TARGET_SPELL_RE = re.compile(
     r"\bcounter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\b",
     re.IGNORECASE,
 )
-ALL_CREATURES_X_DEBUFF_RE = re.compile(r"\ball creatures get -x/-x until end of turn\b", re.IGNORECASE)
+ALL_CREATURES_X_DEBUFF_RE = re.compile(r"\b(?:all creatures get|each creature gets) -x/-x until end of turn\b", re.IGNORECASE)
 
 
 def infer_effect_from_oracle(

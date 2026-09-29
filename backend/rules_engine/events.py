@@ -629,9 +629,13 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
 
 
 def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if "\n" in oracle:
+        return any(_matches_creature_dies_trigger(state, card, line.strip(), payload) for line in oracle.splitlines())
     dead_id = payload.get("card_id")
     dead_card = _departed_card_view(state, dead_id)
     dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
+    if "whenever a creature an opponent controls dies" in oracle:
+        return bool(dead_card) and dead_card.controller != card.controller and "Creature" in dead_types
     if "when this creature dies" in oracle:
         return bool(dead_card) and dead_id == card.id and "Creature" in dead_types
     if "whenever another creature you control dies" in oracle:
@@ -1054,6 +1058,20 @@ def _trigger_from_oracle(
     payload: dict[str, Any],
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
+    if event in {"enters_battlefield", "creature_dies"}:
+        matching_clauses = [
+            line.strip() for line in oracle.splitlines()
+            if (
+                event == "enters_battlefield"
+                and re.match(r"^(?:when|whenever)\b.*\benters\b", line.strip())
+            ) or (
+                event == "creature_dies"
+                and source_card_id in state.cards
+                and _matches_creature_dies_trigger(state, state.cards[source_card_id], line.strip(), payload)
+            )
+        ]
+        if len(matching_clauses) == 1:
+            oracle = matching_clauses[0]
     opponent = 1 if controller == 2 else 2
     gain_amount = _first_number(oracle, r"gain (\d+) life")
     lose_amount = _first_number(oracle, r"lose (\d+) life")
@@ -1252,6 +1270,7 @@ def _trigger_from_oracle(
             "counter target",
             "cast target",
             "reveals the top card",
+            "gets -x/-x",
         )
     ):
         from rules_engine.ability_model import build_ability_spec
