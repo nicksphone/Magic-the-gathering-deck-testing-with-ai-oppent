@@ -3,9 +3,8 @@ from copy import copy
 
 from game_state.state import _infer_keywords
 from game_state.state import Zone
-from rules_engine.card_types import is_token_card
+from rules_engine.card_types import is_token_card, printed_card_types
 
-CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery", "Kindred"}
 FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "keywords", "image_uri", "selected_face_index")
 
 
@@ -20,7 +19,7 @@ def select_cast_face(card, index=None):
     proxy = copy(card)
     for field in ("name", "oracle_text", "mana_cost", "type_line"):
         setattr(proxy, field, str(face.get(field, getattr(card, field, "")) or ""))
-    proxy.types = [value for value in proxy.type_line.replace("—", " ").split() if value in CARD_TYPES]
+    proxy.types = printed_card_types(proxy.type_line)
     proxy.keywords = _infer_keywords(proxy.oracle_text)
     for field in ("power", "toughness", "loyalty"):
         value = face.get(field)

@@ -154,7 +154,7 @@ It is designed for serious deck work:
 - Canonical Rest in Peace graveyard replacement and ETB exile sweep, with HTTP action and SQLite-restore regressions for damage-spell resolution, suppressed dies triggers, and existing graveyards; interacting replacement choices remain uncertified
 - Owner-scoped opponent-card graveyard replacement for Leyline of the Void wording: opposing cards are exiled from discard, stack and battlefield paths, but tokens and the controller's own cards are not; a resolved opponent spell is HTTP/restore-tested, while Leyline's opening-hand permission remains unsupported
 - Dynamic characteristic-defining power/toughness for graveyard card-type counts
-- Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; all 112 distinct shipped deck names have offline Oracle metadata, with zero missing-Oracle or parser-fallback classifications in the empty-cache report. Parser classification alone does not certify any card's rules behavior.
+- Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; all 112 distinct shipped deck names have offline Oracle metadata, with zero missing-Oracle or parser-fallback classifications in the empty-cache report. It shares front-face card-type parsing with gameplay, including Battle and Kindred while excluding supertypes and subtypes. Parser classification alone does not certify any card's rules behavior.
 - Fuzzy matching for deck import correction
 - Cached fallback metadata when remote lookups fail
 - Token creation uses cached art or an immediate local fallback, never a network request in the rules path; explicit token-art sync stores local art for later games

@@ -5,7 +5,13 @@ from collections.abc import Mapping
 
 
 _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
-_REVEAL_CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Kindred", "Land", "Planeswalker", "Sorcery"}
+CARD_TYPES = frozenset({"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Kindred", "Land", "Planeswalker", "Sorcery"})
+
+
+def printed_card_types(type_line: str) -> list[str]:
+    """Read the front face's types, excluding supertypes and subtypes."""
+    front = (type_line or "").split("//", 1)[0].split("—", 1)[0].strip()
+    return [part for part in front.split() if part in CARD_TYPES]
 
 
 def cards_have_distinct_card_types(state, card_ids: list[str]) -> bool:
@@ -16,7 +22,7 @@ def cards_have_distinct_card_types(state, card_ids: list[str]) -> bool:
         card = state.cards.get(card_id)
         if card is None:
             return False
-        for card_type in sorted(set(card.types) & _REVEAL_CARD_TYPES):
+        for card_type in sorted(set(card.types) & CARD_TYPES):
             if card_type in visited:
                 continue
             visited.add(card_type)

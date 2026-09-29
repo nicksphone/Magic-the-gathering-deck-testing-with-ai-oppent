@@ -3,7 +3,7 @@ from card_data.fallback_cards import fallback_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
-from rules_engine.card_types import cards_have_distinct_card_types
+from rules_engine.card_types import cards_have_distinct_card_types, printed_card_types
 from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -102,6 +102,11 @@ def test_kindred_is_an_independent_card_type_for_reveal() -> None:
     sorcery = state.cards[top[7]]
     sorcery.types = ["Sorcery"]
     assert cards_have_distinct_card_types(state, [kindred.id, sorcery.id])
+
+
+def test_printed_type_parser_uses_only_the_front_face_and_excludes_subtypes() -> None:
+    assert printed_card_types("Kindred Sorcery — Merfolk") == ["Kindred", "Sorcery"]
+    assert printed_card_types("Sorcery // Land") == ["Sorcery"]
 
 
 def test_atraxa_ai_considers_all_revealed_cards_before_type_filter() -> None:

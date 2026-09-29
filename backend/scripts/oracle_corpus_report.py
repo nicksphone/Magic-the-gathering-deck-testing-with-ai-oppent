@@ -21,10 +21,10 @@ from game_state.state import CardInstance, MatchFactory, Zone
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.ability_model import build_ability_spec
+from rules_engine.card_types import printed_card_types
 
 
 DECK_LINE = re.compile(r"^\s*(\d+)\s*x?\s+(.+?)\s*$", re.IGNORECASE)
-CARD_TYPES = ("Land", "Creature", "Instant", "Sorcery", "Enchantment", "Artifact", "Planeswalker")
 
 
 def parse_args() -> argparse.Namespace:
@@ -59,8 +59,7 @@ def collect_corpus() -> dict[str, dict[str, Any]]:
 
 
 def _types_from_type_line(type_line: str) -> list[str]:
-    lower = (type_line or "").lower()
-    return [kind for kind in CARD_TYPES if kind.lower() in lower]
+    return printed_card_types(type_line)
 
 
 def _family_for(text: str) -> str:
