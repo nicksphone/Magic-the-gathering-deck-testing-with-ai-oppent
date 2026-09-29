@@ -292,6 +292,7 @@ def _restore_active_matches(repo: Repository, match_id: str | None = None) -> No
                 int(pid): AIAgent(
                     difficulty=str(config.get("difficulties", {}).get(str(pid), "master")),
                     archetype=str(config.get("archetypes", {}).get(str(pid), "Midrange")),
+                    opponent_archetype=str(config.get("archetypes", {}).get("2" if int(pid) == 1 else "1", "Midrange")),
                 )
                 for pid in (1, 2)
             }
@@ -623,8 +624,9 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
     state.trigger_order_choice_required = state.replacement_choice_required
     state.trigger_order_choice_players = set(state.replacement_choice_players)
     rules = RulesEngine()
-    a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(deck_a))
-    b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=guess_archetype(deck_b))
+    a_archetype, b_archetype = guess_archetype(deck_a), guess_archetype(deck_b)
+    a_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
+    b_ai = AIAgent(difficulty=payload.ai_difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
     controller = MatchController(
         state=state,
         rules=rules,

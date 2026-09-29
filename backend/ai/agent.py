@@ -79,7 +79,8 @@ class AIAgent:
             options = list(choice.get("options", []))
             if choice["kind"] == "choose_revealed_discard":
                 target = int(choice["target_player"])
-                options.sort(key=lambda cid: (-self._hand_retention_value(state, cid, target), cid))
+                target_archetype = self.opponent_archetype if target != player_id else self.archetype
+                options.sort(key=lambda cid: (-self._hand_retention_value(state, cid, target, target_archetype or "Midrange"), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:1]}, reasoning="Discard the opponent's most useful revealed card")
             if choice["kind"] == "combat_damage":
                 return AIDecision(
@@ -3255,8 +3256,9 @@ class AIAgent:
             value += 1.0
         return value
 
-    def _hand_retention_value(self, state: MatchState, cid: str, player_id: int) -> float:
+    def _hand_retention_value(self, state: MatchState, cid: str, player_id: int, archetype: str | None = None) -> float:
         card = state.cards[cid]
+        archetype = archetype or self.archetype
         player = state.players[player_id]
         lands_in_play = sum("Land" in state.cards[pid].types for pid in player.battlefield)
         lands_in_hand = sum("Land" in state.cards[hid].types for hid in player.hand)
@@ -3266,9 +3268,9 @@ class AIAgent:
             return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0
         cost = mana_value(card.mana_cost)
         value = 5.0 - max(0, cost - lands_in_play - 1) * 0.8
-        if self.archetype == "Reanimator" and "Creature" in card.types and cost > lands_in_play + 2:
+        if archetype == "Reanimator" and "Creature" in card.types and cost > lands_in_play + 2:
             value -= 2.0
-        if self.archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
+        if archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
             value += 1.5
         return value
 

@@ -1478,13 +1478,19 @@ def each_player_discard(state: MatchState, controller: int, payload: dict) -> No
 
 
 def choose_revealed_discard(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_types import is_land_card
     from rules_engine.zone_actions import discard_selected, is_departed_token
 
     target = int(payload["target_player"])
-    options = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
+    excluded = set(payload.get("excluded_types") or [])
+    revealed = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
+    options = [cid for cid in revealed
+               if ("Land" not in excluded or not is_land_card(state.cards[cid]))
+               and ("Creature" not in excluded or "Creature" not in state.cards[cid].types)]
+    names = ", ".join(state.cards[cid].name for cid in revealed) or "(empty)"
+    state.log.append(f"{state.players[target].name} reveals their hand: {names}.")
     if not options:
         return
-    state.log.append(f"{state.players[target].name} reveals their hand.")
     if controller in state.mechanic_choice_players:
         state.pending_mechanic_choice = {
             "kind": "choose_revealed_discard", "player_id": controller,

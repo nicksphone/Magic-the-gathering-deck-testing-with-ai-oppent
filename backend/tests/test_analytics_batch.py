@@ -462,6 +462,29 @@ def test_batch_does_not_auto_award_unresolved_games_to_deck_a() -> None:
     assert out["rules_coverage"] == {"status": "exploratory", "known_unsupported_cards": []}
 
 
+def test_batch_agents_receive_each_others_archetype(monkeypatch) -> None:
+    import analytics.service as service_module
+
+    agents = []
+    original = service_module.AIAgent
+
+    def record_agent(*args, **kwargs):
+        agent = original(*args, **kwargs)
+        agents.append(agent)
+        return agent
+
+    monkeypatch.setattr(service_module, "AIAgent", record_agent)
+    service = AnalyticsService(_DummyRepo())  # type: ignore[arg-type]
+    service.run_batch(
+        [{"quantity": 60, "card_name": "Mountain"}],
+        [{"quantity": 60, "card_name": "Island"}],
+        matches=1, difficulty="master", max_ticks=1,
+    )
+    assert len(agents) == 2
+    assert agents[0].opponent_archetype == agents[1].archetype
+    assert agents[1].opponent_archetype == agents[0].archetype
+
+
 def test_batch_result_names_known_unsupported_card_without_certifying_others() -> None:
     repo = _DummyRepo()
     service = AnalyticsService(repo)  # type: ignore[arg-type]

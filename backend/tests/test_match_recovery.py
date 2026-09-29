@@ -48,6 +48,8 @@ def test_receipt_revision_and_state_survive_restoration(game):
         main._restore_active_matches(Repository(session))
     restored = main.ACTIVE_MATCHES[mid]
     assert restored.revision == 1
+    assert restored.ai[1].opponent_archetype == restored.ai[2].archetype
+    assert restored.ai[2].opponent_archetype == restored.ai[1].archetype
     response = client.post(f"/matches/{mid}/action", json=payload, headers=headers())
     assert response.status_code == 200
     assert response.json()["revision"] == 1
@@ -123,6 +125,8 @@ def test_start_key_retries_one_durable_match_without_replacing_other_controllers
 
     created = main.ACTIVE_MATCHES.pop(match_id)
     assert created.revision == 0
+    assert created.ai[1].opponent_archetype == created.ai[2].archetype
+    assert created.ai[2].opponent_archetype == created.ai[1].archetype
     restored = start()
     assert restored.status_code == 200
     assert restored.json()["id"] == match_id

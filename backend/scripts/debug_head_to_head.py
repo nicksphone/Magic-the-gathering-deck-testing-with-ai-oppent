@@ -99,8 +99,9 @@ def main() -> int:
             for game_idx in range(args.matches):
                 game_seed = args.seed + game_idx if args.seed is not None else None
                 state = MatchFactory.from_decks(deck_a, deck_b, player_a_name=args.deck_a, player_b_name=args.deck_b, seed=game_seed)
-                a_agent = AIAgent(difficulty=args.difficulty, archetype=a_arch)
-                b_agent = AIAgent(difficulty=args.difficulty, archetype=b_arch)
+                state.mechanic_choice_players = {1, 2}
+                a_agent = AIAgent(difficulty=args.difficulty, archetype=a_arch, opponent_archetype=b_arch)
+                b_agent = AIAgent(difficulty=args.difficulty, archetype=b_arch, opponent_archetype=a_arch)
                 ticks = 0
 
                 while state.winner is None and ticks < args.max_ticks:

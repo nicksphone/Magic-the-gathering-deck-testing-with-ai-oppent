@@ -26,6 +26,35 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {"thoughtseize", "duress"}:
+        deck = [{"quantity": 60, "card_name": "Swamp"}]
+        state = MatchFactory.from_decks(deck, deck, seed=920)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        state.players[1].mana_pool["B"] = 1
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name = "Thoughtseize" if face_kind == "thoughtseize" else "Duress"
+        spell.types, spell.type_line, spell.mana_cost = ["Sorcery"], "Sorcery", "{B}"
+        spell.oracle_text = (
+            "Target player reveals their hand. You choose a nonland card from it. "
+            "That player discards that card. You lose 2 life."
+            if face_kind == "thoughtseize" else
+            "Target opponent reveals their hand. You choose a noncreature, nonland card from it. "
+            "That player discards that card."
+        )
+        hand = state.players[2].hand
+        forest = state.cards[hand[0]]
+        forest.name, forest.types, forest.type_line = "Forest", ["Land"], "Basic Land - Forest"
+        bolt = state.cards[hand[1]]
+        bolt.name, bolt.types, bolt.type_line, bolt.mana_cost = "Lightning Bolt", ["Instant"], "Instant", "{R}"
+        bolt.oracle_text = "Lightning Bolt deals 3 damage to any target."
+        elf = state.cards[hand[2]]
+        elf.name, elf.types, elf.type_line, elf.mana_cost = "Llanowar Elves", ["Creature"], "Creature - Elf Druid", "{G}"
+        elf.power, elf.toughness, elf.oracle_text = 1, 1, "{T}: Add {G}."
+        return publish(state, deck)
     if face_kind == "revealed_discard":
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=919)

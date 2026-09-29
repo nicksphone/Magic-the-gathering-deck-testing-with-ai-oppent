@@ -179,6 +179,29 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
   console.log("PASS Coercion caster targets opponent and chooses from revealed hand");
 
+  for (const [fixture, spell, expected, life] of [
+    ["Thoughtseize Fixture", "Thoughtseize", ["Lightning Bolt", "Llanowar Elves"], 18],
+    ["Duress Fixture", "Duress", ["Lightning Bolt"], 20],
+  ]) {
+    await click(fixture);
+    await waitFor(`[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast ${spell}'))`);
+    await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast ${spell}')); const select = box.querySelector('[aria-label="Player target"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await click(`Cast ${spell}`);
+    await waitFor(`window.fixtureState.stack.some(item => item.label === '${spell}')`);
+    await click("Resolve Stack");
+    await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'choose_revealed_discard'");
+    const labels = await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand')).querySelectorAll('label')].map(label => label.textContent.trim())");
+    assert.deepEqual(labels, expected);
+    assert.equal(await evaluate("window.fixtureState.log.some(line => line.includes('reveals their hand:') && line.includes('Forest') && line.includes('Llanowar Elves'))"), true);
+    assert.equal(await evaluate("window.fixtureState.players['1'].life"), 20);
+    await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand')).querySelector('input[type=checkbox]').click()");
+    await click("Confirm Selection");
+    await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");
+    assert.equal(await evaluate("window.fixtureState.players['1'].life"), life);
+    assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.some(card => card.name === 'Lightning Bolt')"), true);
+    console.log(`PASS ${spell} offers only eligible cards and completes its printed effects`);
+  }
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");

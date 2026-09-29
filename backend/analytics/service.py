@@ -61,8 +61,9 @@ class AnalyticsService:
             state.mechanic_choice_players = {1, 2}
             opener_quality_a.append(self._opening_hand_quality(state, 1))
             opener_quality_b.append(self._opening_hand_quality(state, 2))
-            a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a))
-            b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b))
+            a_archetype, b_archetype = guess_archetype(deck_a), guess_archetype(deck_b)
+            a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
+            b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
             ticks = 0
             while state.winner is None and ticks < max_ticks:
                 if state.pregame_pending:
@@ -306,8 +307,10 @@ class AnalyticsService:
             for game_idx in range(matches_per_pair):
                 state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
                 state.mechanic_choice_players = {1, 2}
-                a_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(left["mainboard"]))
-                b_agent = AIAgent(difficulty=difficulty, archetype=guess_archetype(right["mainboard"]))
+                a_archetype = guess_archetype(left["mainboard"])
+                b_archetype = guess_archetype(right["mainboard"])
+                a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
+                b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
                 ticks = 0
                 while state.winner is None and ticks < max_ticks:
                     pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)

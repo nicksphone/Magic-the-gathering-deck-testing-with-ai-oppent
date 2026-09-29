@@ -124,6 +124,8 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             return False, "A player or permanent target is required."
     if target_hints.get("requires_opponent_target") and action_targets.get("target_player") is None:
         return False, "An opponent target is required."
+    if target_hints.get("requires_reveal_target") and action_targets.get("target_player") is None:
+        return False, "A player target is required."
 
     selected_player = action_targets.get("target_player")
     if selected_player is not None:
