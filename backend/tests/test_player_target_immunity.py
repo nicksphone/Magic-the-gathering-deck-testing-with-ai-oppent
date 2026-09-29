@@ -2,6 +2,7 @@
 
 import pytest
 
+from ai.agent import AIAgent
 from effects.handlers import deal_damage
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -122,3 +123,48 @@ def test_divided_damage_omits_newly_hexproof_player_but_keeps_creature_share():
     assert resolve_top_of_stack(state)
     assert state.players[2].life == 20
     assert state.cards["first"].counters.get("__damage_marked", 0) == 1
+
+
+@pytest.mark.parametrize("name, oracle", [
+    ("Shock", "Shock deals 2 damage to any target."),
+    ("Lightning Bolt", "Lightning Bolt deals 3 damage to any target."),
+])
+def test_ai_does_not_choose_protected_opponent_for_burn_spell(name, oracle):
+    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    bolt.name = name
+    bolt.oracle_text = oracle
+    state.players[1].hand = [bolt.id]
+    moves = RulesEngine().legal_moves(state, 1)
+    cast = next(move for move in moves if move.get("card_id") == bolt.id and move["type"] == "cast_spell")
+    agent = AIAgent(difficulty="master", archetype="Burn")
+    materialized = agent._materialize_action(state, cast, 1)
+    assert materialized.get("targets", {}).get("target_player") != 2
+    assert agent.choose_action(state, moves, 1).action["type"] != "cast_spell"
+
+
+def test_ai_can_burn_opposing_creature_behind_player_hexproof():
+    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    state.players[1].hand = [bolt.id]
+    bear = CardInstance("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    state.cards[bear.id] = bear
+    state.players[2].battlefield.append(bear.id)
+    moves = RulesEngine().legal_moves(state, 1)
+    cast = next(move for move in moves if move.get("card_id") == bolt.id and move["type"] == "cast_spell")
+    agent = AIAgent(difficulty="master", archetype="Burn")
+    assert not agent._burn_has_only_friendly_targets(state, cast, 1)
+    materialized = agent._materialize_action(state, cast, 1)
+    assert materialized["targets"]["target_card_id"] == bear.id
+    assert materialized["targets"].get("target_player") is None
+
+
+@pytest.mark.parametrize("defense", ["hexproof", "shroud", "protection from red"])
+def test_battlefield_target_hints_omit_defended_creature(defense):
+    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    state.players[1].hand = [bolt.id]
+    bear = CardInstance("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2, keywords=[defense])
+    state.cards[bear.id] = bear
+    state.players[2].battlefield.append(bear.id)
+    moves = RulesEngine().legal_moves(state, 1)
+    cast = next(move for move in moves if move.get("card_id") == bolt.id and move["type"] == "cast_spell")
+    assert bear.id not in {target["id"] for target in cast["target_hints"]["creature_targets"]}
+    assert AIAgent(difficulty="master", archetype="Burn").choose_action(state, moves, 1).action["type"] != "cast_spell"

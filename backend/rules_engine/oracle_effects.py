@@ -7,7 +7,7 @@ from game_state.state import CardInstance, MatchState, Zone
 from card_data.token_definitions import named_artifact_token
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind, validate_hexproof_shroud_targets
+from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind, validate_hexproof_shroud_targets, validate_protection_targets
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -720,6 +720,17 @@ def inspect_target_hints(
             target for target in hints["player_targets"]
             if validate_hexproof_shroud_targets(state, controller, {"target_player": target["id"]})[0]
         ]
+    source = card if isinstance(card, CardInstance) else state.cards.get(getattr(card, "id", None), card)
+    for key in (
+        "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+        "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
+    ):
+        if key in hints:
+            hints[key] = [
+                target for target in hints[key]
+                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]})[0]
+                    and validate_protection_targets(state, source, {"target_card_id": target["id"]})[0])
+            ]
     return hints
 
 

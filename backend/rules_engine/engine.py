@@ -745,12 +745,6 @@ class RulesEngine:
                     require_declared_targets(face_card, hints, action_targets, player_id, spell=True)
                 if hints.get("supports_divide") and "divide_total" not in action_targets:
                     reject("Cannot derive this allocation total from the supported card effect")
-                ok, error = validate_cast_choice(hints, action_targets)
-                if not ok:
-                    reject(error)
-                    state.log.append(f"Invalid targets for {card.name}: {error}")
-                    apply_state_based_actions(state)
-                    return
                 ok_prot, err_prot = validate_protection_targets(state, face_card, action_targets)
                 if not ok_prot:
                     reject(err_prot)
@@ -761,6 +755,12 @@ class RulesEngine:
                 if not ok_hs:
                     reject(err_hs)
                     state.log.append(f"Invalid targets for {card.name}: {err_hs}")
+                    apply_state_based_actions(state)
+                    return
+                ok, error = validate_cast_choice(hints, action_targets)
+                if not ok:
+                    reject(error)
+                    state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
                 target_ids: list[str] = []

@@ -69,6 +69,7 @@ class AIAgent:
             or (move.get("card_id") not in pending_crews
                 and "Creature" not in (getattr(state.cards.get(move.get("card_id")), "types", []) or []))
         ]
+        legal_moves = [move for move in legal_moves if not self._burn_has_only_friendly_targets(state, move, player_id)]
         if getattr(state, "pregame_pending", False):
             return self.choose_mulligan_action(state, player_id)
         if not legal_moves:
@@ -2097,6 +2098,23 @@ class AIAgent:
         )
         return [scored[0][2], scored[1][2]]
 
+    def _burn_has_only_friendly_targets(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if move.get("type") != "cast_spell":
+            return False
+        card = state.cards.get(move.get("card_id"))
+        if card is None or not re.fullmatch(r"[^.\n]*\bdeals? \d+ damage to any target\.", (getattr(card, "oracle_text", "") or "").strip(), re.I):
+            return False
+        hints = move.get("target_hints") or {}
+        opponent = 3 - player_id
+        if any(int(target["id"]) == opponent for target in hints.get("player_targets") or []):
+            return False
+        return not any(
+            state.cards[target["id"]].controller == opponent
+            for key in ("creature_targets", "planeswalker_targets")
+            for target in hints.get(key) or []
+            if target.get("id") in state.cards
+        )
+
     def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
         mtype = move.get("type")
         if mtype == "attack":
@@ -2179,10 +2197,12 @@ class AIAgent:
 
         player_targets = hints.get("player_targets") or []
         if player_targets and targets.get("target_player") is None and not targets.get("target_card_id"):
+            allowed_players = {int(target["id"]) for target in player_targets}
             if "gain" in tags and "drain" not in tags:
-                targets["target_player"] = player_id
+                preferred = player_id
             else:
-                targets["target_player"] = opponent
+                preferred = opponent
+            targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)
 
         creature_targets = hints.get("creature_targets") or []
         target_text = str(move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
@@ -2306,7 +2326,8 @@ class AIAgent:
                 if best:
                     targets["target_distribution"] = {best["id"]: 1}
             elif player_targets:
-                targets["target_distribution"] = {str(opponent): 1}
+                preferred = opponent if any(int(target["id"]) == opponent for target in player_targets) else int(player_targets[0]["id"])
+                targets["target_distribution"] = {str(preferred): 1}
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         if "{X}" in mana_cost.upper() and "x_value" not in targets:
