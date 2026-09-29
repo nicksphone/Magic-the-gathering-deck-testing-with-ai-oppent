@@ -5,6 +5,7 @@ from typing import Any
 
 from game_state.state import Zone
 from rules_engine.continuous import has_keyword
+from rules_engine.oracle_text import without_reminder_text
 from rules_engine.protection import protection_match_reason
 
 
@@ -170,6 +171,15 @@ def validate_hexproof_shroud_targets(
     source_controller: int,
     action_targets: dict[str, Any],
 ) -> tuple[bool, str]:
+    player_ids = []
+    if action_targets.get("target_player") is not None:
+        player_ids.append(int(action_targets["target_player"]))
+    player_ids.extend(int(pid) for pid in (action_targets.get("target_distribution") or {}) if str(pid) in {"1", "2"})
+    for player_id in set(player_ids):
+        immunity = player_target_immunity(state, player_id, source_controller)
+        if immunity:
+            return False, f"Target {state.players[player_id].name} has {immunity}."
+
     target_ids: list[str] = []
     target_card_id = action_targets.get("target_card_id")
     if target_card_id:
@@ -188,3 +198,21 @@ def validate_hexproof_shroud_targets(
         if target.controller != source_controller and has_keyword(state, cid, "hexproof"):
             return False, f"Target {target.name} has hexproof."
     return True, ""
+
+
+def player_target_immunity(state, player_id: int, source_controller: int) -> str | None:
+    """Recognize unconditional static Oracle clauses on controlled permanents."""
+    if player_id not in state.players:
+        return None
+    for cid in state.players[player_id].battlefield:
+        card = state.cards.get(cid)
+        if card is None:
+            continue
+        clauses = without_reminder_text(card.oracle_text or "").splitlines()
+        for clause in clauses:
+            normalized = clause.strip().lower()
+            if normalized == "you have shroud.":
+                return "shroud"
+            if normalized == "you have hexproof." and player_id != source_controller:
+                return "hexproof"
+    return None

@@ -26,6 +26,26 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "player_hexproof":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=911)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[1].mana_pool["R"] = 1
+        cards = (
+            CardInstance(id="bolt", name="Shock", owner=1, controller=1, zone=Zone.HAND,
+                         types=["Instant"], mana_cost="{R}", oracle_text="Shock deals 2 damage to any target."),
+            CardInstance(id="shield", name="Leyline of Sanctity", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text="You have hexproof."),
+            CardInstance(id="bear", name="Grizzly Bears", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+        )
+        for card in cards:
+            state.cards[card.id] = card
+            getattr(state.players[card.controller], card.zone.value).append(card.id)
+        return publish(state, deck)
     if face_kind == "damage_trigger":
         from effects.handlers import sacrifice
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]

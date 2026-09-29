@@ -60,6 +60,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "damage_trigger").catch((failure) => setError(String(failure)))}>Damage Trigger Fixture</button>
+    <button onClick={() => reset(false, false, 3, "player_hexproof").catch((failure) => setError(String(failure)))}>Player Hexproof Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "alternative_target").catch((failure) => setError(String(failure)))}>Alternative Target Fixture</button>
     <button onClick={() => reset(false, false, 3, "variable_life_x").catch((failure) => setError(String(failure)))}>Variable Life X Fixture</button>

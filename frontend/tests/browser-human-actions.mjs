@@ -81,6 +81,19 @@ try {
   await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'teferi' && c.loyalty === 1)");
   console.log("PASS player-or-planeswalker choice uses one selector and damages loyalty");
 
+  await click("Player Hexproof Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Shock'))");
+  assert.deepEqual(await evaluate("[...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player') && [...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player').options.length"), 2);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Shock')); const player = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); const creature = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); player.value = '1'; player.dispatchEvent(new Event('change', { bubbles: true })); creature.value = 'bear'; creature.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("[...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player')?.value === ''");
+  await click("Cast Shock");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_card_id"), "bear");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_player"), undefined);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.players['2'].life === 20");
+  console.log("PASS player hexproof filters UI targets and switching to a creature clears player choice");
+
   await click("Variable Life X Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Toxic Deluge'))");
   assert.equal(await evaluate("document.querySelector('.cast-card-box input[type=number]')?.max"), "20");

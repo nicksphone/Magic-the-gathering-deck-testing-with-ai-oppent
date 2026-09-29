@@ -18,14 +18,16 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
   }
   const unsupportedCost = move.mana_cost?.toUpperCase().includes("{X}");
   const hints = move.target_hints;
+  const targetText = move.ability_label ?? "";
+  const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
   const options = [...new Map([...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []), ...(hints?.permanent_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []), ...(hints?.land_targets ?? []), ...(hints?.artifact_targets ?? []), ...(hints?.enchantment_targets ?? []), ...(hints?.noncreature_permanent_targets ?? []), ...(hints?.aura_targets ?? []), ...(move.targets ?? [])].map((target) => [target.id, target])).values()];
   return <article className="cast-card-box">
     <strong>{move.card_name}: {move.ability_label}</strong>
     <small>{move.mana_cost}</small>
-    {hints?.player_targets?.length ? <select aria-label="Ability target player" value={String(targets.target_player ?? "")} onChange={(event) => setTargets({ ...targets, target_player: event.target.value ? Number(event.target.value) : undefined })}>
+    {hints?.player_targets?.length ? <select aria-label="Ability target player" value={String(targets.target_player ?? "")} onChange={(event) => setTargets({ ...targets, target_player: event.target.value ? Number(event.target.value) : undefined, ...(exclusiveTarget ? { target_card_id: undefined } : {}) })}>
       <option value="">Target player</option>{hints.player_targets.map((target) => <option key={target.id} value={target.id}>{target.name}</option>)}
     </select> : null}
-    {options.length ? <select aria-label="Ability target permanent" value={String(targets.target_card_id ?? "")} onChange={(event) => setTargets({ ...targets, target_card_id: event.target.value || undefined })}>
+    {options.length ? <select aria-label="Ability target permanent" value={String(targets.target_card_id ?? "")} onChange={(event) => setTargets({ ...targets, target_card_id: event.target.value || undefined, ...(exclusiveTarget ? { target_player: undefined } : {}) })}>
       <option value="">Target permanent</option>{options.map((target) => <option key={target.id} value={target.id}>{target.name}</option>)}
     </select> : null}
     {hints?.stack_targets?.length ? <select aria-label="Ability stack target" onChange={(event) => setTargets({ ...targets, target_stack_id: event.target.value })}>

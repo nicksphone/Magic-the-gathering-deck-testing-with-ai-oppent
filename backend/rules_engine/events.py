@@ -294,7 +294,11 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
     if "any target" in low and item.effect_key == "deal_damage":
-        options = [{"target_player": pid, "target_name": state.players[pid].name} for pid in state.players]
+        options = [
+            {"target_player": pid, "target_name": state.players[pid].name}
+            for pid in state.players
+            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+        ]
         for player in state.players.values():
             for cid in player.battlefield:
                 target = state.cards[cid]

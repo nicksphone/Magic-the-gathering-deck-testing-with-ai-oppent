@@ -346,6 +346,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             {loyaltyMoves.map((move, i) => {
               const key = `${move.card_id}-loyalty-${move.ability_index ?? i}`;
               const hints = move.target_hints;
+              const targetText = move.ability_label ?? "";
+              const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
               return (
                 <div key={key} className="cast-card-box">
                   <button
@@ -365,10 +367,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
-                          [key]: { ...prev[key], target_player: Number(e.target.value) },
+                          [key]: { ...prev[key], target_player: e.target.value ? Number(e.target.value) : undefined, ...(exclusiveTarget ? { target_card_id: undefined } : {}) },
                         }))
                       }
-                      defaultValue=""
+                      value={String(targets[key]?.target_player ?? "")}
                     >
                       <option value="">Target Player</option>
                       {hints.player_targets.map((t) => (
@@ -383,10 +385,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
-                          [key]: { ...prev[key], target_card_id: e.target.value },
+                          [key]: { ...prev[key], target_card_id: e.target.value || undefined, ...(exclusiveTarget ? { target_player: undefined } : {}) },
                         }))
                       }
-                      defaultValue=""
+                      value={String(targets[key]?.target_card_id ?? "")}
                     >
                       <option value="">Target Permanent</option>
                       {(hints.creature_targets ?? []).map((t) => (
@@ -491,6 +493,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               );
             }
             const hints = move.target_hints;
+            const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
+            const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
             const alternativeTargets = [...new Map([
               ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
@@ -566,10 +570,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     onChange={(e) =>
                       setTargets((prev) => ({
                         ...prev,
-                        [card.id]: { ...prev[card.id], target_player: Number(e.target.value) },
+                        [card.id]: { ...prev[card.id], target_player: e.target.value ? Number(e.target.value) : undefined, ...(exclusiveTarget ? { target_card_id: undefined } : {}) },
                       }))
                     }
-                    defaultValue=""
+                    value={String(targets[card.id]?.target_player ?? "")}
                   >
                     <option value="">Target Player</option>
                     {hints.player_targets.map((t) => (
@@ -662,10 +666,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
-                          [card.id]: { ...prev[card.id], target_card_id: e.target.value },
+                          [card.id]: { ...prev[card.id], target_card_id: e.target.value || undefined, ...(exclusiveTarget ? { target_player: undefined } : {}) },
                         }))
                       }
-                      defaultValue=""
+                      value={String(targets[card.id]?.target_card_id ?? "")}
                     >
                       <option value="">Target Creature</option>
                       {(hints.creature_targets ?? []).map((t) => (
