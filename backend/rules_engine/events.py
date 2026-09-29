@@ -434,6 +434,21 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
+            elif event == "transformed" and payload.get("card_id") in state.cards:
+                transformed = state.cards[payload["card_id"]]
+                counter_trigger = re.search(
+                    r"whenever a permanent you control transforms into an? ([a-z-]+), put a \+1/\+1 counter on it",
+                    oracle,
+                )
+                subtype_text = re.split(r"\s+[—–-]\s+", transformed.type_line or "", maxsplit=1)
+                if (counter_trigger and transformed.controller == card.controller
+                        and len(subtype_text) == 2
+                        and counter_trigger.group(1) in subtype_text[1].lower().split()):
+                    out.append({
+                        "source_card_id": cid, "controller": card.controller,
+                        "label": f"{card.name} transform trigger", "effect_key": "add_counters",
+                        "payload": {"target_card_id": transformed.id, "counter": "+1/+1", "amount": 1},
+                    })
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} sacrifice trigger", event=event, payload=payload))
             elif event == "discard" and _matches_discard_trigger(state, card, oracle, payload):

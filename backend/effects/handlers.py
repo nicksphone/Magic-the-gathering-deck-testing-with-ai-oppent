@@ -1472,9 +1472,7 @@ def transform_if_top_matches(state: MatchState, controller: int, payload: dict) 
     index = int(payload.get("face_index", 1) or 1)
     if index < 0 or index >= len(faces):
         return
-    from rules_engine.card_faces import apply_transform_face
-    apply_transform_face(card, index)
-    state.log.append(f"{card.name} transforms.")
+    transform_card(state, controller, {"target_card_id": target_id, "face_index": index})
 
 
 def transform_card(state: MatchState, controller: int, payload: dict) -> None:
@@ -1491,8 +1489,13 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
     if index < 0 or index >= len(faces) or index == getattr(card, "selected_face_index", None):
         return
     from rules_engine.card_faces import apply_transform_face
+    previous_face = getattr(card, "selected_face_index", None)
     apply_transform_face(card, index)
     state.log.append(f"{card.name} transforms.")
+    emit_event(state, "transformed", {
+        "card_id": target_id, "controller": card.controller,
+        "from_face_index": previous_face, "to_face_index": index,
+    })
 
 
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
@@ -1521,7 +1524,7 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     counter = payload.get("counter", "+1/+1")
     amount = int(payload.get("amount", 1))
-    if target in state.cards:
+    if target in state.cards and state.cards[target].zone == Zone.BATTLEFIELD:
         card = state.cards[target]
         card.counters[counter] = card.counters.get(counter, 0) + amount
         if payload.get("animate_land") and "Land" in card.types:
