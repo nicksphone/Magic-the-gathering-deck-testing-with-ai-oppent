@@ -26,6 +26,27 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "compleated_payment":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=925)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        state.players[1].mana_pool.update({"C": 2, "G": 2, "U": 1})
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name = "Tamiyo, Compleated Sage"
+        spell.types, spell.type_line = ["Legendary", "Planeswalker"], "Legendary Planeswalker - Tamiyo"
+        spell.mana_cost, spell.loyalty = "{2}{G}{G/U/P}{U}", 5
+        spell.oracle_text = (
+            "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. "
+            "If life was paid, this planeswalker enters with two fewer loyalty counters.)\n"
+            "+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step.\n"
+            "-X: Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card.\n"
+            "-7: Create Tamiyo's Notebook, a legendary colorless artifact token with \"Spells you cast cost {2} less to cast\" and \"{T}: Draw a card.\""
+        )
+        return publish(state, deck)
     if face_kind == "phyrexian_ability":
         deck = [{"quantity": 60, "card_name": "Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=923)

@@ -60,6 +60,25 @@ try {
   await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.some(card => card.name === 'Pestilent Souleater' && card.keywords.includes('infect'))");
   console.log("PASS human activated Phyrexian branch resolves infect through the API");
 
+  for (const [branch, life, loyalty] of [["P", 18, 3], ["G", 20, 5]]) {
+    await click("Compleated Payment Fixture");
+    await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Tamiyo, Compleated Sage'))");
+    await evaluate(`(() => {
+      const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Tamiyo, Compleated Sage'));
+      const payment = box.querySelector('[aria-label^="Pay hybrid symbol"]');
+      if (!payment) throw new Error('Missing compleated payment control');
+      payment.value = ${JSON.stringify(branch)}; payment.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`);
+    await click("Cast Tamiyo, Compleated Sage");
+    await waitFor("window.fixtureState.stack.some(item => item.label === 'Tamiyo, Compleated Sage')");
+    assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.hybrid_choices"), [branch]);
+    assert.equal(await evaluate("window.fixtureState.players['1'].life"), life);
+    await click("Resolve Stack");
+    await waitFor(`window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.some(card => card.name === 'Tamiyo, Compleated Sage' && card.loyalty === ${loyalty})`);
+    assert.equal(await evaluate(`document.querySelector('article.card[title="Tamiyo, Compleated Sage"]')?.textContent.includes('LOY: ${loyalty}')`), true);
+  }
+  console.log("PASS compleated life and mana branches display correct resolved loyalty through the API");
+
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);

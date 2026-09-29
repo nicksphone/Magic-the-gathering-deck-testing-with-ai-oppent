@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+python_bin="${MTG_TEST_PYTHON:-$PWD/backend/.venv/bin/python}"
+if [[ ! -x "$python_bin" ]]; then
+  echo "Browser CI requires backend/.venv/bin/python or MTG_TEST_PYTHON" >&2
+  exit 1
+fi
+
 scratch=$(mktemp -d /tmp/mtg-browser-ci-XXXXXX)
 profile=$(mktemp -d /tmp/mtg-browser-profile-XXXXXX)
 git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
@@ -17,7 +23,7 @@ cleanup() {
 trap cleanup EXIT
 
 start_backend() {
-  (cd "$scratch/backend" && exec python -m uvicorn tests.browser_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.browser_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 

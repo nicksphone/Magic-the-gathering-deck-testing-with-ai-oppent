@@ -64,6 +64,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "hybrid_payment").catch((failure) => setError(String(failure)))}>Hybrid Payment Fixture</button>
     <button onClick={() => reset(false, false, 3, "phyrexian_payment").catch((failure) => setError(String(failure)))}>Phyrexian Payment Fixture</button>
     <button onClick={() => reset(false, false, 3, "phyrexian_ability").catch((failure) => setError(String(failure)))}>Phyrexian Ability Fixture</button>
+    <button onClick={() => reset(false, false, 3, "compleated_payment").catch((failure) => setError(String(failure)))}>Compleated Payment Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
