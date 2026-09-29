@@ -1,6 +1,6 @@
 # Variable life cost and name-fallback boundary (2026-09-29)
 
-Status: open. Three strict expected-failure tests pin a real-card defect; no gameplay repair is included in this audit.
+Status: bounded repair implemented. The three strict expected failures are now positive regressions; the evidence below records the pre-repair defect.
 
 ## Evidence
 
@@ -19,3 +19,11 @@ Status: open. Three strict expected-failure tests pin a real-card defect; no gam
 5. Turn the three xfails green with engine, HTTP/UI, AI, snapshot, and deterministic replay coverage. Until then, flag this wording as unsupported in deck diagnostics and do not treat its simulation results as rules-correct.
 
 This is a general semantic-contract problem, not a Toxic Deluge-only fix. The audit does not certify other variable costs or global continuous effects.
+
+## Repair outcome
+
+- The cost model recognizes the supported `pay X life` additional-cost wording. Checked casts require an explicit X; affordability is checked before payment. The shared payment event fires for positive X, and X=0 remains legal without a payment event.
+- A reusable all-creatures temporary power/toughness handler applies to creatures present when the spell resolves, on both sides, and expires at cleanup. State-based actions handle creatures reduced to zero toughness.
+- AI estimates a useful X from current creature toughness, life risk and friendly losses rather than spending all available life. This heuristic is bounded tactical support, not optimal-play certification.
+- When Oracle text is present but not understood, a card-name substring no longer silently substitutes an unrelated effect. Existing blank-text compatibility guesses remain.
+- Focused engine, snapshot, HTTP and Chromium human-action regressions now check these paths. A three-game seeded BO3 replay completed without timeout or drift, but did not exercise this card and is not balance evidence. Other variable-cost clauses, combined costs and continuous-layer dependencies remain to be certified.

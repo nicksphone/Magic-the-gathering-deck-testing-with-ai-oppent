@@ -143,6 +143,7 @@ export type LegalMove = {
     label: string;
     mana_cost: string;
     pay_life: number;
+    pay_life_x?: boolean;
     discard_cards: number;
     sacrifice_creatures: number;
     sacrifice_kind?: string;
@@ -184,6 +185,7 @@ export type LegalMove = {
     modes?: string[];
     choose_two_modes?: boolean;
     requires_x_value?: boolean;
+    x_value_max?: number;
     up_to_target_count?: number;
     supports_divide?: boolean;
     library_search?: {

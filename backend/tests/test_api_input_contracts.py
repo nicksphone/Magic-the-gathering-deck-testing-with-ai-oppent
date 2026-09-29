@@ -223,6 +223,28 @@ def test_x_cost_failure_and_unknown_cost_face_or_zone_are_atomic(game):
     rejected(client, controller, {"type": "cast_spell", "card_id": "wastes", "from_exile": True, "targets": {"x_value": 0}})
 
 
+def test_variable_additional_life_x_cast_is_validated_and_persisted(game):
+    client, controller = game
+    state = controller.state
+    add_card(controller, "deluge", "Toxic Deluge", Zone.HAND, ["Sorcery"], "{2}{B}",
+             "As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn.")
+    state.players[1].mana_pool.update({"C": 2, "B": 1})
+    persist(controller)
+    url = f"/matches/{state.id}"
+    move = next(item for item in client.get(f"{url}/legal-moves?player_id=1").json()["moves"]
+                if item.get("card_id") == "deluge")
+    assert move["target_hints"]["requires_x_value"]
+    assert move["cost_options"][0]["pay_life_x"]
+    rejected(client, controller, {"type": "cast_spell", "card_id": "deluge"})
+    rejected(client, controller, {"type": "cast_spell", "card_id": "deluge", "targets": {"x_value": 21}})
+    response = client.post(f"{url}/action", json={"player_id": 1, "action": {
+        "type": "cast_spell", "card_id": "deluge", "targets": {"x_value": 2},
+    }})
+    assert response.status_code == 200, response.text
+    assert response.json()["players"]["1"]["life"] == 18
+    assert controller.state.stack[-1].effect_key == "temporary_pt_buff_all"
+
+
 def test_rejected_cleanup_choice_remains_pending(game):
     client, controller = game
     state = controller.state

@@ -622,7 +622,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   <input
                     type="number"
                     min={0}
-                    placeholder="X value"
+                    max={hints.x_value_max}
+                    placeholder={move.cost_options?.some((option) => option.pay_life_x) ? "X life to pay" : "X value"}
                     onChange={(e) =>
                       setTargets((prev) => ({
                         ...prev,

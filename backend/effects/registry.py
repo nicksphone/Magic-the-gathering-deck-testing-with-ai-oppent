@@ -53,6 +53,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "set_next_creature_entry_counter": handlers.set_next_creature_entry_counter,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
     "temporary_pt_buff": handlers.temporary_pt_buff,
+    "temporary_pt_buff_all": handlers.temporary_pt_buff_all,
     "sacrifice": handlers.sacrifice,
     "tap": handlers.tap_card,
     "untap": handlers.untap_card,

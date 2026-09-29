@@ -785,7 +785,7 @@ class RulesEngine:
                 if cost_staging:
                     state.trigger_staging = True
                     state.trigger_staging_event = "spell_cast"
-                if not apply_additional_costs(state, player_id, chosen, cid):
+                if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value):
                     if cost_staging:
                         state.staged_triggers.clear()
                         state.trigger_staging = False

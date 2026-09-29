@@ -19,6 +19,7 @@ from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 from rules_engine.replacement import graveyard_destination
+from rules_engine.costs import PAY_X_LIFE_RE
 
 
 def _has_counter_spell_text(text: str) -> bool:
@@ -1405,6 +1406,7 @@ class AIAgent:
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         mana_cost_text = (getattr(card, "mana_cost", "") or "").upper()
         x_value = 0
+        life_x = bool(PAY_X_LIFE_RE.search(getattr(card, "oracle_text", "") or ""))
         if "{X}" in mana_cost_text:
             x_value = self._choose_x_value(state, player_id, mana_cost_text, card=card)
             if x_value <= 0:
@@ -1413,6 +1415,10 @@ class AIAgent:
             x_penalty = self._x_spell_timing_penalty(state, card, player_id, x_value)
             if x_penalty <= -3.5:
                 return x_penalty
+        elif life_x:
+            x_value = self._choose_variable_life_x(state, player_id, card)
+            if x_value <= 0:
+                return -8.0
         power = getattr(card, "power", 0) or 0
         is_big_threat = power >= 4 or cmc >= 4
         if face_score:
@@ -2309,6 +2315,8 @@ class AIAgent:
             if mtype == "activate_loyalty" and cid:
                 loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)
                 targets["x_value"] = max(0, min(3, loyalty_now))
+            elif card is not None and PAY_X_LIFE_RE.search(getattr(card, "oracle_text", "") or ""):
+                targets["x_value"] = self._choose_variable_life_x(state, player_id, card)
             else:
                 targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card) or 0
 
@@ -2837,6 +2845,37 @@ class AIAgent:
             weakest = min(current, key=lambda cid: (_eff_pow(state, cid), _eff_tgh(state, cid)))
             current.remove(weakest)
         return []
+
+    def _choose_variable_life_x(self, state: MatchState, player_id: int, card) -> int:
+        from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE
+        from rules_engine.replacement import can_pay_life
+
+        if not ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
+            return 0
+        opponent = 1 if player_id == 2 else 2
+        creatures = [
+            (pid, cid, effective_toughness(state, cid))
+            for pid in (player_id, opponent)
+            for cid in state.players[pid].battlefield
+            if "Creature" in state.cards[cid].types
+        ]
+        if not creatures:
+            return 0
+        max_x = min(max(0, state.players[player_id].life - 1), max(t for _, _, t in creatures))
+        best = (0.0, 0)
+        for x in range(1, max_x + 1):
+            if not can_pay_life(state, player_id, x):
+                continue
+            score = -0.35 * x - 1.0
+            if state.players[player_id].life - x <= 5:
+                score -= 3.0
+            for pid, cid, toughness in creatures:
+                if toughness <= x:
+                    value = max(1.0, self._creature_threat_score(state, cid, opponent if pid == player_id else player_id))
+                    score += -value if pid == player_id else value
+            if score > best[0]:
+                best = (score, x)
+        return best[1]
 
     def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str, card=None) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())

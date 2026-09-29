@@ -61,6 +61,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "alternative_target").catch((failure) => setError(String(failure)))}>Alternative Target Fixture</button>
+    <button onClick={() => reset(false, false, 3, "variable_life_x").catch((failure) => setError(String(failure)))}>Variable Life X Fixture</button>
     <button onClick={() => reset(false, false, 3, "first_strike_window").catch((failure) => setError(String(failure)))}>First Strike Fixture</button>
     <button onClick={() => reset(false, false, 3, "combat_damage_assignment").catch((failure) => setError(String(failure)))}>Damage Assignment Fixture</button>
     <button onClick={() => reset(false, false, 3, "shared_trample").catch((failure) => setError(String(failure)))}>Shared Trample Fixture</button>

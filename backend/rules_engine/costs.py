@@ -12,6 +12,7 @@ from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
 KICKER_RE = re.compile(r"kicker\s+((?:\{[^}]+\})+)", re.IGNORECASE)
 PAY_LIFE_RE = re.compile(r"additional cost to cast[^.]*pay\s+(\d+)\s+life", re.IGNORECASE)
+PAY_X_LIFE_RE = re.compile(r"additional cost to cast[^.]*pay\s+x\s+life\b", re.IGNORECASE)
 ACTIVATED_PAY_LIFE_RE = re.compile(r"pay\s+(\d+)\s+life", re.IGNORECASE)
 ACTIVATED_DISCARD_RE = re.compile(r"discard\s+(?:a|one|an|\d+)\s+cards?", re.IGNORECASE)
 ACTIVATED_SACRIFICE_RE = re.compile(r"sacrifice\s+(?:a|an|this|one|\d+)\s+", re.IGNORECASE)
@@ -23,6 +24,7 @@ class CostOption:
     label: str
     mana_cost: str
     pay_life: int = 0
+    pay_life_x: bool = False
     discard_cards: int = 0
     sacrifice_creatures: int = 0
     sacrifice_kind: str = "creature"
@@ -219,6 +221,9 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
         life = int(life_match.group(1))
         for opt in options:
             opt.pay_life += life
+    if PAY_X_LIFE_RE.search(card.oracle_text or ""):
+        for opt in options:
+            opt.pay_life_x = True
 
     if "as an additional cost to cast" in oracle and "discard" in oracle and "card" in oracle:
         for opt in options:
@@ -242,9 +247,11 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
     player = state.players[player_id]
+    if x_value < 0:
+        return False
     if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
-    if not can_pay_life(state, player_id, option.pay_life):
+    if not can_pay_life(state, player_id, option.pay_life + (x_value if option.pay_life_x else 0)):
         return False
     if sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in player.hand) < option.discard_cards:
         return False
@@ -265,14 +272,16 @@ def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> 
     return options[0]
 
 
-def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str) -> bool:
+def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str, x_value: int = 0) -> bool:
     player = state.players[player_id]
-    if not can_pay_life(state, player_id, option.pay_life):
+    life_amount = option.pay_life + (x_value if option.pay_life_x else 0)
+    if x_value < 0 or not can_pay_life(state, player_id, life_amount):
         return False
-    if option.pay_life:
+    if life_amount:
         from rules_engine.replacement import pay_life
-        pay_life(state, player_id, option.pay_life)
-        state.log.append(f"{player.name} pays {option.pay_life} life as an additional cost.")
+        if not pay_life(state, player_id, life_amount):
+            return False
+        state.log.append(f"{player.name} pays {life_amount} life as an additional cost.")
 
     for _ in range(option.discard_cards):
         discard_id = _first_discardable_card(state, player_id, exclude={spell_card_id})

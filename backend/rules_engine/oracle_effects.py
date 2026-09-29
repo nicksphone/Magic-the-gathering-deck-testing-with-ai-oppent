@@ -109,6 +109,7 @@ COUNTER_TARGET_SPELL_RE = re.compile(
     r"\bcounter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\b",
     re.IGNORECASE,
 )
+ALL_CREATURES_X_DEBUFF_RE = re.compile(r"\ball creatures get -x/-x until end of turn\b", re.IGNORECASE)
 
 
 def infer_effect_from_oracle(
@@ -231,12 +232,12 @@ def infer_effect_from_oracle(
     if len(effects) == 1:
         return effects[0]
 
-    if any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
+    if not oracle and any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
         opp = action_targets.get("target_player", 1 if controller == 2 else 2)
         return "deal_damage", {"target_player": opp, "amount": 3}
-    if any(k in name for k in ["consider", "deluge"]):
+    if not oracle and any(k in name for k in ["consider", "deluge"]):
         return "draw_cards", {"amount": 1}
-    if "counterspell" in name and state.stack:
+    if not oracle and "counterspell" in name and state.stack:
         return "counter_spell", {"target_stack_id": state.stack[-1].id}
 
     # Static-only/keyword text often has no explicit resolver-side action.
@@ -491,11 +492,15 @@ def inspect_target_hints(
         hints["modes"] = modes
     if CHOOSE_TWO_RE.search(oracle):
         hints["choose_two_modes"] = True
-    # X should generally be user-supplied only when present in cast cost.
+    # X is announced for a mana cost or an explicitly supported additional cost.
     # Do not require x_value for cards whose oracle text references X contextually
-    # (e.g. "where X is..." or cycling text) unless the spell itself has {X} cost.
-    if "x" in (card.mana_cost or "").lower():
+    # (e.g. "where X is..." or cycling text) without an announced-cost X.
+    from rules_engine.costs import PAY_X_LIFE_RE
+    if "{x}" in (card.mana_cost or "").lower() or PAY_X_LIFE_RE.search(raw_oracle):
         hints["requires_x_value"] = True
+    if PAY_X_LIFE_RE.search(raw_oracle):
+        from rules_engine.replacement import can_pay_life
+        hints["x_value_max"] = max(0, state.players[controller].life) if can_pay_life(state, controller, 1) else 0
     up_to_match = UP_TO_RE.search(oracle)
     if up_to_match:
         hints["up_to_target_count"] = int(up_to_match.group(1))
@@ -907,6 +912,9 @@ def _infer_clause_effect(
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
+
+    if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
+        return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}
 
     if COPY_CREATURE_TOKEN_RE.search(oracle):
         return "create_token_copy", {

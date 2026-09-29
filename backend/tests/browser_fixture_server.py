@@ -26,6 +26,27 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "variable_life_x":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=46)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool.update({"B": 1, "C": 2})
+        cards = [
+            CardInstance(id="deluge", name="Toxic Deluge", owner=2, controller=2,
+                         zone=Zone.HAND, types=["Sorcery"], mana_cost="{2}{B}",
+                         oracle_text="As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn."),
+            CardInstance(id="own-four", name="Giant Spider", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=4, oracle_text="Reach"),
+            CardInstance(id="their-two", name="Grizzly Bears", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+        ]
+        for card in cards:
+            state.cards[card.id] = card
+            getattr(state.players[card.owner], card.zone.value).append(card.id)
+        return publish(state, deck)
     if face_kind in {"conditional_land", "conditional_land_effect"}:
         import json
         from effects.handlers import put_land_from_hand

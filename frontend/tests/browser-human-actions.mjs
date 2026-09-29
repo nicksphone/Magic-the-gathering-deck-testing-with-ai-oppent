@@ -81,6 +81,17 @@ try {
   await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'teferi' && c.loyalty === 1)");
   console.log("PASS player-or-planeswalker choice uses one selector and damages loyalty");
 
+  await click("Variable Life X Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Toxic Deluge'))");
+  assert.equal(await evaluate("document.querySelector('.cast-card-box input[type=number]')?.max"), "20");
+  await evaluate("(() => { const input = document.querySelector('.cast-card-box input[type=number]'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '2'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  await click("Cast Toxic Deluge");
+  await waitFor("window.fixtureState.players['2'].life === 18 && window.fixtureState.stack.some(item => item.label === 'Toxic Deluge')");
+  assert.equal(await evaluate("window.fixtureActions[0].action.targets.x_value"), 2);
+  await click("Resolve Stack");
+  await waitFor("!window.fixtureState.players['1'].battlefield.some(c => c.id === 'their-two') && window.fixtureState.players['2'].battlefield.some(c => c.id === 'own-four' && c.toughness === 2)");
+  console.log("PASS human chooses variable life X and global debuff resolves through UI/API");
+
   await click("First Strike Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && window.fixtureState.step === 'declare_blockers'");
   await click("Resolve Stack");

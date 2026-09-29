@@ -177,7 +177,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         choice = (action.get("cost_choice") or {}).get("id")
         require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
         if targets.get("x_value") is not None:
-            require("{X}" in face_card.mana_cost.upper(), "This casting cost does not have a chosen X")
+            require("{X}" in face_card.mana_cost.upper() or any(option.pay_life_x for option in options), "This casting cost does not have a chosen X")
 
 
 def validate_tap(state, player_id: int, action: dict) -> None:
