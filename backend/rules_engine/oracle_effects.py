@@ -50,7 +50,7 @@ TARGET_MV_CONTROLLED_TYPE_RE = re.compile(
     r"mana value\s+(?:less than or equal to\s+)?the number of\s+([a-z]+)s?\s+you control",
     re.IGNORECASE,
 )
-COPY_STACK_RE = re.compile(r"copy target (instant or sorcery spell|spell|activated or triggered ability|activated ability|triggered ability)", re.IGNORECASE)
+COPY_STACK_RE = re.compile(r"copy target (instant or sorcery spell|permanent spell|spell|activated or triggered ability|activated ability|triggered ability)", re.IGNORECASE)
 COPY_CREATURE_TOKEN_RE = re.compile(r"create a token that's a copy of (?:another )?target (?:nonlegendary )?creature you control", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
@@ -819,6 +819,8 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
 
     if "target instant or sorcery spell" in oracle:
         restrictions["allowed_types"] = ["Instant", "Sorcery"]
+    elif "target permanent spell" in oracle:
+        restrictions["allowed_types"] = ["Artifact", "Battle", "Creature", "Enchantment", "Planeswalker"]
     elif "target creature or planeswalker" in oracle:
         restrictions["allowed_types"] = ["Creature", "Planeswalker"]
     elif "target artifact or enchantment" in oracle:

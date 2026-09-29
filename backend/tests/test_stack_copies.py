@@ -560,3 +560,56 @@ def test_lithoform_cannot_copy_an_opponents_ability() -> None:
             "ability_index": 0, "targets": {"target_stack_id": "opponent-ability"},
         })
     assert serialize_match_snapshot(state) == before
+
+
+def test_lithoform_permanent_spell_copy_enters_as_token() -> None:
+    import pytest
+
+    state = _state()
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool["C"] = 4
+    engine = CardInstance(
+        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
+        oracle_text=(
+            "{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.\n"
+            "{3}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n"
+            "{4}, {T}: Copy target permanent spell you control. (The copy becomes a token.)"
+        ),
+    )
+    state.cards[engine.id] = engine
+    state.players[1].battlefield.append(engine.id)
+    for cid, types in (("bear", ["Creature"]), ("bolt", ["Instant"])):
+        card = CardInstance(
+            id=cid, name="Grizzly Bears" if cid == "bear" else "Lightning Bolt",
+            owner=1, controller=1, zone=Zone.STACK, types=types,
+            mana_cost="{1}{G}" if cid == "bear" else "{R}",
+            power=2 if cid == "bear" else None,
+            toughness=2 if cid == "bear" else None,
+        )
+        state.cards[cid] = card
+        state.stack.append(StackItem(
+            id=f"{cid}-spell", source_card_id=cid, controller=1,
+            label=card.name, effect_key="noop", payload={},
+        ))
+    rules = RulesEngine()
+    before = serialize_match_snapshot(state)
+    with pytest.raises(Exception):
+        checked_action(state, rules, 1, {
+            "type": "activate_ability", "card_id": engine.id,
+            "ability_index": 2, "targets": {"target_stack_id": "bolt-spell"},
+        })
+    assert serialize_match_snapshot(state) == before
+    state = checked_action(state, rules, 1, {
+        "type": "activate_ability", "card_id": engine.id,
+        "ability_index": 2, "targets": {"target_stack_id": "bear-spell"},
+    })
+    rules.take_action(state, 1, {"type": "pass_priority"})
+    rules.take_action(state, 2, {"type": "pass_priority"})
+    assert state.pending_mechanic_choice is None
+    assert state.stack[-1].label == "Grizzly Bears (copy)"
+    assert resolve_top_of_stack(state)
+    tokens = [state.cards[cid] for cid in state.players[1].battlefield if state.cards[cid].is_token]
+    assert len(tokens) == 1
+    assert (tokens[0].name, tokens[0].power, tokens[0].toughness) == ("Grizzly Bears", 2, 2)
+    assert state.cards["bear"].zone == Zone.STACK

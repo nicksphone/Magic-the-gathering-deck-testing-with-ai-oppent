@@ -145,6 +145,34 @@ def test_lithoform_ability_copy_targets_only_controlled_abilities() -> None:
     assert payload["copy_kind"] == "activated or triggered ability"
 
 
+def test_copy_target_permanent_spell_excludes_instants_and_sorceries() -> None:
+    from game_state.state import StackItem
+
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Island"}],
+        [{"quantity": 60, "card_name": "Island"}], seed=938,
+    )
+    for cid, types, controller in (("creature", ["Creature"], 1), ("artifact", ["Artifact"], 1),
+                                   ("instant", ["Instant"], 1), ("sorcery", ["Sorcery"], 1),
+                                   ("opponent-creature", ["Creature"], 2)):
+        card = CardInstance(id=cid, name=cid, owner=controller, controller=controller,
+                            zone=Zone.STACK, types=types)
+        state.cards[cid] = card
+        state.stack.append(StackItem(cid, cid, controller, cid, "noop", {}))
+    copier = CardInstance(
+        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"],
+        oracle_text="{4}, {T}: Copy target permanent spell you control. (The copy becomes a token.)",
+    )
+    hints = inspect_target_hints(state, copier, 1)
+    assert {target["id"] for target in hints["stack_targets"]} == {"creature", "artifact"}
+    effect_key, payload = infer_effect_from_oracle(
+        state, copier, 1, action_targets={"target_stack_id": "creature"},
+    )
+    assert effect_key == "copy_spell"
+    assert payload["may_choose_new_targets"] is False
+
+
 def test_oracle_counter_ability_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
