@@ -27,6 +27,7 @@ DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
 
 
 def parse_mana_cost(mana_cost: str, is_land: bool = False, x_value: int = 0) -> dict[str, int]:
+    """Return a single cost estimate; payment alternatives use _payment_requirements."""
     if is_land:
         return {"generic": 0, "W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
     if not mana_cost:
@@ -107,9 +108,41 @@ def can_pay_with_pool_and_lands(
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
-    mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
-    return _plan_mana_sources(state, player_id, req) is not None
+    return any(
+        _plan_mana_sources(state, player_id, req) is not None
+        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase)
+    )
+
+
+def _payment_requirements(
+    mana_cost: str, is_land: bool, x_value: int, generic_reduction: int, generic_increase: int,
+) -> list[dict[str, int]]:
+    if is_land:
+        return [parse_mana_cost("", is_land=True)]
+    keys = ("generic", "W", "U", "B", "R", "G", "C")
+    choices: list[dict[str, int]] = [{key: 0 for key in keys}]
+    for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
+        parts = symbol.split("/")
+        if len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts):
+            options = [("generic", 2) if part == "2" else (part, 1) for part in parts]
+            options.sort(key=lambda item: item[0] == "generic")
+        else:
+            parsed = parse_mana_cost("{" + symbol + "}", x_value=x_value)
+            options = [(key, amount) for key, amount in parsed.items() if amount]
+        next_choices = []
+        seen: set[tuple[int, ...]] = set()
+        for base in choices:
+            for key, amount in options or [("generic", 0)]:
+                option = dict(base)
+                option[key] += amount
+                signature = tuple(option[item] for item in keys)
+                if signature not in seen:
+                    seen.add(signature)
+                    next_choices.append(option)
+        choices = next_choices
+    for option in choices:
+        option["generic"] = max(0, option["generic"] + generic_increase - generic_reduction)
+    return choices
 
 
 def _plan_mana_sources(state: MatchState, player_id: int, req: dict[str, int]) -> list[tuple[str, str, int, bool]] | None:
@@ -189,11 +222,15 @@ def auto_pay_cost(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
     ))
-    mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
-    plan = _plan_mana_sources(state, player_id, req)
-    if plan is None:
+    payment = next(
+        ((req, plan) for req in _payment_requirements(
+            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase,
+        ) if (plan := _plan_mana_sources(state, player_id, req)) is not None),
+        None,
+    )
+    if payment is None:
         return False
+    req, plan = payment
     player = state.players[player_id]
     for color in ("C", "W", "U", "B", "R", "G"):
         player.mana_pool.setdefault(color, 0)
@@ -215,40 +252,29 @@ def auto_pay_cost(
 
 
 def mana_value(mana_cost: str, is_land: bool = False, x_value: int = 0) -> int:
-    req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
-    return int(req["generic"] + req["C"] + sum(req[c] for c in ["W", "U", "B", "R", "G"]))
+    if is_land:
+        return 0
+    total = 0
+    for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
+        if symbol in {"X", "Y"}:
+            total += max(0, x_value)
+        elif "/" in symbol:
+            total += max((int(part) if part.isdigit() else 1 for part in symbol.split("/") if part != "P"), default=1)
+        else:
+            total += int(symbol) if symbol.isdigit() else 1
+    return total
 
 
 def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic_increase: int) -> str:
-    variable_symbols = re.findall(r"\{[XY]\}", (mana_cost or "").upper())
-    req = parse_mana_cost(mana_cost)
-    req["generic"] = max(0, req["generic"] + generic_increase - generic_reduction)
-    return (
-        ("{" + str(req["generic"]) + "}" if req["generic"] > 0 else "")
-        + ("".join(variable_symbols))
-        + ("{W}" * req["W"])
-        + ("{U}" * req["U"])
-        + ("{B}" * req["B"])
-        + ("{R}" * req["R"])
-        + ("{G}" * req["G"])
-        + ("{C}" * req["C"])
+    symbols = MANA_SYMBOL_RE.findall((mana_cost or "").upper())
+    generic = max(0, sum(int(symbol) for symbol in symbols if symbol.isdigit()) + generic_increase - generic_reduction)
+    return ("{" + str(generic) + "}" if generic else "") + "".join(
+        "{" + symbol + "}" for symbol in symbols if not symbol.isdigit()
     )
 
 
 def add_generic_to_cost(mana_cost: str, generic_add: int) -> str:
-    variable_symbols = re.findall(r"\{[XY]\}", (mana_cost or "").upper())
-    req = parse_mana_cost(mana_cost)
-    req["generic"] = max(0, req["generic"] + max(0, int(generic_add)))
-    return (
-        ("{" + str(req["generic"]) + "}" if req["generic"] > 0 else "")
-        + ("".join(variable_symbols))
-        + ("{W}" * req["W"])
-        + ("{U}" * req["U"])
-        + ("{B}" * req["B"])
-        + ("{R}" * req["R"])
-        + ("{G}" * req["G"])
-        + ("{C}" * req["C"])
-    )
+    return _apply_generic_delta_to_cost(mana_cost, 0, max(0, int(generic_add)))
 
 
 def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> Set[str]:

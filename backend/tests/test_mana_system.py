@@ -3,7 +3,66 @@ from __future__ import annotations
 from game_state.state import Zone
 from game_state.state import CardInstance, MatchFactory, Step
 from rules_engine.engine import RulesEngine
-from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, land_mana_amount
+from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_pool_and_lands, land_mana_amount, mana_value
+
+
+def test_spectral_procession_hybrid_cost_uses_white_or_generic_mana() -> None:
+    cost = "{2/W}{2/W}{2/W}"
+    assert mana_value(cost) == 6
+    for land_name, count in (("Plains", 3), ("Island", 6)):
+        deck = [{"quantity": 60, "card_name": land_name}]
+        state = MatchFactory.from_decks(deck, deck, seed=101)
+        for _ in range(count):
+            cid = state.players[1].library.pop()
+            state.cards[cid].zone = Zone.BATTLEFIELD
+            state.players[1].battlefield.append(cid)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.step = Step.PRECOMBAT_MAIN
+        state.priority_player = 1
+        spell_id = state.players[1].hand[0]
+        spell = state.cards[spell_id]
+        spell.name = "Spectral Procession"
+        spell.types = ["Sorcery"]
+        spell.mana_cost = cost
+        assert any(move["type"] == "cast_spell" and move.get("card_id") == spell_id
+                   for move in RulesEngine().legal_moves(state, 1))
+        assert can_pay_with_pool_and_lands(state, 1, cost)
+        assert auto_pay_cost(state, 1, cost)
+        assert sum(state.cards[cid].tapped for cid in state.players[1].battlefield) == count
+        assert all(value == 0 for value in state.players[1].mana_pool.values())
+
+
+def test_two_color_hybrid_uses_either_color_without_changing_mana_value() -> None:
+    assert mana_value("{W/U}{W/U}") == 2
+    for land_name in ("Plains", "Island"):
+        deck = [{"quantity": 60, "card_name": land_name}]
+        state = MatchFactory.from_decks(deck, deck, seed=102)
+        for _ in range(2):
+            cid = state.players[1].library.pop()
+            state.cards[cid].zone = Zone.BATTLEFIELD
+            state.players[1].battlefield.append(cid)
+        assert can_pay_with_pool_and_lands(state, 1, "{W/U}{W/U}")
+        assert auto_pay_cost(state, 1, "{W/U}{W/U}")
+
+
+def test_generic_reduction_applies_after_monocolored_hybrid_choice(monkeypatch) -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=103)
+    cid = state.players[1].library.pop()
+    state.cards[cid].zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(cid)
+    assert not can_pay_with_pool_and_lands(state, 1, "{2/W}")
+
+    def reduce_one(context):
+        context.generic_reduction = 1
+        return context
+
+    monkeypatch.setattr("rules_engine.mana.apply_cost_modifiers", reduce_one)
+    assert can_pay_with_pool_and_lands(state, 1, "{2/W}")
+    assert auto_pay_cost(state, 1, "{2/W}")
+    assert state.cards[cid].tapped
+    assert add_generic_to_cost("{2/W}{W/U}", 1) == "{1}{2/W}{W/U}"
 
 
 def test_nonland_single_color_source_is_used_before_flexible_land() -> None:
