@@ -185,6 +185,20 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         options = collect_cost_options(state, player_id, face_card)
         choice = (action.get("cost_choice") or {}).get("id")
         require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
+        hybrid_choices = action.get("hybrid_choices")
+        if hybrid_choices is not None:
+            from rules_engine.mana import hybrid_payment_symbols, can_pay_with_pool_and_lands
+            require(bool(choice), "Select a casting cost option for hybrid payment")
+            option = next(option for option in options if option.id == choice)
+            symbols = hybrid_payment_symbols(option.mana_cost)
+            require(bool(symbols), "Selected cost has no supported hybrid symbols")
+            require(len(hybrid_choices) == len(symbols), "Choose one branch for each hybrid symbol")
+            require(all(branch in symbol["choices"] for branch, symbol in zip(hybrid_choices, symbols)), "Invalid hybrid payment branch")
+            require(can_pay_with_pool_and_lands(
+                state, player_id, option.mana_cost, card_name=face_card.name,
+                x_value=int(targets.get("x_value") or 0), spell_types=set(face_card.types),
+                hybrid_choices=hybrid_choices,
+            ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:
             require("{X}" in face_card.mana_cost.upper() or any(option.pay_life_x for option in options), "This casting cost does not have a chosen X")
 

@@ -101,6 +101,7 @@ def can_pay_with_pool_and_lands(
     x_value: int = 0,
     spell_types: set[str] | None = None,
     apply_modifiers: bool = True,
+    hybrid_choices: list[str] | None = None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -110,22 +111,43 @@ def can_pay_with_pool_and_lands(
         context = apply_cost_modifiers(context)
     return any(
         _plan_mana_sources(state, player_id, req) is not None
-        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase)
+        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices)
     )
+
+
+def hybrid_payment_symbols(mana_cost: str) -> list[dict[str, object]]:
+    out = []
+    for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
+        parts = symbol.split("/")
+        if len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts):
+            out.append({"symbol": symbol, "choices": parts})
+    return out
 
 
 def _payment_requirements(
     mana_cost: str, is_land: bool, x_value: int, generic_reduction: int, generic_increase: int,
+    hybrid_choices: list[str] | None = None,
 ) -> list[dict[str, int]]:
     if is_land:
         return [parse_mana_cost("", is_land=True)]
+    hybrid_symbols = hybrid_payment_symbols(mana_cost)
+    if hybrid_choices is not None and (
+        len(hybrid_choices) != len(hybrid_symbols)
+        or any(choice not in symbol["choices"] for choice, symbol in zip(hybrid_choices, hybrid_symbols))
+    ):
+        return []
     keys = ("generic", "W", "U", "B", "R", "G", "C")
     choices: list[dict[str, int]] = [{key: 0 for key in keys}]
+    hybrid_index = 0
     for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
         parts = symbol.split("/")
         if len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts):
             options = [("generic", 2) if part == "2" else (part, 1) for part in parts]
-            options.sort(key=lambda item: item[0] == "generic")
+            if hybrid_choices is not None:
+                options = [options[parts.index(hybrid_choices[hybrid_index])]]
+            else:
+                options.sort(key=lambda item: item[0] == "generic")
+            hybrid_index += 1
         else:
             parsed = parse_mana_cost("{" + symbol + "}", x_value=x_value)
             options = [(key, amount) for key, amount in parsed.items() if amount]
@@ -217,6 +239,7 @@ def auto_pay_cost(
     card_name: str = "",
     x_value: int = 0,
     spell_types: set[str] | None = None,
+    hybrid_choices: list[str] | None = None,
 ) -> bool:
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -224,7 +247,7 @@ def auto_pay_cost(
     ))
     payment = next(
         ((req, plan) for req in _payment_requirements(
-            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase,
+            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices,
         ) if (plan := _plan_mana_sources(state, player_id, req)) is not None),
         None,
     )

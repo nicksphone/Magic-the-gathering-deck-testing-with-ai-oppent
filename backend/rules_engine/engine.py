@@ -784,6 +784,7 @@ class RulesEngine:
                 paid = auto_pay_cost(
                     state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
+                    hybrid_choices=action.get("hybrid_choices"),
                 )
                 if not paid:
                     reject("Cannot pay spell cost and ward tax")

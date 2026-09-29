@@ -3,7 +3,9 @@ from __future__ import annotations
 from game_state.state import Zone
 from game_state.state import CardInstance, MatchFactory, Step
 from rules_engine.engine import RulesEngine
-from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_pool_and_lands, land_mana_amount, mana_value
+from rules_engine.action_validation import ActionRejected, checked_action
+from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_pool_and_lands, hybrid_payment_symbols, land_mana_amount, mana_value
+import pytest
 
 
 def test_spectral_procession_hybrid_cost_uses_white_or_generic_mana() -> None:
@@ -44,6 +46,50 @@ def test_two_color_hybrid_uses_either_color_without_changing_mana_value() -> Non
             state.players[1].battlefield.append(cid)
         assert can_pay_with_pool_and_lands(state, 1, "{W/U}{W/U}")
         assert auto_pay_cost(state, 1, "{W/U}{W/U}")
+
+
+def test_explicit_hybrid_payment_rejects_unaffordable_branch_without_tapping() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=104)
+    cid = state.players[1].library.pop()
+    state.cards[cid].zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(cid)
+    assert hybrid_payment_symbols("{W/U}") == [{"symbol": "W/U", "choices": ["W", "U"]}]
+    assert not can_pay_with_pool_and_lands(state, 1, "{W/U}", hybrid_choices=["W"])
+    assert not auto_pay_cost(state, 1, "{W/U}", hybrid_choices=["W"])
+    assert not state.cards[cid].tapped
+    assert auto_pay_cost(state, 1, "{W/U}", hybrid_choices=["U"])
+    assert state.cards[cid].tapped
+
+
+def test_checked_cast_requires_valid_affordable_per_symbol_hybrid_choices() -> None:
+    deck = [{"quantity": 60, "card_name": "Plains"}]
+    state = MatchFactory.from_decks(deck, deck, seed=105)
+    for _ in range(3):
+        cid = state.players[1].library.pop()
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        state.players[1].battlefield.append(cid)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    spell_id = state.players[1].hand[0]
+    spell = state.cards[spell_id]
+    spell.name = "Spectral Procession"
+    spell.types, spell.type_line, spell.mana_cost = ["Sorcery"], "Sorcery", "{2/W}{2/W}{2/W}"
+    spell.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
+    move = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == spell_id and move["type"] == "cast_spell")
+    option = move["cost_options"][0]
+    assert option["hybrid_symbols"] == [{"symbol": "2/W", "choices": ["2", "W"]}] * 3
+    action = {"type": "cast_spell", "card_id": spell_id, "cost_choice": {"id": option["id"]}}
+    for choices in (["2", "2", "2"], ["W", "W"], ["U", "W", "W"]):
+        with pytest.raises(ActionRejected):
+            checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": choices})
+        assert spell_id in state.players[1].hand
+        assert not any(state.cards[cid].tapped for cid in state.players[1].battlefield)
+    cast = checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["W", "W", "W"]})
+    assert cast.stack[-1].source_card_id == spell_id
+    assert sum(cast.cards[cid].tapped for cid in cast.players[1].battlefield) == 3
 
 
 def test_generic_reduction_applies_after_monocolored_hybrid_choice(monkeypatch) -> None:

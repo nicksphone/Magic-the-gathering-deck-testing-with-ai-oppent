@@ -14,6 +14,20 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Hybrid Payment Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Spectral Procession'))");
+  assert.equal(await evaluate("document.querySelectorAll('[aria-label^=\"Pay hybrid symbol\"]').length"), 3);
+  await evaluate(`(() => {
+    for (const select of document.querySelectorAll('[aria-label^="Pay hybrid symbol"]')) {
+      select.value = 'W'; select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  })()`);
+  await click("Cast Spectral Procession");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Spectral Procession')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.hybrid_choices"), ["W", "W", "W"]);
+  assert.equal(await evaluate("window.fixtureState.players['1'].battlefield.filter(card => card.name === 'Plains' && card.tapped).length"), 3);
+  console.log("PASS human hybrid branches reach the API and pay the printed white cost");
+
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);

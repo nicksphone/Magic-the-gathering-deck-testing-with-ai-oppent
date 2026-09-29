@@ -10,7 +10,7 @@ from rules_engine.costs import activated_cost_available, check_cost_option_avail
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.entry import land_entry_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
-from rules_engine.mana import can_pay_with_pool_and_lands
+from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing
@@ -221,6 +221,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                             "id": o.id,
                             "label": o.label,
                             "mana_cost": o.mana_cost,
+                            "hybrid_symbols": hybrid_payment_symbols(o.mana_cost),
                             "pay_life": o.pay_life,
                             "pay_life_x": o.pay_life_x,
                             "discard_cards": o.discard_cards,

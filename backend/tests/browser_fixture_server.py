@@ -26,6 +26,24 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "hybrid_payment":
+        deck = [{"quantity": 60, "card_name": "Plains"}]
+        state = MatchFactory.from_decks(deck, deck, seed=921)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        for _ in range(3):
+            cid = state.players[1].library.pop()
+            state.cards[cid].zone = Zone.BATTLEFIELD
+            state.players[1].battlefield.append(cid)
+        spell = state.cards[state.players[1].hand[0]]
+        spell.name = "Spectral Procession"
+        spell.types, spell.type_line = ["Sorcery"], "Sorcery"
+        spell.mana_cost = "{2/W}{2/W}{2/W}"
+        spell.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
+        return publish(state, deck)
     if face_kind in {"thoughtseize", "duress", "inquisition", "despise", "appetite"}:
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=920)

@@ -110,6 +110,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
+  const [hybridChoice, setHybridChoice] = useState<Record<string, string>>({});
   const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
   const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
@@ -168,11 +169,15 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       ? { ...t, target_card_id: undefined, target_player: undefined, target_stack_id: undefined,
           mode_targets: Object.fromEntries(selectedModes.map((mode) => [mode, modeTargets[mode] ?? {}])) }
       : t;
+    const optionId = costChoice[cardId] || move?.cost_options?.[0]?.id;
+    const symbols = move?.cost_options?.find((option) => option.id === optionId)?.hybrid_symbols ?? [];
+    const branches = symbols.map((_, index) => hybridChoice[`${cardId}:${selectedFaceIndex ?? 0}:${optionId}:${index}`] ?? "");
     onCardAction(viewerSeat, {
       type: "cast_spell",
       card_id: cardId,
       targets: announced,
-      cost_choice: costChoice[cardId] ? { id: costChoice[cardId] } : undefined,
+      cost_choice: optionId ? { id: optionId } : undefined,
+      hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined,
       selected_face_index: selectedFaceIndex,
       from_exile: move?.from_exile,
       from_library: move?.from_library,
@@ -539,6 +544,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
+            const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const hybridSymbols = move.cost_options?.find((option) => option.id === selectedCostId)?.hybrid_symbols ?? [];
+            const chosenHybridBranches = hybridSymbols.map((_, index) => hybridChoice[`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`] ?? "");
+            const incompleteHybridChoice = chosenHybridBranches.some(Boolean) && !chosenHybridBranches.every(Boolean);
             return (
               <div
                 key={card.id}
@@ -548,6 +557,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               >
                 {landControls}
                 <button
+                  disabled={incompleteHybridChoice}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
@@ -587,6 +597,19 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ))}
                   </select>
                 ) : null}
+                {hybridSymbols.map((symbol, index) => (
+                  <label key={`${card.id}-hybrid-${selectedCostId}-${index}`}>
+                    {`Pay {${symbol.symbol}}`}
+                    <select
+                      aria-label={`Pay hybrid symbol ${index + 1} {${symbol.symbol}}`}
+                      value={chosenHybridBranches[index]}
+                      onChange={(e) => setHybridChoice((prev) => ({ ...prev, [`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`]: e.target.value }))}
+                    >
+                      <option value="">Auto</option>
+                      {symbol.choices.map((branch) => <option key={`${symbol.symbol}-${branch}`} value={branch}>{branch === "2" ? "2 generic mana" : branch}</option>)}
+                    </select>
+                  </label>
+                ))}
                 {showAlternativeSelect ? (
                   <select
                     value={targets[card.id]?.target_card_id ? `card:${targets[card.id].target_card_id}` : targets[card.id]?.target_player ? `player:${targets[card.id].target_player}` : ""}

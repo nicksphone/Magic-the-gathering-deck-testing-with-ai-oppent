@@ -144,6 +144,7 @@ export type LegalMove = {
     id: string;
     label: string;
     mana_cost: string;
+    hybrid_symbols?: { symbol: string; choices: string[] }[];
     pay_life: number;
     pay_life_x?: boolean;
     discard_cards: number;
