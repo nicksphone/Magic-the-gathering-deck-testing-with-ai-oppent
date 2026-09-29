@@ -179,6 +179,8 @@ def infer_effect_from_oracle(
             "mv_max": int(linked_exile.group(1)), "source_card_id": card.id,
             "source_timestamp": card.effect_timestamp,
         }
+    if re.search(r"\bdeals? x damage to each creature and each player\b", oracle, re.IGNORECASE):
+        return "damage_each_creature_and_player", {"amount": max(0, int(action_targets.get("x_value", 0) or 0))}
     mode_text = action_targets.get("mode_text")
     mode_texts = _printed_mode_order(oracle, action_targets.get("mode_texts") or [])
     x_value = int(action_targets.get("x_value", 0) or 0)

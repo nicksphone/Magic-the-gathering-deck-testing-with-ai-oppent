@@ -113,6 +113,7 @@ def can_pay_with_pool_and_lands(
     hybrid_choices: list[str] | None = None,
     reserved_life: int = 0,
     oracle_text: str = "",
+    restricted_x_color: str | None = None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -125,7 +126,7 @@ def can_pay_with_pool_and_lands(
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
         and _plan_payment(state, player_id, req) is not None
-        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices)
+        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color)
     )
 
 
@@ -143,9 +144,12 @@ def hybrid_payment_symbols(mana_cost: str) -> list[dict[str, object]]:
 def _payment_requirements(
     mana_cost: str, is_land: bool, x_value: int, generic_reduction: int, generic_increase: int,
     hybrid_choices: list[str] | None = None,
+    restricted_x_color: str | None = None,
 ) -> list[dict[str, int]]:
     if is_land:
         return [parse_mana_cost("", is_land=True)]
+    if restricted_x_color and restricted_x_color not in MANA_COLORS:
+        return []
     hybrid_symbols = hybrid_payment_symbols(mana_cost)
     if hybrid_choices is not None and (
         len(hybrid_choices) != len(hybrid_symbols)
@@ -164,6 +168,8 @@ def _payment_requirements(
             else:
                 options.sort(key=lambda item: item[0] == "generic")
             hybrid_index += 1
+        elif symbol == "X" and restricted_x_color:
+            options = [(restricted_x_color, max(0, x_value))]
         else:
             parsed = parse_mana_cost("{" + symbol + "}", x_value=x_value)
             options = [(key, amount) for key, amount in parsed.items() if amount]
@@ -343,6 +349,7 @@ def auto_pay_cost(
     reserved_life: int = 0,
     payment_details: dict | None = None,
     oracle_text: str = "",
+    restricted_x_color: str | None = None,
 ) -> bool:
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -352,7 +359,7 @@ def auto_pay_cost(
     from rules_engine.replacement import can_pay_life, pay_life
     payment = next(
         ((req, plan) for req in _payment_requirements(
-            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices,
+            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color,
         ) if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
         and (plan := _plan_payment(state, player_id, req)) is not None),
         None,

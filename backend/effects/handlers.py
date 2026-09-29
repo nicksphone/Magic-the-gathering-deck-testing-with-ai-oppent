@@ -76,6 +76,7 @@ def _queue_human_damage_replacement_choice(
         "controller": int(controller),
         "source_card_id": payload.get("__source_card_id"),
         "selected_source_ids": used_source_ids,
+        "batch_damage": bool(payload.get("__batch_damage")),
         "options": options,
     }
     state.priority_player = affected_player
@@ -168,7 +169,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 return
         if (card.toughness is not None or "Planeswalker" in card.types) and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount) is not None:
-                if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+                if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
                 return
             replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
@@ -193,7 +194,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 card.loyalty -= int(post)
                 state.log.append(f"{card.name} loses {post} loyalty.")
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
-            if "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+            if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)
             return
     if target_player is not None:
@@ -1785,6 +1786,61 @@ def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None
             deal_damage(state, controller, {"target_player": int(target), "amount": int(amount)})
         else:
             deal_damage(state, controller, {"target_card_id": target, "amount": int(amount)})
+
+
+def damage_each_creature_and_player(state: MatchState, controller: int, payload: dict) -> None:
+    amount = max(0, int(payload.get("amount", 0)))
+    if not amount:
+        return
+    source_id = payload.get("__source_card_id")
+    if "recipients" in payload:
+        recipients = list(payload["recipients"])
+    else:
+        recipients = [
+            {"target_card_id": cid, "amount": amount, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
+            for player in state.players.values() for cid in list(player.battlefield)
+            if "Creature" in state.cards[cid].types
+        ]
+        recipients.extend(
+            {"target_player": pid, "amount": amount, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
+            for pid in state.players
+        )
+    for index, recipient in enumerate(recipients):
+        target_id = recipient.get("target_card_id")
+        affected = state.cards[target_id].controller if target_id else recipient.get("target_player")
+        event = "damage_to_permanent" if target_id else "damage_to_player"
+        humans = set(getattr(state, "replacement_choice_players", set()) or set())
+        if (state.replacement_choice_required and (not humans or affected in humans)
+                and not damage_cant_be_prevented(state, source_card_id=source_id,
+                                                target_player=recipient.get("target_player"), target_card_id=target_id)):
+            options = replacement_options(
+                state, event, target_player=affected if not target_id else None,
+                target_card_id=target_id, source_card_id=source_id,
+            )
+            if len(options) > 1:
+                state.pending_replacement_choice = {
+                    "resume_kind": "damage_batch", "player_id": affected, "event": event,
+                    "target_player": recipient.get("target_player"), "target_card_id": target_id,
+                    "amount": amount, "controller": controller, "source_card_id": source_id,
+                    "options": options, "combat_damage_needs_sba": True,
+                    "continuation_effects": [{
+                        "effect_key": "damage_each_creature_and_player",
+                        "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id},
+                    }] if recipients[index + 1:] else [],
+                }
+                state.priority_player = affected
+                state.passed_priority = set()
+                return
+        deal_damage(state, controller, recipient)
+        pending = state.pending_replacement_choice or state.pending_mechanic_choice
+        if pending:
+            pending["combat_damage_needs_sba"] = True
+            if recipients[index + 1:]:
+                pending.setdefault("continuation_effects", []).append({
+                    "effect_key": "damage_each_creature_and_player",
+                    "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id},
+                })
+            return
 
 
 def tap_card(state: MatchState, controller: int, payload: dict) -> None:

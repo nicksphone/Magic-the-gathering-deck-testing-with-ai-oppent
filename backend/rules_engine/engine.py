@@ -6,7 +6,7 @@ from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assi
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
-from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
+from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
 from rules_engine.mana import land_can_produce_mana, land_mana_amount
@@ -518,7 +518,7 @@ class RulesEngine:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
-            if pending.get("resume_kind") == "damage_chain":
+            if pending.get("resume_kind") in {"damage_chain", "damage_batch"}:
                 state.pending_replacement_choice = None
                 state.log.append(
                     f"{state.players[player_id].name} chooses replacement source {chosen_id}."
@@ -535,11 +535,14 @@ class RulesEngine:
                         "__replacement_source_id": chosen_id,
                         "__used_replacement_source_ids": list(pending.get("selected_source_ids") or [])
                         + [chosen_id],
+                        "__defer_lethal": bool(pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"),
+                        "__batch_damage": bool(pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"),
                     },
                 )
                 from rules_engine.stack_engine import resume_paused_resolution
                 resume_paused_resolution(state, pending)
-                apply_state_based_actions(state)
+                if not (pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"):
+                    apply_state_based_actions(state)
                 if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
@@ -956,10 +959,8 @@ class RulesEngine:
                 reject("Ability can only be activated at sorcery speed")
                 return
             cost = ability["mana_cost"]
-            from rules_engine.costs import RESTRICTED_X_PAYMENT_RE
-            if RESTRICTED_X_PAYMENT_RE.search(ability["text"]):
-                reject("Restricted X mana payments are not yet supported")
-                return
+            from rules_engine.costs import restricted_x_color
+            x_color = restricted_x_color(ability["text"])
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             x_value = int(action_targets.get("x_value", 0) or 0)
             if x_value < 0 or ("{X}" in cost.upper() and "x_value" not in action_targets):
@@ -993,12 +994,18 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
+            if not activated_cost_available(
+                state, player_id, cid, cost, action.get("hybrid_choices"), x_value, x_color,
+            ):
+                reject("Cannot pay activation costs")
+                state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
+                return
             cost_context: dict = {}
             cost_staging = not state.trigger_staging
             if cost_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "ability_activation"
-            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices"), x_value=x_value):
+            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices"), x_value=x_value, restricted_x_color=x_color):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False

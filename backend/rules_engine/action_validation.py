@@ -171,7 +171,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     elif kind == "cycle_card":
         require(any(item.get("x_value", 0) == action.get("x_value", 0) for item in available), "Unavailable cycling cost")
     elif kind == "activate_ability":
-        from rules_engine.costs import activated_cost_available
+        from rules_engine.costs import activated_cost_available, restricted_x_color
         mana_cost = move["mana_cost"]
         require(targets.get("x_value") is None or (type(targets["x_value"]) is int and targets["x_value"] >= 0), "X value must be a non-negative integer")
         if "{X}" in mana_cost:
@@ -181,6 +181,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(activated_cost_available(
             state, player_id, action["card_id"], mana_cost,
             action.get("hybrid_choices"), int(targets.get("x_value") or 0),
+            restricted_x_color(move.get("ability_label", "")),
         ), "Cannot pay activation costs")
     elif kind == "activate_loyalty" and targets.get("x_value") is not None:
         from rules_engine.oracle_effects import extract_loyalty_abilities
@@ -230,6 +231,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(can_pay_with_pool_and_lands(
             state, player_id, cost.mana_cost, card_name=state.cards[action["card_id"]].name,
             hybrid_choices=choices, reserved_life=cost.pay_life, x_value=int(targets.get("x_value") or 0),
+            restricted_x_color=restricted_x_color(move.get("ability_label", "")),
         ), "Cannot pay the selected hybrid branches")
 
 

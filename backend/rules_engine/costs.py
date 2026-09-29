@@ -16,7 +16,13 @@ PAY_X_LIFE_RE = re.compile(r"additional cost to cast[^.]*pay\s+x\s+life\b", re.I
 ACTIVATED_PAY_LIFE_RE = re.compile(r"pay\s+(\d+)\s+life", re.IGNORECASE)
 ACTIVATED_DISCARD_RE = re.compile(r"discard\s+(?:a|one|an|\d+)\s+cards?", re.IGNORECASE)
 ACTIVATED_SACRIFICE_RE = re.compile(r"sacrifice\s+(?:a|an|this|one|\d+)\s+", re.IGNORECASE)
-RESTRICTED_X_PAYMENT_RE = re.compile(r"\bspend only (?:white|blue|black|red|green|colorless) mana on x\b", re.IGNORECASE)
+RESTRICTED_X_PAYMENT_RE = re.compile(r"\bspend only (white|blue|black|red|green|colorless) mana on x\b", re.IGNORECASE)
+RESTRICTED_X_COLORS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G", "colorless": "C"}
+
+
+def restricted_x_color(ability_text: str) -> str | None:
+    match = RESTRICTED_X_PAYMENT_RE.search(ability_text or "")
+    return RESTRICTED_X_COLORS[match.group(1).lower()] if match else None
 
 
 @dataclass
@@ -114,7 +120,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
     )
 
 
-def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0) -> bool:
+def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
         return False
@@ -133,17 +139,17 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     return not cost.mana_cost or can_pay_with_pool_and_lands(
         state, player_id, cost.mana_cost, card_name=source.name, reserved_life=cost.pay_life,
-        hybrid_choices=hybrid_choices, x_value=x_value,
+        hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color,
     )
 
 
-def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0) -> bool:
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None) -> bool:
     cost = parse_activated_cost(cost_text)
-    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value):
+    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color):
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
-    if cost.mana_cost and not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value):
+    if cost.mana_cost and not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color):
         return False
     if cost.tap_source:
         source.tapped = True
@@ -185,10 +191,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     return True
 
 
-def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0) -> bool:
+def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None) -> bool:
     from rules_engine.mana import auto_pay_cost
 
-    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value)
+    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color)
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:

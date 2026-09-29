@@ -1152,6 +1152,15 @@ class AIAgent:
                 label = str(move.get("ability_label", "")).lower()
                 if "look at the top" in label or "draw" in label or "search" in label:
                     base += 4.0
+                if "x damage to each creature and each player" in label:
+                    from rules_engine.costs import restricted_x_color
+                    source = state.cards.get(move.get("card_id"))
+                    x = self._choose_x_value(
+                        state, player_id, str(move.get("mana_cost") or ""), card=source,
+                        restricted_x_color=restricted_x_color(label),
+                    )
+                    base += (self._score_x_value(state, player_id, source, str(move.get("mana_cost") or ""), x, x, 1)
+                             if x else -20.0) - 2.5
             elif mtype == "ninjutsu":
                 ninja = state.cards[move["card_id"]]
                 returned_power = effective_power(state, move["return_card_id"])
@@ -2455,6 +2464,8 @@ class AIAgent:
                 targets["target_distribution"] = {str(preferred): 1}
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
+        from rules_engine.costs import restricted_x_color
+        x_color = restricted_x_color(str(move.get("ability_label", ""))) if mtype == "activate_ability" else None
         linked_copy = mtype == "activate_ability" and "becomes a copy of that card" in str(move.get("ability_label", "")).lower()
         if linked_copy and "x_value" not in targets and cid:
             from rules_engine.linked_exile import linked_exiled_creatures
@@ -2465,7 +2476,7 @@ class AIAgent:
             selected = self._choose_library_search(state, eligible, 1, player_id)
             targets["x_value"] = mana_value(state.cards[selected[0]].mana_cost or "") if selected else 0
         elif "{X}" in mana_cost.upper() and "x_value" not in targets:
-            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card)
+            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card, restricted_x_color=x_color)
         elif hints.get("requires_x_value") and "x_value" not in targets:
             if mtype == "activate_loyalty" and cid:
                 loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)
@@ -2485,6 +2496,11 @@ class AIAgent:
                 xv = 0
             if xv <= 0:
                 out["_invalid_ai_choice"] = True
+            if mtype == "activate_ability" and "x damage to each creature and each player" in str(move.get("ability_label", "")).lower():
+                if (xv >= state.players[player_id].life
+                        or (xv < state.players[opponent].life
+                            and self._score_x_value(state, player_id, card, mana_cost, xv, xv, 1) <= 0)):
+                    out["_invalid_ai_choice"] = True
 
         if hints.get("supports_divide") and card:
             from types import SimpleNamespace
@@ -3098,7 +3114,7 @@ class AIAgent:
                 best = (score, x)
         return best[1]
 
-    def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str, card=None) -> int:
+    def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str, card=None, restricted_x_color: str | None = None) -> int:
         pool_total = sum((state.players[player_id].mana_pool or {}).values())
         untapped_lands = sum(
             1
@@ -3111,10 +3127,10 @@ class AIAgent:
         card_name = str(getattr(card, "name", "") or "") if card is not None else ""
         scored: list[tuple[float, int]] = []
         for x in range(upper, 0, -1):
-            cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
             if x >= floor and can_pay_with_pool_and_lands(
-                state, player_id, cost, card_name=card_name, spell_types=spell_types,
-                oracle_text=getattr(card, "oracle_text", "") or "",
+                state, player_id, mana_cost, card_name=card_name, spell_types=spell_types,
+                oracle_text=getattr(card, "oracle_text", "") or "", x_value=x,
+                restricted_x_color=restricted_x_color,
             ):
                 scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
         if not scored:
@@ -3122,17 +3138,17 @@ class AIAgent:
             interactive_x = any(k in text for k in ["target", "destroy", "exile", "counter", "tap"])
             if interactive_x:
                 for x in range(1, upper + 1):
-                    cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
                     if can_pay_with_pool_and_lands(
-                        state, player_id, cost, card_name=card_name, spell_types=spell_types,
-                        oracle_text=getattr(card, "oracle_text", "") or "",
+                        state, player_id, mana_cost, card_name=card_name, spell_types=spell_types,
+                        oracle_text=getattr(card, "oracle_text", "") or "", x_value=x,
+                        restricted_x_color=restricted_x_color,
                     ):
                         return x
             for x in range(max(1, floor), upper + 1):
-                cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
                 if can_pay_with_pool_and_lands(
-                    state, player_id, cost, card_name=card_name, spell_types=spell_types,
-                    oracle_text=getattr(card, "oracle_text", "") or "",
+                    state, player_id, mana_cost, card_name=card_name, spell_types=spell_types,
+                    oracle_text=getattr(card, "oracle_text", "") or "", x_value=x,
+                    restricted_x_color=restricted_x_color,
                 ):
                     return x
             return 0
@@ -3185,6 +3201,17 @@ class AIAgent:
                     score -= max(0.0, (x_value - 1) * 0.35)
             if len(getattr(me, "hand", []) or []) <= 2 and turn >= 6:
                 score += min(1.0, x_value * 0.2)
+        elif "x damage to each creature and each player" in text:
+            if me.life <= x_value:
+                return -100.0
+            if opp.life <= x_value:
+                return 100.0
+            from rules_engine.continuous import effective_toughness
+            defeated = sum(1 for cid in opp.battlefield if cid in state.cards and "Creature" in state.cards[cid].types
+                           and effective_toughness(state, cid) <= x_value)
+            lost = sum(1 for cid in me.battlefield if cid in state.cards and "Creature" in state.cards[cid].types
+                       and effective_toughness(state, cid) <= x_value)
+            score += 3.0 * (defeated - lost) - 0.25 * x_value
         elif "deal x damage" in text or "deals x damage" in text or "lose x life" in text:
             opp_life = int(getattr(opp, "life", 20) or 20)
             score += x_value * 0.85
@@ -3212,6 +3239,8 @@ class AIAgent:
             return 3 if turn < 6 else 2
         if "mill x" in text or "search your library for x" in text:
             return 2
+        if "x damage to each creature and each player" in text:
+            return 1
         if "deals x damage" in text or "deal x damage" in text or "lose x life" in text:
             opp_id = 1 if player_id == 2 else 2
             opp_life = int(getattr(state.players.get(opp_id), "life", 20) or 20)

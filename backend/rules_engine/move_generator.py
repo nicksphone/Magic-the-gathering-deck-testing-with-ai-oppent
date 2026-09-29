@@ -7,7 +7,7 @@ from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
-from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost
+from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost, restricted_x_color
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.entry import land_entry_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -352,9 +352,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             cost = ability["mana_cost"]
             parsed_cost = parse_activated_cost(cost)
-            from rules_engine.costs import RESTRICTED_X_PAYMENT_RE
-            if (not parsed_cost.supported or RESTRICTED_X_PAYMENT_RE.search(ability["text"])
-                    or not activated_cost_available(state, player_id, cid, cost)):
+            if (not parsed_cost.supported or not activated_cost_available(
+                    state, player_id, cid, cost, restricted_x_color=restricted_x_color(ability["text"]))):
                 continue
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
             if build_ability_spec(state, proxy, player_id, report_unsupported=False).effect.key == "noop":

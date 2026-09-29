@@ -8,6 +8,36 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_p
 import pytest
 
 
+def test_restricted_x_and_fixed_generic_have_distinct_payment_colors() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=930)
+    state.players[1].mana_pool.update({"B": 1, "R": 2})
+    assert not can_pay_with_pool_and_lands(state, 1, "{X}{1}", x_value=2, restricted_x_color="B")
+    state.players[1].mana_pool["B"] = 2
+    assert can_pay_with_pool_and_lands(state, 1, "{X}{1}", x_value=2, restricted_x_color="B")
+    assert auto_pay_cost(state, 1, "{X}{1}", x_value=2, restricted_x_color="B")
+    assert state.players[1].mana_pool["B"] == 0
+    assert state.players[1].mana_pool["R"] == 1
+
+
+def test_restricted_x_can_use_swamp_without_spending_floating_red() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=931)
+    land_id = state.players[1].library.pop()
+    land = state.cards[land_id]
+    land.name = "Swamp"
+    land.types = ["Land"]
+    land.type_line = "Basic Land - Swamp"
+    land.zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(land_id)
+    state.players[1].mana_pool.update({"B": 1, "R": 3})
+    assert can_pay_with_pool_and_lands(state, 1, "{X}", x_value=2, restricted_x_color="B")
+    assert auto_pay_cost(state, 1, "{X}", x_value=2, restricted_x_color="B")
+    assert land.tapped
+    assert state.players[1].mana_pool["B"] == 0
+    assert state.players[1].mana_pool["R"] == 3
+
+
 def test_newly_controlled_animated_land_cannot_tap_until_ready_unless_hasty() -> None:
     deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
     state = MatchFactory.from_decks(deck, deck, seed=118)
