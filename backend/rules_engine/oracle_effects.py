@@ -59,6 +59,15 @@ SAGA_CHAPTER_RE = re.compile(r"^\s*(I{1,3}|IV|V|VI|VII|VIII|IX|X)\s*[—-]\s*(.+
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
+
+
+def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
+    if not set(getattr(card, "types", []) or []).intersection({"Instant", "Sorcery"}):
+        return oracle_text
+    return "\n".join(
+        line for line in oracle_text.splitlines()
+        if not ACTIVATED_ABILITY_RE.match(line.strip())
+    )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 LOOK_TOP_MANA_SPENT_HAND_RE = re.compile(
@@ -133,7 +142,7 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (getattr(card, "types", []) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
-    oracle = without_reminder_text(oracle)
+    oracle = without_reminder_text(spell_resolution_text(card, oracle))
     mode_text = action_targets.get("mode_text")
     mode_texts = _printed_mode_order(oracle, action_targets.get("mode_texts") or [])
     x_value = int(action_targets.get("x_value", 0) or 0)
@@ -275,12 +284,12 @@ def infer_effect_from_oracle(
     if len(effects) == 1:
         return effects[0]
 
-    if not oracle and any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
+    if not oracle and not card.oracle_text and any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
         opp = action_targets.get("target_player", 1 if controller == 2 else 2)
         return "deal_damage", {"target_player": opp, "amount": 3}
-    if not oracle and any(k in name for k in ["consider", "deluge"]):
+    if not oracle and not card.oracle_text and any(k in name for k in ["consider", "deluge"]):
         return "draw_cards", {"amount": 1}
-    if not oracle and "counterspell" in name and state.stack:
+    if not oracle and not card.oracle_text and "counterspell" in name and state.stack:
         return "counter_spell", {"target_stack_id": state.stack[-1].id}
 
     # Static-only/keyword text often has no explicit resolver-side action.
@@ -512,7 +521,7 @@ def inspect_target_hints(
     controller: int,
     action_targets: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    raw_oracle = card.oracle_text or ""
+    raw_oracle = spell_resolution_text(card, card.oracle_text or "")
     action_targets = action_targets or {}
     selected_modes = _printed_mode_order(raw_oracle, action_targets.get("mode_texts") or [])
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
@@ -1319,6 +1328,8 @@ def _infer_clause_effect(
             "keywords": token_keywords,
             "colors": token_colors,
         }
+        if re.search(r"\bfor each basic land type among lands you control\b", oracle):
+            out["per_basic_land_type"] = True
         quoted_ability = TOKEN_CREATURE_ABILITY_RE.search(getattr(card, "source_oracle_text", card.oracle_text or ""))
         if quoted_ability:
             out["oracle_text"] = quoted_ability.group(1).strip()

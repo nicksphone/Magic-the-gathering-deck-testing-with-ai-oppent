@@ -5,7 +5,7 @@ from copy import copy
 from typing import Any
 
 from game_state.state import CardInstance, MatchState
-from rules_engine.oracle_effects import DIVIDE_RE, inspect_target_hints
+from rules_engine.oracle_effects import DIVIDE_RE, inspect_target_hints, spell_resolution_text
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 
@@ -52,7 +52,7 @@ def build_cast_hints(
             card.oracle_text = ""
     hints = inspect_target_hints(state, card, controller, action_targets)
     selected_modes = (action_targets or {}).get("mode_texts") or []
-    selected_text = " ".join(selected_modes) or (action_targets or {}).get("mode_text") or card.oracle_text or ""
+    selected_text = spell_resolution_text(card, " ".join(selected_modes) or (action_targets or {}).get("mode_text") or card.oracle_text or "")
     hints["action_has_target_text"] = _needs_target(selected_text)
     if hints.get("modes"):
         selected = set(selected_modes or ([action_targets["mode_text"]] if action_targets and action_targets.get("mode_text") else []))

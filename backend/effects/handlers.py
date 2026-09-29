@@ -1231,15 +1231,17 @@ def _place_searched_card(
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import CardInstance
+    from rules_engine.domain import basic_land_type_count
     import uuid
 
     name = payload.get("name", "Token")
     p = int(payload.get("power", 1))
     t = int(payload.get("toughness", 1))
-    amount = max(1, int(payload.get("amount", 1)))
+    token_controller = int(payload.get("controller", controller))
+    amount = (basic_land_type_count(state, token_controller) if payload.get("per_basic_land_type")
+              else max(0, int(payload.get("amount", 1))))
     types = list(payload.get("types", ["Creature", "Token"]))
     keywords = list(payload.get("keywords", []))
-    token_controller = int(payload.get("controller", controller))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     for _ in range(amount):
