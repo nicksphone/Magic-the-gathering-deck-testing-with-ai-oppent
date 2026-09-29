@@ -25,6 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ai.agent import AIAgent
 from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
+from ai.sideboarding import plan_sideboard
 from api_contracts import ActionRequest, DeckEntry, DeckPairInput, InputModel, PlayerID
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
@@ -613,6 +614,8 @@ def start_match(payload: StartMatchRequest, request: Request, repo: Repository =
 def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None, fingerprint: str) -> dict:
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
+    side_a = _validated_deck_cards(repo, payload.deck_a_sideboard)
+    side_b = _validated_deck_cards(repo, payload.deck_b_sideboard)
     root_seed = payload.seed if payload.seed is not None else secrets.randbits(63)
     state = MatchFactory.from_decks(deck_a, deck_b, seed=root_seed)
     state.best_of = payload.best_of
@@ -638,7 +641,7 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
         mode=payload.mode,
         deck_ids=(payload.deck_a_id, payload.deck_b_id),
         mainboards={1: deck_a, 2: deck_b},
-        sideboards={1: [entry.model_dump() for entry in payload.deck_a_sideboard], 2: [entry.model_dump() for entry in payload.deck_b_sideboard]},
+        sideboards={1: side_a, 2: side_b},
         game_number=1,
         current_game_recorded=False,
         match_complete=False,
@@ -789,7 +792,7 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             if match.match_complete:
                 break
             if _is_full_ai_match(match):
-                _start_next_game_state(match)
+                _start_next_game_state(match, repo=repo)
                 continue
             break
         pid = _default_player_for_state(match)
@@ -894,7 +897,7 @@ def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repos
         if payload is not None and payload.play_first is not None:
             raise HTTPException(status_code=422, detail={"code": "invalid_play_draw_choice", "message": "AI seat chooses play or draw"})
         play_first = True
-    _start_next_game_state(match, play_first=play_first)
+    _start_next_game_state(match, play_first=play_first, repo=repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
 
@@ -1427,7 +1430,37 @@ def _next_play_draw_chooser(match: MatchController) -> int | None:
     return match.play_draw_chooser if match.state.winner == 0 else (1 if match.state.winner == 2 else 2)
 
 
-def _start_next_game_state(match: MatchController, *, play_first: bool = True) -> None:
+def _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:
+    from card_data.hydration import hydrate_deck_cards
+
+    for pid in (1, 2):
+        if match.controllers.get(pid) != "ai" or not match.sideboards.get(pid):
+            continue
+        opponent = 2 if pid == 1 else 1
+        public_ids = (match.state.players[opponent].battlefield
+                      + match.state.players[opponent].graveyard
+                      + [cid for cid in match.state.players[opponent].exile
+                         if not match.state.cards[cid].exile_face_down])
+        observed_types = {
+            card_type for cid in public_ids for card_type in match.state.cards[cid].types
+        }
+        known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
+        cards_out, cards_in = plan_sideboard(
+            match.mainboards[pid], match.sideboards[pid], observed_types, known_archetype,
+        )
+        if not cards_in:
+            continue
+        next_main, next_side = apply_sideboard_swaps(match.mainboards[pid], match.sideboards[pid], cards_out, cards_in)
+        match.mainboards[pid] = hydrate_deck_cards(repo, next_main)
+        match.sideboards[pid] = hydrate_deck_cards(repo, next_side)
+        match.state.log.append(f"{match.state.players[pid].name} sideboards {sum(item['quantity'] for item in cards_in)} card(s) for the next game.")
+
+
+def _start_next_game_state(match: MatchController, *, play_first: bool = True, repo: Repository | None = None) -> None:
+    chooser = _next_play_draw_chooser(match)
+    if chooser is None:
+        raise ValueError("A finished game is required before starting the next game")
+    _ai_sideboard_for_next_game(match, repo)
     prior_log_tail = list(match.state.log[-80:])
     prior_id = match.state.id
     p1_name = match.state.players[1].name
@@ -1446,9 +1479,6 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True) -
     new_state.mechanic_choice_players = {1, 2}
     new_state.trigger_order_choice_required = new_state.replacement_choice_required
     new_state.trigger_order_choice_players = set(new_state.replacement_choice_players)
-    chooser = _next_play_draw_chooser(match)
-    if chooser is None:
-        raise ValueError("A finished game is required before starting the next game")
     new_state.active_player = chooser if play_first else (2 if chooser == 1 else 1)
     new_state.priority_player = new_state.active_player
     transition = f"--- Starting game {match.game_number + 1} ---"
