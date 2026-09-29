@@ -21,6 +21,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "change_control": handlers.change_control,
     "destroy_all_creatures": handlers.destroy_all_creatures,
     "exile_all_creatures": handlers.exile_all_creatures,
+    "exile_nonland_until_source_leaves": handlers.exile_nonland_until_source_leaves,
     "exile_all_creatures_incubate": handlers.exile_all_creatures_incubate,
     "exile_colored_permanents_mana_value_at_most": handlers.exile_colored_permanents_mana_value_at_most,
     "exile_all_graveyards": handlers.exile_all_graveyards,
@@ -119,3 +120,5 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         state.log.append(f"Missing effect handler: {effect_key}")
         return
     handler(state, controller, payload)
+    from rules_engine.linked_exile import flush_linked_exile_returns
+    flush_linked_exile_returns(state)

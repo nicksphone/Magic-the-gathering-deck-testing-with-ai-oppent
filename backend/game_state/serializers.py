@@ -95,6 +95,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
         },
+        "linked_exiles": [dict(item) for item in state.linked_exiles],
         "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
         "adventure_permissions": dict(state.adventure_permissions),
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
@@ -282,6 +283,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()
     }
+    state.linked_exiles = [dict(item) for item in payload.get("linked_exiles", [])]
     state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}

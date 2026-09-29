@@ -556,6 +556,40 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> in
     return moved
 
 
+def exile_nonland_until_source_leaves(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_types import is_land_card, is_token_card
+
+    source_id = payload.get("source_card_id")
+    source = state.cards.get(source_id)
+    timestamp = int(payload.get("source_timestamp", -1))
+    if (source is None or source.zone != Zone.BATTLEFIELD
+            or source.id not in state.players[source.controller].battlefield
+            or source.effect_timestamp != timestamp):
+        return
+    mv_max = int(payload["mv_max"])
+    affected = [cid for player in state.players.values() for cid in player.battlefield
+                if not is_land_card(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max]
+    for cid in affected:
+        capture_last_known_battlefield(state, cid)
+    leaves = []
+    returning = []
+    for cid in affected:
+        card = state.cards[cid]
+        leaves.append({"card_id": cid, "controller": card.controller})
+        state.players[card.controller].battlefield.remove(cid)
+        state.players[card.owner].exile.append(cid)
+        card.move_to_zone(Zone.EXILE)
+        if not is_token_card(card):
+            returning.append(cid)
+    if returning:
+        state.linked_exiles.append({
+            "source_id": source_id, "source_timestamp": timestamp, "card_ids": returning,
+            "card_timestamps": {cid: state.cards[cid].effect_timestamp for cid in returning},
+        })
+    emit_event_batch(state, "leaves_battlefield", leaves)
+    state.log.append(f"Exile nonland permanents with mana value {mv_max} or less until the source leaves: {len(affected)} exiled.")
+
+
 def exile_all_creatures_incubate(state: MatchState, controller: int, payload: dict) -> None:
     moved = exile_all_creatures(state, controller, payload)
     incubate(state, controller, {"counters": moved})
@@ -1405,7 +1439,7 @@ def look_top_distinct_types_to_hand(state: MatchState, controller: int, payload:
     if chosen is None:
         state.pending_mechanic_choice = {
             "kind": "topdeck_put", "player_id": controller,
-            "options": list(reversed(top_slice)), "count": min(8, len(top_slice)),
+            "options": list(reversed(top_slice)), "count": min(9, len(top_slice)),
             "min_count": 0, "top_ids": top_slice,
             "effect_key": "look_top_distinct_types_to_hand", "effect_payload": payload,
             "label": "Choose up to one card for each different card type to put into your hand",
@@ -1413,7 +1447,7 @@ def look_top_distinct_types_to_hand(state: MatchState, controller: int, payload:
         state.priority_player = controller
         state.passed_priority = set()
         return
-    if (not isinstance(chosen, list) or len(chosen) > 8 or not set(chosen).issubset(top_slice)
+    if (not isinstance(chosen, list) or len(chosen) > 9 or not set(chosen).issubset(top_slice)
             or not cards_have_distinct_card_types(state, chosen)):
         raise ValueError("Selected cards must have assignable distinct card types")
     del player.library[-len(top_slice):]

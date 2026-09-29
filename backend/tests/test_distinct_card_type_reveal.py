@@ -93,6 +93,17 @@ def test_atraxa_ai_selects_only_assignable_types() -> None:
     assert set(chosen["card_ids"]) <= set(state.players[1].hand)
 
 
+def test_kindred_is_an_independent_card_type_for_reveal() -> None:
+    state, _, top, _ = _atraxa_state()
+    kindred = state.cards[top[6]]
+    kindred.name = "Summon the School"
+    kindred.type_line = "Kindred Sorcery — Merfolk"
+    kindred.types = ["Kindred", "Sorcery"]
+    sorcery = state.cards[top[7]]
+    sorcery.types = ["Sorcery"]
+    assert cards_have_distinct_card_types(state, [kindred.id, sorcery.id])
+
+
 def test_atraxa_ai_considers_all_revealed_cards_before_type_filter() -> None:
     state, atraxa, top, _ = _atraxa_state()
     forest = fallback_card_payload("Forest")
@@ -151,7 +162,7 @@ def test_atraxa_choice_is_validated_through_match_api() -> None:
             assert legal.status_code == 200
             move = legal.json()["moves"][0]
             assert move["kind"] == "topdeck_put"
-            assert move["count"] == 8
+            assert move["count"] == 9
             assert set(move["options"]) == set(top)
             assert "Enchantment Creature" in move["option_type_lines"][named["dual"]]
             invalid = client.post(f"/matches/{state.id}/action", json={

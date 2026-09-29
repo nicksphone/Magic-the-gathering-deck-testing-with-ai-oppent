@@ -1258,6 +1258,7 @@ def _trigger_from_oracle(
             "create ",
             "destroy target",
             "exile target",
+            "exile each ",
             "tap target",
             "untap target",
             "search your library",

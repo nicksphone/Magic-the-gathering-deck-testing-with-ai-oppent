@@ -152,6 +152,15 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    linked_exile = re.search(
+        r"exile each nonland permanent with mana value (\d+) or less until this (?:enchantment|permanent|creature|artifact) leaves the battlefield",
+        oracle,
+    )
+    if linked_exile:
+        return "exile_nonland_until_source_leaves", {
+            "mv_max": int(linked_exile.group(1)), "source_card_id": card.id,
+            "source_timestamp": card.effect_timestamp,
+        }
     mode_text = action_targets.get("mode_text")
     mode_texts = _printed_mode_order(oracle, action_targets.get("mode_texts") or [])
     x_value = int(action_targets.get("x_value", 0) or 0)

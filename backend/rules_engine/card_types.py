@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 
 _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
-_REVEAL_CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery"}
+_REVEAL_CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Kindred", "Land", "Planeswalker", "Sorcery"}
 
 
 def cards_have_distinct_card_types(state, card_ids: list[str]) -> bool:
