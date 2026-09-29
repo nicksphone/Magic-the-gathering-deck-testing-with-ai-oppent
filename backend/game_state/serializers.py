@@ -159,6 +159,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
                 "colors": card.colors,
+                "last_known_battlefield": dict(card.last_known_battlefield),
             }
             for cid, card in state.cards.items()
         },
@@ -213,6 +214,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
+            last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
         )
 
     state = MatchState(

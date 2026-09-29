@@ -86,6 +86,7 @@ class CardInstance:
     printed_characteristics: dict = field(default_factory=dict)
     colors: list[str] | None = None
     is_token: bool = False
+    last_known_battlefield: dict = field(default_factory=dict)
 
     def reset_zone_counters(self, zone: Zone) -> None:
         if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
@@ -299,6 +300,7 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card = state.cards.get(card_id)
     if not card:
         return
+    card.last_known_battlefield.clear()
     # Printed counter-persistence text is the exception; damage and temporary
     # modifiers still belong to the old object, not the entering permanent.
     card.reset_zone_counters(Zone.BATTLEFIELD)

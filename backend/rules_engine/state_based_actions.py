@@ -3,7 +3,7 @@ from __future__ import annotations
 from game_state.state import MatchState, Zone
 from rules_engine.card_types import is_token_card
 from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
-from rules_engine.events import emit_event, emit_event_batch
+from rules_engine.events import emit_event, emit_event_batch, was_creature_on_battlefield
 from rules_engine.continuous import effective_toughness, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
 from rules_engine.zone_actions import put_into_graveyard
@@ -77,7 +77,7 @@ def resume_legend_rule_replacement(
         f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
     )
     emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
-    if "Creature" in card.types:
+    if was_creature_on_battlefield(card):
         emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 

@@ -75,7 +75,7 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
-    from rules_engine.events import emit_event_batch
+    from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
     if pending and pending["kind"] == "draw":
@@ -189,7 +189,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             card.reset_zone_counters(Zone.EXILE)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
     emit_event_batch(state, "permanent_dies", died)
-    emit_event_batch(state, "creature_dies", [event for event in died if "Creature" in state.cards[event["card_id"]].types])
+    emit_event_batch(state, "creature_dies", [event for event in died if was_creature_on_battlefield(state.cards[event["card_id"]])])
     state.pending_mechanic_choice = None
     if pending.get("resolving_item"):
         from game_state.state import StackItem

@@ -9,7 +9,7 @@ from rules_engine.continuous import effective_keywords, effective_toughness, has
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
-from rules_engine.events import emit_event, emit_event_batch
+from rules_engine.events import capture_last_known_battlefield, emit_event, emit_event_batch, was_creature_on_battlefield
 from rules_engine.mana import mana_value, parse_mana_cost
 from rules_engine.prevention import (
     add_card_prevention_shield,
@@ -405,7 +405,7 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
         card.zone = Zone.GRAVEYARD
         state.log.append(f"{card.name} is destroyed.")
         emit_event(state, "permanent_dies", {"card_id": target, "controller": card.controller})
-        if "Creature" in card.types:
+        if was_creature_on_battlefield(card):
             emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
 
 
@@ -441,6 +441,8 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
         for cid, card in state.cards.items()
         if "Creature" in card.types and cid in state.players[card.controller].battlefield
     }
+    for cid in destinations:
+        capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
         if "Creature" not in card.types:
             continue
@@ -480,6 +482,8 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
         for cid, card in state.cards.items()
         if allowed_types.intersection(set(card.types or [])) and cid in state.players[card.controller].battlefield
     }
+    for cid in destinations:
+        capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
         if not allowed_types.intersection(set(card.types or [])):
             continue
@@ -526,6 +530,10 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> No
     """Exile every creature, preserving ownership and leave events."""
     moved = 0
     leaves: list[dict] = []
+    for player in state.players.values():
+        for cid in player.battlefield:
+            if "Creature" in state.cards[cid].types:
+                capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
         if card.zone != Zone.BATTLEFIELD or "Creature" not in card.types:
             continue
@@ -549,6 +557,8 @@ def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: i
         cid for player in state.players.values() for cid in player.battlefield
         if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
     ]
+    for cid in affected:
+        capture_last_known_battlefield(state, cid)
     leaves = []
     for cid in affected:
         card = state.cards[cid]
@@ -1323,7 +1333,7 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
             return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
-        if "Creature" in card.types:
+        if was_creature_on_battlefield(card):
             emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
         card.reset_zone_counters(Zone.GRAVEYARD)
