@@ -72,7 +72,7 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     if event == "leaves_battlefield":
         for payload in payloads:
             capture_last_known_battlefield(state, payload.get("card_id"))
-    departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event in {"permanent_dies", "creature_dies"} else []
+    departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event in {"permanent_dies", "creature_dies", "sacrifice"} else []
     for payload in payloads:
         event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
         for trigger in _collect_triggers(state, event, event_payload):
@@ -411,7 +411,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             )
     for pid, pstate in state.players.items():
         source_ids = list(pstate.battlefield)
-        if event in {"permanent_dies", "creature_dies"}:
+        if event in {"permanent_dies", "creature_dies", "sacrifice"}:
             departed_ids = payload.get("__simultaneous_source_ids", [payload.get("card_id")])
             source_ids.extend(
                 cid for cid in departed_ids
