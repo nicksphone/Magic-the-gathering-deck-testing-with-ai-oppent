@@ -97,6 +97,9 @@ def test_copied_snow_spend_spell_has_zero_snow_mana_spent() -> None:
         effect_key="gain_life", payload={"amount_source": "snow_mana_spent", "snow_mana_spent": 2},
     ))
     copy_spell(state, 1, {"target_stack_id": "snow-spell"})
+    assert len(state.stack) == 2
+    assert state.players[1].life == 20
+    assert resolve_top_of_stack(state)
     assert state.players[1].life == 20
     assert resolve_top_of_stack(state)
     assert state.players[1].life == 22
@@ -108,7 +111,11 @@ def test_copied_search_for_glory_uses_zero_snow_spent() -> None:
     cast = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell_id})
     hand_before_copy = len(cast.players[1].hand)
     copy_spell(cast, 1, {"target_stack_id": cast.stack[-1].id})
-    assert len(cast.stack) == 1
+    assert len(cast.stack) == 2
+    assert cast.stack[-1].payload["snow_mana_spent"] == 0
+    assert len(cast.players[1].hand) == hand_before_copy
+    assert cast.players[1].life == 20
+    assert resolve_top_of_stack(cast)
     assert len(cast.players[1].hand) == hand_before_copy + 1
     assert cast.players[1].life == 20
     assert resolve_top_of_stack(cast)

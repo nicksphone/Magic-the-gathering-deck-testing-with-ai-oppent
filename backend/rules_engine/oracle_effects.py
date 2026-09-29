@@ -50,7 +50,7 @@ TARGET_MV_CONTROLLED_TYPE_RE = re.compile(
     r"mana value\s+(?:less than or equal to\s+)?the number of\s+([a-z]+)s?\s+you control",
     re.IGNORECASE,
 )
-COPY_STACK_RE = re.compile(r"copy target (spell|activated ability|triggered ability)", re.IGNORECASE)
+COPY_STACK_RE = re.compile(r"copy target (instant or sorcery spell|spell|activated ability|triggered ability)", re.IGNORECASE)
 COPY_CREATURE_TOKEN_RE = re.compile(r"create a token that's a copy of (?:another )?target (?:nonlegendary )?creature you control", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
@@ -210,7 +210,7 @@ def infer_effect_from_oracle(
     if copy_match and state.stack:
         target_stack_id = action_targets.get("target_stack_id") or state.stack[-1].id
         kind = str(copy_match.group(1) or "spell").strip().lower()
-        effect_key = "copy_spell" if kind == "spell" else "copy_ability"
+        effect_key = "copy_spell" if kind.endswith("spell") else "copy_ability"
         return effect_key, {"target_stack_id": target_stack_id, "copy_kind": kind}
     topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
     if topdeck_creatures is not None:
@@ -583,7 +583,7 @@ def inspect_target_hints(
         if "counter target activated or triggered ability" in oracle:
             allowed_kinds.update(("activated", "triggered"))
         allowed_kinds.update(
-            "spell" if match.group(1) == "spell" else match.group(1).split()[0]
+            "spell" if match.group(1).endswith("spell") else match.group(1).split()[0]
             for match in COPY_STACK_RE.finditer(oracle)
         )
         stack_targets = []
@@ -810,7 +810,9 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     if "nonenchantment" in oracle:
         restrictions.setdefault("exclude_types", []).append("Enchantment")
 
-    if "target creature or planeswalker" in oracle:
+    if "target instant or sorcery spell" in oracle:
+        restrictions["allowed_types"] = ["Instant", "Sorcery"]
+    elif "target creature or planeswalker" in oracle:
         restrictions["allowed_types"] = ["Creature", "Planeswalker"]
     elif "target artifact or enchantment" in oracle:
         restrictions["allowed_types"] = ["Artifact", "Enchantment"]

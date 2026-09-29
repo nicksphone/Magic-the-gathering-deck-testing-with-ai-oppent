@@ -89,6 +89,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         return False
     item = state.stack[-1]
     card = state.cards.get(item.source_card_id)
+    if card and (item.payload or {}).get("__stack_copy_kind") == "spell":
+        from copy import copy
+        card = copy(card)
+        for key, value in (item.payload.get("__copied_card") or {}).items():
+            setattr(card, key, value)
+        card.zone = Zone.STACK
     if (item.payload or {}).get("__trigger_target_choice"):
         from rules_engine.events import trigger_target_options
         chosen_card = item.payload.get("target_card_id")
@@ -219,6 +225,16 @@ def resolve_top_of_stack(state: MatchState) -> bool:
 
 
 def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -> bool:
+    if payload.get("__stack_copy_kind"):
+        if payload.get("__stack_copy_kind") == "spell" and not payload.get("__failed_to_resolve"):
+            copied_card = payload.get("__copied_card") or {}
+            if not {"Instant", "Sorcery"}.intersection(copied_card.get("types") or []):
+                _finish_permanent_spell_copy(state, item, payload)
+        state.log.append(
+            f"{item.label} does not resolve because its target is illegal."
+            if payload.get("__failed_to_resolve") else f"{item.label} resolves."
+        )
+        return True
     is_trigger = bool(payload.get("__trigger_event"))
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK and not is_trigger:
@@ -288,6 +304,37 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     if not state.pending_mechanic_choice:
         state.log.append(f"{item.label} does not resolve because its target is illegal." if payload.get("__failed_to_resolve") else f"{item.label} resolves.")
     return True
+
+
+def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: dict) -> None:
+    from game_state.state import CardInstance
+
+    copied = payload["__copied_card"]
+    types = list(copied.get("types") or [])
+    token = CardInstance(
+        id=str(uuid.uuid4()), name=copied["name"], owner=item.controller,
+        controller=item.controller, zone=Zone.BATTLEFIELD, is_token=True,
+        types=list(dict.fromkeys([*types, "Token"])),
+        mana_cost=copied.get("mana_cost") or "", type_line=copied.get("type_line") or "",
+        oracle_text=copied.get("oracle_text") or "", power=copied.get("power"),
+        toughness=copied.get("toughness"), loyalty=copied.get("loyalty"),
+        keywords=list(copied.get("keywords") or []), colors=copied.get("colors"),
+        image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
+        card_faces=list(copied.get("card_faces") or []),
+        selected_face_index=copied.get("selected_face_index"),
+        summoning_sick="Creature" in types, entered_turn=state.turn,
+    )
+    if "Planeswalker" in types and "compleated" in token.oracle_text.lower() and token.loyalty is not None:
+        token.loyalty = max(0, token.loyalty - 2 * int(payload.get("__phyrexian_life_symbols", 0) or 0))
+    state.cards[token.id] = token
+    state.players[item.controller].battlefield.append(token.id)
+    if is_aura(token) and not attach_if_legal(state, token.id, payload.get("target_card_id")):
+        state.players[item.controller].battlefield.remove(token.id)
+        del state.cards[token.id]
+        return
+    assign_static_order_on_battlefield_entry(state, token.id)
+    emit_event(state, "enters_battlefield", {"card_id": token.id, "controller": item.controller,
+                                            "x_value": max(0, int(payload.get("x_value", 0) or 0))})
 
 
 def resume_paused_resolution(state: MatchState, pending: dict) -> None:

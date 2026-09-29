@@ -6,6 +6,7 @@ from effects.registry import resolve_effect
 from rules_engine.continuous import effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from rules_engine.cast_choice import build_cast_hints
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_effects import inspect_target_hints
 
@@ -51,16 +52,44 @@ def test_oracle_copy_spell_parsing() -> None:
     state.stack.append(type("SI", (), {"id": "stack-copy"})())
     card = CardInstance(
         id="copy",
-        name="Spell Swindle",
+        name="Twincast",
         owner=1,
         controller=1,
         zone=Zone.HAND,
         types=["Instant"],
-        oracle_text="Copy target spell.",
+        mana_cost="{U}{U}",
+        oracle_text="Copy target instant or sorcery spell. You may choose new targets for the copy.",
     )
     effect_key, payload = infer_effect_from_oracle(state, card, 1)
     assert effect_key == "copy_spell"
     assert payload["target_stack_id"] == "stack-copy"
+
+
+def test_twincast_can_copy_instant_or_sorcery_but_not_creature_spell() -> None:
+    from game_state.state import StackItem
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=936)
+    for cid, name, types in (
+        ("instant", "Lightning Bolt", ["Instant"]),
+        ("sorcery", "Divination", ["Sorcery"]),
+        ("creature", "Grizzly Bears", ["Creature"]),
+    ):
+        state.cards[cid] = CardInstance(
+            id=cid, name=name, owner=2, controller=2, zone=Zone.STACK, types=types,
+        )
+        state.stack.append(StackItem(cid, cid, 2, name, "noop", {}))
+    twincast = CardInstance(
+        id="twincast", name="Twincast", owner=1, controller=1, zone=Zone.HAND,
+        types=["Instant"], mana_cost="{U}{U}",
+        oracle_text="Copy target instant or sorcery spell. You may choose new targets for the copy.",
+    )
+    hints = build_cast_hints(state, twincast, 1)
+    assert {item["id"] for item in hints["stack_targets"]} == {"instant", "sorcery"}
+    key, payload = infer_effect_from_oracle(
+        state, twincast, 1, action_targets={"target_stack_id": "sorcery"},
+    )
+    assert key == "copy_spell" and payload["target_stack_id"] == "sorcery"
 
 
 def test_oracle_copy_ability_parsing() -> None:
@@ -273,6 +302,9 @@ def test_copy_spell_handler_replays_target_effect() -> None:
         oracle_text="Lightning Bolt deals 3 damage to any target.",
     )
     resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-dmg"})
+    assert state.players[2].life == 10
+    assert len(state.stack) == 2
+    resolve_top_of_stack(state)
     assert state.players[2].life == 7
 
 
@@ -304,6 +336,9 @@ def test_copy_ability_handler_replays_target_ability() -> None:
         oracle_text="Whenever another creature enters the battlefield, you gain 1 life.",
     )
     resolve_effect(state, 1, "copy_ability", {"target_stack_id": "stack-ability"})
+    assert state.players[1].life == 10
+    assert len(state.stack) == 2
+    resolve_top_of_stack(state)
     assert state.players[1].life == 11
 
 

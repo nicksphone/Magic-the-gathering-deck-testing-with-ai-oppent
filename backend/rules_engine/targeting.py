@@ -17,6 +17,9 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
 
 
 def stack_object_kind(state: Any, item: Any) -> str:
+    copied_kind = (item.payload or {}).get("__stack_copy_kind")
+    if copied_kind:
+        return str(copied_kind)
     if (item.payload or {}).get("__trigger_event"):
         return "triggered"
     source = state.cards.get(item.source_card_id)

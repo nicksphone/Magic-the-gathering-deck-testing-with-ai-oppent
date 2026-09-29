@@ -310,6 +310,9 @@ def test_copying_a_spell_triggers_magecraft_style_pump() -> None:
     from effects.registry import resolve_effect
 
     resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-1"})
+    assert len(state.stack) == 3
+    assert state.stack[-1].effect_key == "temporary_pt_buff"
+    assert state.stack[-2].payload["__stack_copy_kind"] == "spell"
     resolve_top_of_stack(state)
 
     assert effective_power(state, creature) == 2

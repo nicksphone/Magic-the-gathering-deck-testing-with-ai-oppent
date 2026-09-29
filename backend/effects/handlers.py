@@ -614,7 +614,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
                 return
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
-            if card:
+            if card and not (popped.payload or {}).get("__stack_copy_kind"):
                 if (popped.payload or {}).get("__flashback"):
                     exile_flashback_spell(state, card.id)
                 else:
@@ -681,7 +681,7 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
             return
 
 
-def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str) -> None:
+def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str):
     target_stack_id = payload.get("target_stack_id")
     if not target_stack_id:
         return
@@ -689,24 +689,51 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     if item is None:
         return
     copied_payload = copy.deepcopy(item.payload or {})
+    from game_state.state import StackItem
+    from rules_engine.targeting import stack_object_kind
+    import uuid
+
+    kind = stack_object_kind(state, item)
+    if (effect_label == "spell") != (kind == "spell"):
+        return
     if effect_label == "spell":
         copied_payload["snow_mana_spent"] = 0
         copied_payload["snow_mana_colors"] = {}
+        if "mana_spent_to_cast" in copied_payload:
+            copied_payload["mana_spent_to_cast"] = 0
+        if "__copied_card" not in copied_payload:
+            source = state.cards.get(item.source_card_id)
+            if source is None:
+                return
+            copied_payload["__copied_card"] = {
+                key: copy.deepcopy(getattr(source, key))
+                for key in ("name", "types", "type_line", "mana_cost", "oracle_text", "power",
+                            "toughness", "loyalty", "keywords", "colors", "image_uri",
+                            "layout", "card_faces", "selected_face_index")
+            }
+    copied_payload["__stack_copy_kind"] = kind
     copied_payload["__source_card_id"] = item.source_card_id
     copied_payload["__copied_from_stack_id"] = item.id
     copied_payload["__copied_targets"] = list(getattr(item, "targets", []) or [])
-    from effects.registry import resolve_effect
-
-    resolve_effect(state, controller, item.effect_key, copied_payload)
+    copied_item = StackItem(
+        id=str(uuid.uuid4()), source_card_id=item.source_card_id,
+        controller=controller, label=f"{item.label} (copy)",
+        effect_key=item.effect_key, payload=copied_payload,
+        targets=list(getattr(item, "targets", []) or []),
+    )
+    state.stack.append(copied_item)
+    state.priority_player = controller
+    state.passed_priority = set()
     state.log.append(f"{state.players[controller].name} copies {effect_label} {item.label}.")
+    return copied_item
 
 
 def copy_spell(state: MatchState, controller: int, payload: dict) -> None:
-    _copy_stack_object(state, controller, payload, "spell")
+    copied_item = _copy_stack_object(state, controller, payload, "spell")
     from rules_engine.events import emit_event
 
     target_stack_id = payload.get("target_stack_id")
-    if target_stack_id:
+    if copied_item and target_stack_id:
         item = next((x for x in state.stack if x.id == target_stack_id), None)
         if item is not None:
             emit_event(
