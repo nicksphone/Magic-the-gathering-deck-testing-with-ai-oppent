@@ -380,8 +380,8 @@
     "hash": "77de865b92e5f77fdb405485a8d6cb59"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/browser_fixture_server.py": {
-    "mtime": 1790670135.8223524,
-    "hash": "3ec8bd04edae65160a42284ab7e090bb"
+    "mtime": 1790671058.1751533,
+    "hash": "b9525553c48ff9e2e5bdc140e9d01abd"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_stack_target_kinds.py": {
     "mtime": 1790592770.5353572,
@@ -1104,8 +1104,8 @@
     "hash": "341d152e8d8021c11542e96331b55e79"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-human-actions.mjs": {
-    "mtime": 1790670205.919215,
-    "hash": "b9aa7b0d75faed877a824f15494df5ea"
+    "mtime": 1790671153.385533,
+    "hash": "d40a2c6d8442f6698683d0cb4612661f"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/simulation-contract.mjs": {
     "mtime": 1790580144.32769,
@@ -1132,16 +1132,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790670791.4146564,
-    "hash": "492c58abb533bb1b118f7730b061e407"
+    "mtime": 1790671206.847627,
+    "hash": "b195e38c0b31dda5e323fdb57d1346d5"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790670579.5661237,
-    "hash": "addb951d2916e63267081cc7977ced96"
+    "mtime": 1790671196.8367965,
+    "hash": "38fef540334d0d3893b3705c707bad19"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790670791.4156563,
-    "hash": "9f85ea00210e3d0c8b8f6d29d005561e"
+    "mtime": 1790671196.8347964,
+    "hash": "5362607d92ddd298b71eed8b79b13163"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1240,8 +1240,8 @@
     "hash": "b90818210f3413e8f4e8ae08bff36c5b"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/modal-spell-faces.md": {
-    "mtime": 1790670791.4156563,
-    "hash": "06ec3b39ad903f9bcab9d9c3a54f0027"
+    "mtime": 1790671196.8367965,
+    "hash": "458712f9f0983eff3f039ef316be9888"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/index.html": {
     "mtime": 1777063134.7080612,

@@ -46,6 +46,12 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
                          zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add {C}{C}."),
             CardInstance(id="bear", name="Grizzly Bears", owner=1, controller=1,
                          zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+            CardInstance(id="elf-grave", name="Llanowar Elves", owner=2, controller=2,
+                         zone=Zone.GRAVEYARD, types=["Creature"], power=1, toughness=1),
+            CardInstance(id="bear-grave", name="Grizzly Bears", owner=2, controller=2,
+                         zone=Zone.GRAVEYARD, types=["Creature"], power=2, toughness=2),
+            CardInstance(id="opponent-grave", name="Grizzly Bears", owner=1, controller=1,
+                         zone=Zone.GRAVEYARD, types=["Creature"], power=2, toughness=2),
         )
         for card in cards:
             state.cards[card.id] = card

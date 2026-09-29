@@ -72,6 +72,32 @@ try {
   await waitFor("window.fixtureState.stack.length === 0 && !window.fixtureState.players['1'].battlefield.some(c => c.id === 'ring' || c.id === 'bear')");
   console.log("PASS modal UI assigns two different permanent targets and resolves both modes");
 
+  await click("Modal Same Kind Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const modes = box.querySelector('[aria-label="Spell modes"]');
+    for (const option of modes.options) option.selected = option.value === 'Return target creature card from your graveyard to your hand' || option.value === 'Destroy target artifact';
+    modes.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await waitFor("Boolean(document.querySelector('[aria-label=\"Target for Return target creature card from your graveyard to your hand\"]'))");
+  assert.equal(await evaluate("[...document.querySelector('[aria-label=\"Target for Return target creature card from your graveyard to your hand\"]').options].some(o => o.value === 'card:opponent-grave')"), false);
+  await evaluate(`(() => {
+    const returning = document.querySelector('[aria-label="Target for Return target creature card from your graveyard to your hand"]');
+    const destroy = document.querySelector('[aria-label="Target for Destroy target artifact"]');
+    if (!returning || !destroy) throw new Error('Missing graveyard or artifact target selector');
+    returning.value = 'card:elf-grave'; returning.dispatchEvent(new Event('change', { bubbles: true }));
+    destroy.value = 'card:ring'; destroy.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Cast Kolaghan's Command");
+  await waitFor("window.fixtureState.stack.some(item => item.label === \"Kolaghan's Command\")");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_targets['Return target creature card from your graveyard to your hand'].target_card_id"), "elf-grave");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['2'].hand.some(c => c.id === 'elf-grave')");
+  assert.equal(await evaluate("window.fixtureState.players['2'].graveyard_count"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['1'].graveyard_count"), 2);
+  console.log("PASS modal UI returns the selected own-graveyard creature and destroys an artifact");
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");
