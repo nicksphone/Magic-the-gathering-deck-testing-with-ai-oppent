@@ -22,6 +22,21 @@ def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dic
     return [{**move, "entry_choice": choice} for choice in options] if options else [move]
 
 
+def _cost_option_view(option) -> dict:
+    return {
+        "id": option.id,
+        "label": option.label,
+        "mana_cost": option.mana_cost,
+        "hybrid_symbols": hybrid_payment_symbols(option.mana_cost),
+        "pay_life": option.pay_life,
+        "pay_life_x": option.pay_life_x,
+        "discard_cards": option.discard_cards,
+        "sacrifice_creatures": option.sacrifice_creatures,
+        "sacrifice_kind": option.sacrifice_kind,
+        "exile_graveyard": option.exile_graveyard,
+    }
+
+
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.winner is not None:
         return []
@@ -216,21 +231,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": card.name,
                     "from_graveyard": card.zone == Zone.GRAVEYARD,
                     "mana_cost": card.mana_cost,
-                    "cost_options": [
-                        {
-                            "id": o.id,
-                            "label": o.label,
-                            "mana_cost": o.mana_cost,
-                            "hybrid_symbols": hybrid_payment_symbols(o.mana_cost),
-                            "pay_life": o.pay_life,
-                            "pay_life_x": o.pay_life_x,
-                            "discard_cards": o.discard_cards,
-                            "sacrifice_creatures": o.sacrifice_creatures,
-                            "sacrifice_kind": o.sacrifice_kind,
-                            "exile_graveyard": o.exile_graveyard,
-                        }
-                        for o in available_options
-                    ],
+                    "cost_options": [_cost_option_view(o) for o in available_options],
                     "target_hints": hints,
                 }
             )
@@ -273,11 +274,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": card.name,
                     "mana_cost": card.mana_cost,
                     "from_exile": True,
-                    "cost_options": [
-                        {"id": o.id, "label": o.label, "mana_cost": o.mana_cost, "pay_life": o.pay_life, "pay_life_x": o.pay_life_x,
-                         "discard_cards": o.discard_cards, "sacrifice_creatures": o.sacrifice_creatures, "sacrifice_kind": o.sacrifice_kind}
-                        for o in available_options
-                    ],
+                    "cost_options": [_cost_option_view(o) for o in available_options],
                     "target_hints": hints,
                 }
             )
@@ -299,19 +296,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": top_card.name,
                     "mana_cost": top_card.mana_cost,
                     "from_library": True,
-                    "cost_options": [
-                        {
-                            "id": o.id,
-                            "label": o.label,
-                            "mana_cost": o.mana_cost,
-                            "pay_life": o.pay_life,
-                            "pay_life_x": o.pay_life_x,
-                            "discard_cards": o.discard_cards,
-                            "sacrifice_creatures": o.sacrifice_creatures,
-                            "sacrifice_kind": o.sacrifice_kind,
-                        }
-                        for o in available_options
-                    ],
+                    "cost_options": [_cost_option_view(o) for o in available_options],
                     "target_hints": hints,
                 }
             )

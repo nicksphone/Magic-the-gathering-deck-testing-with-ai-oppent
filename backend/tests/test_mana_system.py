@@ -92,6 +92,44 @@ def test_checked_cast_requires_valid_affordable_per_symbol_hybrid_choices() -> N
     assert sum(cast.cards[cid].tapped for cid in cast.players[1].battlefield) == 3
 
 
+def test_hybrid_choices_are_exposed_for_exile_and_top_library_casts() -> None:
+    deck = [{"quantity": 60, "card_name": "Plains"}]
+    state = MatchFactory.from_decks(deck, deck, seed=106)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    player = state.players[1]
+    for _ in range(3):
+        cid = player.library.pop()
+        state.cards[cid].zone = Zone.BATTLEFIELD
+        player.battlefield.append(cid)
+    exile_id = player.library.pop()
+    exiled = state.cards[exile_id]
+    exiled.name, exiled.types, exiled.type_line = "Spectral Procession", ["Sorcery"], "Sorcery"
+    exiled.mana_cost = "{2/W}{2/W}{2/W}"
+    exiled.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
+    exiled.zone = Zone.EXILE
+    player.exile.append(exile_id)
+    player.exile_play_until[exile_id] = state.turn
+    walker = CardInstance(
+        id="walker-hybrid", name="Realmwalker", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Shapeshifter",
+        chosen_creature_type="Kithkin",
+        oracle_text="You may cast creature spells of the chosen type from the top of your library.",
+    )
+    state.cards[walker.id] = walker
+    player.battlefield.append(walker.id)
+    top = state.cards[player.library[-1]]
+    top.name, top.types, top.type_line = "Figure of Destiny", ["Creature"], "Creature — Kithkin"
+    top.mana_cost = "{R/W}"
+    moves = RulesEngine().legal_moves(state, 1)
+    exile_move = next(move for move in moves if move.get("card_id") == exile_id and move.get("from_exile"))
+    library_move = next(move for move in moves if move.get("card_id") == top.id and move.get("from_library"))
+    assert exile_move["cost_options"][0]["hybrid_symbols"] == [{"symbol": "2/W", "choices": ["2", "W"]}] * 3
+    assert library_move["cost_options"][0]["hybrid_symbols"] == [{"symbol": "R/W", "choices": ["R", "W"]}]
+
+
 def test_generic_reduction_applies_after_monocolored_hybrid_choice(monkeypatch) -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=103)
