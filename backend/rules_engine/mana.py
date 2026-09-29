@@ -220,7 +220,10 @@ def _plan_mana_sources(
                     continue
                 chosen_color = max(_ordered_colors(set(outputs)), key=outputs.__getitem__)
                 available.append((i, (chosen_color, outputs[chosen_color])))
-            available.sort(key=lambda entry: (-entry[1][1], len(sources[entry[0]][1]), entry[0]))
+            available.sort(key=lambda entry: (
+                is_snow_source(state.cards[sources[entry[0]][0]]),
+                -entry[1][1], len(sources[entry[0]][1]), entry[0],
+            ))
             chosen = []
             for i, (color, amount) in available:
                 chosen.append((i, color))
@@ -234,7 +237,10 @@ def _plan_mana_sources(
             return None
         candidates = sorted(
             (i for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i) and color in outputs),
-            key=lambda i: (len(sources[i][1]), -sources[i][1][color], not sources[i][2], i),
+            key=lambda i: (
+                is_snow_source(state.cards[sources[i][0]]), len(sources[i][1]),
+                -sources[i][1][color], not sources[i][2], i,
+            ),
         )
         tried: set[tuple[tuple[str, int], ...]] = set()
         for i in candidates:
@@ -358,23 +364,34 @@ def auto_pay_cost(
             return False
         add_mana_to_pool(state, player_id, color, amount, source_id=cid)
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay spell cost.")
+    snow_by_color = dict(snow_spent)
     for color, amount in snow_spent.items():
         player.snow_mana_pool[color] -= amount
         player.mana_pool[color] -= amount
     for color in MANA_COLORS:
-        _spend_pool_color(player, color, req[color])
+        spent = _spend_pool_color(player, color, req[color])
+        snow_by_color[color] = snow_by_color.get(color, 0) + spent
     generic_need = req["generic"]
-    for color in MANA_COLORS:
-        paid = min(generic_need, player.mana_pool[color])
-        _spend_pool_color(player, color, paid)
-        generic_need -= paid
+    for spend_snow in (False, True):
+        for color in MANA_COLORS:
+            available = (player.snow_mana_pool.get(color, 0) if spend_snow else
+                         player.mana_pool[color] - player.snow_mana_pool.get(color, 0))
+            paid = min(generic_need, available)
+            spent = _spend_pool_color(player, color, paid)
+            snow_by_color[color] = snow_by_color.get(color, 0) + spent
+            generic_need -= paid
+    if payment_details is not None:
+        payment_details["snow_mana_colors"] = {color: amount for color, amount in snow_by_color.items() if amount}
+        payment_details["snow_mana_spent"] = sum(snow_by_color.values())
     return True
 
 
-def _spend_pool_color(player, color: str, amount: int) -> None:
+def _spend_pool_color(player, color: str, amount: int) -> int:
     ordinary = player.mana_pool[color] - player.snow_mana_pool.get(color, 0)
-    player.snow_mana_pool[color] = max(0, player.snow_mana_pool.get(color, 0) - max(0, amount - ordinary))
+    snow_spent = max(0, amount - ordinary)
+    player.snow_mana_pool[color] = max(0, player.snow_mana_pool.get(color, 0) - snow_spent)
     player.mana_pool[color] -= amount
+    return snow_spent
 
 
 def mana_value(mana_cost: str, is_land: bool = False, x_value: int = 0) -> int:

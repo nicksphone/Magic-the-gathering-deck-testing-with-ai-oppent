@@ -101,6 +101,42 @@ def test_colored_payment_keeps_snow_provenance_when_ordinary_mana_is_available()
     assert auto_pay_cost(state, 1, "{S}")
 
 
+def test_generic_payment_preserves_snow_from_other_colors_and_reports_spend() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=932)
+    player = state.players[1]
+    player.mana_pool.update({"C": 1, "G": 1})
+    player.snow_mana_pool["C"] = 1
+    first: dict = {}
+    assert auto_pay_cost(state, 1, "{1}", payment_details=first)
+    assert player.mana_pool["G"] == 0
+    assert player.mana_pool["C"] == player.snow_mana_pool["C"] == 1
+    assert first["snow_mana_spent"] == 0
+    second: dict = {}
+    assert auto_pay_cost(state, 1, "{1}", payment_details=second)
+    assert second["snow_mana_spent"] == 1
+    assert second["snow_mana_colors"] == {"C": 1}
+
+
+def test_generic_payment_prefers_ordinary_source_before_snow_source() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=934)
+    snow_id = state.players[1].library.pop()
+    ordinary_id = state.players[1].library.pop()
+    for cid in (snow_id, ordinary_id):
+        card = state.cards[cid]
+        card.zone = Zone.BATTLEFIELD
+        card.types, card.type_line = ["Land"], "Basic Land - Forest"
+        state.players[1].battlefield.append(cid)
+    state.cards[snow_id].name = "Snow-Covered Forest"
+    state.cards[snow_id].type_line = "Basic Snow Land - Forest"
+    details: dict = {}
+    assert auto_pay_cost(state, 1, "{1}", payment_details=details)
+    assert state.cards[ordinary_id].tapped
+    assert not state.cards[snow_id].tapped
+    assert details["snow_mana_spent"] == 0
+
+
 def test_snow_payment_search_preserves_colored_snow_pool_for_colored_cost() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck, seed=931)

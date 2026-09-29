@@ -113,6 +113,15 @@ def build_cast_hints(
 
 
 def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
+    mode_targets = action_targets.get("mode_targets") or {}
+    if not isinstance(mode_targets, dict):
+        return False, "Mode targets must be an object."
+    search_overrides = {"search_contains", "search_count", "search_mv_max"}
+    if search_overrides.intersection(action_targets) or any(
+        isinstance(targets, dict) and search_overrides.intersection(targets)
+        for targets in mode_targets.values()
+    ):
+        return False, "Library-search restrictions come from the card, not the cast action."
     ok, err = validate_cast_targets(hints, action_targets)
     if not ok:
         return ok, err

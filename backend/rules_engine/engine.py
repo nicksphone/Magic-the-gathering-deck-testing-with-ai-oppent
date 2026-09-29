@@ -822,6 +822,8 @@ class RulesEngine:
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
+                payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
                 if "Planeswalker" in face_card.types and "compleated" in face_card.oracle_text.lower():
                     payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
                 if effect_key == "look_top_select_hand":

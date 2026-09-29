@@ -79,12 +79,15 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         return
     if effect_key == "effect_sequence":
         source_card_id = payload.get("__source_card_id")
+        snow_mana_spent = payload.get("snow_mana_spent")
         effects = payload.get("effects", [])
         for index, item in enumerate(effects):
             key = item.get("effect_key")
             data = dict(item.get("payload", {}) or {})
             if source_card_id and "__source_card_id" not in data:
                 data["__source_card_id"] = source_card_id
+            if snow_mana_spent:
+                data.setdefault("snow_mana_spent", snow_mana_spent)
             if not key:
                 continue
             resolve_effect(state, controller, key, data)
@@ -95,6 +98,8 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
                     next_data = dict(next_effect.get("payload", {}))
                     if source_card_id:
                         next_data.setdefault("__source_card_id", source_card_id)
+                    if snow_mana_spent:
+                        next_data.setdefault("snow_mana_spent", snow_mana_spent)
                     remaining.append({**next_effect, "payload": next_data})
                 pending.setdefault("continuation_effects", []).extend(remaining)
                 return

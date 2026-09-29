@@ -309,7 +309,7 @@ def cycle_search(state: MatchState, controller: int, payload: dict) -> None:
 
 def gain_life(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", controller))
-    amount = int(payload.get("amount", 0))
+    amount = int(payload.get("snow_mana_spent", 0) if payload.get("amount_source") == "snow_mana_spent" else payload.get("amount", 0))
     if amount <= 0:
         return
     if player_cant_gain_life(state, target_player):
@@ -689,6 +689,9 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     if item is None:
         return
     copied_payload = copy.deepcopy(item.payload or {})
+    if effect_label == "spell":
+        copied_payload["snow_mana_spent"] = 0
+        copied_payload["snow_mana_colors"] = {}
     copied_payload["__source_card_id"] = item.source_card_id
     copied_payload["__copied_from_stack_id"] = item.id
     copied_payload["__copied_targets"] = list(getattr(item, "targets", []) or [])

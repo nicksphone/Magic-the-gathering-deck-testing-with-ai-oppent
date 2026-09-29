@@ -246,6 +246,11 @@ def infer_effect_from_oracle(
         return "look_top_choose", {"top_n": _parse_count_token(top_choice.group(1))}
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
+        if re.search(r"you gain 1 life for each \{s\} spent to cast this spell", oracle):
+            return "effect_sequence", {"effects": [
+                {"effect_key": search_effect[0], "payload": search_effect[1]},
+                {"effect_key": "gain_life", "payload": {"amount_source": "snow_mana_spent"}},
+            ]}
         return search_effect
 
     clauses = _split_clauses(oracle)
@@ -394,7 +399,9 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     count = action_targets.get("search_count")
     mv_max = action_targets.get("search_mv_max")
     if not contains:
-        if "basic land" in oracle:
+        if "snow permanent card" in oracle and "legendary card" in oracle and "saga card" in oracle:
+            contains = "snow_or_legendary_or_saga"
+        elif "basic land" in oracle:
             contains = "basic_land"
         elif "creature card" in oracle:
             contains = "creature"
@@ -459,6 +466,10 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
     subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
     if needle == "card":
         matched = True
+    elif needle == "snow_or_legendary_or_saga":
+        permanent = bool(card_types.intersection({"artifact", "enchantment", "creature", "land", "planeswalker", "battle"}))
+        supertypes = set(type_line_parts[0].split()) | card_types
+        matched = (permanent and "snow" in supertypes) or "legendary" in supertypes or "saga" in subtypes
     elif needle == "basic_land":
         matched = "basic" in type_line_parts[0].split() and "land" in card_types
     elif needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land"}:

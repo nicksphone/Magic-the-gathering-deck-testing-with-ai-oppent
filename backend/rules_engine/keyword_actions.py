@@ -200,17 +200,11 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         state.pending_mechanic_choice = None
         resolve_effect(state, player_id, effect_key, payload)
         if state.pending_mechanic_choice:
-            if pending.get("resolving_item"):
-                state.pending_mechanic_choice["resolving_item"] = pending["resolving_item"]
+            from rules_engine.stack_engine import resume_paused_resolution
+            resume_paused_resolution(state, pending)
             return True
-        if pending.get("resolving_item"):
-            from game_state.state import StackItem
-            from rules_engine.stack_engine import finish_stack_resolution
-            item = StackItem(**pending["resolving_item"])
-            finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
-        if not state.pending_trigger_order and not state.pending_replacement_choice:
-            state.priority_player = state.active_player
-            state.passed_priority = set()
+        from rules_engine.stack_engine import resume_paused_resolution
+        resume_paused_resolution(state, pending)
         return True
     if not pending or pending["player_id"] != player_id or pending["kind"] != "sacrifice":
         return False
