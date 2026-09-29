@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import permutations
 
 from game_state.state import MatchState, Step, Zone
+from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
@@ -351,12 +352,18 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             cost = ability["mana_cost"]
             parsed_cost = parse_activated_cost(cost)
-            if not parsed_cost.supported or not activated_cost_available(state, player_id, cid, cost):
+            from rules_engine.costs import RESTRICTED_X_PAYMENT_RE
+            if (not parsed_cost.supported or RESTRICTED_X_PAYMENT_RE.search(ability["text"])
+                    or not activated_cost_available(state, player_id, cid, cost)):
                 continue
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+            if build_ability_spec(state, proxy, player_id, report_unsupported=False).effect.key == "noop":
+                continue
             hints = build_cast_hints(state, proxy, player_id)
             if not has_available_targets_for_action(hints):
                 continue
+            if "{X}" in parsed_cost.mana_cost:
+                hints["requires_x_value"] = True
             moves.append(
                 {
                     "type": "activate_ability",

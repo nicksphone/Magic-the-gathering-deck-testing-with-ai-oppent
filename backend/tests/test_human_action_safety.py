@@ -1,4 +1,5 @@
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.serializers import serialize_match_snapshot
 from rules_engine.engine import RulesEngine
 
 
@@ -42,7 +43,7 @@ def test_empty_graveyard_target_surface_rejects_stale_card():
     assert not valid
 
 
-def test_variable_activation_is_rejected_without_paying_costs():
+def test_unsupported_activation_is_rejected_without_paying_costs():
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=2)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
@@ -50,10 +51,13 @@ def test_variable_activation_is_rejected_without_paying_costs():
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     state.players[1].mana_pool["U"] = 4
+    before = serialize_match_snapshot(state)
+    assert not any(move["type"] == "activate_ability" for move in RulesEngine().legal_moves(state, 1))
+    assert serialize_match_snapshot(state) == before
     RulesEngine().take_action(state, 1, {"type": "activate_ability", "card_id": source.id, "ability_index": 0, "targets": {"target_player": 2, "x_value": 3}})
     assert state.players[1].mana_pool["U"] == 4
     assert not state.stack
-    assert "Variable activated costs" in state.log[-1]
+    assert "Unsupported activated ability effect" in state.log[-1]
     assert not any(move["type"] == "activate_ability" for move in RulesEngine().legal_moves(state, 1))
 
 

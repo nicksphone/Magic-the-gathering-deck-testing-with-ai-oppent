@@ -4,6 +4,18 @@ from game_state.state import MatchState, Zone, assign_static_order_on_battlefiel
 from rules_engine.events import emit_event_batch
 
 
+def linked_exiled_creatures(state: MatchState, source_id: str, timestamp: int) -> list[str]:
+    return list(dict.fromkeys(
+        cid for link in state.linked_exiles
+        if link["source_id"] == source_id and link["source_timestamp"] == timestamp
+        for cid in link["card_ids"]
+        if cid in state.cards and state.cards[cid].zone == Zone.EXILE
+        and cid in state.players[state.cards[cid].owner].exile
+        and state.cards[cid].effect_timestamp == link.get("card_timestamps", {}).get(cid, state.cards[cid].effect_timestamp)
+        and "Creature" in state.cards[cid].types
+    ))
+
+
 def source_still_present(state: MatchState, source_id: str, timestamp: int) -> bool:
     source = state.cards.get(source_id)
     return bool(source and source.zone == Zone.BATTLEFIELD

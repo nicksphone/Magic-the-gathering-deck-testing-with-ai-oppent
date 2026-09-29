@@ -15,7 +15,8 @@ _UNSUPPORTED_PATTERNS = (
     ("multikicker", re.compile(r"\bmultikicker\b", re.IGNORECASE)),
     ("domain", re.compile(r"\bdomain\s*[—-]", re.IGNORECASE)),
     ("incubate", re.compile(r"\bincubat(?:e|es|ed|ing)\b", re.IGNORECASE)),
-    ("exiled-card copy", re.compile(r"\bbecomes a copy of (?:that|the chosen|a chosen) card\b", re.IGNORECASE)),
+    ("copy-layer fidelity", re.compile(r"\bbecomes a copy of (?:that|the chosen|a chosen) card\b", re.IGNORECASE)),
+    ("restricted X payment", re.compile(r"\bspend only (?:white|blue|black|red|green|colorless) mana on x\b", re.IGNORECASE)),
 )
 
 

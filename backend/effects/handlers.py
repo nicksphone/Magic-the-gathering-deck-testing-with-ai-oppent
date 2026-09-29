@@ -584,6 +584,43 @@ def exile_nonland_until_source_leaves(state: MatchState, controller: int, payloa
     state.log.append(f"Exile nonland permanents with mana value {mv_max} or less until the source leaves: {len(affected)} exiled.")
 
 
+def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -> None:
+    from copy import copy
+    from rules_engine.card_faces import select_cast_face
+    from rules_engine.linked_exile import linked_exiled_creatures, source_still_present
+
+    source_id = payload["source_card_id"]
+    timestamp = int(payload["source_timestamp"])
+    if not source_still_present(state, source_id, timestamp):
+        return
+    x_value = int(payload["x_value"])
+    options = [cid for cid in linked_exiled_creatures(state, source_id, timestamp)
+               if mana_value(state.cards[cid].mana_cost or "") == x_value]
+    if not options:
+        return
+    chosen = payload.get("selected_card_id")
+    if chosen is None and controller in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            "kind": "linked_exile_copy", "player_id": controller, "options": options,
+            "count": 1, "effect_key": "copy_linked_exiled_card", "effect_payload": payload,
+            "label": "Choose an exiled creature card to copy",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if chosen is None:
+        chosen = max(options, key=lambda cid: (int(state.cards[cid].power or 0) + int(state.cards[cid].toughness or 0), cid))
+    if chosen not in options:
+        raise ValueError("Chosen card is no longer exiled with this permanent at the announced X")
+    source = state.cards[source_id]
+    previous_name = source.name
+    selected = select_cast_face(state.cards[chosen], 0)
+    for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "oracle_text", "keywords", "colors"):
+        source.printed_characteristics.setdefault(field, copy(getattr(source, field)))
+        setattr(source, field, copy(getattr(selected, field)))
+    state.log.append(f"{previous_name} becomes a copy of {selected.name}.")
+
+
 def exile_all_creatures_incubate(state: MatchState, controller: int, payload: dict) -> None:
     moved = exile_all_creatures(state, controller, payload)
     incubate(state, controller, {"counters": moved})

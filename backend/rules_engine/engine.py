@@ -956,13 +956,22 @@ class RulesEngine:
                 reject("Ability can only be activated at sorcery speed")
                 return
             cost = ability["mana_cost"]
-            if "{X}" in cost.upper():
-                reject("Variable activated costs are unsupported")
-                state.log.append("Variable activated costs are not yet supported; no costs paid.")
+            from rules_engine.costs import RESTRICTED_X_PAYMENT_RE
+            if RESTRICTED_X_PAYMENT_RE.search(ability["text"]):
+                reject("Restricted X mana payments are not yet supported")
                 return
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
+            x_value = int(action_targets.get("x_value", 0) or 0)
+            if x_value < 0 or ("{X}" in cost.upper() and "x_value" not in action_targets):
+                reject("A non-negative X value is required for this activated cost")
+                return
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
             action_targets = enrich_divide_total(proxy, action_targets)
+            proxy.source_oracle_text = state.cards[cid].oracle_text
+            if build_ability_spec(state, proxy, player_id, action_targets=action_targets, report_unsupported=False).effect.key == "noop":
+                reject("Unsupported activated ability effect")
+                state.log.append(f"Unsupported activated ability effect for {state.cards[cid].name}.")
+                return
             hints = build_cast_hints(state, proxy, player_id, action_targets)
             if reject_invalid:
                 from rules_engine.action_validation import require_declared_targets
@@ -989,7 +998,7 @@ class RulesEngine:
             if cost_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "ability_activation"
-            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices")):
+            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices"), x_value=x_value):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False

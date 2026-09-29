@@ -3,6 +3,7 @@ import pytest
 from game_state.state import MatchFactory, StackItem, Step, Zone
 from rules_engine.action_validation import ActionRejected
 from rules_engine.engine import RulesEngine
+from game_state.serializers import serialize_match_snapshot
 
 
 def _state(oracle_text: str):
@@ -56,3 +57,18 @@ def test_unrestricted_activated_ability_remains_available_with_stack() -> None:
     state, source_id = _state("{T}: Draw a card.")
     state.stack.append(StackItem("pending", source_id, 1, "Pending", "noop", {}))
     assert any(move["type"] == "activate_ability" for move in RulesEngine().legal_moves(state, 1))
+
+
+def test_restricted_x_payment_is_not_offered_or_charged_without_color_enforcement() -> None:
+    state, source_id = _state("{X}: This creature deals X damage to each creature and each player. Spend only black mana on X.")
+    state.cards[source_id].name = "Crypt Rats"
+    state.cards[source_id].types = ["Creature"]
+    state.players[1].mana_pool["B"] = 3
+    before = serialize_match_snapshot(state)
+    assert not any(move["type"] == "activate_ability" for move in RulesEngine().legal_moves(state, 1))
+    with pytest.raises(ActionRejected):
+        RulesEngine().take_action(state, 1, {
+            "type": "activate_ability", "card_id": source_id,
+            "ability_index": 0, "targets": {"x_value": 2},
+        }, reject_invalid=True)
+    assert serialize_match_snapshot(state) == before

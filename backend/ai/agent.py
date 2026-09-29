@@ -148,6 +148,9 @@ class AIAgent:
                 target_archetype = self.opponent_archetype if target != player_id else self.archetype
                 options.sort(key=lambda cid: (-self._hand_retention_value(state, cid, target, target_archetype or "Midrange"), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:1]}, reasoning="Remove the opponent's most useful revealed card")
+            if choice["kind"] == "linked_exile_copy":
+                selected = self._choose_library_search(state, options, 1, player_id)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Copy the most useful eligible exiled creature")
             if choice["kind"] == "combat_damage":
                 return AIDecision(
                     action={"type": "choose_mechanic", "damage_assignment": self._choose_combat_damage_allocation(state, choice)},
@@ -2452,7 +2455,16 @@ class AIAgent:
                 targets["target_distribution"] = {str(preferred): 1}
 
         mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
-        if "{X}" in mana_cost.upper() and "x_value" not in targets:
+        linked_copy = mtype == "activate_ability" and "becomes a copy of that card" in str(move.get("ability_label", "")).lower()
+        if linked_copy and "x_value" not in targets and cid:
+            from rules_engine.linked_exile import linked_exiled_creatures
+            eligible = [card_id for card_id in linked_exiled_creatures(state, cid, state.cards[cid].effect_timestamp)
+                        if can_pay_with_pool_and_lands(state, player_id, mana_cost,
+                                                       card_name=state.cards[cid].name,
+                                                       x_value=mana_value(state.cards[card_id].mana_cost or ""))]
+            selected = self._choose_library_search(state, eligible, 1, player_id)
+            targets["x_value"] = mana_value(state.cards[selected[0]].mana_cost or "") if selected else 0
+        elif "{X}" in mana_cost.upper() and "x_value" not in targets:
             targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card)
         elif hints.get("requires_x_value") and "x_value" not in targets:
             if mtype == "activate_loyalty" and cid:

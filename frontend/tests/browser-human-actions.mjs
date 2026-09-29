@@ -14,6 +14,22 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Variable Ability Fixture");
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Activate Valki'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Activate Valki')).disabled"), true);
+  await evaluate("(() => { const input = document.querySelector('[aria-label=\"X value for Valki, God of Lies ability\"]'); if (!input) throw new Error('Missing announced X input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '1'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Activate Valki') && !b.disabled)");
+  await click("Activate Valki");
+  await waitFor("window.fixtureState.stack.at(-1)?.effect_key === 'copy_linked_exiled_card'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.x_value"), 1);
+  assert.equal(await evaluate("window.fixtureState.players['1'].mana_pool.B"), 1);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'linked_exile_copy'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Elvish Mystic')); if (!label) throw new Error('Missing linked copy option'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'linked-valki' && c.name === 'Elvish Mystic')");
+  console.log("PASS human announced-X activation pays mana and chooses linked exiled card through UI/API");
+  await reset();
   await click("Copy Target Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'copy_target'");
   assert.deepEqual(await evaluate("window.fixtureState.pending_mechanic_choice.options"), ["keep", "target_player:1"]);

@@ -26,6 +26,41 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "linked_copy_x":
+        import json
+        from card_data.fallback_cards import fallback_card_payload
+        from game_state.state import assign_static_order_on_battlefield_entry
+        from rules_engine.linked_exile import record_linked_exile
+
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=934)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.mechanic_choice_players = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[1].mana_pool["B"] = 2
+        face = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[
+            "Valki, God of Lies // Tibalt, Cosmic Impostor"
+        ]["card_faces"][0]
+        source = CardInstance(
+            "linked-valki", face["name"], 1, 1, Zone.BATTLEFIELD, ["Creature"],
+            mana_cost=face["mana_cost"], oracle_text=face["oracle_text"],
+            type_line=face["type_line"], power=int(face["power"]), toughness=int(face["toughness"]),
+        )
+        state.cards[source.id] = source
+        state.players[1].battlefield.append(source.id)
+        assign_static_order_on_battlefield_entry(state, source.id)
+        printed = fallback_card_payload("Elvish Mystic")
+        held = CardInstance(
+            "linked-mystic", printed["name"], 2, 2, Zone.EXILE, ["Creature"],
+            mana_cost=printed["mana_cost"], oracle_text=printed["oracle_text"],
+            type_line=printed["type_line"], power=int(printed["power"]), toughness=int(printed["toughness"]),
+        )
+        state.cards[held.id] = held
+        state.players[2].exile.append(held.id)
+        record_linked_exile(state, source.id, source.effect_timestamp, [held.id], Zone.HAND)
+        return publish(state, deck)
     if face_kind == "modal_copy_target":
         from effects.handlers import copy_spell
         deck = [{"quantity": 60, "card_name": "Island"}]

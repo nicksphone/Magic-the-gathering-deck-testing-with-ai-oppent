@@ -19,7 +19,8 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
       combined = { ...targets, ...parsed };
     } catch { inputError = "Advanced choices must be a valid JSON object."; }
   }
-  const unsupportedCost = move.mana_cost?.toUpperCase().includes("{X}");
+  const requiresX = move.mana_cost?.toUpperCase().includes("{X}");
+  const incompleteX = requiresX && (!Number.isInteger(targets.x_value) || Number(targets.x_value) < 0);
   const hints = move.target_hints;
   const targetText = move.ability_label ?? "";
   const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
@@ -47,11 +48,11 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
     {hints?.modes?.length ? <select aria-label="Ability mode" onChange={(event) => setTargets({ ...targets, mode_text: event.target.value })}>
       <option value="">Choose mode</option>{hints.modes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
     </select> : null}
-    {hints?.requires_x_value ? <label>X<input type="number" min={0} value={Number(targets.x_value ?? 0)} onChange={(event) => setTargets({ ...targets, x_value: Math.max(0, Number(event.target.value)) })} /></label> : null}
+    {hints?.requires_x_value && !requiresX ? <label>X<input type="number" min={0} value={Number(targets.x_value ?? 0)} onChange={(event) => setTargets({ ...targets, x_value: Math.max(0, Number(event.target.value)) })} /></label> : null}
     <details><summary>Advanced choices</summary><p>Enter additional target/mode choices as JSON. The engine validates them before costs are paid.</p><pre>{JSON.stringify(hints?.choice_schema ?? {}, null, 2)}</pre><textarea aria-label="Advanced ability choices" value={advanced} onChange={(event) => setAdvanced(event.target.value)} /></details>
+    {requiresX ? <label>Announced X <input aria-label={`X value for ${move.card_name} ability`} type="number" min={0} step={1} value={targets.x_value === undefined ? "" : String(targets.x_value)} onChange={(event) => setTargets((prior) => ({ ...prior, x_value: event.target.value === "" ? undefined : Number(event.target.value) }))} /></label> : null}
     {inputError ? <p role="alert">{inputError}</p> : null}
-    {unsupportedCost ? <p role="alert">Variable activated costs are not implemented; this activation is disabled.</p> : null}
-    <button disabled={Boolean(inputError || unsupportedCost || incompletePayment)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined,
+    <button disabled={Boolean(inputError || incompleteX || incompletePayment)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined,
       hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined })}>Activate {move.card_name}</button>
   </article>;
 }

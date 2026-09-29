@@ -58,6 +58,8 @@ def build_ability_spec(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    report_unsupported: bool = True,
 ) -> AbilitySpec:
     action_targets = dict(action_targets or {})
     target_hints = inspect_target_hints(state, card, controller, action_targets)
@@ -66,6 +68,7 @@ def build_ability_spec(
         card,
         controller,
         action_targets=action_targets,
+        report_unsupported=report_unsupported,
     )
     oracle = (card.oracle_text or "").strip()
     modes = list(target_hints.get("modes", []))

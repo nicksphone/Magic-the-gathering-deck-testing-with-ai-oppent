@@ -22,6 +22,7 @@ GAIN_CONTROL_RE = re.compile(r"gain control of\s+target\s+(creature|artifact|enc
 PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(?:noncreature )?(creature|land|permanent)")
+SELF_COUNTER_RE = re.compile(r"^\s*put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(this (?:creature|permanent|artifact|enchantment)|[^.]+)", re.IGNORECASE)
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
@@ -143,6 +144,8 @@ def infer_effect_from_oracle(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    report_unsupported: bool = True,
 ) -> tuple[str, dict[str, Any]]:
     action_targets = action_targets or {}
     # A real planeswalker card's loyalty lines are activated later, not cast as
@@ -152,6 +155,11 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    if re.search(r"choose a creature card exiled with .+? with (?:mana value|converted mana cost) x\.\s*.+? becomes a copy of that card", oracle):
+        return "copy_linked_exiled_card", {
+            "source_card_id": card.id, "x_value": int(action_targets.get("x_value", 0) or 0),
+            "source_timestamp": state.cards[card.id].effect_timestamp,
+        }
     linked_hand_exile = re.search(
         r"each opponent reveals their hand\.\s*for each opponent, exile a creature card they revealed this way until [^.]+ leaves the battlefield",
         oracle,
@@ -333,7 +341,8 @@ def infer_effect_from_oracle(
     if _looks_static_or_keyword_only(card.oracle_text or "") or _is_event_layer_resolved(card.oracle_text or ""):
         return "noop", {}
     # Fallback: log uninferrable oracle text instead of silent no-op.
-    state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
+    if report_unsupported:
+        state.log.append(f"Oracle effect not inferred for {card.name} (controller={controller}). Text: {card.oracle_text[:120]}")
     return "noop", {}
 
 
@@ -1420,6 +1429,16 @@ def _infer_clause_effect(
             "name": token_name, "amount": amount, "types": ["Artifact", "Token"],
             "type_line": token_definition["type_line"] if token_definition else f"Token Artifact - {token_name}",
             "oracle_text": reminder_ability.group(1).strip() if reminder_ability else token_definition["oracle_text"],
+        }
+
+    self_counter = SELF_COUNTER_RE.search(oracle)
+    if self_counter and getattr(card, "id", None) and (
+        self_counter.group(2).lower().startswith("this ")
+        or self_counter.group(2).strip().lower() == card.name.lower()
+    ):
+        return "add_counters", {
+            "target_card_id": card.id, "counter": "+1/+1",
+            "amount": _parse_count_token(self_counter.group(1)),
         }
 
     counters_match = COUNTER_RE.search(oracle)

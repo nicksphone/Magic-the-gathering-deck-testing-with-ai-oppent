@@ -160,6 +160,142 @@ def test_valki_http_choice_persists_link_and_returns_to_hand() -> None:
             ACTIVE_MATCHES.pop(state.id, None)
 
 
+def _valki_with_exiled_mystic():
+    from card_data.fallback_cards import fallback_card_payload
+
+    state, source = _valki_entry()
+    state.mechanic_choice_players = {1, 2}
+    target_id = state.players[2].hand[0]
+    printed = fallback_card_payload("Elvish Mystic")
+    assert printed is not None
+    target = state.cards[target_id]
+    target.name = printed["name"]
+    target.type_line = printed["type_line"]
+    target.types = ["Creature"]
+    target.mana_cost = printed["mana_cost"]
+    target.oracle_text = printed["oracle_text"]
+    target.power = int(printed["power"])
+    target.toughness = int(printed["toughness"])
+    target.card_faces = []
+    target.layout = ""
+    assert not resolve_top_of_stack(state)
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [target_id]})
+    state.players[1].mana_pool = {color: 0 for color in "WUBRGC"}
+    state.players[1].mana_pool["B"] = 1
+    return state, source.id, target_id
+
+
+def test_variable_activated_cost_rejects_missing_or_unaffordable_x_before_mutation() -> None:
+    state, source_id, _ = _valki_with_exiled_mystic()
+    moves = [move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "activate_ability"]
+    assert len(moves) == 1 and moves[0]["mana_cost"] == "{X}"
+    assert moves[0]["target_hints"]["requires_x_value"]
+    before = serialize_match_snapshot(state)
+    for targets in ({}, {"x_value": -1}, {"x_value": 2}, {"x_value": 1.5}):
+        try:
+            checked_action(state, RulesEngine(), 1, {
+                "type": "activate_ability", "card_id": source_id,
+                "ability_index": 0, "targets": targets,
+            })
+        except ActionRejected:
+            pass
+        else:
+            raise AssertionError(f"Invalid variable activation was accepted: {targets}")
+        assert serialize_match_snapshot(state) == before
+
+
+def test_valki_copy_ability_uses_announced_x_and_restores_printed_characteristics() -> None:
+    from rules_engine.oracle_effects import extract_activated_abilities
+
+    state, source_id, target_id = _valki_with_exiled_mystic()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "activate_ability", "card_id": source_id,
+        "ability_index": 0, "targets": {"x_value": 1},
+    })
+    assert state.players[1].mana_pool["B"] == 0
+    assert state.stack[-1].effect_key == "copy_linked_exiled_card"
+    assert state.cards[source_id].name == "Valki, God of Lies // Tibalt, Cosmic Impostor"
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert not resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["kind"] == "linked_exile_copy"
+    assert state.pending_mechanic_choice["options"] == [target_id]
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [target_id]})
+    copied = state.cards[source_id]
+    assert copied.name == "Elvish Mystic"
+    assert copied.oracle_text == "{T}: Add {G}."
+    assert copied.types == ["Creature"] and copied.power == copied.toughness == 1
+    assert not extract_activated_abilities(copied)
+    assert copied.summoning_sick
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source_id})
+    assert state.cards[source_id].name == VALKI
+    assert state.cards[source_id].zone == Zone.GRAVEYARD
+    assert state.cards[target_id].zone == Zone.HAND
+    assert not state.cards[source_id].printed_characteristics
+
+
+def test_valki_ai_announces_the_exiled_cards_mana_value_not_all_available_mana() -> None:
+    from ai.agent import AIAgent
+
+    state, source_id, target_id = _valki_with_exiled_mystic()
+    state.players[1].mana_pool = {color: 20 for color in "WUBRGC"}
+    move = next(move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "activate_ability")
+    action = AIAgent(difficulty="master")._materialize_action(state, move, 1)
+    assert action["targets"]["x_value"] == 1
+    assert not action.get("_invalid_ai_choice")
+    state = checked_action(state, RulesEngine(), 1, action)
+    assert not resolve_top_of_stack(state)
+    decision = AIAgent(difficulty="master").choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action["card_ids"] == [target_id]
+
+
+def test_valki_copy_ability_does_nothing_if_source_left_before_resolution() -> None:
+    state, source_id, target_id = _valki_with_exiled_mystic()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "activate_ability", "card_id": source_id,
+        "ability_index": 0, "targets": {"x_value": 1},
+    })
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source_id})
+    assert state.cards[target_id].zone == Zone.HAND
+    assert resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice is None
+    assert state.cards[source_id].zone == Zone.GRAVEYARD
+
+
+def test_two_copy_activations_on_stack_resolve_after_source_loses_ability() -> None:
+    state, source_id, target_id = _valki_with_exiled_mystic()
+    state.players[1].mana_pool["B"] = 2
+    for _ in range(2):
+        state = checked_action(state, RulesEngine(), 1, {
+            "type": "activate_ability", "card_id": source_id,
+            "ability_index": 0, "targets": {"x_value": 1},
+        })
+    assert len(state.stack) == 2
+    for _ in range(2):
+        assert not resolve_top_of_stack(state)
+        state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [target_id]})
+        assert state.cards[source_id].name == "Elvish Mystic"
+    assert not state.stack
+
+
+def test_copy_activation_has_no_choice_if_linked_card_left_exile() -> None:
+    from rules_engine.linked_exile import flush_linked_exile_returns
+
+    state, source_id, target_id = _valki_with_exiled_mystic()
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "activate_ability", "card_id": source_id,
+        "ability_index": 0, "targets": {"x_value": 1},
+    })
+    held = state.cards[target_id]
+    state.players[2].exile.remove(target_id)
+    state.players[2].hand.append(target_id)
+    held.move_to_zone(Zone.HAND)
+    flush_linked_exile_returns(state)
+    assert resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice is None
+    assert state.cards[source_id].name == VALKI
+
+
 def fixture(name):
     raw = DATA[name]
     row = SimpleNamespace(**{key: value for key, value in raw.items() if key != "card_faces"},
