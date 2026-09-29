@@ -788,11 +788,13 @@ class RulesEngine:
                 if cost_staging:
                     state.trigger_staging = True
                     state.trigger_staging_event = "spell_cast"
+                payment_details: dict = {}
                 paid = auto_pay_cost(
                     state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
                     hybrid_choices=action.get("hybrid_choices"),
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
+                    payment_details=payment_details,
                 )
                 if not paid:
                     if cost_staging:
@@ -816,6 +818,8 @@ class RulesEngine:
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                if "Planeswalker" in face_card.types and "compleated" in face_card.oracle_text.lower():
+                    payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
                 if effect_key == "look_top_select_hand":
                     payload["mana_spent_to_cast"] = mana_value(adjusted_cost, x_value=x_value)
                 if x_value > 0:

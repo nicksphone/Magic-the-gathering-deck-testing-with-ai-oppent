@@ -246,6 +246,7 @@ def auto_pay_cost(
     spell_types: set[str] | None = None,
     hybrid_choices: list[str] | None = None,
     reserved_life: int = 0,
+    payment_details: dict | None = None,
 ) -> bool:
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -263,6 +264,8 @@ def auto_pay_cost(
         return False
     req, plan = payment
     player = state.players[player_id]
+    if payment_details is not None:
+        payment_details["phyrexian_life_symbols"] = req.get("life", 0) // 2
     if req.get("life", 0):
         if not pay_life(state, player_id, req["life"]):
             return False

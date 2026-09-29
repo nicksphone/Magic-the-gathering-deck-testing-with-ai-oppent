@@ -216,6 +216,53 @@ def test_pestilent_souleater_activated_phyrexian_choice() -> None:
     assert "__eot_keyword_infect" not in paid_mana.cards[source.id].counters
 
 
+def test_compleated_uses_announced_phyrexian_life_choice_on_entry() -> None:
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from effects.handlers import counter_spell
+    from rules_engine.stack_engine import resolve_top_of_stack
+    from rules_engine.state_based_actions import apply_state_based_actions
+
+    for branch, pool, expected_loyalty in (
+        ("P", {"C": 2, "G": 1, "U": 1}, 3),
+        ("G", {"C": 2, "G": 2, "U": 1}, 5),
+    ):
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=924)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        source = state.cards[state.players[1].hand[0]]
+        source.name = "Tamiyo, Compleated Sage"
+        source.types = ["Legendary", "Planeswalker"]
+        source.mana_cost = "{2}{G}{G/U/P}{U}"
+        source.loyalty = 5
+        source.oracle_text = (
+            "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. "
+            "If life was paid, this planeswalker enters with two fewer loyalty counters.)\n"
+            "+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step."
+        )
+        state.players[1].mana_pool.update(pool)
+        action = {"type": "cast_spell", "card_id": source.id, "cost_choice": {"id": "base"}, "hybrid_choices": [branch]}
+        cast = checked_action(state, RulesEngine(), 1, action)
+        assert cast.players[1].life == (18 if branch == "P" else 20)
+        assert cast.stack[-1].payload["__phyrexian_life_symbols"] == (1 if branch == "P" else 0)
+        if branch == "P":
+            countered = deserialize_match_snapshot(serialize_match_snapshot(cast))
+            counter_spell(countered, 2, {"target_stack_id": countered.stack[-1].id})
+            assert countered.cards[source.id].zone == Zone.GRAVEYARD
+            assert countered.cards[source.id].loyalty == 5
+        restored = deserialize_match_snapshot(serialize_match_snapshot(cast))
+        assert resolve_top_of_stack(restored)
+        assert restored.cards[source.id].loyalty == expected_loyalty
+        assert restored.cards[source.id].zone == Zone.BATTLEFIELD
+        restored.players[1].battlefield.remove(source.id)
+        restored.players[1].graveyard.append(source.id)
+        restored.cards[source.id].move_to_zone(Zone.GRAVEYARD)
+        apply_state_based_actions(restored)
+        assert restored.cards[source.id].loyalty == 5
+
+
 def test_mutagenic_growth_phyrexian_life_trigger_is_above_spell() -> None:
     from copy import deepcopy
     from ai.agent import AIAgent

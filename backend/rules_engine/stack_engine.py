@@ -241,6 +241,10 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             card.zone = Zone.BATTLEFIELD
             card.summoning_sick = "Creature" in card.types
             card.entered_turn = state.turn
+            if "Planeswalker" in card.types and card.loyalty is not None:
+                card.printed_characteristics.setdefault("loyalty", card.loyalty)
+                if "compleated" in card.oracle_text.lower():
+                    card.loyalty = max(0, card.loyalty - 2 * int(payload.get("__phyrexian_life_symbols", 0) or 0))
             assign_static_order_on_battlefield_entry(state, card.id)
             if "Creature" in card.types:
                 if payload.get("__escaped"):
