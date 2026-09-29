@@ -110,12 +110,19 @@ class AIAgent:
                                 if effect["effect_key"] == "deal_damage":
                                     amount = int(effect.get("payload", {}).get("amount", 0) or 0)
                                     return 100.0 if int(value) == opponent and state.players[opponent].life <= amount else 3.0 if int(value) == opponent else -100.0
+                                if effect["effect_key"] == "gain_life":
+                                    return 5.0 if int(value) == player_id else -5.0
                                 return 5.0 if int(value) == opponent else -5.0
+                            if key == "target_stack_id" and effect["effect_key"] in {"counter_spell", "counter_ability"}:
+                                target = next((item for item in state.stack if item.id == value), None)
+                                return 10.0 if target and target.controller == opponent else -10.0
                             card = state.cards.get(value)
                             if card is None:
                                 return -100.0
                             if effect["effect_key"] == "destroy_permanent":
                                 return self._noncreature_permanent_threat_score(state, value, player_id)
+                            if effect["effect_key"] == "return_permanent_to_hand":
+                                return 4.0 + self._noncreature_permanent_threat_score(state, value, player_id) if card.controller == opponent else -5.0
                             if effect["effect_key"] == "deal_damage":
                                 if card.controller == player_id:
                                     return -100.0

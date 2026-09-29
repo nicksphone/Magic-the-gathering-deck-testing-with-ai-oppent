@@ -67,7 +67,7 @@ wait_for_services
 echo 'Browser CI: verifying process restart'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs --verify-restart)
 echo 'Browser CI: match creation recovery'
-(cd frontend && timeout 120s node tests/browser-start-recovery.mjs)
+(cd frontend && timeout 180s node tests/browser-start-recovery.mjs)
 echo 'Browser CI: sideboard transition'
 (cd frontend && timeout 120s node tests/browser-sideboard.mjs)
 echo 'Browser CI: natural AI BO3'

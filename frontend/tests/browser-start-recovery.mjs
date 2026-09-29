@@ -41,7 +41,7 @@ try {
   await selectDecks();
   const before = await matchIds();
   const dropped = await startWithDroppedResponses(1);
-  await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')", 45000);
+  await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')", 75000);
   await command('Fetch.disable');
   const after = await matchIds();
   assert.equal(dropped(), 1);

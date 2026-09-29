@@ -119,6 +119,100 @@ def test_modal_copy_can_retarget_stack_mode_without_changing_permanent_mode() ->
     assert state.cards[bolt_id].zone == Zone.STACK
 
 
+def test_modal_copy_retargets_shared_announcements_as_independent_modes() -> None:
+    from effects.handlers import copy_spell
+
+    state, bolt_id, forest_id = _cast_counter_and_return()
+    own_land_id = state.players[1].hand.pop()
+    state.cards[own_land_id].zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(own_land_id)
+    original = state.stack[-1]
+    original_targets = dict(original.payload["__announced_targets"])
+    copy_spell(state, 2, {"target_stack_id": original.id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["mode_target_text"] == "Counter target spell"
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "card_ids": [f"target_stack_id:{original.id}"],
+    })
+    assert state.pending_mechanic_choice["mode_target_text"] == "Return target permanent to its owner's hand"
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "card_ids": [f"target_card_id:{own_land_id}"],
+    })
+    assert state.stack[1].payload["__announced_targets"] == original_targets
+    copied = state.stack[-1]
+    assert copied.payload["__announced_targets"]["mode_targets"] == {
+        "Counter target spell": {"target_stack_id": original.id},
+        "Return target permanent to its owner's hand": {"target_card_id": own_land_id},
+    }
+    assert resolve_top_of_stack(state)
+    assert not any(item.id == original.id for item in state.stack)
+    assert own_land_id in state.players[1].hand
+    assert forest_id in state.players[2].battlefield
+    assert state.cards[bolt_id].zone == Zone.STACK
+
+
+def test_ai_retargets_shared_modal_copy_away_from_its_own_side() -> None:
+    from effects.handlers import copy_spell
+
+    state, _, forest_id = _cast_counter_and_return()
+    own_land_id = state.players[1].hand.pop()
+    state.cards[own_land_id].zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(own_land_id)
+    original_id = state.stack[-1].id
+    copy_spell(state, 2, {"target_stack_id": original_id, "may_choose_new_targets": True})
+    ai = AIAgent(difficulty="master", archetype="Control")
+    rules = RulesEngine()
+    decision = ai.choose_action(state, rules.legal_moves(state, 2), 2)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": [f"target_stack_id:{original_id}"]}
+    state = checked_action(state, rules, 2, decision.action)
+    decision = ai.choose_action(state, rules.legal_moves(state, 2), 2)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": [f"target_card_id:{own_land_id}"]}
+    state = checked_action(state, rules, 2, decision.action)
+    assert resolve_top_of_stack(state)
+    assert own_land_id in state.players[1].hand
+    assert forest_id in state.players[2].battlefield
+
+
+def test_http_shared_modal_copy_exposes_both_choices() -> None:
+    from fastapi.testclient import TestClient
+
+    from effects.handlers import copy_spell
+    from main import ACTIVE_MATCHES, MatchController, app
+
+    state, _, _ = _cast_counter_and_return()
+    own_land_id = state.players[1].hand.pop()
+    state.cards[own_land_id].zone = Zone.BATTLEFIELD
+    state.players[1].battlefield.append(own_land_id)
+    original_id = state.stack[-1].id
+    copy_spell(state, 2, {"target_stack_id": original_id, "may_choose_new_targets": True})
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={},
+        mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = match
+        try:
+            legal = client.get(f"/matches/{state.id}/legal-moves?player_id=2")
+            assert legal.status_code == 200
+            assert any(move.get("mode_target_text") == "Counter target spell" for move in legal.json()["moves"])
+            first = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 2, "action": {"type": "choose_mechanic", "card_ids": [f"target_stack_id:{original_id}"]},
+            })
+            assert first.status_code == 200
+            assert first.json()["pending_mechanic_choice"]["mode_target_text"] == "Return target permanent to its owner's hand"
+            second = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 2, "action": {"type": "choose_mechanic", "card_ids": [f"target_card_id:{own_land_id}"]},
+            })
+            assert second.status_code == 200
+            assert second.json()["pending_mechanic_choice"] is None
+            assert second.json()["stack"][-1]["targets"] == [original_id, own_land_id]
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
+
+
 def test_restored_modal_spell_skips_permanent_that_gained_shroud() -> None:
     state, bolt_id, forest_id = _cast_counter_and_return()
     state.cards[forest_id].keywords.append("shroud")

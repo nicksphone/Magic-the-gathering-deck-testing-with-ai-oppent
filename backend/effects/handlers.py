@@ -748,8 +748,32 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     if is_spell and copied_item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
         _offer_divided_copy_target_choice(state, controller, copied_item)
         return
-    if is_spell and copied_item.effect_key == "effect_sequence" and announced.get("mode_targets"):
-        _offer_modal_copy_target_choice(state, controller, copied_item)
+    if is_spell and copied_item.effect_key == "effect_sequence" and announced.get("mode_texts"):
+        if not announced.get("mode_targets"):
+            keys = ("target_player", "target_card_id", "target_stack_id")
+            shared = {key: announced[key] for key in keys if announced.get(key) is not None}
+            modes = list(announced["mode_texts"])
+            effects = copied_payload.get("effects") or []
+            per_mode = {}
+            if shared and len(effects) == len(modes):
+                for mode in modes:
+                    matching = [effect for effect in effects if effect.get("mode_text") == mode]
+                    if len(matching) != 1:
+                        break
+                    selected = {key: matching[0].get("payload", {}).get(key) for key in keys
+                                if matching[0].get("payload", {}).get(key) is not None}
+                    if len(selected) > 1:
+                        break
+                    per_mode[mode] = selected
+            if len(per_mode) == len(modes) and shared == {
+                key: value for selected in per_mode.values() for key, value in selected.items()
+            }:
+                for key in keys:
+                    announced.pop(key, None)
+                announced["mode_targets"] = per_mode
+                copied_item.targets = [str(value) for selected in per_mode.values() for value in selected.values()]
+        if announced.get("mode_targets"):
+            _offer_modal_copy_target_choice(state, controller, copied_item)
         return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))

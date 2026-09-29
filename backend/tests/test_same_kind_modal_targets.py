@@ -134,6 +134,32 @@ def test_modal_copy_retargets_each_mode_without_changing_original() -> None:
     assert "bear" in state.players[2].graveyard
 
 
+def test_shared_same_card_target_is_two_choices_on_modal_copy() -> None:
+    state, spell_id = _setup()
+    spare = CardInstance("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"])
+    state.cards[spare.id] = spare
+    state.players[2].battlefield.append(spare.id)
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {"mode_texts": [DESTROY, DAMAGE], "target_card_id": "ring"},
+    })
+    original = state.stack[-1]
+    copy_spell(state, 1, {"target_stack_id": original.id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["mode_target_text"] == DESTROY
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:spare-ring"],
+    })
+    assert state.pending_mechanic_choice["mode_target_text"] == DAMAGE
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:bear"],
+    })
+    assert original.payload["__announced_targets"]["target_card_id"] == "ring"
+    assert state.stack[-1].payload["__announced_targets"]["mode_targets"] == {
+        DESTROY: {"target_card_id": "spare-ring"}, DAMAGE: {"target_card_id": "bear"},
+    }
+    assert state.stack[-1].targets == ["spare-ring", "bear"]
+
+
 def test_modal_copy_can_keep_now_illegal_original_target() -> None:
     state, spell_id = _setup()
     state = checked_action(state, RulesEngine(), 1, {
