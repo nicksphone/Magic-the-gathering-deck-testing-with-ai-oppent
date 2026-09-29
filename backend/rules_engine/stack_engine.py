@@ -269,7 +269,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             card.controller = item.controller
             battlefield_player.battlefield.append(card.id)
             card.zone = Zone.BATTLEFIELD
-            card.summoning_sick = "Creature" in card.types
+            card.summoning_sick = True
             card.entered_turn = state.turn
             if "Planeswalker" in card.types and card.loyalty is not None:
                 card.printed_characteristics.setdefault("loyalty", card.loyalty)
@@ -336,7 +336,7 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
         card_faces=list(copied.get("card_faces") or []),
         selected_face_index=copied.get("selected_face_index"),
-        summoning_sick="Creature" in types, entered_turn=state.turn,
+        summoning_sick=True, entered_turn=state.turn,
     )
     if "Planeswalker" in types and "compleated" in token.oracle_text.lower() and token.loyalty is not None:
         token.loyalty = max(0, token.loyalty - 2 * int(payload.get("__phyrexian_life_symbols", 0) or 0))

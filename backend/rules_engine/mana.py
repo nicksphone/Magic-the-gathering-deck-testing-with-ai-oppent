@@ -60,12 +60,20 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
     out: Counter = Counter()
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        if "Land" in card.types and not card.tapped:
+        if land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
             for color in _land_colors(card.name, card.type_line, card.oracle_text):
                 out[color] += amount
             out["ANY"] += amount
     return out
+
+
+def land_can_produce_mana(state: MatchState, card_id: str) -> bool:
+    card = state.cards[card_id]
+    return (
+        "Land" in card.types and not card.tapped
+        and ("Creature" not in card.types or not card.summoning_sick or has_keyword(state, card_id, "haste"))
+    )
 
 
 def land_mana_amount(state: MatchState, player_id: int, card_id: str) -> int:
@@ -201,7 +209,7 @@ def _plan_mana_sources(
             continue
         card = state.cards[cid]
         land = "Land" in card.types
-        if land and not card.tapped:
+        if land and land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
             outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
         else:
@@ -277,7 +285,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tup
         if not is_snow_source(card):
             continue
         land = "Land" in card.types
-        if land and not card.tapped:
+        if land and land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
             outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
         else:

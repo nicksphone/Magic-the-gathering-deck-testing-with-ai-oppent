@@ -9,7 +9,7 @@ from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
-from rules_engine.mana import land_mana_amount
+from rules_engine.mana import land_can_produce_mana, land_mana_amount
 from rules_engine.move_generator import legal_moves
 from rules_engine.library_permissions import choose_type_for_realmwalker, top_library_creature_for_type
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -74,7 +74,7 @@ class RulesEngine:
             player = state.players[state.active_player]
             for cid in list(player.battlefield):
                 card = state.cards[cid]
-                if "Creature" in card.types and card.entered_turn < state.turn:
+                if card.entered_turn < state.turn:
                     card.summoning_sick = False
             state.players[state.active_player].lands_played_this_turn = 0
             state.players[state.active_player].max_land_plays_this_turn = compute_max_land_plays_this_turn(
@@ -612,7 +612,7 @@ class RulesEngine:
                 player.land_plays_recorded_on_turn = used_land_plays + 1
                 player.last_land_play_turn = state.turn
                 card.move_to_zone(Zone.BATTLEFIELD)
-                state.cards[cid].summoning_sick = False
+                state.cards[cid].summoning_sick = True
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
@@ -620,7 +620,7 @@ class RulesEngine:
         elif kind == "tap_land_for_mana":
             from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
-            if cid in player.battlefield and not state.cards[cid].tapped and "Land" in state.cards[cid].types:
+            if cid in player.battlefield and land_can_produce_mana(state, cid):
                 state.cards[cid].tapped = True
                 color = _infer_mana_from_land(
                     state.cards[cid].name,
@@ -655,7 +655,7 @@ class RulesEngine:
                     card = state.cards[cid]
                     if tapped >= count:
                         break
-                    if "Land" not in card.types or card.tapped:
+                    if not land_can_produce_mana(state, cid):
                         continue
                     if card.name.strip().lower() != land_name:
                         continue

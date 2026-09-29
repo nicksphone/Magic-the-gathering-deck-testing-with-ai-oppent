@@ -531,7 +531,7 @@ def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> N
     state.log.append("All graveyards are exiled.")
 
 
-def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
+def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> int:
     """Exile every creature, preserving ownership and leave events."""
     moved = 0
     leaves: list[dict] = []
@@ -553,6 +553,12 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> No
         moved += 1
     emit_event_batch(state, "leaves_battlefield", leaves)
     state.log.append(f"Exile all creatures resolves: {moved} creature(s) exiled.")
+    return moved
+
+
+def exile_all_creatures_incubate(state: MatchState, controller: int, payload: dict) -> None:
+    moved = exile_all_creatures(state, controller, payload)
+    incubate(state, controller, {"counters": moved})
 
 
 def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: int, payload: dict) -> None:
@@ -1220,7 +1226,7 @@ def _place_searched_card(
         card.controller = controller
         if "Land" not in card.types:
             card.tapped = tapped
-        card.summoning_sick = "Creature" in card.types
+        card.summoning_sick = True
         card.entered_turn = state.turn
         assign_static_order_on_battlefield_entry(state, card_id)
         emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
@@ -1233,6 +1239,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import CardInstance
     from rules_engine.domain import basic_land_type_count
     import uuid
+    from copy import deepcopy
 
     name = payload.get("name", "Token")
     p = int(payload.get("power", 1))
@@ -1259,8 +1266,11 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             toughness=t if "Creature" in types else None,
             type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
             oracle_text=payload.get("oracle_text", ""),
-            summoning_sick="Creature" in types,
+            summoning_sick=True,
             entered_turn=state.turn,
+            card_faces=deepcopy(payload.get("card_faces") or []),
+            layout=str(payload.get("layout") or ""),
+            selected_face_index=payload.get("selected_face_index"),
             keywords=keywords,
             colors=list(payload.get("colors", [])),
             image_uri=token_image_uri,
@@ -1268,11 +1278,31 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
+        token.counters.update(payload.get("counters") or {})
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
     token_label = f"{p}/{t}" if "Creature" in types else name
     state.log.append(f"{state.players[token_controller].name} creates {amount} {token_label} token(s).")
+
+
+def incubate(state: MatchState, controller: int, payload: dict) -> None:
+    counters = max(0, int(payload.get("counters", 0)))
+    times = max(0, int(payload.get("times", 1)))
+    faces = [
+        {"name": "Incubator", "type_line": "Token Artifact - Incubator",
+         "oracle_text": "{2}: Transform this artifact."},
+        {"name": "Phyrexian", "type_line": "Token Artifact Creature - Phyrexian",
+         "oracle_text": "", "power": "0", "toughness": "0"},
+    ]
+    create_token(state, controller, {
+        "name": "Incubator", "types": ["Artifact", "Token"],
+        "power": 0, "toughness": 0,
+        "type_line": faces[0]["type_line"], "oracle_text": faces[0]["oracle_text"],
+        "card_faces": faces, "layout": "transform", "selected_face_index": 0,
+        "counters": {"+1/+1": counters} if counters else {},
+        "amount": times,
+    })
 
 
 def create_token_copy(state: MatchState, controller: int, payload: dict) -> None:

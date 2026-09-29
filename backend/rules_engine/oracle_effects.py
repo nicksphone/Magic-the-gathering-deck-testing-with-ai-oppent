@@ -146,6 +146,8 @@ def infer_effect_from_oracle(
     mode_text = action_targets.get("mode_text")
     mode_texts = _printed_mode_order(oracle, action_targets.get("mode_texts") or [])
     x_value = int(action_targets.get("x_value", 0) or 0)
+    if re.search(r"exile all creatures\.\s+incubate x, where x is the number of creatures exiled this way", oracle):
+        return "exile_all_creatures_incubate", {}
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = action_targets.get("target_card_id") or action_targets.get("source_card_id")
         if target:
@@ -1011,6 +1013,19 @@ def _infer_clause_effect(
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
+
+    if oracle.strip(" .") == "transform this artifact":
+        return "transform_card", {"target_card_id": card.id, "face_index": 1}
+    incubate_match = re.search(r"\bincubate\s+(\d+|x)\b", oracle)
+    if incubate_match:
+        raw = incubate_match.group(1)
+        if raw == "x" and "where x is the number of lands you control" in oracle:
+            amount = sum("Land" in state.cards[cid].types for cid in state.players[controller].battlefield)
+        elif raw == "x" and ("where x is" in oracle or "x_value" not in action_targets):
+            return None
+        else:
+            amount = x_value if raw == "x" else int(raw)
+        return "incubate", {"counters": amount, "times": 2 if re.search(r"\bincubate\s+(?:\d+|x)\s+twice\b", oracle) else 1}
 
     for keyword in ("infect", "wither", "flying", "haste", "vigilance", "trample", "lifelink",
                     "deathtouch", "menace", "reach", "hexproof", "indestructible", "first strike", "double strike"):

@@ -8,6 +8,28 @@ from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_p
 import pytest
 
 
+def test_newly_controlled_animated_land_cannot_tap_until_ready_unless_hasty() -> None:
+    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
+    state = MatchFactory.from_decks(deck, deck, seed=118)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    cid = state.players[1].hand.pop()
+    card = state.cards[cid]
+    card.zone = Zone.BATTLEFIELD
+    card.types = ["Land", "Creature"]
+    card.summoning_sick = True
+    state.players[1].battlefield.append(cid)
+    assert not can_pay_with_pool_and_lands(state, 1, "{G}")
+    RulesEngine().take_action(state, 1, {"type": "tap_land_for_mana", "card_id": cid})
+    assert not card.tapped and state.players[1].mana_pool["G"] == 0
+    card.keywords.append("haste")
+    assert can_pay_with_pool_and_lands(state, 1, "{G}")
+    RulesEngine().take_action(state, 1, {"type": "tap_land_for_mana", "card_id": cid})
+    assert card.tapped and state.players[1].mana_pool["G"] == 1
+
+
 def test_snow_cost_requires_source_provenance_and_survives_pool_snapshot() -> None:
     from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 

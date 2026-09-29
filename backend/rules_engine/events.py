@@ -1013,6 +1013,19 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event == "spell_cast" and re.search(
+            r"whenever you cast a noncreature spell, incubate x, where x is that spell's mana value",
+            oracle,
+        ):
+            spell = state.cards.get(payload.get("source_card_id"))
+            if spell is not None:
+                from rules_engine.mana import mana_value
+                x_value = int((payload.get("stack_payload") or {}).get("x_value", 0) or 0)
+                return {
+                    "source_card_id": source_card_id, "controller": controller,
+                    "label": default_label, "effect_key": "incubate",
+                    "payload": {"counters": mana_value(spell.mana_cost, x_value=x_value)},
+                }
         if event == "permanent_dies" and "target opponent loses life equal to this creature's power" in oracle:
             from rules_engine.continuous import effective_power
             amount = (effective_power(state, source_card_id) if source_card.zone == Zone.BATTLEFIELD
@@ -1186,6 +1199,7 @@ def _trigger_from_oracle(
             "discard",
             "sacrifice",
             "return target",
+            "incubate ",
             "add ",
             "lose ",
             "loses ",
