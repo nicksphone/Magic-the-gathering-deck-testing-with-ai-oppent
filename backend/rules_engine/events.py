@@ -10,6 +10,13 @@ from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
 
 
+TRANSFORM_DRAW_RE = re.compile(
+    r"whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed,\s*"
+    r"you may draw a card\.\s*do this only once each turn",
+    re.IGNORECASE,
+)
+
+
 def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD:
@@ -411,10 +418,34 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         for cid in dict.fromkeys(source_ids):
             card = _departed_card_view(state, cid)
             oracle = without_reminder_text((card.oracle_text or "").lower())
-            once_each_turn = "only once each turn" in oracle or "this ability triggers only once each turn" in oracle
+            transform_draw = bool(TRANSFORM_DRAW_RE.search(oracle))
+            once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
+            if transform_draw and event in {"transformed", "enters_battlefield"}:
+                once_each_turn = False
             trigger_key = f"{cid}:{event}"
             if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
                 continue
+
+            if transform_draw and event in {"transformed", "enters_battlefield"}:
+                changed = state.cards.get(payload.get("card_id"))
+                transformed_entry = (
+                    event == "enters_battlefield" and changed is not None
+                    and changed.layout in {"transform", "double_faced_token"}
+                    and changed.selected_face_index == 1
+                )
+                if (changed is not None and changed.controller == card.controller
+                        and (event == "transformed" or transformed_entry)):
+                    choice_key = f"{cid}:{card.effect_timestamp}:transform_draw"
+                    if choice_key not in state.trigger_once_seen_this_turn:
+                        out.append({
+                            "source_card_id": cid, "controller": card.controller,
+                            "label": f"{card.name} transform draw", "effect_key": "draw_cards",
+                            "payload": {"target_player": card.controller, "amount": 1,
+                                        "__may": True, "__may_choose": True,
+                                        "__once_on_accept": choice_key},
+                        })
+                if event == "enters_battlefield":
+                    oracle = TRANSFORM_DRAW_RE.sub("", oracle)
 
             if event == "draw_card" and payload.get("player_id") == card.controller and "whenever you draw a card" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
@@ -1227,13 +1258,16 @@ def _trigger_from_oracle(
 
         source_card = state.cards.get(source_card_id)
         if source_card is not None:
+            parser_card = copy(source_card)
+            parser_card.oracle_text = oracle
+            parser_card.source_oracle_text = source_card.oracle_text
             parser_payload = dict(payload)
             # Cycle triggers need the permanent that owns the trigger as the
             # token/effect source. Other event payloads already use
             # source_card_id for the spell or permanent that caused the event.
             if event == "cycle":
                 parser_payload["source_card_id"] = source_card_id
-            ability = build_ability_spec(state, source_card, controller, action_targets=parser_payload)
+            ability = build_ability_spec(state, parser_card, controller, action_targets=parser_payload)
             effect_key, effect_payload = ability.effect.key, ability.effect.payload
             if effect_key and effect_key != "noop":
                 return {

@@ -229,6 +229,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             state.log.append(f"{item.label} ignores {ignored} illegal target(s).")
     is_trigger = bool(payload.get("__trigger_event"))
     payload["__source_card_id"] = item.source_card_id
+    if payload.get("__once_on_accept"):
+        state.trigger_once_seen_this_turn.add(str(payload["__once_on_accept"]))
     resolve_effect(state, item.controller, item.effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:
