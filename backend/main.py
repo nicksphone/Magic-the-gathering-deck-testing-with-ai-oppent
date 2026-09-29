@@ -90,6 +90,7 @@ class MatchController:
     root_seed: int | None = None
     play_draw_chooser: int = 1
     sideboarded_players: set[int] = field(default_factory=set)
+    seen_opponent_types: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
     revision: int = 0
     mutation_receipts: dict[str, str] = field(default_factory=dict)
@@ -261,6 +262,7 @@ def _controller_snapshot(match: MatchController) -> dict:
         "root_seed": match.root_seed,
         "play_draw_chooser": match.play_draw_chooser,
         "sideboarded_players": sorted(match.sideboarded_players),
+        "seen_opponent_types": {str(pid): sorted(types) for pid, types in match.seen_opponent_types.items()},
         "difficulties": difficulties,
         "archetypes": archetypes,
         "revision": match.revision,
@@ -269,6 +271,7 @@ def _controller_snapshot(match: MatchController) -> dict:
 
 
 def _persist_active_match(repo: Repository | object, match: MatchController) -> None:
+    _remember_public_types(match)
     state_json = json.dumps(serialize_match_snapshot(match.state))
     controller_json = json.dumps(_controller_snapshot(match))
     if isinstance(repo, Repository):
@@ -315,6 +318,7 @@ def _restore_active_matches(repo: Repository, match_id: str | None = None) -> No
                 root_seed=config.get("root_seed"),
                 play_draw_chooser=int(config.get("play_draw_chooser", state.active_player)),
                 sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
+                seen_opponent_types={pid: set(config.get("seen_opponent_types", {}).get(str(pid), [])) for pid in (1, 2)},
                 revision=int(config.get("revision", 0)),
                 mutation_receipts=dict(config.get("mutation_receipts", {})),
             )
@@ -821,6 +825,7 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             if _human_priority_pause(match, pid):
                 break
             match.rules.take_action(match.state, pid, {"type": "pass_priority"})
+        _remember_public_types(match)
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
@@ -1430,23 +1435,32 @@ def _next_play_draw_chooser(match: MatchController) -> int | None:
     return match.play_draw_chooser if match.state.winner == 0 else (1 if match.state.winner == 2 else 2)
 
 
+def _remember_public_types(match: MatchController) -> None:
+    for pid in (1, 2):
+        opponent = 2 if pid == 1 else 1
+        public_ids = (match.state.players[opponent].battlefield
+                      + match.state.players[opponent].graveyard
+                      + [cid for cid in match.state.players[opponent].exile
+                         if not match.state.cards[cid].exile_face_down])
+        match.seen_opponent_types.setdefault(pid, set()).update(
+            card_type for cid in public_ids for card_type in match.state.cards[cid].types
+        )
+        match.seen_opponent_types[pid].update(
+            card_type for item in match.state.stack if item.controller == opponent
+            if item.source_card_id in match.state.cards
+            for card_type in match.state.cards[item.source_card_id].types
+        )
+
+
 def _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:
     from card_data.hydration import hydrate_deck_cards
 
     for pid in (1, 2):
         if match.controllers.get(pid) != "ai" or not match.sideboards.get(pid):
             continue
-        opponent = 2 if pid == 1 else 1
-        public_ids = (match.state.players[opponent].battlefield
-                      + match.state.players[opponent].graveyard
-                      + [cid for cid in match.state.players[opponent].exile
-                         if not match.state.cards[cid].exile_face_down])
-        observed_types = {
-            card_type for cid in public_ids for card_type in match.state.cards[cid].types
-        }
         known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
         cards_out, cards_in = plan_sideboard(
-            match.mainboards[pid], match.sideboards[pid], observed_types, known_archetype,
+            match.mainboards[pid], match.sideboards[pid], match.seen_opponent_types.get(pid, set()), known_archetype,
         )
         if not cards_in:
             continue
@@ -1460,6 +1474,7 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True, r
     chooser = _next_play_draw_chooser(match)
     if chooser is None:
         raise ValueError("A finished game is required before starting the next game")
+    _remember_public_types(match)
     _ai_sideboard_for_next_game(match, repo)
     prior_log_tail = list(match.state.log[-80:])
     prior_id = match.state.id

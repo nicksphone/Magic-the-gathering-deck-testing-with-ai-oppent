@@ -165,3 +165,42 @@ def test_ai_vs_human_uses_public_spells_not_hidden_cards_or_internal_archetype()
     public = match_with_observation(True)
     _start_next_game_state(public)
     assert {item["card_name"]: item["quantity"] for item in public.mainboards[1]}["Counterspell"] == 2
+
+
+def test_seen_public_type_survives_card_return_to_hidden_hand_and_restore():
+    init_db()
+    main, side = _decks()
+    opponent = hydrate_deck_cards(None, OPPONENT)
+    state = MatchFactory.from_decks(main, opponent, seed=74)
+    seen = CardInstance(id="seen-then-hidden", name="Sol Ring", owner=2, controller=2,
+                        zone=Zone.BATTLEFIELD, types=["Artifact"], type_line="Artifact")
+    state.cards[seen.id] = seen
+    state.players[2].battlefield.append(seen.id)
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "ai", 2: "human"},
+        ai={1: AIAgent(), 2: AIAgent()}, mode="player_vs_ai", deck_ids=(None, None),
+        mainboards={1: main, 2: opponent}, sideboards={1: side, 2: []},
+        game_number=1, current_game_recorded=False, match_complete=False,
+        best_of=3, root_seed=74,
+    )
+    ACTIVE_MATCHES[state.id] = match
+    try:
+        with Session(engine) as session:
+            repo = Repository(session)
+            _persist_active_match(repo, match)
+            state.players[2].battlefield.remove(seen.id)
+            state.players[2].hand.append(seen.id)
+            seen.zone = Zone.HAND
+            state.winner = 2
+            state.score = {1: 0, 2: 1}
+            _persist_active_match(repo, match)
+            ACTIVE_MATCHES.pop(state.id)
+            _restore_active_matches(repo, state.id)
+        restored = ACTIVE_MATCHES[state.id]
+        assert restored.seen_opponent_types[1] == {"Artifact"}
+        assert "Artifact" not in {kind for cid in restored.state.players[2].graveyard
+                                   for kind in restored.state.cards[cid].types}
+        _start_next_game_state(restored)
+        assert {item["card_name"]: item["quantity"] for item in restored.mainboards[1]}["Abrupt Decay"] == 4
+    finally:
+        ACTIVE_MATCHES.pop(state.id, None)

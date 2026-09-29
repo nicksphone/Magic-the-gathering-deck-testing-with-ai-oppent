@@ -376,6 +376,8 @@ Any-one-color quantity follow-up: verified Gilded Lotus text now supplies three 
 
 Bounded AI sideboarding increment: AI seats with supplied sideboards now make at most four swaps from hydrated Oracle text and a conservative mana-source check. Against a human, the plan uses only opposing public battlefield, graveyard and face-up exile types, not hidden hand or internal archetype. Full AI testing may use its known matchup archetype. Next-game HTTP, autoplay transition and SQLite restore regressions pass. Verification: 1,257 isolated backend tests, frontend lint/build/unit, complete Chromium harness, and one seeded three-game replay with no reported timeout/anomaly/drift. No built-in sideboard templates were added; card-name-free text scoring is limited to common removal, counters and sweepers and is not a measured strategic improvement. The planning checkbox stays open.
 
+Observation-memory follow-up: each persisted action and each autoplay tick records opposing types seen in public battlefield, graveyard, face-up exile or stack. The type-only record survives SQLite restore and lets game-two AI respond to a publicly seen card that later returned to hidden hand, without reading a never-revealed hand card. Verification: 1,258 isolated backend tests, frontend lint/build/unit, complete Chromium harness and one seeded three-game replay without reported timeout/anomaly/drift. This is still a coarse type signal, not per-card tracking or expert sideboard planning.
+
 Acceptance: each AI change has concrete decision evidence and regressions; no strength claim based only on completing games or winning a small sample.
 
 ### 13. Run seeded matrices and replay/restart gates
