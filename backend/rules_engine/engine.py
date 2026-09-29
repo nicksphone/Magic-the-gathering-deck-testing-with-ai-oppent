@@ -968,6 +968,9 @@ class RulesEngine:
             proxy.source_oracle_text = state.cards[cid].oracle_text
             proxy.sacrificed_toughness = cost_context.get("__sacrificed_toughness")
             resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
+            resolved_payload = {**resolved.effect.payload,
+                                "__announced_targets": dict(action_targets),
+                                "__ability_target_text": ability["text"]}
             add_to_stack(
                 state,
                 source_card_id=cid,
@@ -975,7 +978,7 @@ class RulesEngine:
                 label=f"{state.cards[cid].name} ability",
                 is_spell=False,
                 effect_key=resolved.effect.key,
-                payload=resolved.effect.payload,
+                payload=resolved_payload,
             )
 
         elif kind == "activate_loyalty":

@@ -91,7 +91,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if chosen != "keep":
             key, raw_value = chosen.split(":", 1)
             value = int(raw_value) if key == "target_player" else raw_value
-            announced = copied.payload["__announced_targets"]
+            announced = copied.payload.setdefault("__announced_targets", {})
             for old_key in ("target_player", "target_card_id", "target_stack_id"):
                 announced.pop(old_key, None)
                 copied.payload.pop(old_key, None)

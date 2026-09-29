@@ -392,3 +392,171 @@ def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
     })
     assert state.stack[-1].payload["target_card_id"] == "second"
     assert state.stack[0].payload["target_card_id"] == "first"
+
+
+def test_activated_ability_copy_can_choose_a_new_target() -> None:
+    state = _state()
+    source = CardInstance(
+        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"],
+        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
+    )
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    state.stack.append(StackItem(
+        id="pyromancer-ability", source_card_id=source.id, controller=1,
+        label="Prodigal Pyromancer ability", effect_key="deal_damage",
+        payload={"target_player": 2, "amount": 1,
+                 "__announced_targets": {"target_player": 2},
+                 "__ability_target_text": source.oracle_text},
+    ))
+    copy_ability(state, 1, {"target_stack_id": "pyromancer-ability", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["options"][:2] == ["keep", "target_player:1"]
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    restored = checked_action(restored, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_player:1"],
+    })
+    assert restored.stack[-1].payload["target_player"] == 1
+    assert restored.stack[0].payload["target_player"] == 2
+    assert resolve_top_of_stack(restored)
+    assert resolve_top_of_stack(restored)
+    assert (restored.players[1].life, restored.players[2].life) == (19, 19)
+
+
+def test_triggered_ability_copy_uses_trigger_clause_for_legal_targets() -> None:
+    state = _state()
+    clause = "When Goblin Arsonist dies, you may have it deal 1 damage to any target."
+    source = CardInstance(
+        id="arsonist", name="Goblin Arsonist", owner=1, controller=1,
+        zone=Zone.GRAVEYARD, types=["Creature"], oracle_text=clause,
+    )
+    state.cards[source.id] = source
+    state.players[1].graveyard.append(source.id)
+    state.stack.append(StackItem(
+        id="arsonist-trigger", source_card_id=source.id, controller=1,
+        label="Goblin Arsonist trigger", effect_key="deal_damage",
+        payload={"target_player": 2, "amount": 1,
+                 "__trigger_event": "creature_dies", "__trigger_target_clause": clause,
+                 "__trigger_target_choice": True},
+    ))
+    copy_ability(state, 1, {"target_stack_id": "arsonist-trigger", "may_choose_new_targets": True})
+    assert "target_player:1" in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_player:1"],
+    })
+    assert resolve_top_of_stack(state)
+    assert resolve_top_of_stack(state)
+    assert (state.players[1].life, state.players[2].life) == (19, 19)
+
+
+def test_activated_ability_copy_fizzles_when_new_target_becomes_illegal() -> None:
+    state = _state()
+    source = CardInstance(
+        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"],
+        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
+    )
+    target = CardInstance(
+        id="bear", name="Grizzly Bears", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
+    )
+    state.cards[source.id] = source
+    state.cards[target.id] = target
+    state.players[1].battlefield.append(source.id)
+    state.players[2].battlefield.append(target.id)
+    state.stack.append(StackItem(
+        id="ability", source_card_id=source.id, controller=1,
+        label="Prodigal Pyromancer ability", effect_key="deal_damage",
+        payload={"target_player": 2, "amount": 1,
+                 "__announced_targets": {"target_player": 2},
+                 "__ability_target_text": source.oracle_text},
+    ))
+    copy_ability(state, 1, {"target_stack_id": "ability", "may_choose_new_targets": True})
+    assert "target_card_id:bear" in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:bear"],
+    })
+    state.players[2].battlefield.remove(target.id)
+    state.players[2].graveyard.append(target.id)
+    target.zone = Zone.GRAVEYARD
+    assert resolve_top_of_stack(state)
+    assert target.counters.get("__damage_marked", 0) == 0
+    assert state.players[2].life == 20
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 19
+
+
+def test_lithoform_activation_copies_targeted_ability_with_human_choice() -> None:
+    state = _state()
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool["C"] = 2
+    pyromancer = CardInstance(
+        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], summoning_sick=False,
+        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
+    )
+    engine = CardInstance(
+        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
+        oracle_text="{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.",
+    )
+    for card in (pyromancer, engine):
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+    rules = RulesEngine()
+    state = checked_action(state, rules, 1, {
+        "type": "activate_ability", "card_id": pyromancer.id,
+        "ability_index": 0, "targets": {"target_player": 2},
+    })
+    assert state.stack[-1].payload["__announced_targets"] == {"target_player": 2}
+    assert state.stack[-1].payload["__ability_target_text"]
+    original_id = state.stack[-1].id
+    state = checked_action(state, rules, 1, {
+        "type": "activate_ability", "card_id": engine.id,
+        "ability_index": 0, "targets": {"target_stack_id": original_id},
+    })
+    rules.take_action(state, 1, {"type": "pass_priority"})
+    rules.take_action(state, 2, {"type": "pass_priority"})
+    assert state.pending_mechanic_choice["kind"] == "copy_target"
+    state = checked_action(state, rules, 1, {
+        "type": "choose_mechanic", "card_ids": ["target_player:1"],
+    })
+    assert len(state.stack) == 2
+    assert state.stack[-1].payload["target_player"] == 1
+    assert state.stack[0].payload["target_player"] == 2
+    assert resolve_top_of_stack(state)
+    assert resolve_top_of_stack(state)
+    assert (state.players[1].life, state.players[2].life) == (19, 19)
+
+
+def test_lithoform_cannot_copy_an_opponents_ability() -> None:
+    import pytest
+
+    state = _state()
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool["C"] = 2
+    source = CardInstance(
+        id="opponent-source", name="Prodigal Pyromancer", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature"],
+        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
+    )
+    engine = CardInstance(
+        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
+        oracle_text="{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.",
+    )
+    for card in (source, engine):
+        state.cards[card.id] = card
+        state.players[card.controller].battlefield.append(card.id)
+    state.stack.append(StackItem(
+        id="opponent-ability", source_card_id=source.id, controller=2,
+        label="Prodigal Pyromancer ability", effect_key="deal_damage",
+        payload={"target_player": 1, "amount": 1},
+    ))
+    before = serialize_match_snapshot(state)
+    with pytest.raises(Exception):
+        checked_action(state, RulesEngine(), 1, {
+            "type": "activate_ability", "card_id": engine.id,
+            "ability_index": 0, "targets": {"target_stack_id": "opponent-ability"},
+        })
+    assert serialize_match_snapshot(state) == before

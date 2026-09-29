@@ -111,6 +111,40 @@ def test_oracle_copy_ability_parsing() -> None:
     assert payload["copy_kind"] == "activated ability"
 
 
+def test_lithoform_ability_copy_targets_only_controlled_abilities() -> None:
+    from game_state.state import StackItem
+
+    state = MatchFactory.from_decks(
+        [{"quantity": 60, "card_name": "Island"}],
+        [{"quantity": 60, "card_name": "Island"}], seed=937,
+    )
+    for player_id in (1, 2):
+        source = CardInstance(
+            id=f"source-{player_id}", name="Prodigal Pyromancer",
+            owner=player_id, controller=player_id, zone=Zone.BATTLEFIELD,
+            types=["Creature"],
+        )
+        state.cards[source.id] = source
+        state.stack.append(StackItem(
+            id=f"ability-{player_id}", source_card_id=source.id,
+            controller=player_id, label="Prodigal Pyromancer ability",
+            effect_key="deal_damage", payload={"amount": 1},
+        ))
+    copier = CardInstance(
+        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"],
+        oracle_text="{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.",
+    )
+    hints = inspect_target_hints(state, copier, 1)
+    assert [item["id"] for item in hints["stack_targets"]] == ["ability-1"]
+    key, payload = infer_effect_from_oracle(
+        state, copier, 1, action_targets={"target_stack_id": "ability-1"},
+    )
+    assert key == "copy_ability"
+    assert payload["may_choose_new_targets"] is True
+    assert payload["copy_kind"] == "activated or triggered ability"
+
+
 def test_oracle_counter_ability_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)

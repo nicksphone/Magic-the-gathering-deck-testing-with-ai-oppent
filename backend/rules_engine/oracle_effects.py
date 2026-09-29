@@ -50,7 +50,7 @@ TARGET_MV_CONTROLLED_TYPE_RE = re.compile(
     r"mana value\s+(?:less than or equal to\s+)?the number of\s+([a-z]+)s?\s+you control",
     re.IGNORECASE,
 )
-COPY_STACK_RE = re.compile(r"copy target (instant or sorcery spell|spell|activated ability|triggered ability)", re.IGNORECASE)
+COPY_STACK_RE = re.compile(r"copy target (instant or sorcery spell|spell|activated or triggered ability|activated ability|triggered ability)", re.IGNORECASE)
 COPY_CREATURE_TOKEN_RE = re.compile(r"create a token that's a copy of (?:another )?target (?:nonlegendary )?creature you control", re.IGNORECASE)
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
@@ -583,14 +583,20 @@ def inspect_target_hints(
             allowed_kinds.add("triggered")
         if "counter target activated or triggered ability" in oracle:
             allowed_kinds.update(("activated", "triggered"))
-        allowed_kinds.update(
-            "spell" if match.group(1).endswith("spell") else match.group(1).split()[0]
-            for match in COPY_STACK_RE.finditer(oracle)
-        )
+        for match in COPY_STACK_RE.finditer(oracle):
+            kind = match.group(1)
+            if kind.endswith("spell"):
+                allowed_kinds.add("spell")
+            elif kind == "activated or triggered ability":
+                allowed_kinds.update(("activated", "triggered"))
+            else:
+                allowed_kinds.add(kind.split()[0])
         stack_targets = []
         for item in state.stack:
             source = state.cards.get(item.source_card_id)
             if source is None or stack_object_kind(state, item) not in allowed_kinds:
+                continue
+            if ("ability you control" in oracle or "spell you control" in oracle) and item.controller != controller:
                 continue
             if stack_restrictions and not _target_id_matches_restrictions(
                 state, source.id, stack_restrictions, controller,

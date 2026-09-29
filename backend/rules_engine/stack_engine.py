@@ -109,6 +109,20 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
     target_count += sum(sum(choice.get(key) is not None for key in ("target_card_id", "target_player", "target_stack_id"))
                         for choice in (announced.get("mode_targets") or {}).values())
+    if card and item.payload.get("__ability_target_text") and target_count == 1:
+        from copy import copy
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets
+
+        source = copy(card)
+        source.oracle_text = item.payload["__ability_target_text"]
+        hints = inspect_target_hints(state, source, item.controller, announced)
+        legal = (validate_cast_targets(hints, announced)[0]
+                 and validate_protection_targets(state, source, announced)[0]
+                 and validate_hexproof_shroud_targets(state, item.controller, announced)[0])
+        if not legal:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     legal_distribution = None
     legal_effects = None
     if card and card.zone == Zone.STACK and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
