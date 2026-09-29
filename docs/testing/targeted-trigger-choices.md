@@ -6,6 +6,10 @@ Supported self-cast single-target clauses use the same target window. [Wizards' 
 
 Bounded printed sacrifice-damage clauses that say "any target" use the same choice window. Mayhem Devil is the regression fixture: a human can choose either player or a creature; unattended play picks a deterministic legal target. The selected recipient survives a snapshot and is rechecked at resolution. A creature that leaves the battlefield before resolution makes the one-target ability fail to resolve. The current engine does not model Battle defense/damage and does not offer Battles for this clause.
 
+The unattended trigger selector now uses a bounded AI heuristic over legal options: an immediately lethal opponent hit wins; otherwise a killable opposing creature or planeswalker may be worth more than nonlethal face damage. Mayhem Devil and Havoc Jester use the same sacrifice-damage path. This policy does not model responses, combat plans or paid optional clauses.
+
+The AI target follow-up passed 1,171 isolated backend tests plus a later focused 20-test target-interaction rerun, the full loopback Chromium suite, and a resolved three-game seeded replay without timeout or drift. This is a regression gate, not evidence of seasoned-player decision quality.
+
 Supported optional triggers then offer the controlling human an accept/decline decision as the ability resolves. The target is still chosen even if the controller plans to decline. Declining skips the effect and its replacement interactions; an illegal target fails before the optional decision. The pending decision survives snapshots. Unattended play retains deterministic acceptance/decline defaults.
 
 The bounded interpreter recognizes ETB sentences with one artifact, enchantment, creature or permanent target and an implemented effect key. Reclamation Sage is the canonical regression fixture: both a friendly Sol Ring and opposing Smuggler's Copter are legal; a human can select either. For unattended play, destructive effects prefer opposing legal permanents. The AI fallback is deterministic, not a claim of optimal strategy.

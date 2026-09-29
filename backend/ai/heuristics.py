@@ -24,6 +24,32 @@ def evaluate_board(state: MatchState, player_id: int) -> float:
     )
 
 
+def choose_damage_trigger_target(state: MatchState, controller: int, amount: int, options: list[dict]) -> dict:
+    opponent = 3 - controller
+
+    def score(option: dict) -> tuple[float, str]:
+        player_id = option.get("target_player")
+        if player_id is not None:
+            if player_id != opponent:
+                return (-1000.0, str(player_id))
+            return (1000.0 if state.players[opponent].life <= amount else amount * 1.6, str(player_id))
+
+        card_id = option["target_card_id"]
+        card = state.cards[card_id]
+        if card.controller != opponent:
+            return (-1000.0, card_id)
+        keywords = {str(keyword).lower() for keyword in effective_keywords(state, card_id)}
+        if "Creature" in card.types:
+            remaining = effective_toughness(state, card_id) - int(card.counters.get("__damage_marked", 0))
+            if remaining <= amount and "indestructible" not in keywords:
+                return (_creature_value(state, card_id), card_id)
+        if "Planeswalker" in card.types and card.loyalty is not None:
+            return (6.0 if card.loyalty <= amount else 0.5 * amount, card_id)
+        return (0.0, card_id)
+
+    return max(options, key=score)
+
+
 def evaluate_inevitability(state: MatchState, player_id: int) -> float:
     me = state.players[player_id]
     opp_id = 1 if player_id == 2 else 2

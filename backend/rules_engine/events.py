@@ -200,8 +200,11 @@ def _append_trigger_groups(
                 if item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent"}:
                     options.sort(key=lambda option: state.cards[option["target_card_id"]].controller == item.controller)
                 if item.effect_key == "deal_damage":
-                    options.sort(key=lambda option: option.get("target_player") != 3 - item.controller)
-                item.payload.update({key: options[0][key] for key in ("target_card_id", "target_player") if key in options[0]})
+                    from ai.heuristics import choose_damage_trigger_target
+                    choice = choose_damage_trigger_target(state, item.controller, int(item.payload.get("amount", 0)), options)
+                else:
+                    choice = options[0]
+                item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
                 item.payload["__trigger_target_choice"] = True
         state.stack.append(item)
     if target_stack_ids:

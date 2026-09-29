@@ -16,8 +16,8 @@
     "hash": "171c52f9ce8ac08f8a1e194c1125523a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/heuristics.py": {
-    "mtime": 1784160463.3688924,
-    "hash": "d33d49df5e4545aea1bfa5e0c3908c41"
+    "mtime": 1790662740.0162446,
+    "hash": "d4b95eeee3fa3e7320b33366f859e6a7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/endgame_policy.py": {
     "mtime": 1779124792.9789293,
@@ -636,8 +636,8 @@
     "hash": "7629b1573b3fbbd63d5e8209ca2f57a1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_damage_trigger_targets.py": {
-    "mtime": 1790662572.7629883,
-    "hash": "89fd32626a848077a04d3143c372fba0"
+    "mtime": 1790662849.209358,
+    "hash": "f0696788b50c0ccf5cda6b66f7cdc5bd"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_new_rules_batch.py": {
     "mtime": 1778926794.6669888,
@@ -888,8 +888,8 @@
     "hash": "35c2a94b4f009866dfe45767aa2c162d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/events.py": {
-    "mtime": 1790661886.1870184,
-    "hash": "350a821747cdf0b61f52b0f436ae8c0c"
+    "mtime": 1790662740.0172446,
+    "hash": "44262e998cfb4264508acd22fb11f840"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/damage_results.py": {
     "mtime": 1790609431.2950838,
@@ -1120,16 +1120,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790662600.9115374,
-    "hash": "90fab5fa551a71aac35acb5bb9e54551"
+    "mtime": 1790663153.1782172,
+    "hash": "36736d384f2e6d3b523184cc45e54d4c"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790662360.1683958,
-    "hash": "a52a21812adbc84f3f735118a8719803"
+    "mtime": 1790662804.5981257,
+    "hash": "dd31719a2f8e4edadf0333a171f6180b"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790662600.9125373,
-    "hash": "d16a3d20bfa16b39c762226634783b83"
+    "mtime": 1790663153.179217,
+    "hash": "7275b3d2906fc3252bdce74fd141253b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1212,8 +1212,8 @@
     "hash": "4d196a853b86e77788f900298aa21042"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/targeted-trigger-choices.md": {
-    "mtime": 1790662607.863426,
-    "hash": "23c6f0eec997ff848d2679a3de8ea269"
+    "mtime": 1790663153.179217,
+    "hash": "d8e377ef5603a03199f328ddb6159303"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/crew-stack-timing.md": {
     "mtime": 1790550195.1532671,

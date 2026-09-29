@@ -12,18 +12,19 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 
 
-def _game(*, human=True):
+def _game(*, human=True, source_name="Mayhem Devil", source_oracle="Whenever a player sacrifices a permanent, this creature deals 1 damage to any target.", opponent_life=20):
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=603)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = human
     state.trigger_order_choice_players = {1} if human else set()
+    state.players[2].life = opponent_life
     cards = [
         CardInstance(
-            "devil", "Mayhem Devil", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+            "devil", source_name, 1, 1, Zone.BATTLEFIELD, ["Creature"],
             type_line="Creature — Devil", power=3, toughness=3,
-            oracle_text="Whenever a player sacrifices a permanent, this creature deals 1 damage to any target.",
+            oracle_text=source_oracle,
         ),
         CardInstance("chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, ["Artifact"]),
         CardInstance(
@@ -115,6 +116,30 @@ def test_unattended_damage_trigger_has_one_legal_target_and_no_pause():
     payload = state.stack[-1].payload
     assert payload.get("__trigger_target_choice") is True
     assert (payload.get("target_player") in {1, 2}) != (payload.get("target_card_id") in {"elf", "devil"})
+
+
+def test_unattended_damage_trigger_kills_opposing_creature_unless_player_is_lethal():
+    state = _game(human=False)
+    assert state.stack[-1].payload.get("target_card_id") == "elf"
+    assert resolve_top_of_stack(state)
+    assert state.cards["elf"].zone == Zone.GRAVEYARD
+
+    state = _game(human=False, opponent_life=1)
+    assert state.stack[-1].payload.get("target_player") == 2
+
+
+def test_havoc_jester_uses_the_same_printed_sacrifice_damage_path():
+    state = _game(
+        source_name="Havoc Jester",
+        source_oracle="Whenever you sacrifice a permanent, this creature deals 1 damage to any target.",
+    )
+    moves = RulesEngine().legal_moves(state, 1)
+    assert "elf" in {move.get("target_card_id") for move in moves}
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_trigger_target", "stack_id": state.stack[-1].id, "target_player": 2,
+    })
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 19
 
 
 def test_trigger_target_request_requires_exactly_one_recipient():
