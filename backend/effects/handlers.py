@@ -1416,7 +1416,9 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     keyword = payload.get("keyword")
     if target in state.cards and keyword:
         card = state.cards[target]
-        if keyword not in card.keywords:
+        if payload.get("until_end_of_turn") and card.zone == Zone.BATTLEFIELD:
+            card.counters[f"__eot_keyword_{keyword.lower()}"] = 1
+        elif keyword not in card.keywords:
             card.keywords.append(keyword)
 
 

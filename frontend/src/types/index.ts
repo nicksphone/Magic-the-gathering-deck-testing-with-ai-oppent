@@ -139,6 +139,7 @@ export type LegalMove = {
   crew_candidates?: { id: string; name: string; power: number }[];
   card_name?: string;
   mana_cost?: string;
+  hybrid_symbols?: { symbol: string; choices: string[] }[];
   x_value?: number;
   cost_options?: {
     id: string;

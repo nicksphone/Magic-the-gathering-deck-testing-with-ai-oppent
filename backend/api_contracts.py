@@ -93,11 +93,14 @@ class CostChoice(InputModel):
     id: Annotated[str, Field(min_length=1, max_length=100)]
 
 
+HybridChoices = Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)]
+
+
 class CastAction(CardAction):
     type: Literal["cast_spell"]
     targets: Targets = Field(default_factory=Targets)
     cost_choice: CostChoice | None = None
-    hybrid_choices: Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)] | None = None
+    hybrid_choices: HybridChoices | None = None
     selected_face_index: Annotated[StrictInt, Field(ge=0, le=20)] | None = None
     from_exile: StrictBool = False
     from_library: StrictBool = False
@@ -114,6 +117,7 @@ class AbilityAction(CardAction):
     type: Literal["activate_ability", "activate_loyalty"]
     ability_index: Annotated[StrictInt, Field(ge=0, le=100)]
     targets: Targets = Field(default_factory=Targets)
+    hybrid_choices: HybridChoices | None = None
 
 
 class CrewAction(CardAction):

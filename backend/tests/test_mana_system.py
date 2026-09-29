@@ -171,6 +171,51 @@ def test_activated_phyrexian_cost_reserves_separate_life_payment() -> None:
     assert state.players[1].life == 1
 
 
+def test_pestilent_souleater_activated_phyrexian_choice() -> None:
+    from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+    from rules_engine.continuous import has_keyword
+    from rules_engine.stack_engine import resolve_top_of_stack
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=110)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    source = CardInstance(
+        id="pestilent-souleater", name="Pestilent Souleater", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"],
+        oracle_text="{B/P}: Pestilent Souleater gains infect until end of turn.",
+        power=3, toughness=3,
+    )
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    move = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == source.id and move["type"] == "activate_ability")
+    assert move["hybrid_symbols"] == [{"symbol": "B/P", "choices": ["B", "P"]}]
+    action = {"type": "activate_ability", "card_id": source.id, "ability_index": move["ability_index"]}
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["B"]})
+    assert state.players[1].life == 20 and not state.stack
+    paid_life = checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["P"]})
+    assert paid_life.players[1].life == 18
+    assert paid_life.stack[-1].source_card_id == source.id
+    assert paid_life.stack[-1].label == "Pestilent Souleater ability"
+    assert resolve_top_of_stack(paid_life)
+    assert has_keyword(paid_life, source.id, "infect")
+    restored = deserialize_match_snapshot(serialize_match_snapshot(paid_life))
+    assert has_keyword(restored, source.id, "infect")
+    RulesEngine()._clear_marked_damage(restored)
+    assert not has_keyword(restored, source.id, "infect")
+    state.players[1].mana_pool["B"] = 1
+    paid_mana = checked_action(state, RulesEngine(), 1, {**action, "hybrid_choices": ["B"]})
+    assert paid_mana.players[1].life == 20
+    assert paid_mana.players[1].mana_pool["B"] == 0
+    paid_mana.players[1].battlefield.remove(source.id)
+    paid_mana.players[1].graveyard.append(source.id)
+    paid_mana.cards[source.id].move_to_zone(Zone.GRAVEYARD)
+    assert resolve_top_of_stack(paid_mana)
+    assert "__eot_keyword_infect" not in paid_mana.cards[source.id].counters
+
+
 def test_mutagenic_growth_phyrexian_life_trigger_is_above_spell() -> None:
     from copy import deepcopy
     from ai.agent import AIAgent

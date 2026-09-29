@@ -834,7 +834,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           })}
         </div>
       </div>
-      <PermanentActions moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
+      <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
       {hoverPreview ? (
         <aside className="card-hover-preview">
           {resolveCardMediaUrl(hoverPreview.imageUri) ? (

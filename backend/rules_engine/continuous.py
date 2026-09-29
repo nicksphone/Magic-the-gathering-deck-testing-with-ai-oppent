@@ -162,6 +162,8 @@ def effective_keywords(state, card_id: str) -> list[str]:
         return sorted(out)
     if "Creature" not in card.types:
         return sorted(out)
+    out.update(key.removeprefix("__eot_keyword_") for key, amount in (card.counters or {}).items()
+               if key.startswith("__eot_keyword_") and amount)
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:

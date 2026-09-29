@@ -7,6 +7,9 @@ const handled = new Set(["cast_spell", "cast_spell_restricted", "cycle_card", "p
 function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }) {
   const [targets, setTargets] = useState<Record<string, unknown>>({});
   const [advanced, setAdvanced] = useState("");
+  const [hybridChoices, setHybridChoices] = useState<Record<number, string>>({});
+  const branches = (move.hybrid_symbols ?? []).map((_, index) => hybridChoices[index] ?? "");
+  const incompletePayment = branches.some(Boolean) && !branches.every(Boolean);
   let combined = targets;
   let inputError = "";
   if (advanced.trim()) {
@@ -24,6 +27,14 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
   return <article className="cast-card-box">
     <strong>{move.card_name}: {move.ability_label}</strong>
     <small>{move.mana_cost}</small>
+    {(move.hybrid_symbols ?? []).map((symbol, index) => <label key={`${symbol.symbol}-${index}`}>
+      {`Pay {${symbol.symbol}}`}
+      <select aria-label={`Ability hybrid symbol ${index + 1} {${symbol.symbol}}`} value={branches[index]}
+        onChange={(event) => setHybridChoices((prior) => ({ ...prior, [index]: event.target.value }))}>
+        <option value="">Auto</option>
+        {symbol.choices.map((choice) => <option key={choice} value={choice}>{choice === "P" ? "Pay 2 life" : choice === "2" ? "2 generic mana" : choice}</option>)}
+      </select>
+    </label>)}
     {hints?.player_targets?.length ? <select aria-label="Ability target player" value={String(targets.target_player ?? "")} onChange={(event) => setTargets({ ...targets, target_player: event.target.value ? Number(event.target.value) : undefined, ...(exclusiveTarget ? { target_card_id: undefined } : {}) })}>
       <option value="">Target player</option>{hints.player_targets.map((target) => <option key={target.id} value={target.id}>{target.name}</option>)}
     </select> : null}
@@ -40,7 +51,8 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
     <details><summary>Advanced choices</summary><p>Enter additional target/mode choices as JSON. The engine validates them before costs are paid.</p><pre>{JSON.stringify(hints?.choice_schema ?? {}, null, 2)}</pre><textarea aria-label="Advanced ability choices" value={advanced} onChange={(event) => setAdvanced(event.target.value)} /></details>
     {inputError ? <p role="alert">{inputError}</p> : null}
     {unsupportedCost ? <p role="alert">Variable activated costs are not implemented; this activation is disabled.</p> : null}
-    <button disabled={Boolean(inputError || unsupportedCost)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined })}>Activate {move.card_name}</button>
+    <button disabled={Boolean(inputError || unsupportedCost || incompletePayment)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined,
+      hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined })}>Activate {move.card_name}</button>
   </article>;
 }
 

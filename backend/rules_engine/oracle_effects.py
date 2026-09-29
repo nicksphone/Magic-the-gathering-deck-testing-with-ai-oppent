@@ -981,6 +981,13 @@ def _infer_clause_effect(
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
 
+    for keyword in ("infect", "wither", "flying", "haste", "vigilance", "trample", "lifelink",
+                    "deathtouch", "menace", "reach", "hexproof", "indestructible", "first strike", "double strike"):
+        if oracle in {f"{card.name.lower()} gains {keyword} until end of turn",
+                      f"this creature gains {keyword} until end of turn",
+                      f"this permanent gains {keyword} until end of turn"}:
+            return "grant_keyword", {"target_card_id": card.id, "keyword": keyword, "until_end_of_turn": True}
+
     if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}
 

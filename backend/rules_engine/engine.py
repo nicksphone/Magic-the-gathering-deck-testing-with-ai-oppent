@@ -298,6 +298,9 @@ class RulesEngine:
                 card.counters.pop("__eot_power", None)
             if "__eot_toughness" in card.counters:
                 card.counters.pop("__eot_toughness", None)
+            for counter in list(card.counters):
+                if counter.startswith("__eot_keyword_"):
+                    card.counters.pop(counter, None)
 
     def _clear_prevention_shields(self, state: MatchState) -> None:
         for player in state.players.values():
@@ -944,7 +947,7 @@ class RulesEngine:
             if cost_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "ability_activation"
-            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context):
+            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices")):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False

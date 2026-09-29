@@ -26,6 +26,23 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "phyrexian_ability":
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=923)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        source = CardInstance(
+            id="pestilent-souleater", name="Pestilent Souleater", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"],
+            oracle_text="{B/P}: Pestilent Souleater gains infect until end of turn.",
+            power=3, toughness=3,
+        )
+        state.cards[source.id] = source
+        state.players[1].battlefield.append(source.id)
+        return publish(state, deck)
     if face_kind == "phyrexian_payment":
         deck = [{"quantity": 60, "card_name": "Forest"}]
         state = MatchFactory.from_decks(deck, deck, seed=922)

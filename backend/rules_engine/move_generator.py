@@ -359,6 +359,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "ability_index": ability["index"],
                     "ability_label": ability["label"],
                     "mana_cost": cost,
+                    "hybrid_symbols": hybrid_payment_symbols(parsed_cost.mana_cost),
                     "target_hints": hints,
                 }
             )

@@ -44,6 +44,22 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['1'].life"), 18);
   console.log("PASS human Phyrexian life branch and target reach the API");
 
+  await click("Phyrexian Ability Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Activate Pestilent Souleater'))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Activate Pestilent Souleater'));
+    const payment = box.querySelector('[aria-label^="Ability hybrid symbol"]');
+    if (!payment) throw new Error('Missing activated Phyrexian payment control');
+    payment.value = 'P'; payment.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Activate Pestilent Souleater");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Pestilent Souleater ability')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.hybrid_choices"), ["P"]);
+  assert.equal(await evaluate("window.fixtureState.players['1'].life"), 18);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.some(card => card.name === 'Pestilent Souleater' && card.keywords.includes('infect'))");
+  console.log("PASS human activated Phyrexian branch resolves infect through the API");
+
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);

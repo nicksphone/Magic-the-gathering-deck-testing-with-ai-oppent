@@ -202,6 +202,21 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:
             require("{X}" in face_card.mana_cost.upper() or any(option.pay_life_x for option in options), "This casting cost does not have a chosen X")
+    if kind == "activate_loyalty":
+        require(action.get("hybrid_choices") is None, "Loyalty abilities do not use hybrid payment choices")
+    if kind == "activate_ability" and action.get("hybrid_choices") is not None:
+        from rules_engine.costs import parse_activated_cost
+        from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
+        cost = parse_activated_cost(move["mana_cost"])
+        choices = action["hybrid_choices"]
+        symbols = hybrid_payment_symbols(cost.mana_cost)
+        require(bool(symbols), "Activated ability has no supported hybrid symbols")
+        require(len(choices) == len(symbols), "Choose one branch for each hybrid symbol")
+        require(all(branch in symbol["choices"] for branch, symbol in zip(choices, symbols)), "Invalid hybrid payment branch")
+        require(can_pay_with_pool_and_lands(
+            state, player_id, cost.mana_cost, card_name=state.cards[action["card_id"]].name,
+            hybrid_choices=choices, reserved_life=cost.pay_life,
+        ), "Cannot pay the selected hybrid branches")
 
 
 def validate_tap(state, player_id: int, action: dict) -> None:
