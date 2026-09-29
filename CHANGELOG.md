@@ -1,5 +1,7 @@
 # Changelog
 
+- Battlefield re-entry now clears stale until-end-of-turn power/toughness modifiers from the returning card object. A real Giant Spider bounce-and-return snapshot regression covers the previous leakage after Toxic Deluge; 1,135 isolated backend tests, the standalone full Chromium harness and a three-game deterministic replay pass. A browser recovery check timed out once while the backend suite ran concurrently, then passed alone. Wider zone-change counter/characteristic resets remain open.
+
 - Added announced variable additional-life costs, reusable all-creatures temporary `-X/-X`, human X range/cost disclosure and board-aware AI X choice. Present Oracle text now blocks unrelated card-name effect guesses. Toxic Deluge engine/snapshot/API/Chromium regressions replace three strict xfails; 1,134 isolated backend tests, frontend lint/build/unit and the full Chromium harness pass. A separate seeded BO3 replay finished without timeout or drift. Broader variable costs and continuous-layer fidelity remain open. See the [boundary audit](docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md).
 
 - Added a live FastAPI integration regression for real Withering Boon and Font of Agonies: legal moves expose only the creature spell as a stack target, and casting returns a 3-life payment with Font's trigger above the counterspell. Verification: 1,124 isolated backend tests pass. This closes the engine-to-HTTP evidence gap, not a claim of complete counterspell or pay-life Oracle coverage.

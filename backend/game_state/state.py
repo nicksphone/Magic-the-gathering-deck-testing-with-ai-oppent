@@ -280,6 +280,10 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card = state.cards.get(card_id)
     if not card:
         return
+    # A returning permanent is a new object; old until-end-of-turn modifiers
+    # must not carry into its new battlefield existence.
+    card.counters.pop("__eot_power", None)
+    card.counters.pop("__eot_toughness", None)
     timestamp = max(
         int(getattr(state, "next_effect_timestamp", 1) or 1),
         int(getattr(state, "next_static_order", 1) or 1),

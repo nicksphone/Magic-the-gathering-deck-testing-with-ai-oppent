@@ -13,6 +13,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from ai.agent import AIAgent
+from effects.handlers import put_green_creature_from_hand, return_permanent_to_hand
 
 
 def _toxic_deluge_game():
@@ -130,6 +131,24 @@ def test_life_total_lock_allows_zero_x_but_not_positive_x():
         checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id, "targets": {"x_value": 1}})
     state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id, "targets": {"x_value": 0}})
     assert state.players[1].life == 20
+
+
+def test_temporary_pt_modifier_does_not_follow_bounced_creature():
+    state, spell = _toxic_deluge_game()
+    spider = CardInstance(id="spider", name="Giant Spider", owner=2, controller=2,
+                          zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{3}{G}",
+                          power=2, toughness=4, oracle_text="Reach")
+    state.cards[spider.id] = spider
+    state.players[2].battlefield.append(spider.id)
+    state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id, "targets": {"x_value": 2}})
+    assert resolve_top_of_stack(state)
+    assert effective_toughness(state, spider.id) == 2
+    return_permanent_to_hand(state, 1, {"target_card_id": spider.id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    put_green_creature_from_hand(state, 2, {})
+    assert state.cards[spider.id].zone == Zone.BATTLEFIELD
+    assert effective_toughness(state, spider.id) == 4
+    assert "__eot_toughness" not in state.cards[spider.id].counters
 
 
 def test_oracle_text_prevents_name_guess_for_other_collision():

@@ -24,6 +24,7 @@ This is a general semantic-contract problem, not a Toxic Deluge-only fix. The au
 
 - The cost model recognizes the supported `pay X life` additional-cost wording. Checked casts require an explicit X; affordability is checked before payment. The shared payment event fires for positive X, and X=0 remains legal without a payment event.
 - A reusable all-creatures temporary power/toughness handler applies to creatures present when the spell resolves, on both sides, and expires at cleanup. State-based actions handle creatures reduced to zero toughness.
+- A follow-up regression bounces and returns Giant Spider before cleanup. Shared battlefield re-entry clears the prior object's temporary P/T modifiers instead of letting the new object inherit them; other zone-change resets remain open.
 - AI estimates a useful X from current creature toughness, life risk and friendly losses rather than spending all available life. This heuristic is bounded tactical support, not optimal-play certification.
 - When Oracle text is present but not understood, a card-name substring no longer silently substitutes an unrelated effect. Existing blank-text compatibility guesses remain.
 - Focused engine, snapshot, HTTP and Chromium human-action regressions now check these paths. A three-game seeded BO3 replay completed without timeout or drift, but did not exercise this card and is not balance evidence. Other variable-cost clauses, combined costs and continuous-layer dependencies remain to be certified.
