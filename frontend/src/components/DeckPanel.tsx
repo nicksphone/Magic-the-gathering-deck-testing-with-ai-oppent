@@ -120,7 +120,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
 
   async function importAllExpansionTopDecks() {
     const data = await api.importAllExpansionTopDecks();
-    setStatus(`Expansion import-all complete: imported ${data.imported}/${data.requested} (errors: ${data.with_errors})`);
+    setStatus(`Expansion catalog sync: ${data.imported}/${data.requested} succeeded (errors: ${data.with_errors})`);
     await refreshDeckData();
   }
 
@@ -165,7 +165,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
         </select>
         <button onClick={loadExpansionTopDeck}>Load Expansion Deck</button>
         <button onClick={importSelectedExpansionTopDeck}>Import Expansion Deck</button>
-        <button onClick={importAllExpansionTopDecks}>Import All Expansions</button>
+        <button onClick={importAllExpansionTopDecks}>Sync Expansion Catalog</button>
       </div>
       {selectedExpansion?.kind === "tournament" && (
         <p className="status">

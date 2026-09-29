@@ -267,6 +267,7 @@ Divided-damage copy follow-up: supported `deal_damage_multi` stack copies now pa
 - [ ] Sync canonical data/rulings with provenance; use verified offline seeds and report incomplete metadata honestly.
 - [ ] Replace expansion-labeled archetype copies with source-backed era/format-legal tournament lists, including provenance and an explicit legality policy.
   - Partial: OTJ now contains a sourced 2024 Pro Tour Domain Ramp 60+15 list with player/event/finish/format provenance. The other 51 entries are explicitly labeled archetype templates, not historical or format-legal decks. Current-format legality and per-card rules fidelity remain unverified; source-backed replacements for the other entries are still required.
+  - Repeated catalog imports now reuse saved IDs. Legacy duplicate rows are deliberately retained while referenced by match history; a reference-aware cleanup/migration is still needed.
 - [ ] Reconcile [the knowledge implementation plan](docs/plans/2026-09-09-ai-knowledge-base.md) with current code before carrying forward its historical cache counts.
 - [ ] Implement tactical profiles, AI consumers and measured matchup priors; storage alone does not complete knowledge integration.
 - [ ] Surface unsupported/ambiguous semantics before simulation instead of silently approximating them.

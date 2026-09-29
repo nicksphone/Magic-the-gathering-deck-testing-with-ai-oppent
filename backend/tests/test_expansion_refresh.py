@@ -7,6 +7,7 @@ from sqlmodel import Session as SqlSession, SQLModel, create_engine
 
 from decks import bootstrap
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS
+from decks.service import DeckService
 from persistence.repository import Repository
 
 
@@ -110,3 +111,34 @@ def test_tournament_refresh_renames_by_source_without_changing_id(tmp_path, monk
         assert next(row for row in repo.list_decks() if row.source == "user").id == user.id
         bootstrap.ensure_expansion_top_decks(repo)
         assert len([row for row in repo.list_decks() if row.source == "expansion_top:OTJ"]) == 1
+
+
+def test_repeated_expansion_imports_reuse_ids_without_touching_user_decks(tmp_path, monkeypatch) -> None:
+    entries = [item for item in EXPANSION_TOP_DECKS if item["code"] in {"USG", "OTJ"}]
+    monkeypatch.setattr("decks.service.EXPANSION_TOP_DECKS", entries)
+    db = create_engine(f"sqlite:///{tmp_path / 'imports.sqlite'}")
+    SQLModel.metadata.create_all(db)
+    with SqlSession(db) as session:
+        repo = Repository(session)
+        service = DeckService(repo)
+        user = repo.save_deck("My Ramp", "user", [{"quantity": 60, "card_name": "Forest"}], [], "Ramp")
+        first = service.import_all_expansion_top_decks()
+        second = service.import_all_expansion_top_decks()
+        assert all(not item["errors"] for item in first + second)
+        assert [item["deck_id"] for item in first] == [item["deck_id"] for item in second]
+        assert len(repo.list_decks()) == 3
+        assert next(row for row in repo.list_decks() if row.source == "user").id == user.id
+
+
+def test_catalog_import_prefers_newest_legacy_duplicate(tmp_path) -> None:
+    db = create_engine(f"sqlite:///{tmp_path / 'duplicates.sqlite'}")
+    SQLModel.metadata.create_all(db)
+    with SqlSession(db) as session:
+        repo = Repository(session)
+        old = [{"quantity": 60, "card_name": "Forest"}]
+        first = repo.save_deck("Old", "expansion_top:USG", old, [], "Ramp")
+        latest = repo.save_deck("Latest", "expansion_top:USG", old, [], "Ramp")
+        updated = repo.save_catalog_deck("Current", "expansion_top:USG", old, [], "Ramp")
+        assert updated.id == latest.id != first.id
+        assert len(repo.list_decks()) == 2
+        assert next(row for row in repo.list_decks() if row.id == first.id).name == "Old"

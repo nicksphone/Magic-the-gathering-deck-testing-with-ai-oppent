@@ -39,10 +39,11 @@ def ensure_expansion_top_decks(repo: Repository) -> None:
         (row.name.strip().lower(), (row.source or "").strip().lower()): row
         for row in rows
     }
-    by_source = {
-        (row.source or "").strip().lower(): row
-        for row in rows if (row.source or "").lower().startswith("expansion_top:")
-    }
+    by_source = {}
+    for row in rows:
+        source = (row.source or "").strip().lower()
+        if source.startswith("expansion_top:"):
+            by_source.setdefault(source, row)
     service = DeckService(repo)
     updated = False
     for item in EXPANSION_TOP_DECKS:

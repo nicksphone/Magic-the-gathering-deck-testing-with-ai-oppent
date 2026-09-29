@@ -76,7 +76,8 @@ class DeckService:
             if metadata is not None and not is_playable_deck_card(metadata):
                 parsed.errors.append(f"{item['card_name']} is not a playable deck card.")
         if not parsed.errors:
-            record = self.repo.save_deck(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
+            save = self.repo.save_catalog_deck if source.lower().startswith("expansion_top:") else self.repo.save_deck
+            record = save(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
             deck_id = record.id
         else:
             deck_id = None

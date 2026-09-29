@@ -140,6 +140,23 @@ class Repository:
         self.session.refresh(record)
         return record
 
+    def save_catalog_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
+        if not source.lower().startswith("expansion_top:"):
+            raise ValueError("Catalog deck source must identify an expansion")
+        record = self.session.exec(
+            select(DeckRecord).where(DeckRecord.source == source).order_by(DeckRecord.created_at.desc(), DeckRecord.id.desc())
+        ).first()
+        if record is None:
+            return self.save_deck(name, source, mainboard, sideboard, archetype_guess)
+        record.name = name
+        record.mainboard_json = json.dumps(mainboard)
+        record.sideboard_json = json.dumps(sideboard)
+        record.archetype_guess = archetype_guess
+        self.session.add(record)
+        self.session.commit()
+        self.session.refresh(record)
+        return record
+
     def list_decks(self) -> list[DeckRecord]:
         return list(self.session.exec(select(DeckRecord).order_by(DeckRecord.created_at.desc())).all())
 
