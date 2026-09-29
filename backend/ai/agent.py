@@ -20,6 +20,7 @@ from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 from rules_engine.replacement import graveyard_destination
 from rules_engine.costs import PAY_X_LIFE_RE
+from rules_engine.oracle_effects import EACH_PLAYER_DRAW_RE, _parse_count_token
 
 
 def _has_counter_spell_text(text: str) -> bool:
@@ -124,6 +125,7 @@ class AIAgent:
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
+        legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)]
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
@@ -198,6 +200,28 @@ class AIAgent:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _bad_shared_draw_cast(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if move.get("type") != "cast_spell":
+            return False
+        card = state.cards.get(move.get("card_id"))
+        if card is None:
+            return False
+        match = EACH_PLAYER_DRAW_RE.fullmatch(str(getattr(card, "oracle_text", "") or "").strip())
+        if match is None:
+            return False
+        raw = match.group(1).lower()
+        amount = (self._choose_x_value(state, player_id, card.mana_cost, card=card)
+                  if raw == "x" else _parse_count_token(raw))
+        if amount <= 0:
+            return True
+        opponent_id = 1 if player_id == 2 else 2
+        me, opponent = state.players[player_id], state.players[opponent_id]
+        if len(opponent.library) < amount:
+            return False
+        if len(me.library) < amount:
+            return True
+        return len(me.hand) >= 5 and len(opponent.hand) <= 2
 
     def _choose_combat_damage_allocation(self, state: MatchState, choice: dict) -> dict[str, int]:
         source = state.cards[choice["source_id"]]
