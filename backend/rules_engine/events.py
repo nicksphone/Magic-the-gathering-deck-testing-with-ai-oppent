@@ -1259,6 +1259,7 @@ def _trigger_from_oracle(
             "destroy target",
             "exile target",
             "exile each ",
+            "exile a creature card they revealed this way",
             "tap target",
             "untap target",
             "search your library",

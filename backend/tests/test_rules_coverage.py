@@ -19,6 +19,7 @@ def test_known_unsupported_otj_mechanics_are_reported_from_root_and_faces() -> N
     ) == ["kicker", "domain", "incubate"]
     assert known_unsupported_mechanics("Multikicker {1}. Incubated tokens transform.") == ["multikicker", "incubate"]
     assert known_unsupported_mechanics("Draw a card.") == []
+    assert known_unsupported_mechanics("", [{"oracle_text": "Choose a creature card exiled with this creature. This creature becomes a copy of that card."}]) == ["exiled-card copy"]
 
 
 def test_deck_pair_coverage_reports_faces_before_simulation() -> None:

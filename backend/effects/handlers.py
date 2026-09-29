@@ -558,13 +558,11 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> in
 
 def exile_nonland_until_source_leaves(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.card_types import is_land_card, is_token_card
+    from rules_engine.linked_exile import record_linked_exile, source_still_present
 
     source_id = payload.get("source_card_id")
-    source = state.cards.get(source_id)
     timestamp = int(payload.get("source_timestamp", -1))
-    if (source is None or source.zone != Zone.BATTLEFIELD
-            or source.id not in state.players[source.controller].battlefield
-            or source.effect_timestamp != timestamp):
+    if not source_still_present(state, source_id, timestamp):
         return
     mv_max = int(payload["mv_max"])
     affected = [cid for player in state.players.values() for cid in player.battlefield
@@ -581,11 +579,7 @@ def exile_nonland_until_source_leaves(state: MatchState, controller: int, payloa
         card.move_to_zone(Zone.EXILE)
         if not is_token_card(card):
             returning.append(cid)
-    if returning:
-        state.linked_exiles.append({
-            "source_id": source_id, "source_timestamp": timestamp, "card_ids": returning,
-            "card_timestamps": {cid: state.cards[cid].effect_timestamp for cid in returning},
-        })
+    record_linked_exile(state, source_id, timestamp, returning)
     emit_event_batch(state, "leaves_battlefield", leaves)
     state.log.append(f"Exile nonland permanents with mana value {mv_max} or less until the source leaves: {len(affected)} exiled.")
 
@@ -1890,6 +1884,11 @@ def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict)
                and ("mv_min" not in payload or mana_value(state.cards[cid].mana_cost or "") >= int(payload["mv_min"]))]
     names = ", ".join(state.cards[cid].name for cid in revealed) or "(empty)"
     state.log.append(f"{state.players[target].name} reveals their hand: {names}.")
+    linked_source = payload.get("linked_source_id")
+    if linked_source:
+        from rules_engine.linked_exile import source_still_present
+        if not source_still_present(state, linked_source, int(payload.get("linked_source_timestamp", -1))):
+            return
     if not options:
         return
     if controller in state.mechanic_choice_players:
@@ -1897,6 +1896,8 @@ def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict)
             "kind": f"choose_revealed_{destination}", "player_id": controller,
             "target_player": target, "options": options, "count": 1,
             "label": f"Choose a card from the revealed hand to {destination}",
+            "linked_source_id": linked_source,
+            "linked_source_timestamp": payload.get("linked_source_timestamp"),
         }
         state.priority_player = controller
         state.passed_priority = set()
@@ -1904,7 +1905,9 @@ def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict)
     chosen = min(options, key=lambda cid: (state.cards[cid].mana_cost or "", cid))
     if destination == "exile":
         from rules_engine.zone_actions import exile_selected_from_hand
-        exile_selected_from_hand(state, target, [chosen])
+        if exile_selected_from_hand(state, target, [chosen]) and linked_source:
+            from rules_engine.linked_exile import record_linked_exile
+            record_linked_exile(state, linked_source, int(payload["linked_source_timestamp"]), [chosen], Zone.HAND)
     else:
         discard_selected(state, target, [chosen])
 

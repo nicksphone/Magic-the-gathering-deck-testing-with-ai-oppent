@@ -152,6 +152,16 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    linked_hand_exile = re.search(
+        r"each opponent reveals their hand\.\s*for each opponent, exile a creature card they revealed this way until [^.]+ leaves the battlefield",
+        oracle,
+    )
+    if linked_hand_exile:
+        return "choose_revealed_exile", {
+            "target_player": 1 if controller == 2 else 2,
+            "allowed_types": ["Creature"], "destination": "exile",
+            "linked_source_id": card.id, "linked_source_timestamp": card.effect_timestamp,
+        }
     linked_exile = re.search(
         r"exile each nonland permanent with mana value (\d+) or less until this (?:enchantment|permanent|creature|artifact) leaves the battlefield",
         oracle,

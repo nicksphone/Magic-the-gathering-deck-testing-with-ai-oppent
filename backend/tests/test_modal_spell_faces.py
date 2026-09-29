@@ -10,10 +10,154 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from rules_engine.engine import RulesEngine
 from rules_engine.card_faces import select_cast_face
 from rules_engine.stack_engine import resolve_top_of_stack
+from rules_engine.events import emit_event
+from game_state.state import assign_static_order_on_battlefield_entry
+from rules_engine.action_validation import ActionRejected, checked_action
+from effects.registry import resolve_effect
 
 DATA = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())
 ARCHAIC = "Wandering Archaic // Explore the Vastlands"
 VALKI = "Valki, God of Lies // Tibalt, Cosmic Impostor"
+
+
+def _valki_entry():
+    state, source = fixture(VALKI)
+    state.players[1].hand.remove(source.id)
+    state.players[1].battlefield.append(source.id)
+    source.move_to_zone(Zone.BATTLEFIELD)
+    assign_static_order_on_battlefield_entry(state, source.id)
+    emit_event(state, "enters_battlefield", {"card_id": source.id, "controller": 1})
+    assert state.stack[-1].effect_key == "choose_revealed_exile"
+    return state, source
+
+
+def test_valki_reveal_exiles_creature_then_returns_it_to_owner_hand() -> None:
+    state, source = _valki_entry()
+    state.mechanic_choice_players = {1}
+    creature = state.players[2].hand[0]
+    noncreature = state.players[2].hand[1]
+    state.cards[noncreature].types = ["Sorcery"]
+    assert not resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["options"] == [cid for cid in state.players[2].hand if cid != noncreature]
+    before = serialize_match_snapshot(state)
+    try:
+        checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [noncreature]})
+    except ActionRejected:
+        pass
+    else:
+        raise AssertionError("Noncreature was accepted for Valki's reveal")
+    assert serialize_match_snapshot(state) == before
+    state = deserialize_match_snapshot(before)
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [creature]})
+    assert state.cards[creature].zone == Zone.EXILE
+    assert state.linked_exiles[0]["return_zone"] == "hand"
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source.id})
+    assert state.cards[creature].zone == Zone.HAND
+    assert creature in state.players[2].hand
+    assert not state.linked_exiles
+
+
+def test_valki_source_leaves_before_trigger_resolves_still_reveals_without_exiling() -> None:
+    state, source = _valki_entry()
+    before = list(state.players[2].hand)
+    resolve_effect(state, 2, "return_permanent_to_hand", {"target_card_id": source.id})
+    assert resolve_top_of_stack(state)
+    assert state.players[2].hand == before
+    assert any("reveals their hand" in line for line in state.log)
+    assert not state.linked_exiles
+
+
+def test_valki_automatic_choice_and_old_source_incarnation() -> None:
+    state, source = _valki_entry()
+    assert resolve_top_of_stack(state)
+    assert len(state.linked_exiles) == 1
+    held = state.linked_exiles[0]["card_ids"][0]
+    old_timestamp = source.effect_timestamp
+    resolve_effect(state, 2, "return_permanent_to_hand", {"target_card_id": source.id})
+    assert state.cards[held].zone == Zone.HAND
+    state.players[1].hand.remove(source.id)
+    state.players[1].battlefield.append(source.id)
+    source.move_to_zone(Zone.BATTLEFIELD)
+    assign_static_order_on_battlefield_entry(state, source.id)
+    assert source.effect_timestamp != old_timestamp
+    assert not state.linked_exiles
+
+
+def test_valki_old_trigger_does_not_exile_after_source_reenters() -> None:
+    state, source = _valki_entry()
+    original_hand = list(state.players[2].hand)
+    resolve_effect(state, 2, "return_permanent_to_hand", {"target_card_id": source.id})
+    state.players[1].hand.remove(source.id)
+    state.players[1].battlefield.append(source.id)
+    source.move_to_zone(Zone.BATTLEFIELD)
+    assign_static_order_on_battlefield_entry(state, source.id)
+    assert resolve_top_of_stack(state)
+    assert state.players[2].hand == original_hand
+    assert not state.linked_exiles
+
+
+def test_valki_old_link_does_not_return_card_that_left_exile() -> None:
+    from rules_engine.linked_exile import flush_linked_exile_returns
+
+    state, source = _valki_entry()
+    assert resolve_top_of_stack(state)
+    held = state.linked_exiles[0]["card_ids"][0]
+    card = state.cards[held]
+    state.players[2].exile.remove(held)
+    state.players[2].graveyard.append(held)
+    card.move_to_zone(Zone.GRAVEYARD)
+    flush_linked_exile_returns(state)
+    assert not state.linked_exiles
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source.id})
+    assert card.zone == Zone.GRAVEYARD
+
+
+def test_valki_ai_chooses_a_revealed_creature_through_legal_moves() -> None:
+    from ai.agent import AIAgent
+
+    state, source = _valki_entry()
+    state.mechanic_choice_players = {1, 2}
+    assert not resolve_top_of_stack(state)
+    legal = RulesEngine().legal_moves(state, 1)
+    action = AIAgent(difficulty="master", archetype="Control").choose_action(state, legal, 1).action
+    assert action["type"] == "choose_mechanic"
+    assert action["card_ids"][0] in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, action)
+    assert state.cards[action["card_ids"][0]].zone == Zone.EXILE
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source.id})
+    assert state.cards[action["card_ids"][0]].zone == Zone.HAND
+
+
+def test_valki_http_choice_persists_link_and_returns_to_hand() -> None:
+    from fastapi.testclient import TestClient
+    from main import ACTIVE_MATCHES, MatchController, app
+
+    state, source = _valki_entry()
+    state.mechanic_choice_players = {1, 2}
+    assert not resolve_top_of_stack(state)
+    deck = [{"quantity": 60, "card_name": VALKI}]
+    match = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "ai"}, ai={},
+        mode="player_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = match
+        try:
+            move = client.get(f"/matches/{state.id}/legal-moves").json()["moves"][0]
+            assert move["kind"] == "choose_revealed_exile"
+            chosen = move["options"][0]
+            response = client.post(f"/matches/{state.id}/action", json={
+                "player_id": 1, "action": {"type": "choose_mechanic", "card_ids": [chosen]},
+            })
+            assert response.status_code == 200
+            assert ACTIVE_MATCHES[state.id].state.linked_exiles[0]["card_ids"] == [chosen]
+            restored = deserialize_match_snapshot(serialize_match_snapshot(ACTIVE_MATCHES[state.id].state))
+            resolve_effect(restored, 2, "destroy_permanent", {"target_card_id": source.id})
+            assert restored.cards[chosen].zone == Zone.HAND
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
 
 
 def fixture(name):

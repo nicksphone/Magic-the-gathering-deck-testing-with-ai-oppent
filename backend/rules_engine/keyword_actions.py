@@ -173,6 +173,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if not move(state, target, ids):
             state.pending_mechanic_choice = pending
             return False
+        if pending["kind"] == "choose_revealed_exile" and pending.get("linked_source_id"):
+            from rules_engine.linked_exile import record_linked_exile
+            record_linked_exile(state, pending["linked_source_id"], int(pending["linked_source_timestamp"]), ids, Zone.HAND)
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "each_player_discard":
