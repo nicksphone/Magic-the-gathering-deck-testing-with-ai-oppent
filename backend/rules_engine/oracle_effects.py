@@ -1037,6 +1037,20 @@ def _infer_clause_effect(
     if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}
 
+    team_buff = re.search(
+        r"\bcreatures you control get ([+-]\d+)/([+-]\d+)"
+        r"(?: and gain (haste|vigilance|trample|lifelink|deathtouch|flying|reach|menace|hexproof|indestructible))?"
+        r" until end of turn\b",
+        oracle,
+    )
+    if team_buff:
+        return "temporary_pt_buff_all", {
+            "power": int(team_buff.group(1)),
+            "toughness": int(team_buff.group(2)),
+            "controller_only": True,
+            "keyword": team_buff.group(3),
+        }
+
     if COPY_CREATURE_TOKEN_RE.search(oracle):
         return "create_token_copy", {
             "target_card_id": target_card_id,

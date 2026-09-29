@@ -318,6 +318,11 @@ def _self_scaling_pt_delta(state, source_card) -> tuple[int, int]:
 def _iter_pt_modifiers(source_card):
     text = (getattr(source_card, "oracle_text", "") or "").lower()
     for match in PT_STATIC_RE.finditer(text):
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        line_end = text.find("\n", match.end())
+        clause = text[line_start:line_end if line_end != -1 else len(text)]
+        if clause.strip().startswith(("when ", "whenever ", "at the beginning")) or "until end of turn" in clause:
+            continue
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
         scope = match.group(3).strip()

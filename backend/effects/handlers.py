@@ -1630,16 +1630,21 @@ def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None
 def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> None:
     power = int(payload.get("power", 0))
     toughness = int(payload.get("toughness", 0))
-    if not power and not toughness:
+    keyword = payload.get("keyword")
+    if not power and not toughness and not keyword:
         return
-    for player in state.players.values():
+    players = [state.players[controller]] if payload.get("controller_only") else state.players.values()
+    for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
             if "Creature" not in card.types:
                 continue
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
-    state.log.append(f"All creatures get {power:+d}/{toughness:+d} until end of turn.")
+            if keyword:
+                card.counters[f"__eot_keyword_{keyword.lower()}"] = 1
+    scope = "Creatures you control" if payload.get("controller_only") else "All creatures"
+    state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")
 
 
 def sacrifice(state: MatchState, controller: int, payload: dict) -> None:

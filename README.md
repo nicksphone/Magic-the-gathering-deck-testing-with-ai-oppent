@@ -15,6 +15,7 @@ It is designed for serious deck work:
 ### Gameplay
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
 - Untap happens without a priority window; play resumes at upkeep. Pending replacement/trigger choices remain answerable, and AI defers optional cycling on its own empty-stack upkeep/draw until a main phase.
+- Supported enter-the-battlefield text granting creatures you control a numeric power/toughness bonus and a keyword until end of turn now affects the creatures present when the trigger resolves, including the source. The bonus expires at cleanup; this is not a general continuous-effect interpreter.
 - London mulligans through zero cards, with deliberate ordered bottom-card selection for human seats
 - Manual phase progression and autoplay
 - Land drops, casting, activated abilities, combat actions, and response windows

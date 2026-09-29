@@ -1271,6 +1271,7 @@ def _trigger_from_oracle(
             "cast target",
             "reveals the top card",
             "gets -x/-x",
+            "creatures you control get ",
         )
     ):
         from rules_engine.ability_model import build_ability_spec
