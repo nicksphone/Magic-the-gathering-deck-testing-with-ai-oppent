@@ -93,6 +93,8 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         for index, item in enumerate(effects):
             key = item.get("effect_key")
             data = dict(item.get("payload", {}) or {})
+            if key == "lose_life" and payload.get("__targeted_life_loss"):
+                data["target_player"] = payload.get("target_player")
             if source_card_id and "__source_card_id" not in data:
                 data["__source_card_id"] = source_card_id
             if source_lki is not None:

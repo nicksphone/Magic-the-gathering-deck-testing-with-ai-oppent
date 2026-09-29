@@ -213,6 +213,8 @@ def _append_trigger_groups(
                 # Destructive effects prefer an opponent's permanent over their own.
                 if item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent"}:
                     options.sort(key=lambda option: state.cards[option["target_card_id"]].controller == item.controller)
+                if item.payload.get("__targeted_life_loss"):
+                    options.sort(key=lambda option: option["target_player"] == item.controller)
                 if item.effect_key == "deal_damage":
                     from ai.heuristics import choose_damage_trigger_target
                     choice = choose_damage_trigger_target(state, item.controller, int(item.payload.get("amount", 0)), options)
@@ -291,6 +293,8 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
             continue
         if item.effect_key == "deal_damage" and "any target" in clause.lower():
             return clause
+        if item.payload.get("__targeted_life_loss") and re.search(r"\btarget player loses \d+ life\b", clause, re.I):
+            return clause
         if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
             return clause
     return None
@@ -307,6 +311,12 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
+    if item.payload.get("__targeted_life_loss"):
+        return [
+            {"target_player": pid, "target_name": player.name}
+            for pid, player in state.players.items()
+            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+        ]
     if "any target" in low and item.effect_key == "deal_damage":
         options = [
             {"target_player": pid, "target_name": state.players[pid].name}
@@ -382,7 +392,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         dead = _departed_card_view(state, dead_id)
         if dead and dead_id not in state.players[dead.controller].battlefield:
             oracle = without_reminder_text((dead.oracle_text or "").lower())
-            if "when this creature dies" in oracle and _matches_creature_dies_trigger(state, dead, oracle, payload):
+            self_oracle = _creature_self_reference(dead, oracle)
+            if ("when this creature dies" in self_oracle or "whenever this creature or another creature dies" in self_oracle) and _matches_creature_dies_trigger(state, dead, oracle, payload):
                 if "power" not in payload and dead.last_known_battlefield:
                     payload = {**payload, "power": dead.last_known_battlefield["power"]}
                 out.append(_trigger_from_oracle(
@@ -635,12 +646,20 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     return out
 
 
+def _creature_self_reference(card, oracle: str) -> str:
+    name = (getattr(card, "name", "") or "").lower()
+    return re.sub(rf"\b{re.escape(name)}\b", "this creature", oracle) if name else oracle
+
+
 def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    oracle = _creature_self_reference(card, oracle)
     if "\n" in oracle:
         return any(_matches_creature_dies_trigger(state, card, line.strip(), payload) for line in oracle.splitlines())
     dead_id = payload.get("card_id")
     dead_card = _departed_card_view(state, dead_id)
     dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
+    if "whenever this creature or another creature dies" in oracle:
+        return "Creature" in dead_types
     if "whenever a creature an opponent controls dies" in oracle:
         return bool(dead_card) and dead_card.controller != card.controller and "Creature" in dead_types
     if "when this creature dies" in oracle:
@@ -1243,17 +1262,22 @@ def _trigger_from_oracle(
             "effect_key": "draw_cards",
             "payload": _maybe_payload(oracle, {"amount": 1}),
         }
+    targeted_drain = re.search(r"\btarget player loses (\d+) life and you gain (\d+) life\b", oracle)
     drain = re.search(r"\beach opponent loses (\d+) life and you gain (\d+) life\b", oracle)
-    if event == "creature_dies" and drain:
+    if event == "creature_dies" and (targeted_drain or drain):
+        amounts = targeted_drain or drain
         return {
             "source_card_id": source_card_id,
             "controller": controller,
             "label": default_label,
             "effect_key": "effect_sequence",
-            "payload": {"effects": [
-                {"effect_key": "lose_life", "payload": {"target_player": opponent, "amount": int(drain.group(1))}},
-                {"effect_key": "gain_life", "payload": {"target_player": controller, "amount": int(drain.group(2))}},
-            ]},
+            "payload": {
+                "__targeted_life_loss": bool(targeted_drain),
+                "effects": [
+                    {"effect_key": "lose_life", "payload": {"target_player": opponent, "amount": int(amounts.group(1))}},
+                    {"effect_key": "gain_life", "payload": {"target_player": controller, "amount": int(amounts.group(2))}},
+                ],
+            },
         }
     if "gain 1 life" in oracle or "gain life" in oracle:
         return {
