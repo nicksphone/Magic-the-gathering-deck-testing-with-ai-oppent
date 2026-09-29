@@ -5,6 +5,27 @@ from collections.abc import Mapping
 
 
 _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
+_REVEAL_CARD_TYPES = {"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery"}
+
+
+def cards_have_distinct_card_types(state, card_ids: list[str]) -> bool:
+    """Each selected card must be assignable a different printed card type."""
+    assigned: dict[str, str] = {}
+
+    def assign(card_id: str, visited: set[str]) -> bool:
+        card = state.cards.get(card_id)
+        if card is None:
+            return False
+        for card_type in sorted(set(card.types) & _REVEAL_CARD_TYPES):
+            if card_type in visited:
+                continue
+            visited.add(card_type)
+            if card_type not in assigned or assign(assigned[card_type], visited):
+                assigned[card_type] = card_id
+                return True
+        return False
+
+    return len(card_ids) == len(set(card_ids)) and all(assign(card_id, set()) for card_id in card_ids)
 
 
 def is_token_card(card) -> bool:

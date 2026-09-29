@@ -262,6 +262,7 @@ export function Controls(props: Props) {
             {(mechanicMove.options ?? []).map((cid) => <label key={cid}>
               <input type="checkbox" checked={mechanicSelections.includes(cid)} onChange={(event) => setMechanicSelections((selected) => event.target.checked ? [...selected, cid] : selected.filter((id) => id !== cid))} />
               {mechanicMove.option_labels?.[cid] ?? cid}
+              {mechanicMove.option_type_lines?.[cid] ? <small> ({mechanicMove.option_type_lines[cid]})</small> : null}
             </label>)}
             {mechanicMove.kind === "search_library" && mechanicSelections.length > 0 ? <p>Selection order: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
             <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>

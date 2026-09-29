@@ -800,7 +800,8 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
         return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller and entering_id != card.id
     if "an artifact or enchantment enters the battlefield under your control" in oracle:
         return _has_artifact_or_enchantment_type(entering_card) and enters_for_controller
-    if f"when {card.name.lower()} enters the battlefield" in oracle:
+    self_names = {card.name.lower(), card.name.split(",", 1)[0].lower()}
+    if any(f"when {name} enters the battlefield" in oracle for name in self_names):
         return entering_id == card.id
     if any(f"when {subject} enters the battlefield" in oracle for subject in ("this creature", "this permanent", "this artifact", "this enchantment", "this planeswalker")):
         return entering_id == card.id
@@ -1270,6 +1271,7 @@ def _trigger_from_oracle(
             "counter target",
             "cast target",
             "reveals the top card",
+            "reveal the top ",
             "gets -x/-x",
             "creatures you control get ",
         )
@@ -1333,7 +1335,7 @@ def _number_token(token: str) -> int:
 def _maybe_payload(oracle: str, payload: dict[str, Any]) -> dict[str, Any]:
     out = dict(payload)
     low = (oracle or "").lower()
-    if "you may" not in low:
+    if "you may" not in low or "for each card type, you may put" in low:
         return out
     out["__may"] = True
     # Conservative default: skip optional effects that only lose life; otherwise choose yes.

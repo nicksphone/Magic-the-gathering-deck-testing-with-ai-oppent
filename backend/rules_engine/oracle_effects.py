@@ -70,6 +70,11 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+REVEAL_TOP_DISTINCT_TYPES_RE = re.compile(
+    r"reveal the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards? of your library\.\s*"
+    r"for each card type, you may put a card of that type from among the revealed cards into your hand",
+    re.IGNORECASE,
+)
 LOOK_TOP_MANA_SPENT_HAND_RE = re.compile(
     r"look at the top x cards of your library, where x is the amount of mana spent to cast this spell\.\s*"
     r"put (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) of them into your hand "
@@ -228,6 +233,12 @@ def infer_effect_from_oracle(
         effect_key = "copy_spell" if kind.endswith("spell") else "copy_ability"
         return effect_key, {"target_stack_id": target_stack_id, "copy_kind": kind,
                             "may_choose_new_targets": "you may choose new targets for the copy" in oracle}
+    distinct_types = REVEAL_TOP_DISTINCT_TYPES_RE.search(oracle)
+    if distinct_types:
+        return "look_top_distinct_types_to_hand", {
+            "top_n": _parse_count_token(distinct_types.group(1)),
+            "bottom_random": "bottom of your library in a random order" in oracle,
+        }
     topdeck_creatures = _infer_topdeck_creature_put_effect(oracle, action_targets)
     if topdeck_creatures is not None:
         return topdeck_creatures

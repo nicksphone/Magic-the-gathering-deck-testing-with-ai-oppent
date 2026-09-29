@@ -174,11 +174,21 @@ class AIAgent:
                     destination = str(payload.get("destination", "hand"))
                     if kind == "search_library" and destination == "graveyard" and payload.get("up_to"):
                         candidates = [cid for cid in candidates if graveyard_destination(state, state.cards[cid]) == "graveyard"]
+                    distinct_types_choice = kind == "topdeck_put" and choice.get("effect_key") == "look_top_distinct_types_to_hand"
                     selected = self._choose_library_search(
-                        state, candidates, int(choice["count"]), player_id,
-                        free_battlefield=kind == "topdeck_put",
+                        state, candidates, len(candidates) if distinct_types_choice else int(choice["count"]), player_id,
+                        free_battlefield=kind == "topdeck_put" and not distinct_types_choice,
                         destination=destination,
                     )
+                    if distinct_types_choice:
+                        from rules_engine.card_types import cards_have_distinct_card_types
+                        distinct = []
+                        for cid in selected:
+                            if cards_have_distinct_card_types(state, [*distinct, cid]):
+                                distinct.append(cid)
+                            if len(distinct) == choice["count"]:
+                                break
+                        selected = distinct
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning=f"Choose {kind} cards at resolution")

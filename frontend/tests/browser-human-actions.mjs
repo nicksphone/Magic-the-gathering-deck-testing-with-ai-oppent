@@ -321,7 +321,8 @@ try {
     await click("Resolve Stack");
     await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'choose_revealed_discard'");
     const labels = await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand')).querySelectorAll('label')].map(label => label.textContent.trim())");
-    assert.deepEqual(labels, expected);
+    assert.deepEqual(labels.map((label) => label.replace(/ \([^)]*\)$/, "")), expected);
+    assert.ok(labels.every((label) => / \([^)]+\)$/.test(label)));
     assert.equal(await evaluate("window.fixtureState.log.some(line => line.includes('reveals their hand:') && line.includes('Forest') && line.includes('Llanowar Elves'))"), true);
     assert.equal(await evaluate("window.fixtureState.players['1'].life"), 20);
     await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand')).querySelector('input[type=checkbox]').click()");
@@ -339,7 +340,7 @@ try {
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Appetite for Brains')");
   await click("Resolve Stack");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'choose_revealed_exile'");
-  assert.deepEqual(await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelectorAll('label')].map(label => label.textContent.trim())"), ["Serra Angel"]);
+  assert.deepEqual(await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelectorAll('label')].map(label => label.textContent.trim())"), ["Serra Angel (Creature - Angel)"]);
   await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelector('input[type=checkbox]').click()");
   await click("Confirm Selection");
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");

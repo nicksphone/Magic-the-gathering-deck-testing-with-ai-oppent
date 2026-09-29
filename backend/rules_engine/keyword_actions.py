@@ -261,7 +261,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         return True
     if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "look_top_select_hand", "search_library"}:
         ids = action.get("card_ids")
+        if (pending.get("effect_key") == "look_top_distinct_types_to_hand"
+                and isinstance(ids, list) and all(isinstance(cid, str) for cid in ids)):
+            from rules_engine.card_types import cards_have_distinct_card_types
+            if not cards_have_distinct_card_types(state, ids):
+                return False
         if (pending["player_id"] != player_id or not isinstance(ids, list)
+                or any(not isinstance(cid, str) for cid in ids)
                 or len(ids) > pending["count"] or len(ids) != len(set(ids))
                 or (pending["kind"] == "search_library" and len(ids) < pending.get("min_count", 0))
                 or (pending["kind"] == "look_top_choose" and len(ids) != pending["count"])

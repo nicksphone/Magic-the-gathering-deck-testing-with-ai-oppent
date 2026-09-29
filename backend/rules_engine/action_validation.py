@@ -15,6 +15,7 @@ def require(condition: bool, reason: str) -> None:
 
 
 def unique_ids(ids: list[str], allowed, count: int | None = None) -> None:
+    require(isinstance(ids, list) and all(isinstance(cid, str) for cid in ids), "Card IDs must be strings")
     require(len(ids) == len(set(ids)), "Card selections cannot contain duplicates")
     require(all(cid in allowed for cid in ids), "Selection contains an unavailable card")
     require(count is None or len(ids) == count, "Incorrect number of selected cards")

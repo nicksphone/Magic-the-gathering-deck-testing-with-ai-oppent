@@ -47,6 +47,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "exile_top_cards_playable": handlers.exile_top_cards_playable,
     "look_top_choose": handlers.look_top_choose,
     "look_top_select_hand": handlers.look_top_select_hand,
+    "look_top_distinct_types_to_hand": handlers.look_top_distinct_types_to_hand,
     "transform_if_top_matches": handlers.transform_if_top_matches,
     "transform_card": handlers.transform_card,
     "exile_return_transformed": handlers.exile_return_transformed,

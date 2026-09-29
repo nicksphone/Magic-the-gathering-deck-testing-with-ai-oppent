@@ -131,6 +131,7 @@ export type LegalMove = {
   can_restart?: boolean;
   target_slot_number?: number;
   option_labels?: Record<string, string>;
+  option_type_lines?: Record<string, string>;
   type: string;
   card_id?: string;
   card_view?: CardView;

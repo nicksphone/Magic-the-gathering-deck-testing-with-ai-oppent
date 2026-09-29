@@ -1394,6 +1394,39 @@ def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> N
     state.log.append(f"{player.name} looks at {len(top_slice)} cards and puts {len(chosen)} into hand.")
 
 
+def look_top_distinct_types_to_hand(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_types import cards_have_distinct_card_types
+
+    player = state.players[controller]
+    top_slice = list(player.library[-max(1, int(payload.get("top_n", 10))):])
+    if not top_slice:
+        return
+    chosen = payload.get("selected_card_ids")
+    if chosen is None:
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_put", "player_id": controller,
+            "options": list(reversed(top_slice)), "count": min(8, len(top_slice)),
+            "min_count": 0, "top_ids": top_slice,
+            "effect_key": "look_top_distinct_types_to_hand", "effect_payload": payload,
+            "label": "Choose up to one card for each different card type to put into your hand",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if (not isinstance(chosen, list) or len(chosen) > 8 or not set(chosen).issubset(top_slice)
+            or not cards_have_distinct_card_types(state, chosen)):
+        raise ValueError("Selected cards must have assignable distinct card types")
+    del player.library[-len(top_slice):]
+    for card_id in chosen:
+        state.cards[card_id].move_to_zone(Zone.HAND)
+        player.hand.append(card_id)
+    remaining = [card_id for card_id in top_slice if card_id not in set(chosen)]
+    if payload.get("bottom_random"):
+        state.rng.shuffle(remaining)
+    player.library[:0] = remaining
+    state.log.append(f"{player.name} reveals {len(top_slice)} cards and puts {len(chosen)} into hand.")
+
+
 def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
     """Resolve a top-card hand/exile/bottom choice, with a legacy AI fallback."""
     player = state.players[controller]
