@@ -784,6 +784,9 @@ def _matches_sacrifice_trigger(state: MatchState, card, oracle: str, payload: di
     if not sac_id or sac_id not in state.cards:
         return False
     sac_card = state.cards[sac_id]
+    if ("whenever a player sacrifices a permanent" in oracle
+            and "put a +1/+1 counter on this creature" in oracle):
+        return True
     if "whenever you sacrifice a permanent" in oracle:
         return sac_card.controller == card.controller
     if "whenever a permanent you control is sacrificed" in oracle or "whenever a permanent you control is sacrificed" in oracle:

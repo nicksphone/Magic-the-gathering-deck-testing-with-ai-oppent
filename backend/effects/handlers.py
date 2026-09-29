@@ -1319,6 +1319,11 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
 def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
+        from rules_engine.events import flush_staged_triggers
+        started_staging = not state.trigger_staging
+        if started_staging:
+            state.trigger_staging = True
+            state.trigger_staging_event = "sacrifice"
         card = state.cards[target]
         destination = replace_die_zone(state, card.controller, target)
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": controller})
@@ -1330,6 +1335,8 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
             state.log.append(f"{card.name} is exiled instead of dying.")
             emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
             card.reset_zone_counters(Zone.EXILE)
+            if started_staging:
+                flush_staged_triggers(state)
             return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
@@ -1338,6 +1345,8 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
             emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
         card.reset_zone_counters(Zone.GRAVEYARD)
+        if started_staging:
+            flush_staged_triggers(state)
 
 
 def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None:

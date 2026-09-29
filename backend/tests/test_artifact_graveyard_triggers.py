@@ -5,6 +5,7 @@ import pytest
 from effects.handlers import destroy_all_creatures, destroy_permanent, sacrifice
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone
+from rules_engine.events import flush_staged_triggers, resume_trigger_order
 from rules_engine.stack_engine import resolve_top_of_stack
 
 
@@ -111,3 +112,75 @@ def test_prior_departure_cannot_trigger_on_later_artifact_death():
 
     destroy_permanent(state, 2, {"target_card_id": "chalice"})
     assert not any(item.source_card_id == "master" for item in state.stack)
+
+
+def _add_merchant(state):
+    merchant = CardInstance(
+        "merchant", "Merchant of Venom", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+        type_line="Creature — Cat Warlock", power=1, toughness=1,
+        oracle_text=(
+            "Menace\nWhen this creature enters, each player sacrifices a creature of their choice.\n"
+            "Whenever a player sacrifices a permanent, put a +1/+1 counter on this creature."
+        ),
+    )
+    state.cards[merchant.id] = merchant
+    state.players[1].battlefield.append(merchant.id)
+
+
+def test_sacrifice_and_graveyard_triggers_share_human_order_choice():
+    state = _state()
+    _add_merchant(state)
+    state.trigger_order_choice_required = True
+    state.trigger_order_choice_players = {1}
+
+    sacrifice(state, 1, {"target_card_id": "chalice"})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    pending = state.pending_trigger_order
+    assert pending is not None
+    group = pending["groups"]["1"]
+    assert {item["source_card_id"] for item in group} == {"master", "merchant"}
+    requested = [item["_choice_id"] for item in reversed(group)]
+    assert resume_trigger_order(state, requested)
+    assert [item.source_card_id for item in state.stack] == [item["source_card_id"] for item in reversed(group)]
+
+
+def test_sacrifice_preserves_outer_trigger_staging():
+    state = _state()
+    _add_merchant(state)
+    state.trigger_staging = True
+    state.trigger_staging_event = "outer"
+
+    sacrifice(state, 1, {"target_card_id": "chalice"})
+    assert state.trigger_staging
+    assert state.stack == []
+    assert {item["source_card_id"] for item in state.staged_triggers} == {"master", "merchant"}
+    flush_staged_triggers(state)
+    assert {item.source_card_id for item in state.stack} == {"master", "merchant"}
+
+
+def test_exiled_sacrifice_still_triggers_merchant_only():
+    state = _state(with_replacement=True)
+    _add_merchant(state)
+
+    sacrifice(state, 1, {"target_card_id": "chalice"})
+    assert state.cards["chalice"].zone == Zone.EXILE
+    assert {item.source_card_id for item in state.stack} == {"merchant"}
+    assert state.stack[-1].effect_key == "add_counters"
+    assert resolve_top_of_stack(state)
+    assert state.cards["merchant"].counters["+1/+1"] == 1
+
+
+def test_opponent_sacrifice_triggers_merchant():
+    state = _state()
+    _add_merchant(state)
+    artifact = CardInstance(
+        "opposing-chalice", "Everflowing Chalice", 2, 2, Zone.BATTLEFIELD,
+        ["Artifact"], oracle_text=CHALICE_ORACLE,
+    )
+    state.cards[artifact.id] = artifact
+    state.players[2].battlefield.append(artifact.id)
+
+    sacrifice(state, 2, {"target_card_id": artifact.id})
+    triggers = [item for item in state.stack if item.source_card_id == "merchant"]
+    assert len(triggers) == 1
+    assert triggers[0].controller == 1
