@@ -293,7 +293,7 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
             continue
         if item.effect_key == "deal_damage" and "any target" in clause.lower():
             return clause
-        if item.payload.get("__targeted_life_loss") and re.search(r"\btarget player loses \d+ life\b", clause, re.I):
+        if item.payload.get("__targeted_life_loss") and re.search(r"\btarget (?:player|opponent) loses \d+ life\b", clause, re.I):
             return clause
         if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
             return clause
@@ -315,7 +315,8 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         return [
             {"target_player": pid, "target_name": player.name}
             for pid, player in state.players.items()
-            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+            if (not item.payload.get("__target_opponent_only") or pid != item.controller)
+            and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
         ]
     if "any target" in low and item.effect_key == "deal_damage":
         options = [
@@ -1258,9 +1259,10 @@ def _trigger_from_oracle(
             "effect_key": "draw_cards",
             "payload": _maybe_payload(oracle, {"amount": 1}),
         }
-    targeted_drain = re.search(r"\btarget player loses (\d+) life and you gain (\d+) life\b", oracle)
+    opponent_drain = re.search(r"\btarget opponent loses (\d+) life and you gain (\d+) life\b", oracle)
+    targeted_drain = re.search(r"\btarget player loses (\d+) life and you gain (\d+) life\b", oracle) or opponent_drain
     drain = re.search(r"\beach opponent loses (\d+) life and you gain (\d+) life\b", oracle)
-    if event == "creature_dies" and (targeted_drain or drain):
+    if event in {"creature_dies", "sacrifice"} and (targeted_drain or drain):
         amounts = targeted_drain or drain
         return {
             "source_card_id": source_card_id,
@@ -1269,6 +1271,7 @@ def _trigger_from_oracle(
             "effect_key": "effect_sequence",
             "payload": {
                 "__targeted_life_loss": bool(targeted_drain),
+                "__target_opponent_only": bool(opponent_drain),
                 "effects": [
                     {"effect_key": "lose_life", "payload": {"target_player": opponent, "amount": int(amounts.group(1))}},
                     {"effect_key": "gain_life", "payload": {"target_player": controller, "amount": int(amounts.group(2))}},
