@@ -32,14 +32,26 @@ def exile_flashback_spell(state, cid: str) -> None:
 
 
 def discard_selected(state, player_id: int, card_ids: list[str]) -> bool:
-    """Validate a simultaneous discard before moving any card or emitting events."""
-    player = state.players[player_id]
-    if not isinstance(card_ids, list) or any(not isinstance(cid, str) for cid in card_ids) or len(set(card_ids)) != len(card_ids) or any(cid not in player.hand or state.cards[cid].zone != Zone.HAND or is_departed_token(state.cards[cid]) for cid in card_ids):
-        return False
-    for cid in card_ids:
-        card = state.cards[cid]
-        player.hand.remove(cid)
-        put_into_graveyard(state, cid)
-        state.log.append(f"{player.name} discards {card.name}.")
-    emit_event_batch(state, "discard", [{"card_id": cid, "controller": player_id} for cid in card_ids])
+    return discard_simultaneous(state, {player_id: card_ids})
+
+
+def discard_simultaneous(state, selections: dict[int, list[str]]) -> bool:
+    """Validate every hand before any card moves, then emit one discard event batch."""
+    for player_id, card_ids in selections.items():
+        if player_id not in state.players or not isinstance(card_ids, list) or any(not isinstance(cid, str) for cid in card_ids) or len(set(card_ids)) != len(card_ids):
+            return False
+        hand = state.players[player_id].hand
+        if any(cid not in hand or state.cards[cid].zone != Zone.HAND or is_departed_token(state.cards[cid]) for cid in card_ids):
+            return False
+    events = []
+    for player_id, card_ids in selections.items():
+        player = state.players[player_id]
+        for cid in card_ids:
+            card = state.cards[cid]
+            player.hand.remove(cid)
+            put_into_graveyard(state, cid)
+            state.log.append(f"{player.name} discards {card.name}.")
+            events.append({"card_id": cid, "controller": player_id})
+    if events:
+        emit_event_batch(state, "discard", events)
     return True

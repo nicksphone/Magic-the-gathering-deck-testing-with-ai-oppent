@@ -26,6 +26,23 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "each_player_discard":
+        deck = [{"quantity": 60, "card_name": "Swamp"}]
+        state = MatchFactory.from_decks(deck, deck, seed=818)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        state.players[1].mana_pool.update({"B": 1, "C": 2})
+        spell_id = state.players[1].hand[0]
+        spell = state.cards[spell_id]
+        spell.name = "Delirium Skeins"
+        spell.types = ["Sorcery"]
+        spell.type_line = "Sorcery"
+        spell.mana_cost = "{2}{B}"
+        spell.oracle_text = "Each player discards three cards."
+        return publish(state, deck)
     if face_kind == "modal_same_kind":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=914)

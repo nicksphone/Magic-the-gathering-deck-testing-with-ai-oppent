@@ -143,6 +143,26 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.some(c => c.id === window.fixtureActions.at(-1).action.card_ids[0])"), true);
   console.log("PASS targeted discard pauses for the affected human and resumes the later modal effect");
 
+  await click("Each Player Discard Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Delirium Skeins'))");
+  await click("Cast Delirium Skeins");
+  await waitFor("window.fixtureState.stack.some(item => item.label === 'Delirium Skeins')");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'each_player_discard' && window.fixtureState.pending_mechanic_choice.player_id === 1");
+  await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose cards to discard')).querySelectorAll('input[type=checkbox]').forEach((box, i) => { if (i < 3) box.click(); })");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.player_id === 2");
+  assert.equal(await evaluate("window.fixtureState.pending_mechanic_choice.effect_payload === undefined"), true);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.card_ids.every(id => window.fixtureState.players['1'].hand.some(card => card.id === id))"), true);
+  await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose cards to discard')).querySelectorAll('input[type=checkbox]').forEach((box, i) => { if (i < 3) box.click(); })");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.length"), 4);
+  assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.length"), 3);
+  console.log("PASS both human seats privately choose before simultaneous discard resolves");
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");

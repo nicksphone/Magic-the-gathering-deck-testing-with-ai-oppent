@@ -1450,6 +1450,33 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     state.log.append(f"{player.name} discards {discarded}.")
 
 
+def each_player_discard(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.zone_actions import discard_simultaneous, is_departed_token
+
+    amount = max(0, int(payload.get("amount", 1)))
+    selected = {str(pid): list(ids) for pid, ids in payload.get("selected_cards", {}).items()}
+    for pid in (state.active_player, 1 if state.active_player == 2 else 2):
+        key = str(pid)
+        if key in selected:
+            continue
+        options = [cid for cid in state.players[pid].hand if not is_departed_token(state.cards[cid])]
+        count = min(amount, len(options))
+        if count and pid in state.mechanic_choice_players and not payload.get("random"):
+            state.pending_mechanic_choice = {
+                "kind": "each_player_discard", "player_id": pid, "options": options,
+                "count": count, "effect_payload": {"amount": amount, "selected_cards": selected},
+                "effect_controller": controller, "label": "Choose cards to discard",
+            }
+            state.priority_player = pid
+            state.passed_priority = set()
+            return
+        selected[key] = state.rng.sample(options, count) if payload.get("random") else options[:count]
+    if not discard_simultaneous(state, {int(pid): ids for pid, ids in selected.items()}):
+        raise ValueError("Simultaneous discard selections are no longer valid")
+    for pid in (1, 2):
+        state.log.append(f"{state.players[pid].name} discards {len(selected[str(pid)])}.")
+
+
 def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_ids: list[str], eligible: list[str], max_count: int) -> bool:
     if not eligible or payload.get("selected_card_ids") is not None:
         return False

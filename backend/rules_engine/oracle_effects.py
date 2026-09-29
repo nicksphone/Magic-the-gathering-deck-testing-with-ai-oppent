@@ -1328,6 +1328,9 @@ def _infer_clause_effect(
             return "sacrifice", {"target_card_id": own_creatures[0]}
 
     if "discard" in oracle and "card" in oracle:
+        each_discard = re.fullmatch(r"each player discards? (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?( at random)?\.?", oracle.strip(), re.IGNORECASE)
+        if each_discard:
+            return "each_player_discard", {"amount": _parse_count_token(each_discard.group(1)), "random": bool(each_discard.group(2))}
         amount = 1
         if "two cards" in oracle:
             amount = 2

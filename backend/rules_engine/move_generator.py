@@ -28,6 +28,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.pending_mechanic_choice:
         pending = state.pending_mechanic_choice
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
+        if pending["kind"] == "each_player_discard":
+            return [{"type": "choose_mechanic", "kind": pending["kind"], "player_id": player_id,
+                     "options": list(pending["options"]), "count": pending["count"],
+                     "label": pending["label"], "option_labels": labels}] if pending["player_id"] == player_id else []
         return [{"type": "choose_mechanic", **pending, "option_labels": labels}] if pending["player_id"] == player_id else []
     pending_order = getattr(state, "pending_trigger_order", None)
     if pending_order:
