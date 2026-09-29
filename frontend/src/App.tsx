@@ -251,12 +251,12 @@ export function App() {
     }, write));
   }
 
-  async function onChooseTriggerTarget(stackId: string, targetCardId: string) {
-    if (!stackId || !targetCardId) return;
+  async function onChooseTriggerTarget(stackId: string, targetCardId?: string, targetPlayer?: number) {
+    if (!stackId || Boolean(targetCardId) === (targetPlayer !== undefined)) return;
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, {
       type: "choose_trigger_target",
       stack_id: stackId,
-      target_card_id: targetCardId,
+      ...(targetCardId ? { target_card_id: targetCardId } : { target_player: targetPlayer }),
     }, write));
   }
 

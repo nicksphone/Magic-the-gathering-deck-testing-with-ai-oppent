@@ -29,7 +29,7 @@ type Props = {
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
   onChooseReplacement: (sourceId: string) => void;
   onChooseTriggerOrder: (order: string[]) => void;
-  onChooseTriggerTarget: (stackId: string, targetCardId: string) => void;
+  onChooseTriggerTarget: (stackId: string, targetCardId?: string, targetPlayer?: number) => void;
   onChooseOptionalEffect: (stackId: string, accept: boolean) => void;
   onChooseMechanic: (playerId: number, action: Record<string, unknown>) => void;
   responseCountdown: number | null;
@@ -317,10 +317,10 @@ export function Controls(props: Props) {
           <div className="row">
             {triggerTargetMoves.map((move) => (
               <button
-                key={`${move.stack_id}-${move.target_card_id}`}
-                onClick={() => props.onChooseTriggerTarget(move.stack_id ?? "", move.target_card_id ?? "")}
+                key={`${move.stack_id}-${move.target_card_id ?? move.target_player}`}
+                onClick={() => props.onChooseTriggerTarget(move.stack_id ?? "", move.target_card_id, move.target_player)}
               >
-                {move.target_name ?? move.target_card_id ?? "Choose target"}
+                {move.target_name ?? move.target_card_id ?? `Player ${move.target_player}`}
               </button>
             ))}
           </div>

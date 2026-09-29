@@ -258,6 +258,25 @@ try {
   await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.players['1'].battlefield.some(c => c.name === \"Smuggler's Copter\")");
   console.log("PASS human ETB trigger chooses friendly legal artifact and accepts effect at resolution");
 
+  await click("Damage Trigger Fixture");
+  await waitFor("window.fixtureState.pending_trigger_order?.phase === 'targets' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  assert.equal(await evaluate("[...document.querySelectorAll('.trigger-target-panel button')].some(b => b.textContent.includes('Llanowar Elves'))"), true);
+  await click("Llanowar Elves");
+  await waitFor("window.fixtureState.pending_trigger_order === null && window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.target_card_id"), "elf");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].graveyard_count === 1 && window.fixtureState.stack.length === 0");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+
+  await click("Damage Trigger Fixture");
+  await waitFor("window.fixtureState.pending_trigger_order?.phase === 'targets' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Player A");
+  await waitFor("window.fixtureState.pending_trigger_order === null && window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.target_player"), 1);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 19 && window.fixtureState.stack.length === 0");
+  console.log("PASS damage trigger offers creature and player targets through UI and API");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

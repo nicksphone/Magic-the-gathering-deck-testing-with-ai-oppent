@@ -178,7 +178,14 @@ class TriggerChoice(InputModel):
 class TriggerTargetChoice(InputModel):
     type: Literal["choose_trigger_target"]
     stack_id: CardID
-    target_card_id: CardID
+    target_card_id: CardID | None = None
+    target_player: PlayerID | None = None
+
+    @model_validator(mode="after")
+    def exactly_one_target(self):
+        if (self.target_card_id is None) == (self.target_player is None):
+            raise ValueError("Choose exactly one trigger target")
+        return self
 
 
 class OptionalEffectChoice(InputModel):

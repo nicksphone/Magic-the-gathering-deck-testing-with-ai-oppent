@@ -91,8 +91,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     card = state.cards.get(item.source_card_id)
     if (item.payload or {}).get("__trigger_target_choice"):
         from rules_engine.events import trigger_target_options
-        chosen = str(item.payload.get("target_card_id", ""))
-        if chosen not in {option["target_card_id"] for option in trigger_target_options(state, item)}:
+        chosen_card = item.payload.get("target_card_id")
+        chosen_player = item.payload.get("target_player")
+        if not any(option.get("target_card_id") == chosen_card and option.get("target_player") == chosen_player
+                   for option in trigger_target_options(state, item)):
             state.stack.pop()
             state.log.append(f"{item.label} does not resolve because its target is illegal.")
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})

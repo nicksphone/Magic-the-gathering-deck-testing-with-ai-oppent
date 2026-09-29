@@ -189,6 +189,8 @@ def _append_trigger_groups(
             if not options:
                 state.log.append(f"{item.label} has no legal target and is not put on the stack.")
                 continue
+            item.payload.pop("target_player", None)
+            item.payload.pop("target_card_id", None)
             choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
             if getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players):
                 target_stack_ids.append(item.id)
@@ -197,7 +199,9 @@ def _append_trigger_groups(
                 # Destructive effects prefer an opponent's permanent over their own.
                 if item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent"}:
                     options.sort(key=lambda option: state.cards[option["target_card_id"]].controller == item.controller)
-                item.payload["target_card_id"] = options[0]["target_card_id"]
+                if item.effect_key == "deal_damage":
+                    options.sort(key=lambda option: option.get("target_player") != 3 - item.controller)
+                item.payload.update({key: options[0][key] for key in ("target_card_id", "target_player") if key in options[0]})
                 item.payload["__trigger_target_choice"] = True
         state.stack.append(item)
     if target_stack_ids:
@@ -252,21 +256,26 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
     event = item.payload.get("__trigger_event")
-    if event not in {"enters_battlefield", "spell_cast"} or item.payload.get("__trigger_target_clause"):
+    patterns = {
+        "enters_battlefield": r"^(?:when|whenever)\b.*\benters\b",
+        "spell_cast": r"^when you cast this spell\b",
+        "sacrifice": r"^(?:when|whenever)\b.*\bsacrific(?:e|es|ed)\b",
+        "creature_dies": r"^(?:when|whenever)\b.*\bdies\b",
+        "permanent_dies": r"^(?:when|whenever)\b.*\bput into a graveyard from the battlefield\b",
+    }
+    if event not in patterns or item.payload.get("__trigger_target_clause"):
         return None
-    card = state.cards.get(item.source_card_id)
+    card = _departed_card_view(state, item.source_card_id)
     if not card:
         return None
     for sentence in re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""):
         clause = sentence.strip()
-        matches_event = (
-            re.match(r"^(?:when|whenever)\b.*\benters\b", clause, re.I)
-            if event == "enters_battlefield" else
-            re.match(r"^(?:when|whenever) you cast this spell\b", clause, re.I)
-        )
-        if matches_event and re.search(r"\btarget\b", clause, re.I):
-            if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
-                return clause
+        if not re.match(patterns[event], clause, re.I):
+            continue
+        if item.effect_key == "deal_damage" and "any target" in clause.lower():
+            return clause
+        if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
+            return clause
     return None
 
 
@@ -281,6 +290,17 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
+    if "any target" in low and item.effect_key == "deal_damage":
+        options = [{"target_player": pid, "target_name": state.players[pid].name} for pid in state.players]
+        for player in state.players.values():
+            for cid in player.battlefield:
+                target = state.cards[cid]
+                if not {"Creature", "Planeswalker"}.intersection(target.types):
+                    continue
+                choice = {"target_card_id": cid}
+                if validate_protection_targets(state, source, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice)[0]:
+                    options.append({**choice, "target_name": target.name})
+        return options
     if "target artifact or enchantment" in low:
         key = "noncreature_permanent_targets"
     elif "target nonland permanent" in low or "target permanent" in low:
@@ -314,16 +334,22 @@ def _advance_trigger_target(state: MatchState, event: str, stack_ids: list[str])
     state.log.append(f"{state.players[item.controller].name} must choose a target for {item.label}.")
 
 
-def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str) -> bool:
+def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str | None = None, target_player: int | None = None) -> bool:
     pending = state.pending_trigger_order or {}
     if pending.get("phase") != "targets" or pending.get("current_stack_id") != stack_id:
         return False
     item = next((item for item in state.stack if item.id == stack_id), None)
-    if not item or target_card_id not in {option["target_card_id"] for option in trigger_target_options(state, item)}:
+    if not item or (target_card_id is None) == (target_player is None):
         return False
-    item.payload["target_card_id"] = target_card_id
+    choice = next((option for option in trigger_target_options(state, item)
+                   if option.get("target_card_id") == target_card_id and option.get("target_player") == target_player), None)
+    if choice is None:
+        return False
+    item.payload.pop("target_card_id", None)
+    item.payload.pop("target_player", None)
+    item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
-    state.log.append(f"{state.players[item.controller].name} targets {state.cards[target_card_id].name} with {item.label}.")
+    state.log.append(f"{state.players[item.controller].name} targets {choice['target_name']} with {item.label}.")
     _advance_trigger_target(state, str(pending["event"]), list(pending["stack_ids"])[1:])
     return True
 
@@ -784,6 +810,8 @@ def _matches_sacrifice_trigger(state: MatchState, card, oracle: str, payload: di
     if not sac_id or sac_id not in state.cards:
         return False
     sac_card = state.cards[sac_id]
+    if "whenever a player sacrifices a permanent" in oracle and re.search(r"deals? \d+ damage to any target", oracle):
+        return True
     if ("whenever a player sacrifices a permanent" in oracle
             and "put a +1/+1 counter on this creature" in oracle):
         return True

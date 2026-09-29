@@ -4,6 +4,9 @@ set -euo pipefail
 scratch=$(mktemp -d /tmp/mtg-browser-ci-XXXXXX)
 profile=$(mktemp -d /tmp/mtg-browser-profile-XXXXXX)
 git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
+{ git diff --name-only -- backend; git ls-files --others --exclude-standard backend; } | sort -u | while IFS= read -r path; do
+  if [[ -f "$path" ]]; then install -D "$path" "$scratch/$path"; fi
+done
 
 backend_pid=''
 frontend_pid=''

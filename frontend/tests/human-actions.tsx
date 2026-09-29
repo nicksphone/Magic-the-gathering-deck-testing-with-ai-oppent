@@ -59,6 +59,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "conditional_land_effect").catch((failure) => setError(String(failure)))}>Conditional Land Effect Fixture</button>
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
+    <button onClick={() => reset(false, false, 3, "damage_trigger").catch((failure) => setError(String(failure)))}>Damage Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "cast_trigger").catch((failure) => setError(String(failure)))}>Cast Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "alternative_target").catch((failure) => setError(String(failure)))}>Alternative Target Fixture</button>
     <button onClick={() => reset(false, false, 3, "variable_life_x").catch((failure) => setError(String(failure)))}>Variable Life X Fixture</button>
@@ -90,7 +91,7 @@ function Harness() {
       onSubmitAttack={(attackers, attackTargets, bands) => { act(actor, { type: "attack", attackers, attack_targets: attackTargets, bands }).catch((failure) => setError(String(failure))); }}
       onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
       onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }} onChooseTriggerOrder={() => {}}
-      onChooseTriggerTarget={(stackId, targetCardId) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, target_card_id: targetCardId }).catch((failure) => setError(String(failure))); }}
+      onChooseTriggerTarget={(stackId, targetCardId, targetPlayer) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, ...(targetCardId ? { target_card_id: targetCardId } : { target_player: targetPlayer }) }).catch((failure) => setError(String(failure))); }}
       onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}
       onChooseMechanic={(playerId, action) => { act(playerId, action).catch((failure) => setError(String(failure))); }}
       responseCountdown={null} autoResponsePaused={false} onToggleAutoResponsePause={() => {}}

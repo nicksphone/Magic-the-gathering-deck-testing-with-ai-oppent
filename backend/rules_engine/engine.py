@@ -392,7 +392,7 @@ class RulesEngine:
                 state.pending_trigger_order = None
                 resolve_top_of_stack(state)
             elif pending_order.get("phase") == "targets":
-                if kind != "choose_trigger_target" or not resume_trigger_target(state, str(action.get("stack_id", "")), str(action.get("target_card_id", ""))):
+                if kind != "choose_trigger_target" or not resume_trigger_target(state, str(action.get("stack_id", "")), action.get("target_card_id"), action.get("target_player")):
                     reject("Invalid trigger target")
                     return
             else:

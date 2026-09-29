@@ -164,6 +164,7 @@ export type LegalMove = {
   trigger_labels?: string[];
   stack_id?: string;
   target_card_id?: string;
+  target_player?: number;
   target_name?: string;
   accept?: boolean;
   target_hints?: {
