@@ -95,6 +95,10 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
     r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+permanent cards?\s+with mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less[^.]*onto the battlefield",
     re.IGNORECASE,
 )
+PUT_LANDS_FROM_TOP_RE = re.compile(
+    r"put up to\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+land cards?\s+from among them onto the battlefield tapped",
+    re.IGNORECASE,
+)
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 REVEAL_CHOOSE_HAND_RE = re.compile(
     r"target (?P<target_kind>opponent|player) reveals (?:their|his or her) hand\. "
@@ -505,15 +509,19 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
 def _infer_topdeck_permanent_put_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
     look_match = LOOK_TOP_RE.search(oracle)
     put_match = PUT_PERMANENTS_FROM_TOP_RE.search(oracle)
-    if not (look_match and put_match):
+    land_match = PUT_LANDS_FROM_TOP_RE.search(oracle)
+    if not look_match or not (put_match or land_match):
         return None
     payload = {
         "top_n": max(1, int(action_targets.get("top_n", _parse_count_token(look_match.group(1))) or 1)),
-        "max_permanents": max(1, int(action_targets.get("max_permanents", _parse_count_token(put_match.group(1))) or 1)),
-        "mv_max": max(0, int(action_targets.get("mv_max", _parse_count_token(put_match.group(2))) or 0)),
+        "max_permanents": max(1, int(action_targets.get("max_permanents", _parse_count_token((put_match or land_match).group(1))) or 1)),
         "bottom_random": "bottom of your library in a random order" in oracle,
         "bottom_any_order": "bottom of your library in any order" in oracle,
     }
+    if land_match:
+        payload.update({"allowed_type": "Land", "tapped": True})
+    else:
+        payload["mv_max"] = max(0, int(action_targets.get("mv_max", _parse_count_token(put_match.group(2))) or 0))
     return "topdeck_put_permanents_battlefield", payload
 
 

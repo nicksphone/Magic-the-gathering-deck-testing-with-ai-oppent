@@ -1935,7 +1935,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 5)))
     max_permanents = max(1, int(payload.get("max_permanents", 2)))
-    mv_max = max(0, int(payload.get("mv_max", 5)))
+    mv_max = payload.get("mv_max")
     top_slice = player.library[-top_n:]
     permanent_types = {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"}
 
@@ -1945,7 +1945,9 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
 
     eligible = [
         cid for cid in top_slice
-        if set(state.cards[cid].types).intersection(permanent_types) and mana_value_for(cid) <= mv_max
+        if set(state.cards[cid].types).intersection(permanent_types)
+        and (not payload.get("allowed_type") or payload["allowed_type"] in state.cards[cid].types)
+        and (mv_max is None or mana_value_for(cid) <= max(0, int(mv_max)))
     ]
     if _pause_topdeck_put(state, controller, {**payload, "__effect_key": "topdeck_put_permanents_battlefield"}, top_slice, eligible, max_permanents):
         return
@@ -1965,7 +1967,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
         if "Land" in card.types:
-            apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(cid, "tapped"))
+            apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(cid, "tapped"), effect_tapped=bool(payload.get("tapped")))
         else:
             card.tapped = False
         card.summoning_sick = "Creature" in card.types
