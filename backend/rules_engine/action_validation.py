@@ -31,6 +31,11 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
         return
     modes = targets.get("mode_texts") or ([targets["mode_text"]] if targets.get("mode_text") else [])
     require(not hints.get("modes") or bool(modes), "Announce the selected mode")
+    if targets.get("mode_targets") is not None:
+        require(set(targets["mode_targets"]) == set(modes), "Announce targets for each selected mode")
+        for mode in modes:
+            require_declared_targets(card, {}, {"mode_text": mode, **targets["mode_targets"][mode]}, controller, spell=spell)
+        return
     text = " ".join(modes).lower() if modes else card.oracle_text.lower()
     permanent = bool(targets.get("target_card_id") or targets.get("target_card_ids") or targets.get("target_distribution"))
     from rules_engine.targeting import single_player_permanent_alternative
@@ -110,6 +115,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         ids = targets.get(key) or []
         ids = [ids] if isinstance(ids, str) else ids
         require(all(cid in state.cards for cid in ids), "Target card is unavailable")
+    for choice in (targets.get("mode_targets") or {}).values():
+        require(not choice.get("target_card_id") or choice["target_card_id"] in state.cards, "Mode target card is unavailable")
+        require(not choice.get("target_stack_id") or any(item.id == choice["target_stack_id"] for item in state.stack), "Mode stack target is unavailable")
     require(all(cid in state.cards or cid in {"1", "2"} for cid in targets.get("target_distribution", {})), "Distribution target is unavailable")
     if kind in {"play_land", "cast_spell"}:
         for flag in ("from_exile", "from_library", "from_graveyard"):

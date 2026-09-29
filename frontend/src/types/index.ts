@@ -186,6 +186,18 @@ export type LegalMove = {
     modes?: string[];
     available_modes?: string[];
     choose_two_modes?: boolean;
+    mode_target_hints?: Record<string, {
+      player_targets?: { id: number; name: string }[];
+      creature_targets?: { id: string; name: string }[];
+      planeswalker_targets?: { id: string; name: string }[];
+      permanent_targets?: { id: string; name: string }[];
+      artifact_targets?: { id: string; name: string }[];
+      enchantment_targets?: { id: string; name: string }[];
+      land_targets?: { id: string; name: string }[];
+      graveyard_creature_targets?: { id: string; name: string }[];
+      graveyard_permanent_targets?: { id: string; name: string }[];
+      stack_targets?: { id: string; label: string }[];
+    }>;
     requires_x_value?: boolean;
     x_value_max?: number;
     up_to_target_count?: number;

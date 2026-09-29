@@ -77,8 +77,10 @@ def test_ai_materializes_both_target_classes_for_selected_modes() -> None:
     move["targets"] = {"mode_texts": ["Counter target spell", "Return target permanent to its owner's hand"]}
     action = AIAgent(difficulty="master", archetype="Control")._materialize_action(state, move, 1)
 
-    assert action["targets"]["target_stack_id"] == "bolt"
-    assert action["targets"]["target_card_id"] == forest_id
+    assert action["targets"]["mode_targets"] == {
+        "Counter target spell": {"target_stack_id": "bolt"},
+        "Return target permanent to its owner's hand": {"target_card_id": forest_id},
+    }
     assert checked_action(state, RulesEngine(), 1, action).stack[-1].source_card_id == cryptic_id
 
 

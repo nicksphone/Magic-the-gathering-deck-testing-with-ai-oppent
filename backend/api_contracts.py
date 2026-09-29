@@ -39,6 +39,12 @@ class DeckPairInput(InputModel):
         return self
 
 
+class ModeTarget(InputModel):
+    target_player: PlayerID | None = None
+    target_card_id: CardID | None = None
+    target_stack_id: CardID | None = None
+
+
 class Targets(InputModel):
     target_player: PlayerID | None = None
     target_card_id: CardID | None = None
@@ -49,6 +55,7 @@ class Targets(InputModel):
     selected_face_index: Annotated[StrictInt, Field(ge=0, le=20)] | None = None
     mode_text: Annotated[str, Field(max_length=4000)] | None = None
     mode_texts: Annotated[list[Annotated[str, Field(max_length=4000)]], Field(max_length=10)] | None = None
+    mode_targets: Annotated[dict[Annotated[str, Field(max_length=4000)], ModeTarget], Field(max_length=10)] | None = None
     search_card_ids: CardIDs | None = None
     topdeck_card_ids: CardIDs | None = None
     top_choice_hand_id: CardID | None = None

@@ -101,6 +101,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     announced = (item.payload or {}).get("__announced_targets") or {}
     target_count = (len(announced.get("target_card_ids") or []) + len(announced.get("target_distribution") or {})
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
+    target_count += sum(sum(choice.get(key) is not None for key in ("target_card_id", "target_player", "target_stack_id"))
+                        for choice in (announced.get("mode_targets") or {}).values())
     legal_distribution = None
     legal_effects = None
     if card and card.zone == Zone.STACK and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
@@ -108,7 +110,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal_distribution:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
-    elif card and card.zone == Zone.STACK and target_count > 1 and item.effect_key == "effect_sequence" and announced.get("mode_texts"):
+    elif card and card.zone == Zone.STACK and target_count > 0 and item.effect_key == "effect_sequence" and announced.get("mode_texts") and (target_count > 1 or announced.get("mode_targets")):
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 

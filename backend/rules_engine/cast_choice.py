@@ -7,7 +7,7 @@ from typing import Any
 from game_state.state import CardInstance, MatchState
 from rules_engine.oracle_effects import DIVIDE_RE, inspect_target_hints
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.targeting import validate_cast_targets
+from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-])?", re.IGNORECASE)
 FIXED_DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage", re.IGNORECASE)
@@ -76,6 +76,10 @@ def build_cast_hints(
     if hints.get("modes"):
         if hints.get("choose_two_modes"):
             hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["available_modes"]}
+            hints["mode_target_hints"] = {
+                mode: inspect_target_hints(state, card, controller, {"mode_text": mode})
+                for mode in hints["available_modes"]
+            }
         else:
             hints["choice_schema"]["mode_text"] = {"type": "string", "required": False, "enum": hints["available_modes"]}
     if hints.get("requires_x_value"):
@@ -129,6 +133,24 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
         return False, "Topdeck cards are chosen when the effect resolves, not when it is cast."
     if hints.get("top_choice") and any(action_targets.get(key) is not None for key in ("top_choice_hand_id", "top_choice_exile_id", "top_choice_bottom_ids")):
         return False, "Top-card choices are made when the effect resolves, not when it is cast."
+    return True, ""
+
+
+def validate_mode_targets(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any]) -> tuple[bool, str]:
+    selected = action_targets.get("mode_texts") or ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
+    choices = action_targets.get("mode_targets") or {}
+    if set(choices) != set(selected) or len(choices) != len(selected):
+        return False, "Mode targets must match the selected modes."
+    for mode in selected:
+        targets = {"mode_text": mode, **choices[mode]}
+        hints = inspect_target_hints(state, card, controller, targets)
+        for check in (
+            validate_cast_targets(hints, targets),
+            validate_protection_targets(state, card, targets),
+            validate_hexproof_shroud_targets(state, controller, targets),
+        ):
+            if not check[0]:
+                return check
     return True, ""
 
 

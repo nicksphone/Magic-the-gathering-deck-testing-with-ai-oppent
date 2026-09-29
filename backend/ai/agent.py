@@ -2384,6 +2384,67 @@ class AIAgent:
                 recipient = next(iter(targets["target_distribution"]))
                 targets["target_distribution"] = {recipient: budget} if budget else {}
 
+        if mtype == "cast_spell" and card is not None and targets.get("mode_texts"):
+            from rules_engine.oracle_effects import inspect_target_hints
+
+            mode_choices = dict(targets.get("mode_targets") or {})
+            for mode in targets["mode_texts"]:
+                choice = dict(mode_choices.get(mode) or {})
+                if not choice:
+                    mode_hints = inspect_target_hints(state, card, player_id, {"mode_text": mode})
+                    text = mode.lower()
+                    stack_options = mode_hints.get("stack_targets") or []
+                    if stack_options:
+                        choice["target_stack_id"] = (
+                            self._choose_best_stack_target_id(state, player_id, stack_options)
+                            if "counter" in text else stack_options[-1]["id"]
+                        )
+                    elif "any target" in text:
+                        damage_match = re.search(r"deals? (\d+) damage", text)
+                        damage = int(damage_match.group(1)) if damage_match else 0
+                        from rules_engine.continuous import effective_combat_stats
+                        killable = [target for target in mode_hints.get("creature_targets") or []
+                                    if state.cards[target["id"]].controller == opponent
+                                    and damage >= effective_combat_stats(state, target["id"])[1]
+                                    and not has_keyword(state, target["id"], "indestructible")]
+                        if killable and state.players[opponent].life > damage:
+                            choice["target_card_id"] = max(killable, key=lambda t: self._creature_threat_score(state, t["id"], player_id))["id"]
+                        elif any(int(target["id"]) == opponent for target in mode_hints.get("player_targets") or []):
+                            choice["target_player"] = opponent
+                        elif mode_hints.get("creature_targets") or mode_hints.get("planeswalker_targets"):
+                            options = (mode_hints.get("creature_targets") or []) + (mode_hints.get("planeswalker_targets") or [])
+                            choice["target_card_id"] = max(options, key=lambda t: self._creature_threat_score(state, t["id"], player_id))["id"]
+                        elif mode_hints.get("player_targets"):
+                            choice["target_player"] = int(mode_hints["player_targets"][0]["id"])
+                    elif "target player" in text or "target opponent" in text:
+                        players = mode_hints.get("player_targets") or []
+                        if players:
+                            choice["target_player"] = opponent if any(int(target["id"]) == opponent for target in players) else int(players[0]["id"])
+                    else:
+                        if "graveyard" in text:
+                            options = [target for target in mode_hints.get("graveyard_creature_targets") or []
+                                       if state.cards[target["id"]].owner == player_id]
+                        elif "target artifact" in text:
+                            options = mode_hints.get("artifact_targets") or []
+                        elif "target enchantment" in text:
+                            options = mode_hints.get("enchantment_targets") or []
+                        else:
+                            options = (mode_hints.get("permanent_targets") or mode_hints.get("creature_targets") or [])
+                        if options:
+                            choice["target_card_id"] = max(
+                                options,
+                                key=lambda t: (
+                                    int(state.cards[t["id"]].controller == opponent),
+                                    self._creature_threat_score(state, t["id"], player_id)
+                                    if "Creature" in state.cards[t["id"]].types
+                                    else self._noncreature_permanent_threat_score(state, t["id"], player_id),
+                                ),
+                            )["id"]
+                mode_choices[mode] = choice
+            for key in ("target_card_id", "target_player", "target_stack_id", "target_card_ids", "target_distribution"):
+                targets.pop(key, None)
+            targets["mode_targets"] = mode_choices
+
         out["targets"] = targets
         return out
 

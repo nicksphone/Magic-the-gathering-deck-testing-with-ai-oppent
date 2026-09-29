@@ -86,6 +86,13 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         if actual != expected:
             return False, "Damage/counter distribution must match divide_total."
 
+    if action_targets.get("mode_targets") is not None:
+        if not modes or set(action_targets["mode_targets"]) != set(selected):
+            return False, "Mode targets must match the selected modes."
+        if any(action_targets.get(key) is not None for key in ("target_card_id", "target_stack_id", "target_player", "target_card_ids")):
+            return False, "Use either per-mode or shared targets, not both."
+        return True, ""
+
     mode_oracle = " ".join(
         [str(action_targets.get("mode_text") or "")]
         + [str(x) for x in (action_targets.get("mode_texts") or [])]

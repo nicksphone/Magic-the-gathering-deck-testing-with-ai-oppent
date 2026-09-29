@@ -143,15 +143,28 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     const t = targets[cardId] ?? {};
     const move = castMoves.find((candidate) => candidate.card_id === cardId &&
       (candidate.selected_face_index ?? 0) === (selectedFaceIndex ?? 0));
+    const selectedModes = Array.isArray(t.mode_texts) ? t.mode_texts as string[] : [];
+    const modeTargets = (t.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
+    const announced = move?.target_hints?.choose_two_modes && selectedModes.length === 2
+      ? { ...t, target_card_id: undefined, target_player: undefined, target_stack_id: undefined,
+          mode_targets: Object.fromEntries(selectedModes.map((mode) => [mode, modeTargets[mode] ?? {}])) }
+      : t;
     onCardAction(viewerSeat, {
       type: "cast_spell",
       card_id: cardId,
-      targets: t,
+      targets: announced,
       cost_choice: costChoice[cardId] ? { id: costChoice[cardId] } : undefined,
       selected_face_index: selectedFaceIndex,
       from_exile: move?.from_exile,
       from_library: move?.from_library,
       from_graveyard: move?.from_graveyard,
+    });
+  }
+
+  function setModeTarget(cardId: string, mode: string, selection: Record<string, unknown>) {
+    setTargets((prev) => {
+      const previous = (prev[cardId]?.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
+      return { ...prev, [cardId]: { ...prev[cardId], mode_targets: { ...previous, [mode]: selection } } };
     });
   }
 
@@ -495,6 +508,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const hints = move.target_hints;
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
             const chosenModes = targets[card.id]?.mode_texts;
+            const selectedModeTexts = Array.isArray(chosenModes) ? chosenModes as string[] : [];
+            const perModeSelected = Boolean(hints?.choose_two_modes && selectedModeTexts.length === 2);
             const chosenMode = targets[card.id]?.mode_text;
             const targetingText = Array.isArray(chosenModes) && chosenModes.length
               ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
@@ -504,7 +519,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
             ].map((target) => [target.id, target])).values()];
-            const showAlternativeSelect = Boolean(hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
+            const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             return (
               <div
                 key={card.id}
@@ -569,7 +584,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     {alternativeTargets.map((target) => <option key={`card-${target.id}`} value={`card:${target.id}`}>{target.name}</option>)}
                   </select>
                 ) : null}
-                {!showAlternativeSelect && hints?.player_targets?.length ? (
+                {!perModeSelected && !showAlternativeSelect && hints?.player_targets?.length ? (
                   <select
                     onChange={(e) =>
                       setTargets((prev) => ({
@@ -598,6 +613,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                           [card.id]: {
                             ...prev[card.id],
                             mode_texts: Array.from(e.target.selectedOptions).map((o) => o.value),
+                            mode_targets: {},
+                            target_card_id: undefined,
+                            target_player: undefined,
+                            target_stack_id: undefined,
                           },
                         }))
                       }
@@ -628,6 +647,40 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </select>
                   )
                 ) : null}
+                {perModeSelected ? selectedModeTexts.map((mode) => {
+                  const modeHints = hints?.mode_target_hints?.[mode];
+                  const modeChoices = (targets[card.id]?.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
+                  const current = modeChoices[mode] ?? {};
+                  const cardOptions = [...new Map([
+                    ...(modeHints?.creature_targets ?? []), ...(modeHints?.planeswalker_targets ?? []),
+                    ...(modeHints?.permanent_targets ?? []), ...(modeHints?.artifact_targets ?? []),
+                    ...(modeHints?.enchantment_targets ?? []), ...(modeHints?.land_targets ?? []),
+                    ...(modeHints?.graveyard_creature_targets ?? []), ...(modeHints?.graveyard_permanent_targets ?? []),
+                  ].map((option) => [option.id, option])).values()];
+                  return <div key={`${card.id}-${mode}`} className="mode-target-choice">
+                    <label>{mode}</label>
+                    {modeHints?.stack_targets?.length ? <select
+                      aria-label={`Target for ${mode}`}
+                      value={String(current.target_stack_id ?? "")}
+                      onChange={(e) => setModeTarget(card.id, mode, e.target.value ? { target_stack_id: e.target.value } : {})}
+                    >
+                      <option value="">Target Stack Item</option>
+                      {modeHints.stack_targets.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                    </select> : null}
+                    {modeHints?.player_targets?.length || cardOptions.length ? <select
+                      aria-label={`Target for ${mode}`}
+                      value={current.target_card_id ? `card:${current.target_card_id}` : current.target_player ? `player:${current.target_player}` : ""}
+                      onChange={(e) => {
+                        const [kind, value] = e.target.value.split(":", 2);
+                        setModeTarget(card.id, mode, kind === "card" ? { target_card_id: value } : kind === "player" ? { target_player: Number(value) } : {});
+                      }}
+                    >
+                      <option value="">Choose Target</option>
+                      {modeHints?.player_targets?.map((option) => <option key={`player-${option.id}`} value={`player:${option.id}`}>{option.name}</option>)}
+                      {cardOptions.map((option) => <option key={`card-${option.id}`} value={`card:${option.id}`}>{option.name}</option>)}
+                    </select> : null}
+                  </div>;
+                }) : null}
                 {hints?.requires_x_value ? (
                   <input
                     type="number"
@@ -642,7 +695,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     }
                   />
                 ) : null}
-                {!showAlternativeSelect && alternativeTargets.length ? (
+                {!perModeSelected && !showAlternativeSelect && alternativeTargets.length ? (
                   hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple
@@ -705,7 +758,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     )}
                   </div>
                 ) : null}
-                {hints?.stack_targets?.length ? (
+                {!perModeSelected && hints?.stack_targets?.length ? (
                   <select
                     onChange={(e) =>
                       setTargets((prev) => ({

@@ -763,10 +763,22 @@ class RulesEngine:
                     state.log.append(f"Invalid targets for {card.name}: {error}")
                     apply_state_based_actions(state)
                     return
+                if action_targets.get("mode_targets") is not None:
+                    from rules_engine.cast_choice import validate_mode_targets
+                    ok, error = validate_mode_targets(state, face_card, player_id, action_targets)
+                    if not ok:
+                        reject(error)
+                        state.log.append(f"Invalid mode targets for {card.name}: {error}")
+                        apply_state_based_actions(state)
+                        return
                 target_ids: list[str] = []
                 if action_targets.get("target_card_id"):
                     target_ids.append(action_targets["target_card_id"])
                 target_ids.extend([x for x in (action_targets.get("target_card_ids") or []) if x not in target_ids])
+                for choice in (action_targets.get("mode_targets") or {}).values():
+                    target_id = choice.get("target_card_id")
+                    if target_id and target_id not in target_ids:
+                        target_ids.append(target_id)
                 ward_tax = ward_tax_for_targets(state, player_id, target_ids)
                 adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
                 paid = auto_pay_cost(

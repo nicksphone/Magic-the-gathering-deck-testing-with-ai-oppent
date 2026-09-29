@@ -26,6 +26,31 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "modal_same_kind":
+        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=914)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.players[2].mana_pool.update({"B": 1, "R": 1, "C": 1})
+        cards = (
+            CardInstance(id="kolaghan", name="Kolaghan's Command", owner=2, controller=2,
+                         zone=Zone.HAND, types=["Instant"], mana_cost="{1}{B}{R}",
+                         oracle_text=("Choose two —\n"
+                                      "• Return target creature card from your graveyard to your hand.\n"
+                                      "• Target player discards a card.\n"
+                                      "• Destroy target artifact.\n"
+                                      "• Kolaghan's Command deals 2 damage to any target.")),
+            CardInstance(id="ring", name="Sol Ring", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add {C}{C}."),
+            CardInstance(id="bear", name="Grizzly Bears", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+        )
+        for card in cards:
+            state.cards[card.id] = card
+            getattr(state.players[card.owner], card.zone.value).append(card.id)
+        return publish(state, deck)
     if face_kind == "modal_two_targets":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=913)

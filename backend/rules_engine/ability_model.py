@@ -72,7 +72,7 @@ def build_ability_spec(
     choices = {
         key: action_targets[key]
         for key in (
-            "selected_face_index", "mode_text", "mode_texts", "x_value",
+            "selected_face_index", "mode_text", "mode_texts", "mode_targets", "x_value",
             "target_card_id", "target_card_ids", "target_stack_id",
             "target_player", "search_contains", "top_n", "max_creatures", "mv_max",
             "search_card_ids", "topdeck_card_ids", "chosen_creature_type",

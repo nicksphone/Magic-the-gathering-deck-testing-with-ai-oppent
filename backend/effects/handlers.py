@@ -754,7 +754,11 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
 
 def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
-    card_id = next((cid for cid in reversed(player.graveyard) if not is_departed_token(state.cards[cid])), None)
+    requested = payload.get("target_card_id")
+    if requested is not None:
+        card_id = requested if requested in player.graveyard and not is_departed_token(state.cards[requested]) else None
+    else:
+        card_id = next((cid for cid in reversed(player.graveyard) if not is_departed_token(state.cards[cid])), None)
     if card_id is None:
         return
     player.graveyard.remove(card_id)

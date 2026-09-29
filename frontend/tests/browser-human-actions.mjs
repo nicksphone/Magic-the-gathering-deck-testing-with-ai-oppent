@@ -31,22 +31,46 @@ try {
     for (const option of modes.options) option.selected = option.value === 'Counter target spell' || option.value === "Return target permanent to its owner's hand";
     modes.dispatchEvent(new Event('change', { bubbles: true }));
   })()`);
-  await waitFor("[...document.querySelectorAll('.cast-card-box select')].some(s => s.options[0].text === 'Target Permanent')");
+  await waitFor(`[...document.querySelectorAll('select')].some(s => s.getAttribute('aria-label') === "Target for Return target permanent to its owner's hand")`);
   await evaluate(`(() => {
     const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Cryptic Command'));
-    const permanent = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Permanent');
-    const stack = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item');
+    const permanent = [...box.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === "Target for Return target permanent to its owner's hand");
+    const stack = [...box.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === 'Target for Counter target spell');
     if (!permanent || !stack) throw new Error('Missing modal target controls');
-    permanent.value = 'forest'; permanent.dispatchEvent(new Event('change', { bubbles: true }));
+    permanent.value = 'card:forest'; permanent.dispatchEvent(new Event('change', { bubbles: true }));
     stack.value = 'bolt-stack'; stack.dispatchEvent(new Event('change', { bubbles: true }));
   })()`);
   await click("Cast Cryptic Command");
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Cryptic Command')");
-  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_card_id"), "forest");
-  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_stack_id"), "bolt-stack");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_targets[\"Return target permanent to its owner's hand\"].target_card_id"), "forest");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_targets['Counter target spell'].target_stack_id"), "bolt-stack");
   await click("Resolve Stack");
   await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].hand.some(c => c.id === 'forest')");
   console.log("PASS modal UI announces stack and permanent targets and resolves both modes");
+
+  await click("Modal Same Kind Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const modes = box.querySelector('[aria-label="Spell modes"]');
+    for (const option of modes.options) option.selected = option.value === 'Destroy target artifact' || option.value === "Kolaghan's Command deals 2 damage to any target";
+    modes.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await waitFor("Boolean(document.querySelector('[aria-label=\"Target for Destroy target artifact\"]'))");
+  await evaluate(`(() => {
+    const destroy = document.querySelector('[aria-label="Target for Destroy target artifact"]');
+    const damage = [...document.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === "Target for Kolaghan's Command deals 2 damage to any target");
+    if (!destroy || !damage) throw new Error('Missing per-mode permanent selectors');
+    destroy.value = 'card:ring'; destroy.dispatchEvent(new Event('change', { bubbles: true }));
+    damage.value = 'card:bear'; damage.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Cast Kolaghan's Command");
+  await waitFor("window.fixtureState.stack.some(item => item.label === \"Kolaghan's Command\")");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_targets['Destroy target artifact'].target_card_id"), "ring");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_targets[\"Kolaghan's Command deals 2 damage to any target\"].target_card_id"), "bear");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && !window.fixtureState.players['1'].battlefield.some(c => c.id === 'ring' || c.id === 'bear')");
+  console.log("PASS modal UI assigns two different permanent targets and resolves both modes");
 
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);

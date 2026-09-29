@@ -138,9 +138,10 @@ def infer_effect_from_oracle(
     elif mode_texts:
         effects = []
         for selected_mode in mode_texts:
+            mode_target = (action_targets.get("mode_targets") or {}).get(selected_mode, {})
             key, payload = infer_effect_from_oracle(
                 state, card, controller,
-                {**action_targets, "mode_text": selected_mode, "mode_texts": []},
+                {**action_targets, **mode_target, "mode_text": selected_mode, "mode_texts": []},
             )
             for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
                 effects.append({**effect, "mode_text": selected_mode})
@@ -478,11 +479,13 @@ def inspect_target_hints(
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
     opponent = 1 if controller == 2 else 2
+    graveyard_only_target = bool(re.search(r"\btarget\b[^.\n]{0,100}\bfrom\b[^.\n]{0,50}\bgraveyard\b", oracle))
     graveyard_creatures = [
         {"id": cid, "name": state.cards[cid].name, "owner": state.cards[cid].owner, "controller": state.cards[cid].controller}
         for pid in state.players
         for cid in getattr(state.players[pid], "graveyard", [])
         if cid in state.cards and "Creature" in state.cards[cid].types
+        and ("your graveyard" not in oracle or pid == controller)
     ]
     faces = list(getattr(card, "card_faces", []) or [])
     split_match = SPLIT_NAME_RE.match((card.name or "").strip())
@@ -568,7 +571,7 @@ def inspect_target_hints(
         target_players = [controller]
     elif re.search(r"target [^.\n]{0,65}\b(?:an opponent|your opponent) controls\b", oracle):
         target_players = [opponent]
-    if re.search(r"\btarget (?:nonlegendary )?creature\b", oracle) or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle:
+    if not graveyard_only_target and (re.search(r"\btarget (?:nonlegendary )?creature\b", oracle) or "destroy target" in oracle or "exile target" in oracle or "tap target" in oracle or "return target" in oracle):
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
@@ -606,7 +609,7 @@ def inspect_target_hints(
                     aura_targets.append({"id": cid, "name": target.name})
         hints["aura_targets"] = aura_targets
         hints["creature_targets"] = aura_targets
-    if "target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle:
+    if not graveyard_only_target and ("target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle):
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
@@ -637,18 +640,21 @@ def inspect_target_hints(
             for pid in state.players
             for cid in state.players[pid].graveyard
             if any(t in {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"} for t in state.cards[cid].types)
+            and ("your graveyard" not in oracle or pid == controller)
         ]
         graveyard_artifacts = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
             for cid in state.players[pid].graveyard
             if "Artifact" in state.cards[cid].types
+            and ("your graveyard" not in oracle or pid == controller)
         ]
         graveyard_enchantments = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
             for cid in state.players[pid].graveyard
             if "Enchantment" in state.cards[cid].types
+            and ("your graveyard" not in oracle or pid == controller)
         ]
         if "artifact" in oracle:
             hints["graveyard_artifact_targets"] = graveyard_artifacts
@@ -1153,7 +1159,7 @@ def _infer_clause_effect(
             return "untap", {"target_card_id": target}
 
     if "return target" in oracle and "graveyard" in oracle and "hand" in oracle:
-        return "return_from_graveyard", {}
+        return "return_from_graveyard", {"target_card_id": target_card_id}
     if "graveyard" in oracle and "creature" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
         target = action_targets.get("target_card_id")
         if target:
