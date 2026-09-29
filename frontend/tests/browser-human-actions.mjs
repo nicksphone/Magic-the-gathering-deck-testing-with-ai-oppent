@@ -14,6 +14,20 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Copy Target Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'copy_target'");
+  assert.deepEqual(await evaluate("window.fixtureState.pending_mechanic_choice.options"), ["keep", "target_player:1"]);
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player A')); if (!label) throw new Error('Missing copy target option'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets[0] === '1'");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_player:1"]);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 17");
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].life === 17");
+  console.log("PASS human copy target choice reaches API and redirects only the copy");
+
   await click("Hybrid Payment Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Spectral Procession'))");
   assert.equal(await evaluate("document.querySelectorAll('[aria-label^=\"Pay hybrid symbol\"]').length"), 3);

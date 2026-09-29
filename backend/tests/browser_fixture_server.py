@@ -26,6 +26,29 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "copy_target":
+        from effects.handlers import copy_spell
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=931)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        bolt = CardInstance(
+            id="copied-bolt", name="Lightning Bolt", owner=1, controller=1,
+            zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
+            oracle_text="Lightning Bolt deals 3 damage to any target.",
+        )
+        state.cards[bolt.id] = bolt
+        state.stack.append(StackItem(
+            id="original-bolt", source_card_id=bolt.id, controller=1,
+            label=bolt.name, effect_key="deal_damage",
+            payload={"target_player": 2, "amount": 3,
+                     "__announced_targets": {"target_player": 2}},
+        ))
+        copy_spell(state, 2, {"target_stack_id": "original-bolt", "may_choose_new_targets": True})
+        return publish(state, deck)
     if face_kind in {"snow_payment", "non_snow_payment"}:
         deck = [{"quantity": 60, "card_name": "Forest"}]
         state = MatchFactory.from_decks(deck, deck, seed=930)
