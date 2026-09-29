@@ -113,6 +113,10 @@ class RulesEngine:
                 state.combat_assignment_queue = []
 
         self._apply_step_start_actions(state)
+        if state.step == Step.UNTAP:
+            # Untap has no priority window; upkeep is the first response window.
+            self.next_step(state)
+            return
         if not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
             state.priority_player = state.active_player
             state.passed_priority = set()
@@ -554,6 +558,13 @@ class RulesEngine:
                 state.priority_player = state.active_player
                 state.passed_priority = set()
             apply_state_based_actions(state)
+            return
+
+        if state.step == Step.UNTAP:
+            if kind == "pass_priority":
+                self.next_step(state)
+            else:
+                reject("Players do not receive priority during the untap step")
             return
 
         if state.cleanup_pending and state.step == Step.CLEANUP:
@@ -1215,6 +1226,7 @@ class RulesEngine:
                 state.step = Step.UNTAP
                 self._apply_step_start_actions(state)
                 state.log.append("Pregame complete. Proceeding to turn structure.")
+                self.next_step(state)
             else:
                 remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
                 if remaining:

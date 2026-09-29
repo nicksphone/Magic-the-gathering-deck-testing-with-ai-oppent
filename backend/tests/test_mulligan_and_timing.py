@@ -44,9 +44,7 @@ def test_first_player_skips_first_draw_with_explicit_log() -> None:
 
     engine.take_action(state, 1, {"type": "keep_hand", "bottom_card_ids": []})
     engine.take_action(state, 2, {"type": "keep_hand", "bottom_card_ids": []})
-    # Advance from UNTAP -> UPKEEP -> DRAW on turn 1
-    engine.take_action(state, 1, {"type": "pass_priority"})
-    engine.take_action(state, 2, {"type": "pass_priority"})
+    # Untap has no priority; the first pair of passes reaches the draw step.
     engine.take_action(state, 1, {"type": "pass_priority"})
     engine.take_action(state, 2, {"type": "pass_priority"})
 

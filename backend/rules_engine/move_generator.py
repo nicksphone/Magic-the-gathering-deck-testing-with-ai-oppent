@@ -97,6 +97,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if state.mulligan_count.get(player_id, 0) < 7:
             moves.append({"type": "mulligan", "current_mulligans": state.mulligan_count.get(player_id, 0)})
         return moves
+    if state.step == Step.UNTAP:
+        return []
     moves: list[dict] = [{"type": "pass_priority"}]
     if state.step == Step.CLEANUP and (state.cleanup_pending or not state.cleanup_repeat_required):
         return moves

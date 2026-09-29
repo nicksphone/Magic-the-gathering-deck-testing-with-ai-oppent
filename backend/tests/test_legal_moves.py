@@ -10,6 +10,7 @@ def test_generates_basic_legal_moves() -> None:
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
+    state.step = Step.UPKEEP
     engine = RulesEngine()
     moves = engine.legal_moves(state, state.priority_player)
     move_types = {m["type"] for m in moves}

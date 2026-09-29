@@ -9,7 +9,7 @@ from ai.endgame_policy import should_force_closure, should_force_inevitability_l
 from ai.heuristics import evaluate_board
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
-from game_state.state import MatchState, Zone
+from game_state.state import MatchState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
@@ -87,6 +87,12 @@ class AIAgent:
         legal_moves = [move for move in legal_moves if not self._burn_has_only_friendly_targets(state, move, player_id)]
         if getattr(state, "pregame_pending", False):
             return self.choose_mulligan_action(state, player_id)
+        if (
+            getattr(state, "active_player", None) == player_id
+            and getattr(state, "step", None) in {Step.UPKEEP, Step.DRAW}
+            and not getattr(state, "stack", [])
+        ):
+            legal_moves = [move for move in legal_moves if move.get("type") != "cycle_card"]
         if not legal_moves:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No legal actions")
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)

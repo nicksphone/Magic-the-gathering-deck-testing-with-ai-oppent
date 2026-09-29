@@ -1,6 +1,7 @@
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.cycling import cycling_variant
+from ai.agent import AIAgent
 
 
 def _state_with_cycler() -> tuple[object, str]:
@@ -32,6 +33,15 @@ def test_fixed_cycling_is_a_legal_hand_action() -> None:
     state, cid = _state_with_cycler()
     moves = RulesEngine().legal_moves(state, 1)
     assert any(m["type"] == "cycle_card" and m["card_id"] == cid for m in moves)
+
+
+def test_ai_defers_optional_cycling_until_own_main_phase() -> None:
+    state, cid = _state_with_cycler()
+    ai = AIAgent(difficulty="master", archetype="Ramp")
+    moves = [{"type": "pass_priority"}, {"type": "cycle_card", "card_id": cid, "card_name": "Lonely Sandbar", "mana_cost": "{1}"}]
+    for step in (Step.UPKEEP, Step.DRAW):
+        state.step = step
+        assert ai.choose_action(state, moves, 1).action["type"] == "pass_priority"
 
 
 def test_cycling_pays_cost_discards_then_draws_on_resolution() -> None:
