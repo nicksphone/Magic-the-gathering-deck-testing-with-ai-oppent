@@ -1,5 +1,7 @@
 # Changelog
 
+- Audited real Toxic Deluge variable life cost and effect interpretation. Three strict expected-failure tests show announced X rejected, omitted X accepted and a wrong draw effect inferred from the card-name substring. The [audit](docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md) defines a generic cost/effect/fallback repair gate. This is a tracked defect, not a mechanic fix.
+
 - Added a live FastAPI integration regression for real Withering Boon and Font of Agonies: legal moves expose only the creature spell as a stack target, and casting returns a 3-life payment with Font's trigger above the counterspell. Verification: 1,124 isolated backend tests pass. This closes the engine-to-HTTP evidence gap, not a claim of complete counterspell or pay-life Oracle coverage.
 
 - Effect-driven multiple land entries now defer payment/ETB triggers until all pre-entry choices complete, rather than overwriting an earlier human trigger-order request. A two-Sacred-Foundry/two-Font-of-Agonies regression restores a snapshot between choices, orders all four triggers, and resolves the correct counters. Verification: 1,123 isolated backend tests and the full Chromium harness pass. Competing replacement effects remain open.

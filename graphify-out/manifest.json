@@ -707,6 +707,10 @@
     "mtime": 1784457082.1893406,
     "hash": "e927b5e4b9554abb574688d08666525c"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_variable_life_cost_audit.py": {
+    "mtime": 1790653738.8178294,
+    "hash": "f531929afd9d7763c177bde97606eef2"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_api_input_contracts.py": {
     "mtime": 1790631486.8424177,
     "hash": "e334e3f7869720b1990930701a8f8eb7"
@@ -1100,16 +1104,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790638421.2603033,
-    "hash": "8f5a789f95e1ef8a9abff63bf478b54f"
+    "mtime": 1790653702.2844555,
+    "hash": "e8695b5cf8a46c8ace562ca856d9cb79"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790631088.066902,
-    "hash": "9d5d73e34412f00fb0fbe00bd4e0da4d"
+    "mtime": 1790653702.3254547,
+    "hash": "aee624960badf521b041231b58233a1c"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790638421.3283021,
-    "hash": "7d045db39defe2d09fa2f6438f9fae9f"
+    "mtime": 1790653702.367454,
+    "hash": "11376b80b6ccbc80434a43966c05ad9b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1158,6 +1162,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-jev-two-stage-review.md": {
     "mtime": 1790535102.2339525,
     "hash": "81be7581a483bf4a2755beda09e66f32"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md": {
+    "mtime": 1790653702.2454562,
+    "hash": "b166c556070a2bbdcb0fb7bfd3fd8d05"
   },
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-api-validation-jev.md": {
     "mtime": 1790543570.155747,
