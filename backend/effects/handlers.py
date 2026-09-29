@@ -1483,10 +1483,13 @@ def choose_revealed_discard(state: MatchState, controller: int, payload: dict) -
 
     target = int(payload["target_player"])
     excluded = set(payload.get("excluded_types") or [])
+    allowed = set(payload.get("allowed_types") or [])
     revealed = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
     options = [cid for cid in revealed
                if ("Land" not in excluded or not is_land_card(state.cards[cid]))
-               and ("Creature" not in excluded or "Creature" not in state.cards[cid].types)]
+               and ("Creature" not in excluded or "Creature" not in state.cards[cid].types)
+               and (not allowed or allowed.intersection(state.cards[cid].types))
+               and ("mv_max" not in payload or mana_value(state.cards[cid].mana_cost or "") <= int(payload["mv_max"]))]
     names = ", ".join(state.cards[cid].name for cid in revealed) or "(empty)"
     state.log.append(f"{state.players[target].name} reveals their hand: {names}.")
     if not options:

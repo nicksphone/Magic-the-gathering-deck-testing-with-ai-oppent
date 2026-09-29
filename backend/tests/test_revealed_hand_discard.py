@@ -192,6 +192,50 @@ def test_duress_filters_creatures_and_lands_without_life_loss():
     assert cards["elf"] in state.players[2].hand
 
 
+def test_inquisition_filters_by_type_and_mana_value_across_snapshot():
+    state, spell_id, cards = _selective_state(
+        "Inquisition of Kozilek",
+        "Target player reveals their hand. You choose a nonland card from it with mana value 3 or less. "
+        "That player discards that card.",
+    )
+    expensive_id = state.players[2].hand[3]
+    expensive = state.cards[expensive_id]
+    expensive.name, expensive.types, expensive.type_line = "Serra Angel", ["Creature"], "Creature - Angel"
+    expensive.mana_cost = "{3}{W}{W}"
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    assert not resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["options"] == [cards["bolt"], cards["elf"]]
+    assert any("Serra Angel" in line and "Forest" in line for line in state.log)
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [expensive_id]})
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [cards["elf"]]})
+    assert cards["elf"] in state.players[2].graveyard
+    assert expensive_id in state.players[2].hand
+
+
+def test_despise_offers_creature_or_planeswalker_only():
+    state, spell_id, cards = _selective_state(
+        "Despise",
+        "Target opponent reveals their hand. You choose a creature or planeswalker card from it. "
+        "That player discards that card.",
+    )
+    walker_id = state.players[2].hand[3]
+    walker = state.cards[walker_id]
+    walker.name, walker.types, walker.type_line = "Jace, the Mind Sculptor", ["Planeswalker"], "Legendary Planeswalker - Jace"
+    walker.mana_cost = "{2}{U}{U}"
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
+    })
+    assert not resolve_top_of_stack(state)
+    assert state.pending_mechanic_choice["options"] == [cards["elf"], walker_id]
+    state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [walker_id]})
+    assert walker_id in state.players[2].graveyard
+    assert cards["bolt"] in state.players[2].hand
+
+
 def test_thoughtseize_loses_life_even_when_target_has_only_lands():
     state, spell_id, _ = _selective_state(
         "Thoughtseize",

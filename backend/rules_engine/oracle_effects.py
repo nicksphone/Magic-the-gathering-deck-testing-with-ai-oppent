@@ -88,7 +88,8 @@ PUT_PERMANENTS_FROM_TOP_RE = re.compile(
 LOOT_RE = re.compile(r"draw\s+(a|\d+)\s+card[s]?\s*,?\s*then\s*discard\s+(a|\d+)\s+card", re.IGNORECASE)
 REVEAL_CHOOSE_DISCARD_RE = re.compile(
     r"target (?P<target_kind>opponent|player) reveals (?:their|his or her) hand\. "
-    r"you choose a (?P<restriction>noncreature, nonland |nonland )?card from it\. "
+    r"you choose a (?P<restriction>noncreature, nonland |nonland |creature or planeswalker )?card from it"
+    r"(?: with mana value (?P<mv_max>\d+) or less)?\. "
     r"that player discards that card\.(?: you lose (?P<life>\d+) life\.)?", re.IGNORECASE,
 )
 SAC_AT_EOT_RE = re.compile(r"sacrifice (?:it|that token) at the beginning of the next end step", re.IGNORECASE)
@@ -180,7 +181,10 @@ def infer_effect_from_oracle(
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
             "excluded_types": (["Creature"] if "noncreature" in restriction else [])
                               + (["Land"] if "nonland" in restriction else []),
+            "allowed_types": ["Creature", "Planeswalker"] if "creature or planeswalker" in restriction else [],
         }}
+        if revealed_discard.group("mv_max"):
+            effect["payload"]["mv_max"] = int(revealed_discard.group("mv_max"))
         life = revealed_discard.group("life")
         if life:
             return "effect_sequence", {"effects": [effect, {

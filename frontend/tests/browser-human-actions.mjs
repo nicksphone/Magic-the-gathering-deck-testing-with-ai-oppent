@@ -179,9 +179,11 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
   console.log("PASS Coercion caster targets opponent and chooses from revealed hand");
 
-  for (const [fixture, spell, expected, life] of [
-    ["Thoughtseize Fixture", "Thoughtseize", ["Lightning Bolt", "Llanowar Elves"], 18],
-    ["Duress Fixture", "Duress", ["Lightning Bolt"], 20],
+  for (const [fixture, spell, expected, life, discarded] of [
+    ["Thoughtseize Fixture", "Thoughtseize", ["Lightning Bolt", "Llanowar Elves"], 18, "Lightning Bolt"],
+    ["Duress Fixture", "Duress", ["Lightning Bolt"], 20, "Lightning Bolt"],
+    ["Inquisition Fixture", "Inquisition of Kozilek", ["Lightning Bolt", "Llanowar Elves"], 20, "Lightning Bolt"],
+    ["Despise Fixture", "Despise", ["Llanowar Elves", "Jace, the Mind Sculptor"], 20, "Llanowar Elves"],
   ]) {
     await click(fixture);
     await waitFor(`[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast ${spell}'))`);
@@ -198,7 +200,7 @@ try {
     await click("Confirm Selection");
     await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");
     assert.equal(await evaluate("window.fixtureState.players['1'].life"), life);
-    assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.some(card => card.name === 'Lightning Bolt')"), true);
+    assert.equal(await evaluate(`window.fixtureState.players['2'].graveyard.some(card => card.name === ${JSON.stringify(discarded)})`), true);
     console.log(`PASS ${spell} offers only eligible cards and completes its printed effects`);
   }
 

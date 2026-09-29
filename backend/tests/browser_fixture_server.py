@@ -26,7 +26,7 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
-    if face_kind in {"thoughtseize", "duress"}:
+    if face_kind in {"thoughtseize", "duress", "inquisition", "despise"}:
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=920)
         state.pregame_pending = False
@@ -36,15 +36,21 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.mechanic_choice_players = {1, 2}
         state.players[1].mana_pool["B"] = 1
         spell = state.cards[state.players[1].hand[0]]
-        spell.name = "Thoughtseize" if face_kind == "thoughtseize" else "Duress"
+        spell.name = {
+            "thoughtseize": "Thoughtseize", "duress": "Duress",
+            "inquisition": "Inquisition of Kozilek", "despise": "Despise",
+        }[face_kind]
         spell.types, spell.type_line, spell.mana_cost = ["Sorcery"], "Sorcery", "{B}"
-        spell.oracle_text = (
-            "Target player reveals their hand. You choose a nonland card from it. "
-            "That player discards that card. You lose 2 life."
-            if face_kind == "thoughtseize" else
-            "Target opponent reveals their hand. You choose a noncreature, nonland card from it. "
-            "That player discards that card."
-        )
+        spell.oracle_text = {
+            "thoughtseize": "Target player reveals their hand. You choose a nonland card from it. "
+                            "That player discards that card. You lose 2 life.",
+            "duress": "Target opponent reveals their hand. You choose a noncreature, nonland card from it. "
+                      "That player discards that card.",
+            "inquisition": "Target player reveals their hand. You choose a nonland card from it with mana value 3 or less. "
+                           "That player discards that card.",
+            "despise": "Target opponent reveals their hand. You choose a creature or planeswalker card from it. "
+                       "That player discards that card.",
+        }[face_kind]
         hand = state.players[2].hand
         forest = state.cards[hand[0]]
         forest.name, forest.types, forest.type_line = "Forest", ["Land"], "Basic Land - Forest"
@@ -54,6 +60,15 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         elf = state.cards[hand[2]]
         elf.name, elf.types, elf.type_line, elf.mana_cost = "Llanowar Elves", ["Creature"], "Creature - Elf Druid", "{G}"
         elf.power, elf.toughness, elf.oracle_text = 1, 1, "{T}: Add {G}."
+        fourth = state.cards[hand[3]]
+        if face_kind == "inquisition":
+            fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
+                "Serra Angel", ["Creature"], "Creature - Angel", "{3}{W}{W}",
+            )
+        elif face_kind == "despise":
+            fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
+                "Jace, the Mind Sculptor", ["Planeswalker"], "Legendary Planeswalker - Jace", "{2}{U}{U}",
+            )
         return publish(state, deck)
     if face_kind == "revealed_discard":
         deck = [{"quantity": 60, "card_name": "Swamp"}]
