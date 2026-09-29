@@ -1,9 +1,59 @@
 from __future__ import annotations
 
 from game_state.state import Zone
-from game_state.state import MatchFactory, Step
+from game_state.state import CardInstance, MatchFactory, Step
 from rules_engine.engine import RulesEngine
 from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, land_mana_amount
+
+
+def test_nonland_single_color_source_is_used_before_flexible_land() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=96)
+    fountain = CardInstance(
+        id="fountain", name="Hallowed Fountain", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Land"], type_line="Land - Plains Island",
+        oracle_text="{T}: Add {W} or {U}.",
+    )
+    diamond = CardInstance(
+        id="diamond", name="Marble Diamond", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"], type_line="Artifact",
+        oracle_text="{T}: Add {W}.",
+    )
+    for card in (fountain, diamond):
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.priority_player = 1
+    spell_id = state.players[1].hand[0]
+    spell = state.cards[spell_id]
+    spell.name = "Lavinia, Azorius Renegade"
+    spell.types = ["Creature", "Legendary"]
+    spell.mana_cost = "{W}{U}"
+    assert any(move["type"] == "cast_spell" and move.get("card_id") == spell_id
+               for move in RulesEngine().legal_moves(state, 1))
+    assert can_pay_with_pool_and_lands(state, 1, "{W}{U}")
+    assert auto_pay_cost(state, 1, "{W}{U}")
+    assert fountain.tapped and diamond.tapped
+    assert all(value == 0 for value in state.players[1].mana_pool.values())
+
+
+def test_multi_mana_source_surplus_pays_generic_cost() -> None:
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=97)
+    lotus = CardInstance(
+        id="lotus", name="Gilded Lotus", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Artifact"], type_line="Artifact",
+        oracle_text="{T}: Add three mana of any one color.",
+    )
+    state.cards[lotus.id] = lotus
+    state.players[1].battlefield.append(lotus.id)
+    assert can_pay_with_pool_and_lands(state, 1, "{W}{2}")
+    assert auto_pay_cost(state, 1, "{W}{2}")
+    assert lotus.tapped
+    assert all(value == 0 for value in state.players[1].mana_pool.values())
 
 
 def test_can_pay_known_mana_cost_with_untapped_lands() -> None:

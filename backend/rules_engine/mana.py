@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from functools import lru_cache
 from typing import Set
 
 from game_state.state import MatchState
@@ -108,48 +109,71 @@ def can_pay_with_pool_and_lands(
         context = apply_cost_modifiers(context)
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
     req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
-    pool = dict(state.players[player_id].mana_pool)
-    lands: list[dict[str, int]] = []
-    nonlands: list[dict[str, int]] = []
+    return _plan_mana_sources(state, player_id, req) is not None
+
+
+def _plan_mana_sources(state: MatchState, player_id: int, req: dict[str, int]) -> list[tuple[str, str, int, bool]] | None:
+    colors = ("C", "W", "U", "B", "R", "G")
+    pool = state.players[player_id].mana_pool
+    needs = tuple(max(0, req[color] - max(0, pool.get(color, 0))) for color in colors)
+    spare = sum(max(0, pool.get(color, 0) - req[color]) for color in colors)
+    sources: list[tuple[str, dict[str, int], bool]] = []
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        if "Land" in card.types and not card.tapped:
-            lands.append({color: land_mana_amount(state, player_id, cid) for color in _land_colors(card.name, card.type_line, card.oracle_text)})
+        land = "Land" in card.types
+        if land and not card.tapped:
+            amount = land_mana_amount(state, player_id, cid)
+            outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
         else:
             outputs = nonland_mana_outputs(state, cid, card)
-            if outputs:
-                nonlands.append(outputs)
+        if outputs:
+            sources.append((cid, outputs, land))
 
-    # Count physical sources, not per-color totals: one flexible source can be spent once.
-    for color in ["W", "U", "B", "R", "G", "C"]:
-        need = req[color]
-        paid = min(need, pool.get(color, 0))
-        pool[color] = pool.get(color, 0) - paid
-        need -= paid
-        for sources in (lands, nonlands):
-            while need > 0:
-                choices = [i for i, outputs in enumerate(sources) if color in outputs]
-                if not choices:
-                    break
-                index = min(choices, key=lambda i: len(sources[i]))
-                amount = sources.pop(index)[color]
-                used = min(need, amount)
-                need -= used
-                pool[color] = pool.get(color, 0) + amount - used
-        if need > 0:
-            return False
+    @lru_cache(maxsize=None)
+    def solve(remaining: tuple[int, ...], used: int, generic_credit: int) -> tuple[tuple[int, str], ...] | None:
+        color_index = next((i for i, need in enumerate(remaining) if need), None)
+        if color_index is None:
+            generic_need = req["generic"] - generic_credit
+            if generic_need <= 0:
+                return ()
+            available = []
+            for i, (_, outputs, _) in enumerate(sources):
+                if used & (1 << i):
+                    continue
+                chosen_color = max(_ordered_colors(set(outputs)), key=outputs.__getitem__)
+                available.append((i, (chosen_color, outputs[chosen_color])))
+            available.sort(key=lambda entry: (-entry[1][1], len(sources[entry[0]][1]), entry[0]))
+            chosen = []
+            for i, (color, amount) in available:
+                chosen.append((i, color))
+                generic_need -= amount
+                if generic_need <= 0:
+                    return tuple(chosen)
+            return None
 
-    generic_need = req["generic"]
-    for color in ["C", "W", "U", "B", "R", "G"]:
-        paid = min(generic_need, pool.get(color, 0))
-        generic_need -= paid
-        pool[color] = pool.get(color, 0) - paid
-    for sources in (lands, nonlands):
-        while generic_need > 0 and sources:
-            outputs = sources.pop(0)
-            amount = outputs[next(iter(_ordered_colors(set(outputs))))]
-            generic_need -= min(generic_need, amount)
-    return generic_need == 0
+        color = colors[color_index]
+        if sum(outputs.get(color, 0) for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i)) < remaining[color_index]:
+            return None
+        candidates = sorted(
+            (i for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i) and color in outputs),
+            key=lambda i: (len(sources[i][1]), -sources[i][1][color], not sources[i][2], i),
+        )
+        tried: set[tuple[tuple[str, int], ...]] = set()
+        for i in candidates:
+            signature = tuple(sorted(sources[i][1].items()))
+            if signature in tried:
+                continue
+            tried.add(signature)
+            amount = sources[i][1][color]
+            next_remaining = list(remaining)
+            next_remaining[color_index] = max(0, remaining[color_index] - amount)
+            tail = solve(tuple(next_remaining), used | (1 << i), generic_credit + max(0, amount - remaining[color_index]))
+            if tail is not None:
+                return ((i, color),) + tail
+        return None
+
+    choices = solve(needs, 0, spare)
+    return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
 def auto_pay_cost(
@@ -166,158 +190,33 @@ def auto_pay_cost(
         state=state, spell_types=spell_types,
     ))
     mana_cost = _apply_generic_delta_to_cost(context.mana_cost, context.generic_reduction, context.generic_increase)
-    if not can_pay_with_pool_and_lands(
-        state, player_id, mana_cost, is_land=is_land, card_name=card_name,
-        x_value=x_value, spell_types=spell_types, apply_modifiers=False,
-    ):
-        return False
     req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
+    plan = _plan_mana_sources(state, player_id, req)
+    if plan is None:
+        return False
     player = state.players[player_id]
-
-    for color in ["W", "U", "B", "R", "G"]:
-        need = req[color]
-        use_pool = min(need, max(0, player.mana_pool.get(color, 0)))
-        player.mana_pool[color] = max(0, player.mana_pool.get(color, 0) - use_pool)
-        req[color] -= use_pool
-
-    colorless_need = req["C"]
-    use_pool = min(colorless_need, max(0, player.mana_pool.get("C", 0)))
-    player.mana_pool["C"] = max(0, player.mana_pool.get("C", 0) - use_pool)
-    colorless_need -= use_pool
-    while colorless_need > 0:
-        land_id = _find_untapped_land_for_color(state, player_id, "C")
-        if land_id:
-            state.cards[land_id].tapped = True
-            amount = land_mana_amount(state, player_id, land_id)
-            state.log.append(f"{player.name} taps {state.cards[land_id].name} for {amount} C to pay spell cost.")
-            used = min(colorless_need, amount)
-            colorless_need -= used
-            player.mana_pool["C"] += amount - used
-            continue
-        nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, "C")
-        if nonland_id:
-            amount = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])["C"]
-            if not _consume_nonland_mana_source(state, player_id, nonland_id):
-                return False
-            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} C to pay spell cost.")
-            used = min(colorless_need, amount)
-            colorless_need -= used
-            player.mana_pool["C"] += amount - used
-            continue
-        return False
-
-    for color in ["W", "U", "B", "R", "G"]:
-        while req[color] > 0:
-            land_id = _find_untapped_land_for_color(state, player_id, color)
-            if land_id:
-                state.cards[land_id].tapped = True
-                state.log.append(f"{player.name} taps {state.cards[land_id].name} for {color} to pay spell cost.")
-                amount = land_mana_amount(state, player_id, land_id)
-                used = min(req[color], amount)
-                req[color] -= used
-                if amount > used:
-                    player.mana_pool[color] += amount - used
-                continue
-            nonland_id = _find_untapped_nonland_mana_source_for_color(state, player_id, color)
-            if nonland_id:
-                amount = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])[color]
-                if not _consume_nonland_mana_source(state, player_id, nonland_id):
-                    return False
-                state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} {color} to pay spell cost.")
-                used = min(req[color], amount)
-                req[color] -= used
-                player.mana_pool[color] += amount - used
-                continue
+    for color in ("C", "W", "U", "B", "R", "G"):
+        player.mana_pool.setdefault(color, 0)
+    for cid, color, amount, land in plan:
+        if land:
+            state.cards[cid].tapped = True
+        elif not _consume_nonland_mana_source(state, player_id, cid):
             return False
-
+        player.mana_pool[color] += amount
+        state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay spell cost.")
+    for color in ("C", "W", "U", "B", "R", "G"):
+        player.mana_pool[color] -= req[color]
     generic_need = req["generic"]
-    for color in ["C", "W", "U", "B", "R", "G"]:
-        if generic_need <= 0:
-            break
-        pay = min(generic_need, max(0, player.mana_pool.get(color, 0)))
-        player.mana_pool[color] = max(0, player.mana_pool.get(color, 0) - pay)
-        generic_need -= pay
-
-    while generic_need > 0:
-        land_id = _find_any_untapped_land(state, player_id)
-        if land_id:
-            produced = next(
-                iter(
-                    _ordered_colors(
-                        _land_colors(
-                            state.cards[land_id].name,
-                            state.cards[land_id].type_line,
-                            state.cards[land_id].oracle_text,
-                        )
-                    )
-                ),
-                "C",
-            )
-            state.cards[land_id].tapped = True
-            state.log.append(f"{player.name} taps {state.cards[land_id].name} for {produced} to pay spell cost.")
-            amount = land_mana_amount(state, player_id, land_id)
-            used = min(generic_need, amount)
-            generic_need -= used
-            if amount > used:
-                player.mana_pool[produced] += amount - used
-            continue
-        nonland_id = _find_any_untapped_nonland_mana_source(state, player_id)
-        if nonland_id:
-            outputs = nonland_mana_outputs(state, nonland_id, state.cards[nonland_id])
-            produced = next(iter(_ordered_colors(set(outputs))), "C")
-            amount = outputs[produced]
-            if not _consume_nonland_mana_source(state, player_id, nonland_id):
-                return False
-            state.log.append(f"{player.name} taps {state.cards[nonland_id].name} for {amount} {produced} to pay spell cost.")
-            used = min(generic_need, amount)
-            generic_need -= used
-            player.mana_pool[produced] += amount - used
-            continue
-        return False
-
+    for color in ("C", "W", "U", "B", "R", "G"):
+        paid = min(generic_need, player.mana_pool[color])
+        player.mana_pool[color] -= paid
+        generic_need -= paid
     return True
 
 
 def mana_value(mana_cost: str, is_land: bool = False, x_value: int = 0) -> int:
     req = parse_mana_cost(mana_cost, is_land=is_land, x_value=x_value)
     return int(req["generic"] + req["C"] + sum(req[c] for c in ["W", "U", "B", "R", "G"]))
-
-
-def _find_untapped_land_for_color(state: MatchState, player_id: int, color: str) -> str | None:
-    candidates = []
-    for cid in state.players[player_id].battlefield:
-        c = state.cards[cid]
-        if "Land" in c.types and not c.tapped:
-            colors = _land_colors(c.name, c.type_line, c.oracle_text)
-            if color in colors:
-                candidates.append((len(colors), cid))
-    return min(candidates, key=lambda item: item[0])[1] if candidates else None
-
-
-def _find_any_untapped_land(state: MatchState, player_id: int) -> str | None:
-    for cid in state.players[player_id].battlefield:
-        c = state.cards[cid]
-        if "Land" in c.types and not c.tapped:
-            return cid
-    return None
-
-
-def _find_untapped_nonland_mana_source_for_color(state: MatchState, player_id: int, color: str) -> str | None:
-    candidates = []
-    for cid in state.players[player_id].battlefield:
-        c = state.cards[cid]
-        colors = _nonland_mana_source_colors(state, cid, c)
-        if colors and color in colors:
-            candidates.append((len(colors), cid))
-    return min(candidates, key=lambda item: item[0])[1] if candidates else None
-
-
-def _find_any_untapped_nonland_mana_source(state: MatchState, player_id: int) -> str | None:
-    for cid in state.players[player_id].battlefield:
-        c = state.cards[cid]
-        if _nonland_mana_source_colors(state, cid, c):
-            return cid
-    return None
 
 
 def _apply_generic_delta_to_cost(mana_cost: str, generic_reduction: int, generic_increase: int) -> str:
