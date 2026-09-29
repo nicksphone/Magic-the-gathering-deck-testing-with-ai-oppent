@@ -1,3 +1,4 @@
+from card_data.fallback_cards import fallback_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.engine import RulesEngine
@@ -86,23 +87,69 @@ def test_saga_next_creature_chapter_applies_one_shot_entry_counter() -> None:
 
 
 def test_saga_transform_chapter_uses_the_source_permanents_back_face() -> None:
-    state = _saga_state(
-        "I — Draw a card.\n"
-        "II — Draw a card.\n"
-        "III — Exile this Saga, then return it to the battlefield transformed under your control."
+    fable = fallback_card_payload("Fable of the Mirror-Breaker")
+    assert fable
+    state = _saga_state(fable["card_faces"][0]["oracle_text"])
+    saga = state.cards["saga"]
+    saga.name = fable["card_faces"][0]["name"]
+    saga.layout = fable["layout"]
+    saga.card_faces = fable["card_faces"]
+    saga.counters["__lore"] = 2
+    saga.counters["+1/+1"] = 1
+    saga.tapped = True
+    saga.summoning_sick = False
+    state.turn = 4
+    observer = CardInstance(
+        "corruption", "Corruption of Towashi", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
+        oracle_text=(
+            "When Corruption of Towashi enters the battlefield, incubate 4.\n"
+            "Whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed, "
+            "you may draw a card. Do this only once each turn."
+        ), type_line="Enchantment",
     )
-    state.cards["saga"].card_faces = [
-        {"name": "Front Saga", "type_line": "Enchantment — Saga"},
-        {"name": "Back Creature", "type_line": "Creature — Human", "power": "3", "toughness": "3"},
-    ]
-    state.cards["saga"].counters["__lore"] = 2
+    state.cards[observer.id] = observer
+    state.players[1].battlefield.append(observer.id)
     engine = RulesEngine()
     engine._advance_sagas(state)
+    assert state.stack[-1].effect_key == "exile_return_transformed"
     resolve_top_of_stack(state)
 
-    assert state.cards["saga"].selected_face_index == 1
-    assert state.cards["saga"].name == "Back Creature"
-    assert "Creature" in state.cards["saga"].types
+    assert saga.zone == Zone.BATTLEFIELD
+    assert saga.id in state.players[1].battlefield and saga.id not in state.players[1].exile
+    assert saga.selected_face_index == 1
+    assert saga.name == "Reflection of Kiki-Jiki"
+    assert "Creature" in saga.types and "Saga" not in saga.type_line
+    assert saga.counters == {}
+    assert not saga.tapped and saga.summoning_sick and saga.entered_turn == 4
+    assert len(state.stack) == 1
+    assert state.stack[-1].effect_key == "draw_cards"
+    assert state.stack[-1].payload["__trigger_event"] == "enters_battlefield"
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.cards[saga.id].selected_face_index == 1
+    assert restored.cards[saga.id].counters == {}
+
+
+def test_transforming_saga_returns_under_chapter_controller_after_exile() -> None:
+    fable = fallback_card_payload("Fable of the Mirror-Breaker")
+    assert fable
+    state = _saga_state(fable["card_faces"][0]["oracle_text"])
+    saga = state.cards["saga"]
+    saga.name = fable["card_faces"][0]["name"]
+    saga.layout = fable["layout"]
+    saga.card_faces = fable["card_faces"]
+    saga.counters["__lore"] = 2
+    state.players[1].battlefield.remove(saga.id)
+    state.players[2].battlefield.append(saga.id)
+    saga.controller = 2
+    state.active_player = state.priority_player = 2
+
+    RulesEngine()._advance_sagas(state)
+    resolve_top_of_stack(state)
+
+    assert saga.owner == 1 and saga.controller == 2
+    assert saga.id not in state.players[1].exile
+    assert saga.id in state.players[2].battlefield
+    assert saga.selected_face_index == 1 and saga.counters == {}
 
 
 def test_double_faced_type_line_uses_front_face_before_transformation() -> None:

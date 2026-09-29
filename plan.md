@@ -281,6 +281,8 @@ Optional transform draw follow-up: Corruption of Towashi's exact Oracle pattern 
 
 Day/night ordering follow-up: upkeep start stages the day/night change, resulting daybound/nightbound face changes and ordinary upkeep triggers together. All faces change before transform triggers are collected, and both players can order the combined triggers by APNAP; the pending order survives a snapshot. This is tested with Corruption of Towashi, multiple Brutal Cathar copies on both sides and Phyrexian Arena. Verification: 1,364 isolated backend tests and frontend lint/build/unit pass. Browser play and matchup replay were not rerun. Simultaneous transform causes outside day/night and broader triggered-effect fidelity remain open.
 
+Transforming Saga follow-up: the supported final-chapter wording now exiles the Saga and returns its back face as a new permanent rather than transforming in place. Fable of the Mirror-Breaker coverage verifies reset lore/other counters, creature entry and summoning sickness, enter-transformed rather than transform triggers, snapshots and nonowner control. Verification: 1,365 isolated backend tests and frontend lint/build/unit pass; browser play and matchup replay were not rerun. Wider re-entry replacement interactions and other Saga wordings remain unverified.
+
 Acceptance: corpus completeness and AI profile consumption are reproducible, including offline mode. Do not require nonempty rulings when the authoritative card legitimately has no rulings.
 
 ### 11. Validate semantics across rule families

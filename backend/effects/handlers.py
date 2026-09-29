@@ -1499,6 +1499,33 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
         })
 
 
+def exile_return_transformed(state: MatchState, controller: int, payload: dict) -> None:
+    """Exile a transforming Saga and return it as a new back-face permanent."""
+    target_id = payload.get("target_card_id")
+    card = state.cards.get(target_id) if target_id else None
+    if card is None or card.zone != Zone.BATTLEFIELD or target_id not in state.players[card.controller].battlefield:
+        return
+    exile_permanent(state, controller, {"target_card_id": target_id})
+    owner_exile = state.players[card.owner].exile
+    if card.zone != Zone.EXILE or target_id not in owner_exile:
+        return
+    if card.layout != "transform" or len(card.card_faces) < 2 or is_departed_token(card):
+        return
+    from rules_engine.card_faces import apply_transform_face
+
+    owner_exile.remove(target_id)
+    apply_transform_face(card, 1)
+    card.zone = Zone.BATTLEFIELD
+    card.controller = controller
+    card.tapped = False
+    card.summoning_sick = "Creature" in card.types
+    card.entered_turn = state.turn
+    state.players[controller].battlefield.append(target_id)
+    assign_static_order_on_battlefield_entry(state, target_id)
+    state.log.append(f"{card.name} returns to the battlefield transformed.")
+    emit_event(state, "enters_battlefield", {"card_id": target_id, "controller": controller})
+
+
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     player = state.players[target_player]

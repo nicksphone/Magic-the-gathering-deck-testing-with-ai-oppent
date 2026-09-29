@@ -49,6 +49,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "look_top_select_hand": handlers.look_top_select_hand,
     "transform_if_top_matches": handlers.transform_if_top_matches,
     "transform_card": handlers.transform_card,
+    "exile_return_transformed": handlers.exile_return_transformed,
     "reveal_defending_top_land": handlers.reveal_defending_top_land,
     "add_mana": handlers.add_mana,
     "add_counters": handlers.add_counters,

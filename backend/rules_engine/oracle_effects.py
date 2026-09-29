@@ -151,7 +151,7 @@ def infer_effect_from_oracle(
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = action_targets.get("target_card_id") or action_targets.get("source_card_id")
         if target:
-            return "transform_card", {"target_card_id": target, "face_index": 1}
+            return "exile_return_transformed", {"target_card_id": target}
     if mode_text:
         oracle = without_reminder_text(mode_text.lower())
     elif mode_texts:
@@ -1050,7 +1050,7 @@ def _infer_clause_effect(
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = target_card_id or action_targets.get("source_card_id")
         if target:
-            return "transform_card", {"target_card_id": target, "face_index": 1}
+            return "exile_return_transformed", {"target_card_id": target}
 
     control_match = GAIN_CONTROL_RE.search(oracle)
     if control_match:
