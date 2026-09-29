@@ -28,6 +28,18 @@ def _has_counter_spell_text(text: str) -> bool:
     return "counter target spell" in normalized or "counter target noncreature spell" in normalized or "counterspell" in normalized
 
 
+def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
+    symbols = re.findall(r"\{([^{}]+)\}", (mana_cost or "").upper())
+    return parse_mana_cost("".join(
+        "{" + symbol + "}" for symbol in symbols if not _supported_hybrid_symbol(symbol)
+    ))
+
+
+def _supported_hybrid_symbol(symbol: str) -> bool:
+    parts = symbol.split("/")
+    return len(parts) == 2 and all(part in {"W", "U", "B", "R", "G", "C", "2"} for part in parts)
+
+
 def _effective_combat_stats(state: MatchState, card_id: str) -> tuple[int, int]:
     """Read resolved combat stats, falling back safely for lightweight fixtures."""
     card = state.cards.get(card_id)
@@ -883,7 +895,7 @@ class AIAgent:
                         colored_pips[sym] += 1
                 continue
             mana_cost = getattr(c, "mana_cost", "") or ""
-            cost = parse_mana_cost(mana_cost, is_land=False)
+            cost = _fixed_color_pips(mana_cost)
             cmc = mana_value(mana_cost, is_land=False)
             text = f"{(getattr(c, 'name', '') or '').lower()} {(getattr(c, 'oracle_text', '') or '').lower()}"
             types = set(getattr(c, "types", []) or [])
@@ -3835,12 +3847,23 @@ class AIAgent:
             card = state.cards.get(cid)
             if not card or "Land" in card.types:
                 continue
-            cost = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
+            mana_cost = getattr(card, "mana_cost", "") or ""
+            cost = _fixed_color_pips(mana_cost)
             cmc = mana_value(getattr(card, "mana_cost", ""), is_land=False)
             weight = 2 if cmc <= 2 else (1 if cmc <= 4 else 0)
             for c in ["W", "U", "B", "R", "G"]:
                 if cost[c] > 0:
                     demand[c] += weight * cost[c]
+            for symbol in re.findall(r"\{([^{}]+/[^{}]+)\}", mana_cost.upper()):
+                if not _supported_hybrid_symbol(symbol):
+                    continue
+                parts = symbol.split("/")
+                options = [part for part in parts if part in demand]
+                if len(options) == 2 and len(parts) == 2:
+                    for color in options:
+                        demand[color] += weight * 0.5
+                elif len(options) == 1 and len(parts) == 2:
+                    demand[options[0]] += weight * 0.25
             text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
             if _has_counter_spell_text(text):
                 demand["U"] += 2

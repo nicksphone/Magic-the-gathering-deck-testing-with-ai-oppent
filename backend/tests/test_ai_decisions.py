@@ -769,6 +769,39 @@ def test_control_ai_mulligans_missing_primary_color_access() -> None:
     assert decision.action["type"] == "mulligan"
 
 
+def test_hybrid_spells_do_not_create_false_opening_color_miss() -> None:
+    from types import SimpleNamespace
+
+    ai = AIAgent(difficulty="strong", archetype="Aggro")
+    lands = [SimpleNamespace(name="Island", type_line="Basic Land — Island", types=["Land"], oracle_text="{T}: Add {U}.") for _ in range(2)]
+    def spell(cost):
+        return SimpleNamespace(name="", type_line="Creature", types=["Creature"],
+                               mana_cost=cost, oracle_text="")
+
+    hybrid = ai._opening_hand_profile(lands + [spell("{W/U}"), spell("{W/U}")])
+    fixed_white = ai._opening_hand_profile(lands + [spell("{W}"), spell("{W}")])
+    unsupported_phyrexian = ai._opening_hand_profile(lands + [spell("{B/P}"), spell("{B/P}")])
+    assert not hybrid["missing_primary_color"]
+    assert fixed_white["missing_primary_color"]
+    assert unsupported_phyrexian["missing_primary_color"]
+
+    cards = {str(i): card for i, card in enumerate(lands + [spell("{W/U}") for _ in range(5)])}
+    state = SimpleNamespace(cards=cards, players={1: SimpleNamespace(hand=list(cards))}, mulligan_count={1: 0})
+    assert ai.choose_mulligan_action(state, 1).action["type"] == "keep_hand"
+
+
+def test_hybrid_spell_land_demand_is_not_fixed_to_first_color() -> None:
+    from game_state.state import MatchFactory
+
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=104)
+    spell = state.cards[state.players[1].hand[0]]
+    spell.types = ["Creature"]
+    spell.mana_cost = "{W/U}"
+    demand = AIAgent(archetype="Aggro")._color_demand(state, 1)
+    assert demand["W"] == demand["U"] > 0
+
+
 def test_control_ai_keeps_borderline_two_land_hand_with_real_action() -> None:
     ai = AIAgent(difficulty="strong", archetype="Control")
 
