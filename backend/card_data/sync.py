@@ -74,20 +74,10 @@ class ScryfallSyncService:
 
     def sync_card_from_local_knowledge(self, name: str) -> bool:
         """Materialize a canonical bulk card without making a network request."""
-        row = self.repository.get_card_knowledge(name)
-        if row is None or row.oracle_source != "scryfall":
+        profile = self.canonical_local_profile(self.repository.get_card_knowledge(name), name)
+        if profile is None:
             return False
-        try:
-            profile = json.loads(row.profiles_json)
-        except (TypeError, ValueError):
-            return False
-        raw = profile.get("card_data") if isinstance(profile, dict) else None
-        if not isinstance(raw, dict) or raw.get("object") != "card":
-            return False
-        if not raw.get("id") or raw["id"] != row.scryfall_id or (not raw.get("type_line") and not raw.get("card_faces")):
-            return False
-        if str(raw.get("name", "")).casefold() != name.strip().casefold():
-            return False
+        raw = profile["card_data"]
         cached = self.repository.get_cached_card_by_name(name)
         local_image = cached.image_uri if cached and cached.scryfall_id == raw["id"] and self._cached_image_available(cached.image_uri) else None
         rulings = profile.get("rulings") if profile.get("rulings_verified") is True else []
@@ -96,6 +86,23 @@ class ScryfallSyncService:
         payload = self._normalize_payload(raw, local_image or self._extract_remote_image_uri(raw), rulings)
         self.repository.upsert_card(payload)
         return True
+
+    @staticmethod
+    def canonical_local_profile(row: Any, name: str) -> dict[str, Any] | None:
+        if row is None or row.oracle_source != "scryfall":
+            return None
+        try:
+            profile = json.loads(row.profiles_json)
+        except (TypeError, ValueError):
+            return None
+        raw = profile.get("card_data") if isinstance(profile, dict) else None
+        if not isinstance(raw, dict) or raw.get("object") != "card":
+            return None
+        if not raw.get("id") or raw["id"] != row.scryfall_id or (not raw.get("type_line") and not raw.get("card_faces")):
+            return None
+        if str(raw.get("name", "")).casefold() != name.strip().casefold():
+            return None
+        return profile
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)
@@ -118,7 +125,8 @@ class ScryfallSyncService:
         card = self.repository.upsert_card(payload)
         return self._serialize_card(card)
 
-    def _extract_remote_image_uri(self, raw: dict[str, Any]) -> str | None:
+    @staticmethod
+    def _extract_remote_image_uri(raw: dict[str, Any]) -> str | None:
         # Prefer stable "normal", then gracefully fall back through other known Scryfall sizes.
         preferred_sizes = ("normal", "large", "png", "small", "art_crop", "border_crop")
         image_uris = raw.get("image_uris") or {}

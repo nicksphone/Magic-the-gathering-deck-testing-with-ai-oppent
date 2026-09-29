@@ -151,6 +151,22 @@ def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
     assert report["cards"][1]["rules_coverage"] == "not_certified"
 
 
+def test_cached_vanilla_creature_has_valid_empty_oracle_text() -> None:
+    bear = _CompleteCachedCard()
+    bear.name = "Grizzly Bears"
+    bear.oracle_text = ""
+    bear.type_line = "Creature — Bear"
+
+    class _ReportRepo:
+        def get_cached_cards_by_names(self, names):  # noqa: ANN001
+            return {"grizzly bears": bear}
+
+    report = CardService(_ReportRepo()).completeness_report(["Grizzly Bears"])
+    assert report["complete"] == 1
+    assert report["cards"][0]["oracle_source"] == "cache"
+    assert report["cards"][0]["oracle"] is True
+
+
 def test_completeness_report_warns_for_morph() -> None:
     card = _CompleteCachedCard()
     card.name = "Willbender"

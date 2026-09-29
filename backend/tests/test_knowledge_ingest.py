@@ -95,6 +95,47 @@ def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeyp
     assert json.loads(repo.get_cached_card_by_name("Lightning Bolt").rulings_json) == []
 
 
+def test_bulk_only_cards_are_visible_to_completeness_and_suggestions(repo, bolt):
+    from card_data.service import CardService
+
+    island = {
+        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
+        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "mana_cost": "",
+    }
+    bears = {
+        **bolt, "id": "printing-bears", "oracle_id": "oracle-bears", "name": "Grizzly Bears",
+        "type_line": "Creature — Bear", "oracle_text": "", "mana_cost": "{1}{G}", "power": "2", "toughness": "2",
+    }
+    import_cards(repo, [bolt, island, bears], {"source": "scryfall"})
+    assert repo.list_cards() == []
+    service = CardService(repo)
+    report = service.completeness_report(["Lightning Bolt", "Island", "Grizzly Bears"])
+
+    assert report["complete"] == 3
+    assert report["missing"]["cached"] == 3
+    assert report["missing"]["oracle"] == 0
+    assert report["missing"]["mana_cost"] == 0
+    assert report["missing"]["rulings"] == 3
+    assert {card["oracle_source"] for card in report["cards"]} == {"knowledge"}
+    assert service.suggest_name("Lightning Bol")["suggestion"] == "Lightning Bolt"
+    assert repo.list_cards() == []
+
+
+def test_verified_empty_rulings_are_not_reported_missing(repo, bolt):
+    from card_data.service import CardService
+
+    import_cards(repo, [bolt], {"source": "scryfall"})
+    row = repo.get_card_knowledge("Lightning Bolt")
+    profile = json.loads(row.profiles_json)
+    profile.update({"rulings_verified": True, "rulings": []})
+    row.profiles_json = json.dumps(profile)
+    repo.session.add(row)
+    repo.session.commit()
+
+    report = CardService(repo).completeness_report(["Lightning Bolt"])
+    assert report["missing"]["rulings"] == 0
+
+
 def test_live_hydration_materializes_bulk_faces_without_prior_deck_import(repo, bolt, monkeypatch):
     from main import _hydrate_deck_cards
 
@@ -143,11 +184,18 @@ def test_http_match_start_uses_bulk_only_cards_offline(tmp_path, bolt, monkeypat
     match_id = None
     try:
         with TestClient(main.app) as client:
+            completeness = client.get("/cards/completeness", params=[("names", "Lightning Bolt"), ("names", "Island")])
+            suggestion = client.get("/cards/suggest", params={"name": "Lightning Bol"})
             response = client.post("/matches/start", json={
                 "deck_a": [{"quantity": 4, "card_name": "Lightning Bolt"}, {"quantity": 56, "card_name": "Island"}],
                 "deck_b": [{"quantity": 60, "card_name": "Island"}],
                 "controller_a": "human", "controller_b": "human", "mode": "human_vs_human", "seed": 51,
             })
+        assert completeness.status_code == 200
+        assert [card["name"] for card in completeness.json()["cards"]] == ["Lightning Bolt", "Island"]
+        assert {card["oracle_source"] for card in completeness.json()["cards"]} == {"knowledge"}
+        assert suggestion.status_code == 200
+        assert suggestion.json()["suggestion"] == "Lightning Bolt"
         assert response.status_code == 200, response.text
         match_id = response.json()["id"]
         state = main.ACTIVE_MATCHES[match_id].state

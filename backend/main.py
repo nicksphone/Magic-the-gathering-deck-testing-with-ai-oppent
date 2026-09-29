@@ -428,7 +428,7 @@ def suggest_card(name: str, repo: Repository = Depends(get_repo)) -> dict:
 
 
 @app.get("/cards/completeness")
-def card_completeness(names: list[str] = [], repo: Repository = Depends(get_repo)) -> dict:
+def card_completeness(names: list[str] = Query(default_factory=list), repo: Repository = Depends(get_repo)) -> dict:
     """Report cached metadata and asset gaps for a deck's distinct card names."""
     return CardService(repo).completeness_report(names)
 

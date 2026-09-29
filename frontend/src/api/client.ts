@@ -78,7 +78,7 @@ export type CardCompletenessReport = {
   cards: {
     name: string;
     cached: boolean;
-    oracle_source: "cache" | "fallback" | "missing";
+    oracle_source: "cache" | "knowledge" | "fallback" | "missing";
     placeholder_image: boolean;
     unsupported_mechanics?: string[];
     rules_coverage?: "known_unsupported" | "not_certified";

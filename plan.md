@@ -260,6 +260,7 @@ Divided-damage copy follow-up: supported `deal_damage_multi` stack copies now pa
 
 - September 27 ingestion milestone: reusable all-Oracle bulk import, exact-name/search rulings verification and a knowledge gap report are implemented. The first local import contains 38,690 unique Oracle records and 6,433 faces; bulk records explicitly await rulings verification. Data remains local and is rebuildable from the official source. Tactical profiles, AI consumers, verified offline seeds and full rules coverage remain open.
 - Corpus verification now covers 88 requested names with zero missing metadata or pending rulings (87 canonical records). The full bulk reimport leaves all 38,690 records unchanged. See `docs/plans/baselines/2026-09-27-card-knowledge.json` for the evidence summary.
+- Bulk-only cards now appear in read-only completeness and typo-suggestion endpoints without being misreported as absent or forced into the gameplay cache. The query-string list accepted by `/cards/completeness` is explicitly bound as query data, and verified-empty rulings are counted as available. This improves metadata diagnostics, not rules certification.
 
 - [ ] Freeze and publish the supported corpus and per-mechanic coverage limits.
 - [ ] Sync canonical data/rulings with provenance; use verified offline seeds and report incomplete metadata honestly.

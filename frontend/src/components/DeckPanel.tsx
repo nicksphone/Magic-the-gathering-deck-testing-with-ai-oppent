@@ -183,12 +183,12 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       )}
       {completeness && (
         <div className="data-report" role="status">
-          <strong>Card data: {completeness.complete}/{completeness.requested} complete</strong>
+          <strong>Card metadata: {completeness.complete}/{completeness.requested} available</strong>
           <span>Oracle fallback: {completeness.cards.filter((card) => card.oracle_source === "fallback").length}</span>
           <span>Uncached: {completeness.missing.cached}</span>
           <span>Placeholder art: {completeness.missing.real_image}</span>
-          <span>Missing rulings: {completeness.missing.rulings}</span>
-          <span>Card data completeness does not guarantee rules support.</span>
+          <span>Rulings unavailable or unverified: {completeness.missing.rulings}</span>
+          <span>Metadata availability does not guarantee rules support.</span>
           <span>Rules coverage: {completeness.cards.filter((card) => card.rules_coverage === "known_unsupported").length} known unsupported; {completeness.cards.filter((card) => card.rules_coverage !== "known_unsupported").length} not certified. Match statistics are exploratory.</span>
           {completeness.unsupported_count ? <span role="alert">Unsupported rules in this deck: {completeness.cards.filter((card) => card.unsupported_mechanics?.length).map((card) => `${card.name} (${card.unsupported_mechanics?.join(", ")})`).join("; ")}</span> : null}
         </div>
