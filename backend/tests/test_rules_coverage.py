@@ -1,4 +1,4 @@
-from rules_engine.coverage import known_unsupported_mechanics
+from rules_engine.coverage import known_unsupported_mechanics, deck_pair_coverage
 
 
 def test_known_unsupported_mechanics_are_conservative_and_deduplicated() -> None:
@@ -10,3 +10,12 @@ def test_known_unsupported_mechanics_are_conservative_and_deduplicated() -> None
     assert known_unsupported_mechanics("Banding", [{"oracle_text": "bands with other Dinosaurs"}]) == ["bands with other"]
     assert known_unsupported_mechanics("Draw a card. Banding. Counter target spell.") == []
     assert known_unsupported_mechanics("", [{"oracle_text": "Morph {2}"}, {"oracle_text": "Morph {3}"}]) == ["morph"]
+
+
+def test_deck_pair_coverage_reports_faces_before_simulation() -> None:
+    deck_a = [{"card_name": "Willbender", "oracle_text": "", "card_faces": [{"oracle_text": "Morph {1}{U}"}]}]
+    deck_b = [{"card_name": "Island", "oracle_text": "{T}: Add {U}."}]
+    assert deck_pair_coverage(deck_a, deck_b) == {
+        "status": "exploratory",
+        "known_unsupported_cards": [{"deck": "A", "card_name": "Willbender", "mechanics": ["morph"]}],
+    }

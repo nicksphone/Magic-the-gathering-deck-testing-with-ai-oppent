@@ -2,7 +2,7 @@ import type { DeckItem, DeckRecord, MatchState } from "../types";
 import { HttpResponseError, httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
 import { parseLegalMoves, parseMatchState, parseSavedMatches } from "./match-contract";
-import { parseBatchJobStatus } from "./simulation-contract";
+import { parseBatchJobStatus, parseSimulationCoverage } from "./simulation-contract";
 
 const configuredApi = import.meta.env.VITE_API_BASE_URL;
 const API = apiBase(configuredApi);
@@ -105,6 +105,11 @@ export type ExpansionTopDeckPayload = {
 export type BatchSimulationJobStart = {
   job_id: string;
   status: string;
+};
+
+export type SimulationCoverage = {
+  status: "exploratory";
+  known_unsupported_cards: { deck: "A" | "B"; card_name: string; mechanics: string[] }[];
 };
 
 export type BatchSimulationJobStatus = {
@@ -258,6 +263,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
+  preflightSimulateBatch: async (deck_a: DeckItem[], deck_b: DeckItem[]) =>
+    parseSimulationCoverage(await req<unknown>("/simulate/batch/preflight", {
+      method: "POST",
+      body: JSON.stringify({ deck_a, deck_b }),
+    })),
   getSimulateBatchJob: async (jobId: string) =>
     parseBatchJobStatus(await req<unknown>(`/simulate/batch/${encodeURIComponent(jobId)}`)),
   listDiagnosticRuns: (limit = 20) =>

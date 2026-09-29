@@ -45,6 +45,7 @@ from game_state.state import MatchFactory, Step
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.coverage import deck_pair_coverage
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.replacement import replacement_options
@@ -905,6 +906,13 @@ def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repos
     _start_next_game_state(match, play_first=play_first, repo=repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
+
+
+@app.post("/simulate/batch/preflight")
+def simulate_batch_preflight(payload: DeckPairInput, repo: Repository = Depends(get_repo)) -> dict:
+    deck_a = _validated_deck_cards(repo, payload.deck_a)
+    deck_b = _validated_deck_cards(repo, payload.deck_b)
+    return deck_pair_coverage(deck_a, deck_b)
 
 
 @app.post("/simulate/batch")

@@ -52,6 +52,8 @@ wait_for_services() {
 wait_for_services
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
+echo 'Browser CI: simulation preflight'
+(cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

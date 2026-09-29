@@ -7,7 +7,7 @@ from api_contracts import DeckPairInput
 
 class BatchSimulationRequest(DeckPairInput):
     matches: int = Field(default=100, ge=1, le=500)
-    difficulty: Literal["casual", "strong", "master"] = "master"
+    difficulty: Literal["casual", "strong", "master", "master_plus"] = "master"
     max_ticks: int = Field(default=6000, ge=500, le=50000)
 
 

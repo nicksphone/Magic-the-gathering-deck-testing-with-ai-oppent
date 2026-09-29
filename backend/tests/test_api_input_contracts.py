@@ -77,7 +77,7 @@ def test_bad_decks_are_rejected_before_starting_or_scheduling(game, deck):
     before = snapshot(controller)
     matches = set(main.ACTIVE_MATCHES)
     jobs = set(main.SIM_JOBS)
-    for path in ("/matches/start", "/simulate/batch", "/simulate/batch/start"):
+    for path in ("/matches/start", "/simulate/batch", "/simulate/batch/start", "/simulate/batch/preflight"):
         response = client.post(path, json={"deck_a": deck, "deck_b": [{"quantity": 60, "card_name": "Island"}]})
         assert response.status_code == 422, response.text
     assert set(main.ACTIVE_MATCHES) == matches
@@ -285,7 +285,7 @@ def test_missing_card_data_cannot_start_a_game_or_job(game, monkeypatch):
     deck = [{"quantity": 60, "card_name": "Island"}]
     before = snapshot(controller)
     jobs = set(main.SIM_JOBS)
-    for path in ("/matches/start", "/simulate/batch", "/simulate/batch/start"):
+    for path in ("/matches/start", "/simulate/batch", "/simulate/batch/start", "/simulate/batch/preflight"):
         response = client.post(path, json={"deck_a": deck, "deck_b": deck})
         assert response.status_code == 422
         assert response.json()["detail"]["code"] == "card_data_unavailable"
@@ -305,6 +305,30 @@ def test_simulator_receives_the_same_hydrated_card_contract(game, monkeypatch):
     assert client.post("/simulate/batch", json={"deck_a": deck, "deck_b": deck, "matches": 1}).status_code == 200
     assert len(received) == 2
     assert all(board[0]["type_line"].startswith("Basic Land") for board in received)
+
+
+def test_simulation_preflight_reports_known_gap_without_starting_job(game, monkeypatch):
+    client, _ = game
+    from analytics.schemas import BatchSimulationRequest
+
+    def hydrated(repo, entries):
+        del repo
+        name = entries[0].card_name
+        return [{"quantity": 60, "card_name": name, "type_line": "Creature — Human Wizard" if name == "Willbender" else "Basic Land — Island",
+                 "oracle_text": "Morph {1}{U}" if name == "Willbender" else "{T}: Add {U}."}]
+
+    monkeypatch.setattr(main, "_validated_deck_cards", hydrated)
+    jobs = set(main.SIM_JOBS)
+    deck_a = [{"quantity": 60, "card_name": "Willbender"}]
+    deck_b = [{"quantity": 60, "card_name": "Island"}]
+    response = client.post("/simulate/batch/preflight", json={"deck_a": deck_a, "deck_b": deck_b})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["known_unsupported_cards"] == [
+        {"deck": "A", "card_name": "Willbender", "mechanics": ["morph"]}
+    ]
+    assert set(main.SIM_JOBS) == jobs
+    assert BatchSimulationRequest.model_validate({"deck_a": deck_a, "deck_b": deck_b, "difficulty": "master_plus"}).difficulty == "master_plus"
 
 
 def test_divided_damage_budget_is_not_a_client_parameter(game):

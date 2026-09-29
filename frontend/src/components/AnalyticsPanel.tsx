@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DeckRecord } from "../types";
-import type { DiagnosticRunDetail, DiagnosticRunSummary } from "../api/client";
+import type { DiagnosticRunDetail, DiagnosticRunSummary, SimulationCoverage } from "../api/client";
 
 type Props = {
   decks: DeckRecord[];
@@ -21,6 +21,8 @@ export function AnalyticsPanel({ decks }: Props) {
   const [jobStatus, setJobStatus] = useState<string>("idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
+  const [preflight, setPreflight] = useState<SimulationCoverage | null>(null);
+  const [reviewedDecks, setReviewedDecks] = useState<string | null>(null);
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
   const [selectedGameIndex, setSelectedGameIndex] = useState(0);
@@ -38,6 +40,9 @@ export function AnalyticsPanel({ decks }: Props) {
   const balanceAlerts = Array.isArray(resultObj?.balance_alerts) ? resultObj.balance_alerts as Array<Record<string, unknown>> : [];
   const confidenceIntervals = (resultObj?.confidence_intervals as Record<string, Record<string, unknown>> | null) ?? null;
   const rulesCoverage = resultObj?.rules_coverage as { status?: string; known_unsupported_cards?: { deck: string; card_name: string; mechanics: string[] }[] } | undefined;
+  const selectedA = decks.find((deck) => deck.id === deckA);
+  const selectedB = decks.find((deck) => deck.id === deckB);
+  const deckSignature = selectedA && selectedB ? JSON.stringify([selectedA.mainboard, selectedB.mainboard]) : null;
 
   async function refreshDiagnosticRuns() {
     try {
@@ -117,22 +122,31 @@ export function AnalyticsPanel({ decks }: Props) {
   }
 
   async function runBatch() {
-    const a = decks.find((d) => d.id === deckA);
-    const b = decks.find((d) => d.id === deckB);
-    if (!a || !b) {
+    if (!selectedA || !selectedB || !deckSignature) {
       setResult("Select both decks before running Testing Simulator.");
       setResultObj(null);
       return;
     }
     try {
       setRunning(true);
-      setJobStatus("queued");
+      setJobStatus("checking");
       setResult("");
       setResultObj(null);
       setJobError("");
       setProgressPct(0);
+      setProgressText("Checking rules coverage...");
+      const coverage = await api.preflightSimulateBatch(selectedA.mainboard, selectedB.mainboard);
+      setPreflight(coverage);
+      if (coverage.known_unsupported_cards.length > 0 && reviewedDecks !== deckSignature) {
+        setReviewedDecks(deckSignature);
+        setJobStatus("review");
+        setProgressText("Known unsupported mechanics found. Review the cards below and click Run Anyway to continue.");
+        setRunning(false);
+        return;
+      }
+      setJobStatus("queued");
       setProgressText("Queueing simulator job...");
-      const job = await api.startSimulateBatchJob(a.mainboard, b.mainboard, matches, difficulty, maxTicks);
+      const job = await api.startSimulateBatchJob(selectedA.mainboard, selectedB.mainboard, matches, difficulty, maxTicks);
       setJobId(job.job_id);
     } catch (err) {
       setResult(`Testing Simulator request failed: ${String(err)}`);
@@ -200,7 +214,7 @@ export function AnalyticsPanel({ decks }: Props) {
     <section className="panel analytics">
       <h2>Testing Simulator</h2>
       <div className="row">
-        <select value={deckA ?? ""} onChange={(e) => setDeckA(Number(e.target.value))}>
+        <select value={deckA ?? ""} onChange={(e) => { setDeckA(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
           <option value="">Deck A</option>
           {decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -208,7 +222,7 @@ export function AnalyticsPanel({ decks }: Props) {
             </option>
           ))}
         </select>
-        <select value={deckB ?? ""} onChange={(e) => setDeckB(Number(e.target.value))}>
+        <select value={deckB ?? ""} onChange={(e) => { setDeckB(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
           <option value="">Deck B</option>
           {decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -224,9 +238,14 @@ export function AnalyticsPanel({ decks }: Props) {
           <option value="master">Master</option>
           <option value="master_plus">Master+</option>
         </select>
-        <button onClick={runBatch} disabled={running}>{running ? "Running..." : `Run ${matches} Matches`}</button>
+        <button onClick={runBatch} disabled={running}>{running ? "Running..." : preflight?.known_unsupported_cards.length && reviewedDecks === deckSignature ? "Run Anyway (Exploratory)" : `Run ${matches} Matches`}</button>
         {running ? <button onClick={cancelDisplay}>Stop Polling</button> : null}
       </div>
+      {preflight ? <p role={preflight.known_unsupported_cards.length ? "alert" : "note"}>
+        {preflight.known_unsupported_cards.length
+          ? `Known unsupported mechanics: ${preflight.known_unsupported_cards.map((card) => `Deck ${card.deck} ${card.card_name} (${card.mechanics.join(", ")})`).join("; ")}. Results are exploratory.`
+          : "No known unsupported mechanics detected; rules-exact results are still not certified."}
+      </p> : null}
       <div className="sim-status-panel">
         <div className="sim-status-row">
           <span className={`sim-status-pill sim-status-${jobStatus}`}>{jobStatus}</span>

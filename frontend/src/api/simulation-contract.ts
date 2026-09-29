@@ -1,7 +1,18 @@
-import type { BatchSimulationJobStatus } from "./client";
+import type { BatchSimulationJobStatus, SimulationCoverage } from "./client";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function parseSimulationCoverage(value: unknown): SimulationCoverage {
+  if (!record(value) || value.status !== "exploratory"
+    || !Array.isArray(value.known_unsupported_cards)
+    || !value.known_unsupported_cards.every((item) => record(item)
+      && ["A", "B"].includes(String(item.deck)) && typeof item.card_name === "string"
+      && Array.isArray(item.mechanics) && item.mechanics.every((name) => typeof name === "string"))) {
+    throw new Error("Invalid simulation rules coverage response");
+  }
+  return value as SimulationCoverage;
 }
 
 export function parseBatchJobStatus(value: unknown): BatchSimulationJobStatus {
@@ -23,12 +34,9 @@ export function parseBatchJobStatus(value: unknown): BatchSimulationJobStatus {
     throw new Error("Invalid simulation job response: completed result is missing metrics");
   }
   if (record(value.result) && value.result.rules_coverage !== undefined) {
-    const coverage = value.result.rules_coverage;
-    if (!record(coverage) || coverage.status !== "exploratory"
-      || !Array.isArray(coverage.known_unsupported_cards)
-      || !coverage.known_unsupported_cards.every((item) => record(item)
-        && ["A", "B"].includes(String(item.deck)) && typeof item.card_name === "string"
-        && Array.isArray(item.mechanics) && item.mechanics.every((name) => typeof name === "string"))) {
+    try {
+      parseSimulationCoverage(value.result.rules_coverage);
+    } catch {
       throw new Error("Invalid simulation job response: rules coverage");
     }
   }
