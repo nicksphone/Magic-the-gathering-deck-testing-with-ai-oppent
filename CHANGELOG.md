@@ -1,5 +1,7 @@
 # Changelog
 
+- AI ranking rollouts now materialize targeted candidate and opponent-reply actions before simulation. Deterministic regressions show previously skipped target-dependent moves contribute to both candidate value and opponent-response penalty. Verification: 1,463 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. The eight-reply cap and hidden-information model remain open.
+
 - Corrected bounded AI search to choose the opponent reply that is worst for us, rather than the best, and to materialize targets on simulated replies. Deterministic best/worst and targeted-reply regressions pass. Verification: 1,461 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. Beam coverage and opponent policy remain heuristic.
 
 - Supported sacrifice-triggered "a player sacrifices another permanent, put a +1/+1 counter on each creature you control" with a reusable team-counter handler. Real Mazirek fixtures cover either player sacrificing, self-exclusion, simultaneous departures, snapshot restore and resolution-time board changes. Verification: 1,458 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. Broader team-counter clauses remain open.

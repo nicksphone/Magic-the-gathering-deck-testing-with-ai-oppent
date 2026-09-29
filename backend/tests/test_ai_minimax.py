@@ -62,3 +62,45 @@ def test_strategic_search_materializes_targeted_opponent_reply(monkeypatch):
     result = agent._strategic_line_score(state, {"type": "pass_priority", "branch": "root"}, 1, depth=1)
 
     assert result == 18.0
+
+
+def test_ranking_rollout_materializes_targeted_candidate(monkeypatch):
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=678)
+    agent = AIAgent(difficulty="master", archetype="Midrange")
+
+    def take_action(sim, _player_id, action):
+        if action.get("targets") != {"target_player": 2}:
+            raise ValueError("Target choice required")
+        sim.players[2].life -= 5
+
+    monkeypatch.setattr(agent.engine, "take_action", take_action)
+    monkeypatch.setattr(agent.engine, "legal_moves", lambda _sim, _pid: [])
+    monkeypatch.setattr(agent, "_materialize_action", lambda _sim, move, _pid: {
+        **move, "targets": {"target_player": 2},
+    })
+    monkeypatch.setattr(agent, "_approximate_resolution_for_creature_cast", lambda *_: None)
+    monkeypatch.setattr(agent, "_approximate_resolution_for_ramp_spell", lambda *_: None)
+    monkeypatch.setattr(agent, "_approximate_resolution_for_activated_action", lambda *_: None)
+    monkeypatch.setattr("ai.agent.evaluate_board", lambda sim, _pid: float(sim.players[1].life - sim.players[2].life))
+
+    assert agent._simulate_delta(state, {"type": "cast_spell"}, 1) == 3.5
+
+
+def test_ranking_rollout_materializes_targeted_opponent_reply(monkeypatch):
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=679)
+    agent = AIAgent(difficulty="master", archetype="Midrange")
+
+    def take_action(sim, _player_id, action):
+        if action.get("targets") != {"target_player": 1}:
+            raise ValueError("Target choice required")
+        sim.players[1].life -= 5
+
+    monkeypatch.setattr(agent.engine, "take_action", take_action)
+    monkeypatch.setattr(agent, "_materialize_action", lambda _sim, move, _pid: {
+        **move, "targets": {"target_player": 1},
+    })
+    monkeypatch.setattr("ai.agent.evaluate_board", lambda sim, _pid: float(sim.players[1].life - sim.players[2].life))
+
+    assert agent._best_reply_delta(state, [{"type": "cast_spell"}], 1, 2) == 5.0

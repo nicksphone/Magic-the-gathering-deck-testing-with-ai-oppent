@@ -175,6 +175,7 @@ It is designed for serious deck work:
 - Replay-prior tuning and training exports for deeper decision analysis
 - Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
 - Bounded tactical search minimizes our evaluation on opponent priority and materializes target choices before simulating replies. Its candidate beam remains heuristic; this is not a guarantee of optimal play.
+- Ranking rollouts likewise materialize targeted candidate and opponent-reply actions before evaluating cloned states. Their eight-reply cap can still miss a better response.
 - Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
 - Combat AI evaluates resolved effective stats and blocker ownership, including counters, continuous buffs, temporary changes, and characteristic-defined values
 - On boards too large for bounded block search, AI fallback checks the engine's direct-block legality before assigning a blocker. It counts all attacking members stopped by a legal band block; this does not make AI form bands strategically.

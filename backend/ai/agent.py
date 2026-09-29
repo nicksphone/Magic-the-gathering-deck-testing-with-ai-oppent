@@ -1193,11 +1193,14 @@ class AIAgent:
         # Two-ply lookahead: own action value minus opponent best reply value.
         try:
             before = evaluate_board(state, player_id)
+            materialized = self._materialize_action(state, move, player_id)
+            if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
+                return 0.0
             sim_state = copy.deepcopy(state)
-            self.engine.take_action(sim_state, player_id, move)
-            self._approximate_resolution_for_creature_cast(sim_state, move, player_id)
-            self._approximate_resolution_for_ramp_spell(sim_state, move, player_id)
-            self._approximate_resolution_for_activated_action(sim_state, move, player_id)
+            self.engine.take_action(sim_state, player_id, materialized)
+            self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
+            self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
+            self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = sorted(
@@ -1217,8 +1220,11 @@ class AIAgent:
         before = evaluate_board(sim_state, eval_for_player)
         for reply in opp_moves[:8]:
             try:
+                materialized = self._materialize_action(sim_state, reply, opp_id)
+                if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
+                    continue
                 branch = copy.deepcopy(sim_state)
-                self.engine.take_action(branch, opp_id, reply)
+                self.engine.take_action(branch, opp_id, materialized)
                 delta = before - evaluate_board(branch, eval_for_player)
                 if delta > worst:
                     worst = delta
