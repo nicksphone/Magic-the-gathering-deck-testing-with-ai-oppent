@@ -104,10 +104,12 @@ def can_pay_with_pool_and_lands(
     apply_modifiers: bool = True,
     hybrid_choices: list[str] | None = None,
     reserved_life: int = 0,
+    oracle_text: str = "",
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
+        oracle_text=oracle_text,
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
@@ -332,10 +334,12 @@ def auto_pay_cost(
     hybrid_choices: list[str] | None = None,
     reserved_life: int = 0,
     payment_details: dict | None = None,
+    oracle_text: str = "",
 ) -> bool:
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
+        oracle_text=oracle_text,
     ))
     from rules_engine.replacement import can_pay_life, pay_life
     payment = next(

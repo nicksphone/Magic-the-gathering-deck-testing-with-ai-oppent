@@ -15,6 +15,7 @@ class CostContext:
     generic_increase: int = 0
     state: Any = None
     spell_types: set[str] | None = None
+    oracle_text: str = ""
 
 
 @dataclass
@@ -40,9 +41,26 @@ def register_replacement_effect(effect: ReplacementEffect) -> None:
 
 def apply_cost_modifiers(context: CostContext) -> CostContext:
     out = _apply_static_spell_taxes(context)
+    out = _apply_domain_self_discount(out)
     for modifier in _COST_MODIFIERS:
         out = modifier(out)
     return out
+
+
+_DOMAIN_DISCOUNT_RE = re.compile(
+    r"this spell costs \{(\d+)\} less to cast for each basic land type among lands you control",
+    re.IGNORECASE,
+)
+
+
+def _apply_domain_self_discount(context: CostContext) -> CostContext:
+    if context.state is None or not context.is_spell or not context.oracle_text:
+        return context
+    match = _DOMAIN_DISCOUNT_RE.search(context.oracle_text)
+    if match:
+        from rules_engine.domain import basic_land_type_count
+        context.generic_reduction += int(match.group(1)) * basic_land_type_count(context.state, context.player_id)
+    return context
 
 
 _SPELL_TAX_RE = re.compile(

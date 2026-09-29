@@ -264,6 +264,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     return can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in card.types),
         card_name=card.name, x_value=x_value, spell_types=set(card.types),
+        oracle_text=card.oracle_text or "",
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
     )
 

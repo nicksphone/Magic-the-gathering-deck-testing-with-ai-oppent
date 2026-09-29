@@ -197,6 +197,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(can_pay_with_pool_and_lands(
                 state, player_id, option.mana_cost, card_name=face_card.name,
                 x_value=int(targets.get("x_value") or 0), spell_types=set(face_card.types),
+                oracle_text=face_card.oracle_text or "",
                 hybrid_choices=hybrid_choices,
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")

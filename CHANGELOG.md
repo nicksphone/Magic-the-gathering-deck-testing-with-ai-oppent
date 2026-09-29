@@ -1,5 +1,7 @@
 # Changelog
 
+- Applied the supported "This spell costs {N} less ... for each basic land type" Domain wording through the shared cost modifier. It uses controlled land subtypes, not land names, and affects move legality, AI affordability, spell-tax-adjusted payment and actual casting without changing printed mana value. Verification: 1,350 isolated backend tests, frontend lint/build/unit checks and the full Chromium browser harness pass.
+
 - Implemented the bounded Domain token-creation wording used by Herd Migration: count distinct basic land subtypes among controlled lands, including nonbasic dual/triple lands, when the effect resolves. Zero types create zero tokens. Sorcery/instant cast parsing now ignores separate activated-ability lines, so Herd Migration's discard/search ability no longer replaces its cast effect. The generic name fallback remains disabled for cards with printed Oracle text. Other Domain uses, such as Leyline Binding's discount, remain unsupported and preflight still warns. Verification: 1,347 isolated backend tests, frontend lint/build/unit tests and the full Chromium browser harness pass.
 
 - Extended simulator rules-coverage preflight to flag kicker, multikicker, Domain and Incubate from Oracle root/face text. A read-only scan of the sourced OTJ list now flags five cards that previously passed silently. This is an honest warning, not an implementation of their gameplay rules. Verification: 1,343 isolated backend tests, frontend lint/build/unit tests and the full Chromium browser harness pass.

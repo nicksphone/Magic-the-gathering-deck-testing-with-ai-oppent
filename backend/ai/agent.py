@@ -1412,6 +1412,7 @@ class AIAgent:
             return bool(can_pay_with_pool_and_lands(
                 state, player_id, getattr(card, "mana_cost", ""),
                 card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+                oracle_text=getattr(card, "oracle_text", "") or "",
             ))
         except Exception:
             return False
@@ -3076,6 +3077,7 @@ class AIAgent:
             cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
             if x >= floor and can_pay_with_pool_and_lands(
                 state, player_id, cost, card_name=card_name, spell_types=spell_types,
+                oracle_text=getattr(card, "oracle_text", "") or "",
             ):
                 scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
         if not scored:
@@ -3086,12 +3088,14 @@ class AIAgent:
                     cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
                     if can_pay_with_pool_and_lands(
                         state, player_id, cost, card_name=card_name, spell_types=spell_types,
+                        oracle_text=getattr(card, "oracle_text", "") or "",
                     ):
                         return x
             for x in range(max(1, floor), upper + 1):
                 cost = re.sub(r"\{X\}", f"{{{x}}}", mana_cost, flags=re.IGNORECASE)
                 if can_pay_with_pool_and_lands(
                     state, player_id, cost, card_name=card_name, spell_types=spell_types,
+                    oracle_text=getattr(card, "oracle_text", "") or "",
                 ):
                     return x
             return 0
@@ -3874,6 +3878,7 @@ class AIAgent:
             if can_pay_with_pool_and_lands(
                 state, player_id, getattr(card, "mana_cost", ""),
                 card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+                oracle_text=getattr(card, "oracle_text", "") or "",
             ):
                 opp_id = 1 if player_id == 2 else 2
                 opp_creatures = sum(

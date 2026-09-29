@@ -796,6 +796,7 @@ class RulesEngine:
                 paid = auto_pay_cost(
                     state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
+                    oracle_text=face_card.oracle_text or "",
                     hybrid_choices=action.get("hybrid_choices"),
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                     payment_details=payment_details,
