@@ -58,10 +58,12 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     if event == "leaves_battlefield":
         for payload in payloads:
             capture_last_known_battlefield(state, payload.get("card_id"))
+    departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event == "permanent_dies" else []
     for payload in payloads:
-        for trigger in _collect_triggers(state, event, payload):
+        event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
+        for trigger in _collect_triggers(state, event, event_payload):
             source_id = str(trigger.get("source_card_id", ""))
-            source = state.cards.get(source_id)
+            source = _departed_card_view(state, source_id)
             oracle = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if "one or more" in oracle:
                 if source_id in one_or_more_sources:
@@ -363,8 +365,18 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 )
             )
     for pid, pstate in state.players.items():
-        for cid in list(pstate.battlefield):
-            card = state.cards[cid]
+        source_ids = list(pstate.battlefield)
+        if event == "permanent_dies":
+            departed_ids = payload.get("__simultaneous_source_ids", [payload.get("card_id")])
+            source_ids.extend(
+                cid for cid in departed_ids
+                if cid in state.cards
+                and state.cards[cid].zone != Zone.BATTLEFIELD
+                and state.cards[cid].last_known_battlefield
+                and state.cards[cid].last_known_battlefield["controller"] == pid
+            )
+        for cid in dict.fromkeys(source_ids):
+            card = _departed_card_view(state, cid)
             oracle = without_reminder_text((card.oracle_text or "").lower())
             once_each_turn = "only once each turn" in oracle or "this ability triggers only once each turn" in oracle
             trigger_key = f"{cid}:{event}"
@@ -575,6 +587,12 @@ def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payloa
     dead_card = _departed_card_view(state, dead_id)
     if not dead_card:
         return False
+    if "whenever an artifact you control is put into a graveyard from the battlefield" in oracle:
+        return (
+            "target opponent loses life equal to this creature's power" in oracle
+            and dead_card.controller == card.controller
+            and "Artifact" in (dead_card.types or [])
+        )
     if "whenever another permanent you control dies" in oracle:
         return dead_card.controller == card.controller and dead_id != card.id
     if "whenever a permanent you control dies" in oracle:
@@ -957,6 +975,17 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event == "permanent_dies" and "target opponent loses life equal to this creature's power" in oracle:
+            from rules_engine.continuous import effective_power
+            amount = (effective_power(state, source_card_id) if source_card.zone == Zone.BATTLEFIELD
+                      else source_card.last_known_battlefield.get("power", source_card.power or 0))
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "lose_life",
+                "payload": {"target_player": opponent, "amount": max(0, int(amount))},
+            }
         if event == "life_paid":
             counter_match = re.search(
                 r"whenever you pay life, put that many ([+\w/-]+) counters? on this (?:creature|artifact|enchantment|permanent)",

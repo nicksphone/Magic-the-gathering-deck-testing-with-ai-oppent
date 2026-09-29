@@ -1333,6 +1333,7 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
             return
         zone_owner.graveyard.append(target)
         card.zone = Zone.GRAVEYARD
+        emit_event(state, "permanent_dies", {"card_id": target, "controller": controller})
         if was_creature_on_battlefield(card):
             emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
