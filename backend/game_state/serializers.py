@@ -155,6 +155,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "instance_order": card.instance_order,
                 "card_faces": list(card.card_faces),
                 "layout": card.layout,
+                "exile_face_down": card.exile_face_down,
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
@@ -215,6 +216,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
+            exile_face_down=bool(raw.get("exile_face_down", False)),
         )
 
     state = MatchState(
@@ -349,6 +351,7 @@ def serialize_match(state: MatchState) -> dict:
                     for cid in p.graveyard
                 ],
                 "graveyard_count": len(p.graveyard),
+                "exile": [serialize_card_view(state, cid) for cid in p.exile if not state.cards[cid].exile_face_down],
                 "exile_count": len(p.exile),
                 "mana_pool": p.mana_pool,
             }

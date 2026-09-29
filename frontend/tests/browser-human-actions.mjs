@@ -216,8 +216,13 @@ try {
   await click("Confirm Selection");
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");
   assert.equal(await evaluate("window.fixtureState.players['2'].exile_count"), 1);
+  assert.equal(await evaluate("window.fixtureState.players['2'].exile[0].name"), "Serra Angel");
   assert.equal(await evaluate("window.fixtureState.players['2'].graveyard.length"), 0);
   assert.equal(await evaluate("window.fixtureState.log.some(line => line.includes('exiles Serra Angel from their hand'))"), true);
+  await evaluate("document.querySelector('[aria-label=\"Player 2 exile\"]').click()");
+  assert.equal(await evaluate("document.querySelector('[aria-label=\"Player 2 exile\"]').parentElement.textContent.includes('Serra Angel')"), true);
+  await evaluate("document.querySelector('[aria-label=\"Player 2 exile\"]').parentElement.querySelector('button').focus()");
+  await waitFor("document.querySelector('.card-hover-preview')?.textContent.includes('Serra Angel')");
   console.log("PASS Appetite for Brains exiles only a qualifying revealed card without discarding it");
 
   await reset();

@@ -87,6 +87,7 @@ class CardInstance:
     colors: list[str] | None = None
     is_token: bool = False
     last_known_battlefield: dict = field(default_factory=dict)
+    exile_face_down: bool = False
 
     def reset_zone_counters(self, zone: Zone) -> None:
         if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
@@ -100,6 +101,8 @@ class CardInstance:
         if zone != self.zone and (zone in {Zone.HAND, Zone.LIBRARY, Zone.EXILE}
                                   or zone == Zone.GRAVEYARD and self.zone != Zone.BATTLEFIELD):
             self.reset_zone_counters(zone)
+        if zone != Zone.EXILE:
+            self.exile_face_down = False
         self.zone = zone
 
 

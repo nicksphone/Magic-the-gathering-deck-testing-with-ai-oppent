@@ -139,9 +139,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     };
   }
 
-  function graveyardTray(seat: number, cards: typeof p1.graveyard) {
+  function zoneTray(seat: number, zone: "graveyard" | "exile", cards: typeof p1.graveyard, count: number) {
     return <details className="graveyard-tray">
-      <summary aria-label={`Player ${seat} graveyard`}>GY {cards.length}</summary>
+      <summary aria-label={`Player ${seat} ${zone}`}>{zone === "graveyard" ? "GY" : "EX"} {count}</summary>
       <div className="graveyard-tray-list">
         {cards.length ? cards.map((card) => <button
           key={card.id}
@@ -152,7 +152,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           onBlur={() => setHoverPreview(null)}
         >
           {card.name}{card.mana_cost ? <small>{card.mana_cost}</small> : null}
-        </button>) : <span>Empty</span>}
+        </button>) : count === 0 ? <span>Empty</span> : null}
+        {count > cards.length ? <span>{count - cards.length} face-down card(s)</span> : null}
       </div>
     </details>;
   }
@@ -208,8 +209,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row opponent">
         <div className="zone-meta">
           <span>Library {p2.library_count}</span>
-          {graveyardTray(opponentSeat, p2.graveyard)}
-          <span>Exile {p2.exile_count}</span>
+          {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
+          {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
           <span>Hand {p2.hand_count}</span>
           <span>Untapped Mana {manaSummary(p2Groups.lands) || "-"}</span>
           <span className="mana-pool">
@@ -271,8 +272,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row player">
         <div className="zone-meta">
           <span>Library {p1.library_count}</span>
-          {graveyardTray(viewerSeat, p1.graveyard)}
-          <span>Exile {p1.exile_count}</span>
+          {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
+          {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
           <span>Hand {p1.hand_count}</span>
           <span>Untapped Mana {manaSummary(p1Groups.lands) || "-"}</span>
           <span className="mana-pool">

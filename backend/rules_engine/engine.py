@@ -606,7 +606,7 @@ class RulesEngine:
                 player.lands_played_this_turn = used_land_plays + 1
                 player.land_plays_recorded_on_turn = used_land_plays + 1
                 player.last_land_play_turn = state.turn
-                state.cards[cid].zone = Zone.BATTLEFIELD
+                card.move_to_zone(Zone.BATTLEFIELD)
                 state.cards[cid].summoning_sick = False
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
@@ -831,7 +831,7 @@ class RulesEngine:
                 else:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
-                card.zone = Zone.STACK
+                card.move_to_zone(Zone.STACK)
                 card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
