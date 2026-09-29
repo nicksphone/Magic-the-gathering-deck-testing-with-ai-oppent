@@ -75,6 +75,7 @@ def _queue_human_damage_replacement_choice(
         "amount": int(remaining_amount),
         "controller": int(controller),
         "source_card_id": payload.get("__source_card_id"),
+        "source_lki": payload.get("__source_lki"),
         "selected_source_ids": used_source_ids,
         "batch_damage": bool(payload.get("__batch_damage")),
         "options": options,
@@ -149,6 +150,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     target_card_id = payload.get("target_card_id")
     amount = int(payload.get("amount", 0))
     source_card_id = payload.get("__source_card_id")
+    source_lki = payload.get("__source_lki")
     selected_source_id = payload.get("__replacement_source_id")
     human_chain = bool(selected_source_id and getattr(state, "replacement_choice_required", False))
     prevention_locked = damage_cant_be_prevented(
@@ -158,7 +160,9 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         target_card_id=target_card_id,
     )
     source_colors: set[str] = set()
-    if source_card_id in state.cards:
+    if source_lki is not None:
+        source_colors = set(source_lki.get("color_names", []))
+    elif source_card_id in state.cards:
         source_colors = card_color_names(state.cards[source_card_id])
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
@@ -188,13 +192,13 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 return 0
             from rules_engine.damage_results import apply_creature_damage
             if card.toughness is not None:
-                apply_creature_damage(state, target_card_id, int(post), source_card_id)
+                apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki)
                 state.log.append(f"{card.name} takes {post} damage.")
             if "Planeswalker" in card.types and card.loyalty is not None:
                 card.loyalty -= int(post)
                 state.log.append(f"{card.name} loses {post} loyalty.")
             if not payload.get("__batch_damage"):
-                _gain_lifelink_from_damage(state, source_card_id, int(post))
+                _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
             if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)
@@ -215,17 +219,19 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         if post <= 0:
             return 0
         from rules_engine.damage_results import apply_player_damage
-        apply_player_damage(state, int(target_player), int(post), source_card_id)
+        apply_player_damage(state, int(target_player), int(post), source_card_id, source_lki=source_lki)
         state.log.append(f"{state.players[target_player].name} takes {post} damage.")
         if not payload.get("__batch_damage"):
-            _gain_lifelink_from_damage(state, source_card_id, int(post))
+            _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
         return int(post)
     return 0
 
 
-def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount: int) -> None:
-    if amount > 0 and source_id in state.cards and has_keyword(state, source_id, "lifelink"):
-        source_controller = state.cards[source_id].controller
+def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount: int,
+                               source_lki: dict | None = None) -> None:
+    from rules_engine.damage_results import source_has_keyword
+    if amount > 0 and source_has_keyword(state, source_id, "lifelink", source_lki):
+        source_controller = int(source_lki["controller"]) if source_lki is not None else state.cards[source_id].controller
         gain_life(state, source_controller, {
             "target_player": source_controller, "amount": amount, "__source_card_id": source_id,
         })
@@ -1799,7 +1805,8 @@ def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None
              int(target) if str(target).isdigit() else target, "amount": int(amount)}
         for target, amount in (payload.get("target_distribution") or {}).items()
     ]
-    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id")})
+    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id"),
+                                          "__source_lki": payload.get("__source_lki")})
 
 
 def damage_each_creature_and_player(state: MatchState, controller: int, payload: dict) -> None:
@@ -1812,15 +1819,18 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
         if "Creature" in state.cards[cid].types
     ]
     recipients.extend({"target_player": pid, "amount": amount} for pid in state.players)
-    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id")})
+    deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id"),
+                                          "__source_lki": payload.get("__source_lki")})
 
 
 def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None:
     source_id = payload.get("__source_card_id")
+    source_lki = payload.get("__source_lki")
     lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
     recipients = list(payload.get("recipients") or [])
     for index, recipient in enumerate(recipients):
-        recipient = {**recipient, "__source_card_id": source_id, "__defer_lethal": True, "__batch_damage": True}
+        recipient = {**recipient, "__source_card_id": source_id, "__source_lki": source_lki,
+                     "__defer_lethal": True, "__batch_damage": True}
         target_id = recipient.get("target_card_id")
         affected = state.cards[target_id].controller if target_id else recipient.get("target_player")
         event = "damage_to_permanent" if target_id else "damage_to_player"
@@ -1837,10 +1847,12 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
                     "resume_kind": "damage_batch", "player_id": affected, "event": event,
                     "target_player": recipient.get("target_player"), "target_card_id": target_id,
                     "amount": recipient["amount"], "controller": controller, "source_card_id": source_id,
+                    "source_lki": source_lki,
                     "options": options, "combat_damage_needs_sba": True,
                     "continuation_effects": [{
                         "effect_key": "deal_damage_batch",
                         "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
+                                    "__source_lki": source_lki,
                                     "lifelink_total": lifelink_total},
                     }],
                 }
@@ -1854,12 +1866,14 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
             pending.setdefault("continuation_effects", []).append({
                 "effect_key": "deal_damage_batch",
                 "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
+                            "__source_lki": source_lki,
                             "lifelink_total": lifelink_total},
             })
             return
-        if source_id in state.cards and has_keyword(state, source_id, "lifelink"):
+        from rules_engine.damage_results import source_has_keyword
+        if source_has_keyword(state, source_id, "lifelink", source_lki):
             lifelink_total += dealt
-    _gain_lifelink_from_damage(state, source_id, lifelink_total)
+    _gain_lifelink_from_damage(state, source_id, lifelink_total, source_lki)
 
 
 def tap_card(state: MatchState, controller: int, payload: dict) -> None:

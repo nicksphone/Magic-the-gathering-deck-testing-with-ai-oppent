@@ -116,6 +116,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
 
         source = copy(card)
         source.oracle_text = item.payload["__ability_target_text"]
+        source_lki = item.payload.get("__source_lki")
+        if source_lki is not None:
+            source.controller = int(source_lki["controller"])
+            source.types = list(source_lki["types"])
+            source.colors = list(source_lki.get("colors", []))
+            source.card_faces = []
         hints = inspect_target_hints(state, source, item.controller, announced)
         legal = (validate_cast_targets(hints, announced)[0]
                  and validate_protection_targets(state, source, announced)[0]

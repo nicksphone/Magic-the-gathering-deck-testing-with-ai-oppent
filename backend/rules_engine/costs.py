@@ -173,6 +173,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     needed = cost.sacrifice_creatures
     destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids[:needed]}
     for sac_id in sacrifice_ids[:needed]:
+        from rules_engine.events import capture_last_known_battlefield
+        capture_last_known_battlefield(state, sac_id)
         if context is not None and "Creature" in state.cards[sac_id].types:
             from rules_engine.continuous import effective_toughness
             context["__sacrificed_toughness"] = effective_toughness(state, sac_id)

@@ -532,6 +532,7 @@ class RulesEngine:
                         "target_card_id": pending.get("target_card_id"),
                         "amount": int(pending.get("amount", 0) or 0),
                         "__source_card_id": pending.get("source_card_id"),
+                        "__source_lki": pending.get("source_lki"),
                         "__replacement_source_id": chosen_id,
                         "__used_replacement_source_ids": list(pending.get("selected_source_ids") or [])
                         + [chosen_id],
@@ -540,9 +541,9 @@ class RulesEngine:
                     },
                 )
                 if pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch":
-                    from rules_engine.continuous import has_keyword
+                    from rules_engine.damage_results import source_has_keyword
                     source_id = pending.get("source_card_id")
-                    if dealt and source_id in state.cards and has_keyword(state, source_id, "lifelink"):
+                    if dealt and source_has_keyword(state, source_id, "lifelink", pending.get("source_lki")):
                         for item in pending.get("continuation_effects", []):
                             if item.get("effect_key") == "deal_damage_batch":
                                 item["payload"]["lifelink_total"] = int(item["payload"].get("lifelink_total", 0)) + dealt
@@ -1027,6 +1028,8 @@ class RulesEngine:
             resolved_payload = {**resolved.effect.payload,
                                 "__announced_targets": dict(action_targets),
                                 "__ability_target_text": ability["text"]}
+            if state.cards[cid].zone != Zone.BATTLEFIELD and state.cards[cid].last_known_battlefield:
+                resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)
             add_to_stack(
                 state,
                 source_card_id=cid,
