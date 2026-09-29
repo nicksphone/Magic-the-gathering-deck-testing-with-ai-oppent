@@ -41,6 +41,7 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
     card = state.cards.get(card_id) if card_id else None
     if card is None:
         return
+    state.temporary_control_changes.pop(card_id, None)
     from rules_engine.alternative_casts import restore_printed_characteristics
     restore_printed_characteristics(card)
     if card.layout in {"transform", "meld", "flip", "double_faced_token"} and card.selected_face_index not in {None, 0} and card.card_faces:

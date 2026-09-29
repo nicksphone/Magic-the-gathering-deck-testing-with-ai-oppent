@@ -1,6 +1,7 @@
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.registry import resolve_effect
+from effects.handlers import destroy_permanent, return_creature_from_graveyard_to_battlefield
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.engine import RulesEngine
 
@@ -61,3 +62,27 @@ def test_control_change_duration_is_snapshot_safe() -> None:
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert restored.temporary_control_changes[creature.id]["controller"] == 2
     assert restored.cards[creature.id].controller == 1
+
+
+def test_temporary_control_does_not_follow_reanimated_new_permanent() -> None:
+    state = _state()
+    creature = CardInstance("creature", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+                            type_line="Creature — Bear", power=2, toughness=2)
+    state.cards[creature.id] = creature
+    state.players[2].battlefield.append(creature.id)
+    resolve_effect(state, 1, "change_control", {
+        "target_card_id": creature.id, "new_controller": 1, "until_end_of_turn": True,
+    })
+    assert creature.controller == 1
+
+    destroy_permanent(state, 2, {"target_card_id": creature.id})
+    assert creature.zone == Zone.GRAVEYARD
+    return_creature_from_graveyard_to_battlefield(state, 1, {"target_card_id": creature.id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert state.cards[creature.id].zone == Zone.BATTLEFIELD
+    assert state.cards[creature.id].controller == 1
+
+    state.step = Step.CLEANUP
+    RulesEngine()._apply_step_start_actions(state)
+    assert state.cards[creature.id].controller == 1
+    assert creature.id in state.players[1].battlefield
