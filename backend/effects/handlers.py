@@ -1687,6 +1687,12 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
         # PT delta from counters is computed dynamically by effective_power/toughness
 
 
+def add_counters_each_creature(state: MatchState, controller: int, payload: dict) -> None:
+    for card_id in list(state.players[controller].battlefield):
+        if card_id in state.cards and "Creature" in state.cards[card_id].types:
+            add_counters(state, controller, {**payload, "target_card_id": card_id})
+
+
 def set_next_creature_entry_counter(state: MatchState, controller: int, payload: dict) -> None:
     """Arm a one-shot counter for the next creature spell cast this turn."""
     amount = max(0, int(payload.get("amount", 1) or 0))

@@ -15,6 +15,7 @@ TRANSFORM_DRAW_RE = re.compile(
     r"you may draw a card\.\s*do this only once each turn",
     re.IGNORECASE,
 )
+TEAM_COUNTER_RE = re.compile(r"\bput a (\+\d+/\+\d+) counter on each creature you control\b")
 
 
 def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
@@ -891,6 +892,8 @@ def _matches_sacrifice_trigger(state: MatchState, card, oracle: str, payload: di
     if not sac_id or sac_id not in state.cards:
         return False
     sac_card = state.cards[sac_id]
+    if "whenever a player sacrifices another permanent" in oracle and TEAM_COUNTER_RE.search(oracle):
+        return sac_id != card.id
     if "whenever a player sacrifices a permanent" in oracle and re.search(r"deals? \d+ damage to any target", oracle):
         return True
     if ("whenever a player sacrifices a permanent" in oracle
@@ -1101,6 +1104,15 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        team_counter = TEAM_COUNTER_RE.search(oracle)
+        if event == "sacrifice" and team_counter:
+            return {
+                "source_card_id": source_card_id,
+                "controller": controller,
+                "label": default_label,
+                "effect_key": "add_counters_each_creature",
+                "payload": {"counter": team_counter.group(1), "amount": 1},
+            }
         if event == "spell_cast" and re.search(
             r"whenever you cast a noncreature spell, incubate x, where x is that spell's mana value",
             oracle,

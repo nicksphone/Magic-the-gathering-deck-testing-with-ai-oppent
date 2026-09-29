@@ -228,12 +228,12 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/handlers.py": {
-    "mtime": 1790720629.0238914,
-    "hash": "b69e76e7ac3bf3e386b9c42088c0c6f6"
+    "mtime": 1790724200.3101437,
+    "hash": "0977ddd0ffde32a987fc9f0578fee08b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/effects/registry.py": {
-    "mtime": 1790721927.9667354,
-    "hash": "3ba03d3086cb80cfc68accb42cab6fa6"
+    "mtime": 1790724200.3111436,
+    "hash": "ba4ce69a8b1d27efbf44bdd698183357"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_trigger_target_choices.py": {
     "mtime": 1790548672.5513647,
@@ -590,6 +590,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_replacement_and_layers.py": {
     "mtime": 1784166271.2632248,
     "hash": "cc3cf5def8a95d27db80641f004ebad7"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_sacrifice_team_counters.py": {
+    "mtime": 1790724229.0596864,
+    "hash": "0f0e459a534b98cd6b0ef421b22803b6"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_saga_live.py": {
     "mtime": 1790707836.5797439,
@@ -1000,8 +1004,8 @@
     "hash": "cda311d31b10ddf942b0d51c06fdd26b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/events.py": {
-    "mtime": 1790723721.5618498,
-    "hash": "a625f64cbe43fd3ef481665fdad610fd"
+    "mtime": 1790724229.0586865,
+    "hash": "89f1bd481f1726dd497f92b65b678bbc"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/damage_results.py": {
     "mtime": 1790719970.259768,
@@ -1248,16 +1252,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790723806.7814796,
-    "hash": "c519586edaae5a7bd4d10db3677ce993"
+    "mtime": 1790724256.1422555,
+    "hash": "56e000da2ad02d93561ed8008f9d8d70"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790724079.1030865,
-    "hash": "0e66e05ce3a961514d2859065e9e0906"
+    "mtime": 1790724624.218365,
+    "hash": "72bf2070862e404fbf781fdad19f38eb"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790724079.1030865,
-    "hash": "5cd4f79884327bf2e7a2ec5bb00f8829"
+    "mtime": 1790724624.2173648,
+    "hash": "89a151642842be3c88b8ea62e6aaf35b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
