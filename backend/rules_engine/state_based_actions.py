@@ -156,6 +156,9 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
     if state.winner is None:
         losing_players = set()
         for pid, player in state.players.items():
+            if pid in state.failed_draw_players:
+                losing_players.add(pid)
+                state.log.append(f"{player.name} loses after attempting to draw from empty library.")
             if player.poison >= 10:
                 losing_players.add(pid)
                 state.log.append(f"{player.name} has ten or more poison counters and loses.")

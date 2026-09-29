@@ -68,6 +68,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "cleanup_repeat_required": state.cleanup_repeat_required,
         "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
         "winner": state.winner,
+        "failed_draw_players": sorted(state.failed_draw_players),
         "best_of": state.best_of,
         "score": {str(key): value for key, value in state.score.items()},
         "pregame_pending": state.pregame_pending,
@@ -232,6 +233,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         if payload.get(key) is not None:
             setattr(state, key, int(payload[key]) if key != "winner" else payload[key])
     state.step = Step(payload.get("step", Step.UNTAP.value))
+    state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))
     state.attack_targets = dict(payload.get("attack_targets", {}))

@@ -5,8 +5,9 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from ai.agent import AIAgent
+from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, draw_card
 from main import (
     ACTIVE_MATCHES, MatchController, NextGameRequest, _controller_snapshot,
     _post_step_finalize, _persist_active_match, _restore_active_matches, _serialize_match_controller,
@@ -52,6 +53,43 @@ def test_simultaneous_player_losses_are_a_draw():
     assert restored.winner == 0
     apply_state_based_actions(state)
     assert sum("game is a draw" in line for line in state.log) == 1
+
+
+def test_empty_library_draw_loss_waits_for_state_based_actions():
+    state = MatchFactory.from_decks(DECK, DECK, seed=102)
+    state.players[1].library.clear()
+    draw_card(state, 1)
+    assert state.winner is None
+    assert state.failed_draw_players == {1}
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.failed_draw_players == {1}
+    apply_state_based_actions(restored)
+    assert restored.winner == 2
+
+
+def test_simultaneous_empty_library_draw_failures_are_a_draw():
+    state = MatchFactory.from_decks(DECK, DECK, seed=103)
+    for player in state.players.values():
+        player.library.clear()
+    draw_card(state, 1)
+    draw_card(state, 2)
+    assert state.winner is None
+    apply_state_based_actions(state)
+    assert state.winner == 0
+    assert sum("loses after attempting to draw" in line for line in state.log) == 2
+
+
+def test_multicard_draw_stops_after_first_empty_library_failure():
+    state = MatchFactory.from_decks(DECK, DECK, seed=104)
+    state.players[1].library = state.players[1].library[:1]
+    before = len(state.players[1].hand)
+    resolve_effect(state, 1, "draw_cards", {"amount": 3})
+    assert len(state.players[1].hand) == before + 1
+    assert state.failed_draw_players == {1}
+    assert sum("attempted to draw from empty library" in line for line in state.log) == 1
+    assert sum("draws 1" in line for line in state.log) == 1
+    apply_state_based_actions(state)
+    assert state.winner == 2
 
 
 def test_drawn_game_keeps_score_and_previous_chooser_after_restore():

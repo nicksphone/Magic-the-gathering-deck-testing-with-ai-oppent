@@ -231,6 +231,8 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
                 single.pop("__replacement_source_id", None)
                 single.pop("__skip_dredge_choice", None)
             draw_cards(state, controller, single)
+            if target_player in state.failed_draw_players:
+                return
             pending = state.pending_mechanic_choice or state.pending_replacement_choice
             if pending:
                 remaining = amount - index - 1
@@ -285,8 +287,11 @@ def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
         from effects.registry import resolve_effect
         resolve_effect(state, controller, key, repl_payload)
         return
+    before = len(state.players[target_player].hand)
     draw_card(state, target_player, amount)
-    state.log.append(f"{state.players[target_player].name} draws {amount}.")
+    drawn = len(state.players[target_player].hand) - before
+    if drawn:
+        state.log.append(f"{state.players[target_player].name} draws {drawn}.")
 
 
 def cycle_draw(state: MatchState, controller: int, payload: dict) -> None:

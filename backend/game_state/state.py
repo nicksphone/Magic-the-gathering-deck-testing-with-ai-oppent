@@ -164,6 +164,7 @@ class MatchState:
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)
     winner: int | None = None
+    failed_draw_players: set[int] = field(default_factory=set)
     best_of: int = 3
     score: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     pregame_pending: bool = True
@@ -282,11 +283,13 @@ def draw_card(state: MatchState, player_id: int, count: int = 1) -> None:
 
     player = state.players[player_id]
     for _ in range(count):
+        if player_id in state.failed_draw_players:
+            return
         if not can_draw_card(state, player_id):
             return
         if not player.library:
-            state.winner = 1 if player_id == 2 else 2
-            state.log.append(f"{player.name} attempted to draw from empty library and loses.")
+            state.failed_draw_players.add(player_id)
+            state.log.append(f"{player.name} attempted to draw from empty library.")
             return
         cid = player.library.pop()
         card = state.cards[cid]
