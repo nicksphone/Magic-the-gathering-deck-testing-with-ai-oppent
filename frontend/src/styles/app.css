@@ -203,6 +203,39 @@ button:hover {
   align-items: center;
 }
 
+.graveyard-tray {
+  position: relative;
+}
+
+.graveyard-tray summary {
+  cursor: pointer;
+}
+
+.graveyard-tray-list {
+  position: absolute;
+  z-index: 25;
+  left: 0;
+  top: 100%;
+  width: min(300px, 78vw);
+  max-height: 320px;
+  overflow-y: auto;
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid #5f95a6;
+  border-radius: 8px;
+  background: #112832;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.graveyard-tray-list button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .mana-pool {
   display: inline-flex;
   align-items: center;

@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from effects.registry import resolve_effect
 from game_state.serializers import serialize_match
-from game_state.state import MatchFactory, Step
+from game_state.state import MatchFactory, Step, Zone
 from main import ACTIVE_MATCHES, MatchController, _serialize_match_controller, app
 from rules_engine.engine import RulesEngine
 
@@ -46,6 +46,35 @@ def test_public_match_and_legal_moves_hide_ai_hand_without_mutating_state():
             spectator = _serialize_match_controller(controller)
             assert spectator["players"][1]["hand"] == []
             assert spectator["players"][2]["hand"] == []
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
+
+
+def test_public_graveyards_show_cards_for_both_seats_without_revealing_ai_hand():
+    deck = [{"quantity": 60, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
+    state = MatchFactory.from_decks(deck, deck, seed=34)
+    state.pregame_pending = False
+    for pid in (1, 2):
+        cid = state.players[pid].hand.pop()
+        state.cards[cid].move_to_zone(Zone.GRAVEYARD)
+        state.players[pid].graveyard.append(cid)
+    controller = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "ai"}, ai={},
+        mode="player_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = controller
+        try:
+            response = client.get(f"/matches/{state.id}")
+            assert response.status_code == 200
+            players = response.json()["players"]
+            assert [card["name"] for card in players["1"]["graveyard"]] == ["Mountain"]
+            assert [card["name"] for card in players["2"]["graveyard"]] == ["Mountain"]
+            assert all(players[str(pid)]["graveyard_count"] == len(players[str(pid)]["graveyard"]) for pid in (1, 2))
+            assert players["2"]["hand"] == [] and players["2"]["hand_count"] == 6
+            assert len(state.players[2].hand) == 6
         finally:
             ACTIVE_MATCHES.pop(state.id, None)
 

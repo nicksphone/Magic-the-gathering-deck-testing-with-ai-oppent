@@ -30,8 +30,10 @@ export function parseMatchState(value: unknown): MatchState {
   for (const seat of ["1", "2"]) {
     const player = value.players[seat];
     if (!record(player) || typeof player.life !== "number" || !Array.isArray(player.hand)
-      || !Array.isArray(player.battlefield) || !player.hand.every(card)
-      || !player.battlefield.every(card)) {
+      || !Array.isArray(player.battlefield) || !Array.isArray(player.graveyard)
+      || !player.hand.every(card) || !player.battlefield.every(card)
+      || !player.graveyard.every(card) || !Number.isInteger(player.graveyard_count)
+      || player.graveyard_count !== player.graveyard.length) {
       throw new Error(`Invalid match response: player ${seat} card view`);
     }
   }

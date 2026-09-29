@@ -49,6 +49,7 @@ export type PlayerView = {
   hand_count: number;
   battlefield: CardView[];
   hand: CardView[];
+  graveyard: CardView[];
   graveyard_count: number;
   exile_count: number;
   mana_pool: Record<string, number>;

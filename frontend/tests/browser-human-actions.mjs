@@ -51,6 +51,16 @@ try {
   await click("Modal Same Kind Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
   await evaluate(`(() => {
+    const own = document.querySelector('[aria-label="Player 2 graveyard"]');
+    const opposing = document.querySelector('[aria-label="Player 1 graveyard"]');
+    if (!own || !opposing) throw new Error('Missing public graveyard controls');
+    own.click(); opposing.click();
+  })()`);
+  assert.equal(await evaluate("[...document.querySelector('[aria-label=\"Player 2 graveyard\"]').parentElement.querySelectorAll('button')].some(b => b.textContent.includes('Llanowar Elves'))"), true);
+  assert.equal(await evaluate("[...document.querySelector('[aria-label=\"Player 1 graveyard\"]').parentElement.querySelectorAll('button')].some(b => b.textContent.includes('Grizzly Bears'))"), true);
+  await evaluate("document.querySelector('[aria-label=\"Player 2 graveyard\"]').parentElement.querySelector('button').focus()");
+  await waitFor("document.querySelector('.card-hover-preview')?.textContent.includes('Llanowar Elves')");
+  await evaluate(`(() => {
     const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
     const modes = box.querySelector('[aria-label="Spell modes"]');
     for (const option of modes.options) option.selected = option.value === 'Destroy target artifact' || option.value === "Kolaghan's Command deals 2 damage to any target";

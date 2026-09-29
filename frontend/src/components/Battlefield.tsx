@@ -139,6 +139,24 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     };
   }
 
+  function graveyardTray(seat: number, cards: typeof p1.graveyard) {
+    return <details className="graveyard-tray">
+      <summary aria-label={`Player ${seat} graveyard`}>GY {cards.length}</summary>
+      <div className="graveyard-tray-list">
+        {cards.length ? cards.map((card) => <button
+          key={card.id}
+          type="button"
+          onMouseEnter={() => setHoverPreview(previewFromCard(card))}
+          onMouseLeave={() => setHoverPreview(null)}
+          onFocus={() => setHoverPreview(previewFromCard(card))}
+          onBlur={() => setHoverPreview(null)}
+        >
+          {card.name}{card.mana_cost ? <small>{card.mana_cost}</small> : null}
+        </button>) : <span>Empty</span>}
+      </div>
+    </details>;
+  }
+
   function castAction(cardId: string, selectedFaceIndex?: number) {
     const t = targets[cardId] ?? {};
     const move = castMoves.find((candidate) => candidate.card_id === cardId &&
@@ -190,7 +208,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row opponent">
         <div className="zone-meta">
           <span>Library {p2.library_count}</span>
-          <span>GY {p2.graveyard_count}</span>
+          {graveyardTray(opponentSeat, p2.graveyard)}
           <span>Exile {p2.exile_count}</span>
           <span>Hand {p2.hand_count}</span>
           <span>Untapped Mana {manaSummary(p2Groups.lands) || "-"}</span>
@@ -253,7 +271,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row player">
         <div className="zone-meta">
           <span>Library {p1.library_count}</span>
-          <span>GY {p1.graveyard_count}</span>
+          {graveyardTray(viewerSeat, p1.graveyard)}
           <span>Exile {p1.exile_count}</span>
           <span>Hand {p1.hand_count}</span>
           <span>Untapped Mana {manaSummary(p1Groups.lands) || "-"}</span>

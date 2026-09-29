@@ -6,8 +6,8 @@ const state = {
   id: "match-1", step: "precombat_main", turn: 1, active_player: 1, priority_player: 1,
   score: { 1: 0, 2: 0 }, stack: [], log: [], blocks: { attacker: ["blocker-a", "blocker-b"] },
   players: {
-    1: { life: 20, hand: [mountain], battlefield: [] },
-    2: { life: 20, hand: [], battlefield: [] },
+    1: { life: 20, hand: [mountain], battlefield: [], graveyard: [], graveyard_count: 0 },
+    2: { life: 20, hand: [], battlefield: [], graveyard: [], graveyard_count: 0 },
   },
 };
 assert.equal(parseMatchState(state), state);
@@ -20,6 +20,9 @@ assert.throws(() => parseMatchState({ ...state, blocks: { attacker: "blocker-a" 
 assert.throws(() => parseMatchState({ ...state, attack_bands: [["attacker"], "blocker-a"] }), /attack bands must/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, power: undefined }] } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 2: undefined } }), /player 2/);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: undefined } } }), /card view/);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: [mountain] } } }), /card view/);
+assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: [mountain], graveyard_count: 1 } } }).id, state.id);
 assert.equal(parseMatchState({ ...state, sideboarding: { 1: { mainboard: [{ card_name: "Island", quantity: 60 }], sideboard: [], applied: false } } }).id, state.id);
 assert.throws(() => parseMatchState({ ...state, sideboarding: { 1: { mainboard: [], sideboard: "Island", applied: false } } }), /sideboarding inventory/);
 const aiChoice = { ...state, controllers: { 1: "human", 2: "ai" }, pending_mechanic_choice: { kind: "search_library", player_id: 2, label: "AI is making a choice" } };

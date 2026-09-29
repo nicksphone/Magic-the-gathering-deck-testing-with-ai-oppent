@@ -344,6 +344,10 @@ def serialize_match(state: MatchState) -> dict:
                     serialize_card_view(state, cid)
                     for cid in p.hand
                 ],
+                "graveyard": [
+                    serialize_card_view(state, cid)
+                    for cid in p.graveyard
+                ],
                 "graveyard_count": len(p.graveyard),
                 "exile_count": len(p.exile),
                 "mana_pool": p.mana_pool,
