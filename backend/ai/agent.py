@@ -508,19 +508,22 @@ class AIAgent:
         beam: list[tuple[float, dict]] = []
         for cand in legal[:6]:
             try:
+                materialized = self._materialize_action(sim, cand, pid)
+                if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
+                    continue
                 nxt = copy.deepcopy(sim)
-                self.engine.take_action(nxt, pid, cand)
+                self.engine.take_action(nxt, pid, materialized)
                 val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
                 )
-                beam.append((val, cand))
+                beam.append((val, materialized))
             except Exception:
                 continue
         if not beam:
             return score
         beam.sort(key=lambda x: x[0], reverse=(pid == player_id))
         # Opponent turn: assume best line against us; own turn: assume best for us.
-        chosen = beam[0][1] if pid == player_id else beam[-1][1]
+        chosen = beam[0][1]
         return 0.6 * score + 0.4 * self._strategic_line_score(sim, chosen, player_id, depth - 1)
 
     def _stack_two_ply_value(self, state: MatchState, player_id: int) -> float:
