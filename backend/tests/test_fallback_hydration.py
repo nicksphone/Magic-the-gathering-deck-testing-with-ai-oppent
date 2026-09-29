@@ -5,6 +5,7 @@ import re
 
 from card_data.fallback_cards import fallback_card_payload
 from decks.builtin_decks import BUILTIN_DECKS
+from scripts.export_builtin_oracle_seed import shipped_names
 from main import _hydrate_deck_cards
 from scripts.debug_head_to_head import hydrate_deck as hydrate_diagnostic_deck
 
@@ -58,6 +59,19 @@ def test_every_builtin_card_has_provenance_backed_offline_oracle_data() -> None:
     assert "Choose one" in fallback_card_payload("Drown in the Loch")["oracle_text"]
     assert "controller's graveyard" in fallback_card_payload("Drown in the Loch")["oracle_text"]
     assert len(fallback_card_payload("Brutal Cathar")["card_faces"]) == 2
+
+
+def test_every_shipped_expansion_card_has_offline_oracle_data() -> None:
+    for name in shipped_names():
+        payload = fallback_card_payload(name)
+        assert payload is not None, name
+        assert payload["scryfall_id"] and payload["type_line"], name
+        assert payload["oracle_text"], name
+    adventure = fallback_card_payload("Imodane's Recruiter")
+    assert adventure["layout"] == "adventure"
+    assert len(adventure["card_faces"]) == 2
+    assert adventure["card_faces"][0]["name"] == "Imodane's Recruiter"
+    assert "pay 2 life" in fallback_card_payload("Sacred Foundry")["oracle_text"].lower()
 
 
 def test_hydrate_deck_cards_uses_fallback_when_cache_unavailable() -> None:

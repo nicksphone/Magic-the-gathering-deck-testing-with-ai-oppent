@@ -38,9 +38,37 @@
       "toughness": "3",
       "type_line": "Creature — Sloth Beast"
     },
+    "Archangel of Wrath": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{2}{W}{W}",
+      "name": "Archangel of Wrath",
+      "oracle_text": "Kicker {B} and/or {R} (You may pay an additional {B} and/or {R} as you cast this spell.)\nFlying, lifelink\nWhen this creature enters, if it was kicked, it deals 2 damage to any target.\nWhen this creature enters, if it was kicked twice, it deals 2 damage to any target.",
+      "power": "3",
+      "scryfall_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+      "toughness": "4",
+      "type_line": "Creature — Angel"
+    },
+    "Atraxa, Grand Unifier": {
+      "colors": [
+        "B",
+        "G",
+        "U",
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{3}{G}{W}{U}{B}",
+      "name": "Atraxa, Grand Unifier",
+      "oracle_text": "Flying, vigilance, deathtouch, lifelink\nWhen Atraxa enters, reveal the top ten cards of your library. For each card type, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order. (Artifact, battle, creature, enchantment, instant, land, planeswalker, and sorcery are card types.)",
+      "power": "7",
+      "scryfall_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+      "toughness": "7",
+      "type_line": "Legendary Creature — Phyrexian Angel"
+    },
     "Badlands": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Badlands",
       "oracle_text": "({T}: Add {B} or {R}.)",
@@ -48,8 +76,7 @@
       "type_line": "Land — Swamp Mountain"
     },
     "Bayou": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Bayou",
       "oracle_text": "({T}: Add {B} or {G}.)",
@@ -124,6 +151,14 @@
       "scryfall_id": "e0d8c9f6-cbbd-4694-b100-01cfb81036cc",
       "type_line": "Instant"
     },
+    "Boseiju, Who Endures": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Boseiju, Who Endures",
+      "oracle_text": "{T}: Add {G}.\nChannel — {1}{G}, Discard this card: Destroy target artifact, enchantment, or nonbasic land an opponent controls. That player may search their library for a land card with a basic land type, put it onto the battlefield, then shuffle. This ability costs {1} less to activate for each legendary creature you control.",
+      "scryfall_id": "2135ac5a-187b-4dc9-8f82-34e8d1603416",
+      "type_line": "Legendary Land"
+    },
     "Brazen Borrower": {
       "card_faces": [
         {
@@ -181,6 +216,17 @@
       "toughness": "2",
       "type_line": "Creature — Human Soldier Werewolf"
     },
+    "Cartographer's Survey": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{3}{G}",
+      "name": "Cartographer's Survey",
+      "oracle_text": "Look at the top seven cards of your library. Put up to two land cards from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "scryfall_id": "b9a41cfc-f329-4e69-a785-835f69c7d2ba",
+      "type_line": "Sorcery"
+    },
     "Cauldron Familiar": {
       "colors": [
         "B"
@@ -193,6 +239,27 @@
       "scryfall_id": "32cf273e-b8f7-434b-9d5d-883dfd6f7423",
       "toughness": "1",
       "type_line": "Creature — Cat"
+    },
+    "Cavern of Souls": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Cavern of Souls",
+      "oracle_text": "As this land enters, choose a creature type.\n{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered.",
+      "scryfall_id": "3aad15a2-8a1b-4460-9b06-e85863081878",
+      "type_line": "Land"
+    },
+    "Chrome Host Seedshark": {
+      "colors": [
+        "U"
+      ],
+      "layout": "normal",
+      "mana_cost": "{2}{U}",
+      "name": "Chrome Host Seedshark",
+      "oracle_text": "Flying\nWhenever you cast a noncreature spell, incubate X, where X is that spell's mana value. (Create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+      "power": "2",
+      "scryfall_id": "04e02176-16ee-4676-8b33-cedebdb18cbc",
+      "toughness": "4",
+      "type_line": "Creature — Phyrexian Shark"
     },
     "Claim the Firstborn": {
       "colors": [
@@ -300,6 +367,17 @@
       "scryfall_id": "6904ea20-e504-47da-95a0-08739fdde260",
       "toughness": "1",
       "type_line": "Creature — Human Wizard"
+    },
+    "Depopulate": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{2}{W}{W}",
+      "name": "Depopulate",
+      "oracle_text": "Each player who controls a multicolored creature draws a card. Then destroy all creatures.",
+      "scryfall_id": "c53c1898-9107-4bf8-b249-d0502fb9596d",
+      "type_line": "Sorcery"
     },
     "Dreadhorde Butcher": {
       "colors": [
@@ -458,6 +536,17 @@
       "scryfall_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
       "type_line": "Basic Land — Forest"
     },
+    "Glimpse the Core": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{1}{G}",
+      "name": "Glimpse the Core",
+      "oracle_text": "Choose one —\n• Search your library for a basic Forest card, put that card onto the battlefield tapped, then shuffle.\n• Return target Cave card from your graveyard to the battlefield tapped.",
+      "scryfall_id": "de7d6aed-3dc8-417d-a190-1660cfc8ee4a",
+      "type_line": "Sorcery"
+    },
     "Go for the Throat": {
       "colors": [
         "B"
@@ -502,6 +591,17 @@
       "scryfall_id": "e056b55f-82ed-4fe0-ab0c-bb20fa4a218a",
       "type_line": "Land — Plains Island"
     },
+    "Herd Migration": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{6}{G}",
+      "name": "Herd Migration",
+      "oracle_text": "Domain — Create a 3/3 green Beast creature token for each basic land type among lands you control.\n{1}{G}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You gain 3 life.",
+      "scryfall_id": "b0244a1f-e696-4223-9c14-22c2ca3cb738",
+      "type_line": "Sorcery"
+    },
     "Hopeful Initiate": {
       "colors": [
         "W"
@@ -529,6 +629,35 @@
       "toughness": "0",
       "type_line": "Creature — Jellyfish Hydra Beast"
     },
+    "Imodane's Recruiter": {
+      "card_faces": [
+        {
+          "mana_cost": "{2}{R}",
+          "name": "Imodane's Recruiter",
+          "oracle_text": "When this creature enters, creatures you control get +1/+0 and gain haste until end of turn.",
+          "power": "2",
+          "toughness": "2",
+          "type_line": "Creature — Human Knight"
+        },
+        {
+          "mana_cost": "{4}{W}",
+          "name": "Train Troops",
+          "oracle_text": "Create two 2/2 white Knight creature tokens with vigilance. (Then exile this card. You may cast the creature later from exile.)",
+          "type_line": "Sorcery — Adventure"
+        }
+      ],
+      "colors": [
+        "R"
+      ],
+      "layout": "adventure",
+      "mana_cost": "{2}{R}",
+      "name": "Imodane's Recruiter // Train Troops",
+      "oracle_text": "When this creature enters, creatures you control get +1/+0 and gain haste until end of turn.",
+      "power": "2",
+      "scryfall_id": "4dbaa855-3f8e-42e6-8ec8-5ffbc5c8acf0",
+      "toughness": "2",
+      "type_line": "Creature — Human Knight"
+    },
     "Intangible Virtue": {
       "colors": [
         "W"
@@ -547,6 +676,14 @@
       "oracle_text": "({T}: Add {U}.)",
       "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
       "type_line": "Basic Land — Island"
+    },
+    "Jetmir's Garden": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Jetmir's Garden",
+      "oracle_text": "({T}: Add {R}, {G}, or {W}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+      "scryfall_id": "26d40e03-6de4-4373-9fbf-04c1dd79e995",
+      "type_line": "Land — Mountain Forest Plains"
     },
     "Kumano Faces Kakkazan": {
       "card_faces": [
@@ -594,6 +731,17 @@
       "scryfall_id": "5649ee5a-4485-40a2-96d1-2e061905a71e",
       "type_line": "Sorcery"
     },
+    "Leyline Binding": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{5}{W}",
+      "name": "Leyline Binding",
+      "oracle_text": "Flash\nDomain — This spell costs {1} less to cast for each basic land type among lands you control.\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+      "scryfall_id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7",
+      "type_line": "Enchantment"
+    },
     "Light Up the Stage": {
       "colors": [
         "R"
@@ -628,6 +776,17 @@
       "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
       "toughness": "1",
       "type_line": "Creature — Elf Druid"
+    },
+    "Long Goodbye": {
+      "colors": [
+        "B"
+      ],
+      "layout": "normal",
+      "mana_cost": "{1}{B}",
+      "name": "Long Goodbye",
+      "oracle_text": "This spell can't be countered. (This includes by the ward ability.)\nDestroy target creature or planeswalker with mana value 3 or less.",
+      "scryfall_id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5",
+      "type_line": "Instant"
     },
     "March of Otherworldly Light": {
       "colors": [
@@ -695,6 +854,29 @@
       "scryfall_id": "a642c7b1-d4d1-4125-a66d-560438e5ee51",
       "type_line": "Basic Land — Mountain"
     },
+    "Negate": {
+      "colors": [
+        "U"
+      ],
+      "layout": "",
+      "mana_cost": "{1}{U}",
+      "name": "Negate",
+      "oracle_text": "Counter target noncreature spell.",
+      "scryfall_id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+      "type_line": "Instant"
+    },
+    "Nissa, Ascended Animist": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "loyalty": "7",
+      "mana_cost": "{3}{G}{G}{G/P}{G/P}",
+      "name": "Nissa, Ascended Animist",
+      "oracle_text": "Compleated ({G/P} can be paid with {G} or 2 life. For each {G/P} paid with life, this planeswalker enters with two fewer loyalty counters.)\n+1: Create an X/X green Phyrexian Horror creature token, where X is Nissa's loyalty.\n−1: Destroy target artifact or enchantment.\n−7: Until end of turn, creatures you control get +1/+1 for each Forest you control and gain trample.",
+      "scryfall_id": "1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3",
+      "type_line": "Legendary Planeswalker — Nissa"
+    },
     "Nissa, Who Shakes the World": {
       "colors": [
         "G"
@@ -727,8 +909,7 @@
       "type_line": "Basic Land — Plains"
     },
     "Plateau": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Plateau",
       "oracle_text": "({T}: Add {R} or {W}.)",
@@ -747,6 +928,14 @@
       "scryfall_id": "363f8761-91a7-47e8-9e15-3b73d59bc020",
       "toughness": "2",
       "type_line": "Creature — Human Cleric"
+    },
+    "Raffine's Tower": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Raffine's Tower",
+      "oracle_text": "({T}: Add {W}, {U}, or {B}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+      "scryfall_id": "a2c56479-4bee-4edb-80d7-4af010b7c793",
+      "type_line": "Land — Plains Island Swamp"
     },
     "Raise the Alarm": {
       "colors": [
@@ -785,6 +974,17 @@
       "toughness": "1",
       "type_line": "Creature — Human Soldier"
     },
+    "Rest in Peace": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{1}{W}",
+      "name": "Rest in Peace",
+      "oracle_text": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
+      "scryfall_id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "type_line": "Enchantment"
+    },
     "Rift Bolt": {
       "colors": [
         "R"
@@ -805,8 +1005,7 @@
       "type_line": "Land — Mountain Plains"
     },
     "Savannah": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Savannah",
       "oracle_text": "({T}: Add {G} or {W}.)",
@@ -908,6 +1107,14 @@
       "toughness": "2",
       "type_line": "Creature — Human Wizard"
     },
+    "Spara's Headquarters": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Spara's Headquarters",
+      "oracle_text": "({T}: Add {G}, {W}, or {U}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+      "scryfall_id": "7363f1fb-9af3-4212-921f-d59533faf0e5",
+      "type_line": "Land — Forest Plains Island"
+    },
     "Spectral Procession": {
       "colors": [
         "W"
@@ -929,6 +1136,17 @@
       "oracle_text": "Counter target noncreature spell unless its controller pays {2}.",
       "scryfall_id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
       "type_line": "Instant"
+    },
+    "Spelunking": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{2}{G}",
+      "name": "Spelunking",
+      "oracle_text": "When this enchantment enters, draw a card, then you may put a land card from your hand onto the battlefield. If you put a Cave onto the battlefield this way, you gain 4 life.\nLands you control enter untapped.",
+      "scryfall_id": "d3be4257-2316-4a2e-b347-f71c0368a947",
+      "type_line": "Enchantment"
     },
     "Sprite Dragon": {
       "colors": [
@@ -955,6 +1173,17 @@
       "scryfall_id": "b4f1f69c-122d-472a-b82d-fed7c253a4cd",
       "type_line": "Sorcery"
     },
+    "Sunfall": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{3}{W}{W}",
+      "name": "Sunfall",
+      "oracle_text": "Exile all creatures. Incubate X, where X is the number of creatures exiled this way. (Create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+      "scryfall_id": "a560b9a7-4c00-4c0c-b63d-774d3f6b9aa9",
+      "type_line": "Sorcery"
+    },
     "Supreme Verdict": {
       "colors": [
         "U",
@@ -976,8 +1205,7 @@
       "type_line": "Basic Land — Swamp"
     },
     "Taiga": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Taiga",
       "oracle_text": "({T}: Add {R} or {G}.)",
@@ -1009,6 +1237,17 @@
       "oracle_text": "+1: Draw a card. At the beginning of the next end step, untap up to two lands.\n−3: Put target nonland permanent into its owner's library third from the top.\n−8: You get an emblem with \"Whenever you draw a card, exile target permanent an opponent controls.\"",
       "scryfall_id": "5d10b752-d9cb-419d-a5c4-d4ee1acb655e",
       "type_line": "Legendary Planeswalker — Teferi"
+    },
+    "Temporary Lockdown": {
+      "colors": [
+        "W"
+      ],
+      "layout": "normal",
+      "mana_cost": "{1}{W}{W}",
+      "name": "Temporary Lockdown",
+      "oracle_text": "When this enchantment enters, exile each nonland permanent with mana value 2 or less until this enchantment leaves the battlefield.",
+      "scryfall_id": "82b3088f-7b49-45e9-b447-129a597ceb75",
+      "type_line": "Enchantment"
     },
     "Thalia, Guardian of Thraben": {
       "colors": [
@@ -1083,9 +1322,21 @@
       "toughness": "6",
       "type_line": "Artifact Creature — Construct"
     },
+    "Tranquil Frillback": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{2}{G}",
+      "name": "Tranquil Frillback",
+      "oracle_text": "When this creature enters, you may pay {G} up to three times. When you pay this cost one or more times, choose up to that many —\n• Destroy target artifact or enchantment.\n• Exile target player's graveyard.\n• You gain 4 life.",
+      "power": "3",
+      "scryfall_id": "5b647377-d47e-4630-8ccc-933ef6127880",
+      "toughness": "3",
+      "type_line": "Creature — Dinosaur"
+    },
     "Tropical Island": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Tropical Island",
       "oracle_text": "({T}: Add {G} or {U}.)",
@@ -1102,8 +1353,7 @@
       "type_line": "Legendary Planeswalker — Ugin"
     },
     "Underground Sea": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Underground Sea",
       "oracle_text": "({T}: Add {U} or {B}.)",
@@ -1121,6 +1371,17 @@
       "scryfall_id": "4e879386-b1f8-4f2a-9820-6e1291746f88",
       "type_line": "Instant"
     },
+    "Up the Beanstalk": {
+      "colors": [
+        "G"
+      ],
+      "layout": "normal",
+      "mana_cost": "{1}{G}",
+      "name": "Up the Beanstalk",
+      "oracle_text": "When this enchantment enters and whenever you cast a spell with mana value 5 or greater, draw a card.",
+      "scryfall_id": "2d5e991f-23b2-4db0-a452-7755125b1fd2",
+      "type_line": "Enchantment"
+    },
     "Village Rites": {
       "colors": [
         "B"
@@ -1133,8 +1394,7 @@
       "type_line": "Instant"
     },
     "Volcanic Island": {
-      "colors": [],
-      "layout": "",
+      "layout": "normal",
       "mana_cost": "",
       "name": "Volcanic Island",
       "oracle_text": "({T}: Add {U} or {R}.)",
@@ -1171,6 +1431,14 @@
       "scryfall_id": "04ef8493-d986-45f8-a718-617b028f7ad4",
       "type_line": "Artifact"
     },
+    "Ziatora's Proving Ground": {
+      "layout": "normal",
+      "mana_cost": "",
+      "name": "Ziatora's Proving Ground",
+      "oracle_text": "({T}: Add {B}, {R}, or {G}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+      "scryfall_id": "75fdce80-e338-4a50-bdc6-786511feaeef",
+      "type_line": "Land — Swamp Mountain Forest"
+    },
     "Zulaport Cutthroat": {
       "colors": [
         "B"
@@ -1185,5 +1453,5 @@
       "type_line": "Creature — Human Rogue Ally"
     }
   },
-  "source": "Scryfall card cache; starting loyalty verified via exact-name API on 2026-09-28"
+  "source": "Scryfall card cache and canonical local Oracle bulk; starting loyalty verified via exact-name API on 2026-09-28"
 }
