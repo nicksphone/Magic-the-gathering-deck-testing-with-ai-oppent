@@ -26,6 +26,36 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "divided_copy_target":
+        from effects.handlers import copy_spell
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=932)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.active_player = state.priority_player = 2
+        state.step = Step.PRECOMBAT_MAIN
+        state.mechanic_choice_players = {1, 2}
+        spell = CardInstance(
+            id="pyrotechnics", name="Pyrotechnics", owner=1, controller=1,
+            zone=Zone.STACK, types=["Sorcery"], mana_cost="{4}{R}",
+            oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
+        )
+        bear = CardInstance(
+            id="divided-bear", name="Grizzly Bears", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
+        )
+        state.cards[spell.id] = spell
+        state.cards[bear.id] = bear
+        state.players[1].battlefield.append(bear.id)
+        distribution = {"1": 1, "2": 3}
+        state.stack.append(StackItem(
+            id="original-pyrotechnics", source_card_id=spell.id, controller=1,
+            label=spell.name, effect_key="deal_damage_multi",
+            payload={"target_distribution": dict(distribution),
+                     "__announced_targets": {"target_distribution": dict(distribution), "divide_total": 4}},
+        ))
+        copy_spell(state, 2, {"target_stack_id": "original-pyrotechnics", "may_choose_new_targets": True})
+        return publish(state, deck)
     if face_kind == "copy_target":
         from effects.handlers import copy_spell
         deck = [{"quantity": 60, "card_name": "Island"}]

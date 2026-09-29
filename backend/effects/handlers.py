@@ -745,6 +745,9 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         for key in ("target_player", "target_card_id", "target_stack_id")
         if copied_payload.get(key) is not None
     }
+    if is_spell and copied_item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
+        _offer_divided_copy_target_choice(state, controller, copied_item)
+        return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):
@@ -803,6 +806,62 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
             "label": f"Choose a new target for {copied_item.label} or keep its target",
             "stack_id": copied_item.id,
         }
+
+
+def _offer_divided_copy_target_choice(
+    state: MatchState, controller: int, copied_item,
+    remaining_targets: list[str] | None = None, slot_number: int = 1, slot_total: int | None = None,
+) -> None:
+    from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+
+    announced = copied_item.payload["__announced_targets"]
+    distribution = copied_item.payload["target_distribution"]
+    remaining = list(remaining_targets) if remaining_targets is not None else list(distribution)
+    total = slot_total or len(remaining)
+    source = state.cards.get(copied_item.source_card_id)
+    if source is None:
+        return
+    copied_card = copy.copy(source)
+    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
+        setattr(copied_card, key, copy.deepcopy(value))
+    hints = build_cast_hints(state, copied_card, controller, announced)
+    candidates = [
+        ("target_player" if surface == "player_targets" else "target_card_id",
+         str(candidate["id"]), candidate.get("name") or str(candidate["id"]))
+        for surface in ("player_targets", "creature_targets", "planeswalker_targets")
+        for candidate in hints.get(surface, [])
+    ]
+    for offset, old_id in enumerate(remaining):
+        if old_id not in distribution:
+            continue
+        amount = int(distribution[old_id])
+        options = ["keep"]
+        target_name = (state.cards[old_id].name if old_id in state.cards
+                       else state.players[int(old_id)].name if str(old_id) in {"1", "2"} else str(old_id))
+        labels = {"keep": f"Keep {amount} damage on {target_name}"}
+        for key, new_id, label in candidates:
+            option = f"{key}:{new_id}"
+            if new_id in distribution or option in options:
+                continue
+            proposed = {**announced, "target_distribution": {new_id: amount}, "divide_total": amount}
+            if not (validate_cast_choice(hints, proposed)[0]
+                    and validate_protection_targets(state, copied_card, proposed)[0]
+                    and validate_hexproof_shroud_targets(state, controller, proposed)[0]):
+                continue
+            options.append(option)
+            labels[option] = label
+        if len(options) > 1:
+            number = slot_number + offset
+            state.pending_mechanic_choice = {
+                "kind": "copy_target", "player_id": controller, "count": 1,
+                "options": options, "option_labels": labels, "stack_id": copied_item.id,
+                "label": f"Choose target {number}/{total} for {amount} damage from {copied_item.label}",
+                "distribution_target": old_id,
+                "remaining_distribution_targets": remaining[offset + 1:],
+                "target_slot_number": number, "target_slot_total": total,
+            }
+            return
 
 
 def copy_spell(state: MatchState, controller: int, payload: dict) -> None:

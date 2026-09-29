@@ -52,6 +52,7 @@ function Harness() {
     <p data-testid="ready">{ready ? "Ready" : "Loading"}</p>
     <button onClick={() => reset().catch((failure) => setError(String(failure)))}>Reset Fixture</button>
     <button onClick={() => reset(false, false, 3, "copy_target").catch((failure) => setError(String(failure)))}>Copy Target Fixture</button>
+    <button onClick={() => reset(false, false, 3, "divided_copy_target").catch((failure) => setError(String(failure)))}>Divided Copy Fixture</button>
     <button onClick={() => reset(false, false, 3, "modal_targetless").catch((failure) => setError(String(failure)))}>Modal Targetless Fixture</button>
     <button onClick={() => reset(false, false, 3, "modal_two_targets").catch((failure) => setError(String(failure)))}>Modal Two Targets Fixture</button>
     <button onClick={() => reset(false, false, 3, "modal_same_kind").catch((failure) => setError(String(failure)))}>Modal Same Kind Fixture</button>

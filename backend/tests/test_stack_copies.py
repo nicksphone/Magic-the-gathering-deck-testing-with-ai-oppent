@@ -613,3 +613,130 @@ def test_lithoform_permanent_spell_copy_enters_as_token() -> None:
     assert len(tokens) == 1
     assert (tokens[0].name, tokens[0].power, tokens[0].toughness) == ("Grizzly Bears", 2, 2)
     assert state.cards["bear"].zone == Zone.STACK
+
+
+def _pyrotechnics(state):
+    spell = CardInstance(
+        id="pyrotechnics", name="Pyrotechnics", owner=1, controller=1,
+        zone=Zone.STACK, types=["Sorcery"], mana_cost="{4}{R}",
+        oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
+    )
+    target = CardInstance(
+        id="bear", name="Grizzly Bears", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
+    )
+    state.cards[spell.id] = spell
+    state.cards[target.id] = target
+    state.players[2].battlefield.append(target.id)
+    distribution = {"1": 1, "2": 3}
+    state.stack.append(StackItem(
+        id="pyrotechnics-original", source_card_id=spell.id, controller=1,
+        label=spell.name, effect_key="deal_damage_multi",
+        payload={"target_distribution": dict(distribution),
+                 "__announced_targets": {"target_distribution": dict(distribution), "divide_total": 4}},
+    ))
+
+
+def test_divided_copy_retargets_slots_without_reallocating_damage() -> None:
+    state = _state()
+    _pyrotechnics(state)
+    copy_spell(state, 1, {"target_stack_id": "pyrotechnics-original", "may_choose_new_targets": True})
+    pending = state.pending_mechanic_choice
+    assert pending["kind"] == "copy_target" and pending["target_slot_number"] == 1
+    assert "target_card_id:bear" in pending["options"]
+    assert "target_player:2" not in pending["options"]
+    rules = RulesEngine()
+    state = checked_action(state, rules, 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:bear"],
+    })
+    assert state.pending_mechanic_choice["target_slot_number"] == 2
+    assert state.stack[-1].payload["target_distribution"] == {"bear": 1, "2": 3}
+    assert state.stack[0].payload["target_distribution"] == {"1": 1, "2": 3}
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    restored = checked_action(restored, rules, 1, {
+        "type": "choose_mechanic", "card_ids": ["keep"],
+    })
+    assert restored.pending_mechanic_choice is None
+    assert resolve_top_of_stack(restored)
+    assert restored.cards["bear"].counters.get("__damage_marked") == 1
+    assert (restored.players[1].life, restored.players[2].life) == (20, 17)
+    assert resolve_top_of_stack(restored)
+    assert (restored.players[1].life, restored.players[2].life) == (19, 14)
+
+
+def test_divided_copy_may_keep_an_illegal_original_target() -> None:
+    state = _state()
+    _pyrotechnics(state)
+    target = state.cards["bear"]
+    state.stack[0].payload["target_distribution"] = {"bear": 1, "2": 3}
+    state.stack[0].payload["__announced_targets"]["target_distribution"] = {"bear": 1, "2": 3}
+    state.players[2].battlefield.remove(target.id)
+    state.players[2].graveyard.append(target.id)
+    target.zone = Zone.GRAVEYARD
+    copy_spell(state, 1, {"target_stack_id": "pyrotechnics-original", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["distribution_target"] == "bear"
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["keep"],
+    })
+    assert state.stack[-1].payload["target_distribution"]["bear"] == 1
+    if state.pending_mechanic_choice:
+        state = checked_action(state, RulesEngine(), 1, {
+            "type": "choose_mechanic", "card_ids": ["keep"],
+        })
+    assert resolve_top_of_stack(state)
+    assert target.counters.get("__damage_marked", 0) == 0
+    assert state.players[2].life == 17
+
+
+def test_ai_redirects_divided_copy_damage_to_opponent() -> None:
+    from ai.agent import AIAgent
+
+    state = _state()
+    _pyrotechnics(state)
+    distribution = {"1": 1, "bear": 3}
+    state.stack[0].payload["target_distribution"] = dict(distribution)
+    state.stack[0].payload["__announced_targets"]["target_distribution"] = dict(distribution)
+    copy_spell(state, 1, {"target_stack_id": "pyrotechnics-original", "may_choose_new_targets": True})
+    decision = AIAgent(archetype="Burn").choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action == {"type": "choose_mechanic", "card_ids": ["target_player:2"]}
+
+
+def test_twincast_divided_copy_finishes_only_after_all_target_choices() -> None:
+    state = _state()
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[1].mana_pool["U"] = 2
+    _pyrotechnics(state)
+    twincast = state.cards[state.players[1].hand[0]]
+    twincast.name, twincast.types, twincast.type_line = "Twincast", ["Instant"], "Instant"
+    twincast.mana_cost = "{U}{U}"
+    twincast.oracle_text = "Copy target instant or sorcery spell. You may choose new targets for the copy."
+    rules = RulesEngine()
+    state = checked_action(state, rules, 1, {
+        "type": "cast_spell", "card_id": twincast.id,
+        "targets": {"target_stack_id": "pyrotechnics-original"},
+    })
+    rules.take_action(state, 1, {"type": "pass_priority"})
+    rules.take_action(state, 2, {"type": "pass_priority"})
+    assert state.pending_mechanic_choice["target_slot_number"] == 1
+    assert state.cards[twincast.id].zone == Zone.STACK
+    state = checked_action(state, rules, 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:bear"],
+    })
+    assert state.pending_mechanic_choice["target_slot_number"] == 2
+    assert state.cards[twincast.id].zone == Zone.STACK
+    state = checked_action(state, rules, 1, {
+        "type": "choose_mechanic", "card_ids": ["keep"],
+    })
+    assert state.pending_mechanic_choice is None
+    assert state.cards[twincast.id].zone == Zone.GRAVEYARD
+    assert len(state.stack) == 2
+    assert state.players[2].life == 20
+
+
+def test_divided_copy_does_not_offer_newly_hexproof_target() -> None:
+    state = _state()
+    _pyrotechnics(state)
+    state.cards["bear"].keywords.append("hexproof")
+    copy_spell(state, 1, {"target_stack_id": "pyrotechnics-original", "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice is None
+    assert state.stack[-1].payload["target_distribution"] == {"1": 1, "2": 3}

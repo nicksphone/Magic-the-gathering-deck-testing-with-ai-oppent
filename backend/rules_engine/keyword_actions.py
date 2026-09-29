@@ -88,6 +88,32 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if copied is None:
             return False
         chosen = ids[0]
+        if pending.get("distribution_target") is not None:
+            from effects.handlers import _offer_divided_copy_target_choice
+
+            old_id = pending["distribution_target"]
+            distribution = copied.payload.get("target_distribution") or {}
+            if old_id not in distribution:
+                return False
+            if chosen != "keep":
+                new_id = chosen.split(":", 1)[1]
+                if new_id in distribution:
+                    return False
+                updated = {new_id if target == old_id else target: amount
+                           for target, amount in distribution.items()}
+                copied.payload["target_distribution"] = updated
+                copied.payload["__announced_targets"]["target_distribution"] = dict(updated)
+                copied.targets = list(updated)
+                state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
+            state.pending_mechanic_choice = None
+            _offer_divided_copy_target_choice(
+                state, player_id, copied,
+                remaining_targets=pending["remaining_distribution_targets"],
+                slot_number=pending["target_slot_number"] + 1,
+                slot_total=pending["target_slot_total"],
+            )
+            resume_paused_resolution(state, pending)
+            return True
         if chosen != "keep":
             key, raw_value = chosen.split(":", 1)
             value = int(raw_value) if key == "target_player" else raw_value

@@ -96,7 +96,7 @@ class AIAgent:
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 opponent = 3 - player_id
                 selected = "keep"
-                if copied and copied.effect_key == "deal_damage" and f"target_player:{opponent}" in options:
+                if copied and copied.effect_key in {"deal_damage", "deal_damage_multi"} and f"target_player:{opponent}" in options:
                     selected = f"target_player:{opponent}"
                 elif copied and copied.effect_key == "gain_life" and f"target_player:{player_id}" in options:
                     selected = f"target_player:{player_id}"

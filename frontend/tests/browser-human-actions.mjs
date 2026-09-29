@@ -28,6 +28,23 @@ try {
   await waitFor("window.fixtureState.players['2'].life === 17");
   console.log("PASS human copy target choice reaches API and redirects only the copy");
 
+  await click("Divided Copy Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 1");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); if (!label) throw new Error('Missing divided copy target'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 2");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_card_id:divided-bear"]);
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Keep 3 damage on Player B')); if (!label) throw new Error('Missing keep-target choice'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets.includes('divided-bear')");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["keep"]);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].life === 17");
+  assert.equal(await evaluate("window.fixtureState.players['1'].life"), 20);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 19 && window.fixtureState.players['2'].life === 14");
+  console.log("PASS divided spell copy keeps damage allocation across two human target choices");
+
   await click("Hybrid Payment Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Spectral Procession'))");
   assert.equal(await evaluate("document.querySelectorAll('[aria-label^=\"Pay hybrid symbol\"]').length"), 3);
