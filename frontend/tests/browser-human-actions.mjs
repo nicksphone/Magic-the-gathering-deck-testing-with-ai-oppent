@@ -108,6 +108,41 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['1'].graveyard_count"), 2);
   console.log("PASS modal UI returns the selected own-graveyard creature and destroys an artifact");
 
+  await click("Modal Same Kind Fixture");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
+  await evaluate(`(() => {
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const modes = box.querySelector('[aria-label="Spell modes"]');
+    for (const option of modes.options) option.selected = option.value === 'Target player discards a card' || option.value === 'Destroy target artifact';
+    modes.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await waitFor("Boolean(document.querySelector('[aria-label=\"Target for Target player discards a card\"]'))");
+  await evaluate(`(() => {
+    const discards = document.querySelector('[aria-label="Target for Target player discards a card"]');
+    const destroy = document.querySelector('[aria-label="Target for Destroy target artifact"]');
+    if (!discards || !destroy) throw new Error('Missing discard or artifact target selector');
+    discards.value = 'player:1'; discards.dispatchEvent(new Event('change', { bubbles: true }));
+    destroy.value = 'card:ring'; destroy.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click("Cast Kolaghan's Command");
+  await waitFor("window.fixtureState.stack.some(item => item.label === \"Kolaghan's Command\")");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'discard' && window.fixtureState.pending_mechanic_choice.player_id === 1");
+  const discardedId = await evaluate("window.fixtureState.pending_mechanic_choice.options.at(-1)");
+  await evaluate(`(() => {
+    const panel = [...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose cards to discard'));
+    const choices = panel?.querySelectorAll('input[type="checkbox"]');
+    if (!choices?.length) throw new Error('Missing discard checkboxes');
+    choices[choices.length - 1].click();
+  })()`);
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && !window.fixtureState.players['1'].battlefield.some(c => c.id === 'ring')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), [discardedId]);
+  assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.some(c => c.id === 'ring')"), true);
+  assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.some(c => c.id === window.fixtureActions.at(-1).action.card_ids[0])"), true);
+  console.log("PASS targeted discard pauses for the affected human and resumes the later modal effect");
+
   await reset();
   assert.equal(await evaluate("[...document.querySelectorAll('.hand-row button')].some(button => button.textContent.includes('Island'))"), false);
   await click("Play Land Forest");

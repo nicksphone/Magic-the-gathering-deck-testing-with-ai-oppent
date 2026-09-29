@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from ai.agent import AIAgent
+from effects.handlers import discard_cards
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -14,6 +15,7 @@ from rules_engine.zone_actions import put_into_graveyard
 DESTROY = "Destroy target artifact"
 DAMAGE = "Kolaghan's Command deals 2 damage to any target"
 RETURN = "Return target creature card from your graveyard to your hand"
+DISCARD = "Target player discards a card"
 ORACLE = (
     "Choose two —\n"
     "• Return target creature card from your graveyard to your hand.\n"
@@ -148,3 +150,67 @@ def test_return_mode_can_fail_while_destroy_mode_resolves() -> None:
     assert resolve_top_of_stack(after)
     assert "elf" in after.players[1].exile
     assert "ring" in after.players[2].graveyard
+
+
+def test_target_player_chooses_discard_before_next_mode_after_snapshot() -> None:
+    state, spell_id = _setup()
+    state.mechanic_choice_players = {1, 2}
+    after = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {
+            "mode_texts": [DISCARD, DESTROY],
+            "mode_targets": {DISCARD: {"target_player": 2}, DESTROY: {"target_card_id": "ring"}},
+        },
+    })
+    hand_before = list(after.players[2].hand)
+    assert not resolve_top_of_stack(after)
+    assert after.pending_mechanic_choice["kind"] == "discard"
+    assert after.pending_mechanic_choice["player_id"] == 2
+    assert after.pending_mechanic_choice["options"] == hand_before
+    assert "ring" in after.players[2].battlefield
+
+    after = deserialize_match_snapshot(serialize_match_snapshot(after))
+    with pytest.raises(ActionRejected):
+        checked_action(after, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [hand_before[-1]]})
+    with pytest.raises(ActionRejected):
+        checked_action(after, RulesEngine(), 2, {"type": "choose_mechanic", "card_ids": [after.players[1].hand[-1]]})
+    assert after.players[2].hand == hand_before
+    assert "ring" in after.players[2].battlefield
+
+    chosen = hand_before[-1]
+    after = checked_action(after, RulesEngine(), 2, {"type": "choose_mechanic", "card_ids": [chosen]})
+    assert not after.pending_mechanic_choice
+    assert chosen in after.players[2].graveyard
+    assert hand_before[0] in after.players[2].hand
+    assert "ring" in after.players[2].graveyard
+    assert spell_id in after.players[1].graveyard
+
+
+def test_ai_chooses_own_discard_from_pending_hand_options() -> None:
+    state, spell_id = _setup()
+    state.mechanic_choice_players = {1, 2}
+    after = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": spell_id,
+        "targets": {
+            "mode_texts": [DISCARD, DESTROY],
+            "mode_targets": {DISCARD: {"target_player": 2}, DESTROY: {"target_card_id": "ring"}},
+        },
+    })
+    assert not resolve_top_of_stack(after)
+    ai = AIAgent(difficulty="master", archetype="Control")
+    decision = ai.choose_action(after, RulesEngine().legal_moves(after, 2), 2)
+    assert decision.action["type"] == "choose_mechanic"
+    assert decision.action["card_ids"][0] in after.players[2].hand
+    resolved = checked_action(after, RulesEngine(), 2, decision.action)
+    assert "ring" in resolved.players[2].graveyard
+
+
+def test_random_discard_uses_seeded_rng_without_choice_window() -> None:
+    first, _ = _setup()
+    second, _ = _setup()
+    for state in (first, second):
+        state.mechanic_choice_players = {1, 2}
+        discard_cards(state, 1, {"target_player": 2, "amount": 2, "random": True})
+        assert state.pending_mechanic_choice is None
+        assert len(state.players[2].graveyard) == 2
+    assert first.players[2].graveyard == second.players[2].graveyard

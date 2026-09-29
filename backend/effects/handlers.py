@@ -1433,8 +1433,18 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
     amount = int(payload.get("amount", 1))
     player = state.players[target_player]
-    from rules_engine.zone_actions import discard_selected
-    selected = list(player.hand[:max(0, amount)])
+    from rules_engine.zone_actions import discard_selected, is_departed_token
+    available = [cid for cid in player.hand if not is_departed_token(state.cards[cid])]
+    count = min(max(0, amount), len(available))
+    if count and not payload.get("random") and target_player in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            "kind": "discard", "player_id": target_player, "options": available,
+            "count": count, "label": "Choose cards to discard",
+        }
+        state.priority_player = target_player
+        state.passed_priority = set()
+        return
+    selected = state.rng.sample(available, count) if payload.get("random") else available[:count]
     discard_selected(state, target_player, selected)
     discarded = len(selected)
     state.log.append(f"{player.name} discards {discarded}.")

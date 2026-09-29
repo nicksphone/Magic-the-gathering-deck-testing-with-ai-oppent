@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+from effects.handlers import discard_cards
 from effects.registry import resolve_effect
 from game_state.serializers import serialize_match
 from game_state.state import MatchFactory, Step, Zone
@@ -75,6 +76,33 @@ def test_public_graveyards_show_cards_for_both_seats_without_revealing_ai_hand()
             assert all(players[str(pid)]["graveyard_count"] == len(players[str(pid)]["graveyard"]) for pid in (1, 2))
             assert players["2"]["hand"] == [] and players["2"]["hand_count"] == 6
             assert len(state.players[2].hand) == 6
+        finally:
+            ACTIVE_MATCHES.pop(state.id, None)
+
+
+def test_ai_discard_options_remain_hidden_in_public_match():
+    deck = [{"quantity": 60, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
+    state = MatchFactory.from_decks(deck, deck, seed=35)
+    state.pregame_pending = False
+    state.mechanic_choice_players = {1, 2}
+    discard_cards(state, 1, {"target_player": 2, "amount": 1})
+    assert state.pending_mechanic_choice["options"] == state.players[2].hand
+    controller = MatchController(
+        state=state, rules=RulesEngine(), controllers={1: "human", 2: "ai"}, ai={},
+        mode="player_vs_ai", deck_ids=(None, None), mainboards={1: deck, 2: deck},
+        sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False,
+        match_complete=False, best_of=3,
+    )
+    with TestClient(app) as client:
+        ACTIVE_MATCHES[state.id] = controller
+        try:
+            public = client.get(f"/matches/{state.id}")
+            assert public.status_code == 200
+            assert public.json()["players"]["2"]["hand"] == []
+            choice = public.json()["pending_mechanic_choice"]
+            assert choice == {"kind": "discard", "player_id": 2, "label": "AI is making a choice"}
+            moves = client.get(f"/matches/{state.id}/legal-moves")
+            assert moves.status_code == 200 and moves.json()["moves"] == []
         finally:
             ACTIVE_MATCHES.pop(state.id, None)
 

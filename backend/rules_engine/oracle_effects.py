@@ -1334,8 +1334,8 @@ def _infer_clause_effect(
         if "three cards" in oracle:
             amount = 3
         if "you discard" in oracle or oracle.startswith("discard "):
-            return "discard_cards", {"target_player": controller, "amount": amount}
-        return "discard_cards", {"target_player": target_player or opponent, "amount": amount}
+            return "discard_cards", {"target_player": controller, "amount": amount, "random": "at random" in oracle}
+        return "discard_cards", {"target_player": target_player or opponent, "amount": amount, "random": "at random" in oracle}
 
     return None
 

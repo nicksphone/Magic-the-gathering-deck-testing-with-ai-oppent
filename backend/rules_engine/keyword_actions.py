@@ -78,6 +78,21 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending["kind"] == "discard":
+        from rules_engine.zone_actions import discard_selected
+        from rules_engine.stack_engine import resume_paused_resolution
+        ids = action.get("card_ids")
+        if (pending["player_id"] != player_id or not isinstance(ids, list)
+                or len(ids) != pending["count"] or len(set(ids)) != len(ids)
+                or any(cid not in pending["options"] or cid not in state.players[player_id].hand for cid in ids)):
+            return False
+        state.pending_mechanic_choice = None
+        if not discard_selected(state, player_id, ids):
+            state.pending_mechanic_choice = pending
+            return False
+        state.log.append(f"{state.players[player_id].name} discards {len(ids)}.")
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] == "draw":
         from rules_engine.dredge import complete_draw_choice
         return complete_draw_choice(state, player_id, action)

@@ -31,6 +31,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state = MatchFactory.from_decks(deck, deck, seed=914)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
+        state.mechanic_choice_players = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool.update({"B": 1, "R": 1, "C": 1})

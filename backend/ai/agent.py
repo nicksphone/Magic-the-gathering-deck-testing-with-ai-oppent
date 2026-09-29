@@ -114,7 +114,7 @@ class AIAgent:
             if choice["kind"] == "sacrifice":
                 options.sort(key=lambda cid: (self._sacrifice_loss(state, cid, player_id), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Sacrifice least valuable permanents")
-            if choice["kind"] == "cleanup_discard":
+            if choice["kind"] in {"cleanup_discard", "discard"}:
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))

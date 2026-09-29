@@ -399,6 +399,42 @@ def test_choose_one_mode_with_no_target_remains_castable() -> None:
     assert len(after.players[1].hand) == hand_before
 
 
+def test_izzet_charm_discard_choice_uses_hand_after_drawing() -> None:
+    state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    state.mechanic_choice_players = {1, 2}
+    state.players[1].mana_pool = {"U": 1, "R": 1}
+    card = state.cards[state.players[1].hand[0]]
+    card.name = "Izzet Charm"
+    card.types = ["Instant"]
+    card.type_line = "Instant"
+    card.mana_cost = "{U}{R}"
+    card.oracle_text = (
+        "Choose one —\n"
+        "• Counter target noncreature spell unless its controller pays {2}.\n"
+        "• Izzet Charm deals 2 damage to target creature.\n"
+        "• Draw two cards, then discard two cards."
+    )
+    after = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": card.id,
+        "targets": {"mode_text": "Draw two cards, then discard two cards"},
+    })
+    hand_after_cast = list(after.players[1].hand)
+    newly_drawn = list(after.players[1].library[-2:])
+    assert not resolve_top_of_stack(after)
+    assert after.pending_mechanic_choice["kind"] == "discard"
+    assert after.pending_mechanic_choice["count"] == 2
+    assert all(cid in after.pending_mechanic_choice["options"] for cid in newly_drawn)
+    after = checked_action(after, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": newly_drawn})
+    assert not after.pending_mechanic_choice
+    assert after.players[1].hand == hand_after_cast
+    assert all(cid in after.players[1].graveyard for cid in newly_drawn)
+    assert card.id in after.players[1].graveyard
+
+
 def test_choose_one_spell_with_no_legal_mode_is_not_offered() -> None:
     state = _state()
     state.pregame_pending = False
