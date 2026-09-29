@@ -1,8 +1,9 @@
 """A card returning to the battlefield is a new object, not its old permanent."""
 
-from effects.handlers import destroy_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand
+from effects.handlers import destroy_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, transform_card
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine.attachments import attach_if_legal
 from rules_engine.continuous import effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -83,3 +84,52 @@ def test_oracle_counter_persistence_except_hand_or_library():
     state.cards[skullbriar.id].counters["+1/+1"] = 2
     state.cards[skullbriar.id].move_to_zone(Zone.LIBRARY)
     assert state.cards[skullbriar.id].counters == {}
+
+
+def test_transformed_card_returns_to_printed_front_face_after_bounce():
+    state = _state()
+    delver = CardInstance(
+        id="delver", name="Delver of Secrets", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Human Wizard",
+        mana_cost="{U}", power=1, toughness=1, layout="transform",
+        card_faces=[
+            {"name": "Delver of Secrets", "type_line": "Creature — Human Wizard", "mana_cost": "{U}",
+             "power": "1", "toughness": "1", "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature."},
+            {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "mana_cost": "",
+             "power": "3", "toughness": "2", "oracle_text": "Flying", "image_uri": None},
+        ],
+    )
+    state.cards[delver.id] = delver
+    state.players[1].battlefield.append(delver.id)
+    transform_card(state, 1, {"target_card_id": delver.id, "face_index": 1})
+    assert delver.name == "Insectile Aberration"
+    return_permanent_to_hand(state, 2, {"target_card_id": delver.id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    delver = state.cards[delver.id]
+    assert delver.name == "Delver of Secrets"
+    assert delver.selected_face_index == 0
+    assert delver.power == delver.toughness == 1
+
+
+def test_equipment_and_target_leave_break_old_attachment():
+    state = _state()
+    bear = CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    sword = CardInstance(
+        "sword", "Short Sword", 1, 1, Zone.BATTLEFIELD, ["Artifact"],
+        mana_cost="{1}", type_line="Artifact — Equipment",
+        oracle_text="Equipped creature gets +1/+1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    )
+    state.cards.update({bear.id: bear, sword.id: sword})
+    state.players[1].battlefield.extend([bear.id, sword.id])
+    assert attach_if_legal(state, sword.id, bear.id)
+
+    return_permanent_to_hand(state, 2, {"target_card_id": sword.id})
+    assert sword.attached_to is None
+    state.players[1].mana_pool["C"] = 1
+    RulesEngine().take_action(state, 1, {"type": "cast_spell", "card_id": sword.id}, reject_invalid=True)
+    assert resolve_top_of_stack(state)
+    assert sword.zone == Zone.BATTLEFIELD and sword.attached_to is None
+
+    assert attach_if_legal(state, sword.id, bear.id)
+    return_permanent_to_hand(state, 2, {"target_card_id": bear.id})
+    assert sword.attached_to is None

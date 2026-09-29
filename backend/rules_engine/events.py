@@ -14,10 +14,7 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     triggers = _collect_triggers(state, event, payload)
     _push_triggers(state, event, triggers)
     if event == "leaves_battlefield":
-        from rules_engine.alternative_casts import restore_printed_characteristics
-        card = state.cards.get(payload.get("card_id"))
-        if card:
-            restore_printed_characteristics(card)
+        _finish_battlefield_exit(state, payload.get("card_id"))
 
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
@@ -36,11 +33,23 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
             triggers.append(trigger)
     _push_triggers(state, event, triggers)
     if event == "leaves_battlefield":
-        from rules_engine.alternative_casts import restore_printed_characteristics
         for payload in payloads:
-            card = state.cards.get(payload.get("card_id"))
-            if card:
-                restore_printed_characteristics(card)
+            _finish_battlefield_exit(state, payload.get("card_id"))
+
+
+def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
+    card = state.cards.get(card_id) if card_id else None
+    if card is None:
+        return
+    from rules_engine.alternative_casts import restore_printed_characteristics
+    restore_printed_characteristics(card)
+    if card.layout in {"transform", "meld", "flip", "double_faced_token"} and card.selected_face_index not in {None, 0} and card.card_faces:
+        from rules_engine.card_faces import apply_transform_face
+        apply_transform_face(card, 0)
+    for attachment in state.cards.values():
+        if attachment.id == card_id or attachment.attached_to == card_id:
+            attachment.attached_to = None
+            attachment.counters.pop("__attached_to", None)
 
 
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
