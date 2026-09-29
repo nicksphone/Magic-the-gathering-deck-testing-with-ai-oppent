@@ -143,7 +143,7 @@ def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
             emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
-def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
+def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     payload = apply_replacement_effects("damage", dict(payload))
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")
@@ -166,12 +166,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
         for color in source_colors:
             if f"protection from {color}" in kws:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
-                return
+                return 0
         if (card.toughness is not None or "Planeswalker" in card.types) and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount) is not None:
                 if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
-                return
+                return 0
             replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
                 state,
                 target_card_id,
@@ -180,12 +180,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
                 max_replacements=1 if human_chain else None,
             )
             if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
-                return
+                return 0
             post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
-                return
+                return 0
             from rules_engine.damage_results import apply_creature_damage
             if card.toughness is not None:
                 apply_creature_damage(state, target_card_id, int(post), source_card_id)
@@ -193,10 +193,12 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             if "Planeswalker" in card.types and card.loyalty is not None:
                 card.loyalty -= int(post)
                 state.log.append(f"{card.name} loses {post} loyalty.")
+            if not payload.get("__batch_damage"):
+                _gain_lifelink_from_damage(state, source_card_id, int(post))
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
             if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)
-            return
+            return int(post)
     if target_player is not None:
         replaced_amount = amount if prevention_locked else apply_damage_replacements(
             state,
@@ -206,15 +208,27 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> None:
             max_replacements=1 if human_chain else None,
         )
         if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
-            return
+            return 0
         post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
             state.log.append(f"{state.players[target_player].name} prevents {prevented} damage.")
         if post <= 0:
-            return
+            return 0
         from rules_engine.damage_results import apply_player_damage
         apply_player_damage(state, int(target_player), int(post), source_card_id)
         state.log.append(f"{state.players[target_player].name} takes {post} damage.")
+        if not payload.get("__batch_damage"):
+            _gain_lifelink_from_damage(state, source_card_id, int(post))
+        return int(post)
+    return 0
+
+
+def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount: int) -> None:
+    if amount > 0 and source_id in state.cards and has_keyword(state, source_id, "lifelink"):
+        source_controller = state.cards[source_id].controller
+        gain_life(state, source_controller, {
+            "target_player": source_controller, "amount": amount, "__source_card_id": source_id,
+        })
 
 
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
@@ -1793,6 +1807,7 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
     if not amount:
         return
     source_id = payload.get("__source_card_id")
+    lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
     if "recipients" in payload:
         recipients = list(payload["recipients"])
     else:
@@ -1825,22 +1840,26 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
                     "options": options, "combat_damage_needs_sba": True,
                     "continuation_effects": [{
                         "effect_key": "damage_each_creature_and_player",
-                        "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id},
-                    }] if recipients[index + 1:] else [],
+                        "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id,
+                                    "lifelink_total": lifelink_total},
+                    }],
                 }
                 state.priority_player = affected
                 state.passed_priority = set()
                 return
-        deal_damage(state, controller, recipient)
+        dealt = deal_damage(state, controller, recipient)
         pending = state.pending_replacement_choice or state.pending_mechanic_choice
         if pending:
             pending["combat_damage_needs_sba"] = True
-            if recipients[index + 1:]:
-                pending.setdefault("continuation_effects", []).append({
-                    "effect_key": "damage_each_creature_and_player",
-                    "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id},
-                })
+            pending.setdefault("continuation_effects", []).append({
+                "effect_key": "damage_each_creature_and_player",
+                "payload": {"amount": amount, "recipients": recipients[index + 1:], "__source_card_id": source_id,
+                            "lifelink_total": lifelink_total},
+            })
             return
+        if source_id in state.cards and has_keyword(state, source_id, "lifelink"):
+            lifelink_total += dealt
+    _gain_lifelink_from_damage(state, source_id, lifelink_total)
 
 
 def tap_card(state: MatchState, controller: int, payload: dict) -> None:

@@ -523,10 +523,10 @@ class RulesEngine:
                 state.log.append(
                     f"{state.players[player_id].name} chooses replacement source {chosen_id}."
                 )
-                resolve_effect(
+                from effects.handlers import deal_damage
+                dealt = deal_damage(
                     state,
                     int(pending.get("controller", player_id)),
-                    "deal_damage",
                     {
                         "target_player": pending.get("target_player"),
                         "target_card_id": pending.get("target_card_id"),
@@ -539,6 +539,14 @@ class RulesEngine:
                         "__batch_damage": bool(pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"),
                     },
                 )
+                if pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch":
+                    from rules_engine.continuous import has_keyword
+                    source_id = pending.get("source_card_id")
+                    if dealt and source_id in state.cards and has_keyword(state, source_id, "lifelink"):
+                        for item in pending.get("continuation_effects", []):
+                            if item.get("effect_key") == "damage_each_creature_and_player":
+                                item["payload"]["lifelink_total"] = int(item["payload"].get("lifelink_total", 0)) + dealt
+                                break
                 from rules_engine.stack_engine import resume_paused_resolution
                 resume_paused_resolution(state, pending)
                 if not (pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"):

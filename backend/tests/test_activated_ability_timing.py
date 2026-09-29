@@ -144,6 +144,63 @@ def test_crypt_rats_damage_respects_protection_from_black() -> None:
     assert state.cards[source_id].zone == Zone.GRAVEYARD
 
 
+def test_crypt_rats_lifelink_is_one_gain_event_for_all_recipients() -> None:
+    state, source_id = _crypt_rats()
+    state.cards[source_id].keywords.append("lifelink")
+    pridemate = CardInstance(
+        id="pridemate", name="Ajani's Pridemate", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
+        oracle_text="Whenever you gain life, put a +1/+1 counter on Ajani's Pridemate.",
+    )
+    state.cards[pridemate.id] = pridemate
+    state.players[1].battlefield.append(pridemate.id)
+    state.players[1].life = 2
+    state.players[1].mana_pool["B"] = 2
+    RulesEngine().take_action(state, 1, {
+        "type": "activate_ability", "card_id": source_id,
+        "ability_index": 0, "targets": {"x_value": 2},
+    }, reject_invalid=True)
+    assert resolve_top_of_stack(state)
+    assert state.players[1].life == 8  # Eight damage dealt to two creatures and two players.
+    assert state.players[2].life == 18
+    assert state.winner is None
+    assert len([item for item in state.stack if item.source_card_id == pridemate.id]) == 1
+
+
+def test_crypt_rats_lifelink_gain_choice_resumes_after_snapshot() -> None:
+    state, source_id = _crypt_rats()
+    state.cards[source_id].keywords.append("lifelink")
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {1}
+    for cid, name, types in (
+        ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
+        ("reflection", "Boon Reflection", ["Enchantment"]),
+    ):
+        card = CardInstance(
+            id=cid, name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
+            types=types, oracle_text="If you would gain life, you gain twice that much life instead.",
+        )
+        state.cards[cid] = card
+        state.players[1].battlefield.append(cid)
+    state.players[1].life = 1
+    state.players[1].mana_pool["B"] = 1
+    RulesEngine().take_action(state, 1, {
+        "type": "activate_ability", "card_id": source_id,
+        "ability_index": 0, "targets": {"x_value": 1},
+    }, reject_invalid=True)
+    assert not resolve_top_of_stack(state)
+    assert state.pending_replacement_choice["resume_kind"] == "gain_event"
+    assert state.cards[source_id].zone == Zone.BATTLEFIELD
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    move = next(move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "choose_replacement")
+    RulesEngine().take_action(state, 1, move, reject_invalid=True)
+    assert state.pending_replacement_choice is None
+    assert state.players[1].life == 12
+    assert state.players[2].life == 19
+    assert state.winner is None
+    assert state.cards[source_id].zone == Zone.GRAVEYARD
+
+
 def test_ai_avoids_bad_crypt_rats_activation_but_uses_lethal_or_favorable_sweep() -> None:
     from ai.agent import AIAgent
 
@@ -173,8 +230,11 @@ def test_ai_avoids_bad_crypt_rats_activation_but_uses_lethal_or_favorable_sweep(
             assert action["targets"]["x_value"] == 2
 
 
-def test_crypt_rats_batch_resumes_human_damage_replacements_before_lethal_sba() -> None:
+@pytest.mark.parametrize("lifelink,expected_life", [(False, 19), (True, 26)])
+def test_crypt_rats_batch_resumes_human_damage_replacements_before_lethal_sba(lifelink, expected_life) -> None:
     state, source_id = _crypt_rats()
+    if lifelink:
+        state.cards[source_id].keywords.append("lifelink")
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     for index in (1, 2):
@@ -198,7 +258,7 @@ def test_crypt_rats_batch_resumes_human_damage_replacements_before_lethal_sba() 
         move = next(move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "choose_replacement")
         RulesEngine().take_action(state, 1, move, reject_invalid=True)
     assert state.pending_replacement_choice is None
-    assert state.players[1].life == 19
+    assert state.players[1].life == expected_life
     assert state.players[2].life == 17
     assert state.cards[source_id].zone == Zone.GRAVEYARD
 

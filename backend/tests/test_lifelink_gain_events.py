@@ -6,6 +6,8 @@ from rules_engine import combat
 from rules_engine.engine import RulesEngine
 from rules_engine.move_generator import legal_moves
 from rules_engine.stack_engine import resolve_top_of_stack
+from effects.handlers import deal_damage
+from rules_engine.prevention import add_player_prevention_shield
 
 
 def game():
@@ -43,6 +45,27 @@ def add_pridemate(state):
 
 def pridemate_triggers(state):
     return [item for item in state.stack if item.source_card_id == "pridemate"]
+
+
+def test_noncombat_lifelink_uses_damage_after_prevention():
+    state = game()
+    source = add_nighthawk(state, "hawk-1")
+    add_pridemate(state)
+    add_player_prevention_shield(state, 2, 1)
+    dealt = deal_damage(state, 1, {"target_player": 2, "amount": 2, "__source_card_id": source})
+    assert dealt == 1
+    assert (state.players[1].life, state.players[2].life) == (21, 19)
+    assert len(pridemate_triggers(state)) == 1
+
+
+def test_fully_prevented_noncombat_lifelink_does_not_gain_life():
+    state = game()
+    source = add_nighthawk(state, "hawk-1")
+    add_pridemate(state)
+    add_player_prevention_shield(state, 2, 2)
+    assert deal_damage(state, 1, {"target_player": 2, "amount": 2, "__source_card_id": source}) == 0
+    assert (state.players[1].life, state.players[2].life) == (20, 20)
+    assert not pridemate_triggers(state)
 
 
 def test_unblocked_lifelink_emits_life_gain_trigger():
