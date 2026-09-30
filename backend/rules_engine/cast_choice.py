@@ -36,6 +36,25 @@ def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
     return not hints.get("action_has_target_text") or _has_target_options(hints)
 
 
+def available_cast_options_and_hints(state: MatchState, card: CardInstance, controller: int):
+    """Keep target-dependent payment and legal Aura choices in one contract."""
+    from rules_engine.costs import collect_cost_options, check_cost_option_available
+    from rules_engine.attachments import is_aura
+    options = collect_cost_options(state, controller, card)
+    if not is_aura(card):
+        available = [o for o in options if check_cost_option_available(state, controller, card, o)]
+        return available, build_cast_hints(state, card, controller) if available else {}
+    hints = build_cast_hints(state, card, controller)
+    targets = hints.get("aura_targets", [])
+    compatible = {t["id"]: [o.id for o in options if check_cost_option_available(
+        state, controller, card, o, target_card_id=t["id"])] for t in targets}
+    targets = [t for t in targets if compatible[t["id"]]]
+    hints["aura_targets"] = hints["creature_targets"] = targets
+    hints["aura_cost_options"] = {t["id"]: compatible[t["id"]] for t in targets}
+    hints["choice_schema"]["target_card_id"] = {"type": "string", "required": True, "enum": [t["id"] for t in targets]}
+    return [o for o in options if any(o.id in compatible[t["id"]] for t in targets)], hints
+
+
 def build_cast_hints(
     state: MatchState,
     card: CardInstance,
@@ -45,10 +64,14 @@ def build_cast_hints(
     types = set(getattr(card, "types", []) or [])
     if types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}) and not types.intersection({"Instant", "Sorcery"}):
         from rules_engine.attachments import is_aura
-        if not is_aura(card):
+        aura = is_aura(card)
+        card = copy(card)
+        if aura:
+            enchant = re.search(r"^enchant [^.\n]+", without_reminder_text(card.oracle_text or ""), re.I | re.M)
+            card.oracle_text = enchant.group(0) if enchant else ""
+        else:
             # This is a permanent spell, not one of its later abilities.
             # Preserve mana/face choices without borrowing ability targets.
-            card = copy(card)
             card.oracle_text = ""
     hints = inspect_target_hints(state, card, controller, action_targets)
     selected_modes = (action_targets or {}).get("mode_texts") or []

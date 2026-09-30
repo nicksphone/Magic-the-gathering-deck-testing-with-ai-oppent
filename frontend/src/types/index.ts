@@ -197,6 +197,7 @@ export type LegalMove = {
     enchantment_targets?: { id: string; name: string }[];
     noncreature_permanent_targets?: { id: string; name: string }[];
     aura_targets?: { id: string; name: string }[];
+    aura_cost_options?: Record<string, string[]>;
     planeswalker_targets?: { id: string; name: string }[];
     stack_targets?: { id: string; label: string }[];
     face_names?: string[];

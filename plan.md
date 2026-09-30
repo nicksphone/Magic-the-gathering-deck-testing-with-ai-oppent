@@ -1,22 +1,32 @@
 # MTG Deck Testing Lab Finish Plan
 
+Aura-cost milestone: 2,062 isolated final-source backend tests, 178 focused
+checks, frontend lint/build/unit and the complete final Chromium harness pass.
+Eight seeded seat-paired games repeat unchanged reported results/logs across
+sixteen executions without timeout or cast/target rejection. Supported Aura
+mechanics are verified by canonical and UI/API tests, not this smoke matrix.
+See [scope and remaining gaps](docs/testing/aura-costs.md).
+
+- [x] Implement supported target-aware Aura casting discounts and shared per-target cost-option compatibility across normal, permitted exile and escape casting. Separate enchant targeting from later abilities; share supported enchant constraints with attachment checks. Verify real human controls and attachment projections across styles. See [scope](docs/testing/aura-costs.md).
+- [ ] Extend enchant constraints to subtype/status/numeric/compound predicates and player Auras; add deeper attachment exposure/resource planning, variable Aura X optimization, granted abilities, competing replacement choices and full type/ability/dependency layers. Do not certify a whole card from one working clause.
+
 Equipment-context milestone: 2,020 isolated backend tests, 157 focused checks,
 frontend lint/build/unit and the complete Chromium harness pass. Human seat two
 can activate the supported target-discounted equip with no mana. See
 [scope and remaining limitations](docs/testing/equip-context.md).
 
 - [x] Implement bounded target-aware ordinary equip discounts, effective-power reductions, payable-target filtering and shared AI equip selection. Scope attached base-stat setters correctly; separate attachment layer timestamps from persisted battlefield identity. See [scope and verification](docs/testing/equip-context.md).
-- [ ] Add Aura spell target-aware cost reductions, equip timing overrides/multiple costs, deeper equip transfer/response and resource-opportunity planning, reconfigure/fortify, and full ability/type/dependency layers. Partial-card warnings remain mandatory.
+- [ ] Extend arbitrary Aura spell cost predicates, equip timing overrides/multiple costs, deeper equip transfer/response and resource-opportunity planning, reconfigure/fortify, and full ability/type/dependency layers. Supported Aura target-aware reductions landed above; partial-card warnings remain mandatory.
 
 Attached-predicate milestone: 1,999 isolated production-source backend tests, 102 focused checks, frontend lint/build/unit and the full final-code Chromium harness pass. Eight seeded seat-paired games reproduce identical reported objects/logs across sixteen executions, unchanged from the parent with no timeout or cast/target rejection. Targeted canonical and real land/cast UI/API scenarios cover the new mechanics. See [scope](docs/testing/attached-predicates.md).
 
 - [x] Implement supported attached condition/otherwise branches and domain, target-color and attachment-count scaling using shared public-state evaluators. Cover source-control ownership, threshold/counter/subtype predicates, snapshot purity and corrected shared AI value. Package a provenance-backed offline subtype registry; do not interpret unknown status words as false subtype tests. See [scope](docs/testing/attached-predicates.md).
-- [ ] Extend compound/negated/composed predicates, attached targeted cast/activation cost reductions, otherwise prevention, source-named counters and granted activated abilities. Maintain explicit partial-card warnings and broad unsupported-mechanic preflight until whole families are actually covered.
+- [ ] Extend compound/negated/composed predicates, arbitrary attached cast/activation cost predicates, otherwise prevention, source-named counters and granted activated abilities. Maintain explicit partial-card warnings and broad unsupported-mechanic preflight until whole families are actually covered.
 
 Attached-scaling milestone: 1,974 isolated production-source backend tests, 77 final focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games reproduce identical complete reported objects/logs across sixteen executions, unchanged from the parent and without timeout or cast/target rejection. Targeted canonical tests and the real UI/API removal scenario verify the new mechanics; the smoke matrix alone does not. See [scope](docs/testing/attached-scaling.md).
 
 - [x] Replace flat-prefix attached modifier inference with supported current-controller battlefield-type/land-subtype counts and source-counter scaling. Preserve independent known effects and expose detected unknown attached clauses in public views, layer traces and both-seat controls. See [scope](docs/testing/attached-scaling.md).
-- [ ] Extend remaining attached compound/negated predicates, targeted cost reductions, otherwise prevention, source-named counters, granted activated abilities, source ability suppression and full type/dependency layers. Supported condition/domain/attachment-count/target-color forms landed above; arbitrary forms remain open. Reconfigure needs both attach/detach actions plus creature-type restoration; permitting attachment alone is not completion.
+- [ ] Extend remaining attached compound/negated predicates, arbitrary targeted cost predicates, otherwise prevention, source-named counters, granted activated abilities, source ability suppression and full type/dependency layers. Supported condition/domain/attachment-count/target-color forms landed above; arbitrary forms remain open. Reconfigure needs both attach/detach actions plus creature-type restoration; permitting attachment alone is not completion.
 
 Restricted-mana/attachment milestone: 1,943 isolated backend tests, 196 focused checks, frontend lint/build/unit and full Chromium pass. New real seat-two UI/API coverage verifies restricted pools, actual equip stack/priority and attached effective stats. The [scope report](docs/testing/restricted-mana-equipment.md) distinguishes this supported increment from arbitrary spending/attachment semantics and expert-play certification.
 

@@ -271,7 +271,7 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
     return options
 
 
-def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0) -> bool:
+def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
     player = state.players[player_id]
     if x_value < 0:
         return False
@@ -288,6 +288,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         card_name=card.name, x_value=x_value, spell_types=set(card.types),
         oracle_text=card.oracle_text or "",
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
+        source_card_id=card.id, target_card_id=target_card_id,
     )
 
 

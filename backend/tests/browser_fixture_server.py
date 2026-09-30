@@ -26,6 +26,10 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "aura_costs":
+        from tests.test_aura_costs import discounted
+        state, *_ = discounted(2)
+        return publish(state, [{"quantity": 60, "card_name": "Plains"}])
     if face_kind == "equip_context":
         from tests.test_equip_context import add
         from tests.test_restricted_mana import clean

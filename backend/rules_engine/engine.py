@@ -785,18 +785,18 @@ class RulesEngine:
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
-                if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value):
+                if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id")):
                     explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
                     if not explicit_choice:
                         chosen = next(
                             (
                                 opt
                                 for opt in options
-                                if check_cost_option_available(state, player_id, face_card, opt, x_value=x_value)
+                                if check_cost_option_available(state, player_id, face_card, opt, x_value=x_value, target_card_id=at_targets.get("target_card_id"))
                             ),
                             chosen,
                         )
-                    if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value):
+                    if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id")):
                         reject("Cannot satisfy chosen casting costs")
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
@@ -863,6 +863,7 @@ class RulesEngine:
                     hybrid_choices=action.get("hybrid_choices"),
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                     payment_details=payment_details,
+                    source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
                 )
                 if not paid:
                     if cost_staging:

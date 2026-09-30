@@ -4,7 +4,7 @@ from itertools import permutations
 
 from game_state.state import MatchState, Step, Zone, pregame_actor
 from rules_engine.ability_model import build_ability_spec
-from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
+from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action, available_cast_options_and_hints
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost, restricted_x_color
@@ -226,11 +226,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
                 continue
-            options = collect_cost_options(state, player_id, card)
-            available_options = [o for o in options if check_cost_option_available(state, player_id, card, o)]
+            available_options, hints = available_cast_options_and_hints(state, card, player_id)
             if not available_options:
                 continue
-            hints = build_cast_hints(state, card, player_id)
             if not has_available_targets_for_action(hints):
                 continue
             moves.append(
@@ -269,11 +267,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
             if not timing_ok:
                 continue
-            options = collect_cost_options(state, player_id, card)
-            available_options = [o for o in options if check_cost_option_available(state, player_id, card, o)]
+            available_options, hints = available_cast_options_and_hints(state, card, player_id)
             if not available_options:
                 continue
-            hints = build_cast_hints(state, card, player_id)
             if not has_available_targets_for_action(hints):
                 continue
             moves.append(
@@ -294,9 +290,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     top_card = top_library_creature_for_type(state, player_id)
     if top_card is not None and _can_cast_spell(state, top_card, player_id):
         timing_ok, _ = can_cast_in_current_timing(state, top_card, player_id)
-        options = collect_cost_options(state, player_id, top_card)
-        available_options = [o for o in options if check_cost_option_available(state, player_id, top_card, o)]
-        hints = build_cast_hints(state, top_card, player_id)
+        available_options, hints = available_cast_options_and_hints(state, top_card, player_id)
         if timing_ok and available_options and has_available_targets_for_action(hints):
             moves.append(
                 {
@@ -456,9 +450,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             if not can_cast_in_current_timing(state, face, player_id)[0]:
                 continue
-            options = [option for option in collect_cost_options(state, player_id, face)
-                       if check_cost_option_available(state, player_id, face, option)]
-            hints = build_cast_hints(state, face, player_id)
+            options, hints = available_cast_options_and_hints(state, face, player_id)
             if not options or not has_available_targets_for_action(hints):
                 continue
             moves.append({"type": "cast_spell", "card_id": cid, "card_name": face.name,

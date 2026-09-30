@@ -1,7 +1,18 @@
 from __future__ import annotations
 
+import re
+
 from game_state.state import Zone, assign_effect_timestamp, object_incarnation
 from rules_engine.protection import protected_from_source
+from rules_engine.oracle_text import without_reminder_text
+
+
+def enchant_restriction(oracle_text: str):
+    """Parse only the enchant instruction, never unrelated ability wording."""
+    match = re.search(r"^enchant ([^.\n]+)", without_reminder_text(oracle_text or "").lower(), re.M)
+    if not match:
+        return None
+    return re.fullmatch(r"(?:(basic|nonbasic|nonland|noncreature) )?(artifact creature|creature|artifact|enchantment|land|planeswalker|permanent)(?: or (creature|artifact|enchantment|land|planeswalker|permanent))?(?: (you control|an opponent controls|your opponent controls))?", match.group(1).strip())
 
 
 def is_aura(card) -> bool:
@@ -30,20 +41,23 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
         return False
     if not is_aura(attachment):
         return True
-    oracle = (attachment.oracle_text or "").lower()
+    restriction = enchant_restriction(attachment.oracle_text)
+    if restriction is None:
+        return False
     target_types = {str(value).lower() for value in (getattr(target, "types", []) or [])}
-    restrictions = {
-        "creature": "creature" in target_types,
-        "artifact": "artifact" in target_types,
-        "enchantment": "enchantment" in target_types,
-        "land": "land" in target_types,
-        "planeswalker": "planeswalker" in target_types,
-        "permanent": True,
-    }
-    requested = [kind for kind in restrictions if f"enchant {kind}" in oracle]
-    if not requested:
-        return True
-    return any(restrictions[kind] for kind in requested)
+    quality, subject, alternative, control = restriction.groups()
+    if control == "you control" and target.controller != attachment.controller:
+        return False
+    if control in {"an opponent controls", "your opponent controls"} and target.controller == attachment.controller:
+        return False
+    basic = bool(re.search(r"\bbasic\b", (target.type_line or "").lower()))
+    if ((quality == "basic" and not basic) or (quality == "nonbasic" and basic)
+            or (quality == "nonland" and "land" in target_types)
+            or (quality == "noncreature" and "creature" in target_types)):
+        return False
+    def matches(kind):
+        return kind == "permanent" or (kind == "artifact creature" and {"artifact", "creature"} <= target_types) or kind in target_types
+    return matches(subject) or bool(alternative and matches(alternative))
 
 
 def attach_if_legal(state, attachment_id: str, target_id: str | None) -> bool:

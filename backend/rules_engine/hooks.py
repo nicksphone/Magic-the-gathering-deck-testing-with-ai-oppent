@@ -46,6 +46,7 @@ def apply_cost_modifiers(context: CostContext) -> CostContext:
     out = _apply_static_spell_taxes(context)
     out = _apply_domain_self_discount(out)
     out = _apply_equip_discounts(out)
+    out = _apply_aura_discounts(out)
     for modifier in _COST_MODIFIERS:
         out = modifier(out)
     return out
@@ -57,6 +58,37 @@ def equip_cost_modifier(clause: str) -> tuple[str, int] | None:
         return match.group(1), int(match.group(2))
     match = re.fullmatch(r"equip costs you pay cost \{(\d+)\} less", clause)
     return ("all", int(match.group(1))) if match else None
+
+
+def aura_cost_modifier(clause: str) -> tuple[str, int] | None:
+    match = re.fullmatch(r"aura spells you cast(?: that target (enchanted creature|this creature))? cost \{(\d+)\} less to cast", clause)
+    return (match.group(1) or "all", int(match.group(2))) if match else None
+
+
+def _apply_aura_discounts(context: CostContext) -> CostContext:
+    if context.state is None or not context.is_spell:
+        return context
+    from rules_engine.attachments import is_aura
+    from rules_engine.continuous import _static_oracle_text
+    # A selected face can differ from the parent object's printed type line.
+    if not context.spell_types or "Enchantment" not in context.spell_types or not re.search(r"^enchant\s", context.oracle_text.lower(), re.M):
+        return context
+    target = context.state.cards.get(context.target_card_id)
+    for cid in context.state.players[context.player_id].battlefield:
+        source = context.state.cards[cid]
+        if source.controller != context.player_id:
+            continue
+        for clause in re.split(r"[.\n]", _static_oracle_text(source)):
+            modifier = aura_cost_modifier(clause.strip())
+            if modifier is None:
+                continue
+            kind, amount = modifier
+            applies = kind == "all" or (target is not None and "Creature" in target.types and (
+                (kind == "enchanted creature" and is_aura(source) and source.attached_to == target.id)
+                or (kind == "this creature" and source.id == target.id)))
+            if applies:
+                context.generic_reduction += amount
+    return context
 
 
 def _apply_equip_discounts(context: CostContext) -> CostContext:

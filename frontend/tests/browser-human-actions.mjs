@@ -14,6 +14,18 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Discounted Aura Fixture");
+  await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(e => e.textContent.includes('Cast Octopus Umbra')); const select = [...box.querySelectorAll('select')].find(s => [...s.options].some(o => o.text.includes('Colossal Dreadmaw'))); if (!select) throw new Error('Missing payable Aura target'); if ([...select.options].some(o => o.text.includes('Llanowar Elves'))) throw new Error('Unpayable Aura target exposed'); select.value = [...select.options].find(o => o.text.includes('Colossal Dreadmaw')).value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra') && !b.disabled)");
+  await click("Cast Octopus Umbra");
+  await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.players['2'].mana_pool.U === 0");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Colossal Dreadmaw')?.power === 12");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Llanowar Elves').power"), 1);
+  console.log("PASS seat-two discounted Aura requires payable target, spends actual mana and shows effective stats through UI/API");
   await click("Discounted Equip Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Equip Bonesplitter'))");
   assert.equal(await evaluate("[...document.querySelectorAll('select')].some(s => [...s.options].some(o => o.text.includes('Fervent Champion')) && [...s.options].some(o => o.text.includes('Llanowar Elves')))"), false);

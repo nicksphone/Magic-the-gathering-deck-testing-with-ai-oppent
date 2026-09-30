@@ -73,9 +73,9 @@ def _attached_effects(state, source, target):
         kw = ATTACHED_KW_RE.fullmatch(clause)
         base = ATTACHED_BASE_RE.fullmatch(clause)
         if not pt and not kw and not base:
-            from rules_engine.hooks import equip_cost_modifier
+            from rules_engine.hooks import equip_cost_modifier, aura_cost_modifier
             from rules_engine.attachments import is_aura
-            if is_aura(source) and equip_cost_modifier(clause):
+            if is_aura(source) and (equip_cost_modifier(clause) or aura_cost_modifier(clause)):
                 continue
             unsupported.append(clause)
             continue

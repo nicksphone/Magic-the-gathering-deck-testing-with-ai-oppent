@@ -574,6 +574,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const selectedAuraTarget = String(targets[card.id]?.target_card_id ?? "");
+            const incompatibleAuraCost = Boolean(hints?.aura_cost_options && (!selectedAuraTarget || !hints.aura_cost_options[selectedAuraTarget]?.includes(selectedCostId ?? "")));
             const hybridSymbols = move.cost_options?.find((option) => option.id === selectedCostId)?.hybrid_symbols ?? [];
             const chosenHybridBranches = hybridSymbols.map((_, index) => hybridChoice[`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`] ?? "");
             const incompleteHybridChoice = chosenHybridBranches.some(Boolean) && !chosenHybridBranches.every(Boolean);
@@ -586,7 +588,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               >
                 {landControls}
                 <button
-                  disabled={incompleteHybridChoice}
+                  disabled={incompleteHybridChoice || incompatibleAuraCost}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
@@ -620,7 +622,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   <select value={costChoice[card.id] ?? ""} onChange={(e) => setCostChoice((prev) => ({ ...prev, [card.id]: e.target.value }))}>
                     <option value="">Cost Option</option>
                     {move.cost_options.map((c) => (
-                      <option key={`${card.id}-cost-${c.id}`} value={c.id}>
+                      <option key={`${card.id}-cost-${c.id}`} value={c.id} disabled={Boolean(hints?.aura_cost_options && selectedAuraTarget && !hints.aura_cost_options[selectedAuraTarget]?.includes(c.id))}>
                         {c.label}
                       </option>
                     ))}

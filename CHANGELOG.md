@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added supported global and target-aware Aura reductions to the shared legal-option/payment path. Payable Aura targets carry compatible cost-option IDs into human controls and AI actions; permitted exile and escape casts preserve source flags/additional costs. AI evaluates beneficial and harmful attachments with immediate heroic triggers. Shared enchant constraints prevent later ability words from widening or mis-owning cast targets; unknown restrictions receive preflight warnings. See [scope](docs/testing/aura-costs.md).
+- Aura-cost verification: 2,062 isolated final-source backend tests, 178 focused checks, frontend lint/build/unit and complete final Chromium pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions without timeout or cast/target rejection. Parent probes reproduce missing discounted casts and incorrect enchant targets; the small matrix is not a strength or balance certificate.
+
 - Added target-aware ordinary equip payment/legality for supported self-target, attached-target, global generic and effective-power reductions. Shared AI planning emits concrete improving equip targets and no longer crashes on list-valued target metadata. Attached base stats no longer affect unrelated creatures. Reattachment timestamps preserve durable battlefield identity, counters and pending ability guards. Reconfigure, fortify and full ability suppression now have explicit preflight warnings; this is not whole-card certification. See [scope](docs/testing/equip-context.md).
 - Equipment-context verification: 2,020 isolated backend tests, 157 focused checks, frontend lint/build/unit and full Chromium pass, including a real seat-two target-discounted equip with no mana. Parent probes independently reproduce the base-stat, missing legal equip and AI crash defects.
 

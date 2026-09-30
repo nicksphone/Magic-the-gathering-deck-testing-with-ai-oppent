@@ -1,0 +1,137 @@
+{
+  "date": "2026-09-30",
+  "parent": "1e31ea94d4c64fa735e9f56f2e055749f654f55b",
+  "scope": "Eight logical BO1 games repeated across sixteen final-source executions. Equality covers complete reported game objects/logs, not every internal state field. Offline built-in hydration is unchanged; targeted canonical and UI/API tests verify the new Aura mechanics, not unchanged smoke results. No expert-play or balance certification; optional Spell Pierce payment failure is not rejected casting.",
+  "difficulty": "master",
+  "max_ticks": 1600,
+  "production_sha256": {
+    "backend/ai/agent.py": "a7feeec993f49da8037e75887368629da133ace2835a237aa525425e7acc0b62",
+    "backend/rules_engine/attachments.py": "e07ef10c0298604b9d4d2081f93fcff3c9e56cac1909029ab7a4f0b0a8b3fe40",
+    "backend/rules_engine/cast_choice.py": "f97c4e1f06a37982df3de6b5209fa6fb3fae666c326c0c9eea3b51b923585b07",
+    "backend/rules_engine/continuous.py": "09129f4886a2ddcdf4fe7bf173efe4112bdcec8d9c13dd4d3fdef886e9f3511a",
+    "backend/rules_engine/costs.py": "f7d4edff37714452bba56c530effeacf6eb9fff45c6cd5f34e2f33233d49e276",
+    "backend/rules_engine/coverage.py": "cf8065180b6ad307444d318313d32900b48c5814ae82448e8ad6b663f96da4f9",
+    "backend/rules_engine/engine.py": "d26f0ffcfe6fc262d8a2f53c9c758768e5c68810ce925a6e1c96e9c68684974d",
+    "backend/rules_engine/hooks.py": "1d19c4d5d84b8d27a7c409635d7fa4e3f511a4b1f556775f73e410e1b2244a71",
+    "backend/rules_engine/move_generator.py": "88a02243c6e8041f41f9d49af8c2538719b59b83c993e0df1e5c7825687276fa",
+    "backend/rules_engine/oracle_effects.py": "804c7715a450dbe8f1f9b8e2527776e9387ac9010793823d3cc1fdd3f5d7e4a7"
+  },
+  "backend_tests": 2062,
+  "backend_warnings": 292,
+  "backend_seconds": 254.56,
+  "focused_tests": 178,
+  "canonical_fixture_rows": 37,
+  "new_tests": 42,
+  "parent_probe": [
+    {
+      "discounted_aura_offered": false,
+      "expected": true
+    },
+    {
+      "glitters_cast_targets": [
+        "Sol Ring"
+      ],
+      "expected": [
+        "Colossal Dreadmaw"
+      ]
+    },
+    {
+      "ossification_cast_targets": [
+        "Colossal Dreadmaw"
+      ],
+      "expected": [
+        "Plains"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 49,
+      "timeout": false,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 15,
+      "timeout": false,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 38,
+      "timeout": false,
+      "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "timeout": false,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 21,
+      "timeout": false,
+      "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "timeout": false,
+      "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 25,
+      "timeout": false,
+      "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 16,
+      "timeout": false,
+      "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    }
+  ]
+}

@@ -697,26 +697,11 @@ def inspect_target_hints(
             for cid in state.players[pid].battlefield
             if "Land" in state.cards[cid].types
         ]
-    aura_restrictions = {
-        "creature": "creature" in oracle,
-        "artifact": "artifact" in oracle,
-        "enchantment": "enchantment" in oracle,
-        "land": "land" in oracle,
-        "planeswalker": "planeswalker" in oracle,
-        "permanent": "permanent" in oracle,
-    }
-    if "enchant " in oracle and any(aura_restrictions.values()):
-        allowed_players = [controller] if "you control" in oracle else [1, 2]
-        aura_targets = []
-        for pid in allowed_players:
-            for cid in state.players[pid].battlefield:
-                target = state.cards[cid]
-                target_types = {str(value).lower() for value in (target.types or [])}
-                if (
-                    (aura_restrictions["permanent"] and target.zone == Zone.BATTLEFIELD)
-                    or any(aura_restrictions[kind] and kind in target_types for kind in aura_restrictions if kind != "permanent")
-                ):
-                    aura_targets.append({"id": cid, "name": target.name})
+    if re.search(r"^enchant ", oracle, re.M):
+        from rules_engine.attachments import attachment_target_is_legal
+        aura_targets = [{"id": cid, "name": state.cards[cid].name}
+                        for pid in state.players for cid in state.players[pid].battlefield
+                        if attachment_target_is_legal(state, card, cid)]
         hints["aura_targets"] = aura_targets
         hints["creature_targets"] = aura_targets
     if not graveyard_only_target and ("target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle):

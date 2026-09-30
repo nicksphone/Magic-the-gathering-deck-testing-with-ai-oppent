@@ -1232,7 +1232,12 @@ class AIAgent:
             stack_items = getattr(state, "stack", []) or []
             cast_moves = [m for m in moves if m.get("type") == "cast_spell"]
             if mtype == "cast_spell":
-                tags = self._spell_tags(_card_for_move(state, move))
+                card = _card_for_move(state, move)
+                tags = self._spell_tags(card)
+                from rules_engine.attachments import is_aura
+                if is_aura(card):
+                    _, gain = self._attachment_projection(state, move, player_id)
+                    base += gain if gain > 0 else -10.0
                 base += self._cast_bias(state, move, player_id)
                 if "burn" in tags:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
@@ -1280,7 +1285,7 @@ class AIAgent:
                     base += (self._score_x_value(state, player_id, source, str(move.get("mana_cost") or ""), x, x, 1)
                              if x else -20.0) - 2.5
             elif mtype == "equip":
-                _, gain = self._equip_projection(state, move, player_id)
+                _, gain = self._attachment_projection(state, move, player_id)
                 base += gain if gain > 0 else -10.0
             elif mtype == "ninjutsu":
                 ninja = state.cards[move["card_id"]]
@@ -1561,6 +1566,10 @@ class AIAgent:
 
     def _can_pay_card_cost(self, state: MatchState, player_id: int, card) -> bool:
         try:
+            from rules_engine.attachments import is_aura
+            if is_aura(card):
+                from rules_engine.cast_choice import available_cast_options_and_hints
+                return bool(available_cast_options_and_hints(state, card, player_id)[0])
             return bool(can_pay_with_pool_and_lands(
                 state, player_id, getattr(card, "mana_cost", ""),
                 card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
@@ -1996,11 +2005,12 @@ class AIAgent:
         if not cid:
             return
         card = sim_state.cards.get(cid)
-        if not card or "Creature" not in card.types:
+        from rules_engine.attachments import is_aura
+        if not card or ("Creature" not in card.types and not is_aura(card)):
             return
         if not getattr(sim_state, "stack", []):
             return
-        # Approximation: if both players pass, creature resolves and enters battlefield.
+        # Approximation: if both players pass, this permanent resolves.
         # This prevents lookahead from systematically undervaluing creature development.
         if sim_state.priority_player != player_id:
             return
@@ -2389,23 +2399,43 @@ class AIAgent:
                     return action
         return None
 
-    def _equip_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
+    def _attachment_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
         from rules_engine.stack_engine import resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
-        equipment = state.cards.get(move.get("card_id"))
-        if equipment is None:
+        source = state.cards.get(move.get("card_id"))
+        if source is None:
             return None, 0.0
+        casting = move.get("type") == "cast_spell"
+        targets = (move.get("target_hints") or {}).get("aura_targets", []) if casting else move.get("targets", [])
         before = evaluate_board(state, player_id)
         best = None
-        for target in move.get("targets", []):
-            if equipment.attached_to == target["id"]:
+        for target in targets:
+            if not casting and source.attached_to == target["id"]:
                 continue
-            action = {"type": "equip", "card_id": equipment.id, "target_card_id": target["id"]}
+            action = {"type": "equip", "card_id": source.id, "target_card_id": target["id"]}
+            if casting:
+                compatible = move["target_hints"].get("aura_cost_options", {}).get(target["id"], [])
+                action = {"type": "cast_spell", "card_id": source.id, "targets": {"target_card_id": target["id"]}}
+                action.update({flag: True for flag in ("from_exile", "from_graveyard", "from_library") if move.get(flag)})
+                if compatible:
+                    action["cost_choice"] = {"id": compatible[0]}
+                if move.get("selected_face_index") is not None:
+                    action["selected_face_index"] = move["selected_face_index"]
             projected = planning_copy(state)
             try:
                 self.engine.take_action(projected, player_id, action, reject_invalid=True)
                 if not projected.stack or not resolve_top_of_stack(projected):
                     continue
+                if casting:
+                    # Immediate cast triggers (for example heroic) resolve above
+                    # the Aura. Do not value an unfinished paid spell as a buff.
+                    for _ in range(64):
+                        if projected.cards[source.id].zone != Zone.STACK:
+                            break
+                        if not resolve_top_of_stack(projected):
+                            break
+                    if projected.cards[source.id].zone == Zone.STACK:
+                        continue
                 apply_state_based_actions(projected)
             except (ValueError, KeyError):
                 continue
@@ -2419,9 +2449,14 @@ class AIAgent:
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False) -> dict:
         mtype = move.get("type")
-        if mtype == "equip":
-            action, _ = self._equip_projection(state, move, player_id)
-            return action or {"type": "equip", "card_id": move.get("card_id"), "_invalid_ai_choice": True}
+        from rules_engine.attachments import is_aura
+        source = state.cards.get(move.get("card_id"))
+        if source is not None and move.get("selected_face_index") is not None:
+            from rules_engine.card_faces import select_cast_face
+            source = select_cast_face(source, int(move["selected_face_index"]))
+        if mtype == "equip" or (mtype == "cast_spell" and source is not None and is_aura(source)):
+            action, _ = self._attachment_projection(state, move, player_id)
+            return action or {"type": mtype, "card_id": move.get("card_id"), "_invalid_ai_choice": True}
         if mtype == "attack":
             out = dict(move)
             candidates = list(move.get("options") or out.get("attackers") or [])

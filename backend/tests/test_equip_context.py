@@ -60,7 +60,7 @@ def test_strong_back_reduces_only_its_attached_target_for_its_controller(owner):
         payment_types={'Artifact'}, ability_kind='equip', source_card_id=source.id,
         target_card_id=target.id) == (owner == 1)
     assert any(m['type'] == 'equip' for m in RulesEngine().legal_moves(state, 1)) == (owner == 1)
-    assert attachment_effect_warnings(state, aura.id) == ['aura spells you cast that target enchanted creature cost {3} less to cast']
+    assert attachment_effect_warnings(state, aura.id) == []
 
 
 def test_global_and_targeted_generic_discounts_stack_but_not_on_other_activations():
