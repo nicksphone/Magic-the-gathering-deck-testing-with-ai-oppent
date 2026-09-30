@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab Finish Plan
 
+Latest resource milestone verification: 1,835 isolated backend tests and frontend lint/build/unit pass, as does the complete final-code Chromium harness. Eight seed/seat-paired games repeat with identical full results across sixteen executions without timeout or logged cost/target rejection. Three traces changed from the prior milestone; stronger play is not established by trace changes. See [resource scope and evidence](docs/testing/ai-mana-resources.md). Both LAN services respond. The earlier intermittent sideboard timeout and timeout-diagnostic interpreter crash remain unverified.
+
+- [x] Separate supported repeatable printed nonland mana capacity from readiness and share bounded public-board resource value across board/sacrifice and creature cast/threat evaluation. Canonical colored/colorless/flexible/multi-mana and excluded-source fixtures cover the boundary. See [scope](docs/testing/ai-mana-resources.md).
+- [ ] Extend resource planning to actual hand-cost/color bottlenecks, attack-versus-activation opportunity cost, restricted/conditional/variable sources and costed untap engines. The public land-count heuristic is not calibrated expert resource planning.
+
 Recurring-payoff milestone validation: 1,811 isolated backend tests and frontend lint/build/unit gates pass. The complete Chromium rerun passes; an initial sideboard pending-operation timeout remains unverified. Eight seat-paired games repeat with identical full results across sixteen executions without timeout or logged cost/target rejection. [Scope and evidence](docs/testing/ai-recurring-payoffs.md) distinguish tactical fixture improvement from broader strategy and balance claims.
 
 - [x] Share supported recurring payoff valuation across creature ranking, threat and sacrifice scoring; suppress unsupported public death opportunities under applicable exile replacements without mutating state. Validate canonical multi-archetype fixtures and snapshot restoration.

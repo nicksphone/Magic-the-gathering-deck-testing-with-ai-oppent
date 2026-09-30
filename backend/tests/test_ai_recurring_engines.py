@@ -35,8 +35,8 @@ def fixture():
     return state
 
 
-def add(state, name, player=1, zone=Zone.BATTLEFIELD):
-    raw = CARDS[name]
+def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS):
+    raw = cards[name]
     card = CardInstance(id=state.allocate_object_id(), name=name, owner=player, controller=player,
                         zone=zone, types=printed_card_types(raw["type_line"]), type_line=raw["type_line"],
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],

@@ -539,7 +539,28 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
     if "Creature" in card_types:
         if getattr(card, "summoning_sick", False) and not has_keyword(state, card_id, "haste"):
             return {}
-    effect = ability.group(2).upper()
+    return _nonland_mana_effect_outputs(ability.group(2))
+
+
+def repeatable_nonland_mana_outputs(card) -> dict[str, int]:
+    """Printed tap-only capacity; never an assertion that it is usable now."""
+    if "Land" in (getattr(card, "types", []) or []):
+        return {}
+    text = getattr(card, "oracle_text", "") or ""
+    ability = NONLAND_MANA_ABILITY_RE.search(text)
+    if ability is None or re.search(
+        r"\bspend\b[^.\n]*\bonly\b|\bcan't be spent\b|\bactivate (?:this ability )?only\b"
+        r"|\bdoesn't untap during your untap step\b", text, re.I,
+    ):
+        return {}
+    from rules_engine.costs import ActivatedCost, parse_activated_cost
+    if parse_activated_cost(ability.group(1)) != ActivatedCost(tap_source=True):
+        return {}
+    return _nonland_mana_effect_outputs(ability.group(2))
+
+
+def _nonland_mana_effect_outputs(effect: str) -> dict[str, int]:
+    effect = effect.upper()
     any_color = re.fullmatch(r"ADD (ONE|TWO|THREE|FOUR|FIVE|SIX|\d+) MANA OF ANY (ONE )?COLOR", effect.strip())
     if any_color:
         words = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6}

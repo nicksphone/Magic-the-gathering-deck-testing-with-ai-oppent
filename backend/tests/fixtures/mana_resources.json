@@ -1,0 +1,226 @@
+[
+  {
+    "name": "Birds of Paradise",
+    "oracle_text": "Flying\n{T}: Add one mana of any color.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Bird",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "d3a0b660-358c-41bd-9cd2-41fbf3491b1a",
+      "source": "scryfall",
+      "scryfall_id": "492c2f9a-51e7-4e0f-9899-23bf43ea988b"
+    }
+  },
+  {
+    "name": "Avacyn's Pilgrim",
+    "oracle_text": "{T}: Add {W}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Human Monk",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "069f6530-e65c-4d52-85f3-e0a2acd148c5",
+      "source": "scryfall",
+      "scryfall_id": "a390a7df-b8da-41aa-93e5-2c0db938a27e"
+    }
+  },
+  {
+    "name": "Boreal Druid",
+    "oracle_text": "{T}: Add {C}.",
+    "mana_cost": "{G}",
+    "type_line": "Snow Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "2fcc69ff-8ab5-4e14-afe3-db892049a872",
+      "source": "scryfall",
+      "scryfall_id": "473d3633-6dc7-4026-a50e-3ea76b9e8c20"
+    }
+  },
+  {
+    "name": "Palladium Myr",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature \u2014 Myr",
+    "power": "2",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "7b0767b8-b504-456e-93bd-218502f73b3d",
+      "source": "scryfall",
+      "scryfall_id": "f7c6aba3-38c3-45d1-83e1-40829eb07862"
+    }
+  },
+  {
+    "name": "Gilded Lotus",
+    "oracle_text": "{T}: Add three mana of any one color.",
+    "mana_cost": "{5}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+      "source": "scryfall",
+      "scryfall_id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba"
+    }
+  },
+  {
+    "name": "Sol Ring",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "source": "scryfall",
+      "scryfall_id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4"
+    }
+  },
+  {
+    "name": "Springleaf Drum",
+    "oracle_text": "{T}, Tap an untapped creature you control: Add one mana of any color.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "bdeb440d-a714-40e8-9038-f651e6ae45fb",
+      "source": "scryfall",
+      "scryfall_id": "e15ab0aa-4059-4923-9816-6f7a9e5b5a18"
+    }
+  },
+  {
+    "name": "Skirk Prospector",
+    "oracle_text": "Sacrifice a Goblin: Add {R}.",
+    "mana_cost": "{R}",
+    "type_line": "Creature \u2014 Goblin",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "c18013e4-0b99-44e3-a2b2-027ace68723a",
+      "source": "scryfall",
+      "scryfall_id": "7bc508b3-8b38-4cf0-89a7-a2cb247ed083"
+    }
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "source": "scryfall",
+      "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+    }
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_text": "",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Bear",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "source": "scryfall",
+      "scryfall_id": "409f9b88-f03e-40b6-9883-68c14c37c0de"
+    }
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "source": "scryfall",
+      "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7"
+    }
+  },
+  {
+    "name": "Renowned Weaponsmith",
+    "oracle_text": "{T}: Add {C}{C}. Spend this mana only to cast artifact spells or activate abilities of artifacts.\n{U}, {T}: Search your library for a card named Heart-Piercer Bow or Vial of Dragonfire, reveal it, put it into your hand, then shuffle.",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature \u2014 Human Artificer",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "40c1375b-1d15-4525-894a-16b7a0ac02b4",
+      "source": "scryfall",
+      "scryfall_id": "5a397298-9d7d-495f-983a-1683291a7b9f"
+    }
+  },
+  {
+    "name": "Basalt Monolith",
+    "oracle_text": "This artifact doesn't untap during your untap step.\n{T}: Add {C}{C}{C}.\n{3}: Untap this artifact.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "6b8cf2a0-b045-4d91-9d91-c602d40c6237",
+      "source": "scryfall",
+      "scryfall_id": "f79de5e7-1545-420c-bfe1-ee2444fca85b"
+    }
+  }
+]

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Mana-resource verification: 1,835 isolated backend tests, frontend lint/build/unit and the full final-code Chromium harness pass. Eight seed/seat-paired games repeat with identical complete results across sixteen executions, zero timeout and zero logged cost/target rejection. Three traces differ from the preceding milestone, not proof of optimality. Both LAN services respond; broad resource planning and previously noted intermittent diagnostics remain open.
+
+- Added shared printed tap-only mana-capacity analysis separately from payment availability. AI board/sacrifice scoring now retains supported creature and artifact resources; creature cast/threat scoring shares the public land-count heuristic. Flexible colors use maximum output rather than summing alternatives. Paid/additional-cost, restricted and non-untapping sources are excluded from this bonus. Thirteen canonical cached fixtures cover multiple colors and output sizes without modifying built-in decks. See [scope](docs/testing/ai-mana-resources.md).
+
 - Recurring-payoff verification: 1,811 isolated backend tests, frontend lint/build/unit and the full Chromium rerun pass. Eight seed/seat-paired games have identical complete results across sixteen executions without timeout or logged cost/target rejection. The initial browser sideboard operation timed out and passed unchanged on retry; its cause remains unverified. This bounded evidence does not certify AI strength, balance or arbitrary mechanics.
 
 - Shared recurring drain/draw/token payoff valuation now reaches creature board, cast and threat scoring as well as sacrifice retention. Supported death-trigger eligibility follows the engine's public-board matching and pure replacement query. It does not borrow spent entry rewards or mistake a draw condition for card advantage.

@@ -52,6 +52,19 @@ def evaluate_board(state: MatchState, player_id: int) -> float:
     )
 
 
+def repeatable_mana_value(state, card_id: str, *, surface_card=None) -> float:
+    """Public-board resource retention, distinct from current payment readiness."""
+    from rules_engine.mana import repeatable_nonland_mana_outputs
+    card = surface_card if surface_card is not None else state.cards[card_id]
+    outputs = repeatable_nonland_mana_outputs(card)
+    controller = getattr(card, "controller", None)
+    if not outputs or controller not in state.players:
+        return 0.0
+    lands = sum("Land" in state.cards[cid].types
+                for cid in state.players[controller].battlefield)
+    return max(outputs.values()) * (2.0 if lands < 4 else 0.75)
+
+
 def choose_damage_trigger_target(state: MatchState, controller: int, amount: int, options: list[dict]) -> dict:
     opponent = 3 - controller
 
@@ -114,7 +127,7 @@ def _board_value(state: MatchState, player_id: int) -> float:
         if "Creature" in types:
             total += _creature_value(state, cid)
             continue
-        total += _noncreature_value(card, surface)
+        total += _noncreature_value(card, surface) + repeatable_mana_value(state, cid)
         if "Land" in types and not getattr(card, "tapped", False):
             total += 0.12
     return total
@@ -125,7 +138,8 @@ def _creature_value(state: MatchState, card_id: str) -> float:
     power = max(0, int(effective_power(state, card_id) or 0))
     toughness = max(0, int(effective_toughness(state, card_id) or 0))
     kws = {str(k).lower() for k in (effective_keywords(state, card_id) or [])}
-    value = power * 1.35 + toughness * 0.55 + recurring_engine_value(state, card_id)
+    value = (power * 1.35 + toughness * 0.55 + recurring_engine_value(state, card_id)
+             + repeatable_mana_value(state, card_id))
     value += 0.25 if not getattr(card, "tapped", False) else -0.1
     if "flying" in kws:
         value += 1.1

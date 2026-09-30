@@ -6,7 +6,7 @@ from itertools import combinations
 from dataclasses import dataclass
 
 from ai.endgame_policy import should_force_closure, should_force_inevitability_line
-from ai.heuristics import evaluate_board, recurring_engine_value
+from ai.heuristics import evaluate_board, recurring_engine_value, repeatable_mana_value
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
@@ -1664,7 +1664,8 @@ class AIAgent:
             bonus_face = 0.0
 
         if is_creature:
-            engine_bonus = recurring_engine_value(state, cid, surface_card=card)
+            engine_bonus = (recurring_engine_value(state, cid, surface_card=card)
+                            + repeatable_mana_value(state, cid, surface_card=card))
             if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
                 bonus = 4.0
                 if in_main:
@@ -3220,7 +3221,8 @@ class AIAgent:
         power = max(0, _eff_pow(state, creature_id))
         toughness = max(0, _eff_tgh(state, creature_id))
         kws = set(effective_keywords(state, creature_id))
-        score = power * 1.2 + toughness * 0.35 + recurring_engine_value(state, creature_id)
+        score = (power * 1.2 + toughness * 0.35 + recurring_engine_value(state, creature_id)
+                 + repeatable_mana_value(state, creature_id))
         if "flying" in kws or "trample" in kws or "menace" in kws:
             score += 1.8
         if "deathtouch" in kws:
@@ -3605,6 +3607,7 @@ class AIAgent:
         if getattr(card, "oracle_text", ""):
             value += 1.0
             value += recurring_engine_value(state, cid)
+            value += repeatable_mana_value(state, cid)
         return value
 
     def _hand_retention_value(self, state: MatchState, cid: str, player_id: int, archetype: str | None = None) -> float:
