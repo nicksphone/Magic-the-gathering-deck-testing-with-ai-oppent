@@ -387,15 +387,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             equip_cost = _extract_equip_cost(card.oracle_text or "")
             if not equip_cost:
                 continue
-            if not can_pay_with_pool_and_lands(state, player_id, equip_cost,
-                                             payment_kind="activation", payment_types=set(card.types)):
-                continue
             from rules_engine.attachments import attachment_target_is_legal, is_equipment
             from rules_engine.targeting import validate_hexproof_shroud_targets
             if not is_equipment(card):
                 continue
             targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
-                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target})[0]]
+                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target})[0]
+                       and can_pay_with_pool_and_lands(state, player_id, equip_cost,
+                           payment_kind="activation", payment_types=set(card.types), ability_kind="equip",
+                           source_card_id=cid, target_card_id=target)]
             if targets:
                 moves.append(
                     {

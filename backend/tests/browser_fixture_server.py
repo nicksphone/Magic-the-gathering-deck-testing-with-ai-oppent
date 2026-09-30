@@ -26,6 +26,14 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "equip_context":
+        from tests.test_equip_context import add
+        from tests.test_restricted_mana import clean
+        state = clean(2)
+        add(state, "Bonesplitter", 2)
+        add(state, "Fervent Champion", 2)
+        add(state, "Llanowar Elves", 2).tapped = True
+        return publish(state, [{"quantity": 60, "card_name": "Forest"}])
     if face_kind == "attached_predicates":
         from tests.test_attached_scaling import add, CARDS
         from tests.test_ai_recurring_engines import add as add_hand

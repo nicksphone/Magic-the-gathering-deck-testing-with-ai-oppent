@@ -1,0 +1,411 @@
+[
+  {
+    "name": "Strong Back",
+    "oracle_text": "Enchant creature\nEquip abilities you activate that target enchanted creature cost {3} less to activate.\nAura spells you cast that target enchanted creature cost {3} less to cast.\nEnchanted creature gets +2/+2 for each Aura and Equipment attached to it.",
+    "mana_cost": "{2}{G}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "097992a9-7b88-4c3f-8191-1ff10a4a735d",
+    "source": "scryfall",
+    "scryfall_id": "3f65afa5-e4f7-49c2-97f9-47ad5dbcacfa"
+  },
+  {
+    "name": "Belt of Giant Strength",
+    "oracle_text": "Equipped creature has base power and toughness 10/10.\nEquip {10}. This ability costs {X} less to activate, where X is the power of the creature it targets.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "eb70939f-c4ce-4224-ab74-acc24771d7f0",
+    "source": "scryfall",
+    "scryfall_id": "4ef2b9aa-4f7c-4640-bb34-9775e1be0935"
+  },
+  {
+    "name": "Fervent Champion",
+    "oracle_text": "First strike, haste\nWhenever this creature attacks, another target attacking Knight you control gets +1/+0 until end of turn.\nEquip abilities you activate that target this creature cost {3} less to activate.",
+    "mana_cost": "{R}",
+    "type_line": "Creature \u2014 Human Knight",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "First strike",
+      "Haste"
+    ],
+    "layout": "normal",
+    "oracle_id": "8de50bda-1ef6-4ccf-9efc-fab10b7eb2e5",
+    "source": "scryfall",
+    "scryfall_id": "c52d66db-5570-48a1-99cf-e0417517747b"
+  },
+  {
+    "name": "Auriok Steelshaper",
+    "oracle_text": "Equip costs you pay cost {1} less.\nAs long as this creature is equipped, each creature you control that's a Soldier or a Knight gets +1/+1.",
+    "mana_cost": "{1}{W}",
+    "type_line": "Creature \u2014 Human Soldier",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "e3ee8b0e-9bdc-4b9a-b4f9-59189dd6a80d",
+    "source": "scryfall",
+    "scryfall_id": "4dd09c01-5a77-4992-96ae-c395a5966a92"
+  },
+  {
+    "name": "Bonesplitter",
+    "oracle_text": "Equipped creature gets +2/+0.\nEquip {1}",
+    "mana_cost": "{1}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "452e3f5f-ce17-4682-966b-5cc100210aee",
+    "source": "scryfall",
+    "scryfall_id": "690972a8-72df-4050-a353-16e45589167c"
+  },
+  {
+    "name": "Lightning Greaves",
+    "oracle_text": "Equipped creature has haste and shroud. (It can't be the target of spells or abilities.)\nEquip {0}",
+    "mana_cost": "{2}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "ca204b66-8d0c-431a-8d34-282f7c2d17da",
+    "source": "scryfall",
+    "scryfall_id": "b61634ae-05be-4b56-8ebb-9d4ade902e42"
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "source": "scryfall",
+    "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+  },
+  {
+    "name": "Colossal Dreadmaw",
+    "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Creature \u2014 Dinosaur",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Trample"
+    ],
+    "layout": "normal",
+    "oracle_id": "08c7db90-c0cf-4482-b7ee-bb033e5996d2",
+    "source": "scryfall",
+    "scryfall_id": "8059c52b-5d25-4052-b48a-e9e219a7a546"
+  },
+  {
+    "name": "Octopus Umbra",
+    "oracle_text": "Enchant creature\nEnchanted creature has base power and toughness 8/8 and has \"Whenever this creature attacks, you may tap target creature with power 8 or less.\"\nUmbra armor (If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.)",
+    "mana_cost": "{3}{U}{U}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Umbra armor",
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "6d2ce0ba-f2ff-4c2b-ba85-f6c011ebda6c",
+    "source": "scryfall",
+    "scryfall_id": "9efcf24c-ad57-4320-9b85-c838f5ed659b"
+  },
+  {
+    "name": "Humility",
+    "oracle_text": "All creatures lose all abilities and have base power and toughness 1/1.",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+    "source": "scryfall",
+    "scryfall_id": "55ad6a45-a840-45ba-89ad-066e20e983f3"
+  },
+  {
+    "name": "Godhead of Awe",
+    "oracle_text": "Flying\nOther creatures have base power and toughness 1/1.",
+    "mana_cost": "{W/U}{W/U}{W/U}{W/U}{W/U}",
+    "type_line": "Creature \u2014 Spirit Avatar",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "layout": "normal",
+    "oracle_id": "1ed5751a-4b45-4cd2-b19c-ac84508de4f8",
+    "source": "scryfall",
+    "scryfall_id": "7e34d294-c0ec-4e3c-a731-31b7a29c59b4"
+  },
+  {
+    "name": "Sol Ring",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+    "source": "scryfall",
+    "scryfall_id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4"
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "source": "scryfall",
+    "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac"
+  },
+  {
+    "name": "Mountain",
+    "oracle_text": "({T}: Add {R}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Mountain",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+    "source": "scryfall",
+    "scryfall_id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55"
+  },
+  {
+    "name": "Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Plains",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+    "source": "scryfall",
+    "scryfall_id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c"
+  },
+  {
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Island",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "source": "scryfall",
+    "scryfall_id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3"
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "source": "scryfall",
+    "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7"
+  },
+  {
+    "name": "Renowned Weaponsmith",
+    "oracle_text": "{T}: Add {C}{C}. Spend this mana only to cast artifact spells or activate abilities of artifacts.\n{U}, {T}: Search your library for a card named Heart-Piercer Bow or Vial of Dragonfire, reveal it, put it into your hand, then shuffle.",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature \u2014 Human Artificer",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "40c1375b-1d15-4525-894a-16b7a0ac02b4",
+    "source": "scryfall",
+    "scryfall_id": "5a397298-9d7d-495f-983a-1683291a7b9f"
+  },
+  {
+    "name": "Stifle",
+    "oracle_text": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+    "source": "scryfall",
+    "scryfall_id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4"
+  },
+  {
+    "name": "Lightning Bolt",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "source": "scryfall",
+    "scryfall_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+  },
+  {
+    "name": "Adeline, Resplendent Cathar",
+    "oracle_text": "Vigilance\nAdeline's power is equal to the number of creatures you control.\nWhenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that player or a planeswalker they control.",
+    "mana_cost": "{1}{W}{W}",
+    "type_line": "Legendary Creature \u2014 Human Knight",
+    "power": "*",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Vigilance"
+    ],
+    "layout": "normal",
+    "oracle_id": "38515f89-348b-4cf3-b7bd-1f6fe4ce2fba",
+    "source": "scryfall",
+    "scryfall_id": "1de30c12-2011-495a-be25-f7a46b23e142"
+  },
+  {
+    "name": "Ornithopter",
+    "oracle_text": "Flying",
+    "mana_cost": "",
+    "type_line": "Token Artifact Creature \u2014 Thopter",
+    "power": "0",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [
+      "Flying"
+    ],
+    "layout": "token",
+    "oracle_id": "75336d52-5278-4e98-9875-b3ac8b91bfe2",
+    "source": "scryfall",
+    "scryfall_id": "a63d3174-75af-4dfa-b2f9-c4330c755af1"
+  },
+  {
+    "name": "Cranial Plating",
+    "oracle_text": "Equipped creature gets +1/+0 for each artifact you control.\n{B}{B}: Attach this Equipment to target creature you control.\nEquip {1}",
+    "mana_cost": "{2}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "75564721-e4e9-463a-b49e-f0c7cd6f53a7",
+    "source": "scryfall",
+    "scryfall_id": "e1375f17-bc25-4a65-98b7-4785bbdbe974"
+  },
+  {
+    "name": "All That Glitters",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +1/+1 for each artifact and/or enchantment you control.",
+    "mana_cost": "{1}{W}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "a4d751e0-41c1-4e90-853d-512f385acd81",
+    "source": "scryfall",
+    "scryfall_id": "5fc0b82a-f943-4330-b9e7-bb4527354bfd"
+  },
+  {
+    "name": "Rancor",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +2/+0 and has trample.\nWhen this Aura is put into a graveyard from the battlefield, return it to its owner's hand.",
+    "mana_cost": "{G}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+    "source": "scryfall",
+    "scryfall_id": "86d6b411-4a31-4bfc-8dd6-e19f553bb29b"
+  }
+]

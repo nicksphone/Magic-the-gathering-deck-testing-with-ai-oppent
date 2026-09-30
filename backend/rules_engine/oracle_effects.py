@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from game_state.state import CardInstance, MatchState, Zone
+from game_state.state import CardInstance, MatchState, Zone, object_incarnation
 from card_data.token_definitions import named_artifact_token
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 from rules_engine.oracle_text import without_reminder_text
@@ -162,7 +162,7 @@ def infer_effect_from_oracle(
     if re.search(r"choose a creature card exiled with .+? with (?:mana value|converted mana cost) x\.\s*.+? becomes a copy of that card", oracle):
         return "copy_linked_exiled_card", {
             "source_card_id": card.id, "x_value": int(action_targets.get("x_value", 0) or 0),
-            "source_timestamp": state.cards[card.id].effect_timestamp,
+            "source_timestamp": object_incarnation(state.cards[card.id]),
         }
     linked_hand_exile = re.search(
         r"each opponent reveals their hand\.\s*for each opponent, exile a creature card they revealed this way until [^.]+ leaves the battlefield",
@@ -172,7 +172,7 @@ def infer_effect_from_oracle(
         return "choose_revealed_exile", {
             "target_player": 1 if controller == 2 else 2,
             "allowed_types": ["Creature"], "destination": "exile",
-            "linked_source_id": card.id, "linked_source_timestamp": card.effect_timestamp,
+            "linked_source_id": card.id, "linked_source_timestamp": object_incarnation(card),
         }
     linked_exile = re.search(
         r"exile each nonland permanent with mana value (\d+) or less until this (?:enchantment|permanent|creature|artifact) leaves the battlefield",
@@ -181,7 +181,7 @@ def infer_effect_from_oracle(
     if linked_exile:
         return "exile_nonland_until_source_leaves", {
             "mv_max": int(linked_exile.group(1)), "source_card_id": card.id,
-            "source_timestamp": card.effect_timestamp,
+            "source_timestamp": object_incarnation(card),
         }
     if re.search(r"\bdeals? x damage to each creature and each player\b", oracle, re.IGNORECASE):
         return "damage_each_creature_and_player", {"amount": max(0, int(action_targets.get("x_value", 0) or 0))}

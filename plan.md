@@ -1,5 +1,13 @@
 # MTG Deck Testing Lab Finish Plan
 
+Equipment-context milestone: 2,020 isolated backend tests, 157 focused checks,
+frontend lint/build/unit and the complete Chromium harness pass. Human seat two
+can activate the supported target-discounted equip with no mana. See
+[scope and remaining limitations](docs/testing/equip-context.md).
+
+- [x] Implement bounded target-aware ordinary equip discounts, effective-power reductions, payable-target filtering and shared AI equip selection. Scope attached base-stat setters correctly; separate attachment layer timestamps from persisted battlefield identity. See [scope and verification](docs/testing/equip-context.md).
+- [ ] Add Aura spell target-aware cost reductions, equip timing overrides/multiple costs, deeper equip transfer/response and resource-opportunity planning, reconfigure/fortify, and full ability/type/dependency layers. Partial-card warnings remain mandatory.
+
 Attached-predicate milestone: 1,999 isolated production-source backend tests, 102 focused checks, frontend lint/build/unit and the full final-code Chromium harness pass. Eight seeded seat-paired games reproduce identical reported objects/logs across sixteen executions, unchanged from the parent with no timeout or cast/target rejection. Targeted canonical and real land/cast UI/API scenarios cover the new mechanics. See [scope](docs/testing/attached-predicates.md).
 
 - [x] Implement supported attached condition/otherwise branches and domain, target-color and attachment-count scaling using shared public-state evaluators. Cover source-control ownership, threshold/counter/subtype predicates, snapshot purity and corrected shared AI value. Package a provenance-backed offline subtype registry; do not interpret unknown status words as false subtype tests. See [scope](docs/testing/attached-predicates.md).

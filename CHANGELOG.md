@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added target-aware ordinary equip payment/legality for supported self-target, attached-target, global generic and effective-power reductions. Shared AI planning emits concrete improving equip targets and no longer crashes on list-valued target metadata. Attached base stats no longer affect unrelated creatures. Reattachment timestamps preserve durable battlefield identity, counters and pending ability guards. Reconfigure, fortify and full ability suppression now have explicit preflight warnings; this is not whole-card certification. See [scope](docs/testing/equip-context.md).
+- Equipment-context verification: 2,020 isolated backend tests, 157 focused checks, frontend lint/build/unit and full Chromium pass, including a real seat-two target-discounted equip with no mana. Parent probes independently reproduce the base-stat, missing legal equip and AI crash defects.
+
 - Added supported attached prefix/suffix conditions, false-versus-unknown otherwise selection, domain/target-color/attachment counts, subtype predicates and public graveyard/source-counter thresholds. Packaged the official offline creature-subtype registry; retained explicit warnings for unimplemented clauses on partially supported cards. See [scope](docs/testing/attached-predicates.md).
 - Attached-predicate verification: 1,999 isolated backend tests, 102 focused checks, frontend lint/build/unit and the full final-code Chromium harness pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions with no timeout or cast/target rejection. These remain regression evidence, not professional-AI/balance certification.
 

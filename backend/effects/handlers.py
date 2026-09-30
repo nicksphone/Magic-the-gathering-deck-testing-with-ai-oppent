@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import re
 
-from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card
+from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card, object_incarnation
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
@@ -1780,7 +1780,7 @@ def transform_if_counters(state: MatchState, controller: int, payload: dict) -> 
     target_id = payload["target_card_id"]
     card = state.cards.get(target_id)
     if (card is not None and card.zone == Zone.BATTLEFIELD
-            and card.effect_timestamp == payload["effect_timestamp"]
+            and object_incarnation(card) == payload["effect_timestamp"]
             and card.counters.get(payload["counter"], 0) >= int(payload["minimum_counters"])):
         transform_card(state, controller, {"target_card_id": target_id, "face_index": 1})
 
@@ -1791,7 +1791,7 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     amount = int(payload.get("amount", 1))
     if target in state.cards and state.cards[target].zone == Zone.BATTLEFIELD:
         card = state.cards[target]
-        if "effect_timestamp" in payload and card.effect_timestamp != payload["effect_timestamp"]:
+        if "effect_timestamp" in payload and object_incarnation(card) != payload["effect_timestamp"]:
             return
         card.counters[counter] = card.counters.get(counter, 0) + amount
         if payload.get("animate_land") and "Land" in card.types:
@@ -2038,8 +2038,8 @@ def equip_attachment(state: MatchState, controller: int, payload: dict) -> None:
             or target.zone != Zone.BATTLEFIELD or target.controller != controller
             or "Creature" not in target.types or "Creature" in source.types
             or not is_equipment(source)
-            or source.effect_timestamp != payload.get("source_timestamp")
-            or target.effect_timestamp != payload.get("target_timestamp")):
+            or object_incarnation(source) != payload.get("source_timestamp")
+            or object_incarnation(target) != payload.get("target_timestamp")):
         return
     if attach_if_legal(state, source.id, target.id):
         state.log.append(f"{state.players[controller].name} equips {source.name} to {target.name}.")
@@ -2049,7 +2049,7 @@ def crew_vehicle(state: MatchState, controller: int, payload: dict) -> None:
     vehicle_id = payload.get("card_id")
     vehicle = state.cards.get(vehicle_id) if vehicle_id else None
     if (vehicle is None or vehicle.zone != Zone.BATTLEFIELD
-            or vehicle.effect_timestamp != payload.get("effect_timestamp", vehicle.effect_timestamp)):
+            or object_incarnation(vehicle) != payload.get("effect_timestamp", object_incarnation(vehicle))):
         return
     if "Artifact" not in vehicle.types:
         vehicle.counters["__crew_added_artifact"] = 1

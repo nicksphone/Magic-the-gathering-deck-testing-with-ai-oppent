@@ -1,0 +1,128 @@
+{
+  "date": "2026-09-30",
+  "parent": "85a7d0e1ac0e92e0760b4d9cc8c85756b7d8bb37",
+  "scope": "Eight logical BO1 games repeated across sixteen executions; comparison covers reported game objects and logs, not all internal state. No strength or balance certification. Offline built-in hydration; no deck changes. Optional Spell Pierce payment failure is not rejected casting.",
+  "difficulty": "master",
+  "max_ticks": 1600,
+  "production_sha256": {
+    "backend/ai/agent.py": "89ae2087fbcb6b21dee023e17c07a0323db6ac8eb86bfac99ff371f51333d7c9",
+    "backend/effects/handlers.py": "f2f016b3ecc091210559b9504a81c9050864e806a1b553d2a8f47779e6ed27dd",
+    "backend/game_state/serializers.py": "5188fbe3be2113f494e2a0d9a2e34a11017d8f0ba89b8421c5fc1022ed96289f",
+    "backend/game_state/state.py": "ac1cd87c112745cc7780ff24e5b56c7681747fdbf04cf14587c2456b42cd9461",
+    "backend/rules_engine/attachments.py": "0e82d41dc59f13793546a96b5f51a92e5b252558d5451092bfc6d5c4337936ed",
+    "backend/rules_engine/continuous.py": "3953005db9f3c07cce3f8646cddce94084686d1922bf949b7958ff001dec0987",
+    "backend/rules_engine/coverage.py": "8c78901fc03af3dba27efb5b86bba962bcbf5f990489aebe99114d3dc67f8a58",
+    "backend/rules_engine/engine.py": "9c7c77aed662dfd1076bd68c3264dccdf8d020ac04030ce17c5f03ddab3cba3c",
+    "backend/rules_engine/events.py": "3643b507fac6dc5ad533cd627e2f0d0cf8968cc5846a5be0bf6aee7880b92511",
+    "backend/rules_engine/hooks.py": "8fb757813a8d2fbd88561b95505daf10971fc390ba524e3c0f75871f1e1f9919",
+    "backend/rules_engine/linked_exile.py": "8cb1d363d98cea3995c12582ec280e7b5147358dcd30867cae7aab7a564d5460",
+    "backend/rules_engine/mana.py": "2709651e11d58ad0bb6325433c01323e712879afdab64f34ff3182566499f3aa",
+    "backend/rules_engine/move_generator.py": "0de65b1c3226fa7b93cd808d8ca4f1e4b2771516edc641946125f536055c375e",
+    "backend/rules_engine/oracle_effects.py": "041b82b67a18301a2ca0cac57e838d693ee40fe38f0a240c389395f80df3e764"
+  },
+  "backend_tests": 2020,
+  "focused_tests": 157,
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 49,
+      "timeout": false,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 15,
+      "timeout": false,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 38,
+      "timeout": false,
+      "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "timeout": false,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 21,
+      "timeout": false,
+      "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "timeout": false,
+      "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 25,
+      "timeout": false,
+      "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 16,
+      "timeout": false,
+      "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+      "same_reported_game_as_parent": true,
+      "cast_target_rejections": []
+    }
+  ],
+  "parent_probe": [
+    {
+      "unattached_belt_elf_power": 10,
+      "expected": 1
+    },
+    {
+      "zero_mana_equip_offered": false,
+      "expected": true
+    },
+    {
+      "ai_error": "AttributeError: 'list' object has no attribute 'get'"
+    }
+  ]
+}

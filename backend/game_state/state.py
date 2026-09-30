@@ -78,6 +78,7 @@ class CardInstance:
     # Monotonic timestamp for continuous/replacement effects. static_order is
     # retained as a compatibility alias for older snapshots and tests.
     effect_timestamp: int = 0
+    battlefield_incarnation: int | None = None
     instance_order: int = 0
     card_faces: list[dict] = field(default_factory=list)
     layout: str = ""
@@ -336,6 +337,17 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     # Printed counter-persistence text is the exception; damage and temporary
     # modifiers still belong to the old object, not the entering permanent.
     card.reset_zone_counters(Zone.BATTLEFIELD)
+    assign_effect_timestamp(state, card_id)
+    card.battlefield_incarnation = card.effect_timestamp
+
+
+def object_incarnation(card) -> int:
+    value = getattr(card, "battlefield_incarnation", None)
+    return int(value if value is not None else getattr(card, "effect_timestamp", 0) or getattr(card, "static_order", 0) or 0)
+
+
+def assign_effect_timestamp(state: MatchState, card_id: str) -> None:
+    card = state.cards[card_id]
     timestamp = max(
         int(getattr(state, "next_effect_timestamp", 1) or 1),
         int(getattr(state, "next_static_order", 1) or 1),

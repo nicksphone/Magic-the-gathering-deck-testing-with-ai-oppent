@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, object_incarnation
 from rules_engine.events import emit_event_batch
 
 
@@ -11,7 +11,7 @@ def linked_exiled_creatures(state: MatchState, source_id: str, timestamp: int) -
         for cid in link["card_ids"]
         if cid in state.cards and state.cards[cid].zone == Zone.EXILE
         and cid in state.players[state.cards[cid].owner].exile
-        and state.cards[cid].effect_timestamp == link.get("card_timestamps", {}).get(cid, state.cards[cid].effect_timestamp)
+        and object_incarnation(state.cards[cid]) == link.get("card_timestamps", {}).get(cid, object_incarnation(state.cards[cid]))
         and "Creature" in state.cards[cid].types
     ))
 
@@ -20,7 +20,7 @@ def source_still_present(state: MatchState, source_id: str, timestamp: int) -> b
     source = state.cards.get(source_id)
     return bool(source and source.zone == Zone.BATTLEFIELD
                 and source.id in state.players[source.controller].battlefield
-                and source.effect_timestamp == timestamp)
+                and object_incarnation(source) == timestamp)
 
 
 def record_linked_exile(state: MatchState, source_id: str, timestamp: int,
@@ -29,7 +29,7 @@ def record_linked_exile(state: MatchState, source_id: str, timestamp: int,
         state.linked_exiles.append({
             "source_id": source_id, "source_timestamp": timestamp,
             "card_ids": list(card_ids), "return_zone": return_zone.value,
-            "card_timestamps": {cid: state.cards[cid].effect_timestamp for cid in card_ids},
+            "card_timestamps": {cid: object_incarnation(state.cards[cid]) for cid in card_ids},
         })
 
 
@@ -41,7 +41,7 @@ def flush_linked_exile_returns(state: MatchState) -> None:
         present = [cid for cid in link["card_ids"]
                    if cid in state.cards and state.cards[cid].zone == Zone.EXILE
                    and cid in state.players[state.cards[cid].owner].exile
-                   and state.cards[cid].effect_timestamp == link.get("card_timestamps", {}).get(cid, state.cards[cid].effect_timestamp)]
+                   and object_incarnation(state.cards[cid]) == link.get("card_timestamps", {}).get(cid, object_incarnation(state.cards[cid]))]
         if source_still_present(state, link["source_id"], link["source_timestamp"]):
             if present:
                 active.append({**link, "card_ids": present})

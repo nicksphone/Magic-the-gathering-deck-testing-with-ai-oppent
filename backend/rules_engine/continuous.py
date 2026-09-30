@@ -16,6 +16,8 @@ _COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": 
 ATTACHED_SUBJECT = r"\b(?:equipped|enchanted|fortified) (creature|permanent|land) "
 ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? (?:an additional )?([+-]\d+)/([+-]\d+)(?: for each (.+?))?(?: and has (.+))?")
 ATTACHED_KW_RE = re.compile(ATTACHED_SUBJECT + r"has (.+)")
+ATTACHED_BASE_RE = re.compile(ATTACHED_SUBJECT + r"has base power and toughness (\d+)/(\d+)(?: and has (.+))?")
+GLOBAL_BASE_RE = re.compile(r"\b(?:(all|other) )?creatures (?:have|lose all abilities and have) base power and toughness (\d+)/(\d+)")
 
 
 def _attached_effects(state, source, target):
@@ -69,11 +71,16 @@ def _attached_effects(state, source, target):
             continue
         pt = ATTACHED_PT_RE.fullmatch(clause)
         kw = ATTACHED_KW_RE.fullmatch(clause)
-        if not pt and not kw:
+        base = ATTACHED_BASE_RE.fullmatch(clause)
+        if not pt and not kw and not base:
+            from rules_engine.hooks import equip_cost_modifier
+            from rules_engine.attachments import is_aura
+            if is_aura(source) and equip_cost_modifier(clause):
+                continue
             unsupported.append(clause)
             continue
         count = _attached_scale_count(state, source, target, pt.group(4)) if pt else 1
-        keyword_text = pt.group(5) if pt else kw.group(2)
+        keyword_text = pt.group(5) if pt else base.group(4) if base else kw.group(2)
         granted = _attached_keywords(keyword_text)
         if count is None or granted is None:
             unsupported.append(clause)
@@ -427,11 +434,7 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         if not src:
             continue
         for scope, other_only, subject, p_set, t_set in _iter_pt_setters(src):
-            if src_id == card_id and other_only:
-                continue
-            if not _scope_controller(src.controller, scope, card.controller):
-                continue
-            if not _subject_matches(state, card_id, subject):
+            if not _pt_setter_applies(state, src, card_id, scope, other_only, subject):
                 continue
             base_p, base_t = p_set, t_set
     return base_p, base_t
@@ -544,20 +547,30 @@ def _iter_pt_modifiers(source_card):
 
 def _iter_pt_setters(source_card):
     text = _static_oracle_text(source_card)
-    scoped_matches = False
     for match in PT_SET_SCOPE_RE.finditer(text):
-        scoped_matches = True
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         p_set, t_set = _extract_pt_set_groups(match)
         if p_set is not None and t_set is not None:
             yield (scope, other_only, subject, p_set, t_set)
-    if not scoped_matches:
-        for match in PT_SET_RE.finditer(text):
-            p_set, t_set = _extract_pt_set_groups(match)
-            if p_set is not None and t_set is not None:
-                yield ("you control", False, "creatures", p_set, t_set)
+    for clause in re.split(r"[.\n]", text):
+        match = ATTACHED_BASE_RE.fullmatch(clause.strip())
+        if match:
+            yield ("attached", False, match.group(1), int(match.group(2)), int(match.group(3)))
+        match = GLOBAL_BASE_RE.fullmatch(clause.strip())
+        if match:
+            yield ("all", match.group(1) == "other", "creatures", int(match.group(2)), int(match.group(3)))
+
+
+def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
+    target = state.cards[target_id]
+    if scope == "attached":
+        return (source.attached_to == target_id and "Creature" not in source.types
+                and (subject == "permanent" or subject.title() in target.types))
+    return ((scope == "all" or _scope_controller(source.controller, scope, target.controller))
+            and not (other_only and source.id == target_id)
+            and _subject_matches(state, target_id, subject))
 
 
 def _iter_keyword_grants(source_card):
@@ -823,7 +836,7 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
             entries.append({"layer": f"pt-mod:{p_delta}/{t_delta}"})
             break
     for scope, other_only, subject, _p_set, _t_set in _iter_pt_setters(source_card):
-        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+        if _pt_setter_applies(state, source_card, target_card_id, scope, other_only, subject):
             entries.append({"layer": "pt-set"})
             break
     for scope, other_only, subject, granted in _iter_keyword_grants(source_card):

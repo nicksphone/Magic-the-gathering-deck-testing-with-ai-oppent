@@ -52,7 +52,7 @@ def test_attachment_count_includes_both_controllers_and_updates_on_detach(player
     attached(state, 'Rancor', target, 3 - player)
     assert (effective_power(state, target.id), effective_toughness(state, target.id)) == (11, 7)
     warnings = attachment_effect_warnings(state, source.id)
-    assert len(warnings) == 2 and all('cost {3} less' in warning for warning in warnings)
+    assert len(warnings) == 1 and 'aura spells' in warnings[0] and 'cost {3} less' in warnings[0]
     equipment.attached_to = None
     assert (effective_power(state, target.id), effective_toughness(state, target.id)) == (7, 5)
 

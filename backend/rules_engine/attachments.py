@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game_state.state import Zone
+from game_state.state import Zone, assign_effect_timestamp, object_incarnation
 from rules_engine.protection import protected_from_source
 
 
@@ -55,6 +55,10 @@ def attach_if_legal(state, attachment_id: str, target_id: str | None) -> bool:
         return False
     if not attachment_target_is_legal(state, attachment, target_id):
         return False
+    if attachment.attached_to == target_id:
+        return True
+    attachment.battlefield_incarnation = object_incarnation(attachment)
+    assign_effect_timestamp(state, attachment_id)
     attachment.counters["__attached_to"] = 0
     setattr(attachment, "attached_to", target_id)
     return True

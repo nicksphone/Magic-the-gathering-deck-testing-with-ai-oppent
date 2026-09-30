@@ -14,6 +14,16 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Discounted Equip Fixture");
+  await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Equip Bonesplitter'))");
+  assert.equal(await evaluate("[...document.querySelectorAll('select')].some(s => [...s.options].some(o => o.text.includes('Fervent Champion')) && [...s.options].some(o => o.text.includes('Llanowar Elves')))"), false);
+  await click("Equip Bonesplitter");
+  await waitFor("window.fixtureState.stack.at(-1)?.effect_key === 'equip_attachment'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Fervent Champion')?.power === 3");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Llanowar Elves').power"), 1);
+  console.log("PASS target-discounted seat-two equip with no mana through real UI/API");
   await click("Restricted Mana Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Add 2 C'))");
   await click("Add 2 C");

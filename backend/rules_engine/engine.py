@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor
+from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor, object_incarnation
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
@@ -1176,7 +1176,7 @@ class RulesEngine:
                 add_to_stack(
                     state, source_card_id=vehicle_id, controller=player_id,
                     label=f"{vehicle.name} crew", effect_key="crew_vehicle",
-                    payload={"card_id": vehicle_id, "effect_timestamp": vehicle.effect_timestamp,
+                    payload={"card_id": vehicle_id, "effect_timestamp": object_incarnation(vehicle),
                              "crew_card_ids": selected}, is_spell=False,
                 )
                 state.log.append(f"{player.name} taps {len(selected)} creature(s) to crew {vehicle.name}.")
@@ -1205,15 +1205,16 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name,
-                                 payment_kind="activation", payment_types=set(state.cards[cid].types)):
+                                 payment_kind="activation", payment_types=set(state.cards[cid].types),
+                                 ability_kind="equip", source_card_id=cid, target_card_id=target_id):
                 reject("Cannot pay equipment cost")
                 state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
             add_to_stack(state, cid, player_id, f"{state.cards[cid].name} equip", "equip_attachment", {
                 "equipment_id": cid, "target_card_id": target_id,
-                "source_timestamp": state.cards[cid].effect_timestamp,
-                "target_timestamp": target.effect_timestamp,
+                "source_timestamp": object_incarnation(state.cards[cid]),
+                "target_timestamp": object_incarnation(target),
                 "__announced_targets": {"target_card_id": target_id},
                 "__ability_target_text": "Attach this Equipment to target creature you control.",
             }, is_spell=False)

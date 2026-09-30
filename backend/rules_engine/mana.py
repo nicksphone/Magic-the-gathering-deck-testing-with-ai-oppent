@@ -126,11 +126,16 @@ def can_pay_with_pool_and_lands(
     restricted_x_color: str | None = None,
     payment_kind: str = "spell",
     payment_types: set[str] | None = None,
+    ability_kind: str | None = None,
+    source_card_id: str | None = None,
+    target_card_id: str | None = None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
         oracle_text=oracle_text,
+        is_spell=payment_kind == "spell", ability_kind=ability_kind,
+        source_card_id=source_card_id, target_card_id=target_card_id,
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
@@ -362,12 +367,17 @@ def auto_pay_cost(
     restricted_x_color: str | None = None,
     payment_kind: str = "spell",
     payment_types: set[str] | None = None,
+    ability_kind: str | None = None,
+    source_card_id: str | None = None,
+    target_card_id: str | None = None,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
         oracle_text=oracle_text,
+        is_spell=payment_kind == "spell", ability_kind=ability_kind,
+        source_card_id=source_card_id, target_card_id=target_card_id,
     ))
     from rules_engine.replacement import can_pay_life, pay_life
     payment = next(

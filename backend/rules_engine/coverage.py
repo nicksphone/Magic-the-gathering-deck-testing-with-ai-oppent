@@ -4,6 +4,9 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ("reconfigure", re.compile(r"\breconfigure\b", re.IGNORECASE)),
+    ("fortify", re.compile(r"\bfortify\b", re.IGNORECASE)),
+    ("full ability suppression", re.compile(r"\blose(?:s)? all abilities\b", re.IGNORECASE)),
     ("bands with other", re.compile(r"\bbands with other\b", re.IGNORECASE)),
     ("fuse", re.compile(r"\bfuse\b", re.IGNORECASE)),
     ("morph", re.compile(r"\bmorph\b", re.IGNORECASE)),

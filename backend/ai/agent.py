@@ -10,7 +10,7 @@ from ai.heuristics import evaluate_board, recurring_engine_value, repeatable_man
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
-from game_state.state import CardInstance, MatchState, Step, Zone
+from game_state.state import CardInstance, MatchState, Step, Zone, object_incarnation
 from rules_engine.engine import RulesEngine
 from ai.pending_effects import planning_copy
 from rules_engine import combat
@@ -715,6 +715,7 @@ class AIAgent:
             return ",".join(sorted(out))
 
         cost_choice = move.get("cost_choice")
+        targets = move.get("targets")
         cost_choice_id = str(cost_choice.get("id")) if isinstance(cost_choice, dict) and cost_choice.get("id") is not None else ""
         return (
             str(move.get("type") or ""),
@@ -726,7 +727,7 @@ class AIAgent:
             str(move.get("target_player_name") or ""),
             str(move.get("target_stack_label") or ""),
             cost_choice_id,
-            str((move.get("targets") or {}).get("x_value", "")),
+            str(targets.get("x_value", "")) if isinstance(targets, dict) else _ids(targets),
             _ids(move.get("attackers")),
             _ids(move.get("blockers")),
             _ids(move.get("options")),
@@ -1278,6 +1279,9 @@ class AIAgent:
                     )
                     base += (self._score_x_value(state, player_id, source, str(move.get("mana_cost") or ""), x, x, 1)
                              if x else -20.0) - 2.5
+            elif mtype == "equip":
+                _, gain = self._equip_projection(state, move, player_id)
+                base += gain if gain > 0 else -10.0
             elif mtype == "ninjutsu":
                 ninja = state.cards[move["card_id"]]
                 returned_power = effective_power(state, move["return_card_id"])
@@ -1981,6 +1985,11 @@ class AIAgent:
         return 0.0
 
     def _approximate_resolution_for_creature_cast(self, sim_state: MatchState, move: dict, player_id: int) -> None:
+        if move.get("type") == "equip":
+            if sim_state.stack and sim_state.stack[-1].effect_key == "equip_attachment" and sim_state.priority_player == player_id:
+                self.engine.take_action(sim_state, player_id, {"type": "pass_priority"})
+                self.engine.take_action(sim_state, 3 - player_id, {"type": "pass_priority"})
+            return
         if move.get("type") != "cast_spell":
             return
         cid = move.get("card_id")
@@ -2380,8 +2389,39 @@ class AIAgent:
                     return action
         return None
 
+    def _equip_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
+        from rules_engine.stack_engine import resolve_top_of_stack
+        from rules_engine.state_based_actions import apply_state_based_actions
+        equipment = state.cards.get(move.get("card_id"))
+        if equipment is None:
+            return None, 0.0
+        before = evaluate_board(state, player_id)
+        best = None
+        for target in move.get("targets", []):
+            if equipment.attached_to == target["id"]:
+                continue
+            action = {"type": "equip", "card_id": equipment.id, "target_card_id": target["id"]}
+            projected = planning_copy(state)
+            try:
+                self.engine.take_action(projected, player_id, action, reject_invalid=True)
+                if not projected.stack or not resolve_top_of_stack(projected):
+                    continue
+                apply_state_based_actions(projected)
+            except (ValueError, KeyError):
+                continue
+            gain = evaluate_board(projected, player_id) - before
+            if gain <= 1e-9:
+                continue
+            score = (gain, self._creature_threat_score(projected, target["id"], player_id), target["id"])
+            if best is None or score > best[0]:
+                best = (score, action)
+        return (best[1], best[0][0]) if best else (None, 0.0)
+
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False) -> dict:
         mtype = move.get("type")
+        if mtype == "equip":
+            action, _ = self._equip_projection(state, move, player_id)
+            return action or {"type": "equip", "card_id": move.get("card_id"), "_invalid_ai_choice": True}
         if mtype == "attack":
             out = dict(move)
             candidates = list(move.get("options") or out.get("attackers") or [])
@@ -2652,7 +2692,7 @@ class AIAgent:
         linked_copy = mtype == "activate_ability" and "becomes a copy of that card" in str(move.get("ability_label", "")).lower()
         if linked_copy and "x_value" not in targets and cid:
             from rules_engine.linked_exile import linked_exiled_creatures
-            eligible = [card_id for card_id in linked_exiled_creatures(state, cid, state.cards[cid].effect_timestamp)
+            eligible = [card_id for card_id in linked_exiled_creatures(state, cid, object_incarnation(state.cards[cid]))
                         if can_pay_with_pool_and_lands(state, player_id, mana_cost,
                                                        card_name=state.cards[cid].name,
                                                        x_value=mana_value(state.cards[card_id].mana_cost or ""))]

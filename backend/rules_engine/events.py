@@ -4,7 +4,7 @@ import re
 from copy import copy
 from typing import Any
 
-from game_state.state import MatchState, StackItem, Zone
+from game_state.state import MatchState, StackItem, Zone, object_incarnation
 from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
 
@@ -48,6 +48,8 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "colors": sorted(card_color_symbols(card)),
         "color_names": sorted(card_color_names(card)),
         "selected_face_index": card.selected_face_index,
+        "battlefield_incarnation": object_incarnation(card),
+        "effect_timestamp": card.effect_timestamp,
     }
     for item in state.stack:
         if item.source_card_id == card_id:
@@ -419,7 +421,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         "source_card_id": attacker.id, "controller": attacker.controller,
                         "label": f"{attacker.name} training", "effect_key": "add_counters",
                         "payload": {"target_card_id": attacker.id, "counter": "+1/+1", "amount": 1,
-                                    "effect_timestamp": attacker.effect_timestamp},
+                                    "effect_timestamp": object_incarnation(attacker)},
                     })
             for amount in re.findall(r"\bannihilator\s+(\d+)", without_reminder_text(attacker.oracle_text or ""), re.IGNORECASE):
                 out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
@@ -458,7 +460,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
             if transform_draw and event in {"transformed", "enters_battlefield"}:
                 once_each_turn = False
-            trigger_key = f"{cid}:{card.effect_timestamp}:{event}"
+            trigger_key = f"{cid}:{object_incarnation(card)}:{event}"
             if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
                 continue
             trigger_count_before = len(out)
@@ -472,7 +474,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 )
                 if (changed is not None and changed.controller == card.controller
                         and (event == "transformed" or transformed_entry)):
-                    choice_key = f"{cid}:{card.effect_timestamp}:transform_draw"
+                    choice_key = f"{cid}:{object_incarnation(card)}:transform_draw"
                     if choice_key not in state.trigger_once_seen_this_turn:
                         out.append({
                             "source_card_id": cid, "controller": card.controller,
@@ -1172,7 +1174,7 @@ def _trigger_from_oracle(
                             {"effect_key": "add_counters", "payload": {
                                 "target_card_id": source_card_id, "counter": match.group(2),
                                 "amount": _number_token(match.group(1)),
-                                "effect_timestamp": source_card.effect_timestamp,
+                                "effect_timestamp": object_incarnation(source_card),
                             }},
                             {"effect_key": "attack_count_reward", "payload": {
                                 "minimum_attackers": _number_token(match.group(3)),
@@ -1181,7 +1183,7 @@ def _trigger_from_oracle(
                             {"effect_key": "transform_if_counters", "payload": {
                                 "target_card_id": source_card_id, "counter": match.group(2),
                                 "minimum_counters": _number_token(match.group(5)),
-                                "effect_timestamp": source_card.effect_timestamp,
+                                "effect_timestamp": object_incarnation(source_card),
                             }},
                         ]},
                     }
