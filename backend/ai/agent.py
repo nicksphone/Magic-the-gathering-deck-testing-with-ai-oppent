@@ -502,7 +502,7 @@ class AIAgent:
         if depth <= 0 or sim.winner is not None:
             return score
         pid = sim.priority_player
-        legal = sorted(self.engine.legal_moves(sim, pid), key=lambda mv: self._move_sort_key(mv))
+        legal = self._rank_moves(sim, self.engine.legal_moves(sim, pid), pid, shallow=True)
         if not legal:
             return score
         beam: list[tuple[float, dict]] = []
@@ -1085,7 +1085,7 @@ class AIAgent:
             return (2, 4)
         return (2, 5)
 
-    def _rank_moves(self, state: MatchState, moves: list[dict], player_id: int) -> list[dict]:
+    def _rank_moves(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main
@@ -1106,7 +1106,7 @@ class AIAgent:
         # allowing Master simulations to monopolize a match run.
         battlefield_size = sum(len(getattr(player, "battlefield", []) or []) for player in state.players.values())
         use_deep_search = (
-            self.difficulty in {"master", "master_plus"}
+            not shallow and self.difficulty in {"master", "master_plus"}
             and battlefield_size <= 10
             and len(moves) <= 24
         )
@@ -1203,10 +1203,7 @@ class AIAgent:
             self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
             after = evaluate_board(sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
-            opp_moves = sorted(
-                self.engine.legal_moves(sim_state, sim_state.priority_player),
-                key=lambda mv: self._move_sort_key(mv),
-            )
+            opp_moves = self.engine.legal_moves(sim_state, sim_state.priority_player)
             if sim_state.priority_player == opp_id and opp_moves:
                 best_reply = self._best_reply_delta(sim_state, opp_moves, player_id, opp_id)
             else:
@@ -1218,7 +1215,7 @@ class AIAgent:
     def _best_reply_delta(self, sim_state: MatchState, opp_moves: list[dict], eval_for_player: int, opp_id: int) -> float:
         worst = 0.0
         before = evaluate_board(sim_state, eval_for_player)
-        for reply in opp_moves[:8]:
+        for reply in self._rank_moves(sim_state, opp_moves, opp_id, shallow=True)[:8]:
             try:
                 materialized = self._materialize_action(sim_state, reply, opp_id)
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):

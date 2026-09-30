@@ -1,5 +1,7 @@
 # Changelog
 
+- Bounded AI search and ranking rollouts now shortlist replies with shallow move scores instead of taking the first six/eight lexically sorted moves. Regressions cover a threatening cast after many ability moves and prove shallow ranking avoids nested rollouts. Verification: 1,466 isolated backend tests, frontend lint/build/unit, full solo Chromium harness, and seeded two-game replay with no reported drift. A paired Blue Control/Ramp API BO3 took 139 seconds on this revision versus 135 seconds on the prior revision; this single run is not a throughput guarantee. Ranking remains heuristic and capped.
+
 - AI ranking rollouts now materialize targeted candidate and opponent-reply actions before simulation. Deterministic regressions show previously skipped target-dependent moves contribute to both candidate value and opponent-response penalty. Verification: 1,463 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. The eight-reply cap and hidden-information model remain open.
 
 - Corrected bounded AI search to choose the opponent reply that is worst for us, rather than the best, and to materialize targets on simulated replies. Deterministic best/worst and targeted-reply regressions pass. Verification: 1,461 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. Beam coverage and opponent policy remain heuristic.

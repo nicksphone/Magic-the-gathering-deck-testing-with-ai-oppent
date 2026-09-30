@@ -1,6 +1,8 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-09-29 UTC. Original audited implementation: `6b95fab0875f4cc35cb9648f8a598be5b13b2c80`, branch `main`. Current milestone evidence is recorded inline below.
+Updated: 2026-09-30 UTC. Original audited implementation: `6b95fab0875f4cc35cb9648f8a598be5b13b2c80`, branch `main`. Current milestone evidence is recorded inline below.
+
+Latest AI reply-shortlist correction: the six-reply strategic beam and eight-reply ranking rollout now use shallow move scoring before capping, instead of the first moves in lexicographic order. A guard prevents the shallow pass from recursively launching another rollout. Verification: 1,466 isolated backend tests, frontend lint/build/unit, full solo Chromium harness, and seeded two-game replay with zero determinism failures or drift labels. A paired Blue Control/Ramp API BO3 took 139 seconds with the shortlist versus 135 seconds on the prior planner; one run does not establish stable throughput. The ranking still uses heuristic archetype preferences, can omit the actual best reply, and does not model hidden information fairly; Gate 2 decision-quality acceptance remains open.
 
 Latest AI ranking-rollout correction: both candidate and opponent-reply branches materialize targets before simulation, instead of silently scoring targeted moves as no-ops. Focused regressions pass. Verification: 1,463 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with zero determinism failures or drift labels. The capped reply list and hidden-information estimates remain open, so this does not establish optimal or fair opponent modeling.
 
