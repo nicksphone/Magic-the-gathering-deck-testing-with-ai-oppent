@@ -90,6 +90,34 @@ class AIAgent:
             )
 
         legal_moves = [move for move in legal_moves if useful_variable_sweep(move)]
+        stack_items = getattr(state, "stack", []) or []
+        if len(stack_items) == 1:
+            item = stack_items[0]
+            source = state.cards.get(getattr(item, "source_card_id", ""))
+            if (
+                getattr(item, "controller", player_id) != player_id
+                and source is not None
+                and "Creature" in getattr(source, "types", [])
+                and self._stack_item_threat_score(state, item.id, player_id) < 2.0
+            ):
+                legal_moves = [
+                    move for move in legal_moves
+                    if move.get("type") != "cast_spell"
+                    or not self._is_counter_card(state.cards.get(move.get("card_id")))
+                    or (move.get("target_hints") or {}).get("creature_targets")
+                ]
+        if stack_items and getattr(stack_items[-1], "controller", None) == player_id and getattr(stack_items[-1], "effect_key", None) in {"counter_spell", "counter_ability"}:
+            covered_id = (getattr(stack_items[-1], "payload", {}) or {}).get("target_stack_id")
+            uncovered_moves = []
+            for move in legal_moves:
+                hints = move.get("target_hints") or {}
+                if move.get("type") != "cast_spell" or not self._is_counter_card(state.cards.get(move.get("card_id"))) or hints.get("creature_targets"):
+                    uncovered_moves.append(move)
+                    continue
+                remaining = [target for target in hints.get("stack_targets", []) if target.get("id") != covered_id and target.get("id") != stack_items[-1].id]
+                if remaining:
+                    uncovered_moves.append({**move, "target_hints": {**hints, "stack_targets": remaining}})
+            legal_moves = uncovered_moves
         pending_crews = {
             item.source_card_id for item in (getattr(state, "stack", []) or [])
             if getattr(item, "effect_key", None) == "crew_vehicle"

@@ -722,6 +722,103 @@ def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
         assert decision.action["targets"]["target_stack_id"] == opposing_spell.id
 
 
+def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker() -> None:
+    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
+    state = MatchFactory.from_decks(deck, deck, seed=935714)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 14
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 2
+    state.priority_player = 1
+    for _ in range(2):
+        land_id = state.players[1].library.pop()
+        state.cards[land_id].zone = Zone.BATTLEFIELD
+        state.players[1].battlefield.append(land_id)
+    counter = fallback_card_payload("Counterspell")
+    grazer = fallback_card_payload("Arboreal Grazer")
+    ugin = fallback_card_payload("Ugin, the Spirit Dragon")
+    assert counter and grazer and ugin
+    held = CardInstance("held-counter", counter["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=counter["mana_cost"], oracle_text=counter["oracle_text"])
+    state.cards[held.id] = held
+    state.players[1].hand.append(held.id)
+    source = CardInstance(
+        "enemy-spell", grazer["name"], 2, 2, Zone.STACK, ["Creature"],
+        mana_cost=grazer["mana_cost"], oracle_text=grazer["oracle_text"],
+        power=int(grazer["power"]), toughness=int(grazer["toughness"]),
+    )
+    state.cards[source.id] = source
+    add_to_stack(state, source.id, 2, source.name, "permanent_spell", {})
+    state.priority_player = 1
+    ai = AIAgent(difficulty="master", archetype="Control")
+    legal = RulesEngine().legal_moves(state, 1)
+    assert any(move["type"] == "cast_spell" and move.get("card_id") == held.id for move in legal)
+    assert ai.choose_action(state, legal, 1).action["type"] == "pass_priority"
+
+    state.stack.clear()
+    source.name = ugin["name"]
+    source.types = ["Planeswalker"]
+    source.mana_cost = ugin["mana_cost"]
+    source.oracle_text = ugin["oracle_text"]
+    add_to_stack(state, source.id, 2, source.name, "permanent_spell", {})
+    state.priority_player = 1
+    decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["card_id"] == held.id
+
+
+def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
+    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
+    state = MatchFactory.from_decks(deck, deck, seed=935715)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 16
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = 2
+    for _ in range(4):
+        land_id = state.players[1].library.pop()
+        state.cards[land_id].zone = Zone.BATTLEFIELD
+        state.players[1].battlefield.append(land_id)
+    payload = fallback_card_payload("Counterspell")
+    removal = fallback_card_payload("Go for the Throat")
+    assert payload and removal
+    for index in range(2):
+        card = CardInstance(f"counter-{index}", payload["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
+        state.cards[card.id] = card
+        state.players[1].hand.append(card.id)
+    enemy = CardInstance("enemy-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
+    state.cards[enemy.id] = enemy
+    target = add_to_stack(state, enemy.id, 2, enemy.name, "destroy_permanent", {"target_card_id": "own-threat"})
+    state.priority_player = 1
+    ai = AIAgent(difficulty="master", archetype="Control")
+    first = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert first.action["type"] == "cast_spell"
+    assert first.action["targets"]["target_stack_id"] == target.id
+    RulesEngine().take_action(state, 1, first.action)
+    assert state.stack[-1].controller == 1
+    second = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert second.action["type"] == "pass_priority"
+
+    enemy_counter = CardInstance("enemy-counter", payload["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
+    state.cards[enemy_counter.id] = enemy_counter
+    reply = add_to_stack(state, enemy_counter.id, 2, enemy_counter.name, "counter_spell", {"target_stack_id": state.stack[-1].id})
+    state.priority_player = 1
+    response = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert response.action["type"] == "cast_spell"
+    assert response.action["targets"]["target_stack_id"] == reply.id
+
+    state.stack.pop()
+    other = CardInstance("other-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
+    state.cards[other.id] = other
+    other_item = add_to_stack(state, other.id, 2, other.name, "destroy_permanent", {"target_card_id": "other-threat"})
+    state.stack.remove(other_item)
+    state.stack.insert(-1, other_item)
+    state.priority_player = 1
+    distinct = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert distinct.action["type"] == "cast_spell"
+    assert distinct.action["targets"]["target_stack_id"] == other_item.id
+
+
 def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     moves = [
