@@ -9,6 +9,7 @@ from ai.endgame_policy import should_force_closure, should_force_inevitability_l
 from ai.heuristics import evaluate_board
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
+from card_data.tactical import tactical_tags
 from game_state.state import MatchState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
@@ -1932,49 +1933,10 @@ class AIAgent:
                     land2.controller = player_id
 
     def _spell_tags(self, card) -> set[str]:
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
-        tags: set[str] = set()
-        if _has_counter_spell_text(text):
-            tags.add("counter")
-        if any(k in text for k in ["destroy all creatures", "wrath", "damnation", "supreme verdict"]):
-            tags.add("sweeper")
-        if "draw" in text:
-            tags.add("draw")
-        if "destroy target" in text or "exile target" in text or "deals" in text:
-            tags.add("removal")
-        if any(k in text for k in ["bolt", "spike", "shock", "lava"]):
-            tags.add("burn")
-        if "add {" in text or any(k in text for k in ["cultivate", "rampant", "llanowar", "mana dork"]):
-            tags.add("ramp")
-        if "create" in text and "token" in text:
-            tags.add("token")
-        if "attack" in text:
-            tags.add("attack")
-        if "block" in text:
-            tags.add("block")
-        if "look at the top" in text and "creature cards" in text and "onto the battlefield" in text:
-            tags.add("creature_deploy_topdeck")
-        if "creatures you control get" in text or "+1/+1" in text:
-            tags.add("anthem")
-        if "enchantment" in text:
-            tags.add("enchantment")
-        if "return target creature card from your graveyard" in text or "reanimate" in text:
-            tags.add("reanimate")
-        if "from your graveyard" in text and any(word in text for word in ["cast", "return", "play"]):
-            tags.add("recursion")
-        if "discard" in text:
-            tags.add("discard")
-        if "mill" in text:
-            tags.add("mill")
-        if "sacrifice" in text:
-            tags.add("sacrifice")
-        if "dies" in text:
-            tags.add("death")
-        if "lose" in text and "gain" in text:
-            tags.add("drain")
-        if any(k in text for k in ["whenever", "at the beginning", "landfall", "magecraft", "prowess", "artifact or enchantment", "another permanent enters the battlefield", "another permanent dies"]):
-            tags.add("engine")
-        return tags
+        return tactical_tags(
+            getattr(card, "oracle_text", ""), getattr(card, "type_line", ""),
+            getattr(card, "types", None),
+        )
 
     def _modal_face_options(self, card) -> list[dict]:
         faces = list(getattr(card, "card_faces", []) or [])

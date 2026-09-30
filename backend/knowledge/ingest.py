@@ -9,6 +9,7 @@ import httpx
 
 from card_data.http_utils import get_with_backoff
 from card_data.sync import ScryfallSyncService
+from card_data.tactical import canonical_tactical_tags
 from persistence.repository import Repository
 
 SCHEMA_VERSION = 1
@@ -50,6 +51,11 @@ class KnowledgeIngestor:
         profile = json.loads(row.profiles_json)
         if profile.get("schema_version") != SCHEMA_VERSION or not profile.get("rulings_verified"):
             return None
+        if "tactical_tags" not in profile and isinstance(profile.get("card_data"), dict):
+            profile.update(canonical_tactical_tags(profile["card_data"]))
+            row.profiles_json = json.dumps(profile, sort_keys=True)
+            self.repository.session.add(row)
+            self.repository.session.commit()
         return row
 
     def sync_name(self, name: str, force: bool = False) -> str:
@@ -91,6 +97,7 @@ class KnowledgeIngestor:
                 "face_count": len(raw.get("card_faces", [])),
             },
         })
+        profile.update(canonical_tactical_tags(raw))
         # Both tables represent one verified fetch; never leave a half-written
         # knowledge/cache pair if validation or the database write fails.
         payload = self.normalizer._normalize_payload(

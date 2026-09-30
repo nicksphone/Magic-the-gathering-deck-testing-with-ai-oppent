@@ -18,6 +18,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from card_data.http_utils import get_with_backoff
 from knowledge.ingest import SCHEMA_VERSION
 from knowledge.models import CardKnowledge
+from card_data.tactical import canonical_tactical_tags
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 
@@ -78,6 +79,7 @@ def import_cards(repository: Repository, cards, provenance: dict, progress=None)
                 "face_count": len(raw.get("card_faces", [])),
             },
         })
+        profile.update(canonical_tactical_tags(raw))
         if not verified:
             # Preserve old rulings as historical data, not current verification.
             report["rulings_pending"] += 1

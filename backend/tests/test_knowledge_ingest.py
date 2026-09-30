@@ -42,8 +42,17 @@ def test_sync_empty_rulings_is_verified_and_second_run_is_offline(repo, bolt):
     assert profile["card_data"] == bolt
     assert profile["rulings_verified"] is True
     assert profile["rulings"] == []
+    assert {"burn", "removal"} <= set(profile["tactical_tags"])
     assert row.play_value is None
     assert repo.get_cached_card_by_name("Lightning Bolt").oracle_text == bolt["oracle_text"]
+
+    profile.pop("tactical_tags")
+    row.profiles_json = json.dumps(profile)
+    repo.session.add(row)
+    repo.session.commit()
+    with httpx.Client(transport=httpx.MockTransport(lambda request: pytest.fail("cached tags fetched over network"))) as client:
+        assert KnowledgeIngestor(repo, client).sync_name("Lightning Bolt") == "cached"
+    assert "burn" in json.loads(repo.get_card_knowledge("Lightning Bolt").profiles_json)["tactical_tags"]
 
 
 def test_failed_rulings_does_not_claim_verification_or_write_cache(repo, bolt):
@@ -60,6 +69,7 @@ def test_bulk_import_is_idempotent_and_does_not_claim_rulings_or_playability(rep
     provenance = {"source": "scryfall", "updated_at": "2026-09-27"}
     first = import_cards(repo, [bolt], provenance)
     second = import_cards(repo, [bolt], provenance)
+    assert {"burn", "removal"} <= set(json.loads(repo.get_card_knowledge("Lightning Bolt").profiles_json)["tactical_tags"])
     assert first["added"] == 1
     assert second["unchanged"] == 1
     assert second["rulings_pending"] == 1
