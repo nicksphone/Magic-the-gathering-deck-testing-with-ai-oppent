@@ -50,7 +50,7 @@ def test_replay_draws_do_not_count_toward_match_wins(monkeypatch) -> None:
     outcomes = iter((0, 1, 2, 1))
     seeds = []
 
-    def fake_game(_deck_a, _deck_b, seed, _difficulty, _max_ticks):
+    def fake_game(_deck_a, _deck_b, seed, _difficulty, _max_ticks, **kwargs):
         seeds.append(seed)
         winner = next(outcomes)
         return {"winner": winner, "turn": 4, "log_hash": str(seed), "log": [], "timeout": False}
@@ -65,7 +65,7 @@ def test_replay_draws_do_not_count_toward_match_wins(monkeypatch) -> None:
 
 
 def test_replay_all_draws_hit_explicit_cap(monkeypatch) -> None:
-    monkeypatch.setattr(replay_matrix, "run_game", lambda *_args: {
+    monkeypatch.setattr(replay_matrix, "run_game", lambda *_args, **kwargs: {
         "winner": 0, "turn": 4, "log_hash": "draw", "log": [], "timeout": False,
     })
     result = replay_matrix.run_match([], [], seed=20, difficulty="master", max_ticks=10, best_of=3)

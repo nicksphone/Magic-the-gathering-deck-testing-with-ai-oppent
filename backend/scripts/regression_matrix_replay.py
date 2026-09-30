@@ -18,6 +18,7 @@ from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
 from game_state.state import MatchFactory
+from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -85,8 +86,12 @@ def _match_termination_status(match: dict) -> str:
     return classify_timeout_state(match.get("log", []), bool(match.get("timeout")))
 
 
-def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int) -> dict:
+def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1) -> dict:
+    if starting_player not in (1, 2):
+        raise ValueError("Starting player must be 1 or 2")
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
+    state.active_player = starting_player
+    state.priority_player = starting_player
     state.mechanic_choice_players = {1, 2}
     engine_rules = RulesEngine()
     ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
@@ -141,6 +146,7 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
         "log_hash": log_hash,
         "log": normalized_log,
         "timeout": state.winner is None,
+        "starting_player": starting_player,
     }
 
 
@@ -149,18 +155,26 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
     wins = {1: 0, 2: 0}
     games: list[dict] = []
     needed = best_of // 2 + 1
-    # Only resolved draws add game slots; unresolved timeouts retain the normal match bound.
+    # Only resolved draws add slots; a timeout is not a finished game to transition from.
     counted_games = 0
+    chooser = 1
     for game_index in range(best_of * 2):
-        game = run_game(deck_a, deck_b, seed + game_index, difficulty, max_ticks)
-        game["seed"] = seed + game_index
+        current_seed = game_seed(seed, game_index + 1)
+        game = run_game(deck_a, deck_b, current_seed, difficulty, max_ticks, starting_player=chooser)
+        game["seed"] = current_seed
+        game["play_draw_chooser"] = chooser
+        game["starting_player"] = chooser
         games.append(game)
+        if game["timeout"]:
+            break
         if game["winner"] != 0:
             counted_games += 1
         if game["winner"] in wins:
             wins[game["winner"]] += 1
         if max(wins.values()) >= needed or counted_games >= best_of:
             break
+        if game["winner"] in (0, 1, 2):
+            chooser = next_play_draw_chooser(game["winner"], chooser)
     winner = 1 if wins[1] >= needed else (2 if wins[2] >= needed else None)
     draw_cap_reached = winner is None and len(games) == best_of * 2 and not any(game["timeout"] for game in games)
     match_hash = hashlib.sha256(
@@ -212,7 +226,7 @@ def main() -> None:
         "protocol": {"seeds_per_pair": args.matches_per_pair, "seat_balanced": not args.single_seat,
                      "difficulty": args.difficulty, "max_ticks_per_game": args.max_ticks,
                      "seed_policy": "sha256(deck_a::deck_b::index), game seed = series seed + game index",
-                     "start_policy": "seat 1 starts each game; no sideboarding or loser play/draw choice",
+                     "start_policy": "seat 1 chooses game one; prior loser chooses thereafter; draw retains chooser; AI chooses play; no sideboarding",
                      "timeout_policy": "unresolved at tick cap; excluded from completed-series win rate",
                      "repeatability_runs_per_sample": 2},
         "determinism_failures": 0,
@@ -259,6 +273,8 @@ def main() -> None:
                 "diverging_result_fields": sorted(key for key in a.keys() | b.keys() if a.get(key) != b.get(key)),
                 "drift_excerpt": _drift_excerpt(drift, drift_label) if drift else None,
                 "game_seeds": [game["seed"] for game in a["games"]],
+                "game_starting_players": [game["starting_player"] for game in a["games"]],
+                "game_play_draw_choosers": [game["play_draw_chooser"] for game in a["games"]],
                 "anomaly_trace": a["log"] if termination_status != "resolved" or not deterministic_ok else None,
                 "repeat_trace": b["log"] if not deterministic_ok else None,
             })

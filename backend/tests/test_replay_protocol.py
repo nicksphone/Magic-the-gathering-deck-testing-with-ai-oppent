@@ -52,7 +52,7 @@ def test_cli_rejects_nonpositive_workload(value):
 
 
 def test_series_records_each_game_seed(monkeypatch):
-    monkeypatch.setattr("scripts.regression_matrix_replay.run_game", lambda *args: {
+    monkeypatch.setattr("scripts.regression_matrix_replay.run_game", lambda *args, **kwargs: {
         "winner": 1, "turn": 3, "log_hash": "same", "log": [], "timeout": False,
     })
     result = run_match([], [], 22, "master", 100, 3)
@@ -87,7 +87,9 @@ def test_cli_report_counts_logical_samples_not_repeatability_runs(monkeypatch, t
         return {"winner": 1, "turns": 5, "games_played": 2,
                 "wins": {"deck_a": 2, "deck_b": 0}, "timeout": False,
                 "log": [], "log_hash": "identical", "games": [
-                    {"seed": seed, "ticks": 1 if not metadata_drift or len(calls) % 2 else 2}, {"seed": seed + 1}]}
+                    {"seed": seed, "starting_player": 1, "play_draw_chooser": 1,
+                     "ticks": 1 if not metadata_drift or len(calls) % 2 else 2},
+                    {"seed": seed + 1, "starting_player": 2, "play_draw_chooser": 2}]}
 
     monkeypatch.setattr(replay, "run_match", fake_match)
     output = tmp_path / "matrix.json"

@@ -16,6 +16,11 @@ backend source, so changing working directory alone does not isolate database wr
   both seat orders; `--single-seat` opts into the legacy, unbalanced smoke mode.
 - Each logical series is executed twice to test repeatability. The second
   execution is not another independent match or a win-rate sample.
+- Live matches and replay share the previous-loser/drawn-game chooser and
+  one-based game-seed policy. Replay's AI currently always chooses to play;
+  game one uses seat 1 as chooser. Every game records its chooser and starter.
+  The loser chooses the next starter and a draw retains the preceding chooser,
+  following [Comprehensive Rules 103.1](https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt).
 - Seeds derive from SHA256 of canonical pair names and index. Each game records
   its series seed plus game index. The schedule is deterministic for identical
   selected deck names/order; renamed decks change seeds.
@@ -29,11 +34,26 @@ backend source, so changing working directory alone does not isolate database wr
 - A series with any timeout is unresolved even if another game supplies a
   series winner. Unresolved results are counted and excluded from the
   completed-series win-rate denominator. No completed series means a null rate,
-  not zero. A draw-cap result is not an ordinary defeat.
+  not zero. A draw-cap result is not an ordinary defeat. Replay now stops at the
+  first timeout rather than constructing another game from an unfinished one.
 - Anomalous logical runs retain their complete normalized trace; nondeterministic
   repetitions also retain the repeat trace and first-divergence context.
 
-## Verification (2026-09-30)
+## Shared Series Policy Verification (2026-09-30)
+
+1,693 isolated backend tests, frontend lint/build/unit and the full Chromium
+harness pass. A seat-balanced Aggro/Control/Tempo template smoke completes six
+logical BO3 series and 15 games with zero reported anomalies, timeouts or drift;
+Player B starts four games. Per-game chooser and starter records are retained.
+Focused fixtures cover resolved draws, timeout termination, legacy null seeds
+and Player B skipping the first draw. Draws and timeouts are fixture evidence,
+not claimed to have occurred in this smoke sample.
+
+Local logs and replay JSON are retained in ignored
+`backend/training_runs/series-policy-20260930/`. This is repeatability and
+bounded setup evidence, not tournament-corpus or seasoned-player certification.
+
+## Previous Milestone Verification (`3548885`, 2026-09-30)
 
 - Final-source backend suite: 1,685 passed, 173 warnings. Frontend lint,
   production build and unit contracts passed; full Chromium actions, recovery,
@@ -54,9 +74,11 @@ backend source, so changing working directory alone does not isolate database wr
 
 ## Known Limitations and Next Upgrades
 
-This diagnostic runner starts seat 1 each game and does not apply sideboards or
-the interactive previous-loser play/draw policy. Swapping seats balances that
-diagnostic starting-seat bias, but does not establish live BO3 transition parity.
+The diagnostic runner still does not apply sideboards. Shared chooser and seed
+policies do not establish full live BO3 transition parity. AI always choosing to
+play is a policy default, not deck-specific strategic choice. Starting-player
+mulligan declaration order and simultaneous mulligan rounds need a shared
+resumable implementation before claiming complete tournament setup semantics.
 
 Paired seeds and determinism repeats are correlated, not independent statistical
 samples. No confidence interval or seasoned-player/balance claim is inferred.

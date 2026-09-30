@@ -42,6 +42,7 @@ from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step
+from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -1438,7 +1439,7 @@ def _serialize_match_controller(match: MatchController) -> dict:
     payload["best_of"] = match.best_of
     # Revealing the RNG seed during play would expose hidden library order.
     payload["root_seed"] = match.root_seed if match.match_complete else None
-    payload["game_seed"] = match.root_seed + match.game_number - 1 if match.match_complete and match.root_seed is not None else None
+    payload["game_seed"] = game_seed(match.root_seed, match.game_number) if match.match_complete else None
     payload["next_play_draw_chooser"] = _next_play_draw_chooser(match)
     payload["match_complete"] = match.match_complete
     payload["games_needed"] = (match.best_of // 2) + 1
@@ -1514,7 +1515,7 @@ def _is_full_ai_match(match: MatchController) -> bool:
 def _next_play_draw_chooser(match: MatchController) -> int | None:
     if match.state.winner is None or match.match_complete:
         return None
-    return match.play_draw_chooser if match.state.winner == 0 else (1 if match.state.winner == 2 else 2)
+    return next_play_draw_chooser(match.state.winner, match.play_draw_chooser)
 
 
 def _remember_public_types(match: MatchController) -> None:
@@ -1562,8 +1563,8 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True, r
     prior_id = match.state.id
     p1_name = match.state.players[1].name
     p2_name = match.state.players[2].name
-    game_seed = match.root_seed + match.game_number if match.root_seed is not None else None
-    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=game_seed)
+    seed = game_seed(match.root_seed, match.game_number + 1)
+    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=seed)
     new_state.id = prior_id
     new_state.score = dict(match.state.score)
     new_state.best_of = match.best_of

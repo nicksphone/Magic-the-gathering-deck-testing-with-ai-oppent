@@ -207,6 +207,7 @@ Acceptance: equivalent draw/discard sources invoke the same applicable replaceme
 - [x] Replace battlefield player-1 assumptions with explicit acting-seat ownership and human controller checks.
 - [x] Drive controls from legal moves, including generic activation, crew, loyalty, cycling, equipment and permitted exile/top-library play.
 - [ ] Provide target, mode, face, X-value, mulligan and cleanup choices needed by supported actions.
+- [ ] Implement starting-player-first mulligan declarations and simultaneous London mulligan rounds through shared resumable engine state. Existing pregame loops complete seat 1's choices first, even when seat 2 starts; shared BO3 chooser/seed policy does not fix this separate rule gap. Verify human/AI routes, snapshots and hidden-hand boundaries against Comprehensive Rules 103.5.
 - [ ] Verify permanent cast effects cannot execute later activated/triggered text prematurely; select targeted ETB/cast-trigger choices in their actual ability window, not as spell targets.
 - [x] Separate conventional permanent spell compilation from activated/triggered text, preserving Aura attachment and supported entry choices.
 - [x] Add snapshot-safe human target selection for supported single-target ETB triggers after APNAP ordering, with resolution-time legality checks and no-target fallback; add separate resolution-time accept/decline for supported optional triggers. Other trigger families and multi-target work remain open.
@@ -499,7 +500,7 @@ Acceptance: each AI change has concrete decision evidence and regressions; no st
 
 ### 13. Run seeded matrices and replay/restart gates
 
-- [x] Make replay matrices seat-balanced by default with explicit seeded workload, timeout denominator, per-game provenance and anomaly traces. Repeated determinism executions are not independent samples. The diagnostic runner still starts seat 1 each game without sideboarding/loser choice; broader live-transition parity and statistical certification remain open. See [the protocol](docs/testing/seat-balanced-replay.md).
+- [x] Make replay matrices seat-balanced by default with explicit seeded workload, timeout denominator, per-game provenance and anomaly traces. Repeated determinism executions are not independent samples. Live and diagnostic series now share loser/draw chooser and seed policies, record starters and stop replay at an unresolved timeout. Diagnostic sideboarding, strategic play/draw selection, mulligan-round ordering, broader live-transition parity and statistical certification remain open. See [the protocol](docs/testing/seat-balanced-replay.md).
 - [x] Distinguish legal conditional-counter nonpayment from repeated recent cost failures in timeout labels; one early Spell Pierce counter no longer converts a late tick-cap timeout into `timeout_rules_issue`.
 - [x] Remove automatic combat-damage shortcuts from live and diagnostic turn loops; focused live/replay tests preserve first-strike and regular-damage priority windows. A seeded Tempo/Dimir BO3 finishes without drift or anomalies at 3,000 ticks; this is not a broad matrix or AI-quality result.
 - [ ] Predefine sample sizes, seed schedule, seat balancing and long-game timeout policy.
