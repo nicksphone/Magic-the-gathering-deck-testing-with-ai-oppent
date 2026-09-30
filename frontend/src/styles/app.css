@@ -591,6 +591,7 @@ button:hover {
   border-color: rgba(191, 100, 100, 0.45);
 }
 
+.sim-status-canceled,
 .sim-status-paused,
 .sim-status-idle {
   background: rgba(76, 91, 96, 0.25);

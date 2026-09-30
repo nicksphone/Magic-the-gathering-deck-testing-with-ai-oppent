@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added cooperative cancellation for background Testing Simulator jobs. The UI now requests worker cancellation rather than merely stopping polling; canceled jobs retain progress without reporting incomplete win-rate metrics. Backend worker/slot tests, a response-contract test, and a browser UI fixture cover the behavior. Queueing, durable retention and multiworker execution remain out of scope.
+
 - Speculative AI search and ranking rollouts now request strict engine rejection for cloned actions. A real unpayable Counterspell regression previously scored a no-op as a valid line and now rejects it. Verification: 1,467 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded two-game replay with no reported drift. Other silent no-op paths remain to be audited.
 
 - Bounded AI search and ranking rollouts now shortlist replies with shallow move scores instead of taking the first six/eight lexically sorted moves. Regressions cover a threatening cast after many ability moves and prove shallow ranking avoids nested rollouts. Verification: 1,466 isolated backend tests, frontend lint/build/unit, full solo Chromium harness, and seeded two-game replay with no reported drift. A paired Blue Control/Ramp API BO3 took 139 seconds on this revision versus 135 seconds on the prior revision; this single run is not a throughput guarantee. Ranking remains heuristic and capped.

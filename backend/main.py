@@ -29,7 +29,7 @@ from ai.sideboarding import plan_sideboard
 from api_contracts import ActionRequest, DeckEntry, DeckPairInput, InputModel, PlayerID
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
-from analytics.service import AnalyticsService
+from analytics.service import AnalyticsService, SimulationCancelled
 from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
@@ -100,6 +100,7 @@ class MatchController:
 ACTIVE_MATCHES: dict[str, MatchController] = {}
 START_MATCH_LOCK = threading.RLock()
 SIM_JOBS: dict[str, dict] = {}
+SIM_JOB_CANCEL_EVENTS: dict[str, threading.Event] = {}
 SIM_JOBS_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
 SIM_JOBS_CACHE_LIMIT = 20
@@ -347,6 +348,7 @@ def _restore_simulation_jobs(repo: Repository) -> None:
     rows.update({row.id: row for row in repo.list_unfinished_simulation_jobs()})
     with SIM_JOBS_LOCK:
         SIM_JOBS.clear()
+        SIM_JOB_CANCEL_EVENTS.clear()
         for row in rows.values():
             job = _job_dict(row)
             if row.status in {"queued", "running"}:
@@ -941,6 +943,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
     if not SIM_WORK_SLOT.acquire(blocking=False):
         raise HTTPException(status_code=429, detail={"code": "simulation_busy", "message": "A batch simulation is already running"})
     job_id = str(uuid.uuid4())
+    cancel_event = threading.Event()
     job = {
         "job_id": job_id,
         "status": "queued",
@@ -954,6 +957,8 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
     }
     def _runner() -> None:
         try:
+            if cancel_event.is_set():
+                raise SimulationCancelled()
             with SIM_JOBS_LOCK:
                 if job_id in SIM_JOBS:
                     SIM_JOBS[job_id]["status"] = "running"
@@ -974,6 +979,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     payload.difficulty,
                     max_ticks=payload.max_ticks,
                     progress_callback=_progress,
+                    should_cancel=cancel_event.is_set,
                 )
             with SIM_JOBS_LOCK:
                 if job_id in SIM_JOBS:
@@ -981,6 +987,13 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     SIM_JOBS[job_id]["completed_matches"] = int(payload.matches)
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     SIM_JOBS[job_id]["result"] = result
+                    _persist_job(SIM_JOBS[job_id])
+                    _prune_simulation_jobs()
+        except SimulationCancelled:
+            with SIM_JOBS_LOCK:
+                if job_id in SIM_JOBS:
+                    SIM_JOBS[job_id]["status"] = "canceled"
+                    SIM_JOBS[job_id]["finished_at"] = time.time()
                     _persist_job(SIM_JOBS[job_id])
                     _prune_simulation_jobs()
         except Exception as exc:
@@ -992,20 +1005,39 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                     _persist_job(SIM_JOBS[job_id])
                     _prune_simulation_jobs()
         finally:
+            with SIM_JOBS_LOCK:
+                SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
             SIM_WORK_SLOT.release()
 
     try:
         with SIM_JOBS_LOCK:
             SIM_JOBS[job_id] = job
+            SIM_JOB_CANCEL_EVENTS[job_id] = cancel_event
         _persist_job(job)
         t = threading.Thread(target=_runner, daemon=True)
         t.start()
     except Exception:
         with SIM_JOBS_LOCK:
             SIM_JOBS.pop(job_id, None)
+            SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
         SIM_WORK_SLOT.release()
         raise
     return {"job_id": job_id, "status": "queued"}
+
+
+@app.post("/simulate/batch/{job_id}/cancel", response_model=BatchSimulationJobStatusResponse)
+def simulate_batch_cancel(job_id: str, repo: Repository = Depends(get_repo)) -> dict:
+    with SIM_JOBS_LOCK:
+        job = SIM_JOBS.get(job_id)
+        if job is None:
+            row = repo.get_simulation_job(job_id)
+            if row is None:
+                raise HTTPException(status_code=404, detail="Simulation job not found")
+            return _job_dict(row)
+        event = SIM_JOB_CANCEL_EVENTS.get(job_id)
+        if event is not None:
+            event.set()
+        return {key: value for key, value in job.items() if key != "request"}
 
 
 @app.get("/simulate/batch/{job_id}", response_model=BatchSimulationJobStatusResponse)

@@ -21,6 +21,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [jobStatus, setJobStatus] = useState<string>("idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
+  const [cancelPending, setCancelPending] = useState(false);
   const [preflight, setPreflight] = useState<SimulationCoverage | null>(null);
   const [reviewedDecks, setReviewedDecks] = useState<string | null>(null);
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
@@ -180,6 +181,11 @@ export function AnalyticsPanel({ decks }: Props) {
           setRunning(false);
           setJobId(null);
           window.clearInterval(timer);
+        } else if (job.status === "canceled") {
+          setProgressText(`Canceled after ${job.completed_matches}/${job.total_matches} matches. No partial results were published.`);
+          setRunning(false);
+          setJobId(null);
+          window.clearInterval(timer);
         } else if (job.status === "failed") {
           setResult(`Testing Simulator failed: ${job.error ?? "unknown error"}`);
           setJobError(job.error ?? "unknown error");
@@ -203,11 +209,19 @@ export function AnalyticsPanel({ decks }: Props) {
     };
   }, [jobId]);
 
-  function cancelDisplay() {
-    setRunning(false);
-    setJobId(null);
-    setJobStatus("paused");
-    setProgressText("Polling stopped. Job may still be running on backend.");
+  async function cancelBatch() {
+    if (!jobId || cancelPending) return;
+    setCancelPending(true);
+    try {
+      const job = await api.cancelSimulateBatchJob(jobId);
+      if (job.status === "queued" || job.status === "running") {
+        setProgressText("Cancellation requested. Waiting for the worker to stop...");
+      }
+    } catch (err) {
+      setJobError(`Cancellation failed: ${String(err)}`);
+    } finally {
+      setCancelPending(false);
+    }
   }
 
   return (
@@ -239,7 +253,7 @@ export function AnalyticsPanel({ decks }: Props) {
           <option value="master_plus">Master+</option>
         </select>
         <button onClick={runBatch} disabled={running}>{running ? "Running..." : preflight?.known_unsupported_cards.length && reviewedDecks === deckSignature ? "Run Anyway (Exploratory)" : `Run ${matches} Matches`}</button>
-        {running ? <button onClick={cancelDisplay}>Stop Polling</button> : null}
+        {running && jobId ? <button onClick={() => void cancelBatch()} disabled={cancelPending}>{cancelPending ? "Canceling..." : "Cancel Run"}</button> : null}
       </div>
       {preflight ? <p role={preflight.known_unsupported_cards.length ? "alert" : "note"}>
         {preflight.known_unsupported_cards.length

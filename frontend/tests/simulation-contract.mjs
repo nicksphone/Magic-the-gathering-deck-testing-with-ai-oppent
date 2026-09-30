@@ -5,6 +5,8 @@ const base = { job_id: "job-1", status: "running", completed_matches: 3, total_m
 assert.equal(parseBatchJobStatus(base), base);
 const completed = { ...base, status: "completed", completed_matches: 10, result: { matches: 10, win_rate_deck_a: 60, win_rate_deck_b: 40 } };
 assert.equal(parseBatchJobStatus(completed), completed);
+const canceled = { ...base, status: "canceled", result: null };
+assert.equal(parseBatchJobStatus(canceled), canceled);
 const exploratory = { ...completed, result: { ...completed.result, rules_coverage: { status: "exploratory", known_unsupported_cards: [{ deck: "A", card_name: "Old Fogey", mechanics: ["bands with other"] }] } } };
 assert.equal(parseBatchJobStatus(exploratory), exploratory);
 assert.deepEqual(parseSimulationCoverage(exploratory.result.rules_coverage), exploratory.result.rules_coverage);

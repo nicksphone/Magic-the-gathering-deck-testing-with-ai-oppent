@@ -31,6 +31,11 @@ try {
   await waitFor("window.fixturePreflights === 1 && window.fixtureStarts === 1");
   assert.ok((await evaluate("document.body.innerText")).includes("not certified"));
   console.log("PASS ordinary matchup starts after one preflight click");
+
+  await click("Cancel Run");
+  await waitFor("window.fixtureCancels === 1 && document.querySelector('.sim-status-pill')?.textContent === 'canceled'");
+  assert.ok((await evaluate("document.body.innerText")).includes("No partial results were published"));
+  console.log("PASS Cancel Run requests backend cancellation and reports no partial result");
 } finally {
   await close();
 }

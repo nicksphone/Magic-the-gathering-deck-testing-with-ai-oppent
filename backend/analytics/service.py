@@ -22,6 +22,10 @@ from rules_engine.coverage import deck_pair_coverage
 from game_state.state import MatchFactory
 
 
+class SimulationCancelled(Exception):
+    """A batch stopped before all requested matches completed."""
+
+
 class AnalyticsService:
     def __init__(self, repo: Repository):
         self.repo = repo
@@ -35,6 +39,7 @@ class AnalyticsService:
         difficulty: str = "master",
         max_ticks: int = 6000,
         progress_callback=None,
+        should_cancel=None,
     ) -> dict:
         stats = Counter()
         turn_counts = []
@@ -52,6 +57,8 @@ class AnalyticsService:
         decision_quality_games: list[dict[str, object]] = []
 
         for i in range(matches):
+            if should_cancel is not None and should_cancel():
+                raise SimulationCancelled()
             seed = self._batch_seed(deck_a, deck_b, i, difficulty)
             deck_a_on_play = i % 2 == 0
             if deck_a_on_play:
@@ -66,6 +73,8 @@ class AnalyticsService:
             b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
             ticks = 0
             while state.winner is None and ticks < max_ticks:
+                if should_cancel is not None and should_cancel():
+                    raise SimulationCancelled()
                 if state.pregame_pending:
                     pid = 1 if 1 not in state.kept_hands else 2
                 else:

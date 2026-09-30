@@ -17,7 +17,7 @@ export function parseSimulationCoverage(value: unknown): SimulationCoverage {
 
 export function parseBatchJobStatus(value: unknown): BatchSimulationJobStatus {
   if (!record(value) || typeof value.job_id !== "string" || !value.job_id
-    || !["queued", "running", "completed", "failed"].includes(String(value.status))
+    || !["queued", "running", "completed", "failed", "canceled"].includes(String(value.status))
     || !Number.isInteger(value.completed_matches) || !Number.isInteger(value.total_matches)
     || (value.completed_matches as number) < 0 || (value.total_matches as number) < 1
     || (value.completed_matches as number) > (value.total_matches as number)

@@ -118,7 +118,7 @@ export type SimulationCoverage = {
 
 export type BatchSimulationJobStatus = {
   job_id: string;
-  status: "queued" | "running" | "completed" | "failed";
+  status: "queued" | "running" | "completed" | "failed" | "canceled";
   completed_matches: number;
   total_matches: number;
   started_at: number;
@@ -274,6 +274,8 @@ export const api = {
     })),
   getSimulateBatchJob: async (jobId: string) =>
     parseBatchJobStatus(await req<unknown>(`/simulate/batch/${encodeURIComponent(jobId)}`)),
+  cancelSimulateBatchJob: async (jobId: string) =>
+    parseBatchJobStatus(await req<unknown>(`/simulate/batch/${encodeURIComponent(jobId)}/cancel`, { method: "POST" })),
   listDiagnosticRuns: (limit = 20) =>
     req<{ runs: DiagnosticRunSummary[] }>(`/diagnostics/runs?limit=${limit}`),
   getDiagnosticRun: (runName: string) =>
