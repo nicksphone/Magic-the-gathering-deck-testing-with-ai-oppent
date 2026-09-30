@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import re
+import json
+from pathlib import Path
 from collections.abc import Mapping
 
 
 _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 CARD_TYPES = frozenset({"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Kindred", "Land", "Planeswalker", "Sorcery"})
+CREATURE_SUBTYPES = frozenset(json.loads(Path(__file__).with_name("creature_subtypes.json").read_text())["types"])
 
 
 def creature_subtype_candidates(plural: str) -> set[str]:

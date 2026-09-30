@@ -26,6 +26,20 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "attached_predicates":
+        from tests.test_attached_scaling import add, CARDS
+        from tests.test_ai_recurring_engines import add as add_hand
+        from tests.test_restricted_mana import clean
+        state = clean(1)
+        target = add(state, "Llanowar Elves", 2)
+        add(state, "Abzan Runemark", 1).attached_to = target.id
+        own = add(state, "Ornithopter", 1)
+        add(state, "Strength of Unity", 1).attached_to = own.id
+        for _ in range(4):
+            add(state, "Swamp", 1)
+        for name in ("Island", "Whip of Erebos"):
+            add_hand(state, name, 1, Zone.HAND, cards=CARDS)
+        return publish(state, [{"quantity": 60, "card_name": "Swamp"}])
     if face_kind == "attached_scaling":
         from tests.test_attached_scaling import add
         from tests.test_restricted_mana import clean, add as payment_card
@@ -36,7 +50,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         add(state, "Sol Ring", 1)
         other = add(state, "Ornithopter", 1)
         add(state, "Unholy Strength", 1).attached_to = other.id
-        unknown = add(state, "Blessing of the Nephilim", 2)
+        unknown = add(state, "Ancestral Mask", 2)
         unknown.attached_to = add(state, "Llanowar Elves", 2).id
         payment_card(state, "Naturalize", 2, Zone.HAND)
         payment_card(state, "Forest", 2)

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added supported attached prefix/suffix conditions, false-versus-unknown otherwise selection, domain/target-color/attachment counts, subtype predicates and public graveyard/source-counter thresholds. Packaged the official offline creature-subtype registry; retained explicit warnings for unimplemented clauses on partially supported cards. See [scope](docs/testing/attached-predicates.md).
+- Attached-predicate verification: 1,999 isolated backend tests, 102 focused checks, frontend lint/build/unit and the full final-code Chromium harness pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions with no timeout or cast/target rejection. These remain regression evidence, not professional-AI/balance certification.
+
 - Replaced prefix-only attached bonus inference with supported full-clause battlefield and source-counter scaling, complete keyword lists and explicit unknown-clause diagnostics. Public views and both-seat UI expose warnings; canonical fixtures cover control changes, union counting, restoration, views and AI valuation. See [scope](docs/testing/attached-scaling.md).
 - Attached-scaling verification: 1,974 isolated backend tests, 77 final focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions with no timeout or cast/target rejection; these are regression checks, not expert-AI or balance certification.
 

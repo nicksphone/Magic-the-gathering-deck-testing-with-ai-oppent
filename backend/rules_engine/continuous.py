@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Any
 
 from game_state.state import Zone
-from rules_engine.card_types import creature_subtype_candidates
+from rules_engine.card_types import creature_subtype_candidates, CREATURE_SUBTYPES
 from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
 
@@ -14,7 +14,7 @@ _STATIC_TYPE_NOUNS = {kind.lower() + "s": kind for kind in
                       ("Creature", "Artifact", "Enchantment", "Land", "Planeswalker", "Battle")}
 _COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
 ATTACHED_SUBJECT = r"\b(?:equipped|enchanted|fortified) (creature|permanent|land) "
-ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? ([+-]\d+)/([+-]\d+)(?: for each (.+?))?(?: and has (.+))?")
+ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? (?:an additional )?([+-]\d+)/([+-]\d+)(?: for each (.+?))?(?: and has (.+))?")
 ATTACHED_KW_RE = re.compile(ATTACHED_SUBJECT + r"has (.+)")
 
 
@@ -23,7 +23,7 @@ def _attached_effects(state, source, target):
     if (not getattr(source, "attached_to", None) or source.attached_to != getattr(target, "id", None) or not _is_battlefield(source)
             or not _is_battlefield(target) or "Creature" in source.types):
         return (0, 0, [], [])
-    text = _static_oracle_text(source)
+    text = _attached_static_text(source)
 
     def matches(subject):
         return subject == "permanent" or subject.title() in target.types
@@ -31,10 +31,41 @@ def _attached_effects(state, source, target):
     power = toughness = 0
     keywords = set()
     unsupported = []
+    previous_condition = None
+    previous_subject = None
     for clause in re.split(r"[.\n]", text):
         clause = clause.strip()
+        otherwise = clause.startswith("otherwise, ")
+        if otherwise:
+            if previous_condition is True:
+                continue
+            if previous_condition is None:
+                unsupported.append(clause)
+                continue
+            clause = clause.removeprefix("otherwise, ")
+            clause = re.sub(r"^it\b", previous_subject or "enchanted creature", clause)
+        else:
+            previous_condition = None
+            previous_subject = None
+            prefix = re.fullmatch(r"as long as (.+?), (.+)", clause)
+            suffix = re.fullmatch(r"(.+?) as long as (.+)", clause)
+            if prefix or suffix:
+                body, condition = (prefix.group(2), prefix.group(1)) if prefix else suffix.groups()
+                subject = re.search(r"\b(?:equipped|enchanted|fortified) (?:creature|permanent|land)\b", body + " " + condition)
+                if not subject:
+                    continue
+                previous_subject = subject.group(0)
+                previous_condition = _attached_condition(state, source, target, condition)
+                if previous_condition is None:
+                    unsupported.append(clause)
+                    continue
+                if not previous_condition:
+                    continue
+                clause = re.sub(r"^it\b", previous_subject, body)
         subject = re.search(ATTACHED_SUBJECT, clause)
         if not subject or not matches(subject.group(1)):
+            if otherwise:
+                unsupported.append(clause)
             continue
         pt = ATTACHED_PT_RE.fullmatch(clause)
         kw = ATTACHED_KW_RE.fullmatch(clause)
@@ -54,6 +85,56 @@ def _attached_effects(state, source, target):
     return power, toughness, sorted(keywords), unsupported
 
 
+def _attached_static_text(source):
+    lines = []
+    for line in without_reminder_text(source.oracle_text or "").lower().splitlines():
+        line = re.sub(r"^(?:domain|threshold|metalcraft|delirium)\s*[—–-]\s*", "", line.strip())
+        if re.match(r"^(?:when|whenever|at the beginning|if|during)\b", line):
+            continue
+        line = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', line)
+        if ":" not in line and "until end of turn" not in line:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def _attached_condition(state, source, target, condition):
+    from rules_engine.colors import card_color_symbols
+    words = {word: i for i, word in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"))}
+
+    def number(text):
+        return int(text) if text.isdigit() else words.get(text)
+
+    characteristic = re.fullmatch(r"(?:it's|it is|(?:equipped|enchanted|fortified) (?:creature|permanent|land) is) (an? )?([a-z]+)", condition)
+    if characteristic:
+        article, kind = characteristic.groups()
+        if kind in _COLOR_SYMBOLS:
+            return _COLOR_SYMBOLS[kind] in card_color_symbols(target)
+        if kind.title() in {"Artifact", "Enchantment", "Creature", "Land", "Planeswalker", "Battle"}:
+            return kind.title() in target.types
+        return _has_subtype(target, kind) if article and kind in CREATURE_SUBTYPES else None
+    permanent = re.fullmatch(r"(you|an opponent|your opponents) controls? an? (.+?) permanent", condition)
+    if permanent:
+        scope, colors = permanent.groups()
+        mode = " and " if " and " in colors else " or "
+        colors = colors.split(mode)
+        if any(color not in _COLOR_SYMBOLS for color in colors):
+            return None
+        needed = {_COLOR_SYMBOLS[color] for color in colors}
+        players = [source.controller] if scope == "you" else [pid for pid in state.players if pid != source.controller]
+        return any((needed <= card_color_symbols(state.cards[cid]) if mode == " and " else bool(needed & card_color_symbols(state.cards[cid])))
+                   for pid in players for cid in state.players[pid].battlefield)
+    graveyard = re.fullmatch(r"there are (\w+) or more cards in your graveyard", condition)
+    counters = re.fullmatch(r"this (?:equipment|aura|permanent) has (\w+) or more counters on it", condition)
+    if graveyard or counters:
+        minimum = number((graveyard or counters).group(1))
+        if minimum is None:
+            return None
+        amount = len(state.players[source.controller].graveyard) if graveyard else sum(
+            max(0, value) for name, value in source.counters.items() if not name.startswith("__"))
+        return amount >= minimum
+    return None
+
+
 def _attached_keywords(text):
     if text is None:
         return []
@@ -70,6 +151,16 @@ def _attached_keywords(text):
 def _attached_scale_count(state, source, target, phrase):
     if phrase is None:
         return 1
+    if phrase == "basic land type among lands you control":
+        from rules_engine.domain import basic_land_type_count
+        return basic_land_type_count(state, source.controller)
+    if phrase == "of its colors":
+        from rules_engine.colors import card_color_symbols
+        return len(card_color_symbols(target))
+    if phrase == "aura and equipment attached to it":
+        from rules_engine.attachments import is_aura, is_equipment
+        return sum((is_aura(card) or is_equipment(card)) and card.attached_to == target.id
+                   for card in state.cards.values() if _is_battlefield(card))
     counter = re.fullmatch(r"(?:(.+?) )?counter on this (?:equipment|aura|permanent)", phrase)
     if counter:
         kind = counter.group(1)

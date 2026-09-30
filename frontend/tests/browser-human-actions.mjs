@@ -42,6 +42,18 @@ try {
   await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.find(c => c.name === 'Llanowar Elves')?.power === 4");
   assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.some(c => c.name === 'Sol Ring')"), true);
   console.log("PASS scaling attachment updates after human removal and unknown static clause warns through UI/API");
+  await click("Conditional Attachment Fixture");
+  await waitFor("window.fixtureState?.priority_player === 1 && window.fixtureState.players['1'].battlefield.find(c => c.name === 'Ornithopter')?.power === 1");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Llanowar Elves').keywords.includes('vigilance')"), false);
+  await click("Play Land Island");
+  await waitFor("window.fixtureState.players['1'].battlefield.find(c => c.name === 'Ornithopter')?.power === 2");
+  await click("Cast Whip of Erebos");
+  await waitFor("window.fixtureState.stack.length === 1");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Llanowar Elves')?.keywords.includes('vigilance')");
+  assert.equal(await evaluate("window.fixtureState.players['1'].battlefield.find(c => c.name === 'Ornithopter').base_power"), 0);
+  assert.deepEqual(await evaluate("window.fixtureState.players['1'].battlefield.find(c => c.name === 'Strength of Unity').effect_warnings"), []);
+  console.log("PASS land play updates domain and resolving a black permanent enables the cross-seat conditional keyword through UI/API");
   await click("Attacking Token Target Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'attacking_token_target' && [...document.querySelectorAll('button')].some(b => b.textContent === 'Attack Teferi, Hero of Dominaria')");
   await click("Attack Teferi, Hero of Dominaria");

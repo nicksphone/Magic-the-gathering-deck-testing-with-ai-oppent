@@ -469,5 +469,236 @@
     "oracle_id": "53987a39-c18c-4c13-b1ea-fd1b2a369f9e",
     "source": "scryfall",
     "scryfall_id": "b738612f-4e78-4b19-9392-6c074956d6e4"
+  },
+  {
+    "name": "Ancestral Mask",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +2/+2 for each other enchantment on the battlefield.",
+    "mana_cost": "{2}{G}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "db5380ed-ba28-4ea2-abc3-4998e2022903",
+    "source": "scryfall",
+    "scryfall_id": "c7a19fc5-20f3-48d2-8c12-e012d3b302e7"
+  },
+  {
+    "name": "Serra's Boon",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +1/+2 as long as it's white. Otherwise, it gets -2/-1.",
+    "mana_cost": "{2}{W}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "1521f26b-9972-4e95-9e14-3ccbb078a1c8",
+    "source": "scryfall",
+    "scryfall_id": "eca4d77a-0bb2-464c-a85f-a22b3d15d7cd"
+  },
+  {
+    "name": "Silver-Inlaid Dagger",
+    "oracle_text": "Equipped creature gets +2/+0.\nAs long as equipped creature is a Human, it gets an additional +1/+0.\nEquip {2}",
+    "mana_cost": "{1}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "93e9b0d6-97a8-4357-bcd4-f82d81bad232",
+    "source": "scryfall",
+    "scryfall_id": "f8b8162a-68f0-45df-bb25-8fd4487257a4"
+  },
+  {
+    "name": "Patriarch's Desire",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +2/-2.\nThreshold \u2014 Enchanted creature gets an additional +2/-2 as long as there are seven or more cards in your graveyard.",
+    "mana_cost": "{3}{B}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Enchant",
+      "Threshold"
+    ],
+    "layout": "normal",
+    "oracle_id": "23b518ab-561f-4551-8270-082cde99b993",
+    "source": "scryfall",
+    "scryfall_id": "309bc2e7-bece-493d-b7ab-0e08a9f40909"
+  },
+  {
+    "name": "Black Scarab",
+    "oracle_text": "Enchant creature\nEnchanted creature can't be blocked by black creatures.\nEnchanted creature gets +2/+2 as long as an opponent controls a black permanent.",
+    "mana_cost": "{W}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "2774d8b3-dc5f-4281-b4c5-cb003fef0ab2",
+    "source": "scryfall",
+    "scryfall_id": "5bfd4ee1-05f9-45ae-a31d-1225b271dbe6"
+  },
+  {
+    "name": "White Scarab",
+    "oracle_text": "Enchant creature\nEnchanted creature can't be blocked by white creatures.\nEnchanted creature gets +2/+2 as long as an opponent controls a white permanent.",
+    "mana_cost": "{W}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "ec9c3906-8628-48c6-96a7-8c6748cba816",
+    "source": "scryfall",
+    "scryfall_id": "c57726b5-dfdd-4e47-bc52-ebf6eedbf3bd"
+  },
+  {
+    "name": "Colossal Dreadmaw",
+    "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Creature \u2014 Dinosaur",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Trample"
+    ],
+    "layout": "normal",
+    "oracle_id": "08c7db90-c0cf-4482-b7ee-bb033e5996d2",
+    "source": "scryfall",
+    "scryfall_id": "8059c52b-5d25-4052-b48a-e9e219a7a546"
+  },
+  {
+    "name": "Tajic, Legion's Edge",
+    "oracle_text": "Haste\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nPrevent all noncombat damage that would be dealt to other creatures you control.\n{R}{W}: Tajic gains first strike until end of turn.",
+    "mana_cost": "{1}{R}{W}",
+    "type_line": "Legendary Creature \u2014 Human Soldier",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "R",
+      "W"
+    ],
+    "keywords": [
+      "Mentor",
+      "Haste"
+    ],
+    "layout": "normal",
+    "oracle_id": "ae6f21a2-e6b6-4793-8343-e27310c0bea1",
+    "source": "scryfall",
+    "scryfall_id": "45c4c3b3-be18-4d74-99d8-f137498673d7"
+  },
+  {
+    "name": "Hallowed Fountain",
+    "oracle_text": "({T}: Add {W} or {U}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "mana_cost": "",
+    "type_line": "Land \u2014 Plains Island",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+    "source": "scryfall",
+    "scryfall_id": "b7285986-7e08-4969-86ef-452dc5bfdd9f"
+  },
+  {
+    "name": "Watery Grave",
+    "oracle_text": "({T}: Add {U} or {B}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "mana_cost": "",
+    "type_line": "Land \u2014 Island Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "fc9ec820-4245-4a96-b009-5308a818ca58",
+    "source": "scryfall",
+    "scryfall_id": "5525d6a6-e532-4047-9da4-bfae7927fecc"
+  },
+  {
+    "name": "Savai Triome",
+    "oracle_text": "({T}: Add {R}, {W}, or {B}.)\nThis land enters tapped.\nCycling {3} ({3}, Discard this card: Draw a card.)",
+    "mana_cost": "",
+    "type_line": "Land \u2014 Mountain Plains Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Cycling"
+    ],
+    "layout": "normal",
+    "oracle_id": "00625242-9348-4ef4-b975-f2ac82fee21d",
+    "source": "scryfall",
+    "scryfall_id": "748e6a61-9c1f-4225-9f04-e54002f63ac3"
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "source": "scryfall",
+    "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac"
+  },
+  {
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Island",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "source": "scryfall",
+    "scryfall_id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3"
+  },
+  {
+    "name": "Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Plains",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+    "source": "scryfall",
+    "scryfall_id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c"
   }
 ]

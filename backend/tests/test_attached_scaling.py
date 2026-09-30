@@ -86,7 +86,7 @@ def test_resource_change_updates_combat_views_ai_and_layer_trace_without_mutatio
     assert effective_power(state, target.id) == 1
 
 
-@pytest.mark.parametrize('name', ['Strength of Unity', 'Blessing of the Nephilim', 'Strong Back', 'Armament of Nyx'])
+@pytest.mark.parametrize('name', ['Ancestral Mask', 'Armament of Nyx'])
 def test_unknown_scaling_or_condition_is_diagnosed_not_flat_or_unconditional(name):
     state = fixture()
     target = add(state, 'Llanowar Elves')
@@ -99,14 +99,14 @@ def test_unknown_scaling_or_condition_is_diagnosed_not_flat_or_unconditional(nam
     assert source_view['effect_warnings']
 
 
-def test_unknown_conditional_keyword_does_not_erase_separate_fixed_bonus():
+def test_supported_conditional_keyword_does_not_erase_separate_fixed_bonus():
     state = fixture()
     target = add(state, 'Llanowar Elves')
     source = add(state, 'Abzan Runemark')
     source.attached_to = target.id
     assert (effective_power(state, target.id), effective_toughness(state, target.id)) == (3, 3)
-    assert 'vigilance' not in effective_keywords(state, target.id)
-    assert continuous_layer_trace(state, target.id)['unsupported_attachment_clauses']
+    assert 'vigilance' in effective_keywords(state, target.id)
+    assert not continuous_layer_trace(state, target.id)['unsupported_attachment_clauses']
 
 
 @pytest.mark.parametrize('name,delta,keywords', [

@@ -1,0 +1,128 @@
+{
+  "date": "2026-09-30",
+  "parent": "ac08124072706eae59aaada33169fb41f42540c8",
+  "scope": "Eight logical BO1 games repeated across sixteen executions with offline built-in hydration. Equality covers complete reported game objects/logs, not every internal field. Unchanged smoke results do not independently cover the new predicates or certify expert AI/balance; targeted canonical and UI/API tests cover supported mechanics. Optional Spell Pierce payment failure is not rejected casting.",
+  "difficulty": "master",
+  "max_ticks": 1600,
+  "production_sha256": {
+    "backend/rules_engine/continuous.py": "7555978a989227090b651d2da2e9c75505981303aa416865e55a3f75129420b8",
+    "backend/rules_engine/card_types.py": "66e326740d588bd117bdd34f7d84d46925eae31ae4d7066fccc7a17123ecd560",
+    "backend/rules_engine/creature_subtypes.json": "7a7df9eadb88748dda7248ee3a4c7678614ab34cd34542727649a0bc1b66e587"
+  },
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 49,
+      "ticks": 1309,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 15,
+      "ticks": 389,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": [
+        "Player B cannot pay {2} for Counterspell."
+      ]
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 38,
+      "ticks": 1036,
+      "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 405,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 21,
+      "ticks": 580,
+      "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 420,
+      "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 25,
+      "ticks": 679,
+      "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 16,
+      "ticks": 435,
+      "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    }
+  ]
+}
