@@ -499,6 +499,7 @@ Acceptance: each AI change has concrete decision evidence and regressions; no st
 
 ### 13. Run seeded matrices and replay/restart gates
 
+- [x] Make replay matrices seat-balanced by default with explicit seeded workload, timeout denominator, per-game provenance and anomaly traces. Repeated determinism executions are not independent samples. The diagnostic runner still starts seat 1 each game without sideboarding/loser choice; broader live-transition parity and statistical certification remain open. See [the protocol](docs/testing/seat-balanced-replay.md).
 - [x] Distinguish legal conditional-counter nonpayment from repeated recent cost failures in timeout labels; one early Spell Pierce counter no longer converts a late tick-cap timeout into `timeout_rules_issue`.
 - [x] Remove automatic combat-damage shortcuts from live and diagnostic turn loops; focused live/replay tests preserve first-strike and regular-damage priority windows. A seeded Tempo/Dimir BO3 finishes without drift or anomalies at 3,000 ticks; this is not a broad matrix or AI-quality result.
 - [ ] Predefine sample sizes, seed schedule, seat balancing and long-game timeout policy.
@@ -529,7 +530,7 @@ The in-memory simulator history is now capped at 20 terminal jobs while old resu
 - [x] Add cooperative cancellation and restore active simulator polling after a browser refresh.
 - [x] Recover ambiguous simulator starts with durable idempotency-key replay and reject conflicting reuse.
 - [ ] Add bounded job queues/quotas, database retention and documented crash/restart behavior.
-- [ ] Add per-match locking/versioning and stale-write checks; test simultaneous actions.
+- [x] Add single-process per-match locking/versioning and stale-write checks; simultaneous retry, storage rollback, receipt restoration and detached-read regressions cover the implemented coordinator. Legacy clients may omit write headers; this is not distributed locking, authorization or multiworker certification.
 - [ ] Add authentication/authorization and restricted origins before supporting network access beyond a trusted single-user setup.
 - [ ] Upgrade vulnerable dependencies deliberately against current advisories; retest without blind forced upgrades.
 

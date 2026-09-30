@@ -29,6 +29,39 @@ def _stable_seed(left_name: str, right_name: str, index: int) -> int:
     return int(digest[:8], 16)
 
 
+def _pair_schedule(left: dict, right: dict, count: int, seat_balanced: bool = True):
+    """Pair each seed with both seat orders; repeats are not new samples."""
+    for index in range(count):
+        seed = _stable_seed(left["name"], right["name"], index)
+        yield seed, left, right, 1
+        if seat_balanced:
+            yield seed, right, left, 2
+
+
+def _pair_outcomes(rows: list[dict]) -> dict:
+    wins = {"deck_a": 0, "deck_b": 0}
+    unresolved = Counter()
+    seats = Counter()
+    for row in rows:
+        seats[str(row["deck_a_seat"])] += 1
+        if row["termination_status"] != "resolved" or row["winner"] not in (1, 2):
+            unresolved[row["termination_status"] if row["termination_status"] != "resolved" else "no_series_winner"] += 1
+        else:
+            wins["deck_a" if row["winner"] == row["deck_a_seat"] else "deck_b"] += 1
+    completed = sum(wins.values())
+    return {"scheduled_matches": len(rows), "completed_matches": completed,
+            "wins": wins, "unresolved": dict(unresolved), "deck_a_seat_counts": dict(seats),
+            "deck_a_win_rate_completed": wins["deck_a"] / completed if completed else None,
+            "inference": "paired-seed regression sample; not independent balance or AI-strength evidence"}
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be positive")
+    return parsed
+
+
 _normalize_log_line = normalize_log_line
 _select_regression_matrix_decks = select_representative_decks
 
@@ -120,6 +153,7 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
     counted_games = 0
     for game_index in range(best_of * 2):
         game = run_game(deck_a, deck_b, seed + game_index, difficulty, max_ticks)
+        game["seed"] = seed + game_index
         games.append(game)
         if game["winner"] != 0:
             counted_games += 1
@@ -145,11 +179,12 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
     }
 def main() -> None:
     p = argparse.ArgumentParser(description="Deterministic replay regression matrix")
-    p.add_argument("--matches-per-pair", type=int, default=3)
-    p.add_argument("--difficulty", default="master")
-    p.add_argument("--max-ticks", type=int, default=6000)
+    p.add_argument("--matches-per-pair", type=_positive_int, default=3, help="Seeds per pairing; each runs in both seat orders by default")
+    p.add_argument("--single-seat", action="store_true", help="Legacy one-order smoke mode; not seat balanced")
+    p.add_argument("--difficulty", choices=("casual", "strong", "master"), default="master")
+    p.add_argument("--max-ticks", type=_positive_int, default=6000)
     p.add_argument("--output", default="training_runs/regression_matrix_replay.json")
-    p.add_argument("--max-decks", type=int, default=12)
+    p.add_argument("--max-decks", type=_positive_int, default=12)
     p.add_argument("--best-of", type=int, choices=(1, 3, 5, 7, 9), default=1)
     args = p.parse_args()
 
@@ -174,6 +209,12 @@ def main() -> None:
         "games": 0,
         "matches": 0,
         "best_of": args.best_of,
+        "protocol": {"seeds_per_pair": args.matches_per_pair, "seat_balanced": not args.single_seat,
+                     "difficulty": args.difficulty, "max_ticks_per_game": args.max_ticks,
+                     "seed_policy": "sha256(deck_a::deck_b::index), game seed = series seed + game index",
+                     "start_policy": "seat 1 starts each game; no sideboarding or loser play/draw choice",
+                     "timeout_policy": "unresolved at tick cap; excluded from completed-series win rate",
+                     "repeatability_runs_per_sample": 2},
         "determinism_failures": 0,
         "drift_labels": {},
         "pair_results": [],
@@ -184,11 +225,10 @@ def main() -> None:
     for left, right in combinations(decks, 2):
         summary["pairs"] += 1
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
-        for i in range(max(1, args.matches_per_pair)):
-            seed = _stable_seed(left["name"], right["name"], i)
-            a = run_match(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
-            b = run_match(left["mainboard"], right["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
-            deterministic_ok = a["winner"] == b["winner"] and a["turns"] == b["turns"] and a["log_hash"] == b["log_hash"]
+        for seed, seat_one, seat_two, deck_a_seat in _pair_schedule(left, right, args.matches_per_pair, not args.single_seat):
+            a = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            b = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            deterministic_ok = a == b
             if not deterministic_ok:
                 summary["determinism_failures"] += 1
                 drift = first_log_divergence(a.get("log", []), b.get("log", []))
@@ -203,19 +243,28 @@ def main() -> None:
                 anomaly_counts[termination_status] += 1
             pair["games"].append({
                 "seed": seed,
+                "deck_a_seat": deck_a_seat,
+                "seat_one_deck": seat_one["name"],
+                "seat_two_deck": seat_two["name"],
                 "winner": a["winner"],
+                "winner_deck": (left["name"] if a["winner"] == deck_a_seat else right["name"]) if a["winner"] in (1, 2) else None,
                 "turns": a["turns"],
                 "games_played": a["games_played"],
-                "wins": a["wins"],
+                "wins": a["wins"] if deck_a_seat == 1 else {"deck_a": a["wins"]["deck_b"], "deck_b": a["wins"]["deck_a"]},
                 "timeout": a["timeout"],
                 "termination_status": termination_status,
                 "deterministic": deterministic_ok,
                 "drift": drift,
                 "drift_label": drift_label,
+                "diverging_result_fields": sorted(key for key in a.keys() | b.keys() if a.get(key) != b.get(key)),
                 "drift_excerpt": _drift_excerpt(drift, drift_label) if drift else None,
+                "game_seeds": [game["seed"] for game in a["games"]],
+                "anomaly_trace": a["log"] if termination_status != "resolved" or not deterministic_ok else None,
+                "repeat_trace": b["log"] if not deterministic_ok else None,
             })
             summary["matches"] += 1
             summary["games"] += a["games_played"]
+        pair["outcomes"] = _pair_outcomes(pair["games"])
         summary["pair_results"].append(pair)
 
     summary["drift_labels"] = dict(drift_labels)

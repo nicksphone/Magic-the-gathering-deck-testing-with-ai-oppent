@@ -84,8 +84,8 @@
     "hash": "842ba3e6c1a52cadce1769d3dd756d7d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1790679066.0225842,
-    "hash": "6048a84d40e04e27b32ec24fa7efae76"
+    "mtime": 1790762778.8842497,
+    "hash": "ea0ec38d698552443c414fd00d2fb1fa"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/build_ai_log_priors.py": {
     "mtime": 1784164092.074253,
@@ -775,6 +775,10 @@
     "mtime": 1790737428.9241862,
     "hash": "a05e8fd5105df246010c61270884bf8c"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_replay_protocol.py": {
+    "mtime": 1790762778.8842497,
+    "hash": "8915894444847f8a0aee8c0345faf96f"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_oracle_effects.py": {
     "mtime": 1790696196.6636238,
     "hash": "09609d4d0c37d7c657629fb071a686a4"
@@ -1332,16 +1336,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790760899.7409835,
-    "hash": "711ba63b1165cf944e161cb12afd0653"
+    "mtime": 1790763082.4692147,
+    "hash": "c59e41088b7ade9114e702115408164a"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790760899.7419834,
-    "hash": "514e4e3ca5033eb407d2941e31beee36"
+    "mtime": 1790762955.8536673,
+    "hash": "0aa9d8872e99b960139ba95c31927cc5"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790760899.7439835,
-    "hash": "3f2404cc56327d57a4b1a8fb65f64192"
+    "mtime": 1790763082.4702146,
+    "hash": "b28f9a152f92d49d0b63771e945b5bb2"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1439,6 +1443,10 @@
     "mtime": 1790665482.830706,
     "hash": "e3409b33b5d25cbf25263d40c6b43e78"
   },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/seat-balanced-replay.md": {
+    "mtime": 1790763082.4712145,
+    "hash": "ced4e8ffbd8af6f439a744dbdb4eec89"
+  },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-destruction-targets.md": {
     "mtime": 1790760899.7429836,
     "hash": "0852845cce416cd7e02e41accc0fdc20"
@@ -1468,8 +1476,8 @@
     "hash": "8c3232ee8c62685a10cae7e22139b939"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-self-removal.md": {
-    "mtime": 1790760899.7429836,
-    "hash": "2ad38943b9cb805d18f8845901e008e5"
+    "mtime": 1790762125.1245708,
+    "hash": "ab1b855a6948a06c92a78f19a954c8ee"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/modal-spell-faces.md": {
     "mtime": 1790671196.8367965,
