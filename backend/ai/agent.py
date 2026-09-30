@@ -22,6 +22,19 @@ from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_man
 from rules_engine.replacement import graveyard_destination
 from rules_engine.costs import PAY_X_LIFE_RE
 from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, _parse_count_token
+from rules_engine.oracle_text import without_reminder_text
+from rules_engine.targeting import spell_cant_be_countered, stack_object_kind
+
+
+_PURE_COUNTER_SPELL_RE = re.compile(
+    r"counter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell"
+    r"(?: you (?:don't )?control)?(?: with mana value (?:\d+|x)(?: or (?:less|greater))?)?"
+    r"(?: unless its controller pays (?:\{[^}]+\})+)?\.?", re.IGNORECASE,
+)
+
+
+def _only_counter_spell_text(text: str) -> bool:
+    return bool(_PURE_COUNTER_SPELL_RE.fullmatch(without_reminder_text(text).strip()))
 
 
 def _has_counter_spell_text(text: str) -> bool:
@@ -2137,6 +2150,11 @@ class AIAgent:
 
     def _score_mode_text(self, state: MatchState, card, mode_text: str, player_id: int) -> float:
         text = (mode_text or "").lower()
+        if isinstance(state, MatchState) and _only_counter_spell_text(text):
+            from rules_engine.oracle_effects import inspect_target_hints
+            options = inspect_target_hints(state, card, player_id, {"mode_text": mode_text}).get("stack_targets") or []
+            if self._choose_best_stack_target_id(state, player_id, options, allow_protected=False) is None:
+                return -8.0
         tags = self._spell_tags(card)
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
@@ -2352,7 +2370,11 @@ class AIAgent:
             # For counters/interaction, target the most threatening spell on stack.
             if "counter" in tags:
                 allow_friendly = bool(re.search(r"counter target[^.\n]{0,60}(?:spell|ability) you control", card.oracle_text.lower()))
-                best = self._choose_best_stack_target_id(state, player_id, stack_targets, allow_friendly=allow_friendly)
+                selected_text = "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
+                best = self._choose_best_stack_target_id(
+                    state, player_id, stack_targets, allow_friendly=allow_friendly,
+                    allow_protected=not _only_counter_spell_text(selected_text),
+                )
                 if best is None:
                     out["_invalid_ai_choice"] = True
                     return out
@@ -2631,6 +2653,11 @@ class AIAgent:
                 targets.pop(key, None)
             targets["mode_targets"] = mode_choices
 
+        selected_text = "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or getattr(card, "oracle_text", "")
+        if isinstance(state, MatchState) and mtype == "cast_spell" and _only_counter_spell_text(selected_text):
+            item = next((item for item in state.stack if item.id == targets.get("target_stack_id")), None)
+            if item and stack_object_kind(state, item) == "spell" and spell_cant_be_countered(state, item):
+                out["_invalid_ai_choice"] = True
         out["targets"] = targets
         return out
 
@@ -4172,9 +4199,9 @@ class AIAgent:
             score += 0.4
         return score
 
-    def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict], *, allow_friendly: bool = False) -> str | None:
+    def _choose_best_stack_target_id(self, state: MatchState, player_id: int, candidates: list[dict], *, allow_friendly: bool = False, allow_protected: bool = True) -> str | None:
         best_id = None
-        best_score = -999.0
+        best_score = (-1, -999.0)
         best_tiebreak = ""
         for c in candidates:
             sid = c.get("id")
@@ -4183,7 +4210,11 @@ class AIAgent:
             item = next((item for item in getattr(state, "stack", []) if item.id == sid), None)
             if item is None or (getattr(item, "controller", None) == player_id and not allow_friendly):
                 continue
-            score = self._stack_item_threat_score(state, sid, player_id)
+            protected = (isinstance(state, MatchState) and stack_object_kind(state, item) == "spell"
+                         and spell_cant_be_countered(state, item))
+            if protected and not allow_protected:
+                continue
+            score = (int(not protected), self._stack_item_threat_score(state, sid, player_id))
             tiebreak = str(c.get("label") or c.get("name") or sid)
             if score > best_score or (score == best_score and (best_id is None or tiebreak < best_tiebreak)):
                 best_score = score

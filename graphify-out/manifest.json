@@ -28,8 +28,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790748981.0308022,
-    "hash": "70a2b2138673d366386416b7efe28d97"
+    "mtime": 1790752028.7119107,
+    "hash": "0e96b833e6bc985c44944d7a41f93779"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -871,6 +871,10 @@
     "mtime": 1790655080.1852007,
     "hash": "9912ae09477f9f78f8e51eb489ac8d26"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_counterability.py": {
+    "mtime": 1790752146.7016416,
+    "hash": "27261dec7b3bc6ac3d5abfc128626556"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_api_input_contracts.py": {
     "mtime": 1790701304.410251,
     "hash": "4e8b45dc6e38b17b5ef01682e014ac86"
@@ -1308,16 +1312,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790751099.3716557,
-    "hash": "c8e1c88ea2b664fc419c9f04c9c4b3b2"
+    "mtime": 1790752466.104218,
+    "hash": "4ef3b25efc14c90a3d47c4ff71928255"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790751390.4789772,
-    "hash": "db2bdf08bfebe16fd1b88fd46b52c288"
+    "mtime": 1790753102.6854105,
+    "hash": "ee7b0ebc15572440748cf961ed4c93d4"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790751450.6132786,
-    "hash": "d5e55011a481c174cbdd39f586f04457"
+    "mtime": 1790753102.6864104,
+    "hash": "5bc5797a5afaab91cd2826e6a8fcc91b"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1402,6 +1406,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/aftermath-boundary.md": {
     "mtime": 1790746485.677705,
     "hash": "511f514d2d7e7bd8cdf22c21f1728482"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ai-counterability.md": {
+    "mtime": 1790753102.6844106,
+    "hash": "36fe3ee56dc0d487fa4460612a208a94"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/human-actions-browser.md": {
     "mtime": 1790690232.594073,

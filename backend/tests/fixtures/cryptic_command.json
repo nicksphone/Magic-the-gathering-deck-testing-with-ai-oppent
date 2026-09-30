@@ -1,0 +1,13 @@
+{
+  "id": "30f6fca9-003b-4f6b-9d6e-1e88adda4155",
+  "oracle_id": "a3e51a35-09df-4189-b131-08a21e6a557d",
+  "name": "Cryptic Command",
+  "mana_cost": "{1}{U}{U}{U}",
+  "type_line": "Instant",
+  "oracle_text": "Choose two —\n• Counter target spell.\n• Return target permanent to its owner's hand.\n• Tap all creatures your opponents control.\n• Draw a card.",
+  "colors": [
+    "U"
+  ],
+  "power": null,
+  "toughness": null
+}
