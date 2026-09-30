@@ -1,13 +1,41 @@
 """Project announced stack effects without guessing choices or new responses."""
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
 import re
 
 from game_state.state import MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
+from rules_engine.continuous import has_keyword
+
+
+SECONDARY_EFFECT_RE = re.compile(
+    r"\b(draw|gain|gains|lose|loses|create|scry|surveil|discard|mill|search|deals?|cast|play|put|add|untap|sacrifice)\b", re.I,
+)
+
+
+def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:
+    """Conserve pure destruction against indestructible or friendly targets."""
+    if ability_text is None and not set(card.types).intersection({"Instant", "Sorcery"}):
+        return set()
+    text = ability_text or "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
+    text = without_reminder_text(text).strip()
+    if SECONDARY_EFFECT_RE.search(text) or not re.fullmatch(
+        r"destroy target [^.\n]+\.(?:\s*it can't be regenerated\.)?", text, re.I,
+    ):
+        return set()
+    proxy = copy(card)
+    proxy.oracle_text = text
+    if ability_text is not None:
+        proxy.types = []
+        proxy.card_faces = []
+    key, _ = infer_effect_from_oracle(state, proxy, player_id, targets, report_unsupported=False)
+    if key != "destroy_permanent":
+        return set()
+    return {cid for player in state.players.values() for cid in player.battlefield
+            if state.cards[cid].controller == player_id or has_keyword(state, cid, "indestructible")}
 
 
 def pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:
@@ -37,7 +65,7 @@ def covered_removal_targets(state: MatchState, card, player_id: int, targets: di
     if not state.stack or not set(card.types).intersection({"Instant", "Sorcery"}):
         return set()
     text = "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
-    if re.search(r"\b(draw|gain|gains|lose|loses|create|scry|surveil|discard|mill|search|deals?|cast|play|put|add|untap|sacrifice)\b", without_reminder_text(text), re.I):
+    if SECONDARY_EFFECT_RE.search(without_reminder_text(text)):
         return set()
     key, _ = infer_effect_from_oracle(state, card, player_id, targets, report_unsupported=False)
     if key not in {"destroy_permanent", "exile", "return_permanent_to_hand"}:

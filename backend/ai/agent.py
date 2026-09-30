@@ -2365,18 +2365,21 @@ class AIAgent:
 
             hints = build_cast_hints(state, card, player_id, targets)
 
-        if isinstance(state, MatchState) and mtype == "cast_spell" and card is not None:
-            from ai.pending_effects import covered_removal_targets
-            covered = covered_removal_targets(state, card, player_id, targets)
-            if covered:
-                if targets.get("target_card_id") in covered:
+        if isinstance(state, MatchState) and card is not None:
+            from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
+            ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
+            excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text)
+            if mtype == "cast_spell":
+                excluded |= covered_removal_targets(state, card, player_id, targets) or set()
+            if excluded:
+                if targets.get("target_card_id") in excluded:
                     out["_invalid_ai_choice"] = True
                     return out
-                hints = {key: [candidate for candidate in value if candidate.get("id") not in covered]
+                hints = {key: [candidate for candidate in value if candidate.get("id") not in excluded]
                          if key.endswith("_targets") and isinstance(value, list) else value
                          for key, value in hints.items()}
                 from rules_engine.cast_choice import has_available_targets_for_action
-                if not has_available_targets_for_action(hints):
+                if not has_available_targets_for_action({**hints, "modes": []}):
                     out["_invalid_ai_choice"] = True
                     return out
 

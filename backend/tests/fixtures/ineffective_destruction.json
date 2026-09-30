@@ -1,0 +1,94 @@
+[
+  {
+    "id": "1add1757-c1f8-448a-b279-c6940fb7ad5f",
+    "oracle_id": "f9db72dc-9a5b-48a4-a86e-7464d9a2166a",
+    "name": "Abrade",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Choose one —\n• Abrade deals 3 damage to target creature.\n• Destroy target artifact.",
+    "colors": [
+      "R"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "keywords": []
+  },
+  {
+    "id": "70197723-c61b-4600-b61d-41380c8f3067",
+    "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+    "name": "Darksteel Colossus",
+    "mana_cost": "{11}",
+    "type_line": "Artifact Creature — Golem",
+    "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nIndestructible (Damage and effects that say \"destroy\" don't destroy this creature.)\nIf Darksteel Colossus would be put into a graveyard from anywhere, reveal Darksteel Colossus and shuffle it into its owner's library instead.",
+    "colors": [],
+    "power": "11",
+    "toughness": "11",
+    "loyalty": null,
+    "keywords": [
+      "Indestructible",
+      "Trample"
+    ]
+  },
+  {
+    "id": "5dcd0c4e-4047-47a2-8969-c62616d457c2",
+    "oracle_id": "59e7f2ae-4535-4191-98be-3e65b6b2befa",
+    "name": "Doom Blade",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target nonblack creature.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "keywords": []
+  },
+  {
+    "id": "244831cc-6383-4daf-aeee-ea4893fdb4c2",
+    "oracle_id": "a96d0065-b8c1-4843-8752-dce60bf83545",
+    "name": "Slice in Twain",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target artifact or enchantment.\nDraw a card.",
+    "colors": [
+      "G"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "keywords": []
+  },
+  {
+    "id": "592364bf-68b5-4ea0-97d6-c7cadce940fd",
+    "oracle_id": "60bc63dc-ac9f-4a2f-aef5-c90d0aa31553",
+    "name": "Thrashing Brontodon",
+    "mana_cost": "{1}{G}{G}",
+    "type_line": "Creature — Dinosaur",
+    "oracle_text": "{1}, Sacrifice this creature: Destroy target artifact or enchantment.",
+    "colors": [
+      "G"
+    ],
+    "power": "3",
+    "toughness": "4",
+    "loyalty": null,
+    "keywords": []
+  },
+  {
+    "id": "a6ab9d2b-6cb3-4477-8d0e-712c530383bd",
+    "oracle_id": "0d2bbce0-8c27-4b82-ab62-51a0c3cfc9b0",
+    "name": "Vraska the Unseen",
+    "mana_cost": "{3}{B}{G}",
+    "type_line": "Legendary Planeswalker — Vraska",
+    "oracle_text": "+1: Until your next turn, whenever a creature deals combat damage to Vraska, destroy that creature.\n−3: Destroy target nonland permanent.\n−7: Create three 1/1 black Assassin creature tokens with \"Whenever this token deals combat damage to a player, that player loses the game.\"",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "power": null,
+    "toughness": null,
+    "loyalty": "5",
+    "keywords": []
+  }
+]
