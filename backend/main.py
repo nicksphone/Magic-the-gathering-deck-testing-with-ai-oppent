@@ -15,7 +15,7 @@ from functools import wraps
 
 from contextlib import asynccontextmanager, nullcontext
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
@@ -102,6 +102,7 @@ START_MATCH_LOCK = threading.RLock()
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOB_CANCEL_EVENTS: dict[str, threading.Event] = {}
 SIM_JOBS_LOCK = threading.Lock()
+SIM_START_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
 SIM_JOBS_CACHE_LIMIT = 20
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
@@ -937,12 +938,35 @@ def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(g
 
 
 @app.post("/simulate/batch/start", response_model=BatchSimulationJobStartResponse)
-def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
+def simulate_batch_start(
+    payload: BatchSimulationRequest,
+    repo: Repository = Depends(get_repo),
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> dict:
+    if idempotency_key is not None and (
+        len(idempotency_key) != 32 or any(char not in "0123456789abcdef" for char in idempotency_key)
+    ):
+        raise HTTPException(422, detail={"code": "invalid_start_key", "message": "Idempotency-Key must be 32 lowercase hex characters"})
+    with SIM_START_LOCK:
+        return _start_batch_job(payload, repo, idempotency_key)
+
+
+def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str | None) -> dict:
+    requested = payload.model_dump(mode="json")
+    if key is not None:
+        row = repo.get_simulation_job(key)
+        with SIM_JOBS_LOCK:
+            existing = dict(SIM_JOBS[key]) if key in SIM_JOBS else None
+        if row is not None or existing is not None:
+            original = json.loads(row.request_json or "{}") if row is not None else existing.get("request", {})
+            if original != requested:
+                raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different simulation request"})
+            return {"job_id": key, "status": row.status if row is not None else existing["status"]}
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
     if not SIM_WORK_SLOT.acquire(blocking=False):
         raise HTTPException(status_code=429, detail={"code": "simulation_busy", "message": "A batch simulation is already running"})
-    job_id = str(uuid.uuid4())
+    job_id = key or str(uuid.uuid4())
     cancel_event = threading.Event()
     job = {
         "job_id": job_id,
@@ -953,7 +977,7 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
         "finished_at": None,
         "error": None,
         "result": None,
-        "request": payload.model_dump(),
+        "request": requested,
     }
     def _runner() -> None:
         try:
@@ -1009,17 +1033,25 @@ def simulate_batch_start(payload: BatchSimulationRequest, repo: Repository = Dep
                 SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
             SIM_WORK_SLOT.release()
 
+    persisted = False
     try:
         with SIM_JOBS_LOCK:
             SIM_JOBS[job_id] = job
             SIM_JOB_CANCEL_EVENTS[job_id] = cancel_event
         _persist_job(job)
+        persisted = True
         t = threading.Thread(target=_runner, daemon=True)
         t.start()
     except Exception:
         with SIM_JOBS_LOCK:
             SIM_JOBS.pop(job_id, None)
             SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
+        if persisted:
+            job.update(status="failed", finished_at=time.time(), error="Simulation worker could not start.")
+            try:
+                _persist_job(job)
+            except Exception:
+                pass
         SIM_WORK_SLOT.release()
         raise
     return {"job_id": job_id, "status": "queued"}

@@ -3,12 +3,17 @@
 import pytest
 import threading
 import time
+import json
+from types import SimpleNamespace
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
+from sqlmodel import Session, SQLModel, create_engine
 
 import main
 from analytics.schemas import BatchSimulationRequest
 from analytics.service import AnalyticsService, SimulationCancelled
+from persistence.repository import Repository
 
 
 def _request() -> BatchSimulationRequest:
@@ -161,3 +166,148 @@ def test_cancel_http_route_sets_worker_signal():
         main.app.dependency_overrides.pop(main.get_repo, None)
         main.SIM_JOBS.pop(job_id, None)
         main.SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
+
+
+def test_batch_start_key_replays_without_second_worker_and_rejects_conflict(monkeypatch):
+    monkeypatch.setattr(main, "_validated_deck_cards", lambda _repo, cards: cards)
+    monkeypatch.setattr(main, "_persist_job", lambda _job: None)
+
+    class DormantThread:
+        def __init__(self, **_kwargs):
+            pass
+
+        def start(self):
+            pass
+
+    class EmptyRepo:
+        def get_simulation_job(self, _job_id):
+            return None
+
+    monkeypatch.setattr(main.threading, "Thread", DormantThread)
+    key = "a" * 32
+    repo = EmptyRepo()
+    try:
+        started = main.simulate_batch_start(_request(), repo=repo, idempotency_key=key)
+        assert started == {"job_id": key, "status": "queued"}
+        assert main.simulate_batch_start(_request(), repo=repo, idempotency_key=key) == started
+        with pytest.raises(HTTPException) as conflict:
+            main.simulate_batch_start(_request().model_copy(update={"matches": 2}), repo=repo, idempotency_key=key)
+        assert conflict.value.status_code == 409
+        with pytest.raises(HTTPException) as busy:
+            main.simulate_batch_start(_request(), repo=repo, idempotency_key="b" * 32)
+        assert busy.value.status_code == 429
+    finally:
+        main.SIM_JOBS.pop(key, None)
+        main.SIM_JOB_CANCEL_EVENTS.pop(key, None)
+        main.SIM_WORK_SLOT.release()
+
+
+def test_batch_start_key_recovers_persisted_job_after_restart():
+    request = _request()
+    key = "c" * 32
+    row = SimpleNamespace(status="completed", request_json=json.dumps(request.model_dump(mode="json")))
+
+    class SavedRepo:
+        def get_simulation_job(self, job_id):
+            return row if job_id == key else None
+
+    assert main.simulate_batch_start(request, repo=SavedRepo(), idempotency_key=key) == {"job_id": key, "status": "completed"}
+    with pytest.raises(HTTPException) as invalid:
+        main.simulate_batch_start(request, repo=SavedRepo(), idempotency_key="bad")
+    assert invalid.value.status_code == 422
+
+
+def test_batch_start_http_idempotency_header(monkeypatch):
+    monkeypatch.setattr(main, "_validated_deck_cards", lambda _repo, cards: cards)
+    monkeypatch.setattr(main, "_persist_job", lambda _job: None)
+
+    class DormantThread:
+        def __init__(self, **_kwargs):
+            pass
+
+        def start(self):
+            pass
+
+    class EmptyRepo:
+        def get_simulation_job(self, _job_id):
+            return None
+
+    monkeypatch.setattr(main.threading, "Thread", DormantThread)
+    main.app.dependency_overrides[main.get_repo] = lambda: EmptyRepo()
+    key = "d" * 32
+    try:
+        client = TestClient(main.app)
+        payload = _request().model_dump(mode="json")
+        headers = {"Idempotency-Key": key}
+        first = client.post("/simulate/batch/start", json=payload, headers=headers)
+        assert first.status_code == 200
+        assert first.json() == {"job_id": key, "status": "queued"}
+        assert client.post("/simulate/batch/start", json=payload, headers=headers).json() == first.json()
+        assert client.post("/simulate/batch/start", json={**payload, "matches": 2}, headers=headers).status_code == 409
+        assert client.post("/simulate/batch/start", json=payload, headers={"Idempotency-Key": "invalid"}).status_code == 422
+    finally:
+        main.app.dependency_overrides.pop(main.get_repo, None)
+        main.SIM_JOBS.pop(key, None)
+        main.SIM_JOB_CANCEL_EVENTS.pop(key, None)
+        main.SIM_WORK_SLOT.release()
+
+
+def test_batch_start_key_replays_from_sqlite_after_process_memory_is_cleared(monkeypatch):
+    test_engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    SQLModel.metadata.create_all(test_engine)
+    monkeypatch.setattr(main, "engine", test_engine)
+    monkeypatch.setattr(main, "_validated_deck_cards", lambda _repo, cards: cards)
+
+    class DormantThread:
+        def __init__(self, **_kwargs):
+            pass
+
+        def start(self):
+            pass
+
+    monkeypatch.setattr(main.threading, "Thread", DormantThread)
+    key = "e" * 32
+    try:
+        with Session(test_engine) as session:
+            repo = Repository(session)
+            first = main.simulate_batch_start(_request(), repo=repo, idempotency_key=key)
+            assert repo.get_simulation_job(key) is not None
+            main.SIM_JOBS.pop(key, None)
+            main.SIM_JOB_CANCEL_EVENTS.pop(key, None)
+            assert main.simulate_batch_start(_request(), repo=repo, idempotency_key=key) == first
+            with pytest.raises(HTTPException) as conflict:
+                main.simulate_batch_start(_request().model_copy(update={"matches": 2}), repo=repo, idempotency_key=key)
+            assert conflict.value.status_code == 409
+    finally:
+        main.SIM_JOBS.pop(key, None)
+        main.SIM_JOB_CANCEL_EVENTS.pop(key, None)
+        main.SIM_WORK_SLOT.release()
+
+
+def test_worker_start_failure_persists_failed_job_and_releases_slot(monkeypatch):
+    monkeypatch.setattr(main, "_validated_deck_cards", lambda _repo, cards: cards)
+    saved = []
+    monkeypatch.setattr(main, "_persist_job", lambda job: saved.append(dict(job)))
+
+    class BrokenThread:
+        def __init__(self, **_kwargs):
+            pass
+
+        def start(self):
+            raise RuntimeError("thread unavailable")
+
+    monkeypatch.setattr(main.threading, "Thread", BrokenThread)
+    key = "f" * 32
+
+    class EmptyRepo:
+        def get_simulation_job(self, _job_id):
+            return None
+
+    with pytest.raises(RuntimeError, match="thread unavailable"):
+        main.simulate_batch_start(_request(), repo=EmptyRepo(), idempotency_key=key)
+    assert [row["status"] for row in saved] == ["queued", "failed"]
+    assert saved[-1]["error"] == "Simulation worker could not start."
+    assert key not in main.SIM_JOBS
+    assert key not in main.SIM_JOB_CANCEL_EVENTS
+    assert main.SIM_WORK_SLOT.acquire(blocking=False)
+    main.SIM_WORK_SLOT.release()

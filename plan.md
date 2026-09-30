@@ -491,6 +491,7 @@ The in-memory simulator history is now capped at 20 terminal jobs while old resu
 
 - [ ] Define single-process local topology and network exposure policy explicitly.
 - [x] Add cooperative cancellation and restore active simulator polling after a browser refresh.
+- [x] Recover ambiguous simulator starts with durable idempotency-key replay and reject conflicting reuse.
 - [ ] Add bounded job queues/quotas, database retention and documented crash/restart behavior.
 - [ ] Add per-match locking/versioning and stale-write checks; test simultaneous actions.
 - [ ] Add authentication/authorization and restricted origins before supporting network access beyond a trusted single-user setup.

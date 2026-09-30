@@ -262,9 +262,10 @@ export const api = {
       signal: AbortSignal.timeout(600000),
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
-  startSimulateBatchJob: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
+  startSimulateBatchJob: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000, startKey?: string) =>
     req<BatchSimulationJobStart>("/simulate/batch/start", {
       method: "POST",
+      headers: startKey ? { "Content-Type": "application/json", "Idempotency-Key": startKey } : undefined,
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
   preflightSimulateBatch: async (deck_a: DeckItem[], deck_b: DeckItem[]) =>

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { DeckRecord } from "../types";
+import { HttpResponseError } from "../api/errors";
+import { newMutationKey } from "../api/mutation-gate";
+import type { DeckItem, DeckRecord } from "../types";
 import type { DiagnosticRunDetail, DiagnosticRunSummary, SimulationCoverage } from "../api/client";
 
 type Props = {
@@ -8,6 +10,31 @@ type Props = {
 };
 
 const ACTIVE_SIMULATION_JOB_KEY = "mtg.activeSimulationJobId";
+const PENDING_SIMULATION_START_KEY = "mtg.pendingSimulationStart";
+type PendingSimulationStart = {
+  key: string;
+  payload: { deck_a: DeckItem[]; deck_b: DeckItem[]; matches: number; difficulty: string; max_ticks: number };
+};
+
+function readPendingSimulationStart(): PendingSimulationStart | null {
+  try {
+    const raw = localStorage.getItem(PENDING_SIMULATION_START_KEY);
+    if (!raw || raw.length > 100000) return null;
+    const value: unknown = JSON.parse(raw);
+    if (value && typeof value === "object" && "key" in value && "payload" in value
+      && typeof value.key === "string" && /^[0-9a-f]{32}$/.test(value.key)
+      && value.payload && typeof value.payload === "object"
+      && "deck_a" in value.payload && "deck_b" in value.payload
+      && Array.isArray(value.payload.deck_a) && Array.isArray(value.payload.deck_b)) {
+      return value as PendingSimulationStart;
+    }
+  } catch { /* Browser storage is optional. */ }
+  return null;
+}
+
+function clearPendingSimulationStart() {
+  try { localStorage.removeItem(PENDING_SIMULATION_START_KEY); } catch { /* Browser storage is optional. */ }
+}
 
 export function AnalyticsPanel({ decks }: Props) {
   const [deckA, setDeckA] = useState<number | null>(null);
@@ -25,9 +52,9 @@ export function AnalyticsPanel({ decks }: Props) {
       return null;
     }
   });
-  const [running, setRunning] = useState(Boolean(jobId));
-  const [progressText, setProgressText] = useState(jobId ? "Restoring simulator job..." : "");
-  const [jobStatus, setJobStatus] = useState(jobId ? "running" : "idle");
+  const [running, setRunning] = useState(Boolean(jobId || readPendingSimulationStart()));
+  const [progressText, setProgressText] = useState(jobId ? "Restoring simulator job..." : readPendingSimulationStart() ? "Recovering pending simulator start..." : "");
+  const [jobStatus, setJobStatus] = useState(jobId ? "running" : readPendingSimulationStart() ? "queued" : "idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
   const [cancelPending, setCancelPending] = useState(false);
@@ -131,8 +158,41 @@ export function AnalyticsPanel({ decks }: Props) {
     );
   }
 
+  const recoverPendingStart = useCallback(async (pending: PendingSimulationStart) => {
+    const { deck_a, deck_b, matches: count, difficulty: level, max_ticks } = pending.payload;
+    const start = () => api.startSimulateBatchJob(deck_a, deck_b, count, level, max_ticks, pending.key);
+    try {
+      let job;
+      try {
+        job = await start();
+      } catch (error) {
+        if (error instanceof HttpResponseError && error.status < 500) throw error;
+        job = await start();
+      }
+      if (job.job_id !== pending.key) throw new Error("Simulation start returned a different job ID");
+      try { localStorage.setItem(ACTIVE_SIMULATION_JOB_KEY, job.job_id); } catch { /* Browser storage is optional. */ }
+      setJobId(job.job_id);
+      setJobStatus(job.status);
+      setRunning(true);
+      clearPendingSimulationStart();
+    } catch (error) {
+      if (error instanceof HttpResponseError && error.status < 500) clearPendingSimulationStart();
+      setResult(`Testing Simulator start could not be recovered: ${String(error)}`);
+      setJobError(String(error));
+      setJobStatus("failed");
+      setRunning(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (jobId) return;
+    const pending = readPendingSimulationStart();
+    if (pending) void recoverPendingStart(pending);
+  }, [jobId, recoverPendingStart]);
+
   async function runBatch() {
-    if (!selectedA || !selectedB || !deckSignature) {
+    const previousPending = readPendingSimulationStart();
+    if (!previousPending && (!selectedA || !selectedB || !deckSignature)) {
       setResult("Select both decks before running Testing Simulator.");
       setResultObj(null);
       return;
@@ -145,19 +205,25 @@ export function AnalyticsPanel({ decks }: Props) {
       setJobError("");
       setProgressPct(0);
       setProgressText("Checking rules coverage...");
-      const coverage = await api.preflightSimulateBatch(selectedA.mainboard, selectedB.mainboard);
-      setPreflight(coverage);
-      if (coverage.known_unsupported_cards.length > 0 && reviewedDecks !== deckSignature) {
-        setReviewedDecks(deckSignature);
-        setJobStatus("review");
-        setProgressText("Known unsupported mechanics found. Review the cards below and click Run Anyway to continue.");
-        setRunning(false);
-        return;
+      if (!previousPending) {
+        const coverage = await api.preflightSimulateBatch(selectedA!.mainboard, selectedB!.mainboard);
+        setPreflight(coverage);
+        if (coverage.known_unsupported_cards.length > 0 && reviewedDecks !== deckSignature) {
+          setReviewedDecks(deckSignature);
+          setJobStatus("review");
+          setProgressText("Known unsupported mechanics found. Review the cards below and click Run Anyway to continue.");
+          setRunning(false);
+          return;
+        }
       }
       setJobStatus("queued");
       setProgressText("Queueing simulator job...");
-      const job = await api.startSimulateBatchJob(selectedA.mainboard, selectedB.mainboard, matches, difficulty, maxTicks);
-      setJobId(job.job_id);
+      const pending = previousPending ?? {
+        key: newMutationKey(),
+        payload: { deck_a: selectedA!.mainboard, deck_b: selectedB!.mainboard, matches, difficulty, max_ticks: maxTicks },
+      };
+      try { localStorage.setItem(PENDING_SIMULATION_START_KEY, JSON.stringify(pending)); } catch { /* Browser storage is optional. */ }
+      await recoverPendingStart(pending);
     } catch (err) {
       setResult(`Testing Simulator request failed: ${String(err)}`);
       setProgressText("");

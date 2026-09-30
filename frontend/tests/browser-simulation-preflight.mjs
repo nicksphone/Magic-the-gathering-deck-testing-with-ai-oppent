@@ -14,6 +14,7 @@ async function selectDeck(index, id) {
 
 try {
   await waitFor("document.querySelector('.analytics > .row select') && window.fixturePreflights === 0");
+  assert.equal(await evaluate("window.fixtureClientStartHeader"), "a".repeat(32));
   await selectDeck(0, 1);
   await selectDeck(1, 2);
   await click("Run 20 Matches");
@@ -21,7 +22,7 @@ try {
   assert.equal(await evaluate("window.fixtureStarts"), 0);
   await click("Run Anyway");
   await waitFor("window.fixtureStarts === 1");
-  await waitFor("localStorage.getItem('mtg.activeSimulationJobId') === 'fixture-job'");
+  await waitFor("/^[0-9a-f]{32}$/.test(localStorage.getItem('mtg.activeSimulationJobId') ?? '')");
   console.log("PASS unsupported mechanics require review before starting a job");
 
   await command("Page.reload");
@@ -42,6 +43,31 @@ try {
   await waitFor("window.fixturePreflights === 1 && window.fixtureStarts === 1");
   assert.ok((await evaluate("document.body.innerText")).includes("not certified"));
   console.log("PASS ordinary matchup starts after one preflight click following cancellation");
+
+  await click("Cancel Run");
+  await waitFor("localStorage.getItem('mtg.activeSimulationJobId') === null");
+  await evaluate("window.fixtureResponseLosses = 2");
+  await click("Run 20 Matches");
+  await waitFor("window.fixtureStarts === 2 && window.fixtureAttempts === 3 && localStorage.getItem('mtg.pendingSimulationStart') !== null");
+  assert.ok((await evaluate("document.body.innerText")).includes("could not be recovered"));
+  console.log("PASS accepted start with two lost responses retains one pending key");
+
+  await command("Page.reload");
+  await waitFor("window.fixtureAttempts === 1 && window.fixtureStarts === 0 && window.fixturePolls > 0");
+  assert.equal(await evaluate("localStorage.getItem('mtg.pendingSimulationStart')"), null);
+  assert.ok(await evaluate("/^[0-9a-f]{32}$/.test(localStorage.getItem('mtg.activeSimulationJobId') ?? '')"));
+  console.log("PASS reload recovers the accepted simulator job without a duplicate start");
+
+  await click("Cancel Run");
+  await waitFor("localStorage.getItem('mtg.activeSimulationJobId') === null");
+  await evaluate("window.fixtureWrongJobId = true");
+  await selectDeck(0, 3);
+  await selectDeck(1, 2);
+  await click("Run 20 Matches");
+  await waitFor("document.body.innerText.includes('different job ID')");
+  assert.equal(await evaluate("localStorage.getItem('mtg.activeSimulationJobId')"), null);
+  assert.ok(await evaluate("localStorage.getItem('mtg.pendingSimulationStart') !== null"));
+  console.log("PASS mismatched start response cannot attach to another simulator job");
 } finally {
   await close();
 }

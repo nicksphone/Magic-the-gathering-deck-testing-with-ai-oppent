@@ -4,14 +4,28 @@ import { api } from "../src/api/client";
 import type { DeckRecord } from "../src/types";
 
 declare global {
-  interface Window { fixturePreflights?: number; fixtureStarts?: number; fixtureCancels?: number; fixturePolls?: number }
+  interface Window { fixturePreflights?: number; fixtureStarts?: number; fixtureAttempts?: number; fixtureResponseLosses?: number; fixtureWrongJobId?: boolean; fixtureCancels?: number; fixturePolls?: number; fixtureClientStartHeader?: string }
+}
+
+const realFetch = window.fetch;
+try {
+  window.fetch = async (_url, init) => {
+    window.fixtureClientStartHeader = new Headers(init?.headers).get("Idempotency-Key") ?? "";
+    return new Response(JSON.stringify({ job_id: "a".repeat(32), status: "queued" }), { status: 200 });
+  };
+  await api.startSimulateBatchJob([], [], 1, "master", 500, "a".repeat(32));
+} finally {
+  window.fetch = realFetch;
 }
 
 window.fixturePreflights = 0;
 window.fixtureStarts = 0;
+window.fixtureAttempts = 0;
+window.fixtureResponseLosses = 0;
 window.fixtureCancels = 0;
 window.fixturePolls = 0;
 let canceled = false;
+const acceptedKeys = new Set<string>(JSON.parse(sessionStorage.getItem("fixtureAcceptedSimulationKeys") ?? "[]"));
 api.listDiagnosticRuns = async () => ({ runs: [] });
 api.preflightSimulateBatch = async (deckA) => {
   window.fixturePreflights = (window.fixturePreflights ?? 0) + 1;
@@ -22,22 +36,33 @@ api.preflightSimulateBatch = async (deckA) => {
       : [],
   };
 };
-api.startSimulateBatchJob = async () => {
-  window.fixtureStarts = (window.fixtureStarts ?? 0) + 1;
-  return { job_id: "fixture-job", status: "queued" };
+api.startSimulateBatchJob = async (_deckA, _deckB, _matches, _difficulty, _maxTicks, key) => {
+  if (!key) throw new Error("Simulation start key missing");
+  window.fixtureAttempts = (window.fixtureAttempts ?? 0) + 1;
+  if (!acceptedKeys.has(key)) {
+    acceptedKeys.add(key);
+    sessionStorage.setItem("fixtureAcceptedSimulationKeys", JSON.stringify([...acceptedKeys]));
+    window.fixtureStarts = (window.fixtureStarts ?? 0) + 1;
+  }
+  canceled = false;
+  if ((window.fixtureResponseLosses ?? 0) > 0) {
+    window.fixtureResponseLosses = (window.fixtureResponseLosses ?? 0) - 1;
+    throw new TypeError("Fixture dropped accepted start response");
+  }
+  return { job_id: window.fixtureWrongJobId ? "0".repeat(32) : key, status: "queued" };
 };
-api.getSimulateBatchJob = async () => {
+api.getSimulateBatchJob = async (jobId) => {
   window.fixturePolls = (window.fixturePolls ?? 0) + 1;
   return {
-    job_id: "fixture-job", status: canceled ? "canceled" : "running", completed_matches: 0,
+    job_id: jobId, status: canceled ? "canceled" : "running", completed_matches: 0,
     total_matches: 20, started_at: Date.now() / 1000, result: null,
   };
 };
-api.cancelSimulateBatchJob = async () => {
+api.cancelSimulateBatchJob = async (jobId) => {
   window.fixtureCancels = (window.fixtureCancels ?? 0) + 1;
   canceled = true;
   return {
-    job_id: "fixture-job", status: "running", completed_matches: 0,
+    job_id: jobId, status: "running", completed_matches: 0,
     total_matches: 20, started_at: Date.now() / 1000, result: null,
   };
 };
