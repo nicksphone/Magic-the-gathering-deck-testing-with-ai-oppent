@@ -102,3 +102,24 @@ def test_topdeck_permanents_enter_as_one_group_event(effect_key, count_key):
     assert all(cid in state.players[1].battlefield for cid in chosen)
     assert len(group) == 1
     assert len(each) == 2
+
+
+def test_library_search_places_multiple_creatures_in_one_entry_batch():
+    state = _state()
+    chosen = state.players[1].library[-2:]
+    for cid in chosen:
+        card = state.cards[cid]
+        card.name = "Zombie"
+        card.types = ["Creature"]
+        card.type_line = "Creature — Zombie"
+        card.mana_cost = "{1}{B}"
+        card.power = card.toughness = 2
+
+    resolve_effect(state, 1, "search_library", {
+        "contains": "creature", "count": 2, "destination": "battlefield",
+        "selected_card_ids": chosen,
+    })
+    group, each = _token_triggers(state)
+    assert all(cid in state.players[1].battlefield for cid in chosen)
+    assert len(group) == 1
+    assert len(each) == 2

@@ -1275,12 +1275,18 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
         return
     found: list[str] = []
+    entry_events = []
     for cid in chosen:
         zone = ("battlefield" if not found else "hand") if destination == "split_battlefield_hand" else destination
         choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
         player.library.remove(cid)
-        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")), entry_choice=choice)
+        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")),
+                             entry_choice=choice, emit_entry=destination != "battlefield")
+        if destination == "battlefield":
+            entry_events.append({"card_id": cid, "controller": controller})
         found.append(state.cards[cid].name)
+    if entry_events:
+        emit_event_batch(state, "enters_battlefield", entry_events)
     if found:
         public_names = bool(payload.get("reveal")) or destination in {"battlefield", "graveyard", "exile"}
         detail = f": {', '.join(found)}" if public_names else ""
@@ -1298,6 +1304,7 @@ def _place_searched_card(
     *,
     tapped: bool = False,
     entry_choice: str = "tapped",
+    emit_entry: bool = True,
 ) -> None:
     card = state.cards[card_id]
     player = state.players[controller]
@@ -1315,7 +1322,8 @@ def _place_searched_card(
         card.summoning_sick = True
         card.entered_turn = state.turn
         assign_static_order_on_battlefield_entry(state, card_id)
-        emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
+        if emit_entry:
+            emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
         return
     player.hand.append(card_id)
     card.move_to_zone(Zone.HAND)
