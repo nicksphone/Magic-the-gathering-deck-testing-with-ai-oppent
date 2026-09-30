@@ -172,6 +172,7 @@ It is designed for serious deck work:
 
 ### AI
 - Tactical role tags derive from Oracle text and card types rather than card-name substrings. Canonical live and bulk knowledge sync store these tags, including per-face tags, and backfill verified cached rows offline. An isolated import of the local Scryfall bulk file populated all 38,690 Oracle rows and repeated without changes; this is metadata coverage, not gameplay certification. Persisted play-value/threat profiles and expert-level decision quality remain future work.
+- Master AI scores supported X-based all-creature debuffs against effective toughness and creature threat rather than maximizing X by default. It holds those spells when the affordable X removes no opposing creature, including when main-phase anti-stall logic would otherwise force a cast. This is a bounded tactical heuristic, not an optimal sweep planner.
 - Archetype-aware AI with difficulty levels: `casual`, `strong`, `master`, `master_plus`
 - Hand-profile-aware mulligan decisions, curve evaluation, interaction timing, threat assessment, attack selection, and combat math
 - X-spell value selection that trades off board pressure, archetype pressure, and mana efficiency

@@ -21,7 +21,7 @@ from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 from rules_engine.replacement import graveyard_destination
 from rules_engine.costs import PAY_X_LIFE_RE
-from rules_engine.oracle_effects import EACH_PLAYER_DRAW_RE, _parse_count_token
+from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, _parse_count_token
 
 
 def _has_counter_spell_text(text: str) -> bool:
@@ -75,6 +75,21 @@ class AIAgent:
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
+        def useful_variable_sweep(move: dict) -> bool:
+            if move.get("type") != "cast_spell":
+                return True
+            card = state.cards.get(move.get("card_id"))
+            mana_cost = getattr(card, "mana_cost", "") or ""
+            if "{X}" not in mana_cost.upper() or not ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
+                return True
+            x_value = self._choose_x_value(state, player_id, mana_cost, card=card)
+            return any(
+                cid in state.cards and "Creature" in state.cards[cid].types
+                and effective_toughness(state, cid) <= x_value
+                for cid in state.players[3 - player_id].battlefield
+            )
+
+        legal_moves = [move for move in legal_moves if useful_variable_sweep(move)]
         pending_crews = {
             item.source_card_id for item in (getattr(state, "stack", []) or [])
             if getattr(item, "effect_key", None) == "crew_vehicle"
@@ -1855,6 +1870,14 @@ class AIAgent:
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
         if x_value <= 0:
             return -8.0
+        if ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
+            opponent = state.players[3 - player_id]
+            if not any(
+                cid in state.cards and "Creature" in state.cards[cid].types
+                and effective_toughness(state, cid) <= x_value
+                for cid in opponent.battlefield
+            ):
+                return -8.0
         # Token X-spells (e.g. Secure the Wastes): avoid low-impact early casts.
         if "create x" in text and "token" in text:
             if x_value <= 1:
@@ -3153,7 +3176,21 @@ class AIAgent:
             if cid in state.cards and "Creature" in state.cards[cid].types
         )
         score = 0.0
-        if "create x" in text and "token" in text:
+        if ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
+            defeated = sum(
+                max(1.0, self._creature_threat_score(state, cid, player_id))
+                for cid in opp.battlefield
+                if cid in state.cards and "Creature" in state.cards[cid].types
+                and effective_toughness(state, cid) <= x_value
+            )
+            lost = sum(
+                max(1.0, self._creature_threat_score(state, cid, opp_id))
+                for cid in me.battlefield
+                if cid in state.cards and "Creature" in state.cards[cid].types
+                and effective_toughness(state, cid) <= x_value
+            )
+            score += defeated - lost - 0.35 * x_value
+        elif "create x" in text and "token" in text:
             # Token makers should scale with pressure, but seasoned pilots avoid
             # dumping the entire mana pool into low-value early boards.
             score += x_value * 0.75
@@ -3187,7 +3224,6 @@ class AIAgent:
                 return -100.0
             if opp.life <= x_value:
                 return 100.0
-            from rules_engine.continuous import effective_toughness
             defeated = sum(1 for cid in opp.battlefield if cid in state.cards and "Creature" in state.cards[cid].types
                            and effective_toughness(state, cid) <= x_value)
             lost = sum(1 for cid in me.battlefield if cid in state.cards and "Creature" in state.cards[cid].types

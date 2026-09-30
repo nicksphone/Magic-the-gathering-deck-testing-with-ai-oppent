@@ -1274,7 +1274,76 @@ def test_ai_x_value_accounts_for_opponent_static_spell_tax() -> None:
         state, 1, spell.mana_cost, card=spell,
     )
 
-    assert chosen == 6
+    assert chosen == 1
+
+
+def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
+    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    state = MatchFactory.from_decks(deck, deck, seed=973)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 5
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    player = state.players[1]
+    player.hand.clear()
+    for _ in range(3):
+        cid = player.library.pop()
+        player.battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+    oracle = fallback_card_payload("The Meathook Massacre")
+    assert oracle is not None
+    spell = CardInstance(
+        "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
+        mana_cost=oracle["mana_cost"], type_line=oracle["type_line"], oracle_text=oracle["oracle_text"],
+    )
+    state.cards[spell.id] = spell
+    player.hand.append(spell.id)
+
+    ai = AIAgent(difficulty="master", archetype="Control")
+    moves = RulesEngine().legal_moves(state, 1)
+    for _ in range(3):
+        decision = ai.choose_action(state, moves, 1)
+        assert decision.action["type"] == "pass_priority"
+
+    threat = CardInstance("large-threat", "Torrential Gearhulk", 2, 2, Zone.BATTLEFIELD, ["Artifact", "Creature"], power=5, toughness=6)
+    state.cards[threat.id] = threat
+    state.players[2].battlefield.append(threat.id)
+    for _ in range(3):
+        decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+        assert decision.action["type"] == "pass_priority"
+
+
+def test_ai_variable_sweeper_spends_only_enough_to_kill_threat() -> None:
+    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    state = MatchFactory.from_decks(deck, deck, seed=974)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 8
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    player = state.players[1]
+    player.hand.clear()
+    for _ in range(8):
+        cid = player.library.pop()
+        player.battlefield.append(cid)
+        state.cards[cid].zone = Zone.BATTLEFIELD
+    oracle = fallback_card_payload("The Meathook Massacre")
+    assert oracle is not None
+    spell = CardInstance(
+        "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
+        mana_cost=oracle["mana_cost"], type_line=oracle["type_line"], oracle_text=oracle["oracle_text"],
+    )
+    threat = CardInstance("threat", "Torrential Gearhulk", 2, 2, Zone.BATTLEFIELD, ["Artifact", "Creature"], power=5, toughness=6)
+    state.cards.update({spell.id: spell, threat.id: threat})
+    player.hand.append(spell.id)
+    state.players[2].battlefield.append(threat.id)
+
+    ai = AIAgent(difficulty="master", archetype="Control")
+    assert ai._choose_x_value(state, 1, spell.mana_cost, card=spell) == 6
+    decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
+    assert decision.action["type"] == "cast_spell"
+    assert decision.action["targets"]["x_value"] == 6
 
 
 def test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible() -> None:
