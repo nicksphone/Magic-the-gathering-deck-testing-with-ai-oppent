@@ -5,7 +5,9 @@ from types import SimpleNamespace
 
 import pytest
 
+from ai.agent import AIAgent
 from card_data.hydration import hydrate_deck_cards
+from effects.handlers import copy_spell
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
@@ -107,3 +109,100 @@ def test_meager_meal_optional_creature_target_can_be_skipped() -> None:
     assert state.cards[creature_id].counters.get("+1/+1", 0) == 0
     assert state.cards[own_id].counters.get("+1/+1", 0) == 0
     assert state.cards[card_id].zone == Zone.EXILE
+
+
+def test_meager_meal_copy_can_retarget_each_clause_after_snapshot() -> None:
+    state, card_id, creature_id = meal_state()
+    own_id = state.players[1].hand.pop(1)
+    state.players[1].battlefield.append(own_id)
+    state.cards[own_id].zone = Zone.BATTLEFIELD
+    state = cast_meal(state, card_id, creature_id)
+    original_id = state.stack[-1].id
+    copy_spell(state, 1, {"target_stack_id": original_id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice is not None
+    assert "target_card_id:" + own_id in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:" + own_id],
+    })
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert "target_player:1" in state.pending_mechanic_choice["options"]
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "choose_mechanic", "card_ids": ["target_player:1"],
+    })
+    assert state.pending_mechanic_choice is None
+    assert resolve_top_of_stack(state)
+    assert state.players[1].life == 22
+    assert state.cards[own_id].counters.get("+1/+1") == 1
+    assert state.cards[card_id].zone == Zone.STACK
+    assert card_id not in state.adventure_permissions
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 22
+    assert state.cards[creature_id].counters.get("+1/+1") == 1
+    assert state.cards[card_id].zone == Zone.EXILE
+    assert state.adventure_permissions[card_id] == 1
+
+
+def test_meager_meal_copy_partially_resolves_without_exile_permission() -> None:
+    state, card_id, creature_id = meal_state()
+    state = cast_meal(state, card_id, creature_id)
+    copy_spell(state, 1, {"target_stack_id": state.stack[-1].id})
+    resolve_effect(state, 2, "destroy_permanent", {"target_card_id": creature_id})
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 22
+    assert state.cards[card_id].zone == Zone.STACK
+    assert card_id not in state.adventure_permissions
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 24
+    assert state.cards[card_id].zone == Zone.EXILE
+    assert state.adventure_permissions[card_id] == 1
+
+
+def test_ai_retargets_beneficial_copy_clauses_to_itself() -> None:
+    state, card_id, creature_id = meal_state()
+    own_id = state.players[1].hand.pop(1)
+    state.players[1].battlefield.append(own_id)
+    state.cards[own_id].zone = Zone.BATTLEFIELD
+    state = cast_meal(state, card_id, creature_id)
+    copy_spell(state, 1, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
+    rules = RulesEngine()
+    ai = AIAgent(difficulty="master", archetype="Midrange")
+
+    first = ai.choose_action(state, rules.legal_moves(state, 1), 1).action
+    assert first["card_ids"] == ["target_card_id:" + own_id]
+    state = checked_action(state, rules, 1, first)
+    second = ai.choose_action(state, rules.legal_moves(state, 1), 1).action
+    assert second["card_ids"] == ["target_player:1"]
+    state = checked_action(state, rules, 1, second)
+    assert resolve_top_of_stack(state)
+    assert state.players[1].life == 22
+    assert state.cards[own_id].counters.get("+1/+1") == 1
+
+
+def test_opponent_controls_copy_choices_but_not_original_adventure_permission() -> None:
+    state, card_id, creature_id = meal_state()
+    own_id = state.players[1].hand.pop(1)
+    state.players[1].battlefield.append(own_id)
+    state.cards[own_id].zone = Zone.BATTLEFIELD
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": card_id, "selected_face_index": 1,
+        "targets": {"target_card_id": own_id, "target_player": 1},
+    })
+    copy_spell(state, 2, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
+    assert state.pending_mechanic_choice["player_id"] == 2
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "card_ids": ["target_card_id:" + creature_id],
+    })
+    state = checked_action(state, RulesEngine(), 2, {
+        "type": "choose_mechanic", "card_ids": ["target_player:2"],
+    })
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert resolve_top_of_stack(state)
+    assert state.players[2].life == 22
+    assert state.cards[creature_id].counters.get("+1/+1") == 1
+    assert card_id not in state.adventure_permissions
+    assert resolve_top_of_stack(state)
+    assert state.players[1].life == 22
+    assert state.cards[own_id].counters.get("+1/+1") == 1
+    assert state.adventure_permissions[card_id] == 1

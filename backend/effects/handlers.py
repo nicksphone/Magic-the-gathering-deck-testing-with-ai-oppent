@@ -867,6 +867,9 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         if announced.get("mode_targets"):
             _offer_modal_copy_target_choice(state, controller, copied_item)
         return
+    if is_spell and copied_item.effect_key == "effect_sequence" and not announced.get("mode_texts"):
+        _offer_clause_copy_target_choice(state, controller, copied_item)
+        return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):
@@ -925,6 +928,73 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
             "label": f"Choose a new target for {copied_item.label} or keep its target",
             "stack_id": copied_item.id,
         }
+
+
+def _offer_clause_copy_target_choice(
+    state: MatchState, controller: int, copied_item,
+    remaining_indices: list[int] | None = None, slot_number: int = 1,
+) -> None:
+    from rules_engine.oracle_effects import clause_target_assignments, inspect_target_hints
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+
+    source = state.cards.get(copied_item.source_card_id)
+    if source is None:
+        return
+    copied_card = copy.copy(source)
+    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
+        setattr(copied_card, key, copy.deepcopy(value))
+    announced = copied_item.payload.get("__announced_targets") or {}
+    effects = copied_item.payload.get("effects") or []
+    assignments = clause_target_assignments(state, copied_card, controller, announced, effects)
+    if assignments is None:
+        return
+    indices = list(remaining_indices) if remaining_indices is not None else [
+        index for index, selected in enumerate(assignments) if selected
+    ]
+    if any(index >= len(assignments) or len(assignments[index]) != 1 for index in indices):
+        return
+    if len({next(iter(assignments[index])) for index in indices}) != len(indices):
+        return
+    surfaces = {
+        "target_player": ("player_targets",),
+        "target_card_id": ("creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+                           "artifact_targets", "enchantment_targets", "graveyard_creature_targets", "graveyard_permanent_targets"),
+        "target_stack_id": ("stack_targets",),
+    }
+    for offset, index in enumerate(indices):
+        selected = assignments[index]
+        if len(selected) != 1:
+            continue
+        target_key, old_value = next(iter(selected.items()))
+        clause_card = copy.copy(copied_card)
+        clause_card.oracle_text = effects[index]["clause_text"]
+        hints = inspect_target_hints(state, clause_card, controller, announced)
+        options = ["keep"]
+        labels = {"keep": f"Keep {old_value}"}
+        for surface in surfaces[target_key]:
+            for candidate in hints.get(surface, []):
+                value = candidate["id"]
+                if str(value) == str(old_value) or value == copied_item.id:
+                    continue
+                proposed = {target_key: value}
+                if not (validate_cast_targets(hints, proposed)[0]
+                        and validate_protection_targets(state, copied_card, proposed)[0]
+                        and validate_hexproof_shroud_targets(state, controller, proposed)[0]):
+                    continue
+                option = f"{target_key}:{value}"
+                if option not in options:
+                    options.append(option)
+                    labels[option] = candidate.get("name") or candidate.get("label") or str(value)
+        if len(options) > 1:
+            state.pending_mechanic_choice = {
+                "kind": "copy_target", "player_id": controller, "count": 1,
+                "options": options, "option_labels": labels, "stack_id": copied_item.id,
+                "clause_effect_index": index, "clause_target_key": target_key,
+                "remaining_clause_indices": indices[offset + 1:],
+                "target_slot_number": slot_number + offset,
+                "label": f"Choose target {slot_number + offset} for {copied_item.label}",
+            }
+            return
 
 
 def _offer_divided_copy_target_choice(

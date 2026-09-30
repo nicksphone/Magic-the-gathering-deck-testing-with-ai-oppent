@@ -857,7 +857,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         return publish(state, deck)
     if modal or face_kind:
         import json
-        if face_kind == "multi_adventure":
+        if face_kind in {"multi_adventure", "multi_adventure_copy"}:
             raw = json.loads((Path(__file__).parent / "fixtures/multi_target_adventure.json").read_text())
         else:
             name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
@@ -871,12 +871,25 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.players[2].mana_pool["C"] = modal_mana
         if face_kind == "adventure":
             state.players[2].mana_pool["R"] = 4
-        if face_kind == "multi_adventure":
+        if face_kind in {"multi_adventure", "multi_adventure_copy"}:
             state.players[2].mana_pool["C"] = 0
             state.players[2].mana_pool["B"] = 1
             creature_id = state.players[1].hand.pop()
             state.players[1].battlefield.append(creature_id)
             state.cards[creature_id].zone = Zone.BATTLEFIELD
+            if face_kind == "multi_adventure_copy":
+                from effects.handlers import copy_spell
+                from rules_engine.action_validation import checked_action
+
+                own_id = state.players[2].hand.pop(1)
+                state.players[2].battlefield.append(own_id)
+                state.cards[own_id].zone = Zone.BATTLEFIELD
+                state.mechanic_choice_players = {1, 2}
+                state = checked_action(state, RulesEngine(), 2, {
+                    "type": "cast_spell", "card_id": state.players[2].hand[0], "selected_face_index": 1,
+                    "targets": {"target_card_id": creature_id, "target_player": 1},
+                })
+                copy_spell(state, 2, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
         return publish(state, deck)
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=15)

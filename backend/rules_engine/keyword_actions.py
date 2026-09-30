@@ -114,6 +114,32 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if copied is None:
             return False
         chosen = ids[0]
+        if pending.get("clause_effect_index") is not None:
+            from effects.handlers import _offer_clause_copy_target_choice
+
+            index = pending["clause_effect_index"]
+            key = pending["clause_target_key"]
+            effects = copied.payload.get("effects") or []
+            announced = copied.payload.get("__announced_targets") or {}
+            if index >= len(effects) or key not in announced or effects[index].get("payload", {}).get(key) != announced[key]:
+                return False
+            if chosen != "keep":
+                chosen_key, raw_value = chosen.split(":", 1)
+                if chosen_key != key:
+                    return False
+                value = int(raw_value) if key == "target_player" else raw_value
+                announced[key] = value
+                effects[index]["payload"][key] = value
+                copied.targets = [str(announced[target]) for target in ("target_card_id", "target_player", "target_stack_id")
+                                  if announced.get(target) is not None]
+                state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
+            state.pending_mechanic_choice = None
+            _offer_clause_copy_target_choice(
+                state, player_id, copied, remaining_indices=pending["remaining_clause_indices"],
+                slot_number=pending["target_slot_number"] + 1,
+            )
+            resume_paused_resolution(state, pending)
+            return True
         if pending.get("mode_target_text") is not None:
             from effects.handlers import _offer_modal_copy_target_choice
 

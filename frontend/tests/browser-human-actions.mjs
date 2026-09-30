@@ -631,6 +631,22 @@ try {
   await waitFor(`window.fixtureState.players['1'].life === 22 && window.fixtureState.players['1'].battlefield.some(c => c.id === ${JSON.stringify(mealTarget)} && c.counters['+1/+1'] === 1) && window.fixtureState.players['2'].exile_count === 1`);
   console.log("PASS human multi-target Adventure announces both targets and resolves both effects");
 
+  await click("Adventure Copy Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.clause_effect_index === 0");
+  const ownMealTarget = await evaluate("window.fixtureState.players['2'].battlefield[0].id");
+  assert.ok((await evaluate("window.fixtureState.pending_mechanic_choice.options")).includes("target_card_id:" + ownMealTarget));
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Gollum, Silent Slinker')); if (!label) throw new Error('Missing own creature copy target'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.clause_effect_index === 1");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player B')); if (!label) throw new Error('Missing own player copy target'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null");
+  await click("Resolve Stack");
+  await waitFor(`window.fixtureState.players['2'].life === 22 && window.fixtureState.players['2'].battlefield.some(c => c.id === ${JSON.stringify(ownMealTarget)} && c.counters['+1/+1'] === 1) && window.fixtureState.players['2'].exile_count === 0`);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 22 && window.fixtureState.players['2'].exile_count === 1");
+  console.log("PASS human Adventure copy retargets separate clauses without granting copy exile permission");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

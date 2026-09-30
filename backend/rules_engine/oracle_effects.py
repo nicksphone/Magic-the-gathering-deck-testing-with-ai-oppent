@@ -859,6 +859,38 @@ def inspect_target_hints(
     return hints
 
 
+def clause_target_assignments(
+    state: MatchState, card: CardInstance, controller: int,
+    announced: dict[str, Any], effects: list[dict[str, Any]],
+) -> list[dict[str, Any]] | None:
+    """Map separate Oracle clauses to at most one announced target each."""
+    from copy import copy
+
+    selections = []
+    for effect in effects:
+        clause = effect.get("clause_text")
+        if not clause:
+            return None
+        clause_card = copy(card)
+        clause_card.oracle_text = clause
+        hints = inspect_target_hints(state, clause_card, controller, announced)
+        card_target = "target" in clause and any(key in hints for key in (
+            "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+            "artifact_targets", "enchantment_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+        ))
+        allowed = {"target_card_id": card_target, "target_player": "player_targets" in hints,
+                   "target_stack_id": "stack_targets" in hints}
+        selected = {
+            key: effect.get("payload", {}).get(key)
+            for key in allowed
+            if allowed[key] and announced.get(key) is not None and effect.get("payload", {}).get(key) == announced[key]
+        }
+        if len(selected) > 1:
+            return None
+        selections.append(selected)
+    return selections
+
+
 def infer_target_restrictions(state: MatchState, oracle_text: str, controller: int) -> dict[str, Any]:
     """Extract reusable restrictions for targeted permanent choices.
 
