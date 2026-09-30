@@ -125,7 +125,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(bool(action.get(flag)) == bool(move.get(flag)), "Card source zone does not match the legal action")
     if kind == "keep_hand":
         ids = action.get("bottom_card_ids", [])
-        unique_ids(ids, player.hand, state.mulligan_count.get(player_id, 0))
+        unique_ids(ids, player.hand, max(0, state.mulligan_count.get(player_id, 0) - state.mulligan_bottomed.get(player_id, 0)))
     elif kind == "play_land":
         face = action.get("selected_face_index", 0) or 0
         require(any(item.get("selected_face_index", 0) == face and item.get("entry_choice") == action.get("entry_choice") for item in available), "Selected land face or entry choice is unavailable")

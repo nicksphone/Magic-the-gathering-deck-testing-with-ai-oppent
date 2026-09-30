@@ -54,7 +54,7 @@ function parseDeckLines(text: string): DeckItem[] {
 
 export function Controls(props: Props) {
   const pregameActor = props.actingPlayerId ?? props.match?.priority_player ?? 1;
-  const bottomCount = props.match?.mulligan_count?.[String(pregameActor)] ?? 0;
+  const bottomCount = Math.max(0, (props.match?.mulligan_count?.[String(pregameActor)] ?? 0) - (props.match?.mulligan_bottomed?.[String(pregameActor)] ?? 0));
   const [bottomCards, setBottomCards] = useState<string[]>([]);
   useEffect(() => setBottomCards([]), [props.match?.id, pregameActor, bottomCount]);
   const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
@@ -64,6 +64,11 @@ export function Controls(props: Props) {
   useEffect(() => setMechanicSelections([]), [mechanicKey]);
   useEffect(() => setDamageAmounts({}), [mechanicKey]);
   const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);
+  const pendingChoicePlayer = props.match?.pending_mechanic_choice?.player_id
+    ?? props.match?.pending_replacement_choice?.player_id
+    ?? props.match?.pending_trigger_order?.current_controller;
+  const aiChoicePending = pendingChoicePlayer !== undefined
+    && props.match?.controllers?.[String(pendingChoicePlayer)] === "ai";
   const stepOptions = [
     "untap",
     "upkeep",
@@ -266,7 +271,7 @@ export function Controls(props: Props) {
               {mechanicMove.option_labels?.[cid] ?? cid}
               {mechanicMove.option_type_lines?.[cid] ? <small> ({mechanicMove.option_type_lines[cid]})</small> : null}
             </label>)}
-            {mechanicMove.kind === "search_library" && mechanicSelections.length > 0 ? <p>Selection order: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
+            {(mechanicMove.kind === "search_library" || mechanicMove.kind === "mulligan_bottom") && mechanicSelections.length > 0 ? <p>Selection order{mechanicMove.kind === "mulligan_bottom" ? " (bottom-most first)" : ""}: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
             <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
           </>}
         </div>
@@ -416,14 +421,14 @@ export function Controls(props: Props) {
         <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
           AI Step x30
         </button>
       </div>
-      {props.match?.pregame_pending && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
+      {props.match?.pregame_pending && mechanicMove?.kind !== "mulligan_bottom" && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
         <div className="block-panel">
           <h3>London Mulligan</h3>
           <p>Player {pregameActor} declares next. Redraws wait until all players declare.</p>

@@ -172,6 +172,7 @@ class MatchState:
     mulligan_count: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     kept_hands: set[int] = field(default_factory=set)
     mulligan_declarations: dict[int, str] = field(default_factory=dict)
+    mulligan_bottomed: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     loyalty_activated_this_turn: set[str] = field(default_factory=set)
     trigger_once_seen_this_turn: set[str] = field(default_factory=set)
     priority_stops: dict[int, set[Step]] = field(
@@ -217,6 +218,8 @@ class MatchState:
 
 def pregame_actor(state: MatchState) -> int | None:
     """The next undeclared player in the current round, starting player first."""
+    if state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "mulligan_bottom":
+        return state.pending_mechanic_choice["player_id"]
     return next((pid for pid in (state.active_player, 3 - state.active_player)
                  if pid not in state.kept_hands and pid not in state.mulligan_declarations), None)
 

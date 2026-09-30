@@ -53,12 +53,14 @@ def test_kept_player_sits_out_later_rounds_and_ordered_bottoms_are_preserved():
     state = checked_action(new_game(2), rules, 2, {"type": "mulligan"})
     state = checked_action(state, rules, 1, {"type": "keep_hand"})
     kept_hand = list(state.players[1].hand)
+    state = checked_action(state, rules, 2, {"type": "choose_mechanic", "card_ids": state.players[2].hand[:1]})
     state = checked_action(state, rules, 2, {"type": "mulligan"})
     assert state.mulligan_count[2] == 2
     assert state.players[1].hand == kept_hand
     assert rules.legal_moves(state, 1) == []
     bottom = list(state.players[2].hand[:2])
-    state = checked_action(state, rules, 2, {"type": "keep_hand", "bottom_card_ids": bottom})
+    state = checked_action(state, rules, 2, {"type": "choose_mechanic", "card_ids": bottom})
+    state = checked_action(state, rules, 2, {"type": "keep_hand"})
     assert not state.pregame_pending
     assert state.players[2].library[:2] == bottom
     assert len(state.players[2].hand) == 5

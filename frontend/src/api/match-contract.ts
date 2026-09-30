@@ -60,6 +60,13 @@ export function parseMatchState(value: unknown): MatchState {
     throw new Error("Invalid match response: attack bands must be card ID arrays");
   }
   const pending = value.pending_mechanic_choice;
+  for (const field of ["mulligan_count", "mulligan_bottomed"]) {
+    const counts = value[field];
+    if (counts !== undefined && (!record(counts) || !Object.entries(counts).every(([seat, count]) =>
+      ["1", "2"].includes(seat) && Number.isInteger(count) && (count as number) >= 0 && (count as number) <= 7))) {
+      throw new Error(`Invalid match response: ${field}`);
+    }
+  }
   if (pending !== undefined && pending !== null && (!record(pending)
     || typeof pending.kind !== "string" || (pending.player_id !== 1 && pending.player_id !== 2)
     || (pending.options !== undefined && (!Array.isArray(pending.options) || !pending.options.every((id) => typeof id === "string")))

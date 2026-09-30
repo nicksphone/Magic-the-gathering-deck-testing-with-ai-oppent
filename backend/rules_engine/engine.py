@@ -383,6 +383,10 @@ class RulesEngine:
             return
         kind = action.get("type")
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice["kind"] == "mulligan_bottom":
+                if kind != "choose_mechanic" or not self._finish_mulligan_bottom(state, player_id, action):
+                    reject("Invalid mulligan bottom selection")
+                return
             if state.pending_mechanic_choice["kind"] == "cleanup_discard":
                 if kind == "choose_mechanic":
                     if not self.choose_cleanup_discards(state, player_id, action):
@@ -1221,7 +1225,7 @@ class RulesEngine:
             state.log.append(f"{player.name} declares a mulligan.")
         if kind == "keep_hand":
             bottom = action.get("bottom_card_ids", [])
-            need_bottom = state.mulligan_count.get(player_id, 0)
+            need_bottom = max(0, state.mulligan_count.get(player_id, 0) - state.mulligan_bottomed.get(player_id, 0))
             chosen = [cid for cid in bottom if cid in player.hand][:need_bottom]
             if len(chosen) < need_bottom:
                 chosen += _auto_bottom_cards(state, player_id, need_bottom - len(chosen), exclude=set(chosen))
@@ -1231,6 +1235,7 @@ class RulesEngine:
                     player.library.insert(0, cid)
                     state.cards[cid].move_to_zone(Zone.LIBRARY)
             state.kept_hands.add(player_id)
+            state.mulligan_bottomed[player_id] = state.mulligan_count.get(player_id, 0)
             state.log.append(f"{player.name} keeps hand.")
         actor = pregame_actor(state)
         if actor is not None:
@@ -1255,6 +1260,9 @@ class RulesEngine:
             draw_card(state, pid, 7)
             state.log.append(f"{state.players[pid].name} takes a mulligan to {7 - state.mulligan_count[pid]}.")
         state.mulligan_declarations.clear()
+        if mulliganers:
+            self._begin_mulligan_bottom(state, mulliganers)
+            return
         if len(state.kept_hands) == 2:
             state.pregame_pending = False
             state.priority_player = state.active_player
@@ -1264,6 +1272,39 @@ class RulesEngine:
             self.next_step(state)
         else:
             state.priority_player = pregame_actor(state)
+
+    def _begin_mulligan_bottom(self, state: MatchState, players: list[int]) -> None:
+        pid = players[0]
+        count = state.mulligan_count[pid]
+        state.pending_mechanic_choice = {
+            "kind": "mulligan_bottom", "player_id": pid,
+            "options": list(state.players[pid].hand), "count": count, "min_count": count,
+            "remaining_players": players[1:],
+            "label": f"Player {pid}: choose {count} cards to bottom before declaring again (bottom-most first)",
+        }
+        state.priority_player = pid
+
+    def _finish_mulligan_bottom(self, state: MatchState, player_id: int, action: dict) -> bool:
+        pending = state.pending_mechanic_choice
+        ids = action.get("card_ids")
+        if (pending["player_id"] != player_id or not isinstance(ids, list)
+                or len(ids) != pending["count"] or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids)
+                or any(cid not in pending["options"] or cid not in state.players[player_id].hand for cid in ids)):
+            return False
+        player = state.players[player_id]
+        for cid in reversed(ids):
+            player.hand.remove(cid)
+            player.library.insert(0, cid)
+            state.cards[cid].move_to_zone(Zone.LIBRARY)
+        state.mulligan_bottomed[player_id] = state.mulligan_count[player_id]
+        state.log.append(f"{player.name} bottoms {len(ids)} card(s) after mulligan redraw.")
+        if pending["remaining_players"]:
+            self._begin_mulligan_bottom(state, pending["remaining_players"])
+        else:
+            state.pending_mechanic_choice = None
+            state.priority_player = pregame_actor(state)
+        return True
 
 
 def _infer_mana_from_land(name: str, oracle_text: str = "", requested_color: str | None = None) -> str:

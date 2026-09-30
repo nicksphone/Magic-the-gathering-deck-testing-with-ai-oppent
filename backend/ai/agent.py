@@ -143,7 +143,7 @@ class AIAgent:
                 and "Creature" not in (getattr(state.cards.get(move.get("card_id")), "types", []) or []))
         ]
         legal_moves = [move for move in legal_moves if not self._burn_has_only_friendly_targets(state, move, player_id)]
-        if getattr(state, "pregame_pending", False):
+        if getattr(state, "pregame_pending", False) and not any(move.get("type") == "choose_mechanic" for move in legal_moves):
             return self.choose_mulligan_action(state, player_id)
         if (
             getattr(state, "active_player", None) == player_id
@@ -156,6 +156,9 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] == "mulligan_bottom":
+                options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Bottom least useful opening cards before redeclaring")
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 opponent = 3 - player_id

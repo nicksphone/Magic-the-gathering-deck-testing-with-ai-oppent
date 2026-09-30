@@ -75,10 +75,10 @@ try {
       await syncAfter('trigger-order', revision);
     } else if (choose('choose_mechanic')) {
       const move = choose('choose_mechanic');
-      if (move.kind !== 'cleanup_discard') throw new Error(`Unexpected human choice: ${move.kind}`);
+      if (!['cleanup_discard', 'mulligan_bottom'].includes(move.kind)) throw new Error(`Unexpected human choice: ${move.kind}`);
       await evaluate(`(() => { const boxes = [...document.querySelectorAll('.block-panel input[type=checkbox]')]; boxes.slice(0, ${move.count}).forEach(box => box.click()); })()`);
       await click('Confirm Selection');
-      await syncAfter('cleanup-discard', revision);
+      await syncAfter(move.kind, revision);
     } else if (state.pregame_pending) {
       const hand = state.players['1'].hand;
       const mulligans = state.mulligan_count['1'];
@@ -86,7 +86,8 @@ try {
         await click('Mulligan');
         await syncAfter('mulligan', revision);
       } else {
-        const bottom = hand.filter(card => card.name !== 'Mountain').slice(0, mulligans);
+        const remaining = Math.max(0, mulligans - (state.mulligan_bottomed?.['1'] ?? 0));
+        const bottom = hand.filter(card => card.name !== 'Mountain').slice(0, remaining);
         for (const card of bottom) {
           const label = `Bottom ${card.name} ${card.id}`;
           await evaluate(`[...document.querySelectorAll('input[type=checkbox]')].find(box => box.getAttribute('aria-label') === ${JSON.stringify(label)}).click()`);

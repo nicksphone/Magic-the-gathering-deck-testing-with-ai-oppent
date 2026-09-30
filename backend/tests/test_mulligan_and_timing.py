@@ -15,6 +15,7 @@ def test_london_mulligan_flow_completes_pregame() -> None:
     assert state.mulligan_count[1] == 0
     engine.take_action(state, 2, {"type": "keep_hand", "bottom_card_ids": []})
     assert state.mulligan_count[1] == 1
+    engine.take_action(state, 1, {"type": "choose_mechanic", "card_ids": state.players[1].hand[:1]})
     engine.take_action(state, 1, {"type": "keep_hand", "bottom_card_ids": []})
     assert state.pregame_pending is False
 

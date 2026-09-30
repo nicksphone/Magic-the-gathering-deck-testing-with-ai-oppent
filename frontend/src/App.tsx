@@ -306,10 +306,7 @@ export function App() {
     if (match.match_complete) return;
     const controllers = match.controllers ?? {};
     const uiAiVsAi = match.mode === "ai_vs_ai";
-    const kept = new Set(match.kept_hands ?? []);
-    const actingPlayer = match.pregame_pending
-      ? ([1, 2].find((pid) => !kept.has(pid)) ?? match.priority_player)
-      : match.priority_player;
+    const actingPlayer = match.priority_player;
     const actingController = controllers[String(actingPlayer)] ?? (uiAiVsAi ? "ai" : "human");
     const bothAi = ((controllers["1"] ?? "human") === "ai" && (controllers["2"] ?? "human") === "ai") || uiAiVsAi;
     const shouldAutoRun = actingController === "ai" || (bothAi && match.winner !== null && !match.match_complete);

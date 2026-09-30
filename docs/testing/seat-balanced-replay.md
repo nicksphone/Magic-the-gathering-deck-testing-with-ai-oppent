@@ -78,8 +78,10 @@ The diagnostic runner still does not apply sideboards. Shared chooser and seed
 policies do not establish full live BO3 transition parity. AI always choosing to
 play is a policy default, not deck-specific strategic choice. Starting-player
 mulligan declarations and paired redraws now use shared resumable engine state.
-Mandatory bottom-selection timing and opening-hand effects still need completion
-before claiming full tournament setup semantics.
+Mandatory bottom choices now pause after each redraw, before the next declaration
+round, through the shared engine. Opening-hand effects, mulligan-time abilities
+and broader legacy migration still need completion before claiming full tournament
+setup semantics.
 
 Paired seeds and determinism repeats are correlated, not independent statistical
 samples. No confidence interval or seasoned-player/balance claim is inferred.

@@ -365,10 +365,13 @@ def test_london_mulligan_to_zero_requires_deliberate_ordered_bottoms(game):
             response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 2, "action": {"type": "keep_hand"}})
             assert response.status_code == 200, response.text
         assert controller.state.mulligan_count[1] == count
+        ids = list(reversed(controller.state.players[1].hand[:count]))
+        rejected(client, controller, {"type": "keep_hand"})
+        response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "choose_mechanic", "card_ids": ids}})
+        assert response.status_code == 200, response.text
+        assert len(controller.state.players[1].hand) == 7 - count
     rejected(client, controller, {"type": "mulligan"})
-    rejected(client, controller, {"type": "keep_hand", "bottom_card_ids": []})
-    ids = list(reversed(controller.state.players[1].hand))
-    response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "keep_hand", "bottom_card_ids": ids}})
+    response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "keep_hand"}})
     assert response.status_code == 200, response.text
     assert controller.state.players[1].hand == []
     assert controller.state.players[1].library[:7] == ids

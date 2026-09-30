@@ -23,6 +23,10 @@ assert.throws(() => parseMatchState({ ...state, blocks: { attacker: "blocker-a" 
 assert.throws(() => parseMatchState({ ...state, attack_bands: [["attacker"], "blocker-a"] }), /attack bands must/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, power: undefined }] } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 2: undefined } }), /player 2/);
+assert.throws(() => parseMatchState({ ...state, mulligan_bottomed: { 1: 8 } }), /mulligan_bottomed/);
+assert.throws(() => parseMatchState({ ...state, mulligan_bottomed: { 3: 1 } }), /mulligan_bottomed/);
+assert.throws(() => parseMatchState({ ...state, mulligan_count: { 1: -1 } }), /mulligan_count/);
+assert.equal(parseMatchState({ ...state, mulligan_bottomed: { 1: 1, 2: 0 } }).mulligan_bottomed["1"], 1);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: undefined } } }), /card view/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: [mountain] } } }), /card view/);
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], graveyard: [mountain], graveyard_count: 1 } } }).id, state.id);
