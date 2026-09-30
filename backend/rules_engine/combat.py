@@ -4,7 +4,7 @@ import re
 
 from game_state.state import MatchState, Step, Zone
 from rules_engine.colors import card_color_names
-from rules_engine.continuous import effective_power, effective_toughness, has_keyword
+from rules_engine.continuous import KNOWN_KEYWORDS, effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
@@ -19,6 +19,7 @@ from rules_engine.restrictions import (
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
+BLOCK_ONLY_KEYWORD_RE = re.compile(r"\bcan block only creatures with ([a-z][a-z ]*?)(?:[.\n]|$)", re.IGNORECASE)
 
 
 def valid_attack_bands(state: MatchState, attackers: list[str], targets: dict[str, str], bands: list[list[str]]) -> bool:
@@ -577,6 +578,11 @@ def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_s
 
 
 def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
+    only_keyword = BLOCK_ONLY_KEYWORD_RE.search(getattr(blocker, "oracle_text", "") or "")
+    if only_keyword:
+        required = only_keyword.group(1).strip().lower()
+        if required in KNOWN_KEYWORDS and not has_keyword(state, attacker.id, required):
+            return False
     # Flying can only be blocked by flying or reach.
     if has_keyword(state, attacker.id, "flying"):
         if not (has_keyword(state, blocker.id, "flying") or has_keyword(state, blocker.id, "reach")):

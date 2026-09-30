@@ -4,15 +4,48 @@ import pytest
 from tests.test_modal_spell_faces import fixture
 from game_state.state import CardInstance, Step, Zone
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
-from rules_engine.action_validation import validate_action, ActionRejected
+from rules_engine.action_validation import validate_action, checked_action, ActionRejected
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
+from rules_engine import combat
 
 RECOVERY = "Bala Ged Recovery // Bala Ged Sanctuary"
 PATHWAY = "Riverglide Pathway // Lavaglide Pathway"
 GIANT = "Bonecrusher Giant // Stomp"
 BORROWER = "Brazen Borrower // Petty Theft"
+
+
+def test_brazen_borrower_blocks_only_flying_attackers_after_snapshot_restore():
+    game, borrower = fixture(BORROWER)
+    game.players[1].hand.remove(borrower.id)
+    game.players[1].battlefield.append(borrower.id)
+    borrower.move_to_zone(Zone.BATTLEFIELD)
+    attacker_id = game.players[2].hand[0]
+    game.players[2].hand.remove(attacker_id)
+    game.players[2].battlefield.append(attacker_id)
+    attacker = game.cards[attacker_id]
+    attacker.move_to_zone(Zone.BATTLEFIELD)
+    attacker.name = "Grizzly Bears"
+    attacker.oracle_text = ""
+    attacker.types = ["Creature"]
+    attacker.keywords = []
+    game.active_player = 2
+    game.priority_player = 1
+    game.step = Step.DECLARE_BLOCKERS
+    game.attackers = [attacker_id]
+
+    before = serialize_match_snapshot(game)
+    with pytest.raises(ActionRejected):
+        checked_action(game, RulesEngine(), 1, {"type": "block", "blocks": {attacker_id: [borrower.id]}})
+    assert serialize_match_snapshot(game) == before
+    combat.declare_blockers(game, {attacker_id: [borrower.id]})
+    assert game.blocks == {}
+
+    restored = deserialize_match_snapshot(serialize_match_snapshot(game))
+    restored.cards[attacker_id].keywords = ["flying"]
+    combat.declare_blockers(restored, {attacker_id: [borrower.id]})
+    assert restored.blocks == {attacker_id: [borrower.id]}
 
 
 def test_modal_land_is_played_tapped_without_cast_or_mana_payment():

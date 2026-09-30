@@ -14,6 +14,7 @@ It is designed for serious deck work:
 
 ### Gameplay
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
+- Combat legality enforces printed single-keyword "can block only creatures with ..." restrictions and numeric "can't attack or block unless you control N or more lands" restrictions using the current battlefield. Brazen Borrower and Topiary Stomper have real-card regressions; other conditional combat text and ability-removal interactions are not certified.
 - Untap happens without a priority window; play resumes at upkeep. Pending replacement/trigger choices remain answerable, and AI defers optional cycling on its own empty-stack upkeep/draw until a main phase.
 - Supported enter-the-battlefield text granting creatures you control a numeric power/toughness bonus and a keyword until end of turn now affects the creatures present when the trigger resolves, including the source. The bonus expires at cleanup; this is not a general continuous-effect interpreter.
 - Supported "look at the top N ... put up to M land cards ... onto the battlefield tapped" spells now share the resolution-time card-choice path with other topdeck permanent effects. The remaining cards are bottomed in the printed random order using persisted match RNG; this covers Cartographer's Survey wording, not every land-selection clause.

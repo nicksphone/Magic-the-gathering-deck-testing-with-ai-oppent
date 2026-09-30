@@ -1,10 +1,35 @@
 from __future__ import annotations
 
+import re
+
 from game_state.state import Step, Zone
+
+_NUMBER_WORDS = {word: value for value, word in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"))}
+_LAND_GATED_COMBAT_RE = re.compile(r"\b(?:can't|cannot) (attack(?: or block)?|block) unless you control (\w+) or more lands\b", re.IGNORECASE)
+
+
+def _land_gate_prevents(state, card_id: str, action: str) -> bool | None:
+    card = state.cards[card_id]
+    for match in _LAND_GATED_COMBAT_RE.finditer(card.oracle_text or ""):
+        if action not in match.group(1).lower().split(" or "):
+            continue
+        token = match.group(2).lower()
+        required = int(token) if token.isdigit() else _NUMBER_WORDS.get(token)
+        if required is None:
+            continue
+        lands = sum(
+            state.cards[cid].zone == Zone.BATTLEFIELD and "Land" in state.cards[cid].types
+            for cid in state.players[card.controller].battlefield
+        )
+        return lands < required
+    return None
 
 
 def card_cant_attack(state, card_id: str) -> bool:
     card = state.cards[card_id]
+    land_gate = _land_gate_prevents(state, card_id, "attack")
+    if land_gate is not None:
+        return land_gate
     text = (card.oracle_text or "").lower()
     if "can't attack alone" in text or "cannot attack alone" in text:
         return False
@@ -20,6 +45,9 @@ def card_must_attack_if_able(state, card_id: str) -> bool:
 
 
 def card_cant_block(state, card_id: str) -> bool:
+    land_gate = _land_gate_prevents(state, card_id, "block")
+    if land_gate is not None:
+        return land_gate
     text = (state.cards[card_id].oracle_text or "").lower()
     return "can't block" in text or "cannot block" in text
 

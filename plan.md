@@ -337,6 +337,7 @@ Acceptance: corpus completeness and AI profile consumption are reproducible, inc
 
 ### 11. Validate semantics across rule families
 
+- [x] Enforce bounded printed combat restrictions for a blocker requiring a named keyword on the attacker and for attack/block permissions gated by controlling N lands. Real Brazen Borrower and Topiary Stomper fixtures cover both sides of the condition and snapshots. Other conditional combat clauses and loss-of-abilities interactions remain open.
 - [x] Prevent one blocker of multiple attackers from dealing its full power to each; Palace Guard now has one shared damage budget per step.
 - [x] Expose controller-chosen numeric combat damage division for multi-attacker blockers and attackers with multiple blockers under current no-assignment-order rules. Focused tests cover ordinary assignment, trample, first/double strike, snapshot, HTTP and UI; the remaining exceptions below stay open.
 - [x] Count another attacker's simultaneous assignment, including deathtouch, toward a shared blocker's trample-lethal requirement. Reject an illegal final attacker split without mutation and permit a pre-damage restart; focused snapshot/AI and browser paths cover the supported case.

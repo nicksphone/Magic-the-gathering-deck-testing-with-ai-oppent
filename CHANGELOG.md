@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Combat legality now applies Brazen Borrower's flying-only block restriction and Topiary Stomper's seven-land attack/block threshold through reusable text clauses. Strict player actions, AI's shared blocker filter, and snapshot behavior use the same legality path. Other conditional combat wordings remain open.
+
 - Batch simulation starts now accept an `Idempotency-Key` (32 lowercase hex characters) and return the existing job for a retry with identical parameters, including after a restart. The UI retries once after an ambiguous response and recovers its pending request on refresh. A worker-start failure records a failed job rather than an indefinite queued row. HTTP, SQLite and browser regressions cover conflict detection and a server-accepted start with two lost replies.
 
-- Testing Simulator now remembers the active background job ID and resumes polling after page refresh or tab remount. A browser regression checks that restore does not create a duplicate job and that cancellation clears the saved ID. It does not recover a start request whose response was lost before the ID reached the browser.
+- Testing Simulator now remembers the active background job ID and resumes polling after page refresh or tab remount. A browser regression checks that restore does not create a duplicate job and that cancellation clears the saved ID. The subsequent idempotent-start change above also recovers an accepted start whose response was lost.
 
 - Added cooperative cancellation for background Testing Simulator jobs. The UI now requests worker cancellation rather than merely stopping polling; canceled jobs retain progress without reporting incomplete win-rate metrics. Backend worker/slot tests, a response-contract test, and a browser UI fixture cover the behavior. Queueing, durable retention and multiworker execution remain out of scope.
 
