@@ -16,6 +16,15 @@ TRANSFORM_DRAW_RE = re.compile(
     re.IGNORECASE,
 )
 TEAM_COUNTER_RE = re.compile(r"\bput a (\+\d+/\+\d+) counter on each creature you control\b")
+ATTACK_REWARD_RE = re.compile(
+    r"at the beginning of your end step, put (a|an|one|two|three|four|five|\d+) "
+    r"([a-z-]+) counters? on this (?:creature|artifact|enchantment|permanent)\. "
+    r"if you attacked with (a|an|one|two|three|four|five|\d+) or more creatures this turn, "
+    r"draw a card\. otherwise, (create [^.]+\.) then if this "
+    r"(?:creature|artifact|enchantment|permanent) has (a|an|one|two|three|four|five|\d+) "
+    r"or more \2 counters on it, transform it\.",
+    re.IGNORECASE,
+)
 
 
 def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
@@ -1122,6 +1131,42 @@ def _trigger_from_oracle(
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
     if source_card is not None:
+        if event == "begin_step" and payload.get("step") == "end_step":
+            match = ATTACK_REWARD_RE.search(oracle)
+            if match:
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+
+                token_surface = copy(source_card)
+                token_surface.oracle_text = match.group(4)
+                token_surface.card_faces = []
+                token_surface.selected_face_index = None
+                token_surface.types = []
+                token_key, token_payload = infer_effect_from_oracle(
+                    state, token_surface, controller, report_unsupported=False,
+                )
+                if token_key == "create_token":
+                    return {
+                        "source_card_id": source_card_id,
+                        "controller": controller,
+                        "label": default_label,
+                        "effect_key": "effect_sequence",
+                        "payload": {"effects": [
+                            {"effect_key": "add_counters", "payload": {
+                                "target_card_id": source_card_id, "counter": match.group(2),
+                                "amount": _number_token(match.group(1)),
+                                "effect_timestamp": source_card.effect_timestamp,
+                            }},
+                            {"effect_key": "attack_count_reward", "payload": {
+                                "minimum_attackers": _number_token(match.group(3)),
+                                "token_payload": token_payload,
+                            }},
+                            {"effect_key": "transform_if_counters", "payload": {
+                                "target_card_id": source_card_id, "counter": match.group(2),
+                                "minimum_counters": _number_token(match.group(5)),
+                                "effect_timestamp": source_card.effect_timestamp,
+                            }},
+                        ]},
+                    }
         team_counter = TEAM_COUNTER_RE.search(oracle)
         if event == "sacrifice" and team_counter:
             return {

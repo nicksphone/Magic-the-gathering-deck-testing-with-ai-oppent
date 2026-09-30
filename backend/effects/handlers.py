@@ -1689,6 +1689,22 @@ def add_mana(state: MatchState, controller: int, payload: dict) -> None:
     add_mana_to_pool(state, controller, color, amount, source_id=payload.get("__source_card_id"))
 
 
+def attack_count_reward(state: MatchState, controller: int, payload: dict) -> None:
+    if state.declared_attackers_this_turn.get(controller, 0) >= int(payload["minimum_attackers"]):
+        draw_cards(state, controller, {"target_player": controller, "amount": 1})
+    else:
+        create_token(state, controller, dict(payload["token_payload"]))
+
+
+def transform_if_counters(state: MatchState, controller: int, payload: dict) -> None:
+    target_id = payload["target_card_id"]
+    card = state.cards.get(target_id)
+    if (card is not None and card.zone == Zone.BATTLEFIELD
+            and card.effect_timestamp == payload["effect_timestamp"]
+            and card.counters.get(payload["counter"], 0) >= int(payload["minimum_counters"])):
+        transform_card(state, controller, {"target_card_id": target_id, "face_index": 1})
+
+
 def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     counter = payload.get("counter", "+1/+1")

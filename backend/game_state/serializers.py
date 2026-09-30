@@ -88,6 +88,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "next_effect_timestamp": state.next_effect_timestamp,
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
+        "declared_attackers_this_turn": {str(key): value for key, value in state.declared_attackers_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
         "draws_in_current_draw_step": {str(key): value for key, value in state.draws_in_current_draw_step.items()},
         "draws_this_turn": {str(key): value for key, value in state.draws_this_turn.items()},
@@ -271,6 +272,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.day_night = str(payload.get("day_night", "none") or "none")
     state.spells_cast_this_turn = {
         int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()
+    }
+    state.declared_attackers_this_turn = {
+        int(key): int(value) for key, value in payload.get("declared_attackers_this_turn", {"1": 0, "2": 0}).items()
     }
     state.spells_cast_last_turn = int(payload.get("spells_cast_last_turn", 0) or 0)
     state.draws_in_current_draw_step = {

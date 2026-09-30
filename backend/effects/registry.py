@@ -45,6 +45,8 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "return_permanent_from_graveyard_to_battlefield": handlers.return_permanent_from_graveyard_to_battlefield,
     "search_library": handlers.search_library,
     "create_token": handlers.create_token,
+    "attack_count_reward": handlers.attack_count_reward,
+    "transform_if_counters": handlers.transform_if_counters,
     "incubate": handlers.incubate,
     "create_token_copy": handlers.create_token_copy,
     "create_shark_token": handlers.create_shark_token,

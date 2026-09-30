@@ -186,6 +186,7 @@ class MatchState:
     # the upkeep transition is deterministic and survives snapshot restore.
     day_night: str = "none"
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    declared_attackers_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
     draws_in_current_draw_step: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     draws_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})

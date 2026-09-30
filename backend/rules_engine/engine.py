@@ -67,6 +67,7 @@ class RulesEngine:
             state.turn += 1
             state.active_player = 1 if state.active_player == 2 else 2
             state.spells_cast_this_turn[state.active_player] = 0
+            state.declared_attackers_this_turn = {1: 0, 2: 0}
             state.draws_this_turn = {1: 0, 2: 0}
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()

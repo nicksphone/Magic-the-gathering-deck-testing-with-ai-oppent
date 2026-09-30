@@ -94,6 +94,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal = []
         legal_targets = {}
     state.attackers = legal
+    state.declared_attackers_this_turn[state.active_player] += len(legal)
     state.attack_bands = [list(band) for band in bands if all(cid in legal for cid in band)]
     state.combat_damage_resolved = False
     state.combat_damage_stage = "none"
