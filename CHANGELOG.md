@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a live-route regression for Wedding Announcement from the bundled canonical corpus: names-only match start, legal attack action, SQLite restore, end-step priority passes, and serialized invitation counter/draw result. A fresh isolated backend suite passes 1,497 tests; frontend and browser checks were already green for the unchanged UI.
+
 - Supported counter/attack-count/token-or-draw/transform end-step clauses through reusable effect handlers. Declared attackers are tracked per turn through snapshots; creatures leaving combat still count, while creatures put onto the battlefield attacking do not. Wedding Announcement regressions cover trigger order, three-counter transform, re-entry and turn reset. Verification: 1,496 isolated backend tests, frontend lint/build/unit, full Chromium harness, one seeded White Weenie/Blue Control game with a Wedding draw, and a two-game replay with no drift. Other conditional end-step patterns remain unverified.
 
 - Tapped-and-attacking token creation now offers a resolution-time choice between the defending player and their planeswalkers. Multiple tokens can choose different defenders; invalid or stale selections are rejected, AI handles the choice, and it survives snapshot restore. A real Adeline browser fixture covers the human control. Verification: 1,490 isolated backend tests, frontend lint/build/unit, full browser harness, one seeded White Weenie/Blue Control AI game, and a two-game replay with no determinism drift.

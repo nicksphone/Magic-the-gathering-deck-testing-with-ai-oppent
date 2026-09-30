@@ -135,3 +135,66 @@ def test_declared_attacker_history_resets_at_new_turn():
     RulesEngine().next_step(state)
     assert state.active_player == 2
     assert state.declared_attackers_this_turn == {1: 0, 2: 0}
+
+
+def test_live_cached_card_draws_after_http_attack_and_match_restore():
+    from fastapi.testclient import TestClient
+    from sqlmodel import Session
+
+    from main import ACTIVE_MATCHES, _persist_active_match, _restore_active_matches, app
+    from persistence.db import engine
+    from persistence.repository import Repository
+
+    deck_a = [{"quantity": 4, "card_name": "Wedding Announcement"},
+              {"quantity": 56, "card_name": "Plains"}]
+    deck_b = [{"quantity": 60, "card_name": "Island"}]
+    with TestClient(app) as client:
+        started = client.post("/matches/start", json={
+            "deck_a": deck_a, "deck_b": deck_b, "controller_a": "human",
+            "controller_b": "human", "mode": "human_vs_human", "seed": 73,
+        })
+        assert started.status_code == 200, started.text
+        match_id = started.json()["id"]
+        try:
+            match = ACTIVE_MATCHES[match_id]
+            state = match.state
+            wedding = next(card for card in state.cards.values() if card.owner == 1 and card.name.startswith("Wedding Announcement"))
+            assert wedding.layout == "transform" and len(wedding.card_faces) == 2
+            getattr(state.players[1], wedding.zone.value).remove(wedding.id)
+            state.players[1].battlefield.append(wedding.id)
+            wedding.zone = Zone.BATTLEFIELD
+            assign_static_order_on_battlefield_entry(state, wedding.id)
+            for cid in ("bear-a", "bear-b"):
+                _bear(state, cid)
+            state.pregame_pending = False
+            state.kept_hands = {1, 2}
+            state.step = Step.DECLARE_ATTACKERS
+            state.active_player = state.priority_player = 1
+
+            attacked = client.post(f"/matches/{match_id}/action", json={
+                "player_id": 1, "action": {"type": "attack", "attackers": ["bear-a", "bear-b"]},
+            })
+            assert attacked.status_code == 200, attacked.text
+            assert match.state.declared_attackers_this_turn[1] == 2
+            with Session(engine) as session:
+                _persist_active_match(Repository(session), match)
+            ACTIVE_MATCHES.pop(match_id)
+            with Session(engine) as session:
+                _restore_active_matches(Repository(session), match_id)
+            restored = ACTIVE_MATCHES[match_id]
+            assert restored.state.declared_attackers_this_turn[1] == 2
+            restored.state.step = Step.POSTCOMBAT_MAIN
+            restored.rules.next_step(restored.state)
+            assert restored.state.step == Step.END_STEP and len(restored.state.stack) == 1
+            hand_before = len(restored.state.players[1].hand)
+            for player_id in (1, 2):
+                response = client.post(f"/matches/{match_id}/action", json={
+                    "player_id": player_id, "action": {"type": "pass_priority"},
+                })
+                assert response.status_code == 200, response.text
+            assert len(restored.state.players[1].hand) == hand_before + 1
+            view = next(item for item in response.json()["players"]["1"]["battlefield"] if item["id"] == wedding.id)
+            assert view["counters"]["invitation"] == 1
+            assert view["selected_face_index"] is None
+        finally:
+            ACTIVE_MATCHES.pop(match_id, None)
