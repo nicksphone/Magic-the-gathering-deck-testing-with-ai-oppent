@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 import re
 from copy import copy
 from typing import Any
@@ -204,7 +203,7 @@ def _append_trigger_groups(
     for order_index, trig in enumerate(ordered):
         payload = dict(trig["payload"])
         item = StackItem(
-            id=str(uuid.uuid4()),
+            id=state.allocate_object_id(),
             source_card_id=trig["source_card_id"],
             controller=trig["controller"],
             label=trig["label"],

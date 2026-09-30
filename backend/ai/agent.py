@@ -12,6 +12,7 @@ from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
 from game_state.state import CardInstance, MatchState, Step, Zone
 from rules_engine.engine import RulesEngine
+from ai.pending_effects import planning_copy
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
@@ -87,6 +88,11 @@ class AIAgent:
             AIAgent._log_priors_cache = load_log_priors()
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
+        from ai.pending_effects import decision_projection_scope
+        with decision_projection_scope(state, player_id):
+            return self._choose_action(state, legal_moves, player_id)
+
+    def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
         def useful_variable_sweep(move: dict) -> bool:
             if move.get("type") != "cast_spell":
@@ -467,7 +473,7 @@ class AIAgent:
                 continue
             action = {"type": "activate_loyalty", "card_id": move["card_id"], "ability_index": move["ability_index"], "targets": {"target_player": opponent}}
             try:
-                sim = copy.deepcopy(state)
+                sim = planning_copy(state)
                 self.engine.take_action(sim, player_id, action, reject_invalid=True)
                 if sim.stack and resolve_top_of_stack(sim):
                     apply_state_based_actions(sim)
@@ -484,7 +490,7 @@ class AIAgent:
             if not 0 <= index < len(abilities):
                 continue
             proxy = SimpleNamespace(name=source.name, oracle_text=abilities[index]["text"], mana_cost="", types=[])
-            parse_state = copy.deepcopy(state)
+            parse_state = planning_copy(state)
             effect_key, _ = infer_effect_from_oracle(parse_state, proxy, player_id, {"x_value": 1})
             if effect_key != "exile_colored_permanents_mana_value_at_most":
                 continue
@@ -496,7 +502,7 @@ class AIAgent:
             for x_value in x_values:
                 action = {"type": "activate_loyalty", "card_id": source.id, "ability_index": index, "targets": {"x_value": x_value}}
                 try:
-                    sim = copy.deepcopy(state)
+                    sim = planning_copy(state)
                     self.engine.take_action(sim, player_id, action, reject_invalid=True)
                     if not sim.stack or not resolve_top_of_stack(sim):
                         continue
@@ -586,7 +592,7 @@ class AIAgent:
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
-            sim = copy.deepcopy(state)
+            sim = planning_copy(state)
             self.engine.take_action(sim, player_id, move, reject_invalid=True)
         except Exception:
             return -9999.0
@@ -605,7 +611,7 @@ class AIAgent:
                 materialized = self._materialize_action(sim, cand, pid)
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
-                nxt = copy.deepcopy(sim)
+                nxt = planning_copy(sim)
                 self.engine.take_action(nxt, pid, materialized, reject_invalid=True)
                 val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
@@ -636,7 +642,7 @@ class AIAgent:
         best = -9999.0 if maximizing else 9999.0
         for act in top_actions:
             try:
-                sim = copy.deepcopy(state)
+                sim = planning_copy(state)
                 self.engine.take_action(sim, pid, act, reject_invalid=True)
             except Exception:
                 continue
@@ -653,7 +659,7 @@ class AIAgent:
                     reply_vals: list[float] = []
                     for rep in replies:
                         try:
-                            nxt = copy.deepcopy(sim)
+                            nxt = planning_copy(sim)
                             self.engine.take_action(nxt, reply_pid, rep, reject_invalid=True)
                             reply_vals.append(evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id))
                         except Exception:
@@ -1290,7 +1296,7 @@ class AIAgent:
             materialized = self._materialize_action(state, move, player_id)
             if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                 return 0.0
-            sim_state = copy.deepcopy(state)
+            sim_state = planning_copy(state)
             self.engine.take_action(sim_state, player_id, materialized, reject_invalid=True)
             self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
@@ -1314,7 +1320,7 @@ class AIAgent:
                 materialized = self._materialize_action(sim_state, reply, opp_id)
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
-                branch = copy.deepcopy(sim_state)
+                branch = planning_copy(sim_state)
                 self.engine.take_action(branch, opp_id, materialized, reject_invalid=True)
                 delta = before - evaluate_board(branch, eval_for_player)
                 if delta > worst:
@@ -2962,7 +2968,7 @@ class AIAgent:
                 if chump_only:
                     continue
             try:
-                sim = copy.deepcopy(state)
+                sim = planning_copy(state)
                 self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
                 self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
             except Exception:
@@ -3133,7 +3139,7 @@ class AIAgent:
 
         best: tuple[float, tuple[str, ...], list[str]] | None = None
         for subset in subsets:
-            sim = copy.deepcopy(state)
+            sim = planning_copy(state)
             actual_attackers: list[str] = []
             try:
                 self.engine.take_action(sim, player_id, {"type": "attack", "attackers": list(subset)})
@@ -3426,7 +3432,7 @@ class AIAgent:
     def _rollout_delta(self, state: MatchState, move: dict, player_id: int) -> float:
         # Lightweight rollout approximation for deeper tactical planning.
         try:
-            sim = copy.deepcopy(state)
+            sim = planning_copy(state)
             self.engine.take_action(sim, player_id, move)
         except Exception:
             return 0.0
@@ -3438,7 +3444,7 @@ class AIAgent:
         samples = 3
         plies = 6
         for _ in range(samples):
-            branch = copy.deepcopy(sim)
+            branch = planning_copy(sim)
             total += self._rollout_playout(branch, player_id, plies)
         return total / samples
 
@@ -3625,7 +3631,7 @@ class AIAgent:
     def _should_pay_two_life_for_land(self, state: MatchState, player_id: int, card_id: str | None) -> bool:
         if not card_id or card_id not in state.cards or state.players[player_id].life <= 4:
             return False
-        simulated = copy.deepcopy(state)
+        simulated = planning_copy(state)
         player = simulated.players[player_id]
         if card_id in player.hand:
             player.hand.remove(card_id)

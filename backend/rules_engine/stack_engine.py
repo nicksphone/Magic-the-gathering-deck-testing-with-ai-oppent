@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 
 from effects.registry import resolve_effect
 from game_state.state import MatchState, StackItem, Zone, assign_static_order_on_battlefield_entry
@@ -13,7 +12,7 @@ from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
     item = StackItem(
-        id=str(uuid.uuid4()),
+        id=state.allocate_object_id(),
         source_card_id=source_card_id,
         controller=controller,
         label=label,
@@ -354,7 +353,7 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
     copied = payload["__copied_card"]
     types = list(copied.get("types") or [])
     token = CardInstance(
-        id=str(uuid.uuid4()), name=copied["name"], owner=item.controller,
+        id=state.allocate_object_id(), name=copied["name"], owner=item.controller,
         controller=item.controller, zone=Zone.BATTLEFIELD, is_token=True,
         types=list(dict.fromkeys([*types, "Token"])),
         mana_cost=copied.get("mana_cost") or "", type_line=copied.get("type_line") or "",

@@ -90,6 +90,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "log": list(state.log),
         "next_static_order": state.next_static_order,
         "next_effect_timestamp": state.next_effect_timestamp,
+        "next_object_id": state.next_object_id,
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
         "declared_attackers_this_turn": {str(key): value for key, value in state.declared_attackers_this_turn.items()},
@@ -275,6 +276,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.log = list(payload.get("log", []))
     state.next_static_order = int(payload.get("next_static_order", 1))
     state.next_effect_timestamp = int(payload.get("next_effect_timestamp", state.next_static_order))
+    state.next_object_id = max(1, int(payload.get("next_object_id", 1)))
     state.day_night = str(payload.get("day_night", "none") or "none")
     state.spells_cast_this_turn = {
         int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()

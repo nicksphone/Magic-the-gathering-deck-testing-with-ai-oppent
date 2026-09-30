@@ -1,0 +1,81 @@
+{
+  "games": 8,
+  "full_normalized_results_equal": true,
+  "timeouts": 0,
+  "logged_cost_target_rejections": 0,
+  "scope": "Offline built-in metadata; eight seed/seat-paired BO1 games. Repeated ablations are not independent samples or balance evidence.",
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 18,
+      "ticks": 500,
+      "log_hash": "bf8772639a6334af43d4c57439456dc4ccdf2eb5d81e7a87e7927b7948e72ff1"
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 28,
+      "ticks": 704,
+      "log_hash": "1b3cdc8f4d1f9d6a18d4ee06af770b841bac3f4a0c4c9f5a79cbc8da9bdbf369"
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 34,
+      "ticks": 912,
+      "log_hash": "aaca6453a3dd63477d81f9e683208cc6fe220022bdda2878164f721405744c8c"
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 405,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 21,
+      "ticks": 578,
+      "log_hash": "6c7eec734a04c9f18a43142f5318d37667aaade9c4b05ce236aa82702bc708ec"
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 421,
+      "log_hash": "311e5b95d4528b9288b83dd6e777cb3d2c363ce125a4954195a82a028da2bfc4"
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 23,
+      "ticks": 611,
+      "log_hash": "39a9d7f5329cb7dd221e26ccf2ce2f0078f9f6f5e572fff77c22f4b64dc3eb34"
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 12,
+      "ticks": 322,
+      "log_hash": "113cc51f9bc92de3a024d5a0351b4fedd26147ec37466c710162e37492548def"
+    }
+  ]
+}

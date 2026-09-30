@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor
 from rules_engine import combat
@@ -227,7 +226,7 @@ class RulesEngine:
             )
             state.stack.append(
                 StackItem(
-                    id=str(uuid.uuid4()),
+                    id=state.allocate_object_id(),
                     source_card_id=cid,
                     controller=card.controller,
                     label=f"{card.name} chapter {chapter['number']}",

@@ -184,6 +184,7 @@ class MatchState:
     log: list[str] = field(default_factory=list)
     next_static_order: int = 1
     next_effect_timestamp: int = 1
+    next_object_id: int = 1
     # Day/night is a game-wide state. Keep the previous turn's spell count so
     # the upkeep transition is deterministic and survives snapshot restore.
     day_night: str = "none"
@@ -214,6 +215,15 @@ class MatchState:
     staged_triggers: list[dict] = field(default_factory=list)
     pending_trigger_order: dict | None = None
     pending_mechanic_choice: dict | None = None
+
+    def allocate_object_id(self) -> str:
+        """Stable gameplay identities without consuming the shuffle RNG."""
+        occupied = set(self.cards) | {item.id for item in self.stack}
+        while True:
+            identifier = str(uuid.UUID(int=self.next_object_id))
+            self.next_object_id += 1
+            if identifier not in occupied:
+                return identifier
 
 
 def pregame_actor(state: MatchState) -> int | None:

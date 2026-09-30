@@ -7,7 +7,10 @@ UUID_RE = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 
 
 def normalize_log_line(line: str) -> str:
-    return UUID_RE.sub("<id>", line)
+    # Retain persisted sequence IDs so target/block identity drift is visible.
+    return UUID_RE.sub(lambda match: match.group(0) if match.group(0).startswith(
+        "00000000-0000-0000-0000-"
+    ) else "<id>", line)
 
 
 def first_log_divergence(a_lines: list[str], b_lines: list[str]) -> dict:

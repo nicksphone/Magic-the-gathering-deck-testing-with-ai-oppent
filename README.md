@@ -198,6 +198,7 @@ It is designed for serious deck work:
 - On boards too large for bounded block search, AI fallback checks the engine's direct-block legality before assigning a blocker. It counts all attacking members stopped by a legal band block; this does not make AI form bands strategically.
 - AI block search and fallback use the same engine minimum-blocker requirement, including creatures that require three or more blockers; choosing no block remains legal. This is not a claim that all combat decisions are optimal.
 - Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
+- Decision-local announced-stack projection reuse and history-free planning clones reduce repeated work while retaining gameplay state, RNG, and search limits. An offline paired benchmark checks full decision/reasoning equality and authoritative-state preservation; see [performance scope](docs/testing/ai-projection-performance.md).
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 
@@ -213,6 +214,7 @@ It is designed for serious deck work:
 - Card-play analytics excludes tapped blockers from attack-quality warnings and preserves hand/board context for missed-land investigations
 - Tactical analytics record effective keywords, attacker/blocker assignments, evasion-aware bad attacks, lethal misses, block trades, and resource-preservation decisions
 - First-divergence drilldown with compact trace context for both sides
+- Tokens, stack objects, copies and triggers use a persisted per-game identity sequence independent of shuffle RNG. Replay normalization retains these identities to expose target/block tie drift; operational match/job IDs remain random.
 - Replay matrices run each seed in both seat orders by default, record per-game seeds/choosers/starters and separate unresolved series from completed win rates. Repeated determinism executions are not counted as new samples; anomalous runs retain traces. Replay shares live-match loser/draw chooser, seed and mulligan-actor policies, chooses play by default and stops at the first timeout. Sideboarding parity and conditional/reveal opening-hand effects remain open. See [the replay protocol](docs/testing/seat-balanced-replay.md).
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction

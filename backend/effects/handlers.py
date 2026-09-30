@@ -779,7 +779,6 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     copied_payload = copy.deepcopy(item.payload or {})
     from game_state.state import StackItem
     from rules_engine.targeting import stack_object_kind
-    import uuid
 
     kind = stack_object_kind(state, item)
     if (effect_label == "spell") != (kind == "spell"):
@@ -804,7 +803,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     copied_payload["__copied_from_stack_id"] = item.id
     copied_payload["__copied_targets"] = list(getattr(item, "targets", []) or [])
     copied_item = StackItem(
-        id=str(uuid.uuid4()), source_card_id=item.source_card_id,
+        id=state.allocate_object_id(), source_card_id=item.source_card_id,
         controller=controller, label=f"{item.label} (copy)",
         effect_key=item.effect_key, payload=copied_payload,
         targets=list(getattr(item, "targets", []) or []),
@@ -1398,7 +1397,6 @@ def _place_searched_card(
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import CardInstance
     from rules_engine.domain import basic_land_type_count
-    import uuid
     from copy import deepcopy
 
     name = payload.get("name", "Token")
@@ -1437,7 +1435,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     entry_events = []
     for index in range(amount):
-        cid = str(uuid.uuid4())
+        cid = state.allocate_object_id()
         token = CardInstance(
             id=cid,
             name=name,

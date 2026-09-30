@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from copy import copy, deepcopy
+from contextlib import contextmanager
+from contextvars import ContextVar
 import re
 
 from game_state.state import MatchState, Zone
@@ -14,6 +16,24 @@ from rules_engine.continuous import has_keyword
 SECONDARY_EFFECT_RE = re.compile(
     r"\b(draw|gain|gains|lose|loses|create|scry|surveil|discard|mill|search|deals?|cast|play|put|add|untap|sacrifice)\b", re.I,
 )
+
+_decision_projection = ContextVar("ai_decision_projection", default=None)
+
+
+@contextmanager
+def decision_projection_scope(state, player_id):
+    """Memoize only the immutable root of one synchronous AI decision."""
+    token = _decision_projection.set((state, player_id, {}))
+    try:
+        yield
+    finally:
+        _decision_projection.reset(token)
+
+
+def planning_copy(state):
+    """Copy all gameplay state, but not diagnostic history unused by search."""
+    log = getattr(state, "log", None)
+    return deepcopy(state, {id(log): []} if isinstance(log, list) else {})
 
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:
@@ -40,7 +60,7 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
 
 def _projection_copy(state: MatchState) -> MatchState:
     # Resolution does not read historical logs; avoid copying growing traces.
-    projected = deepcopy(state, {id(state.log): []})
+    projected = planning_copy(state)
     projected.mechanic_choice_players = {1, 2}
     projected.replacement_choice_players = {1, 2}
     projected.trigger_order_choice_players = {1, 2}
@@ -87,6 +107,17 @@ def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, o
 
 
 def pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:
+    scope = _decision_projection.get()
+    if scope is None or scope[0] is not state or scope[1] != player_id:
+        return _pending_removal_destinations(state, player_id)
+    memo = scope[2]
+    if "destinations" not in memo:
+        memo["destinations"] = _pending_removal_destinations(state, player_id)
+    result = memo["destinations"]
+    return dict(result) if result is not None else None
+
+
+def _pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:
     """Project destinations of opposing permanents with own effects pending."""
     candidates = set(state.players[3 - player_id].battlefield)
     if not candidates or not any(item.controller == player_id for item in state.stack):
