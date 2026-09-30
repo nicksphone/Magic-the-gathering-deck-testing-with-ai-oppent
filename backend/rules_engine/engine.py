@@ -22,7 +22,7 @@ from rules_engine.events import emit_event, emit_event_batch, flush_staged_trigg
 from rules_engine.restrictions import can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.ward import ward_tax_for_targets
 from rules_engine.zone_actions import put_into_graveyard
-from rules_engine.attachments import attach_if_legal
+from rules_engine.attachments import attachment_target_is_legal
 from effects.registry import resolve_effect
 
 
@@ -313,6 +313,7 @@ class RulesEngine:
                 p.mana_pool[color] = 0
             for color in p.snow_mana_pool:
                 p.snow_mana_pool[color] = 0
+            p.restricted_mana_pool.clear()
 
     def _clear_marked_damage(self, state: MatchState) -> None:
         for card in state.cards.values():
@@ -937,7 +938,8 @@ class RulesEngine:
             if cost_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "discard"
-            if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value):
+            if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
+                                                 payment_kind="activation", payment_types=set(card.types)):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False
@@ -1182,6 +1184,9 @@ class RulesEngine:
                 reject("Crew selection does not satisfy the activation cost")
 
         elif kind == "equip":
+            if state.step not in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} or state.active_player != player_id or state.stack:
+                reject("Equip can only be activated at sorcery speed")
+                return
             cid = action.get("card_id")
             target_id = action.get("target_card_id")
             if not cid or not target_id:
@@ -1190,20 +1195,28 @@ class RulesEngine:
             if cid not in player.battlefield:
                 apply_state_based_actions(state)
                 return
+            target = state.cards.get(target_id)
+            if (target is None or target.controller != player_id or "Creature" not in target.types
+                    or not attachment_target_is_legal(state, state.cards[cid], target_id)):
+                reject("Cannot legally equip this target")
+                return
             equip_cost = _extract_equip_cost_text(state.cards[cid].oracle_text or "")
             if not equip_cost:
                 apply_state_based_actions(state)
                 return
-            if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name):
+            if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name,
+                                 payment_kind="activation", payment_types=set(state.cards[cid].types)):
                 reject("Cannot pay equipment cost")
                 state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
-            if attach_if_legal(state, cid, target_id):
-                state.log.append(f"{player.name} equips {state.cards[cid].name} to {state.cards[target_id].name}.")
-            else:
-                reject("Cannot legally equip this target")
-                state.log.append(f"{player.name} cannot legally equip {state.cards[cid].name} to chosen target.")
+            add_to_stack(state, cid, player_id, f"{state.cards[cid].name} equip", "equip_attachment", {
+                "equipment_id": cid, "target_card_id": target_id,
+                "source_timestamp": state.cards[cid].effect_timestamp,
+                "target_timestamp": target.effect_timestamp,
+                "__announced_targets": {"target_card_id": target_id},
+                "__ability_target_text": "Attach this Equipment to target creature you control.",
+            }, is_spell=False)
 
         elif kind == "block":
             if getattr(state, "blockers_declared", False):

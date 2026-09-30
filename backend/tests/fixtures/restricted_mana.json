@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Renowned Weaponsmith",
+    "oracle_text": "{T}: Add {C}{C}. Spend this mana only to cast artifact spells or activate abilities of artifacts.\n{U}, {T}: Search your library for a card named Heart-Piercer Bow or Vial of Dragonfire, reveal it, put it into your hand, then shuffle.",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature \u2014 Human Artificer",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "40c1375b-1d15-4525-894a-16b7a0ac02b4",
+    "source": "scryfall",
+    "scryfall_id": "5a397298-9d7d-495f-983a-1683291a7b9f"
+  },
+  {
+    "name": "Somberwald Sage",
+    "oracle_text": "{T}: Add three mana of any one color. Spend this mana only to cast creature spells.",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature \u2014 Human Druid",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "f249db15-09fa-4a1c-9461-9ae803c219b6",
+    "source": "scryfall",
+    "scryfall_id": "9d8dfef3-4c87-4eb8-b0d4-8f8485de792c"
+  },
+  {
+    "name": "Naturalize",
+    "oracle_text": "Destroy target artifact or enchantment.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+    "source": "scryfall",
+    "scryfall_id": "390c40ba-2464-44ae-8d67-93c72ab3c425"
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "source": "scryfall",
+    "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac"
+  },
+  {
+    "name": "Sol Ring",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+    "source": "scryfall",
+    "scryfall_id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4"
+  },
+  {
+    "name": "Boreal Druid",
+    "oracle_text": "{T}: Add {C}.",
+    "mana_cost": "{G}",
+    "type_line": "Snow Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "2fcc69ff-8ab5-4e14-afe3-db892049a872",
+    "source": "scryfall",
+    "scryfall_id": "473d3633-6dc7-4026-a50e-3ea76b9e8c20"
+  },
+  {
+    "name": "Wurmcoil Engine",
+    "oracle_text": "Deathtouch, lifelink\nWhen this creature dies, create a 3/3 colorless Phyrexian Wurm artifact creature token with deathtouch and a 3/3 colorless Phyrexian Wurm artifact creature token with lifelink.",
+    "mana_cost": "{6}",
+    "type_line": "Artifact Creature \u2014 Phyrexian Wurm",
+    "power": "6",
+    "toughness": "6",
+    "colors": [],
+    "keywords": [
+      "Lifelink",
+      "Deathtouch"
+    ],
+    "layout": "normal",
+    "oracle_id": "d1a60f44-7696-49ee-91fb-cab5b3102962",
+    "source": "scryfall",
+    "scryfall_id": "5d275f04-cc60-4e3f-95cc-3d02bc916b82"
+  },
+  {
+    "name": "Myr Galvanizer",
+    "oracle_text": "Other Myr creatures you control get +1/+1.\n{1}, {T}: Untap each other Myr you control.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature \u2014 Myr",
+    "power": "2",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "e070028e-468a-41e9-9ddd-a8cd01551266",
+    "source": "scryfall",
+    "scryfall_id": "e55ca835-b7f3-497c-b0bc-50a182cabecf"
+  },
+  {
+    "name": "Steel Leaf Champion",
+    "oracle_text": "This creature can't be blocked by creatures with power 2 or less.",
+    "mana_cost": "{G}{G}{G}",
+    "type_line": "Creature \u2014 Elf Knight",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "666af637-9282-4121-962a-048e528f9221",
+    "source": "scryfall",
+    "scryfall_id": "24d8a688-79d4-49b9-ab0c-c7f5c9b551f4"
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "source": "scryfall",
+    "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+  },
+  {
+    "name": "Manakin",
+    "oracle_text": "{T}: Add {C}.",
+    "mana_cost": "{2}",
+    "type_line": "Artifact Creature \u2014 Construct",
+    "power": "1",
+    "toughness": "1",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "d2343af0-468b-42bc-8a0c-347c10f7e2f3",
+    "source": "scryfall",
+    "scryfall_id": "9f91e78e-9297-4ae3-b55f-d73e79d0d21a"
+  },
+  {
+    "name": "Basalt Monolith",
+    "oracle_text": "This artifact doesn't untap during your untap step.\n{T}: Add {C}{C}{C}.\n{3}: Untap this artifact.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "6b8cf2a0-b045-4d91-9d91-c602d40c6237",
+    "source": "scryfall",
+    "scryfall_id": "f79de5e7-1545-420c-bfe1-ee2444fca85b"
+  },
+  {
+    "name": "Priest of Gix",
+    "oracle_text": "When this creature enters, add {B}{B}{B}.",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature \u2014 Phyrexian Human Cleric Minion",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "d93f82ce-0eed-45cc-a7b1-50fd4cbb6152",
+    "source": "scryfall",
+    "scryfall_id": "8cbc4c4c-f1f5-4593-9894-1d8715a2f2c1"
+  },
+  {
+    "name": "Hollow One",
+    "oracle_text": "This spell costs {2} less to cast for each card you've cycled or discarded this turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "mana_cost": "{5}",
+    "type_line": "Artifact Creature \u2014 Golem",
+    "power": "4",
+    "toughness": "4",
+    "colors": [],
+    "keywords": [
+      "Cycling"
+    ],
+    "layout": "normal",
+    "oracle_id": "b9e4d34a-ba91-4ad6-b886-daeeda6c9498",
+    "source": "scryfall",
+    "scryfall_id": "43fe9c6d-4fa2-4f9a-9025-1bf12fe7ed9f"
+  },
+  {
+    "name": "Bonesplitter",
+    "oracle_text": "Equipped creature gets +2/+0.\nEquip {1}",
+    "mana_cost": "{1}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "452e3f5f-ce17-4682-966b-5cc100210aee",
+    "source": "scryfall",
+    "scryfall_id": "690972a8-72df-4050-a353-16e45589167c"
+  },
+  {
+    "name": "Stifle",
+    "oracle_text": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+    "source": "scryfall",
+    "scryfall_id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4"
+  },
+  {
+    "name": "Lightning Bolt",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "source": "scryfall",
+    "scryfall_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+  },
+  {
+    "name": "Lightning Greaves",
+    "oracle_text": "Equipped creature has haste and shroud. (It can't be the target of spells or abilities.)\nEquip {0}",
+    "mana_cost": "{2}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "ca204b66-8d0c-431a-8d34-282f7c2d17da",
+    "source": "scryfall",
+    "scryfall_id": "b61634ae-05be-4b56-8ebb-9d4ade902e42"
+  },
+  {
+    "name": "Sylvan Caryatid",
+    "oracle_text": "Defender, hexproof\n{T}: Add one mana of any color.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Plant",
+    "power": "0",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Hexproof",
+      "Defender"
+    ],
+    "layout": "normal",
+    "oracle_id": "13d4c46b-c2d6-44cc-a252-4a991d471854",
+    "source": "scryfall",
+    "scryfall_id": "2662837c-3837-4da9-80b4-79edb0b6c289"
+  },
+  {
+    "name": "Rancor",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +2/+0 and has trample.\nWhen this Aura is put into a graveyard from the battlefield, return it to its owner's hand.",
+    "mana_cost": "{G}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+    "source": "scryfall",
+    "scryfall_id": "86d6b411-4a31-4bfc-8dd6-e19f553bb29b"
+  },
+  {
+    "name": "Shadowspear",
+    "oracle_text": "Equipped creature gets +1/+1 and has trample and lifelink.\n{1}: Permanents your opponents control lose hexproof and indestructible until end of turn.\nEquip {2}",
+    "mana_cost": "{1}",
+    "type_line": "Legendary Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "8b27326f-e7b8-4a4d-b589-df459246d19a",
+    "source": "scryfall",
+    "scryfall_id": "939c6e19-4b27-4023-bb9c-ae440f91e21c"
+  },
+  {
+    "name": "Unholy Strength",
+    "oracle_text": "Enchant creature\nEnchanted creature gets +2/+1.",
+    "mana_cost": "{B}",
+    "type_line": "Enchantment \u2014 Aura",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "oracle_id": "090d88a9-7f2d-4bd1-a30a-7c48d05068be",
+    "source": "scryfall",
+    "scryfall_id": "f42c9574-2f09-4cb0-80cb-10fb8c592e6f"
+  }
+]

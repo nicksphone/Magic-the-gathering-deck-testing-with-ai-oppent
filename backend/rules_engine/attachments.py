@@ -24,6 +24,8 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
     target = state.cards.get(target_id)
     if not target or target.zone != Zone.BATTLEFIELD:
         return False
+    if is_equipment(attachment) and ("Creature" in attachment.types or "Creature" not in target.types):
+        return False
     if protected_from_source(state, target_id, attachment):
         return False
     if not is_aura(attachment):

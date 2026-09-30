@@ -13,6 +13,7 @@ It is designed for serious deck work:
 ## Current Features
 
 ### Gameplay
+- [Restricted mana and ordinary equip](docs/testing/restricted-mana-equipment.md): supported spending restrictions survive floating, partial spending, source departure and snapshots. Casting/activation costs share eligibility; the UI labels restricted units. Ordinary equip uses the stack with responses and resolution revalidation. Supported attached fixed buffs and keywords affect combat, targeting, AI and effective views; special equip/reconfigure and full attachment/layer semantics remain open.
 - Targeted destruction respects indestructible. Pure signed numeric targeted power/toughness changes until end of turn use the shared temporary-effect handler; additional clauses, keywords and X-based pump wording still need coverage.
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
 - Supported "whenever you attack" triggers fire once for an attacker group, while "whenever a creature attacks" still fires per creature. Tokens created tapped and attacking join combat without being declared as attackers. Adeline's power tracks creatures controlled, including the new token. When multiple defenders are legal, human and AI controllers choose where each new token attacks; the choice survives snapshot restore.

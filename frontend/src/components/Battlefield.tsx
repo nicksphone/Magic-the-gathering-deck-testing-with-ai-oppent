@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { resolveCardMediaUrl } from "../api/client";
-import type { LegalMove, MatchState } from "../types";
+import type { LegalMove, MatchState, PlayerView } from "../types";
 import { PermanentActions } from "./PermanentActions";
 
 type Props = {
@@ -9,6 +9,16 @@ type Props = {
   actingPlayerId?: number;
   onCardAction: (playerId: number, action: Record<string, unknown>) => void;
 };
+
+function restrictedMana(player: PlayerView) {
+  return player.restricted_mana_pool?.length ? <span className="restricted-mana">
+    Restricted: {player.restricted_mana_pool.map((lot) => {
+      const purposes = [lot.rule.cast_types?.length ? `${lot.rule.cast_types.join("/")} spells` : "",
+        lot.rule.activate_types?.length ? `${lot.rule.activate_types.join("/")} abilities` : ""].filter(Boolean).join(" or ");
+      return `${lot.amount} ${lot.color}${lot.snow ? " (snow)" : ""}: ${lot.rule.unsupported ? "unsupported spending rule" : purposes}`;
+    }).join("; ")}
+  </span> : null;
+}
 
 type HoverPreview = {
   name: string;
@@ -231,6 +241,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
           <span>Hand {p2.hand_count}</span>
+          {restrictedMana(p2)}
           <span>Ready Mana Options (shared sources) {manaSummary(p2Groups.lands) || "-"}</span>
           <span className="mana-pool">
             Pool{" "}
@@ -294,6 +305,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
           <span>Hand {p1.hand_count}</span>
+          {restrictedMana(p1)}
           <span>Ready Mana Options (shared sources) {manaSummary(p1Groups.lands) || "-"}</span>
           <span className="mana-pool">
             Pool{" "}

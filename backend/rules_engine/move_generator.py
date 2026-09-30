@@ -175,7 +175,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             x_values = range(0, 21) if cycling_is_variable(cycle_cost) else range(1)
             for x_value in x_values:
                 if not can_pay_with_pool_and_lands(
-                    state, player_id, cycle_cost, card_name=card.name, x_value=x_value
+                    state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
+                    payment_kind="activation", payment_types=set(card.types),
                 ):
                     continue
                 cycle_move = {
@@ -386,16 +387,23 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             equip_cost = _extract_equip_cost(card.oracle_text or "")
             if not equip_cost:
                 continue
-            if not can_pay_with_pool_and_lands(state, player_id, equip_cost):
+            if not can_pay_with_pool_and_lands(state, player_id, equip_cost,
+                                             payment_kind="activation", payment_types=set(card.types)):
                 continue
-            if own_creatures:
+            from rules_engine.attachments import attachment_target_is_legal, is_equipment
+            from rules_engine.targeting import validate_hexproof_shroud_targets
+            if not is_equipment(card):
+                continue
+            targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
+                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target})[0]]
+            if targets:
                 moves.append(
                     {
                         "type": "equip",
                         "card_id": cid,
                         "card_name": card.name,
                         "mana_cost": equip_cost,
-                        "targets": [{"id": c, "name": state.cards[c].name} for c in own_creatures],
+                        "targets": [{"id": c, "name": state.cards[c].name} for c in targets],
                     }
                 )
 

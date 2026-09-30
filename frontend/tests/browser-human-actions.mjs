@@ -14,6 +14,23 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Restricted Mana Fixture");
+  await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Add 2 C'))");
+  await click("Add 2 C");
+  await waitFor("document.querySelector('.restricted-mana')?.innerText.includes('2 C: Artifact spells or Artifact abilities')");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Naturalize'))"), false);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  await click("Equip Bonesplitter");
+  await waitFor("window.fixtureState.stack.at(-1)?.effect_key === 'equip_attachment'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].restricted_mana_pool[0].amount"), 1);
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Bonesplitter').attached_to ?? null"), null);
+  await click("Pass Priority");
+  await waitFor("window.fixtureState.priority_player === 1");
+  await click("Pass Priority");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['2'].battlefield.find(c => c.name === 'Renowned Weaponsmith').power === 3");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Bonesplitter').attached_to"), await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Renowned Weaponsmith').id"));
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Renowned Weaponsmith').base_power"), 1);
+  console.log("PASS seat-two restricted mana, legal equipment stack/priority and effective attached stats through UI/API");
   await click("Attacking Token Target Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'attacking_token_target' && [...document.querySelectorAll('button')].some(b => b.textContent === 'Attack Teferi, Hero of Dominaria')");
   await click("Attack Teferi, Hero of Dominaria");

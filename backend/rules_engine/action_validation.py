@@ -104,6 +104,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         return
     require(bool(available), "Action is not currently legal")
     for key in ("card_id", "ability_index", "return_card_id", "replacement_source_id", "stack_id", "target_card_id"):
+        if kind == "equip" and key == "target_card_id":
+            continue  # Equipment targets are choices inside move["targets"], checked below.
         if key in action:
             available = [move for move in available if move.get(key) == action[key]]
     require(bool(available), "Action references an unavailable card, ability or choice")
@@ -232,6 +234,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             state, player_id, cost.mana_cost, card_name=state.cards[action["card_id"]].name,
             hybrid_choices=choices, reserved_life=cost.pay_life, x_value=int(targets.get("x_value") or 0),
             restricted_x_color=restricted_x_color(move.get("ability_label", "")),
+            payment_kind="activation", payment_types=set(state.cards[action["card_id"]].types),
         ), "Cannot pay the selected hybrid branches")
 
 

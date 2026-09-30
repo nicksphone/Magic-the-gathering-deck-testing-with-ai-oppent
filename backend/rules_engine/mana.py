@@ -8,6 +8,7 @@ from typing import Set
 from game_state.state import MatchState
 from rules_engine.continuous import has_keyword
 from rules_engine.hooks import CostContext, apply_cost_modifiers
+from rules_engine.mana_restrictions import available_pool, consume_pool, eligible, spending_rule
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
@@ -123,6 +124,8 @@ def can_pay_with_pool_and_lands(
     reserved_life: int = 0,
     oracle_text: str = "",
     restricted_x_color: str | None = None,
+    payment_kind: str = "spell",
+    payment_types: set[str] | None = None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -134,7 +137,7 @@ def can_pay_with_pool_and_lands(
     from rules_engine.replacement import can_pay_life
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and _plan_payment(state, player_id, req) is not None
+        and _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set())) is not None
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color)
     )
 
@@ -208,14 +211,19 @@ def add_mana_to_pool(state: MatchState, player_id: int, color: str, amount: int,
     player.mana_pool[color] = player.mana_pool.get(color, 0) + amount
     if source_id in state.cards and is_snow_source(state.cards[source_id]):
         player.snow_mana_pool[color] = player.snow_mana_pool.get(color, 0) + amount
+    if source_id in state.cards and (rule := spending_rule(state.cards[source_id])) is not None and amount > 0:
+        from copy import deepcopy
+        player.restricted_mana_pool.append({"color": color, "amount": amount,
+                                           "snow": is_snow_source(state.cards[source_id]), "rule": deepcopy(rule)})
 
 
 def _plan_mana_sources(
     state: MatchState, player_id: int, req: dict[str, int], *,
     pool_override: dict[str, int] | None = None, excluded_sources: set[str] | None = None,
+    payment_context=None,
 ) -> list[tuple[str, str, int, bool]] | None:
     colors = MANA_COLORS
-    pool = pool_override if pool_override is not None else state.players[player_id].mana_pool
+    pool = pool_override if pool_override is not None else available_pool(state.players[player_id], payment_context)[0]
     needs = tuple(max(0, req[color] - max(0, pool.get(color, 0))) for color in colors)
     spare = sum(max(0, pool.get(color, 0) - req[color]) for color in colors)
     sources: list[tuple[str, dict[str, int], bool]] = []
@@ -223,6 +231,8 @@ def _plan_mana_sources(
         if cid in (excluded_sources or set()):
             continue
         card = state.cards[cid]
+        if not eligible(spending_rule(card), payment_context):
+            continue
         land = "Land" in card.types
         outputs = mana_source_outputs(state, player_id, cid)
         if outputs:
@@ -281,19 +291,18 @@ def _plan_mana_sources(
     return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
-def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tuple[list[tuple[str, str, int, bool]], dict[str, int]] | None:
+def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None) -> tuple[list[tuple[str, str, int, bool]], dict[str, int]] | None:
     snow_needed = req.get("S", 0)
     if not snow_needed:
-        plan = _plan_mana_sources(state, player_id, req)
+        plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context)
         return (plan, {}) if plan is not None else None
 
     player = state.players[player_id]
-    pool = {color: max(0, player.mana_pool.get(color, 0)) for color in MANA_COLORS}
-    snow = {color: min(pool[color], max(0, player.snow_mana_pool.get(color, 0))) for color in MANA_COLORS}
+    pool, snow = available_pool(player, payment_context)
     sources = []
     for cid in player.battlefield:
         card = state.cards[cid]
-        if not is_snow_source(card):
+        if not is_snow_source(card) or not eligible(spending_rule(card), payment_context):
             continue
         land = "Land" in card.types
         outputs = mana_source_outputs(state, player_id, cid)
@@ -304,7 +313,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tup
               selected: list[tuple[str, str, int, bool]], spent: dict[str, int]):
         if remaining == 0:
             ordinary = _plan_mana_sources(state, player_id, req, pool_override=totals,
-                                          excluded_sources={entry[0] for entry in selected})
+                                          excluded_sources={entry[0] for entry in selected}, payment_context=payment_context)
             return (selected + ordinary, spent) if ordinary is not None else None
         for color in MANA_COLORS:
             if snow_left[color] <= 0:
@@ -351,7 +360,10 @@ def auto_pay_cost(
     payment_details: dict | None = None,
     oracle_text: str = "",
     restricted_x_color: str | None = None,
+    payment_kind: str = "spell",
+    payment_types: set[str] | None = None,
 ) -> bool:
+    payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     context = apply_cost_modifiers(CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types,
@@ -362,7 +374,7 @@ def auto_pay_cost(
         ((req, plan) for req in _payment_requirements(
             context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color,
         ) if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and (plan := _plan_payment(state, player_id, req)) is not None),
+        and (plan := _plan_payment(state, player_id, req, payment_context=payment_context)) is not None),
         None,
     )
     if payment is None:
@@ -385,21 +397,27 @@ def auto_pay_cost(
         add_mana_to_pool(state, player_id, color, amount, source_id=cid)
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay spell cost.")
     snow_by_color = dict(snow_spent)
+    from types import SimpleNamespace
+    totals, snow_totals = available_pool(player, payment_context)
+    payer = SimpleNamespace(mana_pool=dict(totals), snow_mana_pool=dict(snow_totals))
     for color, amount in snow_spent.items():
-        player.snow_mana_pool[color] -= amount
-        player.mana_pool[color] -= amount
+        payer.snow_mana_pool[color] -= amount
+        payer.mana_pool[color] -= amount
     for color in MANA_COLORS:
-        spent = _spend_pool_color(player, color, req[color])
+        spent = _spend_pool_color(payer, color, req[color])
         snow_by_color[color] = snow_by_color.get(color, 0) + spent
     generic_need = req["generic"]
     for spend_snow in (False, True):
         for color in MANA_COLORS:
-            available = (player.snow_mana_pool.get(color, 0) if spend_snow else
-                         player.mana_pool[color] - player.snow_mana_pool.get(color, 0))
+            available = (payer.snow_mana_pool.get(color, 0) if spend_snow else
+                         payer.mana_pool[color] - payer.snow_mana_pool.get(color, 0))
             paid = min(generic_need, available)
-            spent = _spend_pool_color(player, color, paid)
+            spent = _spend_pool_color(payer, color, paid)
             snow_by_color[color] = snow_by_color.get(color, 0) + spent
             generic_need -= paid
+    for color in MANA_COLORS:
+        consume_pool(player, color, totals[color] - payer.mana_pool[color],
+                     snow_totals[color] - payer.snow_mana_pool[color], payment_context)
     if payment_details is not None:
         payment_details["snow_mana_colors"] = {color: amount for color, amount in snow_by_color.items() if amount}
         payment_details["snow_mana_spent"] = sum(snow_by_color.values())
@@ -532,6 +550,8 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
     ability = NONLAND_MANA_ABILITY_RE.search(getattr(card, "oracle_text", "") or "")
     if ability is None:
         return {}
+    if (rule := spending_rule(card)) is not None and rule.get("unsupported"):
+        return {}
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     cost = parse_activated_cost(ability.group(1))
     if not cost.supported or cost.mana_cost or not activated_cost_available(state, card.controller, card_id, ability.group(1)):
@@ -543,14 +563,14 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
     return _nonland_mana_effect_outputs(ability.group(2), state=state, card=card)
 
 
-def repeatable_nonland_mana_outputs(card, *, state=None) -> dict[str, int]:
+def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -> dict[str, int]:
     """Printed tap-only capacity; never an assertion that it is usable now."""
     if "Land" in (getattr(card, "types", []) or []):
         return {}
     text = getattr(card, "oracle_text", "") or ""
     ability = NONLAND_MANA_ABILITY_RE.search(text)
-    if ability is None or re.search(
-        r"\bspend\b[^.\n]*\bonly\b|\bcan't be spent\b|\bactivate (?:this ability )?only\b"
+    if ability is None or not eligible(spending_rule(card), payment_context) or re.search(
+        r"\bactivate (?:this ability )?only\b"
         r"|\bdoesn't untap during your untap step\b", text, re.I,
     ):
         return {}

@@ -39,6 +39,7 @@ export type CardView = {
   loyalty?: number | null;
   types: string[];
   is_token?: boolean;
+  attached_to?: string | null;
 };
 
 export type PlayerView = {
@@ -55,6 +56,12 @@ export type PlayerView = {
   exile_count: number;
   mana_pool: Record<string, number>;
   snow_mana_pool?: Record<string, number>;
+  restricted_mana_pool?: {
+    color: string;
+    amount: number;
+    snow: boolean;
+    rule: { cast_types?: string[]; activate_types?: string[]; unsupported?: boolean };
+  }[];
 };
 
 export type MatchState = {

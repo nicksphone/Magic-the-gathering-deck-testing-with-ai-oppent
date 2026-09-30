@@ -13,6 +13,31 @@ STATIC_SUBJECT = r"(creature tokens|(?:[a-z]+(?:-[a-z]+)? )*creatures|[a-z]+s?)"
 _STATIC_TYPE_NOUNS = {kind.lower() + "s": kind for kind in
                       ("Creature", "Artifact", "Enchantment", "Land", "Planeswalker", "Battle")}
 _COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
+ATTACHED_SUBJECT = r"\b(?:equipped|enchanted|fortified) (creature|permanent|land) "
+ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? ([+-]\d+)/([+-]\d+)")
+ATTACHED_KW_RE = re.compile(ATTACHED_SUBJECT + r"(?:gets? [+-]\d+/[+-]\d+ and )?has ([^.]*)")
+
+
+def _attached_effects(source, target):
+    """Only the current attachment receives supported static bonuses."""
+    if (not getattr(source, "attached_to", None) or source.attached_to != getattr(target, "id", None) or not _is_battlefield(source)
+            or not _is_battlefield(target) or "Creature" in source.types):
+        return (0, 0, [])
+    text = _static_oracle_text(source)
+
+    def matches(subject):
+        return subject == "permanent" or subject.title() in target.types
+
+    power = toughness = 0
+    for match in ATTACHED_PT_RE.finditer(text):
+        if matches(match.group(1)):
+            power += int(match.group(2))
+            toughness += int(match.group(3))
+    keywords = set()
+    for match in ATTACHED_KW_RE.finditer(text):
+        if matches(match.group(1)):
+            keywords.update(kw for kw in KNOWN_KEYWORDS if re.search(r"\b" + re.escape(kw) + r"\b", match.group(2)))
+    return power, toughness, sorted(keywords)
 
 
 def _static_oracle_text(source_card) -> str:
@@ -196,6 +221,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
         src = state.cards.get(src_id)
         if not src:
             continue
+        out.update(_attached_effects(src, card)[2])
         for scope, other_only, subject, granted in _iter_keyword_grants(src):
             if _scope_controller(src.controller, scope, card.controller):
                 if other_only and src_id == card_id:
@@ -290,6 +316,9 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         src = state.cards.get(src_id)
         if not src:
             continue
+        attached_p, attached_t, _ = _attached_effects(src, card)
+        p_bonus += attached_p
+        t_bonus += attached_t
         for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(src):
             if not _scope_controller(src.controller, scope, card.controller):
                 continue
@@ -627,6 +656,11 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
+    attached_p, attached_t, attached_keywords = _attached_effects(source_card, target)
+    if attached_p or attached_t:
+        entries.append({"layer": f"pt-mod:{attached_p}/{attached_t}"})
+    if attached_keywords:
+        entries.append({"layer": f"keyword-grant:{','.join(attached_keywords)}"})
     for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(source_card):
         if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
             entries.append({"layer": f"pt-mod:{p_delta}/{t_delta}"})

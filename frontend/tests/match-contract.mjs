@@ -52,3 +52,16 @@ assert.throws(() => parseSavedMatches([{ ...saved[0], id: null }]), /saved-match
 assert.throws(() => parseSavedMatches([{ ...saved[0], players: "Player A" }]), /saved-matches response/);
 assert.throws(() => parseSavedMatches([{ ...saved[0], revision: -1 }]), /saved-matches response/);
 console.log("PASS live match response contract cases");
+
+const restricted = { color: "C", amount: 2, snow: false, rule: { cast_types: ["Artifact"], activate_types: ["Artifact"] } };
+function withLots(lots, pool = { C: 2 }, snow = { C: 0 }) {
+  return { ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: pool, snow_mana_pool: snow, restricted_mana_pool: lots } } };
+}
+assert.equal(parseMatchState(withLots([restricted])).id, state.id);
+assert.equal(parseMatchState(withLots([{ ...restricted, rule: { unsupported: true } }])).id, state.id);
+assert.throws(() => parseMatchState(withLots([{ ...restricted, amount: -1 }])), /restricted mana pool/);
+assert.throws(() => parseMatchState(withLots([{ ...restricted, rule: { cast_types: ["Anything"], activate_types: [] } }])), /restricted mana pool/);
+assert.throws(() => parseMatchState(withLots([restricted, restricted])), /restricted mana pool/);
+assert.throws(() => parseMatchState(withLots([{ ...restricted, snow: true }])), /restricted mana pool/);
+assert.throws(() => parseMatchState(withLots([restricted], { C: 2 }, { C: 2 })), /restricted mana pool/);
+console.log("PASS restricted-mana quantity, purpose and snow-provenance contracts");

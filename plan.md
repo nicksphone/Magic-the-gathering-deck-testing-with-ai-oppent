@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab Finish Plan
 
+Restricted-mana/attachment milestone: 1,943 isolated backend tests, 196 focused checks, frontend lint/build/unit and full Chromium pass. New real seat-two UI/API coverage verifies restricted pools, actual equip stack/priority and attached effective stats. The [scope report](docs/testing/restricted-mana-equipment.md) distinguishes this supported increment from arbitrary spending/attachment semantics and expert-play certification.
+
+- [x] Persist supported type-restricted mana units and respect casting/activation permission through ready/floated/snow/partial payment, source departure and snapshots; expose validated purposes in human views. Verify both seats and style-independent real-cost decisions.
+- [x] Fix ordinary equip target admission, stack/priority/responses, source/target/control revalidation and paid-cost preservation. Connect supported attached static P/T and keyword grants to shared characteristics and layer traces.
+- [ ] Extend spending predicates to selected mana abilities, multiple/granted/conditional/color/subtype restrictions, spending bonuses/triggers and restricted-resource future utility without hidden-hand peeking.
+- [ ] Implement special/multiple equip costs/targets, reconfigure and fortify, arbitrary attached/granted effects and dependency/ability-suppression fidelity. Explicitly exercise the creature-Equipment reconfigure exception rather than claiming blanket attachment completeness.
+
 Variable-resource increment: 1,897 isolated final production-source backend tests, frontend lint/build/unit, the complete final-code Chromium rerun and an eight-game/sixteen-execution repeated seeded matrix pass. Scaling quantities reach actual payment and public views; two Tribal/Burn traces contain real two-to-seven-green Archdruid payments. The initial browser failure prompted canonical offline sideboard fixture caching; production network latency is not declared fixed. This is not calibrated expert play or balance evidence. See [scope](docs/testing/variable-mana.md).
 
 - [x] Share supported state-aware battlefield-count, source-counter and effective-power nonland outputs across automatic/manual payment, views, AI resource valuation and postcombat reservation. Verify canonical rows, both seats, snapshot purity and style-independent decisions.

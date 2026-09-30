@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from copy import deepcopy
 
 from game_state.state import CardInstance, MatchState, PlayerState, StackItem, Step, TURN_STEPS, Zone
 from rules_engine.card_types import is_token_card
@@ -37,6 +38,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
+        "attached_to": card.attached_to,
         "colors": sorted(card_color_symbols(card)),
         "mana_source_colors": sorted(outputs),
         "mana_source_amounts": outputs,
@@ -129,6 +131,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "exile_play_until": dict(player.exile_play_until),
                 "mana_pool": dict(player.mana_pool),
                 "snow_mana_pool": dict(player.snow_mana_pool),
+                "restricted_mana_pool": deepcopy(player.restricted_mana_pool),
                 "prevent_damage_shield": player.prevent_damage_shield,
                 "max_land_plays_this_turn": player.max_land_plays_this_turn,
                 "lands_played_this_turn": player.lands_played_this_turn,
@@ -198,6 +201,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
         player.mana_pool = {str(key): int(value) for key, value in raw.get("mana_pool", {}).items()}
         player.snow_mana_pool = {str(key): int(value) for key, value in raw.get("snow_mana_pool", {}).items()}
+        player.restricted_mana_pool = deepcopy(raw.get("restricted_mana_pool", []))
         for key in (
             "prevent_damage_shield", "max_land_plays_this_turn", "lands_played_this_turn",
             "last_land_play_turn", "land_plays_recorded_on_turn",
@@ -374,6 +378,7 @@ def serialize_match(state: MatchState) -> dict:
                 "exile_count": len(p.exile),
                 "mana_pool": p.mana_pool,
                 "snow_mana_pool": p.snow_mana_pool,
+                "restricted_mana_pool": deepcopy(p.restricted_mana_pool),
             }
             for pid, p in state.players.items()
         },

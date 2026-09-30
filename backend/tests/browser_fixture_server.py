@@ -26,6 +26,17 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "restricted_mana":
+        from tests.test_restricted_mana import clean, add
+        state = clean(2)
+        add(state, "Renowned Weaponsmith", 2)
+        add(state, "Forest", 2)
+        add(state, "Bonesplitter", 2)
+        add(state, "Manakin", 2).tapped = True
+        add(state, "Sol Ring", 2, Zone.HAND)
+        add(state, "Naturalize", 2, Zone.HAND)
+        add(state, "Sol Ring", 1)
+        return publish(state, [{"quantity": 60, "card_name": "Forest"}])
     if face_kind == "conditional_opening":
         from tests.test_opening_hand import opening_game, add_opening, keep_both
         state = opening_game()

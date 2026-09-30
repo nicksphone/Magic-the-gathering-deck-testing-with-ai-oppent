@@ -14,6 +14,7 @@ function card(value: unknown): boolean {
     && value.types.every((type) => typeof type === "string")
     && (value.power === null || typeof value.power === "number")
     && (value.toughness === null || typeof value.toughness === "number")
+    && (value.attached_to === undefined || value.attached_to === null || typeof value.attached_to === "string")
     && (value.colors === undefined || (Array.isArray(value.colors) && value.colors.every((color) => typeof color === "string" && /^[WUBRG]$/.test(color))))
     && (value.mana_source_colors === undefined || (Array.isArray(value.mana_source_colors) && value.mana_source_colors.every((color) => typeof color === "string" && /^[WUBRGC]$/.test(color))))
     && (value.mana_source_amounts === undefined || (record(value.mana_source_amounts) && Object.entries(value.mana_source_amounts).every(([color, amount]) => /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) > 0)))
@@ -48,6 +49,30 @@ export function parseMatchState(value: unknown): MatchState {
             && typeof total === "number" && amount <= total;
         })) {
         throw new Error(`Invalid match response: player ${seat} snow mana pool`);
+      }
+    }
+    if (player.restricted_mana_pool !== undefined) {
+      const lots = player.restricted_mana_pool;
+      const totals: Record<string, number> = {};
+      const snowTotals: Record<string, number> = {};
+      const pool = player.mana_pool;
+      const snow = player.snow_mana_pool;
+      const types = ["Artifact", "Creature", "Enchantment", "Instant", "Sorcery", "Planeswalker", "Battle"];
+      if (!Array.isArray(lots) || !record(pool) || !record(snow) || !lots.every((lot) => {
+        if (!record(lot) || typeof lot.color !== "string" || !/^[WUBRGC]$/.test(lot.color)
+          || !Number.isInteger(lot.amount) || (lot.amount as number) <= 0 || typeof lot.snow !== "boolean"
+          || !record(lot.rule)) return false;
+        const rule = lot.rule;
+        if (rule.unsupported !== true && (!Array.isArray(rule.cast_types) || !rule.cast_types.length
+          || !rule.cast_types.every((type) => types.includes(type)) || !Array.isArray(rule.activate_types)
+          || !rule.activate_types.every((type) => types.includes(type)))) return false;
+        totals[lot.color] = (totals[lot.color] ?? 0) + (lot.amount as number);
+        if (lot.snow) snowTotals[lot.color] = (snowTotals[lot.color] ?? 0) + (lot.amount as number);
+        return true;
+      }) || !Object.entries(totals).every(([color, amount]) => typeof pool[color] === "number" && amount <= (pool[color] as number))
+        || !Object.entries(snowTotals).every(([color, amount]) => typeof snow[color] === "number" && amount <= (snow[color] as number))
+        || !Object.entries(totals).every(([color, amount]) => amount - (snowTotals[color] ?? 0) <= (pool[color] as number) - ((snow[color] as number) ?? 0))) {
+        throw new Error(`Invalid match response: player ${seat} restricted mana pool`);
       }
     }
   }

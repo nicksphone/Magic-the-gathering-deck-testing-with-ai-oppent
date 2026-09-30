@@ -3150,13 +3150,15 @@ class AIAgent:
     def _reserve_postcombat_mana(self, state, candidates, player_id):
         """Compare known postcombat payment opportunities with unblocked damage."""
         from rules_engine.mana import mana_source_outputs, repeatable_nonland_mana_outputs
+        from rules_engine.card_types import CARD_TYPES
         if (not isinstance(state, MatchState) or state.active_player != player_id
                 or state.step != Step.DECLARE_ATTACKERS or state.stack
                 or not state.players[player_id].hand):
             return list(candidates)
         sources = [cid for cid in candidates if cid in state.cards
                    and "vigilance" not in {kw.lower() for kw in effective_keywords(state, cid)}
-                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(state.cards[cid], state=state))
+                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(
+                       state.cards[cid], state=state, payment_context=("spell", CARD_TYPES)))
                    and mana_source_outputs(state, player_id, cid)]
         if not sources:
             return list(candidates)
@@ -3168,6 +3170,7 @@ class AIAgent:
         sim.priority_player = player_id
         sim.players[player_id].mana_pool.clear()
         sim.players[player_id].snow_mana_pool.clear()
+        sim.players[player_id].restricted_mana_pool.clear()
         held = set(sim.players[player_id].hand)
 
         def opportunities():

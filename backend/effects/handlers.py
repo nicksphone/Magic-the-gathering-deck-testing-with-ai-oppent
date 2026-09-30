@@ -2030,6 +2030,21 @@ def untap_card(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[target].tapped = False
 
 
+def equip_attachment(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.attachments import attach_if_legal, is_equipment
+    source = state.cards.get(payload.get("equipment_id"))
+    target = state.cards.get(payload.get("target_card_id"))
+    if (source is None or target is None or source.zone != Zone.BATTLEFIELD
+            or target.zone != Zone.BATTLEFIELD or target.controller != controller
+            or "Creature" not in target.types or "Creature" in source.types
+            or not is_equipment(source)
+            or source.effect_timestamp != payload.get("source_timestamp")
+            or target.effect_timestamp != payload.get("target_timestamp")):
+        return
+    if attach_if_legal(state, source.id, target.id):
+        state.log.append(f"{state.players[controller].name} equips {source.name} to {target.name}.")
+
+
 def crew_vehicle(state: MatchState, controller: int, payload: dict) -> None:
     vehicle_id = payload.get("card_id")
     vehicle = state.cards.get(vehicle_id) if vehicle_id else None
