@@ -334,12 +334,17 @@ The knowledge database can ingest every unique Oracle card from Scryfall's offic
 ```bash
 cd backend
 ./.venv/bin/python -m scripts.sync_all_card_knowledge
+./.venv/bin/python -m scripts.sync_all_card_knowledge --backfill-tags
 ./.venv/bin/python -m scripts.sync_corpus_cards --out knowledge/data/corpus-sync-summary.json
 ./.venv/bin/python -m scripts.knowledge_gap_report --require-rulings
 ./.venv/bin/python -m scripts.card_mechanics_inventory --out knowledge/data/mechanics-inventory.json
 ```
 
 The bulk command writes `CardKnowledge` in the application's SQLite database without replacing the gameplay/image cache. Repeated imports reuse the downloaded dataset and unchanged rows. Bulk download files and summaries live in ignored `backend/knowledge/data/`; rebuild them after a fresh checkout. Back up `backend/mtg_lab.db` before refreshing local data. Both sync commands accept `--database /path/to/isolated.db` for isolated ingestion.
+
+`--backfill-tags` uses canonical payloads already stored in SQLite, makes no network request, and writes a separate `knowledge/data/tag-backfill-summary.json`. It skips rows without canonical payloads and leaves rulings, provenance, and tactical score fields unchanged. Back up the database first; use `--database` to rehearse on a copy.
+
+The September 30 local backfill updated all 38,690 knowledge rows; 3,214 multiface rows have per-face tags. A second run changed zero rows. A pre-backfill SQLite backup is stored in the ignored `backend/knowledge/data/` directory. This metadata migration does not add rules support or prove stronger AI decisions.
 
 The 119-card offline shipped-deck seed is tracked at `backend/card_data/builtin_oracle_seed.json`, with Scryfall IDs for provenance. From `backend/`, regenerate it with `./.venv/bin/python scripts/export_builtin_oracle_seed.py`. The read-only exporter uses verified cached metadata or canonical local Scryfall bulk records and fails if a requested card lacks both; it does not invent an Oracle clause. Starting loyalty for four older built-in planeswalkers was checked against Scryfall's exact-name API because the current card-cache schema omits that field. Face art is intentionally not bundled; sync images separately or use the tracked generic fallback.
 The head-to-head diagnostic uses the same card hydrator as live matches. In a local seed-100 Tempo/Dimir comparison, offline and cache-backed games had identical normalized actions and final state after that duplicate-hydration path was removed; this is a one-seed parity check, not a broad rules certificate.

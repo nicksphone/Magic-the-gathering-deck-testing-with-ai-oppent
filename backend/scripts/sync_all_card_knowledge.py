@@ -19,7 +19,7 @@ from card_data.http_utils import get_with_backoff
 from knowledge.ingest import SCHEMA_VERSION
 from knowledge.models import CardKnowledge
 from card_data.tactical import canonical_tactical_tags
-from persistence.db import engine, init_db
+from persistence.db import DATABASE_PATH, engine, init_db
 from persistence.repository import Repository
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "knowledge" / "data"
@@ -110,6 +110,33 @@ def import_cards(repository: Repository, cards, provenance: dict, progress=None)
     return report
 
 
+def backfill_tactical_tags(repository: Repository) -> dict[str, int]:
+    """Refresh derived tags from already stored canonical payloads, offline."""
+    report = {"scanned": 0, "updated": 0, "unchanged": 0, "missing_canonical": 0}
+    for row in repository.list_card_knowledge():
+        report["scanned"] += 1
+        profile = json.loads(row.profiles_json)
+        raw = profile.get("card_data")
+        if not isinstance(raw, dict):
+            report["missing_canonical"] += 1
+            continue
+        refreshed = dict(profile)
+        tags = canonical_tactical_tags(raw)
+        refreshed.update(tags)
+        if "face_tactical_tags" not in tags:
+            refreshed.pop("face_tactical_tags", None)
+        if refreshed == profile:
+            report["unchanged"] += 1
+            continue
+        row.profiles_json = json.dumps(refreshed, sort_keys=True)
+        repository.session.add(row)
+        report["updated"] += 1
+        if report["updated"] % 500 == 0:
+            repository.session.commit()
+    repository.session.commit()
+    return report
+
+
 def download_bulk(client: httpx.Client, directory: Path) -> tuple[Path, dict]:
     response = get_with_backoff(client, "https://api.scryfall.com/bulk-data/oracle_cards", timeout=30)
     response.raise_for_status()
@@ -139,8 +166,11 @@ def download_bulk(client: httpx.Client, directory: Path) -> tuple[Path, dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Import all unique Scryfall Oracle cards into CardKnowledge")
     parser.add_argument("--database", type=Path, help="Alternative SQLite file")
-    parser.add_argument("--out", type=Path, default=DATA_DIR / "all-cards-summary.json")
+    parser.add_argument("--backfill-tags", action="store_true", help="Refresh tactical tags from stored card data without network access")
+    parser.add_argument("--out", type=Path)
     args = parser.parse_args()
+    if args.backfill_tags and not (args.database or DATABASE_PATH).is_file():
+        parser.error("Backfill requires an existing SQLite database")
     if args.database:
         args.database.parent.mkdir(parents=True, exist_ok=True)
         selected_engine = create_engine(f"sqlite:///{args.database.resolve()}")
@@ -148,15 +178,22 @@ def main() -> int:
     else:
         init_db()
         selected_engine = engine
-    with httpx.Client(headers={"User-Agent": "MTGDeckTestingLab/0.1 (canonical knowledge sync)", "Accept": "application/json"}, follow_redirects=False) as client:
-        path, provenance = download_bulk(client, DATA_DIR)
-    with Session(selected_engine) as session:
-        repo = Repository(session)
-        report = import_cards(repo, read_cards(path), provenance, lambda count: print(f"Imported {count} cards", flush=True))
-        report["total_knowledge_rows"] = len(repo.list_card_knowledge())
-        report["provenance"] = provenance
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.backfill_tags:
+        with Session(selected_engine) as session:
+            repo = Repository(session)
+            report = backfill_tactical_tags(repo)
+            report["total_knowledge_rows"] = len(repo.list_card_knowledge())
+    else:
+        with httpx.Client(headers={"User-Agent": "MTGDeckTestingLab/0.1 (canonical knowledge sync)", "Accept": "application/json"}, follow_redirects=False) as client:
+            path, provenance = download_bulk(client, DATA_DIR)
+        with Session(selected_engine) as session:
+            repo = Repository(session)
+            report = import_cards(repo, read_cards(path), provenance, lambda count: print(f"Imported {count} cards", flush=True))
+            report["total_knowledge_rows"] = len(repo.list_card_knowledge())
+            report["provenance"] = provenance
+    output = args.out or DATA_DIR / ("tag-backfill-summary.json" if args.backfill_tags else "all-cards-summary.json")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 

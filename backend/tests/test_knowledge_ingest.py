@@ -9,7 +9,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from knowledge.ingest import KnowledgeIngestor
 from persistence.repository import Repository
-from scripts.sync_all_card_knowledge import import_cards
+from scripts.sync_all_card_knowledge import import_cards, backfill_tactical_tags, main as bulk_main
 from scripts.knowledge_gap_report import knowledge_report
 from scripts.card_mechanics_inventory import inventory
 
@@ -77,6 +77,60 @@ def test_bulk_import_is_idempotent_and_does_not_claim_rulings_or_playability(rep
     profile = json.loads(repo.get_card_knowledge("Lightning Bolt").profiles_json)
     assert profile["rulings_verified"] is False
     assert profile["card_data"]["legalities"] == {"modern": "legal"}
+
+
+def test_offline_tag_backfill_preserves_canonical_and_verified_data(repo, bolt):
+    import_cards(repo, [bolt], {"source": "scryfall", "updated_at": "2026-09-27"})
+    row = repo.get_card_knowledge("Lightning Bolt")
+    profile = json.loads(row.profiles_json)
+    profile.pop("tactical_tags")
+    profile["rulings_verified"] = True
+    profile["rulings"] = []
+    row.profiles_json = json.dumps(profile)
+    row.play_value = 8.5
+    repo.session.add(row)
+    repo.upsert_card_knowledge({"name": "Swamp", "oracle_source": "manual"})
+    repo.session.commit()
+
+    assert backfill_tactical_tags(repo) == {"scanned": 2, "updated": 1, "unchanged": 0, "missing_canonical": 1}
+    assert backfill_tactical_tags(repo) == {"scanned": 2, "updated": 0, "unchanged": 1, "missing_canonical": 1}
+    after = repo.get_card_knowledge("Lightning Bolt")
+    refreshed = json.loads(after.profiles_json)
+    assert {"burn", "removal"} <= set(refreshed["tactical_tags"])
+    assert refreshed["rulings_verified"] is True
+    assert refreshed["rulings"] == []
+    assert refreshed["card_data"] == bolt
+    assert after.play_value == 8.5
+
+
+def test_offline_tag_backfill_cli_does_not_download(monkeypatch, tmp_path, bolt):
+    import sys
+    from scripts import sync_all_card_knowledge as bulk
+
+    db_path = tmp_path / "knowledge.sqlite3"
+    out_path = tmp_path / "report.json"
+    local_engine = create_engine(f"sqlite:///{db_path}")
+    SQLModel.metadata.create_all(local_engine)
+    with Session(local_engine) as session:
+        local_repo = Repository(session)
+        import_cards(local_repo, [bolt], {"source": "scryfall", "updated_at": "2026-09-27"})
+        row = local_repo.get_card_knowledge("Lightning Bolt")
+        profile = json.loads(row.profiles_json)
+        profile.pop("tactical_tags")
+        row.profiles_json = json.dumps(profile)
+        session.add(row)
+        session.commit()
+
+    monkeypatch.setattr(bulk, "download_bulk", lambda *args: pytest.fail("offline backfill downloaded data"))
+    monkeypatch.setattr(sys, "argv", ["sync_all_card_knowledge", "--database", str(db_path), "--backfill-tags", "--out", str(out_path)])
+    assert bulk_main() == 0
+    assert json.loads(out_path.read_text())["updated"] == 1
+
+    missing = tmp_path / "missing.sqlite3"
+    monkeypatch.setattr(sys, "argv", ["sync_all_card_knowledge", "--database", str(missing), "--backfill-tags"])
+    with pytest.raises(SystemExit):
+        bulk_main()
+    assert not missing.exists()
 
 
 def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeypatch):
