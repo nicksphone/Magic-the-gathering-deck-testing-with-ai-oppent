@@ -1,0 +1,227 @@
+[
+  {
+    "name": "Elvish Archdruid",
+    "oracle_text": "Other Elf creatures you control get +1/+1.\n{T}: Add {G} for each Elf you control.",
+    "mana_cost": "{1}{G}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "6e2c2423-d854-4478-99e6-64f29851f026",
+    "scryfall_id": "006ff5a3-355b-4a7d-b402-bb3c8d32a585",
+    "source": "scryfall"
+  },
+  {
+    "name": "Priest of Titania",
+    "oracle_text": "{T}: Add {G} for each Elf on the battlefield.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "3a198a16-17b9-481e-b516-5bc945c7e247",
+    "scryfall_id": "eb11921b-1b28-483f-a707-4de21a6daa31",
+    "source": "scryfall"
+  },
+  {
+    "name": "Circle of Dreams Druid",
+    "oracle_text": "{T}: Add {G} for each creature you control.",
+    "mana_cost": "{G}{G}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "1c857fa4-e823-494d-9ea4-7eb9e719c9b6",
+    "scryfall_id": "be6fdec0-a2c4-4da2-ae14-961185eaee66",
+    "source": "scryfall"
+  },
+  {
+    "name": "Viridian Joiner",
+    "oracle_text": "{T}: Add an amount of {G} equal to this creature's power.",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "84244aa6-11be-4940-b102-e029f955fc9a",
+    "scryfall_id": "b50679df-bf82-4bb2-9fe3-8ebd7a9decde",
+    "source": "scryfall"
+  },
+  {
+    "name": "Marwyn, the Nurturer",
+    "oracle_text": "Whenever another Elf you control enters, put a +1/+1 counter on Marwyn.\n{T}: Add an amount of {G} equal to Marwyn's power.",
+    "mana_cost": "{2}{G}",
+    "type_line": "Legendary Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "ee35de1c-aef1-4bd4-85fd-fe77bc927790",
+    "scryfall_id": "aad61d99-5c8e-47b7-ab1a-e70905f59205",
+    "source": "scryfall"
+  },
+  {
+    "name": "Gyre Sage",
+    "oracle_text": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\n{T}: Add {G} for each +1/+1 counter on this creature.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Evolve"
+    ],
+    "layout": "normal",
+    "oracle_id": "e3aa16cf-079b-4737-9ffd-7bfdffef0cb2",
+    "scryfall_id": "be573ae7-967a-4b98-9058-ec3ff82ff63f",
+    "source": "scryfall"
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "source": "scryfall"
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_text": "",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Bear",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "scryfall_id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "source": "scryfall"
+  },
+  {
+    "name": "Steel Leaf Champion",
+    "oracle_text": "This creature can't be blocked by creatures with power 2 or less.",
+    "mana_cost": "{G}{G}{G}",
+    "type_line": "Creature \u2014 Elf Knight",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "666af637-9282-4121-962a-048e528f9221",
+    "scryfall_id": "24d8a688-79d4-49b9-ab0c-c7f5c9b551f4",
+    "source": "scryfall"
+  },
+  {
+    "name": "Wurmcoil Engine",
+    "oracle_text": "Deathtouch, lifelink\nWhen this creature dies, create a 3/3 colorless Phyrexian Wurm artifact creature token with deathtouch and a 3/3 colorless Phyrexian Wurm artifact creature token with lifelink.",
+    "mana_cost": "{6}",
+    "type_line": "Artifact Creature \u2014 Phyrexian Wurm",
+    "power": "6",
+    "toughness": "6",
+    "colors": [],
+    "keywords": [
+      "Lifelink",
+      "Deathtouch"
+    ],
+    "layout": "normal",
+    "oracle_id": "d1a60f44-7696-49ee-91fb-cab5b3102962",
+    "scryfall_id": "5d275f04-cc60-4e3f-95cc-3d02bc916b82",
+    "source": "scryfall"
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "source": "scryfall"
+  },
+  {
+    "name": "Palladium Myr",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature \u2014 Myr",
+    "power": "2",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "7b0767b8-b504-456e-93bd-218502f73b3d",
+    "scryfall_id": "f7c6aba3-38c3-45d1-83e1-40829eb07862",
+    "source": "scryfall"
+  },
+  {
+    "name": "Devoted Druid",
+    "oracle_text": "{T}: Add {G}.\nPut a -1/-1 counter on this creature: Untap this creature.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "0",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "cb814e16-acf7-41d5-a357-1323dcc369f3",
+    "scryfall_id": "22589a81-3ea8-4e78-98c9-c015e7539cf9",
+    "source": "scryfall"
+  },
+  {
+    "name": "Bloom Tender",
+    "oracle_text": "Vivid \u2014 {T}: For each color among permanents you control, add one mana of that color.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Vivid"
+    ],
+    "layout": "normal",
+    "oracle_id": "0c23fefe-9891-4dd8-9bb1-eebdb3274e31",
+    "scryfall_id": "ba86688d-18f0-4b5c-a797-42bf125a6c9f",
+    "source": "scryfall"
+  }
+]

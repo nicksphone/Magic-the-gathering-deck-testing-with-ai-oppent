@@ -56,7 +56,7 @@ def repeatable_mana_value(state, card_id: str, *, surface_card=None) -> float:
     """Public-board resource retention, distinct from current payment readiness."""
     from rules_engine.mana import repeatable_nonland_mana_outputs
     card = surface_card if surface_card is not None else state.cards[card_id]
-    outputs = repeatable_nonland_mana_outputs(card)
+    outputs = repeatable_nonland_mana_outputs(card, state=state)
     controller = getattr(card, "controller", None)
     if not outputs or controller not in state.players:
         return 0.0

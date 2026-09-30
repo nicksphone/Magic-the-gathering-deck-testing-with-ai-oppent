@@ -710,7 +710,19 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         if face_kind == "bo3_sideboard":
             match.sideboards[1] = [{"quantity": 15, "card_name": "Forest"}]
         with Session(engine) as session:
-            _persist_active_match(Repository(session), match)
+            repo = Repository(session)
+            if face_kind == "bo3_sideboard":
+                # Exercise real hydration without an incidental Scryfall request
+                # exceeding the browser's action timeout on an empty cache.
+                import json
+                rows = json.loads((Path(__file__).parent / "fixtures/sideboard_basics.json").read_text())
+                for row in rows:
+                    repo.upsert_card({
+                        **{key: row[key] for key in ("name", "scryfall_id", "oracle_text", "mana_cost", "type_line", "layout")},
+                        "colors": ",".join(row["colors"]),
+                        "image_uri": "/card-images/generic-token-creature.svg",
+                    })
+            _persist_active_match(repo, match)
         return get_match(state.id)
     if face_kind in {"trigger", "cast_trigger"}:
         import json

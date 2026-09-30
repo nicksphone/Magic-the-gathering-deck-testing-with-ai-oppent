@@ -2,6 +2,11 @@
 
 Date: 2026-09-30 UTC.
 
+Follow-ups: [postcombat reservation](ai-postcombat-mana.md) and
+[state-aware variable mana](variable-mana.md) extend this initial fixed-output
+valuation. The original verification and limitations below are historical, not
+a claim that these later bounded increments remain unimplemented.
+
 ## Implemented
 
 Payment and valuation share one parser for supported printed nonland mana

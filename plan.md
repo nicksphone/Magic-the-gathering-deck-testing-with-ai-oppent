@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab Finish Plan
 
+Variable-resource increment: 1,897 isolated final production-source backend tests, frontend lint/build/unit, the complete final-code Chromium rerun and an eight-game/sixteen-execution repeated seeded matrix pass. Scaling quantities reach actual payment and public views; two Tribal/Burn traces contain real two-to-seven-green Archdruid payments. The initial browser failure prompted canonical offline sideboard fixture caching; production network latency is not declared fixed. This is not calibrated expert play or balance evidence. See [scope](docs/testing/variable-mana.md).
+
+- [x] Share supported state-aware battlefield-count, source-counter and effective-power nonland outputs across automatic/manual payment, views, AI resource valuation and postcombat reservation. Verify canonical rows, both seats, snapshot purity and style-independent decisions.
+- [x] Remove incidental live card synchronization from the sideboard browser fixture by caching canonical basics; validate zero network-sync calls through the real HTTP route without mocking production hydration.
+- [ ] Complete mixed/color-dependent output, restricted/granted/multiple mana abilities, conditional costs, paid untap engines, and full type/layer dependency semantics. Add product-level missing-card sync latency/recovery tests; fixture determinism is not a production network fix.
+
 Latest postcombat/layer increment: 1,875 isolated backend tests, frontend lint/build/unit and the complete Chromium harness pass. Six continuous-effect regressions fail on the parent and pass here; eight seed/seat-paired games repeat their complete reported game traces across sixteen executions without timeout or rejected cast/target. One optional Spell Pierce payment fails normally; the smoke traces are unchanged from the parent. This is bounded regression evidence, not expert-play or arbitrary-card certification. See [scope and evidence](docs/testing/ai-postcombat-mana.md).
 
 - [x] Compare supported unblocked mana-source attacks with actual fixed-cost postcombat hand opportunities; preserve vigilance and release redundant sources, using the engine's payment rules and no carried floating mana. Validate both seats, ten style labels, colors, taxes and snapshot purity.

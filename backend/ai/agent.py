@@ -3156,7 +3156,7 @@ class AIAgent:
             return list(candidates)
         sources = [cid for cid in candidates if cid in state.cards
                    and "vigilance" not in {kw.lower() for kw in effective_keywords(state, cid)}
-                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(state.cards[cid]))
+                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(state.cards[cid], state=state))
                    and mana_source_outputs(state, player_id, cid)]
         if not sources:
             return list(candidates)
@@ -3188,7 +3188,7 @@ class AIAgent:
                 text = " ".join(targets.get("mode_texts") or []) or targets.get("mode_text") or _oracle_text(card)
                 if targets.get("target_player") == 3 - player_id:
                     value += self._burn_damage_estimate(text) * 1.6
-                if "ramp" in self._spell_tags(card) and not repeatable_nonland_mana_outputs(card):
+                if "ramp" in self._spell_tags(card) and not repeatable_nonland_mana_outputs(card, state=sim):
                     value += 2.0
                 if value > 0:
                     key = (card.id, move.get("selected_face_index"))

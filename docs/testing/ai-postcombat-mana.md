@@ -2,6 +2,11 @@
 
 Date: 2026-09-30 UTC.
 
+Follow-up: [state-aware variable mana](variable-mana.md) adds supported printed
+battlefield-count, source-counter and power-based sources to this reservation
+path. The limitations below describe the original increment; broader variable
+and conditional source families remain open.
+
 ## Implemented
 
 The unblocked-attack shortcut now compares the damage from ready mana creatures

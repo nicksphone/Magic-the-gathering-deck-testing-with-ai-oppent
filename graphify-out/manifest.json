@@ -16,8 +16,8 @@
     "hash": "c5eabc3afa58b16be3c89012e1e68f24"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/heuristics.py": {
-    "mtime": 1790789976.8174233,
-    "hash": "c2b553af86e575d704b7c7b9345724af"
+    "mtime": 1790797230.0228696,
+    "hash": "5396255390b4c5314ed140f9369226bc"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/endgame_policy.py": {
     "mtime": 1779124792.9789293,
@@ -32,8 +32,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790792185.9321544,
-    "hash": "c1dffcc97859c8084d4284830cc59743"
+    "mtime": 1790797230.0238698,
+    "hash": "b2b43d2d16cb95c26e24b8ab15e8df25"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -355,6 +355,10 @@
     "mtime": 1790763491.4066966,
     "hash": "3c9114ba3565d4f1a8141cccee8089f3"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_variable_mana.py": {
+    "mtime": 1790797409.655815,
+    "hash": "5c743579d4c24c6c7a3878e13b2db46d"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_death_replacement_canonical.py": {
     "mtime": 1790657974.8231332,
     "hash": "761d4f9c86865001ab9f57378708a6fc"
@@ -472,8 +476,8 @@
     "hash": "77de865b92e5f77fdb405485a8d6cb59"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/browser_fixture_server.py": {
-    "mtime": 1790768501.4268308,
-    "hash": "6d94e9cf69cab62e788f0f341584a5e1"
+    "mtime": 1790797819.6069374,
+    "hash": "b8c702508c276f6131322726a62697eb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_stack_target_kinds.py": {
     "mtime": 1790592770.5353572,
@@ -1164,8 +1168,8 @@
     "hash": "2eb564468bb6f8a192a80f9f8a0fe27d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/mana.py": {
-    "mtime": 1790791542.9829657,
-    "hash": "dc38bc223198d3ec171f1dc6c996328f"
+    "mtime": 1790797230.0228696,
+    "hash": "64035c365a035d3470eeb0264031b62d"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/library_permissions.py": {
     "mtime": 1784462395.3417816,
@@ -1404,16 +1408,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790796765.3577394,
-    "hash": "8df3880f6a6ef5b39e3c13686aadf5b5"
+    "mtime": 1790798110.7990973,
+    "hash": "55cea1f05b23d1975182bd73d58c095b"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790796856.6592562,
-    "hash": "8838f7538054d7bd769c815979324369"
+    "mtime": 1790798176.579007,
+    "hash": "6f0d3e26f018618c8886a5d92245dd31"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790796856.658256,
-    "hash": "1006eb4d5dc2525a46a1bc726961e8bb"
+    "mtime": 1790798176.578007,
+    "hash": "5bf6adce6c276966f5cb7a8b54350f9e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1500,8 +1504,8 @@
     "hash": "3bf299b03aa5b477a658d172334cf698"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-mana-resources.md": {
-    "mtime": 1790790669.808877,
-    "hash": "1231b340a4aa7b1fd73356b37e1011bb"
+    "mtime": 1790798110.8080971,
+    "hash": "3d8903f6d641a6339181148d20daa944"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/aftermath-boundary.md": {
     "mtime": 1790746485.677705,
@@ -1576,12 +1580,16 @@
     "hash": "458712f9f0983eff3f039ef316be9888"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-postcombat-mana.md": {
-    "mtime": 1790796856.6572561,
-    "hash": "cdb9980f1a0a0ba61e66886e9ee016c5"
+    "mtime": 1790798110.8010972,
+    "hash": "a6e3a05fb40411afa208a0d7f491321d"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-projection-performance.md": {
     "mtime": 1790772242.3153238,
     "hash": "438099b776e1c9a80d50c3161a70783e"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/variable-mana.md": {
+    "mtime": 1790798176.5770068,
+    "hash": "c6a7d7b5a171ac8c76ae0441d04795c5"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/index.html": {
     "mtime": 1777063134.7080612,

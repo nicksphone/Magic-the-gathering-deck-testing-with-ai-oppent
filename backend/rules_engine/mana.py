@@ -540,10 +540,10 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
     if "Creature" in card_types:
         if getattr(card, "summoning_sick", False) and not has_keyword(state, card_id, "haste"):
             return {}
-    return _nonland_mana_effect_outputs(ability.group(2))
+    return _nonland_mana_effect_outputs(ability.group(2), state=state, card=card)
 
 
-def repeatable_nonland_mana_outputs(card) -> dict[str, int]:
+def repeatable_nonland_mana_outputs(card, *, state=None) -> dict[str, int]:
     """Printed tap-only capacity; never an assertion that it is usable now."""
     if "Land" in (getattr(card, "types", []) or []):
         return {}
@@ -557,11 +557,11 @@ def repeatable_nonland_mana_outputs(card) -> dict[str, int]:
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     if parse_activated_cost(ability.group(1)) != ActivatedCost(tap_source=True):
         return {}
-    return _nonland_mana_effect_outputs(ability.group(2))
+    return _nonland_mana_effect_outputs(ability.group(2), state=state, card=card)
 
 
-def _nonland_mana_effect_outputs(effect: str) -> dict[str, int]:
-    effect = effect.upper()
+def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[str, int]:
+    effect = effect.strip().upper()
     any_color = re.fullmatch(r"ADD (ONE|TWO|THREE|FOUR|FIVE|SIX|\d+) MANA OF ANY (ONE )?COLOR", effect.strip())
     if any_color:
         words = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6}
@@ -570,13 +570,44 @@ def _nonland_mana_effect_outputs(effect: str) -> dict[str, int]:
         if 1 <= amount <= 20 and (amount == 1 or any_color.group(2)):
             return {color: amount for color in "WUBRG"}
         return {}
-    symbols = [sym for sym in MANA_SYMBOL_RE.findall(effect) if sym in "WUBRGC"]
-    if not symbols:
+    if re.fullmatch(r"ADD (?:\{[WUBRGC]\})+", effect):
+        symbols = MANA_SYMBOL_RE.findall(effect)
+        if len(set(symbols)) == 1:
+            return {symbols[0]: len(symbols)}
+    if re.fullmatch(r"ADD \{[WUBRGC]\}(?:,? (?:OR )?\{[WUBRGC]\})+", effect) and " OR " in effect:
+        return {color: 1 for color in MANA_SYMBOL_RE.findall(effect)}
+    if state is None or card is None:
         return {}
-    if len(set(symbols)) == 1:
-        return {symbols[0]: len(symbols)}
-    if " OR " in effect and len(symbols) == len(set(symbols)):
-        return {color: 1 for color in symbols}
+    amount = None
+    count = re.fullmatch(r"ADD \{([WUBRGC])\} FOR EACH (.+) (YOU CONTROL|ON THE BATTLEFIELD)", effect)
+    if count:
+        from rules_engine.continuous import _subject_matches
+        subject = count.group(2).lower()
+        other = subject.startswith("other ")
+        subject = subject.removeprefix("other ")
+        if subject in {"creature", "artifact", "enchantment", "land", "planeswalker", "battle", "permanent", "token"}:
+            subject += "s"
+        elif subject.endswith(" creature"):
+            subject += "s"
+        amount = sum(
+            (not other or cid != card.id) and _subject_matches(state, cid, subject)
+            for player in state.players.values() for cid in player.battlefield
+            if count.group(3) == "ON THE BATTLEFIELD" or state.cards[cid].controller == card.controller
+        )
+        color = count.group(1)
+    else:
+        names = {card.name.upper(), card.name.split(",", 1)[0].upper(), "THIS CREATURE", "THIS PERMANENT"}
+        counter = re.fullmatch(r"ADD \{([WUBRGC])\} FOR EACH (.+) COUNTER ON (.+)", effect)
+        power = re.fullmatch(r"ADD AN AMOUNT OF \{([WUBRGC])\} EQUAL TO (.+)'S POWER", effect)
+        if counter and counter.group(3) in names:
+            amount = max(0, (card.counters or {}).get(counter.group(2).lower(), 0))
+            color = counter.group(1)
+        elif power and power.group(2) in names:
+            from rules_engine.continuous import effective_power
+            amount = max(0, effective_power(state, card.id))
+            color = power.group(1)
+    if amount:
+        return {color: amount}
     return {}
 
 
