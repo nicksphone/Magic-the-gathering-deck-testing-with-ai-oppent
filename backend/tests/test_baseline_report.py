@@ -107,6 +107,7 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
         "lethal_misses": 1,
         "bad_blocks": 0,
         "stall_streaks": 0,
+        "redundant_removal_casts": None,
     }
     assert report["card_cache_completeness"] == {
         "cached_cards": 1,
@@ -116,7 +117,11 @@ def test_baseline_report_contains_required_metrics_and_is_byte_stable(tmp_path: 
     }
     assert report["oracle_status_counts"]["unique"]["missing_oracle"] == 1
     assert report["log_priors"] == {"cards": 1, "samples": {"games": 7, "logs": 11}}
-    assert report["unavailable_metrics"] == {}
+    assert report["unavailable_metrics"] == {
+        f"decision_quality_by_archetype.{archetype}.redundant_removal_casts":
+        "complete relevant decision trace evidence absent"
+        for archetype in ("Aggro", "Control")
+    }
     assert render_report(report) == render_report(
         build_report(
             oracle_path=oracle,
@@ -370,6 +375,7 @@ def test_baseline_report_marks_absent_source_metrics_unavailable(tmp_path: Path)
             "lethal_misses": None,
             "bad_blocks": None,
             "stall_streaks": None,
+            "redundant_removal_casts": None,
         },
         "Control": {
             "missed_land_drops": None,
@@ -377,6 +383,7 @@ def test_baseline_report_marks_absent_source_metrics_unavailable(tmp_path: Path)
             "lethal_misses": None,
             "bad_blocks": None,
             "stall_streaks": None,
+            "redundant_removal_casts": None,
         },
     }
     assert report["oracle_status_counts"] == {"unique": None, "weighted": None}
@@ -426,6 +433,7 @@ def test_baseline_report_preserves_measured_zero_values(tmp_path: Path) -> None:
         "lethal_misses": 0,
         "bad_blocks": 0,
         "stall_streaks": 0,
+        "redundant_removal_casts": None,
     }
     assert report["oracle_status_counts"] == {"unique": {}, "weighted": {}}
     assert report["card_cache_completeness"] == {
@@ -659,6 +667,7 @@ def test_baseline_report_requires_complete_evidence_in_every_game_row(
             "lethal_misses": None,
             "bad_blocks": None,
             "stall_streaks": None,
+            "redundant_removal_casts": None,
         }
         for metric in baseline_report.DECISION_QUALITY_METRICS:
             assert f"decision_quality_by_archetype.{archetype}.{metric}" in unavailable

@@ -180,6 +180,7 @@ def test_decision_quality_overall_ignores_nonparticipating_pool_decks() -> None:
         "lethal_misses": 3,
         "bad_blocks": 4,
         "stall_streaks": 5,
+        "redundant_removal_casts": 6,
     }
     availability = {metric: True for metric in metrics}
     decks = [
@@ -216,6 +217,7 @@ def test_decision_quality_malformed_trace_invalidates_all_metrics() -> None:
             "step": "Step.UPKEEP",
             "legal_non_pass": False,
             "stall_actionable_options": False,
+            "redundant_removal_casts": 0,
             "mana_pool": {},
             "action": {"type": "pass_priority"},
         })
@@ -233,6 +235,7 @@ def test_decision_quality_complete_non_applicable_windows_are_measured_zero() ->
             "step": "Step.UPKEEP",
             "legal_non_pass": False,
             "stall_actionable_options": False,
+            "redundant_removal_casts": 0,
             "mana_pool": {},
             "action": {"type": "pass_priority"},
         })
@@ -253,6 +256,7 @@ def _complete_trace(pid: int, turn: int, step: str, action_type: str, **fields: 
         "legal_non_pass": False,
         "legal_has_land": False,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {},
         "action": {"type": action_type},
         **fields,
@@ -321,6 +325,7 @@ def test_decision_quality_malformed_mana_only_invalidates_unused_mana(
         "step": "Step.UPKEEP",
         "legal_non_pass": True,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {"U": malformed_mana},
         "action": {"type": "pass_priority"},
     }
@@ -329,6 +334,7 @@ def test_decision_quality_malformed_mana_only_invalidates_unused_mana(
         "step": "Step.UPKEEP",
         "legal_non_pass": False,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {},
         "action": {"type": "pass_priority"},
     }
@@ -368,6 +374,7 @@ def test_decision_quality_invalid_action_makes_stall_evidence_unavailable(
         "step": "Step.UPKEEP",
         "legal_non_pass": False,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {},
     }
     if action is not _MISSING_ACTION:
@@ -377,6 +384,7 @@ def test_decision_quality_invalid_action_makes_stall_evidence_unavailable(
         "step": "Step.UPKEEP",
         "legal_non_pass": False,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {},
         "action": {"type": "pass_priority"},
     }
@@ -395,22 +403,26 @@ def test_decision_quality_invalid_action_makes_stall_evidence_unavailable(
         (
             "missed_land_drops",
             {"pid": 1, "step": "Step.PRECOMBAT_MAIN", "legal_non_pass": True,
-             "stall_actionable_options": False, "action": {"type": "cast_spell"}},
+             "stall_actionable_options": False,
+             "redundant_removal_casts": 0, "action": {"type": "cast_spell"}},
         ),
         (
             "unused_mana_passes",
             {"pid": 1, "step": "Step.UPKEEP", "legal_non_pass": False,
-             "stall_actionable_options": False, "action": {"type": "pass_priority"}},
+             "stall_actionable_options": False,
+             "redundant_removal_casts": 0, "action": {"type": "pass_priority"}},
         ),
         (
             "lethal_misses",
             {"pid": 1, "step": "Step.DECLARE_ATTACKERS", "lethal_attack_available": "false",
-             "stall_actionable_options": False, "action": {"type": "attack"}},
+             "stall_actionable_options": False,
+             "redundant_removal_casts": 0, "action": {"type": "attack"}},
         ),
         (
             "bad_blocks",
             {"pid": 1, "step": "Step.DECLARE_BLOCKERS",
              "stall_actionable_options": False,
+             "redundant_removal_casts": 0,
              "battlefield": [{"id": "b", "power": 1, "toughness": 1}],
              "opp_battlefield": [{"id": "a", "power": 3, "toughness": 3}],
              "action": {"type": "block", "blocks": {"a": "b"}}},
@@ -418,6 +430,7 @@ def test_decision_quality_invalid_action_makes_stall_evidence_unavailable(
         (
             "stall_streaks",
             {"pid": 1, "step": "Step.UPKEEP", "legal_non_pass": False, "mana_pool": {},
+             "redundant_removal_casts": 0,
              "action": {"type": "pass_priority"}},
         ),
     ],
@@ -428,6 +441,7 @@ def test_decision_quality_partial_trace_only_invalidates_affected_metric(metric:
         "step": "Step.UPKEEP",
         "legal_non_pass": False,
         "stall_actionable_options": False,
+        "redundant_removal_casts": 0,
         "mana_pool": {},
         "action": {"type": "pass_priority"},
     }
@@ -526,6 +540,7 @@ def test_batch_summary_exports_decision_quality_with_honest_unavailable_metrics(
         "lethal_misses",
         "bad_blocks",
         "stall_streaks",
+        "redundant_removal_casts",
     }
     decision_quality = out["decision_quality"]
     assert [(row["deck_name"], row["deck_key"]) for row in decision_quality["per_deck"]] == [
@@ -573,6 +588,7 @@ def test_batch_and_overnight_decision_quality_share_exact_schema() -> None:
             "lethal_misses",
             "bad_blocks",
             "stall_streaks",
+            "redundant_removal_casts",
         )
     }
     batch = AnalyticsService._decision_quality_summary(
@@ -637,7 +653,7 @@ def test_overnight_real_trace_path_includes_shared_authoritative_evidence() -> N
     assert isinstance(payload["stall_actionable_options"], bool)
 
 
-def test_overnight_artifact_measures_all_five_metrics_from_complete_real_traces() -> None:
+def test_overnight_artifact_measures_all_six_metrics_from_complete_real_traces() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
@@ -665,7 +681,7 @@ def test_overnight_artifact_measures_all_five_metrics_from_complete_real_traces(
     game = overnight_verbose_round_robin._decision_quality_game_summary(traces, *decks)  # type: ignore[attr-defined]
     artifact = overnight_verbose_round_robin._decision_quality_artifact([game], decks)  # type: ignore[attr-defined]
 
-    assert len(artifact["overall"]) == 5
+    assert len(artifact["overall"]) == 6
     assert all(type(value) is int for value in artifact["overall"].values())
     assert artifact["unavailable_metrics"] == {}
     assert all(row["unavailable_metrics"] == {} for row in artifact["per_deck"])
@@ -691,6 +707,7 @@ def test_batch_decision_quality_attributes_stall_streaks_across_reversed_seats()
             "step": "Step.UPKEEP",
             "legal_non_pass": False,
             "stall_actionable_options": False,
+            "redundant_removal_casts": 0,
             "mana_pool": {},
             "action": {"type": "pass_priority"},
         }))
@@ -735,6 +752,7 @@ def test_batch_decision_quality_aggregates_traces_by_deck_across_reversed_seats(
                         "legal_non_pass": False,
                         "legal_has_land": False,
                         "stall_actionable_options": False,
+                        "redundant_removal_casts": 0,
                         "mana_pool": {},
                         "action": {"type": "pass_priority"},
                     }
@@ -794,9 +812,11 @@ def test_batch_decision_quality_aggregates_traces_by_deck_across_reversed_seats(
                 "lethal_misses": 2,
                 "bad_blocks": 2,
                 "stall_streaks": None,
+                "redundant_removal_casts": None,
             },
             "unavailable_metrics": {
                 "stall_streaks": "complete per-player AI decision trace evidence absent",
+                "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
             },
         },
         {
@@ -809,9 +829,11 @@ def test_batch_decision_quality_aggregates_traces_by_deck_across_reversed_seats(
                 "lethal_misses": 0,
                 "bad_blocks": 0,
                 "stall_streaks": None,
+                "redundant_removal_casts": None,
             },
             "unavailable_metrics": {
                 "stall_streaks": "complete per-player AI decision trace evidence absent",
+                "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
             },
         },
     ]
@@ -821,9 +843,11 @@ def test_batch_decision_quality_aggregates_traces_by_deck_across_reversed_seats(
         "lethal_misses": 2,
         "bad_blocks": 2,
         "stall_streaks": None,
+        "redundant_removal_casts": None,
     }
     assert out["decision_quality"]["unavailable_metrics"] == {
         "stall_streaks": "complete per-player AI decision trace evidence absent",
+        "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
     }
 
 

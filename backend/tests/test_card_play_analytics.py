@@ -96,6 +96,7 @@ def test_card_play_analytics_empty_stream_marks_all_decision_metrics_unavailable
         "lethal_misses",
         "bad_blocks",
         "stall_streaks",
+        "redundant_removal_casts",
     }
     assert out["decision_quality"]["metrics"] == {
         metric: None for metric in expected_metrics
@@ -194,6 +195,7 @@ def test_card_play_analytics_non_finite_attack_power_only_invalidates_lethal_mis
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "lethal_attack_available": False,
                 "battlefield": [{
@@ -215,6 +217,7 @@ def test_card_play_analytics_non_finite_attack_power_only_invalidates_lethal_mis
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "action": {"type": "pass_priority"},
             }),
@@ -253,6 +256,7 @@ def test_card_play_analytics_non_finite_attack_comparison_only_invalidates_letha
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "lethal_attack_available": False,
                 "battlefield": [{
@@ -278,6 +282,7 @@ def test_card_play_analytics_non_finite_attack_comparison_only_invalidates_letha
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "action": {"type": "pass_priority"},
             }),
@@ -315,6 +320,7 @@ def test_card_play_analytics_non_finite_legacy_lethal_evidence_does_not_crash(
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "battlefield": [{
                     "id": "attacker",
@@ -335,6 +341,7 @@ def test_card_play_analytics_non_finite_legacy_lethal_evidence_does_not_crash(
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "action": {"type": "pass_priority"},
             }),
@@ -382,6 +389,7 @@ def test_card_play_analytics_non_finite_block_stat_only_invalidates_bad_blocks(
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "battlefield": [blocker],
                 "opp_battlefield": [attacker],
@@ -394,6 +402,7 @@ def test_card_play_analytics_non_finite_block_stat_only_invalidates_bad_blocks(
                 "legal_has_land": False,
                 "stall_actionable_options": False,
                 "bad_blocks": 0,
+                "redundant_removal_casts": 0,
                 "mana_pool": {},
                 "action": {"type": "pass_priority"},
             }),

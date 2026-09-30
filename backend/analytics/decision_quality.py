@@ -9,7 +9,7 @@ from typing import Any
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
-from game_state.state import Zone
+from game_state.state import MatchState, Zone
 
 
 DECISION_QUALITY_METRICS = (
@@ -18,6 +18,7 @@ DECISION_QUALITY_METRICS = (
     "lethal_misses",
     "bad_blocks",
     "stall_streaks",
+    "redundant_removal_casts",
 )
 _TRACE_METRICS = DECISION_QUALITY_METRICS
 UNAVAILABLE_REASON = "complete per-player AI decision trace evidence absent"
@@ -249,9 +250,54 @@ def build_trace_payload(
         "lethal_attack_available": _lethal_attack_available(state, pid, legal_moves),
         "bad_blocks": _validated_bad_blocks(state, pid, action),
         "stall_actionable_options": bool(stall_actionable),
+        "stack": _stack_snapshot(state),
+        "redundant_removal_casts": _redundant_removal_casts(state, pid, action),
         "action": compact_action(action),
         "reasoning": reasoning,
     }
+
+
+def _stack_snapshot(state: Any) -> list[dict]:
+    from rules_engine.targeting import stack_object_kind, stack_source_card, spell_cant_be_countered
+    from rules_engine.mana import mana_value
+    out = []
+    for item in getattr(state, "stack", []) or []:
+        source = stack_source_card(state, item)
+        kind = stack_object_kind(state, item)
+        payload = item.payload or {}
+        out.append({
+            "id": item.id, "controller": item.controller, "kind": kind,
+            "label": item.label, "source_card_id": item.source_card_id,
+            "source_missing": source is None,
+            "source_name": source.name if source else None, "types": list(source.types) if source else None,
+            "mana_cost": source.mana_cost if source else None,
+            "mana_value": mana_value(source.mana_cost, x_value=int(payload.get("x_value", 0) or 0)) if source else None,
+            "oracle_text": source.oracle_text if source else None,
+            "effect_key": item.effect_key,
+            "effect_payload": copy.deepcopy({key: value for key, value in payload.items() if not key.startswith("__")}),
+            "announced_targets": copy.deepcopy(payload.get("__announced_targets") or {}),
+            "source_lki": copy.deepcopy(payload.get("__source_lki")),
+            "ability_text": payload.get("__ability_target_text"),
+            "engine_detected_uncounterable": kind == "spell" and spell_cant_be_countered(state, item),
+        })
+    return out
+
+
+def _redundant_removal_casts(state: Any, pid: int, action: dict) -> int | None:
+    if action.get("type") != "cast_spell":
+        return 0
+    if not isinstance(state, MatchState):
+        return None
+    card = state.cards.get(action.get("card_id"))
+    if card is None:
+        return None
+    if action.get("selected_face_index") is not None:
+        from rules_engine.card_faces import select_cast_face
+        card = select_cast_face(card, int(action["selected_face_index"]))
+    from ai.pending_effects import covered_removal_targets
+    targets = action.get("targets") or {}
+    covered = covered_removal_targets(state, card, pid, targets)
+    return None if covered is None else int(targets.get("target_card_id") in covered)
 
 
 def losing_blocks(payload: dict[str, Any]) -> int | None:
@@ -390,6 +436,11 @@ def summarize_trace_rows(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
                 row_evidence_complete[pid]["bad_blocks"] = False
             else:
                 counts[pid]["bad_blocks"] += bad_blocks
+            redundant_removal = payload.get("redundant_removal_casts")
+            if type(redundant_removal) is not int or redundant_removal < 0:
+                row_evidence_complete[pid]["redundant_removal_casts"] = False
+            else:
+                counts[pid]["redundant_removal_casts"] += redundant_removal
 
         for pid in expected_pids:
             counts[pid]["missed_land_drops"] += sum(

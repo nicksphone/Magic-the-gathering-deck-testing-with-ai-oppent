@@ -2365,6 +2365,21 @@ class AIAgent:
 
             hints = build_cast_hints(state, card, player_id, targets)
 
+        if isinstance(state, MatchState) and mtype == "cast_spell" and card is not None:
+            from ai.pending_effects import covered_removal_targets
+            covered = covered_removal_targets(state, card, player_id, targets)
+            if covered:
+                if targets.get("target_card_id") in covered:
+                    out["_invalid_ai_choice"] = True
+                    return out
+                hints = {key: [candidate for candidate in value if candidate.get("id") not in covered]
+                         if key.endswith("_targets") and isinstance(value, list) else value
+                         for key, value in hints.items()}
+                from rules_engine.cast_choice import has_available_targets_for_action
+                if not has_available_targets_for_action(hints):
+                    out["_invalid_ai_choice"] = True
+                    return out
+
         stack_targets = hints.get("stack_targets") or []
         if stack_targets and not targets.get("target_stack_id"):
             # For counters/interaction, target the most threatening spell on stack.
@@ -2393,7 +2408,17 @@ class AIAgent:
             targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)
 
         creature_targets = hints.get("creature_targets") or []
-        target_text = str(move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
+        target_text = str(targets.get("mode_text") or move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
+        from rules_engine.oracle_effects import TARGET_PT_CHANGE_RE
+        pt_change = TARGET_PT_CHANGE_RE.fullmatch(without_reminder_text(target_text).strip())
+        if pt_change:
+            power, toughness = map(int, pt_change.groups())
+            preferred_controller = player_id if power >= 0 and toughness >= 0 else opponent if power <= 0 and toughness <= 0 else None
+            if preferred_controller is not None:
+                creature_targets = [target for target in creature_targets if state.cards[target["id"]].controller == preferred_controller]
+                if not creature_targets:
+                    out["_invalid_ai_choice"] = True
+                    return out
         any_damage_target = "any target" in target_text or "any number of targets" in target_text
         if any_damage_target:
             creature_targets = [target for target in creature_targets if state.cards[target["id"]].controller != player_id]

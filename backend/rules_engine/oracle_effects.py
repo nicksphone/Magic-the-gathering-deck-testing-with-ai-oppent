@@ -140,6 +140,7 @@ COUNTER_TARGET_SPELL_RE = re.compile(
     re.IGNORECASE,
 )
 ALL_CREATURES_X_DEBUFF_RE = re.compile(r"\b(?:all creatures get|each creature gets) -x/-x until end of turn\b", re.IGNORECASE)
+TARGET_PT_CHANGE_RE = re.compile(r"target creature gets ([+-]\d+)/([+-]\d+) until end of turn\.?", re.IGNORECASE)
 
 
 def infer_effect_from_oracle(
@@ -1133,6 +1134,13 @@ def _infer_clause_effect(
                       f"this creature gains {keyword} until end of turn",
                       f"this permanent gains {keyword} until end of turn"}:
             return "grant_keyword", {"target_card_id": card.id, "keyword": keyword, "until_end_of_turn": True}
+
+    targeted_pt = TARGET_PT_CHANGE_RE.fullmatch(oracle.strip())
+    if targeted_pt:
+        return "temporary_pt_buff", {
+            "target_card_id": action_targets.get("target_card_id"),
+            "power": int(targeted_pt.group(1)), "toughness": int(targeted_pt.group(2)),
+        }
 
     if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}

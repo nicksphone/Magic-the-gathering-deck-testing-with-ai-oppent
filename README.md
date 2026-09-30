@@ -13,6 +13,7 @@ It is designed for serious deck work:
 ## Current Features
 
 ### Gameplay
+- Targeted destruction respects indestructible. Pure signed numeric targeted power/toughness changes until end of turn use the shared temporary-effect handler; additional clauses, keywords and X-based pump wording still need coverage.
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
 - Supported "whenever you attack" triggers fire once for an attacker group, while "whenever a creature attacks" still fires per creature. Tokens created tapped and attacking join combat without being declared as attackers. Adeline's power tracks creatures controlled, including the new token. When multiple defenders are legal, human and AI controllers choose where each new token attacks; the choice survives snapshot restore.
 - Training uses the power of creatures declared as attackers together, creates one stack trigger even when several companions have greater power, and adds a +1/+1 counter only if that battlefield incarnation remains when the trigger resolves. Hopeful Initiate has real-card, snapshot and re-entry regressions; other attack-trigger keywords are not implied to be supported.
@@ -171,6 +172,7 @@ It is designed for serious deck work:
 - Diagnostic replay scripts hydrate cards from the local cache before simulation; unknown cards retain unknown characteristics instead of being silently treated as generic 2/2s
 
 ### AI
+- [Pending-removal awareness](docs/testing/ai-pending-removal.md) projects announced stack effects using the rules engine before committing another simple removal spell. AI preserves backup interaction when a known counter or pump defeats the pending effect, and prefers uncovered threats. Unknown choices retain options rather than inventing outcomes; arbitrary compound-effect valuation remains open.
 - [Counterability-aware decisions](docs/testing/ai-counterability.md) conserve supported pure counters against protected spells and prefer counterable opposing targets. Modal scoring can choose useful non-counter modes instead; human counter targets remain legal. Compound-effect valuation, protection-removal planning and expert-level play remain open.
 - Tactical role tags derive from Oracle text and card types rather than card-name substrings. Canonical live and bulk knowledge sync store these tags, including per-face tags, and backfill verified cached rows offline. An isolated import of the local Scryfall bulk file populated all 38,690 Oracle rows and repeated without changes; this is metadata coverage, not gameplay certification. Persisted play-value/threat profiles and expert-level decision quality remain future work.
 - Master AI scores supported X-based all-creature debuffs against effective toughness and creature threat rather than maximizing X by default. It holds those spells when the affordable X removes no opposing creature, including when main-phase anti-stall logic would otherwise force a cast. This is a bounded tactical heuristic, not an optimal sweep planner.
@@ -326,7 +328,7 @@ python3 scripts/card_play_analytics.py --games-jsonl diagnostics/RUN_DIR/games.j
 python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2
 python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
 ```
-The head-to-head runner records full hand/board decisions, effective keywords and marked damage. Its trace uses the shared five-metric decision-quality evidence path. `--seed` records per-game seeds for reruns; generated stack IDs can still differ in raw logs, so compare normalized actions rather than raw bytes. Replace `RUN_DIR` with the run directory printed by the preceding head-to-head command. Metrics may remain unavailable when a complex combat line cannot be validated.
+The head-to-head runner records full hand/board decisions, effective keywords, marked damage and stack objects, including announced targets, saved copy characteristics and engine-detected counterability. Its trace uses the shared six-metric decision-quality evidence path, including `redundant_removal_casts`. Legacy, malformed or unresolved-choice evidence does not become a measured zero for that metric. `--seed` records per-game seeds for reruns; generated stack IDs can still differ in raw logs, so compare normalized actions rather than raw bytes. Replace `RUN_DIR` with the run directory printed by the preceding head-to-head command. Metrics may remain unavailable when a complex combat line cannot be validated.
 
 The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.
 

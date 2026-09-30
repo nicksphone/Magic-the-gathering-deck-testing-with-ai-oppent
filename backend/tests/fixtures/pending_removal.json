@@ -1,0 +1,146 @@
+[
+  {
+    "id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+    "oracle_id": "16437a83-be52-44cd-a768-a767c9347eb2",
+    "name": "Fatal Push",
+    "mana_cost": "{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target creature if it has mana value 2 or less.\nRevolt — Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Revolt"
+    ]
+  },
+  {
+    "id": "5446e1ba-c745-45b2-ad05-b22abf04daec",
+    "oracle_id": "2f092562-9e17-43cd-aeb8-d0567f99363e",
+    "name": "Go for the Throat",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target nonartifact creature.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "361385d8-d9c7-4de8-a5c8-683e682779f4",
+    "oracle_id": "a9d8ab76-70a4-475e-b87e-4737c090553a",
+    "name": "Sprite Dragon",
+    "mana_cost": "{U}{R}",
+    "type_line": "Creature — Faerie Dragon",
+    "oracle_text": "Flying, haste\nWhenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "power": "1",
+    "toughness": "1",
+    "keywords": [
+      "Flying",
+      "Haste"
+    ]
+  },
+  {
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "name": "Counterspell",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "colors": [
+      "U"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+    "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+    "name": "Naturalize",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target artifact or enchantment.",
+    "colors": [
+      "G"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "b30a8f92-ce42-4b27-a893-bcf97fde228d",
+    "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2",
+    "name": "Mind Stone",
+    "mana_cost": "{2}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+    "colors": [],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48",
+    "oracle_id": "ee579a32-a048-4335-b966-231ba731cdea",
+    "name": "Phyrexian Arena",
+    "mana_cost": "{1}{B}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "At the beginning of your upkeep, you draw a card and lose 1 life.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "0f5712cf-c6a9-4a2e-90db-8ca17c621724",
+    "oracle_id": "f90fe86c-5cca-483b-93c2-6e856fa01c88",
+    "name": "Darksteel Myr",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature — Myr",
+    "oracle_text": "Indestructible (Damage and effects that say \"destroy\" don't destroy this creature. If its toughness is 0 or less, it still dies.)",
+    "colors": [],
+    "power": "0",
+    "toughness": "1",
+    "keywords": [
+      "Indestructible"
+    ]
+  },
+  {
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "name": "Lightning Bolt",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+    "oracle_id": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+    "name": "Giant Growth",
+    "mana_cost": "{G}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +3/+3 until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  }
+]

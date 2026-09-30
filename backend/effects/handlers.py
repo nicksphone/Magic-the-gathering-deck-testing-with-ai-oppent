@@ -419,6 +419,9 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        if has_keyword(state, target, "indestructible"):
+            state.log.append(f"{card.name} cannot be destroyed because it has indestructible.")
+            return
         destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
@@ -1867,7 +1870,7 @@ def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None
         card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
         card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
         state.log.append(
-            f"{card.name} gets +{power}/+{toughness} until end of turn."
+            f"{card.name} gets {power:+d}/{toughness:+d} until end of turn."
         )
 
 

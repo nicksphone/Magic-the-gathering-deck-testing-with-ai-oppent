@@ -128,9 +128,11 @@ def test_verbose_round_robin_decision_quality_uses_stable_ids_for_duplicate_name
                 "lethal_misses": 1,
                 "bad_blocks": 0,
                 "stall_streaks": None,
+                "redundant_removal_casts": None,
             },
             "unavailable_metrics": {
                 "stall_streaks": "complete per-player AI decision trace evidence absent",
+                "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
             },
         },
         {
@@ -143,9 +145,11 @@ def test_verbose_round_robin_decision_quality_uses_stable_ids_for_duplicate_name
                 "lethal_misses": 0,
                 "bad_blocks": 0,
                 "stall_streaks": None,
+                "redundant_removal_casts": None,
             },
             "unavailable_metrics": {
                 "stall_streaks": "complete per-player AI decision trace evidence absent",
+                "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
             },
         },
     ]
@@ -155,9 +159,11 @@ def test_verbose_round_robin_decision_quality_uses_stable_ids_for_duplicate_name
         "lethal_misses": 1,
         "bad_blocks": 0,
         "stall_streaks": None,
+        "redundant_removal_casts": None,
     }
     assert out["unavailable_metrics"] == {
         "stall_streaks": "complete per-player AI decision trace evidence absent",
+        "redundant_removal_casts": "complete per-player AI decision trace evidence absent",
     }
 
 
@@ -175,6 +181,7 @@ def test_verbose_round_robin_decision_quality_only_validates_participating_decks
             "lethal_misses",
             "bad_blocks",
             "stall_streaks",
+            "redundant_removal_casts",
         )
     }
     games = []
