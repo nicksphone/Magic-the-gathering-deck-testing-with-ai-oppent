@@ -1,0 +1,363 @@
+[
+  {
+    "name": "Always Watching",
+    "oracle_text": "Nontoken creatures you control get +1/+1 and have vigilance.",
+    "mana_cost": "{1}{W}{W}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "c2153115-bc12-458d-baeb-538ec61e1242",
+      "source": "scryfall",
+      "scryfall_id": "cf65bfa0-9c05-4e9e-b4c7-d705e1a822c1"
+    }
+  },
+  {
+    "name": "Intangible Virtue",
+    "oracle_text": "Creature tokens you control get +1/+1 and have vigilance.",
+    "mana_cost": "{1}{W}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "d21c3c8f-d105-4ba9-bf69-e5f26f0f8ec5",
+      "source": "scryfall",
+      "scryfall_id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+    }
+  },
+  {
+    "name": "Angel of Jubilation",
+    "oracle_text": "Flying\nOther nonblack creatures you control get +1/+1.\nPlayers can't pay life or sacrifice creatures to cast spells or activate abilities.",
+    "mana_cost": "{1}{W}{W}{W}",
+    "type_line": "Creature \u2014 Angel",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "36c2fc4c-7d8b-47c2-91c3-e356df60b219",
+      "source": "scryfall",
+      "scryfall_id": "16c5dfed-4dee-4e48-a445-89f03d7794e6"
+    }
+  },
+  {
+    "name": "Creakwood Liege",
+    "oracle_text": "Other black creatures you control get +1/+1.\nOther green creatures you control get +1/+1.\nAt the beginning of your upkeep, you may create a 1/1 black and green Worm creature token.",
+    "mana_cost": "{1}{B/G}{B/G}{B/G}",
+    "type_line": "Creature \u2014 Horror",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "1e67b4eb-e5d2-4368-8284-4ba5c4c42455",
+      "source": "scryfall",
+      "scryfall_id": "9a05c8f9-e810-498d-ab51-632661dd000d"
+    }
+  },
+  {
+    "name": "Darksteel Forge",
+    "oracle_text": "Artifacts you control have indestructible. (Effects that say \"destroy\" don't destroy them. Artifact creatures with indestructible can't be destroyed by damage.)",
+    "mana_cost": "{9}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "9b3bec05-441f-4fdf-8b51-69fa8613fcd4",
+      "source": "scryfall",
+      "scryfall_id": "421089c4-c8d3-48c5-b313-fb1741546271"
+    }
+  },
+  {
+    "name": "Privileged Position",
+    "oracle_text": "({G/W} can be paid with either {G} or {W}.)\nOther permanents you control have hexproof. (They can't be the targets of spells or abilities your opponents control.)",
+    "mana_cost": "{2}{G/W}{G/W}{G/W}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G",
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "abd62af0-c17d-4f62-af15-9ea83037b990",
+      "source": "scryfall",
+      "scryfall_id": "9655bbe4-062f-4278-ad05-a326a64c5b69"
+    }
+  },
+  {
+    "name": "Avacyn, Angel of Hope",
+    "oracle_text": "Flying, vigilance, indestructible\nOther permanents you control have indestructible.",
+    "mana_cost": "{5}{W}{W}{W}",
+    "type_line": "Legendary Creature \u2014 Angel",
+    "power": "8",
+    "toughness": "8",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Indestructible",
+      "Vigilance"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "216cb26e-8da9-478b-bfbc-8030f7adee72",
+      "source": "scryfall",
+      "scryfall_id": "74e5dcec-ef1d-4461-bb23-61d98ff082dd"
+    }
+  },
+  {
+    "name": "Mutavault",
+    "oracle_text": "{T}: Add {C}.\n{1}: This land becomes a 2/2 creature with all creature types until end of turn. It's still a land.",
+    "mana_cost": "",
+    "type_line": "Land",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "6b3cc59a-7ea5-4eb5-9bf9-5a9c07f80e2b",
+      "source": "scryfall",
+      "scryfall_id": "52cc2f10-142d-4e6a-984e-b25f566cc960"
+    }
+  },
+  {
+    "name": "Shadowspear",
+    "oracle_text": "Equipped creature gets +1/+1 and has trample and lifelink.\n{1}: Permanents your opponents control lose hexproof and indestructible until end of turn.\nEquip {2}",
+    "mana_cost": "{1}",
+    "type_line": "Legendary Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "8b27326f-e7b8-4a4d-b589-df459246d19a",
+      "source": "scryfall",
+      "scryfall_id": "939c6e19-4b27-4023-bb9c-ae440f91e21c"
+    }
+  },
+  {
+    "name": "Steel Leaf Champion",
+    "oracle_text": "This creature can't be blocked by creatures with power 2 or less.",
+    "mana_cost": "{G}{G}{G}",
+    "type_line": "Creature \u2014 Elf Knight",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "666af637-9282-4121-962a-048e528f9221",
+      "source": "scryfall",
+      "scryfall_id": "24d8a688-79d4-49b9-ab0c-c7f5c9b551f4"
+    }
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_text": "",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Bear",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "source": "scryfall",
+      "scryfall_id": "409f9b88-f03e-40b6-9883-68c14c37c0de"
+    }
+  },
+  {
+    "name": "Blood Artist",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature \u2014 Vampire",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "source": "scryfall",
+      "scryfall_id": "b5275d76-2947-4219-be21-614c7421614a"
+    }
+  },
+  {
+    "name": "Palladium Myr",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature \u2014 Myr",
+    "power": "2",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "7b0767b8-b504-456e-93bd-218502f73b3d",
+      "source": "scryfall",
+      "scryfall_id": "f7c6aba3-38c3-45d1-83e1-40829eb07862"
+    }
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "source": "scryfall",
+      "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7"
+    }
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "source": "scryfall",
+      "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+    }
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "source": "scryfall",
+      "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac"
+    }
+  },
+  {
+    "name": "Raise the Alarm",
+    "oracle_text": "Create two 1/1 white Soldier creature tokens.",
+    "mana_cost": "{1}{W}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "source": "scryfall",
+      "scryfall_id": "6c7c8527-55f6-494d-b4f7-c427a5735053"
+    }
+  },
+  {
+    "name": "Thistledown Liege",
+    "oracle_text": "Flash\nOther white creatures you control get +1/+1.\nOther blue creatures you control get +1/+1.",
+    "mana_cost": "{1}{W/U}{W/U}{W/U}",
+    "type_line": "Creature \u2014 Kithkin Knight",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Flash"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "7b07356f-9c3f-4875-939e-aa64eb6b5ce2",
+      "source": "scryfall",
+      "scryfall_id": "41a21a0c-fe3d-456b-a905-8d962c0b1e3c"
+    }
+  },
+  {
+    "name": "Naturalize",
+    "oracle_text": "Destroy target artifact or enchantment.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "source": "scryfall",
+      "scryfall_id": "390c40ba-2464-44ae-8d67-93c72ab3c425"
+    }
+  },
+  {
+    "name": "Darksteel Citadel",
+    "oracle_text": "Indestructible\n{T}: Add {C}.",
+    "mana_cost": "",
+    "type_line": "Artifact Land",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc",
+      "source": "scryfall",
+      "scryfall_id": "2ba7597d-6d76-45b8-b172-342999e401bd"
+    }
+  }
+]

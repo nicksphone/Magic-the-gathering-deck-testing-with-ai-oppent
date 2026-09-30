@@ -1,9 +1,15 @@
 # MTG Deck Testing Lab Finish Plan
 
+Latest postcombat/layer increment: 1,875 isolated backend tests, frontend lint/build/unit and the complete Chromium harness pass. Six continuous-effect regressions fail on the parent and pass here; eight seed/seat-paired games repeat their complete reported game traces across sixteen executions without timeout or rejected cast/target. One optional Spell Pierce payment fails normally; the smoke traces are unchanged from the parent. This is bounded regression evidence, not expert-play or arbitrary-card certification. See [scope and evidence](docs/testing/ai-postcombat-mana.md).
+
+- [x] Compare supported unblocked mana-source attacks with actual fixed-cost postcombat hand opportunities; preserve vigilance and release redundant sources, using the engine's payment rules and no carried floating mana. Validate both seats, ten style labels, colors, taxes and snapshot purity.
+- [x] Correct qualified token/color/type continuous subjects and noncreature keyword protection; keep unactivated/triggered effect bodies out of static layers. Validate canonical protection/targeting/destruction, effective views and restore.
+- [ ] Expand attack-versus-activation planning to blocked combat, multiple spells, opposing responses, variable/conditional/costed mana and untap engines. Add real conditional static and layer-5/dependency semantics rather than unconditional text inference.
+
 Latest resource milestone verification: 1,835 isolated backend tests and frontend lint/build/unit pass, as does the complete final-code Chromium harness. Eight seed/seat-paired games repeat with identical full results across sixteen executions without timeout or logged cost/target rejection. Three traces changed from the prior milestone; stronger play is not established by trace changes. See [resource scope and evidence](docs/testing/ai-mana-resources.md). Both LAN services respond. The earlier intermittent sideboard timeout and timeout-diagnostic interpreter crash remain unverified.
 
 - [x] Separate supported repeatable printed nonland mana capacity from readiness and share bounded public-board resource value across board/sacrifice and creature cast/threat evaluation. Canonical colored/colorless/flexible/multi-mana and excluded-source fixtures cover the boundary. See [scope](docs/testing/ai-mana-resources.md).
-- [ ] Extend resource planning to actual hand-cost/color bottlenecks, attack-versus-activation opportunity cost, restricted/conditional/variable sources and costed untap engines. The public land-count heuristic is not calibrated expert resource planning.
+- [ ] Extend the bounded unblocked fixed-cost hand forecast to broader attack/block-versus-activation opportunity cost, restricted/conditional/variable sources and costed untap engines. The public land-count valuation remains an uncalibrated heuristic.
 
 Recurring-payoff milestone validation: 1,811 isolated backend tests and frontend lint/build/unit gates pass. The complete Chromium rerun passes; an initial sideboard pending-operation timeout remains unverified. Eight seat-paired games repeat with identical full results across sixteen executions without timeout or logged cost/target rejection. [Scope and evidence](docs/testing/ai-recurring-payoffs.md) distinguish tactical fixture improvement from broader strategy and balance claims.
 

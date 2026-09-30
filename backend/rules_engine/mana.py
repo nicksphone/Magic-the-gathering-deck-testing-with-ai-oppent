@@ -101,6 +101,15 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
     return out
 
 
+def mana_source_outputs(state: MatchState, player_id: int, card_id: str) -> dict[str, int]:
+    """Ready outputs used by both ordinary and snow payment planning."""
+    card = state.cards[card_id]
+    if "Land" in card.types and land_can_produce_mana(state, card_id):
+        amount = land_mana_amount(state, player_id, card_id)
+        return {color: amount for color in land_mana_colors(card)}
+    return nonland_mana_outputs(state, card_id, card)
+
+
 def can_pay_with_pool_and_lands(
     state: MatchState,
     player_id: int,
@@ -215,11 +224,7 @@ def _plan_mana_sources(
             continue
         card = state.cards[cid]
         land = "Land" in card.types
-        if land and land_can_produce_mana(state, cid):
-            amount = land_mana_amount(state, player_id, cid)
-            outputs = {color: amount for color in land_mana_colors(card)}
-        else:
-            outputs = nonland_mana_outputs(state, cid, card)
+        outputs = mana_source_outputs(state, player_id, cid)
         if outputs:
             sources.append((cid, outputs, land))
 
@@ -291,11 +296,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tup
         if not is_snow_source(card):
             continue
         land = "Land" in card.types
-        if land and land_can_produce_mana(state, cid):
-            amount = land_mana_amount(state, player_id, cid)
-            outputs = {color: amount for color in land_mana_colors(card)}
-        else:
-            outputs = nonland_mana_outputs(state, cid, card)
+        outputs = mana_source_outputs(state, player_id, cid)
         if outputs:
             sources.append((cid, outputs, land))
 

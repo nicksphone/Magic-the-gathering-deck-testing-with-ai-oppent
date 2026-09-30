@@ -1,21 +1,49 @@
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from typing import Any
 
 from game_state.state import Zone
 from rules_engine.card_types import creature_subtype_candidates
 from rules_engine.card_types import is_token_card
+from rules_engine.oracle_text import without_reminder_text
+
+STATIC_SUBJECT = r"(creature tokens|(?:[a-z]+(?:-[a-z]+)? )*creatures|[a-z]+s?)"
+_STATIC_TYPE_NOUNS = {kind.lower() + "s": kind for kind in
+                      ("Creature", "Artifact", "Enchantment", "Land", "Planeswalker", "Battle")}
+_COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
+
+
+def _static_oracle_text(source_card) -> str:
+    """Do not turn later activated/triggered effects into permanent layers."""
+    return _static_text_from_oracle(getattr(source_card, "oracle_text", "") or "")
+
+
+@lru_cache(maxsize=4096)
+def _static_text_from_oracle(oracle_text: str) -> str:
+    lines = []
+    text = without_reminder_text(oracle_text).lower()
+    for line in text.splitlines():
+        line = line.strip()
+        if re.match(r"^(?:when|whenever|at the beginning|if|as long as|during)\b", line):
+            continue
+        # Quoted granted abilities are not instructions being applied now.
+        line = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', line)
+        if ":" not in line and "until end of turn" not in line:
+            lines.append(line)
+    return "\n".join(lines)
+
 
 PT_STATIC_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+get\s+([+-]\d+)\/([+-]\d+)"
 )
 PT_SET_RE = re.compile(
     r"\b(?:base power and toughness\s+(\d+)\/(\d+)|(?:are|become|becomes|is)\s+(\d+)\/(\d+)|set(?:s)?(?:\s+their)?\s+base power and toughness\s+(\d+)\/(\d+))\b"
 )
 PT_SET_SCOPE_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+"
     r"(?:base power and toughness\s+(\d+)\/(\d+)|(?:are|become|becomes|is)\s+(\d+)\/(\d+)|"
     r"set(?:s)?(?:\s+their)?\s+base power and toughness\s+(\d+)\/(\d+))\b"
@@ -28,23 +56,23 @@ SELF_SCALE_BF_RE = re.compile(
 )
 CARD_TYPE_COUNT_RE = re.compile(r"number of card types among cards in all graveyards", re.IGNORECASE)
 KW_STATIC_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
 )
 PT_AND_KW_STATIC_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:have|has)\s+([^.]*)"
 )
 KW_REMOVE_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+(?:lose|loses)\s+([^.]*)"
 )
 KW_CANT_HAVE_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+can't have\s+([^.]*)"
 )
 PT_AND_KW_REMOVE_RE = re.compile(
-    r"\b(other\s+)?(creature tokens|artifact creatures|[a-z]+ creatures|creatures|[a-z]+s?)\s+"
+    r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
@@ -161,8 +189,6 @@ def effective_keywords(state, card_id: str) -> list[str]:
     card = state.cards[card_id]
     out = {str(k).lower() for k in (getattr(card, "keywords", None) or [])}
     if not _is_battlefield(card):
-        return sorted(out)
-    if "Creature" not in card.types:
         return sorted(out)
     out.update(key.removeprefix("__eot_keyword_") for key, amount in (card.counters or {}).items()
                if key.startswith("__eot_keyword_") and amount)
@@ -320,7 +346,7 @@ def _self_scaling_pt_delta(state, source_card) -> tuple[int, int]:
 
 
 def _iter_pt_modifiers(source_card):
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    text = _static_oracle_text(source_card)
     for match in PT_STATIC_RE.finditer(text):
         line_start = text.rfind("\n", 0, match.start()) + 1
         line_end = text.find("\n", match.end())
@@ -336,7 +362,7 @@ def _iter_pt_modifiers(source_card):
 
 
 def _iter_pt_setters(source_card):
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    text = _static_oracle_text(source_card)
     scoped_matches = False
     for match in PT_SET_SCOPE_RE.finditer(text):
         scoped_matches = True
@@ -354,7 +380,7 @@ def _iter_pt_setters(source_card):
 
 
 def _iter_keyword_grants(source_card):
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    text = _static_oracle_text(source_card)
     for match in PT_AND_KW_STATIC_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -374,7 +400,7 @@ def _iter_keyword_grants(source_card):
 
 
 def _iter_keyword_removals(source_card):
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    text = _static_oracle_text(source_card)
     for match in PT_AND_KW_REMOVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -398,7 +424,7 @@ def _iter_keyword_removals(source_card):
         if removed:
             yield (scope, other_only, subject, set(removed))
 def _iter_keyword_cant_removals(source_card):
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
+    text = _static_oracle_text(source_card)
     for match in KW_CANT_HAVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -420,16 +446,40 @@ def _scope_controller(source_controller: int, scope: str, target_controller: int
 def _subject_matches(state, card_id: str, subject: str) -> bool:
     card = state.cards[card_id]
     s = (subject or "").strip().lower()
-    if s == "creatures":
-        return "Creature" in card.types
+    type_nouns = _STATIC_TYPE_NOUNS
+    if s in type_nouns:
+        return type_nouns[s] in card.types
+    if s == "permanents":
+        return _is_battlefield(card) and bool(set(card.types) & set(type_nouns.values()))
+    if s == "tokens":
+        return is_token_card(card)
     if s == "creature tokens":
         return "Creature" in card.types and is_token_card(card)
-    if s == "artifact creatures":
-        return "Creature" in card.types and "Artifact" in card.types
-    # "elf creatures"
     if s.endswith(" creatures"):
-        tribe = s.replace(" creatures", "").strip()
-        return _has_subtype(card, tribe)
+        if "Creature" not in card.types:
+            return False
+        colors = set(getattr(card, "colors", None) or [])
+        color_names = _COLOR_SYMBOLS
+        front_types = set((getattr(card, "type_line", "") or "").split("—", 1)[0].split("-", 1)[0].lower().split())
+
+        def matches(qualifier):
+            negative = qualifier.startswith("non")
+            word = qualifier[3:].lstrip("-") if negative else qualifier
+            if word == "token":
+                matched = is_token_card(card)
+            elif word in color_names:
+                matched = color_names[word] in colors
+            elif word == "colorless":
+                matched = not colors
+            elif word.title() in type_nouns.values():
+                matched = word.title() in card.types
+            elif word in {"legendary", "snow"}:
+                matched = word in front_types
+            else:
+                matched = _has_subtype(card, word)
+            return not matched if negative else matched
+
+        return all(matches(word) for word in s.removesuffix(" creatures").split())
     return any(_has_subtype(card, singular) for singular in creature_subtype_candidates(s))
 
 

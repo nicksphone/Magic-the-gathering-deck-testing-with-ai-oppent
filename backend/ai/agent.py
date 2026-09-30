@@ -776,6 +776,9 @@ class AIAgent:
         chosen = self._choose_attackers(state, options, player_id)
         if not chosen:
             chosen = self._fallback_progress_attackers(state, options, player_id)
+            if not any("Creature" in state.cards[cid].types and not state.cards[cid].tapped
+                       for cid in state.players[3 - player_id].battlefield):
+                chosen = self._reserve_postcombat_mana(state, chosen, player_id)
         if not chosen:
             return None
         move["attackers"] = chosen
@@ -3061,7 +3064,7 @@ class AIAgent:
             if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
         ]
         if not opp_blockers:
-            return list(candidates)
+            return self._reserve_postcombat_mana(state, candidates, player_id)
 
         searched = self._search_attack_assignments(state, candidates, player_id)
         if searched is not None:
@@ -3143,6 +3146,77 @@ class AIAgent:
             if total_power >= opp_life:
                 return list(candidates)
         return chosen
+
+    def _reserve_postcombat_mana(self, state, candidates, player_id):
+        """Compare known postcombat payment opportunities with unblocked damage."""
+        from rules_engine.mana import mana_source_outputs, repeatable_nonland_mana_outputs
+        if (not isinstance(state, MatchState) or state.active_player != player_id
+                or state.step != Step.DECLARE_ATTACKERS or state.stack
+                or not state.players[player_id].hand):
+            return list(candidates)
+        sources = [cid for cid in candidates if cid in state.cards
+                   and "vigilance" not in {kw.lower() for kw in effective_keywords(state, cid)}
+                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(state.cards[cid]))
+                   and mana_source_outputs(state, player_id, cid)]
+        if not sources:
+            return list(candidates)
+        # Preserve the existing lethal-pressure line; this is not a combat proof.
+        if sum(max(0, _effective_combat_stats(state, cid)[0]) for cid in candidates) >= state.players[3 - player_id].life:
+            return list(candidates)
+        sim = planning_copy(state)
+        sim.step = Step.POSTCOMBAT_MAIN
+        sim.priority_player = player_id
+        sim.players[player_id].mana_pool.clear()
+        sim.players[player_id].snow_mana_pool.clear()
+        held = set(sim.players[player_id].hand)
+
+        def opportunities():
+            scores = {}
+            for move in self.engine.legal_moves(sim, player_id):
+                if move.get("type") != "cast_spell" or move.get("card_id") not in held:
+                    continue
+                card = _card_for_move(sim, move)
+                if card is None or "{X}" in card.mana_cost.upper() or PAY_X_LIFE_RE.search(card.oracle_text or ""):
+                    continue
+                action = self._materialize_action(sim, move, player_id)
+                if action.get("_invalid_ai_choice"):
+                    continue
+                value = (self._closure_spell_score(card, _oracle_text(card))
+                         + recurring_engine_value(sim, card.id, surface_card=card)
+                         + repeatable_mana_value(sim, card.id, surface_card=card))
+                targets = action.get("targets") or {}
+                text = " ".join(targets.get("mode_texts") or []) or targets.get("mode_text") or _oracle_text(card)
+                if targets.get("target_player") == 3 - player_id:
+                    value += self._burn_damage_estimate(text) * 1.6
+                if "ramp" in self._spell_tags(card) and not repeatable_nonland_mana_outputs(card):
+                    value += 2.0
+                if value > 0:
+                    key = (card.id, move.get("selected_face_index"))
+                    scores[key] = value
+            return scores
+
+        before = opportunities()
+        best = max(before.values(), default=0.0)
+        if not best:
+            return list(candidates)
+        for cid in sources:
+            sim.cards[cid].tapped = True
+        after = max(opportunities().values(), default=0.0)
+        if after >= best:
+            return list(candidates)
+        # Greedily release higher-power sources when some equally valuable cast
+        # remains payable. Flexible colors remain shared, finite payment sources.
+        reserved = set(sources)
+        for cid in sources:
+            sim.cards[cid].tapped = False
+        for cid in sorted(sources, key=lambda cid: (-_effective_combat_stats(state, cid)[0], cid)):
+            sim.cards[cid].tapped = True
+            if max(opportunities().values(), default=0.0) >= best:
+                reserved.remove(cid)
+            else:
+                sim.cards[cid].tapped = False
+        damage_value = sum(max(0, _effective_combat_stats(state, cid)[0]) for cid in reserved) * 1.6
+        return [cid for cid in candidates if cid not in reserved] if best - after > damage_value else list(candidates)
 
     def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int) -> list[str] | None:
         """Search small-board attack subsets through the defender's best legal blocks."""
