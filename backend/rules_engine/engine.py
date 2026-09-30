@@ -889,6 +889,9 @@ class RulesEngine:
                     payload["__escaped"] = True
                 if chosen.id == "flashback":
                     payload["__flashback"] = True
+                from rules_engine.alternative_casts import has_aftermath
+                if from_graveyard and has_aftermath(face_card):
+                    payload["__aftermath"] = True
                 if from_exile:
                     leave_exile(state, cid)
                 else:

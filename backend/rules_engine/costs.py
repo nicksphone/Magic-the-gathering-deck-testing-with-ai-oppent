@@ -212,13 +212,15 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:
-    from rules_engine.alternative_casts import escape_cost, flashback_cost, prototype_characteristics
+    from rules_engine.alternative_casts import escape_cost, flashback_cost, has_aftermath, prototype_characteristics
     oracle = (card.oracle_text or "").lower()
     base = CostOption(id="base", label="Base Cost", mana_cost=card.mana_cost or "")
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
     if card.zone == Zone.GRAVEYARD:
         options = []
+        if has_aftermath(card):
+            options.append(CostOption(id="aftermath", label="Aftermath", mana_cost=card.mana_cost or ""))
         if escape:
             options.append(CostOption(id="escape", label="Escape", mana_cost=escape[0], exile_graveyard=escape[1]))
         if flashback:

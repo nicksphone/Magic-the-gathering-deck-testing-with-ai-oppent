@@ -8,7 +8,7 @@ from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 from rules_engine.library_permissions import choose_type_for_realmwalker
 from rules_engine.replacement import replacement_options, replacement_source_used
-from rules_engine.zone_actions import put_into_graveyard, exile_flashback_spell
+from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
@@ -287,14 +287,14 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     if card and card.zone == Zone.STACK and not is_trigger:
         owner = state.players[getattr(card, "owner", card.controller)]
         if "Instant" in card.types or "Sorcery" in card.types or payload.get("__failed_to_resolve"):
-            if payload.get("__flashback"):
-                exile_flashback_spell(state, card.id)
+            if payload.get("__flashback") or payload.get("__aftermath"):
+                move_spell_from_stack(state, item)
             elif card.layout == "adventure" and (card.selected_face_index or 0) > 0 and not payload.get("__failed_to_resolve"):
                 owner.exile.append(card.id)
                 card.move_to_zone(Zone.EXILE)
                 state.adventure_permissions[card.id] = item.controller
             else:
-                put_into_graveyard(state, card.id)
+                move_spell_from_stack(state, item)
             from rules_engine.alternative_casts import restore_printed_characteristics
             restore_printed_characteristics(card)
         else:

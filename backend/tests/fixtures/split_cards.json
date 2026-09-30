@@ -20,6 +20,10 @@
         "type_line": "Instant",
         "oracle_text": "Tap target permanent.\nDraw a card."
       }
+    ],
+    "colors": [
+      "R",
+      "U"
     ]
   },
   {
@@ -43,6 +47,10 @@
         "type_line": "Instant",
         "oracle_text": "Exile target creature. That creature's controller creates a 3/3 green Frog Lizard creature token."
       }
+    ],
+    "colors": [
+      "G",
+      "U"
     ]
   },
   {
@@ -66,6 +74,10 @@
         "type_line": "Sorcery",
         "oracle_text": "Trouble deals damage to target player equal to the number of cards in that player's hand.\nFuse (You may cast one or both halves of this card from your hand.)"
       }
+    ],
+    "colors": [
+      "B",
+      "R"
     ]
   },
   {
@@ -89,6 +101,9 @@
         "type_line": "Sorcery",
         "oracle_text": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEach player shuffles their hand and graveyard into their library, then draws seven cards."
       }
+    ],
+    "colors": [
+      "U"
     ]
   }
 ]

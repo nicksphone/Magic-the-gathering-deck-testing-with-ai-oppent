@@ -72,8 +72,9 @@ def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> 
 
 
 def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
+    from rules_engine.alternative_casts import has_aftermath
     text = (card.oracle_text or "").lower()
-    if re.search(r"\baftermath\b", text) and card.zone != Zone.GRAVEYARD:
+    if has_aftermath(card) and card.zone != Zone.GRAVEYARD:
         return (False, "An Aftermath half can be cast only from a graveyard.")
     step = state.step
     is_active = state.active_player == player_id

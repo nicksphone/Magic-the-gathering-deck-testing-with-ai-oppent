@@ -859,18 +859,26 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         import json
         if face_kind == "split":
             raw = json.loads((Path(__file__).parent / "fixtures/split_cards.json").read_text())[0]
+        elif face_kind == "aftermath":
+            raw = json.loads((Path(__file__).parent / "fixtures/aftermath_cards.json").read_text())[0]
         elif face_kind in {"multi_adventure", "multi_adventure_copy"}:
             raw = json.loads((Path(__file__).parent / "fixtures/multi_target_adventure.json").read_text())
         else:
             name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
             raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[name]
-        deck = [{"quantity": 60, "card_name": raw["name"], **raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}]
+        characteristics = {**raw, "oracle_text": raw["card_faces"][0]["oracle_text"]} if face_kind in {"split", "aftermath"} else {**raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}
+        deck = [{"quantity": 60, "card_name": raw["name"], **characteristics}]
         state = MatchFactory.from_decks(deck, deck, seed=9)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool["C"] = modal_mana
+        if face_kind == "aftermath":
+            state.players[2].mana_pool.update({"C": 4, "U": 2})
+            card_id = state.players[2].hand.pop(0)
+            state.players[2].graveyard.append(card_id)
+            state.cards[card_id].move_to_zone(Zone.GRAVEYARD)
         if face_kind == "adventure":
             state.players[2].mana_pool["R"] = 4
         if face_kind == "split":

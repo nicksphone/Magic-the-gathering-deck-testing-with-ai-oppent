@@ -34,7 +34,7 @@ from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
 from card_data.service import CardService
-from card_data.sync import CACHE_DIR, ScryfallSyncService
+from card_data.sync import CACHE_DIR, ScryfallSyncService, needs_split_color_sync
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
@@ -1481,6 +1481,7 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
                 for row in cached.values()
                 if not (getattr(row, "image_uri", None) and getattr(row, "mana_cost", None) is not None and getattr(row, "type_line", None))
                 or (not getattr(row, "layout", None) and getattr(row, "card_faces_json", "[]") not in {"", "[]"})
+                or needs_split_color_sync(row)
             }
         )
         to_sync = sorted(set(missing + stale))
@@ -1489,10 +1490,7 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             for name in to_sync:
                 try:
                     if not sync.sync_card_from_local_knowledge(name):
-                        row = cached.get(name.lower())
-                        missing_layout = bool(row and not getattr(row, "layout", None)
-                                              and getattr(row, "card_faces_json", "[]") not in {"", "[]"})
-                        sync.sync_card_by_name(name, force=missing_layout)
+                        sync.sync_card_by_name(name, force=name in stale)
                 except Exception:
                     # Match start should still proceed if external sync is unavailable.
                     continue

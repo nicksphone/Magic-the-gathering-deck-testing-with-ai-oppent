@@ -21,6 +21,10 @@ def flashback_cost(card) -> str | None:
     return match.group(1) if match else None
 
 
+def has_aftermath(card) -> bool:
+    return bool(re.search(r"(?:^|\n)aftermath\b", card.oracle_text or "", re.IGNORECASE))
+
+
 def prototype_characteristics(card) -> dict | None:
     match = re.search(r"\bprototype\s+((?:\{[^}]+\})+)\s*[\u2014-]\s*(\d+)/(\d+)", card.oracle_text or "", re.IGNORECASE)
     return {"mana_cost": match.group(1), "power": int(match.group(2)), "toughness": int(match.group(3))} if match else None

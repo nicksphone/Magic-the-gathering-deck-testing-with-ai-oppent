@@ -6,10 +6,12 @@ from types import SimpleNamespace
 import pytest
 
 from ai.agent import AIAgent
+from effects.handlers import counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.coverage import deck_pair_coverage
+from rules_engine.colors import card_color_symbols
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import validate_cast_targets
@@ -31,6 +33,7 @@ def split_state(name: str):
 
 def test_fire_half_uses_its_own_cost_and_restores_combined_identity() -> None:
     state, card_id = split_state("Fire // Ice")
+    assert card_color_symbols(state.cards[card_id]) == {"R", "U"}
     state.players[1].mana_pool.update({"C": 1, "R": 1})
     moves = [move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "cast_spell" and move["card_id"] == card_id]
     assert [(move["card_name"], move["selected_face_index"], move["mana_cost"]) for move in moves] == [
@@ -43,6 +46,7 @@ def test_fire_half_uses_its_own_cost_and_restores_combined_identity() -> None:
     assert (state.cards[card_id].name, state.cards[card_id].mana_cost, state.cards[card_id].types) == (
         "Fire", "{1}{R}", ["Instant"],
     )
+    assert card_color_symbols(state.cards[card_id]) == {"R"}
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert resolve_top_of_stack(state)
     assert state.players[2].life == 18
@@ -50,6 +54,7 @@ def test_fire_half_uses_its_own_cost_and_restores_combined_identity() -> None:
     assert (state.cards[card_id].name, state.cards[card_id].mana_cost) == (
         "Fire // Ice", "{1}{R} // {1}{U}",
     )
+    assert card_color_symbols(state.cards[card_id]) == {"R", "U"}
 
 
 def test_ice_half_taps_target_and_draws_with_blue_mana() -> None:
@@ -73,6 +78,21 @@ def test_ice_half_taps_target_and_draws_with_blue_mana() -> None:
     assert len(state.players[1].hand) == hand_before
     assert state.cards[card_id].zone == Zone.GRAVEYARD
     assert state.cards[card_id].name == "Fire // Ice"
+
+
+def test_countered_normal_split_half_restores_combined_graveyard_identity() -> None:
+    state, card_id = split_state("Fire // Ice")
+    state.players[1].mana_pool.update({"C": 1, "R": 1})
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": card_id, "selected_face_index": 0,
+        "targets": {"target_distribution": {"2": 2}, "divide_total": 2},
+    })
+    counter_spell(state, 2, {"target_stack_id": state.stack[-1].id})
+    assert state.cards[card_id].zone == Zone.GRAVEYARD
+    assert (state.cards[card_id].name, state.cards[card_id].mana_cost) == (
+        "Fire // Ice", "{1}{R} // {1}{U}",
+    )
+    assert state.players[2].life == 20
 
 
 def test_opponent_turn_only_offers_instant_half() -> None:
@@ -115,7 +135,8 @@ def test_fire_rejects_more_than_two_announced_recipients() -> None:
     assert serialize_match_snapshot(state) == before
 
 
-def test_match_hydration_backfills_missing_layout_from_local_canonical_data(monkeypatch) -> None:
+@pytest.mark.parametrize("stale_kind", ["missing_layout", "legacy_empty_colors"])
+def test_match_hydration_backfills_stale_faces_from_local_canonical_data(monkeypatch, stale_kind) -> None:
     from card_data.sync import ScryfallSyncService
     from main import _hydrate_deck_cards
 
@@ -123,10 +144,11 @@ def test_match_hydration_backfills_missing_layout_from_local_canonical_data(monk
 
     class FakeRepo:
         def __init__(self):
+            faces = [{**face, "colors": []} for face in raw["card_faces"]] if stale_kind == "legacy_empty_colors" else raw["card_faces"]
             self.row = SimpleNamespace(
                 name=raw["name"], scryfall_id=raw["id"], oracle_text="", mana_cost=raw["mana_cost"],
-                type_line="Instant", layout="", image_uri="/card-images/old.svg", colors="",
-                card_faces_json=json.dumps(raw["card_faces"]), power=None, toughness=None, loyalty=None,
+                type_line="Instant", layout="split" if stale_kind == "legacy_empty_colors" else "", image_uri="/card-images/old.svg", colors="R,U",
+                card_faces_json=json.dumps(faces), power=None, toughness=None, loyalty=None,
             )
             self.upserts = 0
 
@@ -158,7 +180,37 @@ def test_match_hydration_backfills_missing_layout_from_local_canonical_data(monk
     second = _hydrate_deck_cards(repo, deck)
     assert first[0]["layout"] == second[0]["layout"] == "split"
     assert first[0]["card_faces"][1]["name"] == "Ice"
+    assert first[0]["card_faces"][1]["colors"] is None
     assert repo.upserts == 1
+
+
+def test_split_face_color_fallback_does_not_inherit_the_other_halfs_color():
+    from card_data.sync import ScryfallSyncService
+    state, card_id = split_state("Fire // Ice")
+    state.cards[card_id].card_faces = ScryfallSyncService.__new__(ScryfallSyncService)._normalize_faces(
+        state.cards[card_id].card_faces,
+    )
+    state.players[1].mana_pool.update({"C": 1, "U": 1})
+    target = CardInstance("master", "Master of Waves", 2, 2, Zone.BATTLEFIELD, ["Creature"],
+                          power=2, toughness=1, oracle_text="Protection from red")
+    state.cards[target.id] = target
+    state.players[2].battlefield.append(target.id)
+    state = checked_action(state, RulesEngine(), 1, {
+        "type": "cast_spell", "card_id": card_id, "selected_face_index": 1,
+        "targets": {"target_card_id": target.id},
+    })
+    assert card_color_symbols(state.cards[card_id]) == {"U"}
+    assert resolve_top_of_stack(state)
+    assert state.cards[target.id].tapped
+    assert card_color_symbols(state.cards[card_id]) == {"R", "U"}
+
+
+def test_split_off_stack_colors_union_faces_when_top_level_metadata_is_missing():
+    state, card_id = split_state("Fire // Ice")
+    card = state.cards[card_id]
+    card.colors = None
+    card.card_faces = [{**card.card_faces[0], "colors": ["R"]}, {**card.card_faces[1], "colors": ["U"]}]
+    assert card_color_symbols(card) == {"R", "U"}
 
 
 @pytest.mark.parametrize("half,pool", [
@@ -181,14 +233,13 @@ def test_ai_materializes_a_castable_split_half(half: str, pool: dict[str, int]) 
     assert state.stack[-1].label == half
 
 
-def test_preflight_warns_about_unimplemented_fuse_and_aftermath() -> None:
+def test_preflight_warns_about_unimplemented_fuse() -> None:
     deck_a = [{"quantity": 4, "card_name": name, **CARDS[name]} for name in (
         "Toil // Trouble", "Commit // Memory",
     )]
     report = deck_pair_coverage(deck_a, [])
     assert [(entry["card_name"], entry["mechanics"]) for entry in report["known_unsupported_cards"]] == [
         ("Toil // Trouble", ["fuse"]),
-        ("Commit // Memory", ["aftermath"]),
     ]
 
 

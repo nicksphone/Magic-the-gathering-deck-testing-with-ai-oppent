@@ -1,0 +1,56 @@
+[
+  {
+    "id": "6431d464-1f2b-42c4-ad38-67b7d0984080",
+    "name": "Spring // Mind",
+    "oracle_id": "6dd7e861-7ae2-49e6-a9ab-8fd761939e22",
+    "layout": "split",
+    "mana_cost": "{2}{G} // {4}{U}{U}",
+    "type_line": "Sorcery // Instant",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Spring",
+        "mana_cost": "{2}{G}",
+        "type_line": "Sorcery",
+        "oracle_text": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "name": "Mind",
+        "mana_cost": "{4}{U}{U}",
+        "type_line": "Instant",
+        "oracle_text": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nDraw two cards."
+      }
+    ],
+    "colors": [
+      "G",
+      "U"
+    ]
+  },
+  {
+    "id": "ca4caa4e-6b8f-4be8-b177-de2ebe2c9201",
+    "name": "Refuse // Cooperate",
+    "oracle_id": "7db22241-fe43-4071-9af9-de1cf394f7f5",
+    "layout": "split",
+    "mana_cost": "{3}{R} // {2}{U}",
+    "type_line": "Instant // Instant",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Refuse",
+        "mana_cost": "{3}{R}",
+        "type_line": "Instant",
+        "oracle_text": "Refuse deals damage to target spell's controller equal to that spell's mana value."
+      },
+      {
+        "name": "Cooperate",
+        "mana_cost": "{2}{U}",
+        "type_line": "Instant",
+        "oracle_text": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nCopy target instant or sorcery spell. You may choose new targets for the copy."
+      }
+    ],
+    "colors": [
+      "R",
+      "U"
+    ]
+  }
+]

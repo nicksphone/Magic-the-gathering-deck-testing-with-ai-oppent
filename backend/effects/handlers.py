@@ -30,7 +30,7 @@ from rules_engine.replacement import (
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
-from rules_engine.zone_actions import exile_flashback_spell, is_departed_token, put_into_graveyard
+from rules_engine.zone_actions import move_spell_from_stack, is_departed_token, put_into_graveyard
 
 
 def _queue_human_damage_replacement_choice(
@@ -707,10 +707,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
             if card and not (popped.payload or {}).get("__stack_copy_kind"):
-                if (popped.payload or {}).get("__flashback"):
-                    exile_flashback_spell(state, card.id)
-                else:
-                    put_into_graveyard(state, card.id)
+                move_spell_from_stack(state, popped)
             state.log.append(f"{item.label} was countered.")
             return
 

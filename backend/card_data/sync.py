@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -15,6 +16,22 @@ from persistence.repository import Repository
 SCRYFALL_NAMED_URL = "https://api.scryfall.com/cards/named"
 CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
 CACHE_ROUTE_PREFIX = "/card-images"
+
+
+def needs_split_color_sync(card) -> bool:
+    """Older cache writers mistook absent Scryfall face colors for colorless."""
+    if getattr(card, "layout", "") != "split":
+        return False
+    try:
+        faces = json.loads(getattr(card, "card_faces_json", "[]") or "[]")
+    except (TypeError, ValueError):
+        return False
+    return isinstance(faces, list) and any(
+        isinstance(face, dict) and face.get("colors") == []
+        and re.search(r"\{[^}]*[WUBRG][^}]*\}", str(face.get("mana_cost") or ""), re.IGNORECASE)
+        and not re.search(r"\bdevoid\b|\bis colorless\b", str(face.get("oracle_text") or ""), re.IGNORECASE)
+        for face in faces
+    )
 
 
 class ScryfallSyncService:
@@ -57,7 +74,7 @@ class ScryfallSyncService:
                     "power": face.get("power"),
                     "toughness": face.get("toughness"),
                     "loyalty": face.get("loyalty"),
-                    "colors": face.get("colors", []),
+                    "colors": face.get("colors"),
                     "image_uri": self._extract_face_image_uri(face),
                 }
             )

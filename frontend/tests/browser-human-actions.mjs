@@ -649,6 +649,7 @@ try {
 
   await click("Split Card Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Fire'))");
+  assert.deepEqual(await evaluate("window.fixtureState.players['2'].hand.find(c => c.name === 'Fire // Ice').colors.slice().sort()"), ["R", "U"]);
   await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Fire')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Face 1: Fire')); if (!select || select.options[1].disabled) throw new Error('Missing Ice face'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Ice'))");
   await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Ice')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Target Permanent')); if (!select) throw new Error('Missing Ice target'); select.value = 'split-target-island'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
@@ -668,6 +669,19 @@ try {
   await click("Resolve Stack");
   await waitFor("window.fixtureState.players['1'].life === 18 && window.fixtureState.players['2'].graveyard.some(c => c.name === 'Fire // Ice')");
   console.log("PASS human split card casts Fire with divided damage using only the selected half");
+
+  await click("Aftermath Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Mind'))");
+  const aftermathHandBefore = await evaluate("window.fixtureState.players['2'].hand.length");
+  await click("Cast Mind");
+  await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.stack[0].label === 'Mind'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.selected_face_index"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.from_graveyard"), true);
+  await click("Resolve Stack");
+  await waitFor(`window.fixtureState.players['2'].hand.length === ${aftermathHandBefore + 2} && window.fixtureState.players['2'].exile.some(c => c.name === 'Spring // Mind') && window.fixtureState.players['2'].graveyard_count === 0`);
+  assert.deepEqual(await evaluate("window.fixtureState.players['2'].exile.find(c => c.name === 'Spring // Mind').colors.slice().sort()"), ["G", "U"]);
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Mind'))"), false);
+  console.log("PASS human Aftermath casts the graveyard half, draws two and exiles the physical card");
 
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");

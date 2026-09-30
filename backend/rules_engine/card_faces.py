@@ -5,7 +5,7 @@ from game_state.state import _infer_keywords
 from game_state.state import Zone
 from rules_engine.card_types import is_token_card, printed_card_types
 
-FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "keywords", "image_uri", "selected_face_index")
+FACE_FIELDS = ("name", "oracle_text", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "keywords", "image_uri", "selected_face_index", "colors")
 
 
 def select_cast_face(card, index=None):
@@ -21,6 +21,7 @@ def select_cast_face(card, index=None):
         setattr(proxy, field, str(face.get(field, getattr(card, field, "")) or ""))
     proxy.types = printed_card_types(proxy.type_line)
     proxy.keywords = _infer_keywords(proxy.oracle_text)
+    proxy.colors = face.get("colors")
     for field in ("power", "toughness", "loyalty"):
         value = face.get(field)
         setattr(proxy, field, int(value) if value is not None and str(value).lstrip("-").isdigit() else None)

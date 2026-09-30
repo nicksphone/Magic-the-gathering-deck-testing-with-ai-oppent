@@ -23,12 +23,24 @@ def put_into_graveyard(state, cid: str) -> Zone:
     return zone
 
 
-def exile_flashback_spell(state, cid: str) -> None:
-    card = state.cards[cid]
-    owner = state.players[card.owner]
-    if cid not in owner.exile:
-        owner.exile.append(cid)
-    card.move_to_zone(Zone.EXILE)
+def move_spell_from_stack(state, item, destination: Zone = Zone.GRAVEYARD) -> Zone | None:
+    """Apply stack-departure replacements before restoring the physical card."""
+    payload = item.payload or {}
+    card = state.cards.get(item.source_card_id)
+    if payload.get("__stack_copy_kind") or card is None or card.zone != Zone.STACK:
+        return None
+    if payload.get("__flashback") or payload.get("__aftermath"):
+        destination = Zone.EXILE
+    if destination == Zone.GRAVEYARD:
+        destination = put_into_graveyard(state, card.id)
+    else:
+        zone_ids = getattr(state.players[card.owner], destination.value)
+        if card.id not in zone_ids:
+            zone_ids.append(card.id)
+        card.move_to_zone(destination)
+    from rules_engine.alternative_casts import restore_printed_characteristics
+    restore_printed_characteristics(card)
+    return destination
 
 
 def discard_selected(state, player_id: int, card_ids: list[str]) -> bool:
