@@ -1,5 +1,7 @@
 # Changelog
 
+- Speculative AI search and ranking rollouts now request strict engine rejection for cloned actions. A real unpayable Counterspell regression previously scored a no-op as a valid line and now rejects it. Verification: 1,467 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded two-game replay with no reported drift. Other silent no-op paths remain to be audited.
+
 - Bounded AI search and ranking rollouts now shortlist replies with shallow move scores instead of taking the first six/eight lexically sorted moves. Regressions cover a threatening cast after many ability moves and prove shallow ranking avoids nested rollouts. Verification: 1,466 isolated backend tests, frontend lint/build/unit, full solo Chromium harness, and seeded two-game replay with no reported drift. A paired Blue Control/Ramp API BO3 took 139 seconds on this revision versus 135 seconds on the prior revision; this single run is not a throughput guarantee. Ranking remains heuristic and capped.
 
 - AI ranking rollouts now materialize targeted candidate and opponent-reply actions before simulation. Deterministic regressions show previously skipped target-dependent moves contribute to both candidate value and opponent-response penalty. Verification: 1,463 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded BO3 replay with no reported drift. The eight-reply cap and hidden-information model remain open.

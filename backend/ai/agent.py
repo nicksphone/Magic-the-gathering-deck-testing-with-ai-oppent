@@ -493,7 +493,7 @@ class AIAgent:
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
             sim = copy.deepcopy(state)
-            self.engine.take_action(sim, player_id, move)
+            self.engine.take_action(sim, player_id, move, reject_invalid=True)
         except Exception:
             return -9999.0
         score = evaluate_board(sim, player_id)
@@ -512,7 +512,7 @@ class AIAgent:
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 nxt = copy.deepcopy(sim)
-                self.engine.take_action(nxt, pid, materialized)
+                self.engine.take_action(nxt, pid, materialized, reject_invalid=True)
                 val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
                 )
@@ -543,7 +543,7 @@ class AIAgent:
         for act in top_actions:
             try:
                 sim = copy.deepcopy(state)
-                self.engine.take_action(sim, pid, act)
+                self.engine.take_action(sim, pid, act, reject_invalid=True)
             except Exception:
                 continue
             immediate = evaluate_board(sim, player_id) + self._strategic_features(sim, player_id)
@@ -560,7 +560,7 @@ class AIAgent:
                     for rep in replies:
                         try:
                             nxt = copy.deepcopy(sim)
-                            self.engine.take_action(nxt, reply_pid, rep)
+                            self.engine.take_action(nxt, reply_pid, rep, reject_invalid=True)
                             reply_vals.append(evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id))
                         except Exception:
                             continue
@@ -1197,7 +1197,7 @@ class AIAgent:
             if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                 return 0.0
             sim_state = copy.deepcopy(state)
-            self.engine.take_action(sim_state, player_id, materialized)
+            self.engine.take_action(sim_state, player_id, materialized, reject_invalid=True)
             self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
             self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
@@ -1221,7 +1221,7 @@ class AIAgent:
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 branch = copy.deepcopy(sim_state)
-                self.engine.take_action(branch, opp_id, materialized)
+                self.engine.take_action(branch, opp_id, materialized, reject_invalid=True)
                 delta = before - evaluate_board(branch, eval_for_player)
                 if delta > worst:
                     worst = delta

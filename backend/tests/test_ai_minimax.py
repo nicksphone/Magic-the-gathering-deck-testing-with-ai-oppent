@@ -3,7 +3,8 @@
 import pytest
 
 from ai.agent import AIAgent
-from game_state.state import MatchFactory
+from game_state.state import CardInstance, MatchFactory, Step, Zone
+from rules_engine.stack_engine import add_to_stack
 
 
 @pytest.mark.parametrize("next_actor,expected", [(1, 20.0), (2, 18.0)])
@@ -12,7 +13,7 @@ def test_strategic_search_selects_best_own_or_worst_opponent_reply(monkeypatch, 
     state = MatchFactory.from_decks(deck, deck, seed=676)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("branch") == "root":
             sim.priority_player = next_actor
         elif action.get("branch") == "punish":
@@ -38,7 +39,7 @@ def test_strategic_search_materializes_targeted_opponent_reply(monkeypatch):
     state = MatchFactory.from_decks(deck, deck, seed=677)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("branch") == "root":
             sim.priority_player = 2
         elif action.get("branch") == "punish":
@@ -69,7 +70,7 @@ def test_ranking_rollout_materializes_targeted_candidate(monkeypatch):
     state = MatchFactory.from_decks(deck, deck, seed=678)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("targets") != {"target_player": 2}:
             raise ValueError("Target choice required")
         sim.players[2].life -= 5
@@ -92,7 +93,7 @@ def test_ranking_rollout_materializes_targeted_opponent_reply(monkeypatch):
     state = MatchFactory.from_decks(deck, deck, seed=679)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("targets") != {"target_player": 1}:
             raise ValueError("Target choice required")
         sim.players[1].life -= 5
@@ -115,7 +116,7 @@ def test_strategic_beam_uses_ranked_reply_beyond_lexical_prefix(monkeypatch):
         for index in range(6)
     ] + [{"type": "cast_spell", "branch": "punish"}]
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("branch") == "root":
             sim.priority_player = 2
         elif action.get("branch") == "punish":
@@ -143,7 +144,7 @@ def test_ranking_reply_beam_uses_ranked_move_beyond_lexical_prefix(monkeypatch):
         for index in range(8)
     ] + [{"type": "cast_spell", "branch": "punish"}]
 
-    def take_action(sim, _player_id, action):
+    def take_action(sim, _player_id, action, **_kwargs):
         if action.get("branch") == "punish":
             sim.players[1].life -= 5
 
@@ -168,3 +169,37 @@ def test_shallow_reply_ranking_does_not_start_nested_rollout(monkeypatch):
     monkeypatch.setattr(agent, "_simulate_delta", fail_if_called)
 
     assert agent._rank_moves(state, [{"type": "pass_priority"}], 1, shallow=True)
+
+
+def test_strategic_search_rejects_unpayable_cast_instead_of_scoring_noop(monkeypatch):
+    deck = [{"quantity": 60, "card_name": "Island"}]
+    state = MatchFactory.from_decks(deck, deck, seed=683)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    counter = CardInstance(
+        "counter", "Counterspell", 1, 1, Zone.HAND, ["Instant"],
+        mana_cost="{U}{U}", oracle_text="Counter target spell.",
+    )
+    threat = CardInstance(
+        "threat", "Lightning Bolt", 2, 2, Zone.STACK, ["Instant"],
+        mana_cost="{R}", oracle_text="Lightning Bolt deals 3 damage to any target.",
+    )
+    state.cards[counter.id] = counter
+    state.players[1].hand.append(counter.id)
+    state.cards[threat.id] = threat
+    stack_item = add_to_stack(state, threat.id, 2, threat.name, "deal_damage", {"target_player": 1, "amount": 3})
+    state.priority_player = 1
+    agent = AIAgent(difficulty="master", archetype="Control")
+    monkeypatch.setattr(agent, "_strategic_features", lambda _sim, _pid: 0.0)
+    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid: 0.0)
+
+    score = agent._strategic_line_score(
+        state,
+        {"type": "cast_spell", "card_id": counter.id, "targets": {"target_stack_id": stack_item.id}},
+        1,
+        depth=0,
+    )
+
+    assert score == -9999.0
