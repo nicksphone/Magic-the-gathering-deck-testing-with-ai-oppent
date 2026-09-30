@@ -383,6 +383,13 @@ class RulesEngine:
             return
         kind = action.get("type")
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice["kind"] == "opening_hand":
+                from rules_engine.opening_hand import finish_opening_hand_choice
+                if kind != "choose_mechanic" or not finish_opening_hand_choice(state, player_id, action):
+                    reject("Invalid opening-hand action")
+                elif state.pending_mechanic_choice is None:
+                    self._finish_pregame(state)
+                return
             if state.pending_mechanic_choice["kind"] == "mulligan_bottom":
                 if kind != "choose_mechanic" or not self._finish_mulligan_bottom(state, player_id, action):
                     reject("Invalid mulligan bottom selection")
@@ -1264,14 +1271,20 @@ class RulesEngine:
             self._begin_mulligan_bottom(state, mulliganers)
             return
         if len(state.kept_hands) == 2:
-            state.pregame_pending = False
-            state.priority_player = state.active_player
-            state.step = Step.UNTAP
-            self._apply_step_start_actions(state)
-            state.log.append("Pregame complete. Proceeding to turn structure.")
-            self.next_step(state)
+            from rules_engine.opening_hand import begin_opening_hand_choices
+            if not begin_opening_hand_choices(state):
+                self._finish_pregame(state)
         else:
             state.priority_player = pregame_actor(state)
+
+    def _finish_pregame(self, state: MatchState) -> None:
+        state.pregame_pending = False
+        state.trigger_staging = False
+        state.priority_player = state.active_player
+        state.step = Step.UNTAP
+        self._apply_step_start_actions(state)
+        state.log.append("Pregame complete. Proceeding to turn structure.")
+        self.next_step(state)
 
     def _begin_mulligan_bottom(self, state: MatchState, players: list[int]) -> None:
         pid = players[0]

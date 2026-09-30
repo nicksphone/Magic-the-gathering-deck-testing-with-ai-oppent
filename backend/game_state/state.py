@@ -217,8 +217,8 @@ class MatchState:
 
 
 def pregame_actor(state: MatchState) -> int | None:
-    """The next undeclared player in the current round, starting player first."""
-    if state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] == "mulligan_bottom":
+    """Pending pregame choice owner, otherwise the next undeclared player."""
+    if state.pending_mechanic_choice and state.pending_mechanic_choice["kind"] in {"mulligan_bottom", "opening_hand"}:
         return state.pending_mechanic_choice["player_id"]
     return next((pid for pid in (state.active_player, 3 - state.active_player)
                  if pid not in state.kept_hands and pid not in state.mulligan_declarations), None)

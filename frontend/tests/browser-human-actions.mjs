@@ -793,6 +793,15 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.card_ids.length"), 5);
   console.log("PASS two-step Collected Company choice orders bottom cards before spell completion");
 
+  await click("Opening Hand Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'opening_hand'");
+  assert.equal(await evaluate("[...document.querySelectorAll('h3')].some(h => h.textContent === 'London Mulligan')"), false);
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Leyline of Sanctity')); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("!window.fixtureState?.pregame_pending && window.fixtureState?.players['2'].battlefield.some(c => c.name === 'Leyline of Sanctity')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS second-seat opening-hand entry through Controls and API");
+
   await click("Search Fixture");
   await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'search_library'");
   await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); label.querySelector('input').click(); })()");

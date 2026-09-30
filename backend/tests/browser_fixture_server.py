@@ -26,6 +26,12 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "opening_hand":
+        from tests.test_opening_hand import opening_game, add_opening, keep_both
+        state = opening_game(2)
+        add_opening(state, "Leyline of Sanctity", 2)
+        state = keep_both(state)
+        return publish(state, [{"quantity": 60, "card_name": "Plains"}])
     if face_kind == "stifle_protection":
         from tests.test_counterability_scope import add_card, state_with_card
         state, _ = state_with_card("Allosaurus Shepherd", Zone.BATTLEFIELD)

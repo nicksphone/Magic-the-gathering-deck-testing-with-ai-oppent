@@ -156,6 +156,12 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] == "opening_hand":
+                # ponytail: free-entry heuristic; symmetric-effect matchup planning remains open.
+                candidates = [cid for cid in options if cid in state.cards]
+                candidates.sort(key=lambda cid: (-self._hand_retention_value(state, cid, player_id), cid))
+                selected = candidates[0] if candidates else "__finish_opening__"
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]}, reasoning="Use supported free opening-hand permanent")
             if choice["kind"] == "mulligan_bottom":
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Bottom least useful opening cards before redeclaring")

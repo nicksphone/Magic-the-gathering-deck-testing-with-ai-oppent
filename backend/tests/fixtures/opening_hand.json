@@ -1,0 +1,78 @@
+[
+  {
+    "id": "7f273641-c5f3-48bc-b89e-3cff52d26a0b",
+    "oracle_id": "c0adbddc-b070-4c5f-afe0-0474c72a9251",
+    "name": "Gemstone Caverns",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "If this card is in your opening hand and you're not the starting player, you may begin the game with Gemstone Caverns on the battlefield with a luck counter on it. If you do, exile a card from your hand.\n{T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color.",
+    "colors": [],
+    "keywords": [],
+    "layout": "normal"
+  },
+  {
+    "id": "f57bdaa1-ce8a-4103-8598-fee751e65a53",
+    "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b",
+    "name": "Leyline of Anticipation",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou may cast spells as though they had flash.",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal"
+  },
+  {
+    "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+    "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+    "name": "Leyline of Sanctity",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou have hexproof. (You can't be the target of spells or abilities your opponents control.)",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal"
+  },
+  {
+    "id": "4bd941ca-f3d2-44c1-8df3-851362f6b848",
+    "oracle_id": "cfaa13d6-9992-4223-8bd7-c44046505555",
+    "name": "Leyline of Transformation",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nAs this enchantment enters, choose a creature type.\nCreatures you control are the chosen type in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal"
+  },
+  {
+    "id": "f5318113-9dfb-492c-9151-de90951d881e",
+    "oracle_id": "cbf2b19e-32a3-489f-9979-ba2748c52845",
+    "name": "Leyline of Vitality",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nCreatures you control get +0/+1.\nWhenever a creature you control enters, you may gain 1 life.",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal"
+  },
+  {
+    "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+    "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+    "name": "Leyline of the Void",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nIf a card would be put into an opponent's graveyard from anywhere, exile it instead.",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal"
+  }
+]

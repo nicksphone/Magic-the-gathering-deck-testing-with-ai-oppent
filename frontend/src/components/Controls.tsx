@@ -428,7 +428,7 @@ export function Controls(props: Props) {
           AI Step x30
         </button>
       </div>
-      {props.match?.pregame_pending && mechanicMove?.kind !== "mulligan_bottom" && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
+      {props.match?.pregame_pending && !mechanicMove && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
         <div className="block-panel">
           <h3>London Mulligan</h3>
           <p>Player {pregameActor} declares next. Redraws wait until all players declare.</p>
