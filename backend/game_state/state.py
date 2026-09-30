@@ -240,6 +240,8 @@ class MatchFactory:
                 # Scryfall combines double-faced type lines with `//`. Until
                 # a face is selected, only the front face defines types.
                 front_type_line = str(type_line).split("//", 1)[0].strip()
+                if raw_item.get("layout") == "split" and raw_item.get("card_faces"):
+                    front_type_line = " // ".join(str(face.get("type_line") or "") for face in raw_item["card_faces"])
                 types = _infer_types(
                     card_name,
                     type_line=front_type_line,

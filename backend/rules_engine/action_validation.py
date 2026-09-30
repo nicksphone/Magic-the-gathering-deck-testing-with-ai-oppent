@@ -194,7 +194,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(0 <= face < len(state.cards[action["card_id"]].card_faces), "Selected card face is unavailable")
             require(not face or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
         face_card = _select_face_for_cast(state.cards[action["card_id"]], face)
-        if state.cards[action["card_id"]].layout in {"modal_dfc", "adventure"}:
+        if state.cards[action["card_id"]].layout in {"modal_dfc", "adventure", "split"}:
             require(any(item.get("selected_face_index", 0) == (face or 0) for item in available), "Selected face is not currently castable")
         options = collect_cost_options(state, player_id, face_card)
         choice = (action.get("cost_choice") or {}).get("id")

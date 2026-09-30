@@ -1,0 +1,94 @@
+[
+  {
+    "id": "18303862-4726-4136-814f-157aa7006579",
+    "name": "Fire // Ice",
+    "oracle_id": "ae92942b-919c-4ea9-b693-85fcef765d5a",
+    "layout": "split",
+    "mana_cost": "{1}{R} // {1}{U}",
+    "type_line": "Instant // Instant",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Fire",
+        "mana_cost": "{1}{R}",
+        "type_line": "Instant",
+        "oracle_text": "Fire deals 2 damage divided as you choose among one or two targets."
+      },
+      {
+        "name": "Ice",
+        "mana_cost": "{1}{U}",
+        "type_line": "Instant",
+        "oracle_text": "Tap target permanent.\nDraw a card."
+      }
+    ]
+  },
+  {
+    "id": "2c1ace2e-b3eb-4e60-adfd-9f40b8cd4416",
+    "name": "Incubation // Incongruity",
+    "oracle_id": "363edb16-009f-4cc2-99e3-2b15db84e7af",
+    "layout": "split",
+    "mana_cost": "{G/U} // {1}{G}{U}",
+    "type_line": "Sorcery // Instant",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Incubation",
+        "mana_cost": "{G/U}",
+        "type_line": "Sorcery",
+        "oracle_text": "Look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "name": "Incongruity",
+        "mana_cost": "{1}{G}{U}",
+        "type_line": "Instant",
+        "oracle_text": "Exile target creature. That creature's controller creates a 3/3 green Frog Lizard creature token."
+      }
+    ]
+  },
+  {
+    "id": "15bb3454-e3bb-4af9-9e93-461e210c26b7",
+    "name": "Toil // Trouble",
+    "oracle_id": "97759579-b676-46e8-b566-fcad10751920",
+    "layout": "split",
+    "mana_cost": "{2}{B} // {2}{R}",
+    "type_line": "Sorcery // Sorcery",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Toil",
+        "mana_cost": "{2}{B}",
+        "type_line": "Sorcery",
+        "oracle_text": "Target player draws two cards and loses 2 life.\nFuse (You may cast one or both halves of this card from your hand.)"
+      },
+      {
+        "name": "Trouble",
+        "mana_cost": "{2}{R}",
+        "type_line": "Sorcery",
+        "oracle_text": "Trouble deals damage to target player equal to the number of cards in that player's hand.\nFuse (You may cast one or both halves of this card from your hand.)"
+      }
+    ]
+  },
+  {
+    "id": "855af9a8-31fc-4290-8204-04ee026f8853",
+    "name": "Commit // Memory",
+    "oracle_id": "56fd8895-3be2-4591-86fa-87567d9cdc14",
+    "layout": "split",
+    "mana_cost": "{3}{U} // {4}{U}{U}",
+    "type_line": "Instant // Sorcery",
+    "oracle_text": null,
+    "card_faces": [
+      {
+        "name": "Commit",
+        "mana_cost": "{3}{U}",
+        "type_line": "Instant",
+        "oracle_text": "Put target spell or nonland permanent into its owner's library second from the top."
+      },
+      {
+        "name": "Memory",
+        "mana_cost": "{4}{U}{U}",
+        "type_line": "Sorcery",
+        "oracle_text": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEach player shuffles their hand and graveyard into their library, then draws seven cards."
+      }
+    ]
+  }
+]

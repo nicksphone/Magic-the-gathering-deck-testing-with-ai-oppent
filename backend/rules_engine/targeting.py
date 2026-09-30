@@ -75,6 +75,9 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if target_hints.get("supports_divide") and not distribution and divide_total != 0:
         return False, "A target distribution is required."
     if distribution:
+        max_targets = target_hints.get("divide_max_targets")
+        if max_targets is not None and len(distribution) > int(max_targets):
+            return False, f"Too many division targets selected (max {max_targets})."
         for value in distribution.values():
             if int(value) < 0:
                 return False, "Distribution values must be non-negative."

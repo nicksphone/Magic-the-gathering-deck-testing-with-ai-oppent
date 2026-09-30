@@ -210,6 +210,7 @@ export type LegalMove = {
     x_value_max?: number;
     up_to_target_count?: number;
     supports_divide?: boolean;
+    divide_max_targets?: number;
     library_search?: {
       contains?: string;
       destination?: string;

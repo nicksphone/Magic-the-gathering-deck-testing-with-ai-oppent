@@ -782,11 +782,11 @@ class RulesEngine:
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
                         return
-                action_targets = enrich_divide_total(card, at_targets)
                 selected_face_index = action.get("selected_face_index")
-                if selected_face_index is None and isinstance(action_targets, dict):
-                    selected_face_index = action_targets.get("selected_face_index")
+                if selected_face_index is None and isinstance(at_targets, dict):
+                    selected_face_index = at_targets.get("selected_face_index")
                 face_card = _select_face_for_cast(card, selected_face_index)
+                action_targets = enrich_divide_total(face_card, at_targets)
                 if face_card is not card:
                     action_targets = dict(action_targets)
                     action_targets.setdefault("selected_face_index", selected_face_index if selected_face_index is not None else 0)

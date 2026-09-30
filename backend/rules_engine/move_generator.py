@@ -211,6 +211,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         elif (
             card.zone in {Zone.HAND, Zone.GRAVEYARD}
             and not _is_land_card(card)
+            and card.layout != "split"
             and _can_cast_spell(state, card, player_id)
         ):
             timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
@@ -263,7 +264,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not state.stack
         ):
             moves.extend(_land_moves(state, player_id, card, {"type": "play_land", "card_id": cid, "from_exile": True}))
-        elif not _is_land_card(card) and _can_cast_spell(state, card, player_id):
+        elif not _is_land_card(card) and card.layout != "split" and _can_cast_spell(state, card, player_id):
             timing_ok, timing_reason = can_cast_in_current_timing(state, card, player_id)
             if not timing_ok:
                 continue
@@ -426,15 +427,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
-    # Modal/Adventure faces have independent timing, costs and target surfaces.
+    # Face choices have independent timing, costs and target surfaces.
     from rules_engine.card_faces import select_cast_face
     for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]
         if is_departed_token(original):
             continue
-        if original.layout not in {"modal_dfc", "adventure"}:
+        if original.layout not in {"modal_dfc", "adventure", "split"}:
             continue
-        for index in range(1, len(original.card_faces)):
+        for index in range(0 if original.layout == "split" else 1, len(original.card_faces)):
             if original.zone == Zone.EXILE and not exile_permission(state, player_id, cid, index):
                 continue
             face = select_cast_face(original, index)

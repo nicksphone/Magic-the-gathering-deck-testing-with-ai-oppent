@@ -496,7 +496,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
             const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
-            const move = ["modal_dfc", "adventure"].includes(card.layout ?? "")
+            const move = ["modal_dfc", "adventure", "split"].includes(card.layout ?? "")
               ? cardCastMoves.find((m) => (m.selected_face_index ?? 0) === selectedFaceIndex)
               : cardCastMoves[0];
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
@@ -591,7 +591,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   >
                     {faceNames.map((faceName, idx) => (
                       <option key={`${card.id}-face-${idx}`} value={idx}
-                        disabled={["modal_dfc", "adventure", "transform", "meld", "flip", "double_faced_token"].includes(card.layout ?? "") && !cardCastMoves.some((m) => (m.selected_face_index ?? 0) === idx)}>
+                        disabled={["modal_dfc", "adventure", "split", "transform", "meld", "flip", "double_faced_token"].includes(card.layout ?? "") && !cardCastMoves.some((m) => (m.selected_face_index ?? 0) === idx)}>
                         Face {idx + 1}: {faceName}
                       </option>
                     ))}
@@ -789,7 +789,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 ) : null}
                 {hints?.supports_divide ? (
                   <div className="divide-box">
-                    <p style={{ margin: "0.2rem 0" }}>Damage Distribution</p>
+                    <p style={{ margin: "0.2rem 0" }}>Damage Distribution{hints.divide_max_targets ? ` (up to ${hints.divide_max_targets} targets)` : ""}</p>
                     {[...(hints.player_targets ?? []).map((p) => ({ id: String(p.id), name: p.name })), ...(hints.creature_targets ?? [])].map(
                       (targetOption) => (
                         <div key={`${card.id}-dist-${targetOption.id}`} className="row">

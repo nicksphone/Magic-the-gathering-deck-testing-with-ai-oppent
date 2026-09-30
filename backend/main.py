@@ -1480,6 +1480,7 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
                 row.name
                 for row in cached.values()
                 if not (getattr(row, "image_uri", None) and getattr(row, "mana_cost", None) is not None and getattr(row, "type_line", None))
+                or (not getattr(row, "layout", None) and getattr(row, "card_faces_json", "[]") not in {"", "[]"})
             }
         )
         to_sync = sorted(set(missing + stale))
@@ -1488,7 +1489,10 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
             for name in to_sync:
                 try:
                     if not sync.sync_card_from_local_knowledge(name):
-                        sync.sync_card_by_name(name)
+                        row = cached.get(name.lower())
+                        missing_layout = bool(row and not getattr(row, "layout", None)
+                                              and getattr(row, "card_faces_json", "[]") not in {"", "[]"})
+                        sync.sync_card_by_name(name, force=missing_layout)
                 except Exception:
                     # Match start should still proceed if external sync is unavailable.
                     continue

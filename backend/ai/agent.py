@@ -1568,7 +1568,7 @@ class AIAgent:
         if not card:
             return 0.0
         role = self._board_role(state, player_id)
-        if getattr(card, "layout", "") in {"modal_dfc", "adventure"}:
+        if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
             from rules_engine.card_faces import select_cast_face
             index = int(move.get("selected_face_index", 0))
             face_score = self._score_modal_face(state, card, card.card_faces[index], player_id)
@@ -2318,12 +2318,12 @@ class AIAgent:
         if card:
             tags = self._spell_tags(card)
             if mtype == "cast_spell" and self._modal_face_options(card):
-                if getattr(card, "layout", "") in {"modal_dfc", "adventure"}:
+                if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
                     selected_face_index = int(move.get("selected_face_index", 0))
                 else:
                     selected_face_index, _ = self._select_modal_face_index(state, card, player_id)
                 out["selected_face_index"] = selected_face_index
-                if getattr(card, "layout", "") in {"modal_dfc", "adventure"}:
+                if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
                     from rules_engine.card_faces import select_cast_face
                     from rules_engine.cast_choice import build_cast_hints
                     card = select_cast_face(card, selected_face_index)

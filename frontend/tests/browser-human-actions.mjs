@@ -647,6 +647,28 @@ try {
   await waitFor("window.fixtureState.players['1'].life === 22 && window.fixtureState.players['2'].exile_count === 1");
   console.log("PASS human Adventure copy retargets separate clauses without granting copy exile permission");
 
+  await click("Split Card Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Fire'))");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Fire')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Face 1: Fire')); if (!select || select.options[1].disabled) throw new Error('Missing Ice face'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Ice'))");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Ice')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Target Permanent')); if (!select) throw new Error('Missing Ice target'); select.value = 'split-target-island'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Ice");
+  await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.stack[0].label === 'Ice'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.selected_face_index"), 1);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].battlefield.some(c => c.id === 'split-target-island' && c.tapped) && window.fixtureState.players['2'].graveyard.some(c => c.name === 'Fire // Ice')");
+  console.log("PASS human split card casts Ice and restores combined identity after tap/draw");
+
+  await click("Split Card Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Fire'))");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Fire')); const row = [...box.querySelectorAll('.divide-box .row')].find(r => r.textContent.includes('Player A')); if (!row) throw new Error('Missing Fire damage recipient'); const input = row.querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '2'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  await click("Cast Fire");
+  await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.stack[0].label === 'Fire'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_distribution['1']"), 2);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.players['1'].life === 18 && window.fixtureState.players['2'].graveyard.some(c => c.name === 'Fire // Ice')");
+  console.log("PASS human split card casts Fire with divided damage using only the selected half");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

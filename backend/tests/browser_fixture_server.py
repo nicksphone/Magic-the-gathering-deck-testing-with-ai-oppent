@@ -857,7 +857,9 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         return publish(state, deck)
     if modal or face_kind:
         import json
-        if face_kind in {"multi_adventure", "multi_adventure_copy"}:
+        if face_kind == "split":
+            raw = json.loads((Path(__file__).parent / "fixtures/split_cards.json").read_text())[0]
+        elif face_kind in {"multi_adventure", "multi_adventure_copy"}:
             raw = json.loads((Path(__file__).parent / "fixtures/multi_target_adventure.json").read_text())
         else:
             name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
@@ -871,6 +873,12 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.players[2].mana_pool["C"] = modal_mana
         if face_kind == "adventure":
             state.players[2].mana_pool["R"] = 4
+        if face_kind == "split":
+            state.players[2].mana_pool.update({"C": 1, "R": 1, "U": 1})
+            island = CardInstance("split-target-island", "Island", 1, 1, Zone.BATTLEFIELD,
+                                  ["Land"], type_line="Basic Land — Island", oracle_text="{T}: Add {U}.")
+            state.cards[island.id] = island
+            state.players[1].battlefield.append(island.id)
         if face_kind in {"multi_adventure", "multi_adventure_copy"}:
             state.players[2].mana_pool["C"] = 0
             state.players[2].mana_pool["B"] = 1

@@ -39,6 +39,7 @@ TOKEN_COLOR_RE = re.compile(r"^(white|blue|black|red|green|colorless)(?: and (wh
 CHOOSE_ONE_RE = re.compile(r"choose one\s*[—-]\s*(.+)", re.IGNORECASE | re.DOTALL)
 CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-]\s*(.+))?", re.IGNORECASE | re.DOTALL)
 DIVIDE_RE = re.compile(r"(?:divid[^.]*damage|damage[^.]*divid)[^.]*among[^.]*targets", re.IGNORECASE)
+DIVIDED_ONE_OR_TWO_RE = re.compile(r"\bdivided\b[^.]*\bamong one or two targets\b", re.IGNORECASE)
 UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 SEARCH_COUNT_RE = re.compile(r"search your library for (?:up to\s+)?(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
 SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
@@ -785,7 +786,8 @@ def inspect_target_hints(
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
         }
-    if "any target" in oracle or "any number of targets" in oracle or "target player" in oracle:
+    divided_one_or_two = bool(DIVIDED_ONE_OR_TWO_RE.search(oracle))
+    if "any target" in oracle or "any number of targets" in oracle or "target player" in oracle or divided_one_or_two:
         hints["player_targets"] = [
             {"id": 1, "name": state.players[1].name},
             {"id": 2, "name": state.players[2].name},
@@ -808,7 +810,9 @@ def inspect_target_hints(
         ]
     if DIVIDE_RE.search(oracle):
         hints["supports_divide"] = True
-    if "any target" in oracle or "any number of targets" in oracle:
+        if divided_one_or_two:
+            hints["divide_max_targets"] = 2
+    if "any target" in oracle or "any number of targets" in oracle or divided_one_or_two:
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for player in state.players.values()
