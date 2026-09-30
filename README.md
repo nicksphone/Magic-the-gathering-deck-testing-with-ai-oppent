@@ -14,6 +14,7 @@ It is designed for serious deck work:
 
 ### Gameplay
 - Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
+- Training uses the power of creatures declared as attackers together, creates one stack trigger even when several companions have greater power, and adds a +1/+1 counter only if that battlefield incarnation remains when the trigger resolves. Hopeful Initiate has real-card, snapshot and re-entry regressions; other attack-trigger keywords are not implied to be supported.
 - Combat legality enforces printed single-keyword "can block only creatures with ..." restrictions and numeric "can't attack or block unless you control N or more lands" restrictions using the current battlefield. Brazen Borrower and Topiary Stomper have real-card regressions; other conditional combat text and ability-removal interactions are not certified.
 - Untap happens without a priority window; play resumes at upkeep. Pending replacement/trigger choices remain answerable, and AI defers optional cycling on its own empty-stack upkeep/draw until a main phase.
 - Supported enter-the-battlefield text granting creatures you control a numeric power/toughness bonus and a keyword until end of turn now affects the creatures present when the trigger resolves, including the source. The bonus expires at cleanup; this is not a general continuous-effect interpreter.

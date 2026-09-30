@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Training now triggers once when a creature attacks alongside a greater-power creature, then adds its counter on stack resolution without rechecking the companion's power. Snapshot and leave/re-entry regressions use Hopeful Initiate. Verification: 1,482 isolated backend tests, frontend lint/build/unit, full browser harness and a seeded two-game replay with no determinism drift. Broader attack-trigger interpretation remains open.
+
 - Combat legality now applies Brazen Borrower's flying-only block restriction and Topiary Stomper's seven-land attack/block threshold through reusable text clauses. Strict player actions, AI's shared blocker filter, and snapshot behavior use the same legality path. Other conditional combat wordings remain open.
 
 - Batch simulation starts now accept an `Idempotency-Key` (32 lowercase hex characters) and return the existing job for a retry with identical parameters, including after a restart. The UI retries once after an ambiguous response and recovers its pending request on refresh. A worker-start failure records a failed job rather than an indefinite queued row. HTTP, SQLite and browser regressions cover conflict detection and a server-accepted start with two lost replies.

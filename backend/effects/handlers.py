@@ -1673,6 +1673,8 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     amount = int(payload.get("amount", 1))
     if target in state.cards and state.cards[target].zone == Zone.BATTLEFIELD:
         card = state.cards[target]
+        if "effect_timestamp" in payload and card.effect_timestamp != payload["effect_timestamp"]:
+            return
         card.counters[counter] = card.counters.get(counter, 0) + amount
         if payload.get("animate_land") and "Land" in card.types:
             card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))

@@ -392,6 +392,22 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     if event == "attack_declared":
         attacker = state.cards.get(payload.get("card_id"))
         if attacker:
+            from rules_engine.continuous import effective_power, has_keyword
+
+            if attacker.id in state.attackers and has_keyword(state, attacker.id, "training"):
+                power = effective_power(state, attacker.id)
+                if any(
+                    other_id != attacker.id
+                    and state.cards[other_id].controller == attacker.controller
+                    and effective_power(state, other_id) > power
+                    for other_id in state.attackers
+                ):
+                    out.append({
+                        "source_card_id": attacker.id, "controller": attacker.controller,
+                        "label": f"{attacker.name} training", "effect_key": "add_counters",
+                        "payload": {"target_card_id": attacker.id, "counter": "+1/+1", "amount": 1,
+                                    "effect_timestamp": attacker.effect_timestamp},
+                    })
             for amount in re.findall(r"\bannihilator\s+(\d+)", without_reminder_text(attacker.oracle_text or ""), re.IGNORECASE):
                 out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
     if event == "spell_cast":

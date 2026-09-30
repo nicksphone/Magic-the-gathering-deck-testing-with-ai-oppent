@@ -48,6 +48,7 @@ PT_AND_KW_REMOVE_RE = re.compile(
 )
 KNOWN_KEYWORDS = [
     "banding",
+    "training",
     "trample",
     "first strike",
     "double strike",
