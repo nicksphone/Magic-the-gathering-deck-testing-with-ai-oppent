@@ -618,6 +618,19 @@ try {
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Bonecrusher Giant')");
   console.log("PASS human Adventure resolves into exile then normal face casts to battlefield");
 
+  await click("Multi-Target Adventure Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Meager Meal'))");
+  const mealTarget = await evaluate("window.fixtureState.players['1'].battlefield[0].id");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); select.value = ${JSON.stringify(mealTarget)}; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await click("Cast Meager Meal");
+  await waitFor("window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_player"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_card_id"), mealTarget);
+  await click("Resolve Stack");
+  await waitFor(`window.fixtureState.players['1'].life === 22 && window.fixtureState.players['1'].battlefield.some(c => c.id === ${JSON.stringify(mealTarget)} && c.counters['+1/+1'] === 1) && window.fixtureState.players['2'].exile_count === 1`);
+  console.log("PASS human multi-target Adventure announces both targets and resolves both effects");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

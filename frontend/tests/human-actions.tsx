@@ -79,6 +79,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "conditional_land").catch((failure) => setError(String(failure)))}>Conditional Land Fixture</button>
     <button onClick={() => reset(false, false, 3, "conditional_land_effect").catch((failure) => setError(String(failure)))}>Conditional Land Effect Fixture</button>
     <button onClick={() => reset(false, false, 3, "adventure").catch((failure) => setError(String(failure)))}>Adventure Fixture</button>
+    <button onClick={() => reset(false, false, 3, "multi_adventure").catch((failure) => setError(String(failure)))}>Multi-Target Adventure Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "damage_trigger").catch((failure) => setError(String(failure)))}>Damage Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "player_hexproof").catch((failure) => setError(String(failure)))}>Player Hexproof Fixture</button>

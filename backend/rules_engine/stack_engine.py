@@ -160,6 +160,50 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not any_legal_target:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    elif (card and card.zone == Zone.STACK and item.effect_key == "effect_sequence"
+          and target_count > 1 and not announced.get("mode_texts")
+          and not announced.get("target_card_ids") and not announced.get("target_distribution")):
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+
+        target_keys = ("target_card_id", "target_player", "target_stack_id")
+        effects = item.payload.get("effects", [])
+        selections = []
+        for effect in effects:
+            clause = effect.get("clause_text")
+            if not clause:
+                break
+            from copy import copy
+            clause_card = copy(card)
+            clause_card.oracle_text = clause
+            clause_hints = inspect_target_hints(state, clause_card, item.controller, announced)
+            card_target = any(key in clause_hints for key in (
+                "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
+                "artifact_targets", "enchantment_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            )) and "target" in clause
+            allowed = {"target_card_id": card_target, "target_player": "player_targets" in clause_hints,
+                       "target_stack_id": "stack_targets" in clause_hints}
+            selections.append({
+                key: effect.get("payload", {}).get(key) for key in target_keys
+                if allowed[key] and announced.get(key) is not None and effect.get("payload", {}).get(key) == announced[key]
+            })
+        if len(selections) == len(effects) and any(selections) and all(len(selected) <= 1 for selected in selections):
+            hints = inspect_target_hints(state, card, item.controller, announced)
+            legal_effects = []
+            any_legal_target = False
+            for effect, selected in zip(effects, selections):
+                if not selected:
+                    legal_effects.append(effect)
+                    continue
+                legal = (validate_cast_targets(hints, selected)[0]
+                         and validate_protection_targets(state, card, selected)[0]
+                         and validate_hexproof_shroud_targets(state, item.controller, selected)[0])
+                if legal:
+                    any_legal_target = True
+                    legal_effects.append(effect)
+            if not any_legal_target:
+                state.stack.pop()
+                return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     elif card and card.zone == Zone.STACK and target_count == 1:
         from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
         from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets

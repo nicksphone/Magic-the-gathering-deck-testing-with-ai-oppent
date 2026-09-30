@@ -1,0 +1,31 @@
+{
+  "id": "6cfaa182-3fec-4907-8814-b4d29c33cec3",
+  "name": "Gollum, Silent Slinker // Meager Meal",
+  "oracle_id": "0296d57e-e5b9-456f-bb21-eb584adefb4c",
+  "layout": "adventure",
+  "type_line": "Legendary Creature — Halfling Horror // Sorcery — Adventure",
+  "oracle_text": null,
+  "mana_cost": "{3}{B} // {B}",
+  "power": "4",
+  "toughness": "3",
+  "card_faces": [
+    {
+      "name": "Gollum, Silent Slinker",
+      "mana_cost": "{3}{B}",
+      "type_line": "Legendary Creature — Halfling Horror",
+      "oracle_text": "Menace (This creature can't be blocked except by two or more creatures.)",
+      "power": "4",
+      "toughness": "3",
+      "colors": null
+    },
+    {
+      "name": "Meager Meal",
+      "mana_cost": "{B}",
+      "type_line": "Sorcery — Adventure",
+      "oracle_text": "Put a +1/+1 counter on up to one target creature. Target player gains 2 life. (Then exile this card. You may cast the creature later from exile.)",
+      "power": null,
+      "toughness": null,
+      "colors": null
+    }
+  ]
+}

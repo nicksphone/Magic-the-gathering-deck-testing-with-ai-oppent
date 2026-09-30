@@ -15,7 +15,7 @@ X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 EACH_PLAYER_DRAW_RE = re.compile(r"each player draws? (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+|x) cards?\.?", re.IGNORECASE)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
-GAIN_RE = re.compile(r"gain\s+(\d+)\s+life")
+GAIN_RE = re.compile(r"gains?\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
 LOSE_COUNT_RE = re.compile(r"loses?\s+life\s+equal\s+to\s+the\s+number\s+of\s+([a-z-]+)\s+you\s+control", re.IGNORECASE)
 GAIN_CONTROL_RE = re.compile(r"gain control of\s+target\s+(creature|artifact|enchantment|permanent|planeswalker|land)", re.IGNORECASE)
@@ -310,9 +310,9 @@ def infer_effect_from_oracle(
         return search_effect
 
     clauses = _split_clauses(oracle)
-    effects: list[tuple[str, dict[str, Any]]] = []
+    effects: list[tuple[str, dict[str, Any], str]] = []
     for clause in clauses:
-        effects.extend(_infer_turn_restriction_effects(clause, controller))
+        effects.extend((key, payload, clause) for key, payload in _infer_turn_restriction_effects(clause, controller))
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
             if (
@@ -324,11 +324,11 @@ def infer_effect_from_oracle(
                 inferred[1]["animate_land"] = True
                 inferred[1]["animate_keywords"] = [keyword for keyword in ("vigilance", "haste") if keyword in oracle]
                 inferred[1]["animate_untap"] = "untap it" in oracle
-            effects.append(inferred)
+            effects.append((*inferred, clause))
     if len(effects) >= 2:
-        return "effect_sequence", {"effects": [{"effect_key": k, "payload": v} for k, v in effects]}
+        return "effect_sequence", {"effects": [{"effect_key": k, "payload": v, "clause_text": clause} for k, v, clause in effects]}
     if len(effects) == 1:
-        return effects[0]
+        return effects[0][0], effects[0][1]
 
     if not oracle and not card.oracle_text and any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
         opp = action_targets.get("target_player", 1 if controller == 2 else 2)
@@ -1471,6 +1471,8 @@ def _infer_clause_effect(
     if counters_match:
         amount = _parse_count_token(counters_match.group(1))
         target = target_card_id
+        if target is None and "up to one target" in oracle:
+            return None
         if target is None and counters_match.group(2).lower() == "land":
             target = next(
                 (cid for cid in state.players[controller].battlefield if "Land" in state.cards[cid].types),

@@ -857,8 +857,11 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         return publish(state, deck)
     if modal or face_kind:
         import json
-        name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
-        raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[name]
+        if face_kind == "multi_adventure":
+            raw = json.loads((Path(__file__).parent / "fixtures/multi_target_adventure.json").read_text())
+        else:
+            name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
+            raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[name]
         deck = [{"quantity": 60, "card_name": raw["name"], **raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}]
         state = MatchFactory.from_decks(deck, deck, seed=9)
         state.pregame_pending = False
@@ -868,6 +871,12 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.players[2].mana_pool["C"] = modal_mana
         if face_kind == "adventure":
             state.players[2].mana_pool["R"] = 4
+        if face_kind == "multi_adventure":
+            state.players[2].mana_pool["C"] = 0
+            state.players[2].mana_pool["B"] = 1
+            creature_id = state.players[1].hand.pop()
+            state.players[1].battlefield.append(creature_id)
+            state.cards[creature_id].zone = Zone.BATTLEFIELD
         return publish(state, deck)
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=15)
