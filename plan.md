@@ -490,7 +490,8 @@ Single-process batch admission now shares one slot across synchronous and backgr
 The in-memory simulator history is now capped at 20 terminal jobs while old result lookups fall back to SQLite. Startup loads only recent rows plus unfinished jobs, which are marked failed after restart. Durable database retention and quotas remain open.
 
 - [ ] Define single-process local topology and network exposure policy explicitly.
-- [ ] Add bounded job queues/quotas, cancellation, retention and documented crash/restart behavior.
+- [x] Add cooperative cancellation and restore active simulator polling after a browser refresh.
+- [ ] Add bounded job queues/quotas, database retention and documented crash/restart behavior.
 - [ ] Add per-match locking/versioning and stale-write checks; test simultaneous actions.
 - [ ] Add authentication/authorization and restricted origins before supporting network access beyond a trusted single-user setup.
 - [ ] Upgrade vulnerable dependencies deliberately against current advisories; retest without blind forced upgrades.

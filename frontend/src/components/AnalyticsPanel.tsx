@@ -7,6 +7,8 @@ type Props = {
   decks: DeckRecord[];
 };
 
+const ACTIVE_SIMULATION_JOB_KEY = "mtg.activeSimulationJobId";
+
 export function AnalyticsPanel({ decks }: Props) {
   const [deckA, setDeckA] = useState<number | null>(null);
   const [deckB, setDeckB] = useState<number | null>(null);
@@ -15,10 +17,17 @@ export function AnalyticsPanel({ decks }: Props) {
   const [maxTicks, setMaxTicks] = useState(2000);
   const [result, setResult] = useState<string>("");
   const [resultObj, setResultObj] = useState<Record<string, unknown> | null>(null);
-  const [running, setRunning] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [progressText, setProgressText] = useState<string>("");
-  const [jobStatus, setJobStatus] = useState<string>("idle");
+  const [jobId, setJobId] = useState<string | null>(() => {
+    try {
+      if (typeof window === "undefined") return null;
+      return window.localStorage.getItem(ACTIVE_SIMULATION_JOB_KEY);
+    } catch {
+      return null;
+    }
+  });
+  const [running, setRunning] = useState(Boolean(jobId));
+  const [progressText, setProgressText] = useState(jobId ? "Restoring simulator job..." : "");
+  const [jobStatus, setJobStatus] = useState(jobId ? "running" : "idle");
   const [progressPct, setProgressPct] = useState(0);
   const [jobError, setJobError] = useState<string>("");
   const [cancelPending, setCancelPending] = useState(false);
@@ -158,6 +167,15 @@ export function AnalyticsPanel({ decks }: Props) {
       setRunning(false);
     }
   }
+
+  useEffect(() => {
+    try {
+      if (jobId) window.localStorage.setItem(ACTIVE_SIMULATION_JOB_KEY, jobId);
+      else window.localStorage.removeItem(ACTIVE_SIMULATION_JOB_KEY);
+    } catch {
+      // Simulator still works when browser storage is unavailable.
+    }
+  }, [jobId]);
 
   useEffect(() => {
     if (!jobId) return;

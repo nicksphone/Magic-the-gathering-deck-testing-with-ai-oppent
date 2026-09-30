@@ -4,12 +4,13 @@ import { api } from "../src/api/client";
 import type { DeckRecord } from "../src/types";
 
 declare global {
-  interface Window { fixturePreflights?: number; fixtureStarts?: number; fixtureCancels?: number }
+  interface Window { fixturePreflights?: number; fixtureStarts?: number; fixtureCancels?: number; fixturePolls?: number }
 }
 
 window.fixturePreflights = 0;
 window.fixtureStarts = 0;
 window.fixtureCancels = 0;
+window.fixturePolls = 0;
 let canceled = false;
 api.listDiagnosticRuns = async () => ({ runs: [] });
 api.preflightSimulateBatch = async (deckA) => {
@@ -25,10 +26,13 @@ api.startSimulateBatchJob = async () => {
   window.fixtureStarts = (window.fixtureStarts ?? 0) + 1;
   return { job_id: "fixture-job", status: "queued" };
 };
-api.getSimulateBatchJob = async () => ({
-  job_id: "fixture-job", status: canceled ? "canceled" : "running", completed_matches: 0,
-  total_matches: 20, started_at: Date.now() / 1000, result: null,
-});
+api.getSimulateBatchJob = async () => {
+  window.fixturePolls = (window.fixturePolls ?? 0) + 1;
+  return {
+    job_id: "fixture-job", status: canceled ? "canceled" : "running", completed_matches: 0,
+    total_matches: 20, started_at: Date.now() / 1000, result: null,
+  };
+};
 api.cancelSimulateBatchJob = async () => {
   window.fixtureCancels = (window.fixtureCancels ?? 0) + 1;
   canceled = true;

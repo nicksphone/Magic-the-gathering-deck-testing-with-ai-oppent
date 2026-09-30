@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Testing Simulator now remembers the active background job ID and resumes polling after page refresh or tab remount. A browser regression checks that restore does not create a duplicate job and that cancellation clears the saved ID. It does not recover a start request whose response was lost before the ID reached the browser.
+
 - Added cooperative cancellation for background Testing Simulator jobs. The UI now requests worker cancellation rather than merely stopping polling; canceled jobs retain progress without reporting incomplete win-rate metrics. Backend worker/slot tests, a response-contract test, and a browser UI fixture cover the behavior. Queueing, durable retention and multiworker execution remain out of scope.
 
 - Speculative AI search and ranking rollouts now request strict engine rejection for cloned actions. A real unpayable Counterspell regression previously scored a no-op as a valid line and now rejects it. Verification: 1,467 isolated backend tests, frontend lint/build/unit, full solo Chromium harness and seeded two-game replay with no reported drift. Other silent no-op paths remain to be audited.
