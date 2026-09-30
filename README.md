@@ -218,6 +218,7 @@ It is designed for serious deck work:
 - Replay matrices run each seed in both seat orders by default, record per-game seeds/choosers/starters and separate unresolved series from completed win rates. Repeated determinism executions are not counted as new samples; anomalous runs retain traces. Replay shares live-match loser/draw chooser, seed and mulligan-actor policies, chooses play by default and stops at the first timeout. Sideboarding parity and conditional/reveal opening-hand effects remain open. See [the replay protocol](docs/testing/seat-balanced-replay.md).
 - Per-game batch results and matchup summaries
 - Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction
+- Offline match-latency profiler reports per-decision counts, p50/p95/p99/max timing and diagnostic target exceedances without hands/card identities. It never changes gameplay or truncates a decision for exceeding the target. Exact card-instance planning clones isolate all mutable fields while reusing immutable scalars; see [measured scope](docs/testing/ai-card-copy-latency.md).
 - Corpus audit script for ranking parser fallbacks and missing Oracle metadata across built-in and expansion decks
 - SQLite cache resolution is stable across launch directories; API, sync jobs, and diagnostics use `backend/mtg_lab.db`
 

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 import re
 
-from game_state.state import MatchState, Zone
+from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
@@ -18,6 +18,7 @@ SECONDARY_EFFECT_RE = re.compile(
 )
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
+_immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
 
 
 @contextmanager
@@ -33,7 +34,21 @@ def decision_projection_scope(state, player_id):
 def planning_copy(state):
     """Copy all gameplay state, but not diagnostic history unused by search."""
     log = getattr(state, "log", None)
-    return deepcopy(state, {id(log): []} if isinstance(log, list) else {})
+    memo = {id(log): []} if isinstance(log, list) else {}
+    # Avoid deepcopy's reconstruction/dispatch overhead for every immutable
+    # scalar of every card. Mutable metadata still shares one deepcopy memo.
+    cards = [card for card in getattr(state, "cards", {}).values() if type(card) is CardInstance]
+    for card in cards:
+        memo[id(card)] = copy(card)
+        memo[id(card.__dict__)] = {}
+        memo[id(card)].__dict__ = memo[id(card.__dict__)]
+    for card in cards:
+        memo[id(card)].__dict__.update({
+            key: value if type(value) in _immutable_card_types
+            else deepcopy(value, memo)
+            for key, value in card.__dict__.items()
+        })
+    return deepcopy(state, memo)
 
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:

@@ -132,12 +132,43 @@ def test_planning_copy_omits_only_history_and_preserves_rng_choices_and_source_s
     assert pending_effects.planning_copy(lightweight).payload is None
 
 
-def test_benchmark_checks_full_decision_and_state_without_timing_threshold():
+def test_fast_card_copy_preserves_aliases_cycles_and_isolates_mutable_fields():
+    state, victim, held = fixture()
+    shared = [{"name": "Face", "keywords": ["flying"], "extra": {"nested": [1]}}]
+    state.cards[victim].card_faces = shared
+    state.cards[held].card_faces = shared
+    state.cards[victim].test_cycle = state.cards[held]
+    state.cards[held].test_cycle = state.cards[victim]
+    state.cards[victim].test_attributes = state.cards[held].__dict__
+    reference = deepcopy(state)
+    reference.log = []
+    clone = pending_effects.planning_copy(state)
+    assert serialize_match_snapshot(clone) == serialize_match_snapshot(reference)
+    assert clone.cards[victim].card_faces is clone.cards[held].card_faces
+    assert clone.cards[victim].test_cycle is clone.cards[held]
+    assert clone.cards[held].test_cycle is clone.cards[victim]
+    assert clone.cards[victim].test_attributes is clone.cards[held].__dict__
+    clone.cards[victim].card_faces[0]["extra"]["nested"].append(2)
+    clone.cards[victim].keywords.append("haste")
+    clone.cards[victim].counters["+1/+1"] = 5
+    assert state.cards[victim].card_faces[0]["extra"]["nested"] == [1]
+    assert "haste" not in state.cards[victim].keywords
+    assert "+1/+1" not in state.cards[victim].counters
+
+
+@pytest.mark.parametrize("reference_mode", ["full", "copy-only"])
+def test_benchmark_checks_full_decision_and_state_without_timing_threshold(reference_mode):
     from scripts.benchmark_ai_decisions import benchmark
     state, _ = dense_removal_state()
-    result = benchmark(serialize_match_snapshot(state), 1, iterations=2)
+    result = benchmark(serialize_match_snapshot(state), 1, iterations=2,
+                       opponent_archetype="Tempo", reference_mode=reference_mode)
     assert result["actions_and_reasoning_equal"] and result["authoritative_state_unchanged"]
     assert result["timing"]["optimized"]["settle_calls"] == [1, 1]
-    assert all(count > 1 for count in result["timing"]["reference_ablation"]["settle_calls"])
+    assert result["opponent_archetype"] == "Tempo"
+    reference_key = "reference_ablation" if reference_mode == "full" else "reference_copy"
+    assert all(count > 1 if reference_mode == "full" else count == 1
+               for count in result["timing"][reference_key]["settle_calls"])
     with pytest.raises(ValueError):
         benchmark(serialize_match_snapshot(state), 1, iterations=0)
+    with pytest.raises(ValueError):
+        benchmark(serialize_match_snapshot(state), 1, reference_mode="unknown")

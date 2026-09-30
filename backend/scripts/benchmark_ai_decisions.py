@@ -20,10 +20,20 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from rules_engine.engine import RulesEngine
 
 
-def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype: str = "Control", difficulty: str = "master") -> dict:
+def _reference_planning_copy(state):
+    log = getattr(state, "log", None)
+    return deepcopy(state, {id(log): []} if isinstance(log, list) else {})
+
+
+def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype: str = "Control",
+              difficulty: str = "master", opponent_archetype: str | None = None,
+              reference_mode: str = "full") -> dict:
     if player_id not in (1, 2) or iterations < 1:
         raise ValueError("Choose player 1/2 and a positive iteration count")
-    rows = {"optimized": [], "reference_ablation": []}
+    if reference_mode not in {"full", "copy-only"}:
+        raise ValueError("Choose full or copy-only reference mode")
+    reference_key = "reference_ablation" if reference_mode == "full" else "reference_copy"
+    rows = {"optimized": [], reference_key: []}
     decisions = []
     unchanged = True
     for iteration in range(iterations):
@@ -33,11 +43,16 @@ def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype:
             state = deserialize_match_snapshot(snapshot)
             before = serialize_match_snapshot(state)
             moves = RulesEngine().legal_moves(state, player_id)
-            agent = agent_module.AIAgent(archetype=archetype, difficulty=difficulty)
+            agent = agent_module.AIAgent(archetype=archetype, difficulty=difficulty,
+                                         opponent_archetype=opponent_archetype)
             with ExitStack() as scope:
-                if mode == "reference_ablation":
-                    scope.enter_context(patch.object(pending_effects, "decision_projection_scope", lambda *_: nullcontext()))
-                    scope.enter_context(patch.object(agent_module, "planning_copy", deepcopy))
+                if mode == reference_key:
+                    if reference_mode == "full":
+                        scope.enter_context(patch.object(pending_effects, "decision_projection_scope", lambda *_: nullcontext()))
+                        scope.enter_context(patch.object(agent_module, "planning_copy", deepcopy))
+                    else:
+                        scope.enter_context(patch.object(agent_module, "planning_copy", _reference_planning_copy))
+                    scope.enter_context(patch.object(pending_effects, "planning_copy", _reference_planning_copy))
                 settles = scope.enter_context(patch.object(pending_effects, "_settle_announced_stack", wraps=pending_effects._settle_announced_stack))
                 start = perf_counter()
                 decision = agent.choose_action(state, moves, player_id)
@@ -51,9 +66,10 @@ def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype:
                      "settle_calls": [row["settle_calls"] for row in samples]} for mode, samples in rows.items()}
     optimized_time = timing["optimized"]["median_seconds"]
     return {"iterations_per_mode": iterations, "player_id": player_id, "archetype": archetype,
-            "difficulty": difficulty, "actions_and_reasoning_equal": all(row == decisions[0] for row in decisions),
+            "difficulty": difficulty, "opponent_archetype": opponent_archetype,
+            "reference_mode": reference_mode, "actions_and_reasoning_equal": all(row == decisions[0] for row in decisions),
             "authoritative_state_unchanged": unchanged, "timing": timing,
-            "median_speedup_ratio": timing["reference_ablation"]["median_seconds"] / optimized_time if optimized_time else None,
+            "median_speedup_ratio": timing[reference_key]["median_seconds"] / optimized_time if optimized_time else None,
             "scope": "single-snapshot performance ablation; not strength, balance or worst-case latency evidence"}
 
 
@@ -63,6 +79,8 @@ def main() -> int:
     parser.add_argument("--player", type=int, choices=(1, 2), default=1)
     parser.add_argument("--iterations", type=int, default=5)
     parser.add_argument("--archetype", default="Control")
+    parser.add_argument("--opponent-archetype")
+    parser.add_argument("--reference-mode", choices=("full", "copy-only"), default="full")
     parser.add_argument("--difficulty", choices=("casual", "strong", "master"), default="master")
     parser.add_argument("--output", default="training_runs/ai_decision_benchmark.json")
     args = parser.parse_args()
@@ -70,7 +88,8 @@ def main() -> int:
         parser.error("--iterations must be positive")
     snapshot = json.loads(Path(args.snapshot).read_text())
     result = benchmark(snapshot.get("state", snapshot), args.player, args.iterations,
-                       archetype=args.archetype, difficulty=args.difficulty)
+                       archetype=args.archetype, difficulty=args.difficulty,
+                       opponent_archetype=args.opponent_archetype, reference_mode=args.reference_mode)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2) + "\n")

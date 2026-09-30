@@ -1,0 +1,190 @@
+{
+  "scope": "Local paired copy-only timing and seeded regression, not strength, balance or HTTP latency certification.",
+  "iterations_per_snapshot_per_mode": 5,
+  "paired_snapshots": [
+    {
+      "seconds": 0.645312950015068,
+      "archetype": "Control",
+      "player": 2,
+      "turn": 26,
+      "step": "draw",
+      "battlefield_count": 16,
+      "legal_moves": 2,
+      "action_type": "cast_spell",
+      "history_lines": 1645,
+      "iterations_per_mode": 5,
+      "actions_and_reasoning_equal": true,
+      "snapshot_clone_equal": true,
+      "source_unchanged": true,
+      "median_seconds": {
+        "optimized": 0.5537193119525909,
+        "reference": 0.6692689810879529
+      }
+    },
+    {
+      "seconds": 0.5237822839990258,
+      "archetype": "Control",
+      "player": 2,
+      "turn": 26,
+      "step": "draw",
+      "battlefield_count": 16,
+      "legal_moves": 2,
+      "action_type": "cast_spell",
+      "history_lines": 1635,
+      "iterations_per_mode": 5,
+      "actions_and_reasoning_equal": true,
+      "snapshot_clone_equal": true,
+      "source_unchanged": true,
+      "median_seconds": {
+        "optimized": 0.42598965717479587,
+        "reference": 0.5201072739437222
+      }
+    },
+    {
+      "seconds": 0.5149518330581486,
+      "archetype": "Control",
+      "player": 1,
+      "turn": 13,
+      "step": "draw",
+      "battlefield_count": 13,
+      "legal_moves": 5,
+      "action_type": "cycle_card",
+      "history_lines": 795,
+      "iterations_per_mode": 5,
+      "actions_and_reasoning_equal": true,
+      "snapshot_clone_equal": true,
+      "source_unchanged": true,
+      "median_seconds": {
+        "optimized": 0.3971146298572421,
+        "reference": 0.4873266429640353
+      }
+    },
+    {
+      "seconds": 0.32844781689345837,
+      "archetype": "Ramp",
+      "player": 1,
+      "turn": 15,
+      "step": "precombat_main",
+      "battlefield_count": 12,
+      "legal_moves": 2,
+      "action_type": "cast_spell",
+      "history_lines": 847,
+      "iterations_per_mode": 5,
+      "actions_and_reasoning_equal": true,
+      "snapshot_clone_equal": true,
+      "source_unchanged": true,
+      "median_seconds": {
+        "optimized": 0.25837890803813934,
+        "reference": 0.32219115598127246
+      }
+    },
+    {
+      "seconds": 0.3250750871375203,
+      "archetype": "Ramp",
+      "player": 2,
+      "turn": 10,
+      "step": "precombat_main",
+      "battlefield_count": 10,
+      "legal_moves": 3,
+      "action_type": "cast_spell",
+      "history_lines": 559,
+      "iterations_per_mode": 5,
+      "actions_and_reasoning_equal": true,
+      "snapshot_clone_equal": true,
+      "source_unchanged": true,
+      "median_seconds": {
+        "optimized": 0.21243605902418494,
+        "reference": 0.32297807885333896
+      }
+    }
+  ],
+  "matrix_games": 8,
+  "matrix_complete_results_equal": true,
+  "matrix_timeouts": 0,
+  "profiled_games": [
+    {
+      "deck_a": "Blue Control",
+      "deck_b": "Ramp",
+      "seed": 111,
+      "game": {
+        "winner": 1,
+        "turn": 14,
+        "ticks": 372,
+        "log_hash": "e9a9a347402cb88239f047f6f98e425f6518cd93a235f81b0bf7dc11a5aeb725",
+        "timeout": false,
+        "starting_player": 1
+      },
+      "latency": {
+        "decisions": 372,
+        "target_seconds": 1.0,
+        "over_target": 0,
+        "p50_seconds": 0.00724999513477087,
+        "p95_seconds": 0.025204895064234734,
+        "p99_seconds": 0.15717595582827926,
+        "max_seconds": 0.4358357838355005
+      },
+      "by_archetype": {
+        "Control": {
+          "decisions": 184,
+          "target_seconds": 1.0,
+          "over_target": 0,
+          "p50_seconds": 0.007338652852922678,
+          "p95_seconds": 0.025204895064234734,
+          "p99_seconds": 0.2301611308939755,
+          "max_seconds": 0.4358357838355005
+        },
+        "Ramp": {
+          "decisions": 188,
+          "target_seconds": 1.0,
+          "over_target": 0,
+          "p50_seconds": 0.0071478672325611115,
+          "p95_seconds": 0.024824341293424368,
+          "p99_seconds": 0.15717595582827926,
+          "max_seconds": 0.21606395533308387
+        }
+      }
+    },
+    {
+      "deck_a": "Ramp",
+      "deck_b": "Blue Control",
+      "seed": 111,
+      "game": {
+        "winner": 2,
+        "turn": 27,
+        "ticks": 736,
+        "log_hash": "f1fb0597de0bd269df72d40f4561f2108852c9986b61c205fa49748545a911ef",
+        "timeout": false,
+        "starting_player": 1
+      },
+      "latency": {
+        "decisions": 736,
+        "target_seconds": 1.0,
+        "over_target": 0,
+        "p50_seconds": 0.0032663829624652863,
+        "p95_seconds": 0.03811974823474884,
+        "p99_seconds": 0.1967683518305421,
+        "max_seconds": 0.547822643071413
+      },
+      "by_archetype": {
+        "Control": {
+          "decisions": 371,
+          "target_seconds": 1.0,
+          "over_target": 0,
+          "p50_seconds": 0.0026493510231375694,
+          "p95_seconds": 0.024540243670344353,
+          "p99_seconds": 0.24130422668531537,
+          "max_seconds": 0.547822643071413
+        },
+        "Ramp": {
+          "decisions": 365,
+          "target_seconds": 1.0,
+          "over_target": 0,
+          "p50_seconds": 0.003516578581184149,
+          "p95_seconds": 0.04855021694675088,
+          "p99_seconds": 0.17017412511631846,
+          "max_seconds": 0.2738164849579334
+        }
+      }
+    }
+  ]
+}
