@@ -1,0 +1,127 @@
+{
+  "date": "2026-09-30",
+  "parent": "60c05d990daee97f9d026cfc1825f03f3a90deb4",
+  "scope": "Eight logical BO1 games repeated across sixteen executions with offline built-in hydration. Equality covers complete reported game results and logs, not every internal state. This unchanged smoke matrix does not independently exercise attachment scaling or establish balance/expert strength. Optional Spell Pierce payment failure is not rejected casting.",
+  "production_sha256": {
+    "backend/rules_engine/continuous.py": "e6a803a4fc3c25de58d0c103e117c34c2210d6e35364a2771d5eee2ea2940473",
+    "backend/game_state/serializers.py": "503576b361b588c7adeb383aba1ee665c95dded98057987921bc99b19c864cdb"
+  },
+  "difficulty": "master",
+  "max_ticks": 1600,
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 49,
+      "ticks": 1309,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 15,
+      "ticks": 389,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": [
+        "Player B cannot pay {2} for Counterspell."
+      ]
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 38,
+      "ticks": 1036,
+      "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 405,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 21,
+      "ticks": 580,
+      "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 420,
+      "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 25,
+      "ticks": 679,
+      "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 16,
+      "ticks": 435,
+      "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+      "repeat_report_equal": true,
+      "unchanged_from_parent": true,
+      "timeout": false,
+      "rejected_cost_or_target_lines": [],
+      "optional_payment_lines": []
+    }
+  ]
+}

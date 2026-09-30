@@ -270,6 +270,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
+              {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
               <small>
@@ -334,6 +335,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
+              {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
               <small>

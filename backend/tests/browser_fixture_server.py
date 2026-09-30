@@ -26,6 +26,22 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "attached_scaling":
+        from tests.test_attached_scaling import add
+        from tests.test_restricted_mana import clean, add as payment_card
+        state = clean(2)
+        target = add(state, "Llanowar Elves", 1)
+        source = add(state, "All That Glitters", 1)
+        source.attached_to = target.id
+        add(state, "Sol Ring", 1)
+        other = add(state, "Ornithopter", 1)
+        add(state, "Unholy Strength", 1).attached_to = other.id
+        unknown = add(state, "Blessing of the Nephilim", 2)
+        unknown.attached_to = add(state, "Llanowar Elves", 2).id
+        payment_card(state, "Naturalize", 2, Zone.HAND)
+        payment_card(state, "Forest", 2)
+        payment_card(state, "Forest", 2)
+        return publish(state, [{"quantity": 60, "card_name": "Forest"}])
     if face_kind == "restricted_mana":
         from tests.test_restricted_mana import clean, add
         state = clean(2)

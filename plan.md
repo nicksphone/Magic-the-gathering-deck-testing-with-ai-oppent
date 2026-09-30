@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab Finish Plan
 
+Attached-scaling milestone: 1,974 isolated production-source backend tests, 77 final focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games reproduce identical complete reported objects/logs across sixteen executions, unchanged from the parent and without timeout or cast/target rejection. Targeted canonical tests and the real UI/API removal scenario verify the new mechanics; the smoke matrix alone does not. See [scope](docs/testing/attached-scaling.md).
+
+- [x] Replace flat-prefix attached modifier inference with supported current-controller battlefield-type/land-subtype counts and source-counter scaling. Preserve independent known effects and expose detected unknown attached clauses in public views, layer traces and both-seat controls. See [scope](docs/testing/attached-scaling.md).
+- [ ] Extend attached conditional/domain/attachment-count/target-color and source-named predicates, granted activated abilities, source ability suppression and full type/dependency layers. Reconfigure needs both attach/detach actions plus creature-type restoration; permitting attachment alone is not completion.
+
 Restricted-mana/attachment milestone: 1,943 isolated backend tests, 196 focused checks, frontend lint/build/unit and full Chromium pass. New real seat-two UI/API coverage verifies restricted pools, actual equip stack/priority and attached effective stats. The [scope report](docs/testing/restricted-mana-equipment.md) distinguishes this supported increment from arbitrary spending/attachment semantics and expert-play certification.
 
 - [x] Persist supported type-restricted mana units and respect casting/activation permission through ready/floated/snow/partial payment, source departure and snapshots; expose validated purposes in human views. Verify both seats and style-independent real-cost decisions.

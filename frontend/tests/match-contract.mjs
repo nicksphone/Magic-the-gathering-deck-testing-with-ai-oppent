@@ -11,6 +11,8 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, effect_warnings: ["Unsupported attached condition"] }] } } }).id, state.id);
+assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], battlefield: [{ ...mountain, effect_warnings: [42] }] } } }), /card view/);
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 2 }, snow_mana_pool: { U: 1 } } } }).id, state.id);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 1 }, snow_mana_pool: { U: 2 } } } }), /snow mana pool/);
 assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], mana_pool: { U: 1 }, snow_mana_pool: { U: -1 } } } }), /snow mana pool/);

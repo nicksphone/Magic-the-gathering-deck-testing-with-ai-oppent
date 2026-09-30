@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replaced prefix-only attached bonus inference with supported full-clause battlefield and source-counter scaling, complete keyword lists and explicit unknown-clause diagnostics. Public views and both-seat UI expose warnings; canonical fixtures cover control changes, union counting, restoration, views and AI valuation. See [scope](docs/testing/attached-scaling.md).
+- Attached-scaling verification: 1,974 isolated backend tests, 77 final focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions with no timeout or cast/target rejection; these are regression checks, not expert-AI or balance certification.
+
 - Added durable type-restricted mana provenance and shared ready-source/floated-pool eligibility. Casting, activation, cycling, equipment, snow and partial payment respect supported restrictions; unknown clauses are not unrestricted. Human pools display purposes, and typed runtime contracts validate quantities/snow overlap. AI's actual-cost reservation can preserve supported restricted sources for payable postcombat hand spells.
 - Fixed checked equip target admission, changed ordinary equip to a respondable stack ability with resolution/incarnation revalidation, and connected supported attached fixed buffs/keywords to continuous characteristics and layer traces. Canonical fixtures cover counters/removal/control changes, source departure and attachment/controller separation. See [scope and acceptance](docs/testing/restricted-mana-equipment.md).
 - Verification: 1,943 isolated backend tests, 196 focused checks, frontend lint/build/unit and full final-code Chromium pass, including real seat-two restricted-mana/equipment UI/API flow. Initial fixture/protocol errors were corrected before passing gates; broad source restrictions, equipment variants, layer fidelity and expert strategy remain open.

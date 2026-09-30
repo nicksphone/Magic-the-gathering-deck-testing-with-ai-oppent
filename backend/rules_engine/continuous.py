@@ -14,30 +14,91 @@ _STATIC_TYPE_NOUNS = {kind.lower() + "s": kind for kind in
                       ("Creature", "Artifact", "Enchantment", "Land", "Planeswalker", "Battle")}
 _COLOR_SYMBOLS = {"white": "W", "blue": "U", "black": "B", "red": "R", "green": "G"}
 ATTACHED_SUBJECT = r"\b(?:equipped|enchanted|fortified) (creature|permanent|land) "
-ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? ([+-]\d+)/([+-]\d+)")
-ATTACHED_KW_RE = re.compile(ATTACHED_SUBJECT + r"(?:gets? [+-]\d+/[+-]\d+ and )?has ([^.]*)")
+ATTACHED_PT_RE = re.compile(ATTACHED_SUBJECT + r"gets? ([+-]\d+)/([+-]\d+)(?: for each (.+?))?(?: and has (.+))?")
+ATTACHED_KW_RE = re.compile(ATTACHED_SUBJECT + r"has (.+)")
 
 
-def _attached_effects(source, target):
+def _attached_effects(state, source, target):
     """Only the current attachment receives supported static bonuses."""
     if (not getattr(source, "attached_to", None) or source.attached_to != getattr(target, "id", None) or not _is_battlefield(source)
             or not _is_battlefield(target) or "Creature" in source.types):
-        return (0, 0, [])
+        return (0, 0, [], [])
     text = _static_oracle_text(source)
 
     def matches(subject):
         return subject == "permanent" or subject.title() in target.types
 
     power = toughness = 0
-    for match in ATTACHED_PT_RE.finditer(text):
-        if matches(match.group(1)):
-            power += int(match.group(2))
-            toughness += int(match.group(3))
     keywords = set()
-    for match in ATTACHED_KW_RE.finditer(text):
-        if matches(match.group(1)):
-            keywords.update(kw for kw in KNOWN_KEYWORDS if re.search(r"\b" + re.escape(kw) + r"\b", match.group(2)))
-    return power, toughness, sorted(keywords)
+    unsupported = []
+    for clause in re.split(r"[.\n]", text):
+        clause = clause.strip()
+        subject = re.search(ATTACHED_SUBJECT, clause)
+        if not subject or not matches(subject.group(1)):
+            continue
+        pt = ATTACHED_PT_RE.fullmatch(clause)
+        kw = ATTACHED_KW_RE.fullmatch(clause)
+        if not pt and not kw:
+            unsupported.append(clause)
+            continue
+        count = _attached_scale_count(state, source, target, pt.group(4)) if pt else 1
+        keyword_text = pt.group(5) if pt else kw.group(2)
+        granted = _attached_keywords(keyword_text)
+        if count is None or granted is None:
+            unsupported.append(clause)
+        if pt and count is not None:
+            power += int(pt.group(2)) * count
+            toughness += int(pt.group(3)) * count
+        if granted is not None:
+            keywords.update(granted)
+    return power, toughness, sorted(keywords), unsupported
+
+
+def _attached_keywords(text):
+    if text is None:
+        return []
+    found = []
+    remainder = text
+    for keyword in sorted(KNOWN_KEYWORDS, key=len, reverse=True):
+        pattern = r"\b" + re.escape(keyword) + r"\b"
+        if re.search(pattern, remainder):
+            found.append(keyword)
+            remainder = re.sub(pattern, "", remainder)
+    return found if not re.sub(r"\band\b|[,\s]", "", remainder) else None
+
+
+def _attached_scale_count(state, source, target, phrase):
+    if phrase is None:
+        return 1
+    counter = re.fullmatch(r"(?:(.+?) )?counter on this (?:equipment|aura|permanent)", phrase)
+    if counter:
+        kind = counter.group(1)
+        return sum(max(0, amount) for name, amount in source.counters.items()
+                   if not name.startswith("__") and (kind is None or name.lower() == kind))
+    battlefield = re.fullmatch(r"(other )?(.+?) you control", phrase)
+    if not battlefield:
+        return None
+    other, selectors = battlefield.groups()
+    selectors = re.split(r" and/or | or | and ", selectors)
+    # Only explicit supported types/subtypes; never turn an unknown predicate into one.
+    allowed = {"artifact", "enchantment", "creature", "land", "planeswalker", "battle",
+               "plains", "island", "swamp", "mountain", "forest", "gate"}
+    if not selectors or any(selector not in allowed for selector in selectors):
+        return None
+
+    def selected(card):
+        subtype = (card.type_line or "").lower().split("—", 1)[-1].split()
+        return any(selector.title() in card.types or ("Land" in card.types and selector in subtype)
+                   for selector in selectors)
+
+    return sum(selected(state.cards[cid]) for cid in state.players[source.controller].battlefield
+               if not other or cid != target.id)
+
+
+def attachment_effect_warnings(state, card_id):
+    source = state.cards[card_id]
+    target = state.cards.get(getattr(source, "attached_to", None))
+    return _attached_effects(state, source, target)[3] if target else []
 
 
 def _static_oracle_text(source_card) -> str:
@@ -221,7 +282,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
         src = state.cards.get(src_id)
         if not src:
             continue
-        out.update(_attached_effects(src, card)[2])
+        out.update(_attached_effects(state, src, card)[2])
         for scope, other_only, subject, granted in _iter_keyword_grants(src):
             if _scope_controller(src.controller, scope, card.controller):
                 if other_only and src_id == card_id:
@@ -316,7 +377,7 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         src = state.cards.get(src_id)
         if not src:
             continue
-        attached_p, attached_t, _ = _attached_effects(src, card)
+        attached_p, attached_t, _, _ = _attached_effects(state, src, card)
         p_bonus += attached_p
         t_bonus += attached_t
         for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(src):
@@ -648,6 +709,11 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
             for index, (_, entry) in enumerate(sorted(applied_layers, key=lambda item: item[0]))
         ],
         "trace": trace,
+        "unsupported_attachment_clauses": [
+            {"source_id": cid, "source_name": state.cards[cid].name, "clause": clause}
+            for cid in _all_battlefield_ids(state)
+            for clause in _attached_effects(state, state.cards[cid], card)[3]
+        ],
     }
 
 
@@ -656,7 +722,7 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
-    attached_p, attached_t, attached_keywords = _attached_effects(source_card, target)
+    attached_p, attached_t, attached_keywords, _ = _attached_effects(state, source_card, target)
     if attached_p or attached_t:
         entries.append({"layer": f"pt-mod:{attached_p}/{attached_t}"})
     if attached_keywords:

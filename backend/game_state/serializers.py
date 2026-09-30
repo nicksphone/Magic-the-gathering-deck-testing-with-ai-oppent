@@ -14,7 +14,7 @@ def _tupleize(value):
 
 
 def serialize_card_view(state: MatchState, cid: str) -> dict:
-    from rules_engine.continuous import effective_combat_stats, effective_keywords
+    from rules_engine.continuous import effective_combat_stats, effective_keywords, attachment_effect_warnings
     from rules_engine.colors import card_color_symbols
     from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
     card = state.cards[cid]
@@ -39,6 +39,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
         "attached_to": card.attached_to,
+        "effect_warnings": attachment_effect_warnings(state, cid),
         "colors": sorted(card_color_symbols(card)),
         "mana_source_colors": sorted(outputs),
         "mana_source_amounts": outputs,

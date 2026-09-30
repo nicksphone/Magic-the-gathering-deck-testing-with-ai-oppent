@@ -40,6 +40,7 @@ export type CardView = {
   types: string[];
   is_token?: boolean;
   attached_to?: string | null;
+  effect_warnings?: string[];
 };
 
 export type PlayerView = {

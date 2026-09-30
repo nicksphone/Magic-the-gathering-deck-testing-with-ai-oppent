@@ -31,6 +31,17 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Bonesplitter').attached_to"), await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Renowned Weaponsmith').id"));
   assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Renowned Weaponsmith').base_power"), 1);
   console.log("PASS seat-two restricted mana, legal equipment stack/priority and effective attached stats through UI/API");
+  await click("Scaling Attachment Fixture");
+  await waitFor("window.fixtureState?.priority_player === 2 && window.fixtureState.players['1'].battlefield.find(c => c.name === 'Llanowar Elves')?.power === 5");
+  assert.equal(await evaluate("window.fixtureState.players['1'].battlefield.find(c => c.name === 'Llanowar Elves').base_power"), 1);
+  assert.equal(await evaluate("[...document.querySelectorAll('[role=status]')].some(e => e.textContent === 'Unsupported static effect')"), true);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(e => e.textContent.includes('Cast Naturalize')); const select = [...box.querySelectorAll('select')].find(e => [...e.options].some(o => o.text.includes('Sol Ring'))); if (!select) throw new Error('Missing artifact target'); select.value = [...select.options].find(o => o.text.includes('Sol Ring')).value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Naturalize");
+  await waitFor("window.fixtureState.stack.length === 1");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].battlefield.find(c => c.name === 'Llanowar Elves')?.power === 4");
+  assert.equal(await evaluate("window.fixtureState.players['1'].graveyard.some(c => c.name === 'Sol Ring')"), true);
+  console.log("PASS scaling attachment updates after human removal and unknown static clause warns through UI/API");
   await click("Attacking Token Target Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'attacking_token_target' && [...document.querySelectorAll('button')].some(b => b.textContent === 'Attack Teferi, Hero of Dominaria')");
   await click("Attack Teferi, Hero of Dominaria");
