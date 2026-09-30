@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Attack-group triggers no longer duplicate for each declared attacker. Adeline now has creature-count power and creates one Human token tapped and attacking, which joins combat without generating a new declared-attack event. Verification: 1,485 isolated backend tests, frontend lint/build/unit, full browser harness and seeded BO3 replay. Planeswalker attack-target selection for that token remains open.
+
+- Browser recovery fixtures now resume intercepted responses with `Fetch.continueResponse`. The previous command prevented the preflight from reaching its action POST under the current Chromium build; the corrected full browser harness passes.
+
 - Training now triggers once when a creature attacks alongside a greater-power creature, then adds its counter on stack resolution without rechecking the companion's power. Snapshot and leave/re-entry regressions use Hopeful Initiate. Verification: 1,482 isolated backend tests, frontend lint/build/unit, full browser harness and a seeded two-game replay with no determinism drift. Broader attack-trigger interpretation remains open.
 
 - Combat legality now applies Brazen Borrower's flying-only block restriction and Topiary Stomper's seven-land attack/block threshold through reusable text clauses. Strict player actions, AI's shared blocker filter, and snapshot behavior use the same legality path. Other conditional combat wordings remain open.

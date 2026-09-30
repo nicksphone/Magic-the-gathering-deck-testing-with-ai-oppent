@@ -39,7 +39,7 @@ try {
     if (event.request.method === 'POST' && event.responseStatusCode === 200 && !discarded) {
       discarded = true;
       await command('Fetch.failRequest',{requestId:event.requestId,errorReason:'Failed'});
-    } else await command('Fetch.continueRequest',{requestId:event.requestId});
+    } else await command('Fetch.continueResponse',{requestId:event.requestId});
   });
   await command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});
   await click('Play Land Forest');

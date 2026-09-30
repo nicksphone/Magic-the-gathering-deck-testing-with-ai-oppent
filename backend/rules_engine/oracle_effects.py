@@ -1406,6 +1406,8 @@ def _infer_clause_effect(
             "keywords": token_keywords,
             "colors": token_colors,
         }
+        if "tapped and attacking" in oracle:
+            out["tapped_and_attacking"] = True
         if re.search(r"\bfor each basic land type among lands you control\b", oracle):
             out["per_basic_land_type"] = True
         quoted_ability = TOKEN_CREATURE_ABILITY_RE.search(getattr(card, "source_oracle_text", card.oracle_text or ""))

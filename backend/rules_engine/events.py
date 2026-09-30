@@ -1034,6 +1034,8 @@ def _matches_attack_trigger(state: MatchState, card, oracle: str, payload: dict[
     attacking_card = state.cards[attacking_id]
     if attacking_card.controller != card.controller:
         return False
+    if ("whenever you attack" in oracle or "whenever one or more creatures attack" in oracle) and not payload.get("attack_group_first", True):
+        return False
     if "whenever this creature attacks" in oracle or "whenever this token attacks" in oracle:
         return attacking_id == card.id
     named_attack = re.search(r"whenever\s+(.+?)\s+attacks", oracle)

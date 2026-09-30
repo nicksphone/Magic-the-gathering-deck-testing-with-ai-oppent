@@ -30,7 +30,7 @@ async function startWithDroppedResponses(dropCount) {
     if (event.request.method === 'POST' && event.responseStatusCode === 200 && dropped < dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
-    } else await command('Fetch.continueRequest', { requestId: event.requestId });
+    } else await command('Fetch.continueResponse', { requestId: event.requestId });
   });
   await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
   await click('Start Best-of-3 Match');

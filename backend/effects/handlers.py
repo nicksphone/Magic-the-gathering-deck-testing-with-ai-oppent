@@ -1336,6 +1336,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     types = list(payload.get("types", ["Creature", "Token"]))
     keywords = list(payload.get("keywords", []))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
+    tapped_and_attacking = bool(payload.get("tapped_and_attacking", False))
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     for _ in range(amount):
         cid = str(uuid.uuid4())
@@ -1364,6 +1365,10 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
+        if tapped_and_attacking:
+            token.tapped = True
+            state.attackers.append(cid)
+            state.attack_targets[cid] = f"player:{3 - token_controller}"
         token.counters.update(payload.get("counters") or {})
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": token_controller})
         if sac_next_end:

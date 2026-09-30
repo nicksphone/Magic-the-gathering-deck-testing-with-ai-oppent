@@ -233,8 +233,10 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
 
 
 def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
-    """Resolve characteristic-defining PT from distinct graveyard card types."""
+    """Resolve supported characteristic-defining power/toughness clauses."""
     text = (getattr(card, "oracle_text", "") or "").lower()
+    if "power is equal to the number of creatures you control" in text:
+        return (sum("Creature" in state.cards[cid].types for cid in state.players[card.controller].battlefield), None)
     if not CARD_TYPE_COUNT_RE.search(text):
         return (None, None)
     types: set[str] = set()

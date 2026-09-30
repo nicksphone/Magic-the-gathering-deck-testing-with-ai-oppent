@@ -105,7 +105,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             for c in legal
         )
         state.log.append(f"Attackers declared: {names}")
-        for cid in legal:
+        for index, cid in enumerate(legal):
             emit_event(
                 state,
                 "attack_declared",
@@ -113,6 +113,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
                     "card_id": cid,
                     "controller": state.cards[cid].controller,
                     "attack_target": state.attack_targets.get(cid, f"player:{defender}"),
+                    "attack_group_first": index == 0,
                 },
             )
 
