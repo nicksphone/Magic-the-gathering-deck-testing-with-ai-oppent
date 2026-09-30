@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab Finish Plan
 
+Recurring-payoff milestone validation: 1,811 isolated backend tests and frontend lint/build/unit gates pass. The complete Chromium rerun passes; an initial sideboard pending-operation timeout remains unverified. Eight seat-paired games repeat with identical full results across sixteen executions without timeout or logged cost/target rejection. [Scope and evidence](docs/testing/ai-recurring-payoffs.md) distinguish tactical fixture improvement from broader strategy and balance claims.
+
+- [x] Share supported recurring payoff valuation across creature ranking, threat and sacrifice scoring; suppress unsupported public death opportunities under applicable exile replacements without mutating state. Validate canonical multi-archetype fixtures and snapshot restoration.
+- [x] Preserve a safe answer-before-wipe sequence when a fixed-cost mass-destruction projection proves an opposing public death-trigger loss. Keep uncertain choices and human legal actions available. See [bounded implementation](docs/testing/ai-recurring-payoffs.md).
+- [ ] Expand resource/activated/static payoff valuation, variable and compound removal sequencing, and adversarial opponent-response planning. This milestone does not certify these broader lines or seasoned-player strength.
+
 Updated: 2026-09-30 UTC. Original audited implementation: `6b95fab0875f4cc35cb9648f8a598be5b13b2c80`, branch `main`. Current milestone evidence is recorded inline below.
 
 Current pregame milestone: unconditional entries and the printed nonstarting-player entry/counter/hand-exile family have durable human/AI choices and HTTP/SQLite restoration. Counter-dependent land mana outputs are shared by payment, manual actions, AI battlefield estimates and views; land piles expose actual choices and amounts. Full arbitrary pregame semantics, entry choices/reveal/mulligan-time effects, restricted/dynamic land mana and strategic entry/exile planning remain open. See [coverage](docs/testing/opening-hand-actions.md).

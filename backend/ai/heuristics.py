@@ -1,7 +1,35 @@
 from __future__ import annotations
 
+import re
+
 from game_state.state import MatchState
+from card_data.tactical import tactical_tags
+from rules_engine.oracle_text import without_reminder_text
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+
+
+def recurring_engine_value(state, card_id: str, *, surface_card=None) -> float:
+    """Value printed recurring rewards, not spent ETBs or trigger conditions."""
+    card = surface_card if surface_card is not None else state.cards[card_id]
+    text = without_reminder_text(_active_card_surface(card)["oracle_text"])
+    effects = []
+    for line in text.splitlines():
+        if not re.match(r"^(?:whenever|at the beginning)\b", line.strip(), re.I) or "," not in line:
+            continue
+        if isinstance(state, MatchState) and re.search(r"\bdies?\b", line, re.I):
+            from rules_engine.events import _matches_creature_dies_trigger
+            from rules_engine.replacement import replacement_options
+            if not any(
+                "Creature" in state.cards[cid].types
+                and _matches_creature_dies_trigger(state, card, line.lower(), {"card_id": cid})
+                and not replacement_options(state, "die_zone", target_card_id=cid)
+                for player in state.players.values() for cid in player.battlefield
+            ):
+                continue
+        effects.append(line.split(",", 1)[1])
+    roles = tactical_tags("\n".join(effects))
+    return sum(weight for role, weight in {"drain": 6.0, "draw": 3.0, "token": 3.0}.items()
+               if role in roles)
 
 
 def evaluate_board(state: MatchState, player_id: int) -> float:
@@ -97,7 +125,7 @@ def _creature_value(state: MatchState, card_id: str) -> float:
     power = max(0, int(effective_power(state, card_id) or 0))
     toughness = max(0, int(effective_toughness(state, card_id) or 0))
     kws = {str(k).lower() for k in (effective_keywords(state, card_id) or [])}
-    value = power * 1.35 + toughness * 0.55
+    value = power * 1.35 + toughness * 0.55 + recurring_engine_value(state, card_id)
     value += 0.25 if not getattr(card, "tapped", False) else -0.1
     if "flying" in kws:
         value += 1.1

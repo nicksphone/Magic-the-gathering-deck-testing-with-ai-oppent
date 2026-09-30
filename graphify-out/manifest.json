@@ -16,24 +16,24 @@
     "hash": "c5eabc3afa58b16be3c89012e1e68f24"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/heuristics.py": {
-    "mtime": 1790774030.2255208,
-    "hash": "53686b88aa3d08da8400171c15707afb"
+    "mtime": 1790789000.8302197,
+    "hash": "348351360fd2a7ee04cad87ee3db112a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/endgame_policy.py": {
     "mtime": 1779124792.9789293,
     "hash": "08af1f72f3ac27148635b6341ea54e8f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/pending_effects.py": {
-    "mtime": 1790772609.4421225,
-    "hash": "7d3efac3bd2c4ee5e41a94cb4c709086"
+    "mtime": 1790776476.7404826,
+    "hash": "248221e89c3be763d4ed4965227c577e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/matchup_profiles.py": {
     "mtime": 1784158311.5813143,
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790774256.6889398,
-    "hash": "73df4dda218dc70fad7a996aa664fde8"
+    "mtime": 1790776612.3725245,
+    "hash": "1c80192508eb15b27611295c84198817"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -546,6 +546,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_zone_change_events.py": {
     "mtime": 1784457609.5140166,
     "hash": "660f921a64dbc06e00f3ddfc5b239dcf"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_recurring_engines.py": {
+    "mtime": 1790789290.0141053,
+    "hash": "86b4d21587503e82ec53b261d6cd32f1"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_latency_profile.py": {
     "mtime": 1790772996.999529,
@@ -1388,16 +1392,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790775038.7628653,
-    "hash": "46ef7bce8689890c6941ff63da9327e5"
+    "mtime": 1790789486.5017164,
+    "hash": "ec82124da1df231c8b402124d8931c8d"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790775401.4809024,
-    "hash": "59fda9aefd47e22ef386efa1c3b43b9a"
+    "mtime": 1790789763.6290085,
+    "hash": "e1695c8c4eeec03644ae260d3884ae90"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790775246.6924386,
-    "hash": "ef5dcb5c23f6104a6d33d5fff2d1a8a7"
+    "mtime": 1790789763.6280084,
+    "hash": "712b4e6cf473fd87e96a7b8ca8104114"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1506,6 +1510,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-destruction-targets.md": {
     "mtime": 1790760899.7429836,
     "hash": "0852845cce416cd7e02e41accc0fdc20"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ai-recurring-payoffs.md": {
+    "mtime": 1790789763.6270084,
+    "hash": "1aacd9b83c0d688c93b707401ba9a3ad"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/counterability-scope.md": {
     "mtime": 1790751079.5319352,

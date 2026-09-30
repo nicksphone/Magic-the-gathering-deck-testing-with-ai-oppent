@@ -105,6 +105,17 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
 
 def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, own_choice_action=None) -> bool | None:
     """Evaluate a legal announced line, never optimize from hidden-zone changes."""
+    outcome = _unanswered_action_outcome(state, player_id, action, own_choice_action=own_choice_action)
+    return None if outcome is None else outcome == "win"
+
+
+def unanswered_action_loses(state: MatchState, player_id: int, action: dict) -> bool | None:
+    """Unknown choices/hidden-zone changes never establish a certain loss."""
+    outcome = _unanswered_action_outcome(state, player_id, action)
+    return None if outcome is None else outcome == "loss"
+
+
+def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *, own_choice_action=None):
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
@@ -113,12 +124,12 @@ def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, o
     try:
         projected = checked_action(projected, RulesEngine(), player_id, action)
     except ActionRejected:
-        return False
+        return "rejected"
     if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
         return None
     if any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items()) or tuple(projected.players[opponent].hand) != opposing_hand:
         return None
-    return projected.winner == player_id
+    return "win" if projected.winner == player_id else "loss" if projected.winner == opponent else "neutral"
 
 
 def pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:

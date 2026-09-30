@@ -6,7 +6,7 @@ from itertools import combinations
 from dataclasses import dataclass
 
 from ai.endgame_policy import should_force_closure, should_force_inevitability_line
-from ai.heuristics import evaluate_board
+from ai.heuristics import evaluate_board, recurring_engine_value
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
@@ -316,6 +316,7 @@ class AIAgent:
         self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
         if self_removal_win is not None:
             return AIDecision(action=self_removal_win, reasoning="Announced self-removal line wins if unanswered")
+        legal_moves = self._without_losing_mass_destruction(state, legal_moves, player_id)
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
@@ -1663,6 +1664,7 @@ class AIAgent:
             bonus_face = 0.0
 
         if is_creature:
+            engine_bonus = recurring_engine_value(state, cid, surface_card=card)
             if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
                 bonus = 4.0
                 if in_main:
@@ -1671,14 +1673,14 @@ class AIAgent:
                     bonus += 2.0
                 if early_turn:
                     bonus += 1.0
-                return bonus + bonus_face
+                return bonus + bonus_face + engine_bonus
             if arche in {"Midrange", "Ramp", "Aristocrats"}:
                 bonus = 2.0 + (0.8 if my_creatures < 2 else 0.0)
                 if is_big_threat and (my_creatures < 2 or state.turn >= 5):
                     bonus += 2.2
                 if arche == "Ramp" and state.turn >= 4 and is_big_threat:
                     bonus += 1.2
-                return bonus + bonus_face
+                return bonus + bonus_face + engine_bonus
             if arche in {"Control", "Counter-heavy"}:
                 bonus = 0.8
                 if is_big_threat and (my_creatures == 0 or state.turn >= 6):
@@ -1687,8 +1689,8 @@ class AIAgent:
                     bonus += 0.7
                 if "recursion" in tags:
                     bonus += self._graveyard_recursion_bonus(state, player_id)
-                return bonus + bonus_face
-            return 1.2 + bonus_face
+                return bonus + bonus_face + engine_bonus
+            return 1.2 + bonus_face + engine_bonus
 
         if "creature_deploy_topdeck" in tags:
             bonus = 3.6
@@ -2320,6 +2322,26 @@ class AIAgent:
             for target in hints.get(key) or []
             if target.get("id") in state.cards
         )
+
+    def _without_losing_mass_destruction(self, state, moves, player_id):
+        """Do not wipe into a proven public death-trigger loss; unknowns stay."""
+        if not isinstance(state, MatchState) or not any(
+            re.search(r"\bdies\b[^.\n]*\bloses?\s+\d+\s+life", _oracle_text(state.cards[cid]))
+            for cid in state.players[3 - player_id].battlefield
+        ):
+            return moves
+        from ai.pending_effects import unanswered_action_loses
+        kept = []
+        for move in moves:
+            card = _card_for_move(state, move)
+            if (move.get("type") == "cast_spell" and card
+                    and "{X}" not in card.mana_cost.upper()
+                    and re.search(r"\bdestroy all (?:creatures|nonland permanents|permanents)\b", _oracle_text(card))):
+                action = self._materialize_action(state, move, player_id)
+                if not action.get("_invalid_ai_choice") and unanswered_action_loses(state, player_id, action) is True:
+                    continue
+            kept.append(move)
+        return kept
 
     def _winning_self_removal_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if not isinstance(state, MatchState):
@@ -3198,7 +3220,7 @@ class AIAgent:
         power = max(0, _eff_pow(state, creature_id))
         toughness = max(0, _eff_tgh(state, creature_id))
         kws = set(effective_keywords(state, creature_id))
-        score = power * 1.2 + toughness * 0.35
+        score = power * 1.2 + toughness * 0.35 + recurring_engine_value(state, creature_id)
         if "flying" in kws or "trample" in kws or "menace" in kws:
             score += 1.8
         if "deathtouch" in kws:
@@ -3582,12 +3604,7 @@ class AIAgent:
             value -= 4.0
         if getattr(card, "oracle_text", ""):
             value += 1.0
-            # Preserve recurring engines, not already-spent ETB rewards.
-            recurring = "\n".join(line for line in without_reminder_text(card.oracle_text).splitlines()
-                                  if re.search(r"\b(?:whenever|at the beginning)\b", line, re.I))
-            if recurring:
-                roles = tactical_tags(recurring)
-                value += sum(weight for role, weight in {"drain": 6.0, "draw": 3.0, "token": 3.0}.items() if role in roles)
+            value += recurring_engine_value(state, cid)
         return value
 
     def _hand_retention_value(self, state: MatchState, cid: str, player_id: int, archetype: str | None = None) -> float:

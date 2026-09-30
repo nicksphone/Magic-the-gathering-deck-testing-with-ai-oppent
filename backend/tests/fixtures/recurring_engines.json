@@ -1,0 +1,246 @@
+[
+  {
+    "name": "Blood Artist",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature \u2014 Vampire",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Zulaport Cutthroat",
+    "oracle_text": "Whenever this creature or another creature you control dies, each opponent loses 1 life and you gain 1 life.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature \u2014 Human Rogue Ally",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "76b003e0-15af-4f22-bdf2-1ade5430964a",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Grim Haruspex",
+    "oracle_text": "Morph {B} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)\nWhenever another nontoken creature you control dies, draw a card.",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature \u2014 Human Wizard",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Morph"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "72aef1d8-11df-4bc2-af83-907b05df73a8",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Torrential Gearhulk",
+    "oracle_text": "Flash\nWhen this creature enters, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "mana_cost": "{4}{U}{U}",
+    "type_line": "Artifact Creature \u2014 Construct",
+    "power": "5",
+    "toughness": "6",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flash"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_text": "",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Bear",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Go for the Throat",
+    "oracle_text": "Destroy target nonartifact creature.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "2f092562-9e17-43cd-aeb8-d0567f99363e",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Rest in Peace",
+    "oracle_text": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
+    "mana_cost": "{1}{W}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Viscera Seer",
+    "oracle_text": "Sacrifice a creature: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "mana_cost": "{B}",
+    "type_line": "Creature \u2014 Vampire Wizard",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Scry"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "f82a4e85-526d-4456-b700-7760043a31be",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Damnation",
+    "oracle_text": "Destroy all creatures. They can't be regenerated.",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Sorcery",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "d57a8f0b-7989-4db5-8756-6f2690097252",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Naturalize",
+    "oracle_text": "Destroy target artifact or enchantment.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "The Meathook Massacre",
+    "oracle_text": "When The Meathook Massacre enters, each creature gets -X/-X until end of turn.\nWhenever a creature you control dies, each opponent loses 1 life.\nWhenever a creature an opponent controls dies, you gain 1 life.",
+    "mana_cost": "{X}{B}{B}",
+    "type_line": "Legendary Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "127de52b-df75-4342-95a0-20d84c5bf916",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  },
+  {
+    "name": "Sheoldred, the Apocalypse",
+    "oracle_text": "Deathtouch\nWhenever you draw a card, you gain 2 life.\nWhenever an opponent draws a card, they lose 2 life.",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Legendary Creature \u2014 Phyrexian Praetor",
+    "power": "4",
+    "toughness": "5",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Deathtouch"
+    ],
+    "layout": "normal",
+    "provenance": {
+      "oracle_id": "34f34409-326d-4994-a0ea-1a69aa278f03",
+      "source": "existing canonical Scryfall knowledge cache"
+    }
+  }
+]

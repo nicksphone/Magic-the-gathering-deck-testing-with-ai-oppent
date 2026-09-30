@@ -1,0 +1,103 @@
+{
+  "logical_games": 8,
+  "executions": 16,
+  "identical_full_results": true,
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "seconds": 11.718867521267384,
+      "winner": 1,
+      "turn": 49,
+      "timeout": false,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "seconds": 5.24173043994233,
+      "winner": 2,
+      "turn": 15,
+      "timeout": false,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "seconds": 12.263774503022432,
+      "winner": 2,
+      "turn": 38,
+      "timeout": false,
+      "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "seconds": 22.174750823993236,
+      "winner": 2,
+      "turn": 14,
+      "timeout": false,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "seconds": 11.067943795118481,
+      "winner": 1,
+      "turn": 17,
+      "timeout": false,
+      "log_hash": "2ba7f185cf3cd1121cdd9922ce600b6e68c4a318295f9b9c7df2854d5d5c243c",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "seconds": 14.146966167725623,
+      "winner": 2,
+      "turn": 12,
+      "timeout": false,
+      "log_hash": "e781d65fc6b06dbbb8893ad76cb7d0841b7a338208fd7867965476dc2a569fbb",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "seconds": 7.699619251303375,
+      "winner": 1,
+      "turn": 23,
+      "timeout": false,
+      "log_hash": "39a9d7f5329cb7dd221e26ccf2ce2f0078f9f6f5e572fff77c22f4b64dc3eb34",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "seconds": 9.853354605380446,
+      "winner": 2,
+      "turn": 16,
+      "timeout": false,
+      "log_hash": "ebda50a4389decbfda20879bf28a4ab1a6e1cc3a1a24b3974423957dc2f6b30e",
+      "repeat_equal": true,
+      "logged_cost_or_target_errors": 0
+    }
+  ]
+}
