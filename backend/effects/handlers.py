@@ -1338,11 +1338,17 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
     tapped_and_attacking = bool(payload.get("tapped_and_attacking", False))
     attack_target = payload.get("attack_target")
+    attack_targets = payload.get("attack_targets")
     if tapped_and_attacking and amount:
         from rules_engine.combat import _valid_defenders, _defender_label
 
         options = sorted(_valid_defenders(state, 3 - token_controller))
-        if attack_target is None and len(options) > 1 and token_controller in state.mechanic_choice_players:
+        if attack_targets is not None and (not isinstance(attack_targets, list)
+                                           or len(attack_targets) != amount
+                                           or any(target not in options for target in attack_targets)):
+            state.log.append("Invalid attacking token targets; no tokens created.")
+            return
+        if attack_targets is None and attack_target is None and len(options) > 1 and token_controller in state.mechanic_choice_players:
             state.pending_mechanic_choice = {
                 "kind": "attacking_token_target", "player_id": token_controller,
                 "options": options, "option_labels": {key: _defender_label(state, key) for key in options},
@@ -1355,7 +1361,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             return
         attack_target = attack_target or f"player:{3 - token_controller}"
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
-    for _ in range(amount):
+    entry_events = []
+    for index in range(amount):
         cid = str(uuid.uuid4())
         token = CardInstance(
             id=cid,
@@ -1385,11 +1392,12 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         if tapped_and_attacking:
             token.tapped = True
             state.attackers.append(cid)
-            state.attack_targets[cid] = attack_target
+            state.attack_targets[cid] = attack_targets[index] if attack_targets is not None else attack_target
         token.counters.update(payload.get("counters") or {})
-        emit_event(state, "enters_battlefield", {"card_id": cid, "controller": token_controller})
+        entry_events.append({"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
+    emit_event_batch(state, "enters_battlefield", entry_events)
     token_label = f"{p}/{t}" if "Creature" in types else name
     state.log.append(f"{state.players[token_controller].name} creates {amount} {token_label} token(s).")
 
@@ -2150,6 +2158,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     player.library = remaining_library
 
     # Put chosen creatures onto battlefield.
+    entry_events = []
     for cid in chosen:
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
@@ -2157,7 +2166,8 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
-        emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
+        entry_events.append({"card_id": cid, "controller": controller})
+    emit_event_batch(state, "enters_battlefield", entry_events)
 
     # Random bottom order consumes the match RNG so snapshots replay identically.
     rest = [cid for cid in top_slice if cid not in set(chosen)]
@@ -2212,6 +2222,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         return
     chosen_set = set(chosen)
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
+    entry_events = []
     for cid in chosen:
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
@@ -2224,7 +2235,8 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
-        emit_event(state, "enters_battlefield", {"card_id": cid, "controller": controller})
+        entry_events.append({"card_id": cid, "controller": controller})
+    emit_event_batch(state, "enters_battlefield", entry_events)
     rest = [cid for cid in top_slice if cid not in chosen_set]
     if payload.get("bottom_random"):
         state.rng.shuffle(rest)

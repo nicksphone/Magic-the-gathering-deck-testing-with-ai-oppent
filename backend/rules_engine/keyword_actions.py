@@ -89,14 +89,19 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 or ids[0] not in _valid_defenders(state, 3 - player_id)):
             return False
         payload = dict(pending["effect_payload"])
+        chosen_targets = [*pending.get("selected_attack_targets", []), ids[0]]
         remaining = max(0, int(pending["remaining_amount"]) - 1)
-        state.pending_mechanic_choice = None
-        resolve_effect(state, player_id, "create_token", {**payload, "amount": 1, "attack_target": ids[0]})
         if remaining:
-            pending["continuation_effects"] = [
-                {"effect_key": "create_token", "payload": {**payload, "amount": remaining}},
-                *pending.get("continuation_effects", []),
-            ]
+            pending["selected_attack_targets"] = chosen_targets
+            pending["remaining_amount"] = remaining
+            state.pending_mechanic_choice = pending
+            state.priority_player = player_id
+            state.passed_priority = set()
+            return True
+        state.pending_mechanic_choice = None
+        resolve_effect(state, player_id, "create_token", {
+            **payload, "amount": len(chosen_targets), "attack_targets": chosen_targets,
+        })
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "copy_target":

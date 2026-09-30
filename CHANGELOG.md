@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Batched simultaneous battlefield entries for multi-token effects and supported topdeck creature/permanent placement. Grouped "one or more" triggers fire once; per-entrant triggers still fire individually. Human attacking-token defender choices now finish before the token group enters. Focused tests cover token placement, both topdeck handlers, separate defenders and snapshot resume. Verification: 1,509 isolated backend tests, frontend lint/build/unit, full Chromium harness including natural AI/human BO3 flows, and a seeded two-game replay with no timeout or determinism drift passed.
+
 - Supported once-per-turn grouped creature-subtype entry triggers and subtype-filtered temporary team buffs without card-name exceptions. Irrelevant entries no longer consume trigger allowances; created creature tokens retain their subtype lines, and static subtype anthems use the same singularization. Elvish Warmaster and Zombie fixtures cover controller filtering, countered triggers, snapshots, new battlefield incarnations, activation payment and later entrants. Verification: 1,505 isolated backend tests, frontend lint/build/unit, full Chromium harness, six seeded Tribal games without timeout or logged rule errors, and a two-game deterministic replay without drift. An intermediate full run exposed an overbroad parser match against all-creature buffs; the guard and rerun pass.
 
 - Added a live-route regression for Wedding Announcement from the bundled canonical corpus: names-only match start, legal attack action, SQLite restore, end-step priority passes, and serialized invitation counter/draw result. A fresh isolated backend suite passes 1,497 tests; frontend and browser checks were already green for the unchanged UI.
