@@ -1,0 +1,342 @@
+[
+  {
+    "name": "Bolt Bend",
+    "oracle_text": "This spell costs {3} less to cast if you control a creature with power 4 or greater.\nChange the target of target spell or ability with a single target.",
+    "mana_cost": "{3}{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "c20a96f7-aa5a-4c15-b8b1-806685c99b27",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Spike Weaver",
+    "oracle_text": "This creature enters with three +1/+1 counters on it.\n{2}, Remove a +1/+1 counter from this creature: Put a +1/+1 counter on target creature.\n{1}, Remove a +1/+1 counter from this creature: Prevent all combat damage that would be dealt this turn.",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Creature \u2014 Spike",
+    "power": "0",
+    "toughness": "0",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "7776b2dd-5795-458d-81da-54fed22d5ee2",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Boros Charm",
+    "oracle_text": "Choose one \u2014\n\u2022 Boros Charm deals 4 damage to target player or planeswalker.\n\u2022 Permanents you control gain indestructible until end of turn.\n\u2022 Target creature gains double strike until end of turn.",
+    "mana_cost": "{R}{W}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R",
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "2679d0dd-ba30-4a1c-b6a0-b3ac6c790496",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Lightning Strike",
+    "oracle_text": "Lightning Strike deals 3 damage to any target.",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "f34b9bc4-7bfe-47fd-ba23-4eeeb46026eb",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Withering Boon",
+    "oracle_text": "As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "6d87415b-0618-48e1-9510-320c4611ecda",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Memory Deluge",
+    "oracle_text": "Look at the top X cards of your library, where X is the amount of mana spent to cast this spell. Put two of them into your hand and the rest on the bottom of your library in a random order.\nFlashback {5}{U}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flashback"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "e6fd55f2-7e26-469c-a44a-ea2eb90e19a9",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Lightning Bolt",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Counterspell",
+    "oracle_text": "Counter target spell.",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Island",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Shark Typhoon",
+    "oracle_text": "Whenever you cast a noncreature spell, create an X/X blue Shark creature token with flying, where X is that spell's mana value.\nCycling {X}{1}{U} ({X}{1}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, create an X/X blue Shark creature token with flying.",
+    "mana_cost": "{5}{U}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Cycling"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "provenance": {
+      "oracle_id": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  },
+  {
+    "name": "Jwari Disruption // Jwari Ruins",
+    "oracle_text": null,
+    "mana_cost": null,
+    "type_line": "Instant // Land",
+    "power": null,
+    "toughness": null,
+    "colors": null,
+    "keywords": [],
+    "layout": "modal_dfc",
+    "card_faces": [
+      {
+        "artist": "Cliff Childs",
+        "artist_id": "ed6f7e03-20ba-4c73-bdda-4a4928480721",
+        "colors": [
+          "U"
+        ],
+        "flavor_text": "\"You worry too much.\"\n\u2014Nys Dal, Sea Gate trapfinder",
+        "illustration_id": "9658aadf-bb95-4d45-8fe2-a0f7f2f7e262",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "crop": "https://cards.scryfall.io/crop/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "display": "https://cards.scryfall.io/display/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "grid": "https://cards.scryfall.io/grid/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "large": "https://cards.scryfall.io/large/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "normal": "https://cards.scryfall.io/normal/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "png": "https://cards.scryfall.io/png/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.png?1783929400",
+          "small": "https://cards.scryfall.io/small/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "thumb": "https://cards.scryfall.io/thumb/front/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400"
+        },
+        "mana_cost": "{1}{U}",
+        "name": "Jwari Disruption",
+        "object": "card_face",
+        "oracle_text": "Counter target spell unless its controller pays {1}.",
+        "type_line": "Instant"
+      },
+      {
+        "artist": "Cliff Childs",
+        "artist_id": "ed6f7e03-20ba-4c73-bdda-4a4928480721",
+        "colors": [],
+        "flavor_text": "\"The Ondu Skyclave was a center for rebellion against the capital in Makindi. Of course they built in deadly traps.\"\n\u2014Nys Dal, Sea Gate trapfinder",
+        "illustration_id": "af2c8d11-3179-48c7-aed3-8957c04220c2",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "crop": "https://cards.scryfall.io/crop/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "display": "https://cards.scryfall.io/display/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "grid": "https://cards.scryfall.io/grid/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400",
+          "large": "https://cards.scryfall.io/large/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "normal": "https://cards.scryfall.io/normal/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "png": "https://cards.scryfall.io/png/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.png?1783929400",
+          "small": "https://cards.scryfall.io/small/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.jpg?1783929400",
+          "thumb": "https://cards.scryfall.io/thumb/back/3/0/301750a7-d1fd-435e-bfa8-9d2fb22ad627.webp?1783929400"
+        },
+        "mana_cost": "",
+        "name": "Jwari Ruins",
+        "object": "card_face",
+        "oracle_text": "This land enters tapped.\n{T}: Add {U}.",
+        "type_line": "Land"
+      }
+    ],
+    "provenance": {
+      "oracle_id": "941a4b14-ea2a-4bd0-8cc2-d609f80df32c",
+      "bulk_provenance": {
+        "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+        "source": "scryfall",
+        "type": "oracle_cards",
+        "updated_at": "2026-09-27T09:01:57.616+00:00"
+      },
+      "source": "existing Scryfall canonical knowledge cache"
+    }
+  }
+]

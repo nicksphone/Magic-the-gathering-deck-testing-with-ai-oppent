@@ -201,6 +201,7 @@ It is designed for serious deck work:
 - Decision-local announced-stack projection reuse and history-free planning clones reduce repeated work while retaining gameplay state, RNG, and search limits. An offline paired benchmark checks full decision/reasoning equality and authoritative-state preservation; see [performance scope](docs/testing/ai-projection-performance.md).
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
+- Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).
 
 ### Simulation and Diagnostics
 - AI vs AI autoplay

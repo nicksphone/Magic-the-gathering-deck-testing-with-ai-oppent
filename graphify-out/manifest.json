@@ -12,12 +12,12 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/deck_analysis.py": {
-    "mtime": 1790566882.357718,
-    "hash": "171c52f9ce8ac08f8a1e194c1125523a"
+    "mtime": 1790774901.1441503,
+    "hash": "c5eabc3afa58b16be3c89012e1e68f24"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/heuristics.py": {
-    "mtime": 1790662740.0162446,
-    "hash": "d4b95eeee3fa3e7320b33366f859e6a7"
+    "mtime": 1790774030.2255208,
+    "hash": "53686b88aa3d08da8400171c15707afb"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/endgame_policy.py": {
     "mtime": 1779124792.9789293,
@@ -32,8 +32,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790770211.4561906,
-    "hash": "6ba3da730d3ea47e87e1b4790445cda7"
+    "mtime": 1790774256.6889398,
+    "hash": "73df4dda218dc70fad7a996aa664fde8"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -803,6 +803,10 @@
     "mtime": 1790692609.9348495,
     "hash": "ac0ca4d75151495f9733f59630953a18"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_oracle_semantics.py": {
+    "mtime": 1790774901.1441503,
+    "hash": "62b277d65fad8434d7ee102a312c52fc"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_tactical_tags.py": {
     "mtime": 1790737428.9241862,
     "hash": "a05e8fd5105df246010c61270884bf8c"
@@ -1384,16 +1388,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790773203.8184056,
-    "hash": "28b314b6c054d948353bf978a83ae8a2"
+    "mtime": 1790775038.7628653,
+    "hash": "46ef7bce8689890c6941ff63da9327e5"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790773386.7535954,
-    "hash": "a2f882de0c7ae56e94ff029edb2cbe70"
+    "mtime": 1790775401.4809024,
+    "hash": "59fda9aefd47e22ef386efa1c3b43b9a"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790773386.7525952,
-    "hash": "23056c581841928c3042775a6b70383a"
+    "mtime": 1790775246.6924386,
+    "hash": "ef5dcb5c23f6104a6d33d5fff2d1a8a7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1530,6 +1534,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-pending-removal.md": {
     "mtime": 1790757781.3071604,
     "hash": "8c3232ee8c62685a10cae7e22139b939"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ai-oracle-semantics.md": {
+    "mtime": 1790775401.4799025,
+    "hash": "f3adca11131eaa7355cea58744e9c852"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/opening-hand-actions.md": {
     "mtime": 1790769750.641648,

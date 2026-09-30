@@ -128,7 +128,7 @@ def _noncreature_value(card, surface: dict | None = None) -> float:
     surface = surface or _active_card_surface(card)
     types = set(getattr(card, "types", []) or [])
     types.update(_types_from_type_line(surface["type_line"]))
-    text = f"{surface['name']} {surface['oracle_text']}".lower()
+    text = surface['oracle_text'].lower()
     value = 0.0
     if "Planeswalker" in types:
         value += 7.0

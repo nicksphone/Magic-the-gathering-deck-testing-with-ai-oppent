@@ -39,8 +39,20 @@ def _only_counter_spell_text(text: str) -> bool:
 
 
 def _has_counter_spell_text(text: str) -> bool:
-    normalized = str(text or "").lower()
-    return "counterspell" in normalized or bool(re.search(r"\bcounter target(?: [a-z -]{0,45})?\b(?:spell|ability)\b", normalized))
+    return bool(re.search(r"\bcounter target(?: [a-z -]{0,45})?\b(?:spell|ability)\b",
+                          without_reminder_text(str(text or "")).lower()))
+
+
+def _oracle_text(card) -> str:
+    return without_reminder_text(str(getattr(card, "oracle_text", "") or "")).lower()
+
+
+def _card_for_move(state, move):
+    card = state.cards.get(move.get("card_id"))
+    if card and move.get("type") == "cast_spell" and getattr(card, "card_faces", None):
+        from rules_engine.card_faces import select_cast_face
+        return select_cast_face(card, move.get("selected_face_index", 0))
+    return card
 
 
 def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
@@ -814,10 +826,10 @@ class AIAgent:
         candidates: list[tuple[float, dict]] = []
         for m in cast_moves:
             cid = m.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, m)
             if not card:
                 continue
-            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+            text = _oracle_text(card)
             # Do not force pure stack-dependent counters when stack is empty.
             if _has_counter_spell_text(text) and not (getattr(state, "stack", []) or []):
                 continue
@@ -843,12 +855,10 @@ class AIAgent:
             p = int(getattr(card, "power", 0) or 0)
             t = int(getattr(card, "toughness", 0) or 0)
             score += min(6.0, p * 0.9 + t * 0.25)
-        if "draw" in text or "deluge" in text or "consider" in text:
+        if "draw" in self._spell_tags(card) or "scry" in text or "surveil" in text:
             score += 1.8
         if "token" in text or "create " in text:
             score += 1.5
-        if "shark typhoon" in text:
-            score += 2.2
         if _has_counter_spell_text(text):
             score -= 2.5
         return score
@@ -868,10 +878,10 @@ class AIAgent:
         best: tuple[float, dict] | None = None
         for move in cast_moves:
             cid = move.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, move)
             if not card:
                 continue
-            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            text = _oracle_text(card)
             score = 0.0
             if _has_counter_spell_text(text):
                 score += 7.0
@@ -902,13 +912,13 @@ class AIAgent:
             if move.get("type") != "cast_spell":
                 continue
             cid = move.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, move)
             if not card:
                 continue
             if "Instant" not in (getattr(card, "types", []) or []):
                 continue
-            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
-            if not any(k in text for k in ["draw", "deluge", "consider", "scry"]):
+            text = _oracle_text(card)
+            if "draw" not in self._spell_tags(card) and not any(k in text for k in ["scry", "surveil"]):
                 continue
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
@@ -950,7 +960,7 @@ class AIAgent:
         best: tuple[float, dict] | None = None
         for move in cast_moves:
             cid = move.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, move)
             if not card:
                 continue
             tags = self._spell_tags(card)
@@ -959,7 +969,7 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
-            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            text = _oracle_text(card)
             score = 0.0
             if "sweeper" in tags:
                 score += 6.0 if len(opp_creatures) >= 3 else 3.0
@@ -1066,7 +1076,7 @@ class AIAgent:
             mana_cost = getattr(c, "mana_cost", "") or ""
             cost = _fixed_color_pips(mana_cost)
             cmc = mana_value(mana_cost, is_land=False)
-            text = f"{(getattr(c, 'name', '') or '').lower()} {(getattr(c, 'oracle_text', '') or '').lower()}"
+            text = _oracle_text(c)
             types = set(getattr(c, "types", []) or [])
             if cmc <= 2:
                 early_spells += 1
@@ -1081,13 +1091,13 @@ class AIAgent:
                 early_pressure += 1
             if cmc <= 2 and any(k in text for k in ["counter target spell", "destroy target", "exile target", "deals", "deal", "remove target"]):
                 cheap_interaction += 1
-            if "draw" in text or "scry" in text or "consider" in text or "memory deluge" in text:
+            if "draw" in self._spell_tags(c) or "scry" in text or "surveil" in text:
                 draw_spells += 1
             if _has_counter_spell_text(text):
                 counter_spells += 1
             if "destroy target" in text or "exile target" in text or "deals" in text:
                 removal_spells += 1
-            if "cultivate" in text or "ramp" in text or "add {" in text or "search your library for a land" in text:
+            if "ramp" in self._spell_tags(c):
                 ramp_spells += 1
             if "create" in text and "token" in text:
                 token_spells += 1
@@ -1217,11 +1227,11 @@ class AIAgent:
             stack_items = getattr(state, "stack", []) or []
             cast_moves = [m for m in moves if m.get("type") == "cast_spell"]
             if mtype == "cast_spell":
-                name = move.get("card_name", "").lower()
+                tags = self._spell_tags(_card_for_move(state, move))
                 base += self._cast_bias(state, move, player_id)
-                if "bolt" in name or "spike" in name:
+                if "burn" in tags:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
-                if "counterspell" in name:
+                if "counter" in tags:
                     if stack_items:
                         base += (9 if self.archetype in {"Control", "Counter-heavy", "Tempo"} else 4) + self._best_stack_threat_score(
                             state, player_id
@@ -1438,7 +1448,7 @@ class AIAgent:
         if self._should_force_proactive_control_line(state, player_id):
             return False
         has_counter = any(
-            _has_counter_spell_text(f"{(state.cards[cid].name or '').lower()} {(state.cards[cid].oracle_text or '').lower()}")
+            _has_counter_spell_text(_oracle_text(state.cards[cid]))
             for cid in state.players[player_id].hand
             if cid in state.cards
         )
@@ -1745,7 +1755,7 @@ class AIAgent:
                     bonus += min(3.5, max(0.0, target_threat) * 0.35)
                 if self._is_burn_matchup() and "counter" in tags and state.turn <= 3 and not (getattr(state, "stack", []) or []):
                     bonus -= 0.8
-                if self._is_burn_matchup() and "sweeper" in f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}":
+                if self._is_burn_matchup() and "sweeper" in tags:
                     if opp_creatures >= 2:
                         bonus += 2.8
                     else:
@@ -1852,8 +1862,7 @@ class AIAgent:
             if "engine" in tags:
                 bonus += 1.6
             # Deploy engine pieces before pure payoff where possible.
-            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
-            if any(k in text for k in ["blood artist", "zulaport", "cauldron familiar", "witch's oven", "priest of forgotten gods"]):
+            if "sacrifice" in tags and ("token" in tags or "drain" in tags or "draw" in tags):
                 bonus += 2.2
             return bonus + bonus_face
 
@@ -1935,7 +1944,7 @@ class AIAgent:
         return 0.0
 
     def _x_spell_timing_penalty(self, state: MatchState, card, player_id: int, x_value: int) -> float:
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         turn = int(getattr(state, "turn", 1) or 1)
         opp_id = 1 if player_id == 2 else 2
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
@@ -1993,8 +2002,8 @@ class AIAgent:
         card = sim_state.cards.get(cid)
         if not card:
             return
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
-        if "land" not in text and "cultivate" not in text and "ramp" not in text and "search your library" not in text:
+        text = _oracle_text(card)
+        if "land" not in text or "ramp" not in self._spell_tags(card):
             return
         if "put a land card from your hand onto the battlefield" not in text and "search your library for" not in text:
             return
@@ -2057,7 +2066,7 @@ class AIAgent:
     def _score_modal_face(self, state: MatchState, card, face: dict, player_id: int) -> float:
         proxy = self._modal_face_proxy(card, face)
         tags = self._spell_tags(proxy)
-        text = f"{proxy.name} {proxy.oracle_text}".lower()
+        text = _oracle_text(proxy)
         mana_req = parse_mana_cost(getattr(proxy, "mana_cost", ""), is_land=False)
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         score = 0.0
@@ -3287,7 +3296,7 @@ class AIAgent:
             ):
                 scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
         if not scored:
-            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+            text = _oracle_text(card)
             interactive_x = any(k in text for k in ["target", "destroy", "exile", "counter", "tap"])
             if interactive_x:
                 for x in range(1, upper + 1):
@@ -3309,7 +3318,7 @@ class AIAgent:
         return scored[0][1]
 
     def _score_x_value(self, state: MatchState, player_id: int, card, mana_cost: str, x_value: int, upper: int, floor: int) -> float:
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         turn = int(getattr(state, "turn", 1) or 1)
         opp_id = 1 if player_id == 2 else 2
         opp = state.players[opp_id]
@@ -3397,7 +3406,7 @@ class AIAgent:
         return score
 
     def _minimum_useful_x_value(self, state: MatchState, player_id: int, card, mana_cost: str) -> int:
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         turn = int(getattr(state, "turn", 1) or 1)
         if "create x" in text and "token" in text:
             return 3 if self.archetype in {"Control", "Counter-heavy"} and turn < 7 else 2
@@ -3489,10 +3498,10 @@ class AIAgent:
             mtype = move.get("type")
             base = 0.0
             if mtype == "cast_spell":
-                name = str(move.get("card_name", "")).lower()
-                if "counterspell" in name and getattr(state, "stack", []):
+                tags = self._spell_tags(_card_for_move(state, move))
+                if "counter" in tags and getattr(state, "stack", []):
                     base += 3 + self._best_stack_threat_score(state, player_id) * 0.5
-                if any(k in name for k in ["bolt", "shock", "spike"]):
+                if "burn" in tags:
                     base += 4
             elif mtype == "attack":
                 base += 3
@@ -3847,7 +3856,7 @@ class AIAgent:
             for move in non_pass:
                 if move.get("type") == "cast_spell":
                     cid = move.get("card_id")
-                    card = state.cards.get(cid) if cid else None
+                    card = _card_for_move(state, move)
                     if card and self._is_counter_card(card):
                         return move
             return non_pass[0]
@@ -3855,8 +3864,8 @@ class AIAgent:
             if move.get("type") != "cast_spell":
                 return move
             cid = move.get("card_id")
-            card = state.cards.get(cid) if cid else None
-            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower() if card else ""
+            card = _card_for_move(state, move)
+            text = _oracle_text(card) if card else ""
             if _has_counter_spell_text(text):
                 continue
             return move
@@ -3958,7 +3967,7 @@ class AIAgent:
             if mv.get("type") != "cast_spell":
                 continue
             cid = mv.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, mv)
             if not card:
                 continue
             mana_text = str(getattr(card, "mana_cost", "") or "")
@@ -4039,10 +4048,10 @@ class AIAgent:
             if mv.get("type") != "cast_spell":
                 continue
             cid = mv.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, mv)
             if not card:
                 continue
-            text = f"{(getattr(card, 'name', '') or '').lower()} {(getattr(card, 'oracle_text', '') or '').lower()}"
+            text = _oracle_text(card)
             dmg = self._burn_damage_estimate(text)
             if dmg <= 0:
                 continue
@@ -4058,16 +4067,10 @@ class AIAgent:
         return burn_spells[0][1]
 
     def _burn_damage_estimate(self, text: str) -> int:
-        t = text.lower()
-        if any(k in t for k in ["lava spike", "lightning bolt", "boros charm", "rift bolt"]):
-            return 3
-        if any(k in t for k in ["lightning helix", "wizard's lightning", "skewer the critics"]):
-            return 3
-        if any(k in t for k in ["shock", "play with fire"]):
-            return 2
-        if "searing blaze" in t:
-            return 3
-        return 0
+        # A printed fixed player-damage clause, not a card-name damage table.
+        matches = re.findall(r"\bdeals?\s+(\d+)\s+damage to\s+(?:any target|target (?:player|opponent)|each (?:player|opponent))\b",
+                             without_reminder_text(text).lower())
+        return max((int(amount) for amount in matches), default=0)
 
     def _is_action_obviously_illegal(self, state: MatchState, action: dict, player_id: int) -> bool:
         kind = action.get("type")
@@ -4154,9 +4157,6 @@ class AIAgent:
                         demand[color] += weight * 0.5
                 elif len(options) == 1:
                     demand[options[0]] += weight * 0.25
-            text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
-            if _has_counter_spell_text(text):
-                demand["U"] += 2
         return demand
 
     def _opening_color_sources_from_hand(self, hand: list) -> dict[str, int]:
@@ -4226,7 +4226,7 @@ class AIAgent:
         return _land_colors(getattr(card, "name", ""), getattr(card, "type_line", ""), getattr(card, "oracle_text", ""))
 
     def _is_counter_card(self, card) -> bool:
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         return _has_counter_spell_text(text)
 
     def _noncreature_permanent_threat_score(self, state: MatchState, card_id: str | None, player_id: int) -> float:
@@ -4239,7 +4239,7 @@ class AIAgent:
             return -10.0
         score = 0.0
         types = set(getattr(card, "types", []) or [])
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         if "Planeswalker" in types:
             score += 8.0
         if "Artifact" in types:
@@ -4275,7 +4275,7 @@ class AIAgent:
         score = float(getattr(card, "power", 0) or 0) * 0.9 + float(getattr(card, "toughness", 0) or 0) * 0.3
         if "legendary" in " ".join(getattr(card, "types", [])).lower():
             score += 0.5
-        text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()
+        text = _oracle_text(card)
         if any(k in text for k in ["draw", "counter", "remove", "destroy", "exile", "return"]):
             score += 0.4
         return score
@@ -4332,12 +4332,12 @@ class AIAgent:
         mana_cost = parse_mana_cost(getattr(source, "mana_cost", ""), is_land=False)
         cmc = mana_value(getattr(source, "mana_cost", ""), is_land=False)
         score += min(5.0, cmc * 0.45)
-        text = f"{getattr(source, 'name', '')} {getattr(source, 'oracle_text', '')}".lower()
-        if any(k in text for k in ["destroy all", "exile all", "sweeper", "wrath", "damnation"]):
+        text = _oracle_text(source)
+        if any(k in text for k in ["destroy all", "exile all"]) or "sweeper" in self._spell_tags(source):
             score += 6.0
-        if any(k in text for k in ["draw", "memory deluge", "dig through", "treasure cruise"]):
+        if "draw" in self._spell_tags(source):
             score += 2.2
-        if any(k in text for k in ["counter target spell"]):
+        if _has_counter_spell_text(text):
             score += 1.4
         if any(k in text for k in ["you can't", "players can't", "your opponents can't"]):
             score += 4.0

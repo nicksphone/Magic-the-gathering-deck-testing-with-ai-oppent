@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections import Counter
+import re
 
+from card_data.tactical import tactical_tags
 from rules_engine.mana import mana_value, parse_mana_cost
-from rules_engine.card_types import is_land_card
+from rules_engine.card_types import is_land_card, creature_subtype_candidates
 
 ARCHETYPES = [
     "Aggro",
@@ -41,61 +43,82 @@ def analyze_deck(mainboard: list[dict]) -> dict:
                     "oracle_text": oracle_text,
                     "mana_cost": mana_cost,
                     "face_stats": face_stats,
+                    "role_faces": meta.get("card_faces") or item.get("card_faces") or [],
                 }
             )
-    names = " ".join(card["name"].lower() for card in expanded_cards)
-    texts = " ".join(f"{card['name']} {card['type_line']} {card['oracle_text']}".lower() for card in expanded_cards)
+    texts = " ".join(card["oracle_text"].lower() for card in expanded_cards)
+    for card in expanded_cards:
+        faces = card["role_faces"]
+        if isinstance(faces, list) and faces:
+            card["tags"] = set().union(*(tactical_tags(face.get("oracle_text", ""), face.get("type_line", ""))
+                                        for face in faces if isinstance(face, dict) and not is_land_card(face)))
+        else:
+            card["tags"] = tactical_tags(card["oracle_text"], card["type_line"])
     total_cards = max(1, len(expanded_cards))
+    known_cards = sum(bool(card["type_line"]) for card in expanded_cards)
     land_count = sum(1 for card in expanded_cards if is_land_card(card))
-    creature_like = sum(1 for card in expanded_cards if "creature" in card["type_line"].split("//", 1)[0].lower() or _looks_like_creature_name(card["name"]))
+    creatures = [card for card in expanded_cards if "creature" in card["type_line"].split("//", 1)[0].lower()]
+    creature_like = len(creatures)
     avg_cmc = sum(_cmc(card["mana_cost"]) for card in expanded_cards) / total_cards
-    cheap_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) <= 2 and not is_land_card(card))
+    cheap_spells = sum(1 for card in expanded_cards if card["type_line"] and _cmc(card["mana_cost"]) <= 2 and not is_land_card(card))
     expensive_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) >= 5)
-    draw_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["draw", "scry", "impulse", "consider", "memory deluge"]))
-    counter_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["counter target", "counterspell", "drown in the loch"]))
-    removal_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["destroy target", "exile target", "deal", "damage to any target", "go for the throat", "fatal push"]))
-    ramp_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["add ", "cultivate", "ramp", "search your library for a land", "treasure"]))
-    token_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["create a", "create two", "token", "warrior", "soldier", "human token"]))
-    graveyard_cards = sum(1 for card in expanded_cards if _card_text_matches(card, ["graveyard", "reanimate", "return target creature card", "mill", "discard"]))
+    def tagged(*tags):
+        return sum(bool(card["tags"].intersection(tags)) for card in expanded_cards if not is_land_card(card))
+    burn_cards = tagged("burn")
+    draw_cards = tagged("draw") + sum(_card_text_matches(card, ["scry", "surveil"]) and "draw" not in card["tags"] for card in expanded_cards)
+    counter_cards = tagged("counter")
+    removal_cards = tagged("removal", "sweeper")
+    ramp_cards = tagged("ramp")
+    token_cards = tagged("token")
+    graveyard_cards = tagged("recursion", "reanimate", "mill", "discard")
+    reanimate_cards = tagged("reanimate")
+    drain_cards = tagged("drain")
+    sacrifice_cards = tagged("sacrifice")
+    cheap_creatures = sum(_cmc(card["mana_cost"]) <= 2 for card in creatures)
+    subtypes = Counter()
+    for card in creatures:
+        front = re.split(r"—| - ", card["type_line"].split("//", 1)[0], maxsplit=1)
+        if len(front) > 1:
+            subtypes.update(set(front[1].lower().split()))
+    tribal_references = re.findall(r"\b([a-z]+)(?: creatures)? you control\b", texts)
+    rule_words = set().union(*(creature_subtype_candidates(word) for word in tribal_references)) if tribal_references else set()
+    tribal_cluster = any(count >= max(8, total_cards // 5) and subtype in rule_words for subtype, count in subtypes.items())
     face_card_count = sum(1 for card in expanded_cards if card.get("face_stats", {}).get("face_count", 0) > 1)
     split_card_count = sum(1 for card in expanded_cards if card.get("face_stats", {}).get("split_like", False))
     score = Counter()
     signals: list[str] = []
 
-    def has_any(keys: list[str]) -> bool:
-        return any(k in texts for k in keys)
-
-    if has_any(["bolt", "spike", "skullcrack", "boros charm", "burn"]):
+    if burn_cards >= max(8, total_cards // 5):
         score["Burn"] += 4
         score["Aggro"] += 2
         signals.append("direct_damage_package")
-    if has_any(["counterspell", "memory deluge", "consider", "teferi", "supreme verdict", "drown in the loch"]):
+    if counter_cards >= 4:
         score["Control"] += 4
         score["Counter-heavy"] += 3
         signals.append("stack_interaction_package")
-    if has_any(["elves", "archdruid", "clancaller", "warmaster", "llanowar"]):
-        score["Tribal"] += 4
+    if tribal_cluster:
+        score["Tribal"] += 6
         score["Aggro"] += 1
         signals.append("tribal_creature_cluster")
-    if has_any(["announcement", "raise the alarm", "march of the multitudes", "secure the wastes", "token"]):
+    if token_cards >= 4:
         score["Tokens"] += 4
         signals.append("token_production_density")
-    if has_any(["cultivate", "arboreal grazer", "nissa, who shakes the world", "ugin", "topiary"]):
+    if ramp_cards >= 4:
         score["Ramp"] += 4
         score["Midrange"] += 1
         signals.append("mana_acceleration_package")
-    if has_any(["blood artist", "zulaport", "cauldron familiar", "witch's oven", "priest of forgotten gods"]):
-        score["Drain"] += 4
-        score["Aristocrats"] += 4
+    if drain_cards >= max(4, total_cards // 8) and (sacrifice_cards >= 3 or tagged("death") >= 3):
+        score["Drain"] += 6
+        score["Aristocrats"] += 6
         signals.append("sacrifice_drain_engine")
-    if has_any(["delver", "sprite dragon", "brazen borrower", "unholy heat", "expressive iteration"]):
-        score["Tempo"] += 4
+    if cheap_creatures >= max(6, total_cards // 10) and counter_cards >= 4:
+        score["Tempo"] += 7
         signals.append("cheap_threat_plus_interaction")
-    if has_any(["fatal push", "go for the throat", "abrupt decay", "ossification", "brutal cathar"]):
+    if removal_cards >= 4:
         score["Removal-heavy"] += 3
         score["Midrange"] += 2
         signals.append("high_removal_density")
-    if has_any(["reanimate", "return target creature card from your graveyard"]):
+    if reanimate_cards >= 4:
         score["Reanimator"] += 4
         signals.append("graveyard_recursion_package")
 
@@ -143,19 +166,25 @@ def analyze_deck(mainboard: list[dict]) -> dict:
         score["Burn"] += 1
     if 2.2 <= avg_cmc <= 3.8 and creature_like >= total_cards * 0.25 and draw_cards + removal_cards >= 6:
         score["Midrange"] += 2
-    if token_cards >= 6 and any(k in texts for k in ["anthem", "+1/+1", "adeline", "wedding announcement"]):
+    if token_cards >= 6 and tagged("anthem"):
         score["Tokens"] += 1
-    if any(k in texts for k in ["elves", "goblins", "humans", "spirits", "soldiers", "zombie"]) and creature_like >= total_cards * 0.3:
+    if tribal_cluster and creature_like >= total_cards * 0.3:
         score["Tribal"] += 2
 
     if not score:
         score["Midrange"] = 1
         signals.append("fallback_midrange")
 
+    if not known_cards:
+        score = Counter({"Midrange": 1})
+        signals = ["missing_card_metadata", "fallback_midrange"]
+    elif known_cards < len(expanded_cards):
+        signals.append("partial_card_metadata")
+
     ranked = score.most_common()
     primary, primary_score = ranked[0]
     secondary = ranked[1][0] if len(ranked) > 1 else primary
-    confidence = round(primary_score / max(1, sum(score.values())), 3)
+    confidence = round(primary_score / max(1, sum(score.values())) * known_cards / total_cards, 3)
     return {
         "primary_archetype": primary,
         "secondary_archetype": secondary,
@@ -167,6 +196,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
         "avg_cmc_estimate": round(avg_cmc, 3),
         "face_card_count_estimate": int(face_card_count),
         "split_card_count_estimate": int(split_card_count),
+        "type_metadata_coverage": round(known_cards / total_cards, 3),
     }
 
 
@@ -174,13 +204,8 @@ def _cmc(mana_cost: str) -> int:
     return int(mana_value(mana_cost or ""))
 
 
-def _looks_like_creature_name(name: str) -> bool:
-    n = (name or "").lower()
-    return any(k in n for k in ["elf", "goblin", "guide", "adeline", "sheoldred", "dragon", "cathar", "spirit", "delver", "soldier", "human", "wizard", "zombie"])
-
-
 def _card_text_matches(card: dict, keys: list[str]) -> bool:
-    text = f"{card.get('name', '')} {card.get('type_line', '')} {card.get('oracle_text', '')}".lower()
+    text = str(card.get("oracle_text", "")).lower()
     return any(key in text for key in keys)
 
 
@@ -189,7 +214,7 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
     type_line = str(meta.get("type_line") or item.get("type_line") or "").strip()
     oracle_text = str(meta.get("oracle_text") or item.get("oracle_text") or "").strip()
     mana_cost = str(meta.get("mana_cost") or item.get("mana_cost") or "").strip()
-    faces = meta.get("card_faces") or []
+    faces = meta.get("card_faces") or item.get("card_faces") or []
     face_names: list[str] = []
     face_types: list[str] = []
     face_oracles: list[str] = []
@@ -211,7 +236,7 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
         if face_mana:
             face_mana_costs.append(face_mana)
     if len(face_names) > 1:
-        layout = str(meta.get("layout") or "").lower()
+        layout = str(meta.get("layout") or item.get("layout") or "").lower()
         split_like = layout == "split" or (not layout and " // " in name)
     if face_types:
         type_line = " // ".join([part for part in [type_line, " | ".join(face_types)] if part]).strip()

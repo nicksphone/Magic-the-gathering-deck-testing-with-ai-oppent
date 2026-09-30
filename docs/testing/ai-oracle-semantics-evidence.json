@@ -1,0 +1,98 @@
+{
+  "logical_games": 8,
+  "executions": 16,
+  "complete_results_repeat_equal": true,
+  "timeouts": 0,
+  "logged_cost_target_rejections": 0,
+  "scope": "Seeded offline regression, not independent strength/balance evidence.",
+  "rows": [
+    {
+      "a": "Dimir Control",
+      "b": "Tempo",
+      "seed": 73,
+      "winner": 1,
+      "turn": 49,
+      "ticks": 1309,
+      "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Tempo",
+      "b": "Dimir Control",
+      "seed": 73,
+      "winner": 2,
+      "turn": 15,
+      "ticks": 389,
+      "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Tokens",
+      "b": "Ramp",
+      "seed": 74,
+      "winner": 2,
+      "turn": 34,
+      "ticks": 912,
+      "log_hash": "aaca6453a3dd63477d81f9e683208cc6fe220022bdda2878164f721405744c8c",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Ramp",
+      "b": "Tokens",
+      "seed": 74,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 405,
+      "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Midrange",
+      "b": "Drain Deck",
+      "seed": 75,
+      "winner": 1,
+      "turn": 17,
+      "ticks": 473,
+      "log_hash": "960c7c19e11309402bed703d3cf155791b16208e7e16c312f3a3efa13cdf9c2a",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Drain Deck",
+      "b": "Midrange",
+      "seed": 75,
+      "winner": 2,
+      "turn": 14,
+      "ticks": 425,
+      "log_hash": "5e5a283b7611b411c883400963c6a9afd7eb8b7eacf30ebed78f458bcb6f2fb2",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Tribal",
+      "b": "Burn",
+      "seed": 76,
+      "winner": 1,
+      "turn": 23,
+      "ticks": 611,
+      "log_hash": "39a9d7f5329cb7dd221e26ccf2ce2f0078f9f6f5e572fff77c22f4b64dc3eb34",
+      "timeout": false,
+      "starting_player": 1
+    },
+    {
+      "a": "Burn",
+      "b": "Tribal",
+      "seed": 76,
+      "winner": 2,
+      "turn": 16,
+      "ticks": 435,
+      "log_hash": "ebda50a4389decbfda20879bf28a4ab1a6e1cc3a1a24b3974423957dc2f6b30e",
+      "timeout": false,
+      "starting_player": 1
+    }
+  ]
+}
