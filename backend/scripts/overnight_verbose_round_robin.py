@@ -29,7 +29,7 @@ from analytics.service import AnalyticsService
 from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, pregame_actor
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.continuous import effective_power
@@ -331,7 +331,7 @@ def run() -> int:
                     stalled_pass_streak = 0
                     reason_codes: Counter = Counter()
                     while state.winner is None and ticks < args.max_ticks:
-                        pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
+                        pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                         legal = engine_rules.legal_moves(state, pid)
                         if not legal:
                             action = {"type": "pass_priority"}

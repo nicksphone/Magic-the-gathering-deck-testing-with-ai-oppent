@@ -360,6 +360,10 @@ def test_london_mulligan_to_zero_requires_deliberate_ordered_bottoms(game):
     for count in range(1, 8):
         response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 1, "action": {"type": "mulligan"}})
         assert response.status_code == 200, response.text
+        if count == 1:
+            assert controller.state.mulligan_count[1] == 0
+            response = client.post(f"/matches/{controller.state.id}/action", json={"player_id": 2, "action": {"type": "keep_hand"}})
+            assert response.status_code == 200, response.text
         assert controller.state.mulligan_count[1] == count
     rejected(client, controller, {"type": "mulligan"})
     rejected(client, controller, {"type": "keep_hand", "bottom_card_ids": []})

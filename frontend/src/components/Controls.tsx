@@ -426,6 +426,7 @@ export function Controls(props: Props) {
       {props.match?.pregame_pending && props.match.controllers?.[String(pregameActor)] !== "ai" ? (
         <div className="block-panel">
           <h3>London Mulligan</h3>
+          <p>Player {pregameActor} declares next. Redraws wait until all players declare.</p>
           <p>
             P1 mulligans: {props.match.mulligan_count?.["1"] ?? 0} | P2 mulligans: {props.match.mulligan_count?.["2"] ?? 0}
           </p>
@@ -437,7 +438,7 @@ export function Controls(props: Props) {
             </label>)}
           </fieldset> : null}
           <div className="row">
-            <button disabled={bottomCards.length !== bottomCount} onClick={() => props.onKeepHand(bottomCards)}>Keep Hand</button>
+            <button disabled={bottomCards.length !== bottomCount || !props.legalMoves.some((move) => move.type === "keep_hand")} onClick={() => props.onKeepHand(bottomCards)}>Keep Hand</button>
             <button disabled={!props.legalMoves.some((move) => move.type === "mulligan")} onClick={props.onMulligan}>Mulligan</button>
           </div>
         </div>

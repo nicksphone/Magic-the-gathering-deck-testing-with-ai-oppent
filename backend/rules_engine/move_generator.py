@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from itertools import permutations
 
-from game_state.state import MatchState, Step, Zone
+from game_state.state import MatchState, Step, Zone, pregame_actor
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
 from rules_engine.card_types import is_land_card as _is_land_card
@@ -96,7 +96,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             for option in (pending.get("options") or [])
         ]
     if state.pregame_pending:
-        if player_id in state.kept_hands:
+        if player_id != pregame_actor(state):
             return []
         moves = [{"type": "keep_hand"}]
         if state.mulligan_count.get(player_id, 0) < 7:

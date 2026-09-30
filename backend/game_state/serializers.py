@@ -74,6 +74,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "pregame_pending": state.pregame_pending,
         "mulligan_count": {str(key): value for key, value in state.mulligan_count.items()},
         "kept_hands": sorted(state.kept_hands),
+        "mulligan_declarations": {str(key): value for key, value in state.mulligan_declarations.items()},
         "loyalty_activated_this_turn": sorted(state.loyalty_activated_this_turn),
         "trigger_once_seen_this_turn": sorted(state.trigger_once_seen_this_turn),
         "trigger_staging": state.trigger_staging,
@@ -260,6 +261,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.pregame_pending = bool(payload.get("pregame_pending", True))
     state.mulligan_count = {int(key): int(value) for key, value in payload.get("mulligan_count", {}).items()}
     state.kept_hands = {int(value) for value in payload.get("kept_hands", [])}
+    state.mulligan_declarations = {int(key): str(value) for key, value in payload.get("mulligan_declarations", {}).items()}
     state.loyalty_activated_this_turn = set(payload.get("loyalty_activated_this_turn", []))
     state.trigger_once_seen_this_turn = set(payload.get("trigger_once_seen_this_turn", []))
     state.priority_stops = {

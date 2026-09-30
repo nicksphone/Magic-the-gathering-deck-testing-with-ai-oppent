@@ -41,7 +41,7 @@ from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
-from game_state.state import MatchFactory, Step
+from game_state.state import MatchFactory, Step, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, get_session, init_db
 from persistence.repository import Repository
@@ -1502,9 +1502,7 @@ def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]
 
 def _default_player_for_state(match: MatchController) -> int:
     if match.state.pregame_pending:
-        for pid in [1, 2]:
-            if pid not in match.state.kept_hands:
-                return pid
+        return pregame_actor(match.state) or match.state.priority_player
     return match.state.priority_player
 
 

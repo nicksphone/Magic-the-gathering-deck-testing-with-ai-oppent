@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card
+from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor
 from rules_engine import combat
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
@@ -405,6 +405,9 @@ class RulesEngine:
             return
 
         if state.pregame_pending:
+            if player_id != pregame_actor(state) or kind not in {"keep_hand", "mulligan"}:
+                reject("Not this player's mulligan declaration window")
+                return
             self._handle_pregame_action(state, player_id, action)
             return
 
@@ -1209,35 +1212,13 @@ class RulesEngine:
         return legal_moves(state, player_id)
 
     def _handle_pregame_action(self, state: MatchState, player_id: int, action: dict) -> None:
-        if player_id in state.kept_hands:
-            remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
-            if remaining:
-                state.priority_player = remaining[0]
-            return
         kind = action.get("type")
         player = state.players[player_id]
-        if kind == "mulligan":
-            if state.mulligan_count.get(player_id, 0) >= 7:
-                return
-            while player.hand:
-                cid = player.hand.pop()
-                player.library.append(cid)
-                state.cards[cid].move_to_zone(Zone.LIBRARY)
-            rng = getattr(state, "rng", None)
-            if rng is not None and hasattr(rng, "shuffle"):
-                rng.shuffle(player.library)
-            else:
-                import random
-
-                random.shuffle(player.library)
-            for _ in range(7):
-                draw_card(state, player_id)
-            state.mulligan_count[player_id] = state.mulligan_count.get(player_id, 0) + 1
-            state.log.append(f"{player.name} takes a mulligan to {7 - state.mulligan_count[player_id]}.")
-            remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
-            if remaining:
-                state.priority_player = remaining[0]
+        if kind == "mulligan" and state.mulligan_count.get(player_id, 0) >= 7:
             return
+        state.mulligan_declarations[player_id] = kind
+        if kind == "mulligan":
+            state.log.append(f"{player.name} declares a mulligan.")
         if kind == "keep_hand":
             bottom = action.get("bottom_card_ids", [])
             need_bottom = state.mulligan_count.get(player_id, 0)
@@ -1251,17 +1232,38 @@ class RulesEngine:
                     state.cards[cid].move_to_zone(Zone.LIBRARY)
             state.kept_hands.add(player_id)
             state.log.append(f"{player.name} keeps hand.")
-            if len(state.kept_hands) == 2:
-                state.pregame_pending = False
-                state.priority_player = state.active_player
-                state.step = Step.UNTAP
-                self._apply_step_start_actions(state)
-                state.log.append("Pregame complete. Proceeding to turn structure.")
-                self.next_step(state)
-            else:
-                remaining = [pid for pid in [1, 2] if pid not in state.kept_hands]
-                if remaining:
-                    state.priority_player = remaining[0]
+        actor = pregame_actor(state)
+        if actor is not None:
+            state.priority_player = actor
+            return
+        # Finish the entire declaration round before changing any mulligan hand.
+        mulliganers = [pid for pid in (state.active_player, 3 - state.active_player)
+                       if state.mulligan_declarations.get(pid) == "mulligan"]
+        for pid in mulliganers:
+            player = state.players[pid]
+            while player.hand:
+                cid = player.hand.pop()
+                player.library.append(cid)
+                state.cards[cid].move_to_zone(Zone.LIBRARY)
+            rng = getattr(state, "rng", None)
+            if rng is None:
+                import random
+                rng = random
+            rng.shuffle(player.library)
+            state.mulligan_count[pid] = state.mulligan_count.get(pid, 0) + 1
+        for pid in mulliganers:
+            draw_card(state, pid, 7)
+            state.log.append(f"{state.players[pid].name} takes a mulligan to {7 - state.mulligan_count[pid]}.")
+        state.mulligan_declarations.clear()
+        if len(state.kept_hands) == 2:
+            state.pregame_pending = False
+            state.priority_player = state.active_player
+            state.step = Step.UNTAP
+            self._apply_step_start_actions(state)
+            state.log.append("Pregame complete. Proceeding to turn structure.")
+            self.next_step(state)
+        else:
+            state.priority_player = pregame_actor(state)
 
 
 def _infer_mana_from_land(name: str, oracle_text: str = "", requested_color: str | None = None) -> str:

@@ -15,7 +15,7 @@ from analytics.decision_quality import build_trace_payload
 from analytics.decision_taxonomy import decision_reason_code, has_actionable_move, has_meaningful_move, is_actionable_move
 from card_data.hydration import hydrate_deck_cards as hydrate_deck
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, pregame_actor
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
@@ -105,7 +105,7 @@ def main() -> int:
                 ticks = 0
 
                 while state.winner is None and ticks < args.max_ticks:
-                    pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
+                    pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                     legal = engine_rules.legal_moves(state, pid)
                     if not legal:
                         action = {"type": "pass_priority"}

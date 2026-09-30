@@ -17,7 +17,7 @@ from analytics.replay_tools import classify_first_divergence, classify_log_line,
 from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.selection import select_representative_decks
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -98,7 +98,7 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
     ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))
     ticks = 0
     while state.winner is None and ticks < max_ticks:
-        pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
+        pid = pregame_actor(state) if state.pregame_pending else state.priority_player
         legal = engine_rules.legal_moves(state, pid)
         if not legal:
             action = {"type": "pass_priority"}

@@ -29,6 +29,8 @@ def test_seeded_mulligans_are_reproducible_even_after_prior_random_use() -> None
 
     engine.take_action(a, 1, {"type": "mulligan"})
     engine.take_action(b, 1, {"type": "mulligan"})
+    engine.take_action(a, 2, {"type": "keep_hand"})
+    engine.take_action(b, 2, {"type": "keep_hand"})
 
     assert [a.cards[cid].name for cid in a.players[1].hand] == [b.cards[cid].name for cid in b.players[1].hand]
     assert [a.cards[cid].name for cid in a.players[1].library[:10]] == [b.cards[cid].name for cid in b.players[1].library[:10]]

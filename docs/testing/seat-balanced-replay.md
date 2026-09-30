@@ -77,8 +77,9 @@ bounded setup evidence, not tournament-corpus or seasoned-player certification.
 The diagnostic runner still does not apply sideboards. Shared chooser and seed
 policies do not establish full live BO3 transition parity. AI always choosing to
 play is a policy default, not deck-specific strategic choice. Starting-player
-mulligan declaration order and simultaneous mulligan rounds need a shared
-resumable implementation before claiming complete tournament setup semantics.
+mulligan declarations and paired redraws now use shared resumable engine state.
+Mandatory bottom-selection timing and opening-hand effects still need completion
+before claiming full tournament setup semantics.
 
 Paired seeds and determinism repeats are correlated, not independent statistical
 samples. No confidence interval or seasoned-player/balance claim is inferred.

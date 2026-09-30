@@ -19,7 +19,7 @@ from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from rules_engine.coverage import deck_pair_coverage
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, pregame_actor
 
 
 class SimulationCancelled(Exception):
@@ -76,7 +76,7 @@ class AnalyticsService:
                 if should_cancel is not None and should_cancel():
                     raise SimulationCancelled()
                 if state.pregame_pending:
-                    pid = 1 if 1 not in state.kept_hands else 2
+                    pid = pregame_actor(state)
                 else:
                     pid = state.priority_player
                 legal = self.engine.legal_moves(state, pid)
@@ -314,7 +314,7 @@ class AnalyticsService:
                 b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
                 ticks = 0
                 while state.winner is None and ticks < max_ticks:
-                    pid = 1 if state.pregame_pending and 1 not in state.kept_hands else (2 if state.pregame_pending else state.priority_player)
+                    pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                     legal = self.engine.legal_moves(state, pid)
                     if not legal:
                         pair_counts["no_legal_moves"] += 1
