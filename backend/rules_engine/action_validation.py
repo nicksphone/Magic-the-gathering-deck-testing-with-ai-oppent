@@ -236,8 +236,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
 
 
 def validate_tap(state, player_id: int, action: dict) -> None:
-    from rules_engine.engine import _land_colors_from_metadata
-    from rules_engine.mana import _nonland_mana_source_colors
+    from rules_engine.mana import _nonland_mana_source_colors, land_can_produce_mana, land_mana_colors
     player = state.players[player_id]
     if action["type"] == "tap_nonland_for_mana":
         cid = action["card_id"]
@@ -248,11 +247,13 @@ def validate_tap(state, player_id: int, action: dict) -> None:
     if action["type"] == "tap_land_for_mana":
         ids = [action["card_id"]]
     else:
-        ids = [cid for cid in player.battlefield if state.cards[cid].name.strip().lower() == action["land_name"].strip().lower() and "Land" in state.cards[cid].types and not state.cards[cid].tapped]
+        ids = [cid for cid in player.battlefield if state.cards[cid].name.strip().lower() == action["land_name"].strip().lower()
+               and land_can_produce_mana(state, cid)
+               and (not action.get("color") or action["color"] in land_mana_colors(state.cards[cid]))]
         require(len(ids) >= action["count"], "Not enough untapped matching lands")
         ids = ids[:action["count"]]
     for cid in ids:
         card = state.cards.get(cid)
-        require(cid in player.battlefield and card is not None and "Land" in card.types and not card.tapped, "Mana source must be an untapped land you control")
-        colors = _land_colors_from_metadata(card.name, card.oracle_text) or {"C"}
+        require(cid in player.battlefield and card is not None and land_can_produce_mana(state, cid), "Mana source must be a ready land you control")
+        colors = land_mana_colors(card)
         require(not action.get("color") or action["color"] in colors, "Land cannot produce the selected color")

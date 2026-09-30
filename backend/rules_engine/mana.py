@@ -62,7 +62,7 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
         card = state.cards[cid]
         if land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
-            for color in _land_colors(card.name, card.type_line, card.oracle_text):
+            for color in land_mana_colors(card):
                 out[color] += amount
             out["ANY"] += amount
     return out
@@ -217,7 +217,7 @@ def _plan_mana_sources(
         land = "Land" in card.types
         if land and land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
-            outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
+            outputs = {color: amount for color in land_mana_colors(card)}
         else:
             outputs = nonland_mana_outputs(state, cid, card)
         if outputs:
@@ -293,7 +293,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int]) -> tup
         land = "Land" in card.types
         if land and land_can_produce_mana(state, cid):
             amount = land_mana_amount(state, player_id, cid)
-            outputs = {color: amount for color in _land_colors(card.name, card.type_line, card.oracle_text)}
+            outputs = {color: amount for color in land_mana_colors(card)}
         else:
             outputs = nonland_mana_outputs(state, cid, card)
         if outputs:
@@ -439,7 +439,33 @@ def add_generic_to_cost(mana_cost: str, generic_add: int) -> str:
     return _apply_generic_delta_to_cost(mana_cost, 0, max(0, int(generic_add)))
 
 
-def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> Set[str]:
+@lru_cache(maxsize=8192)
+def _counter_mana_replacement(name: str, text: str):
+    subject = rf"(?:this land|this card|{re.escape(name)})"
+    conditional = re.compile(
+        rf"\{{T\}}: Add \{{([WUBRGC])\}}\. If {subject} has a ([\w-]+) counter on it, "
+        r"instead add one mana of any color\.", re.I,
+    )
+    match = next((conditional.fullmatch(line.strip()) for line in text.split("\n")
+                  if conditional.fullmatch(line.strip())), None)
+    if match:
+        remaining = "\n".join(line for line in text.split("\n") if not conditional.fullmatch(line.strip()))
+        return match[1].upper(), match[2].lower(), remaining
+    return None
+
+
+def land_mana_colors(card) -> Set[str]:
+    """Supported counter-presence replacement, using current permanent state."""
+    text = card.oracle_text or ""
+    replacement = _counter_mana_replacement(card.name, text)
+    if replacement:
+        base, counter, remaining = replacement
+        colors = set("WUBRG") if card.counters.get(counter, 0) > 0 else {base}
+        return colors | _land_colors(card.name, card.type_line, remaining, fallback=False)
+    return _land_colors(card.name, card.type_line, text)
+
+
+def _land_colors(name: str, type_line: str | None, oracle_text: str | None, *, fallback: bool = True) -> Set[str]:
     n = (name or "").strip().lower()
     if n in DUAL_LAND_NAME_COLORS:
         return set(DUAL_LAND_NAME_COLORS[n])
@@ -459,7 +485,9 @@ def _land_colors(name: str, type_line: str | None, oracle_text: str | None) -> S
     for sym in MANA_SYMBOL_RE.findall((oracle_text or "").upper()):
         if sym in {"W", "U", "B", "R", "G", "C"}:
             out.add(sym)
-    if not out:
+    if re.search(r"\{T\}: Add one mana of any color\.", oracle_text or "", re.I):
+        out.update("WUBRG")
+    if not out and fallback:
         out.add("C")
     return out
 

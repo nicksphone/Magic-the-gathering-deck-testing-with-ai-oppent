@@ -10,7 +10,7 @@ from ai.heuristics import evaluate_board
 from ai.log_priors import load_log_priors
 from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
-from game_state.state import MatchState, Step, Zone
+from game_state.state import CardInstance, MatchState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
@@ -162,9 +162,9 @@ class AIAgent:
                 candidates.sort(key=lambda cid: (-self._hand_retention_value(state, cid, player_id), cid))
                 selected = candidates[0] if candidates else "__finish_opening__"
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]}, reasoning="Use supported free opening-hand permanent")
-            if choice["kind"] == "mulligan_bottom":
+            if choice["kind"] in {"mulligan_bottom", "opening_hand_exile"}:
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
-                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Bottom least useful opening cards before redeclaring")
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Select least useful cards for required pregame instruction")
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 opponent = 3 - player_id
@@ -4214,17 +4214,10 @@ class AIAgent:
         return sources
 
     def _land_colors(self, card) -> set[str]:
-        colors: set[str] = set()
-        type_line = (getattr(card, "type_line", "") or "").lower()
-        name = (getattr(card, "name", "") or "").lower()
-        oracle = (getattr(card, "oracle_text", "") or "").upper()
-        mapping = {"plains": "W", "island": "U", "swamp": "B", "mountain": "R", "forest": "G"}
-        for basic, sym in mapping.items():
-            if basic in type_line or basic in name:
-                colors.add(sym)
-        for sym in re.findall(r"\{([WUBRG])\}", oracle):
-            colors.add(sym)
-        return colors
+        from rules_engine.mana import _land_colors, land_mana_colors
+        if isinstance(card, CardInstance) and card.zone == Zone.BATTLEFIELD:
+            return land_mana_colors(card)
+        return _land_colors(getattr(card, "name", ""), getattr(card, "type_line", ""), getattr(card, "oracle_text", ""))
 
     def _is_counter_card(self, card) -> bool:
         text = f"{getattr(card, 'name', '')} {getattr(card, 'oracle_text', '')}".lower()

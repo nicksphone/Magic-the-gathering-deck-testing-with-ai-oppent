@@ -9,7 +9,7 @@ from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
-from rules_engine.mana import land_can_produce_mana, land_mana_amount
+from rules_engine.mana import land_can_produce_mana, land_mana_amount, land_mana_colors
 from rules_engine.move_generator import legal_moves
 from rules_engine.library_permissions import choose_type_for_realmwalker, top_library_creature_for_type
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -383,7 +383,7 @@ class RulesEngine:
             return
         kind = action.get("type")
         if state.pending_mechanic_choice:
-            if state.pending_mechanic_choice["kind"] == "opening_hand":
+            if state.pending_mechanic_choice["kind"] in {"opening_hand", "opening_hand_exile"}:
                 from rules_engine.opening_hand import finish_opening_hand_choice
                 if kind != "choose_mechanic" or not finish_opening_hand_choice(state, player_id, action):
                     reject("Invalid opening-hand action")
@@ -679,12 +679,12 @@ class RulesEngine:
             from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
             if cid in player.battlefield and land_can_produce_mana(state, cid):
+                colors = land_mana_colors(state.cards[cid])
+                if action.get("color") and action["color"] not in colors:
+                    reject("Land cannot produce the selected color now")
+                    return
                 state.cards[cid].tapped = True
-                color = _infer_mana_from_land(
-                    state.cards[cid].name,
-                    oracle_text=getattr(state.cards[cid], "oracle_text", "") or "",
-                    requested_color=action.get("color"),
-                )
+                color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                 amount = land_mana_amount(state, player_id, cid)
                 add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
@@ -702,6 +702,12 @@ class RulesEngine:
                     state.log.append(f"{player.name} activates {name} for {outputs[color]} {color}.")
 
         elif kind == "tap_lands_bulk":
+            from rules_engine.action_validation import ActionRejected, validate_tap
+            try:
+                validate_tap(state, player_id, action)
+            except ActionRejected as error:
+                reject(str(error))
+                return
             from rules_engine.mana import add_mana_to_pool
             land_name = str(action.get("land_name", "")).strip().lower()
             count = max(0, int(action.get("count", 0)))
@@ -717,12 +723,11 @@ class RulesEngine:
                         continue
                     if card.name.strip().lower() != land_name:
                         continue
+                    colors = land_mana_colors(card)
+                    if action.get("color") and action["color"] not in colors:
+                        continue
                     card.tapped = True
-                    color = _infer_mana_from_land(
-                        card.name,
-                        oracle_text=getattr(card, "oracle_text", "") or "",
-                        requested_color=action.get("color"),
-                    )
+                    color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                     amount = land_mana_amount(state, player_id, cid)
                     add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                     produced = color
@@ -1318,57 +1323,6 @@ class RulesEngine:
             state.pending_mechanic_choice = None
             state.priority_player = pregame_actor(state)
         return True
-
-
-def _infer_mana_from_land(name: str, oracle_text: str = "", requested_color: str | None = None) -> str:
-    import re
-
-    colors = _land_colors_from_metadata(name, oracle_text)
-    req = (requested_color or "").strip().upper()
-    if req in colors:
-        return req
-    if colors:
-        # Deterministic default when no requested color is provided.
-        for preferred in ["U", "B", "R", "G", "W", "C"]:
-            if preferred in colors:
-                return preferred
-    return "C"
-
-
-def _land_colors_from_metadata(name: str, oracle_text: str = "") -> set[str]:
-    import re
-
-    n = name.lower()
-    colors: set[str] = set()
-    dual_pref = {
-        "hallowed fountain": {"W", "U"},
-        "sacred foundry": {"R", "W"},
-        "watery grave": {"U", "B"},
-        "blood crypt": {"B", "R"},
-        "overgrown tomb": {"B", "G"},
-        "breeding pool": {"U", "G"},
-        "stomping ground": {"R", "G"},
-        "steam vents": {"U", "R"},
-        "godless shrine": {"W", "B"},
-        "temple garden": {"W", "G"},
-    }
-    if n in dual_pref:
-        colors |= dual_pref[n]
-    if "plains" in n:
-        colors.add("W")
-    if "island" in n:
-        colors.add("U")
-    if "swamp" in n:
-        colors.add("B")
-    if "mountain" in n:
-        colors.add("R")
-    if "forest" in n:
-        colors.add("G")
-    for sym in re.findall(r"\{([WUBRGC])\}", (oracle_text or "").upper()):
-        colors.add(sym)
-    if not colors:
-        colors.add("C")
-    return colors
 
 
 def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: set[str] | None = None) -> list[str]:

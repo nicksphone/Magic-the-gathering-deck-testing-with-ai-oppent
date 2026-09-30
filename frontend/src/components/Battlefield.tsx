@@ -34,7 +34,8 @@ type LandPile = {
   total: number;
   untapped: number;
   tapped: number;
-  color: string;
+  colors: string[];
+  amounts: Record<string, number>;
 };
 
 type ManaSymbol = "W" | "U" | "B" | "R" | "G" | "C";
@@ -54,7 +55,9 @@ function groupBattlefield(cards: MatchState["players"]["1"]["battlefield"]): { n
   const piles = new Map<string, LandPile>();
   for (const card of cards) {
     if (!card.types.includes("Land")) continue;
-    const key = `${card.name}|${card.image_uri ?? ""}`;
+    const colors = card.mana_source_colors ?? [inferLandColor(card.name)];
+    const amounts = card.mana_source_amounts ?? Object.fromEntries(colors.map((color) => [color, 1]));
+    const key = `${card.name}|${card.image_uri ?? ""}|${colors.map((color) => `${color}:${amounts[color] ?? 1}`).join(",")}`;
     const existing = piles.get(key) ?? {
       key,
       name: card.name,
@@ -62,11 +65,12 @@ function groupBattlefield(cards: MatchState["players"]["1"]["battlefield"]): { n
       total: 0,
       untapped: 0,
       tapped: 0,
-      color: inferLandColor(card.name),
+      colors,
+      amounts,
     };
     existing.total += 1;
     if (card.tapped) existing.tapped += 1;
-    else existing.untapped += 1;
+    else if (!card.types.includes("Creature") || !card.summoning_sick || card.keywords?.includes("haste")) existing.untapped += 1;
     piles.set(key, existing);
   }
   return { nonLands, lands: Array.from(piles.values()).sort((a, b) => a.name.localeCompare(b.name)) };
@@ -74,7 +78,7 @@ function groupBattlefield(cards: MatchState["players"]["1"]["battlefield"]): { n
 
 function manaSummary(lands: LandPile[]): string {
   const counts: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
-  for (const pile of lands) counts[pile.color] = (counts[pile.color] ?? 0) + pile.untapped;
+  for (const pile of lands) for (const color of pile.colors) counts[color] = (counts[color] ?? 0) + pile.untapped * (pile.amounts[color] ?? 1);
   return Object.entries(counts)
     .filter(([, n]) => n > 0)
     .map(([c, n]) => `${c}:${n}`)
@@ -227,7 +231,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
           <span>Hand {p2.hand_count}</span>
-          <span>Untapped Mana {manaSummary(p2Groups.lands) || "-"}</span>
+          <span>Ready Mana Options (shared sources) {manaSummary(p2Groups.lands) || "-"}</span>
           <span className="mana-pool">
             Pool{" "}
             {p2ManaPool.length ? (
@@ -290,7 +294,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
           <span>Hand {p1.hand_count}</span>
-          <span>Untapped Mana {manaSummary(p1Groups.lands) || "-"}</span>
+          <span>Ready Mana Options (shared sources) {manaSummary(p1Groups.lands) || "-"}</span>
           <span className="mana-pool">
             Pool{" "}
             {p1ManaPool.length ? (
@@ -370,17 +374,18 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                           </option>
                         ))}
                       </select>
-                      <button
+                      {pile.colors.map((color) => <button key={color}
                         onClick={() =>
                           onCardAction(viewerSeat, {
                             type: "tap_lands_bulk",
                             land_name: pile.name,
                             count: landTapCounts[pile.key] ?? 1,
+                            color,
                           })
                         }
                       >
-                        Add {pile.color}
-                      </button>
+                        Add {(pile.amounts[color] ?? 1) > 1 ? `${pile.amounts[color]} ` : ""}{color}
+                      </button>)}
                     </div>
                   ) : null}
                 </div>

@@ -74,6 +74,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "non_snow_payment").catch((failure) => setError(String(failure)))}>Non-Snow Payment Fixture</button>
     <button onClick={() => reset(true).catch((failure) => setError(String(failure)))}>Pregame Fixture</button>
     <button onClick={() => reset(false, false, 3, "opening_hand").catch((failure) => setError(String(failure)))}>Opening Hand Fixture</button>
+    <button onClick={() => reset(false, false, 3, "conditional_opening").catch((failure) => setError(String(failure)))}>Conditional Opening Fixture</button>
     <button onClick={() => reset(false, true).catch((failure) => setError(String(failure)))}>Modal Fixture</button>
     <button onClick={() => reset(false, true, 5).catch((failure) => setError(String(failure)))}>Modal Choice Fixture</button>
     <button onClick={() => reset(false, false, 3, "land").catch((failure) => setError(String(failure)))}>Land Face Fixture</button>

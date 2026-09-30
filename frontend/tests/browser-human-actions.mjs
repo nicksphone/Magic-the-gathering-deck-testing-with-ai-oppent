@@ -802,6 +802,22 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   console.log("PASS second-seat opening-hand entry through Controls and API");
 
+  await click("Conditional Opening Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'opening_hand'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Gemstone Caverns')); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'opening_hand_exile'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Plains')); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("!window.fixtureState?.pregame_pending && window.fixtureState?.priority_player === 1");
+  await click("Pass Priority");
+  await waitFor("window.fixtureState?.priority_player === 2");
+  await click("Add U");
+  await waitFor("window.fixtureState?.players['2'].mana_pool.U === 1");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Gemstone Caverns').counters.luck"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.color"), "U");
+  console.log("PASS conditional opening entry, exile and state-aware colored land tap through UI/API");
+
   await click("Search Fixture");
   await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'search_library'");
   await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); label.querySelector('input').click(); })()");

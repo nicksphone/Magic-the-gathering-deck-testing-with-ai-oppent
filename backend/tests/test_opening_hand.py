@@ -96,7 +96,7 @@ def test_declining_retains_cards_and_wrong_seat_or_stale_choice_cannot_mutate():
     assert player_target_immunity(state, 1, 2) is None
 
 
-@pytest.mark.parametrize("name", ["Gemstone Caverns", "Leyline of Transformation"])
+@pytest.mark.parametrize("name", ["Leyline of Transformation"])
 def test_extra_conditions_counters_costs_and_entry_choices_are_not_assumed(name):
     state, rules = opening_game(), RulesEngine()
     cid = add_opening(state, name)
@@ -147,7 +147,8 @@ def test_http_opening_window_survives_sqlite_restore_and_wrong_seat_rejection(ga
     assert cid in main.ACTIVE_MATCHES[controller.state.id].state.players[2].battlefield
 
 
-def test_names_only_http_start_hydrates_cached_opening_clause_without_network(monkeypatch):
+@pytest.mark.parametrize("name", ["Leyline of Sanctity", "Gemstone Caverns"])
+def test_names_only_http_start_hydrates_cached_opening_clause_without_network(monkeypatch, name):
     import main
     from fastapi.testclient import TestClient
     from sqlmodel import Session
@@ -165,12 +166,12 @@ def test_names_only_http_start_hydrates_cached_opening_clause_without_network(mo
     original = dict(main.ACTIVE_MATCHES)
     try:
         with TestClient(main.app) as client:
-            raw = CARDS["Leyline of Sanctity"]
+            raw = CARDS[name]
             with Session(engine) as session:
                 Repository(session).upsert_card({
                     "scryfall_id": raw["id"], "name": raw["name"], "oracle_text": raw["oracle_text"],
                     "mana_cost": raw["mana_cost"], "type_line": raw["type_line"], "layout": raw["layout"],
-                    "colors": "W", "image_uri": "/card-images/generic-token-creature.svg",
+                    "colors": "".join(raw["colors"]), "image_uri": "/card-images/generic-token-creature.svg",
                 })
             # Dense sandbox deck makes opening access deterministic; not a legal constructed list.
             deck = [{"quantity": 60, "card_name": raw["name"]}]
@@ -183,11 +184,21 @@ def test_names_only_http_start_hydrates_cached_opening_clause_without_network(mo
                 response = client.post(path + "/action", json={"player_id": pid, "action": {"type": "keep_hand"}})
                 assert response.status_code == 200, response.text
             assert response.json()["pending_mechanic_choice"]["kind"] == "opening_hand"
+            pid = 1
+            if name == "Gemstone Caverns":
+                response = client.post(path + "/action", json={"player_id": 1,
+                    "action": {"type": "choose_mechanic", "card_ids": ["__finish_opening__"]}})
+                assert response.status_code == 200, response.text
+                assert response.json()["pending_mechanic_choice"]["player_id"] == 2
+                pid = 2
             cid = response.json()["pending_mechanic_choice"]["options"][0]
-            response = client.post(path + "/action", json={"player_id": 1,
+            response = client.post(path + "/action", json={"player_id": pid,
                 "action": {"type": "choose_mechanic", "card_ids": [cid]}})
             assert response.status_code == 200, response.text
-            assert response.json()["players"]["1"]["battlefield"][0]["name"] == raw["name"]
+            assert response.json()["players"][str(pid)]["battlefield"][0]["name"] == raw["name"]
+            if name == "Gemstone Caverns":
+                assert response.json()["players"][str(pid)]["battlefield"][0]["counters"]["luck"] == 1
+                assert response.json()["pending_mechanic_choice"]["kind"] == "opening_hand_exile"
             assert not network_calls
     finally:
         main.ACTIVE_MATCHES.clear()

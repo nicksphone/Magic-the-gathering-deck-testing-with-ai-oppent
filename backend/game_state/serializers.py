@@ -15,7 +15,7 @@ def _tupleize(value):
 def serialize_card_view(state: MatchState, cid: str) -> dict:
     from rules_engine.continuous import effective_combat_stats, effective_keywords
     from rules_engine.colors import card_color_symbols
-    from rules_engine.mana import nonland_mana_outputs
+    from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
     card = state.cards[cid]
     creature = "Creature" in card.types and card.zone == Zone.BATTLEFIELD
     def numeric(value):
@@ -25,6 +25,8 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
             return None
     base_power, base_toughness = numeric(card.power), numeric(card.toughness)
     power, toughness = effective_combat_stats(state, cid) if creature else (base_power, base_toughness)
+    outputs = ({color: land_mana_amount(state, card.controller, cid) for color in land_mana_colors(card)}
+               if "Land" in card.types else nonland_mana_outputs(state, cid, card)) if card.zone == Zone.BATTLEFIELD else {}
     return {
         "id": cid, "name": card.name, "tapped": card.tapped,
         "summoning_sick": card.summoning_sick,
@@ -36,8 +38,8 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
         "colors": sorted(card_color_symbols(card)),
-        "mana_source_colors": sorted(nonland_mana_outputs(state, cid, card)) if card.zone == Zone.BATTLEFIELD else [],
-        "mana_source_amounts": nonland_mana_outputs(state, cid, card) if card.zone == Zone.BATTLEFIELD else {},
+        "mana_source_colors": sorted(outputs),
+        "mana_source_amounts": outputs,
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
         "layout": card.layout,
