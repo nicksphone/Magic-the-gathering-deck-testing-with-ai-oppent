@@ -30,6 +30,10 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.attachments import enchant_restriction
     if any(re.search(r"^enchant ", value, re.I | re.M) and enchant_restriction(value) is None for value in texts):
         out.append("unsupported enchant restriction")
+    from rules_engine.ward import WARD_LINE, parse_ward_cost
+    from rules_engine.oracle_text import without_reminder_text
+    if any(parse_ward_cost(match[1]) is None for text in texts for match in WARD_LINE.finditer(without_reminder_text(text))):
+        out.append("unsupported ward cost")
     return out
 
 

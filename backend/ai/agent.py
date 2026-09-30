@@ -174,6 +174,10 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice["kind"] in {"ward_payment", "ward_cost_cards"}:
+                selected = self._ward_selection(state, player_id, choice)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected},
+                                  reasoning="Compare ward payment with losing the targeted stack object")
             if choice["kind"] == "opening_hand":
                 # ponytail: free-entry heuristic; symmetric-effect matchup planning remains open.
                 candidates = [cid for cid in options if cid in state.cards]
@@ -391,6 +395,51 @@ class AIAgent:
             return AIDecision(action={"type": "pass_priority"}, reasoning="No favorable attacks; pass priority")
 
         return AIDecision(action=move, reasoning=f"{self.archetype} plan selected best-scoring move")
+
+    def _ward_selection(self, state, player_id, choice):
+        from rules_engine.ward import finish_ward_choice
+        from rules_engine.stack_engine import resolve_top_of_stack
+        from rules_engine.state_based_actions import apply_state_based_actions
+
+        def cost_selection(game, pending):
+            options = list(pending["options"])
+            if pending["ward_cost"]["kind"] == "discard":
+                options.sort(key=lambda cid: (self._hand_retention_value(game, cid, player_id), cid))
+            else:
+                # Price a sacrifice by its actual loss from the public board.
+                base = evaluate_board(game, player_id)
+                def loss(cid):
+                    projected = planning_copy(game)
+                    projected.players[player_id].battlefield.remove(cid)
+                    return base - evaluate_board(projected, player_id), cid
+                options.sort(key=loss)
+            return options[:pending["count"]]
+
+        pending = state.pending_mechanic_choice
+        if choice["kind"] == "ward_cost_cards":
+            return cost_selection(state, pending)
+        target_id = pending["effect_payload"]["target_stack_id"]
+        target = next((item for item in state.stack if item.id == target_id), None)
+        if ("pay" not in choice["options"] or target is None
+                or (stack_object_kind(state, target) == "spell" and spell_cant_be_countered(state, target))):
+            return ["decline"]
+        scores = {}
+        for option in ("pay", "decline"):
+            game = planning_copy(state)
+            if not finish_ward_choice(game, player_id, {"card_ids": [option]}):
+                continue
+            if game.pending_mechanic_choice:
+                if not finish_ward_choice(game, player_id, {"card_ids": cost_selection(game, game.pending_mechanic_choice)}):
+                    continue
+            remaining = next((item for item in game.stack if item.id == target_id), None)
+            if remaining:
+                # Bounded local projection, not an assertion that later responses
+                # or additional ward costs will be paid.
+                game.stack = [remaining]
+                resolve_top_of_stack(game)
+            apply_state_based_actions(game)
+            scores[option] = -100000 if game.winner == 3 - player_id else evaluate_board(game, player_id)
+        return ["pay" if scores.get("pay", -100000) > scores.get("decline", -100000) + 0.25 else "decline"]
 
     def _bad_shared_draw_cast(self, state: MatchState, move: dict, player_id: int) -> bool:
         if move.get("type") != "cast_spell":

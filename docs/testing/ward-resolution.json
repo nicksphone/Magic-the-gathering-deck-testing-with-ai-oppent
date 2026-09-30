@@ -1,0 +1,187 @@
+{
+  "scope": "Supported ward trigger/payment boundary; not whole-card, balance or expert-AI certification",
+  "base_revision": "bd2101e7ac58832d4d9b9bf5f93d1000c8182aff",
+  "verified_at": "2026-09-30T23:24:50.199Z",
+  "canonical_fixture_rows": 30,
+  "new_ward_tests": 34,
+  "checks": {
+    "backend": {
+      "passed": 2096,
+      "warnings": 292,
+      "seconds": 246.2,
+      "command": "python -m pytest -q -o faulthandler_timeout=90",
+      "source_copy": "/tmp/mtg-ward-suite.HdRXUX",
+      "notes": "Independent tracked source plus owned edits; no other tests/API jobs mutated this database. A diagnostic timeout stack trace reflects long tactical computation, not test failure."
+    },
+    "focused": {
+      "passed": 246,
+      "source_copy": "/tmp/mtg-ward-release.FJJ6ai"
+    },
+    "frontend": {
+      "lint": "pass",
+      "build": "pass",
+      "unit": "pass",
+      "chromium": "pass",
+      "browser_log": "/tmp/mtg-ward-browser-release.log"
+    },
+    "installation": "Existing pinned interpreter/dependencies reused; fresh install not rechecked"
+  },
+  "replays": {
+    "executions": 16,
+    "logical_games": 8,
+    "determinism_failures": 0,
+    "timeouts": 0,
+    "cast_target_rejection_lines": 0,
+    "hydration": "Offline built-in seed via hydrate_deck_cards(None,...); not the entire live cache",
+    "games": [
+      {
+        "a": "Dimir Control",
+        "b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "ticks": 1309,
+        "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae"
+      },
+      {
+        "a": "Tempo",
+        "b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "ticks": 389,
+        "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a"
+      },
+      {
+        "a": "Tokens",
+        "b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "ticks": 1036,
+        "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7"
+      },
+      {
+        "a": "Ramp",
+        "b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 405,
+        "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+      },
+      {
+        "a": "Midrange",
+        "b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "ticks": 580,
+        "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1"
+      },
+      {
+        "a": "Drain Deck",
+        "b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 420,
+        "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b"
+      },
+      {
+        "a": "Tribal",
+        "b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "ticks": 679,
+        "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691"
+      },
+      {
+        "a": "Burn",
+        "b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "ticks": 435,
+        "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd"
+      }
+    ]
+  },
+  "parent_probes": {
+    "spell": {
+      "source_zone": "hand",
+      "stack": [],
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A cannot pay ward tax (2) for Lightning Bolt."
+      ]
+    },
+    "ability": {
+      "source_zone": "battlefield",
+      "stack": [
+        "deal_damage"
+      ],
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A casts/activates Prodigal Pyromancer ability."
+      ]
+    }
+  },
+  "fixed_probes": {
+    "spell": {
+      "source_zone": "stack",
+      "stack": [
+        "deal_damage",
+        "ward_payment"
+      ],
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A casts/activates Lightning Bolt.",
+        "1 triggered ability(s) added to stack (spell_cast)."
+      ]
+    },
+    "ability": {
+      "source_zone": "battlefield",
+      "stack": [
+        "deal_damage",
+        "ward_payment"
+      ],
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A casts/activates Prodigal Pyromancer ability.",
+        "1 triggered ability(s) added to stack (ability_activation)."
+      ]
+    }
+  },
+  "ai_card_cost_probe": [
+    "PASS discard AI choice, exact-card action and planning purity",
+    "PASS sacrifice AI choice, exact-card action and planning purity"
+  ],
+  "source_sha256": {
+    "backend/ai/agent.py": "f262421809972a4b583168e45d5a93c7d29c4570050912e59a37669d9ee7d272",
+    "backend/effects/handlers.py": "7c10b4c2d320acd853b081801095331bbb0e4d7f7bb053d615b9431e549b743e",
+    "backend/effects/registry.py": "c195e5f3d81e025aa214aea736a28600e57ed17c715a7d25496f22d622d1238c",
+    "backend/rules_engine/continuous.py": "efba4dd25c67ee372e901ff889efc8239f61e5d6bd3499e604724e3926e00a1d",
+    "backend/rules_engine/coverage.py": "3198afb5094e4dbee6daed76668a3c3d55724708c718ad0d546674b9efbaf158",
+    "backend/rules_engine/engine.py": "1925c8212f54692eb63894a6172d9c75197f3c5c8b59bba0fee13fbee85aee79",
+    "backend/rules_engine/events.py": "2b61a7f5a0f9ed93e8f51485b2b3fd251cab18cb2db2affe51f565865848e6d8",
+    "backend/rules_engine/keyword_actions.py": "7ed4f0216facb301acc7ee6005466efd51ce49395ab509c699a487387c9b4c5f",
+    "backend/rules_engine/stack_engine.py": "7e151ef506815746996eb74c6d4a614060bf84f79da6ae0a77f722648dd83dcb",
+    "backend/rules_engine/ward.py": "ba7379068c2c402aedad4b7a2d4576ee9ff9994f80f74cd539f5e40f0f7bb394",
+    "backend/rules_engine/zone_actions.py": "2fa01530b4a67f5ef6d4661a08554222b49ce4a2c0048e33ba549e5b0d35d10c",
+    "backend/tests/browser_fixture_server.py": "d1da28e6dc5b35846c06696df7fd43dd2146558967f3795712967985fc9e1575",
+    "backend/tests/test_new_rules_batch.py": "58dbfa6d0ea00ab371115d714d97d899dfd6589d2e68e6eb6b4b88d7a816e60d",
+    "frontend/src/components/Controls.tsx": "b9bfb89091498b57e54d053de1cdba2302902fa6455e8e1fe13c87020f8e0060",
+    "frontend/src/types/index.ts": "e35a545b5b0816e5db3f7a9f9c75e150c45f569838a0752438403defec7913bb",
+    "frontend/tests/browser-human-actions.mjs": "d6e1e5b84f696ad81d778e9de24f9d649272fb2821384470d8023bcc381a527e",
+    "frontend/tests/human-actions.tsx": "e8baa2aed35ff57b0df7a9f6c4698333b22d559c8d7f45b975858da75c1df41a",
+    "backend/tests/fixtures/ward.json": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "backend/tests/test_ward_resolution.py": "e9bc9f359c2a057cb6d0860c82f1896a56280ff2a87dbb4ee4c611346b60af96"
+  },
+  "manual_review": [
+    "Long-session/LAN ward choice ergonomics",
+    "Arbitrary custom-deck unsupported mechanics",
+    "Control/ramp tactical decision latency and broader statistical AI quality"
+  ]
+}

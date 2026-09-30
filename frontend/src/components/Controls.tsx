@@ -252,7 +252,9 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "ward_payment" ? (mechanicMove.options ?? []).map((cid) => (
+            <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
+          )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>

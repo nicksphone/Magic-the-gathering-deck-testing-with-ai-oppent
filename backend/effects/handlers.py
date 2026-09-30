@@ -777,6 +777,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     if item is None:
         return
     copied_payload = copy.deepcopy(item.payload or {})
+    copied_payload.pop("__last_target_ids", None)
     from game_state.state import StackItem
     from rules_engine.targeting import stack_object_kind
 

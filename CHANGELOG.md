@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replaced upfront ward casting taxes with triggered stack objects and resumable mana, fixed/dynamic-power life, discard and qualified sacrifice payments. Covered actual activated/entry-triggered abilities and spell copies; Stifle can counter ward while the original remains on the stack. Human controls expose pay/decline and deliberate card selection for either seat. Shared AI projects immediate payment versus losing the referenced stack object without mutating the live match. See [scope and verification](docs/testing/ward-resolution.md).
+- Ward verification: 2,096 independent final-source backend tests, 246 focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games repeat across sixteen executions without timeout or cast/target rejection. Thirty canonical fixture rows and actual HTTP/UI controls cover the supported boundary, not universal rules or professional AI strength.
+
 - Added supported global and target-aware Aura reductions to the shared legal-option/payment path. Payable Aura targets carry compatible cost-option IDs into human controls and AI actions; permitted exile and escape casts preserve source flags/additional costs. AI evaluates beneficial and harmful attachments with immediate heroic triggers. Shared enchant constraints prevent later ability words from widening or mis-owning cast targets; unknown restrictions receive preflight warnings. See [scope](docs/testing/aura-costs.md).
 - Aura-cost verification: 2,062 isolated final-source backend tests, 178 focused checks, frontend lint/build/unit and complete final Chromium pass. Eight seeded seat-paired games repeat unchanged reported results/logs across sixteen executions without timeout or cast/target rejection. Parent probes reproduce missing discounted casts and incorrect enchant targets; the small matrix is not a strength or balance certificate.
 

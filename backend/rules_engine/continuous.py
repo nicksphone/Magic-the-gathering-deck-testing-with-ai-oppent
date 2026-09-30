@@ -147,6 +147,10 @@ def _attached_keywords(text):
         return []
     found = []
     remainder = text
+    from rules_engine.ward import MANA_WARD
+    for match in MANA_WARD.finditer(text):
+        found.extend(["ward", f"ward {match[1]}"])
+    remainder = MANA_WARD.sub("", remainder)
     for keyword in sorted(KNOWN_KEYWORDS, key=len, reverse=True):
         pattern = r"\b" + re.escape(keyword) + r"\b"
         if re.search(pattern, remainder):

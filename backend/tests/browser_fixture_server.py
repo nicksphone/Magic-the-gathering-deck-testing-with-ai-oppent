@@ -26,6 +26,16 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {"ward_mana", "ward_discard"}:
+        from tests.test_ward_resolution import cast_at, add
+        from rules_engine.stack_engine import resolve_top_of_stack
+        state, *_ = cast_at('Tolarian Terror' if face_kind == 'ward_mana' else 'Graveyard Trespasser',
+                            player=2, mana={'R': 1, 'G': 2})
+        if face_kind == 'ward_discard':
+            add(state, 'Island', 2, Zone.HAND)
+            add(state, 'Counterspell', 2, Zone.HAND)
+        resolve_top_of_stack(state)
+        return publish(state, [{"quantity": 60, "card_name": "Island"}])
     if face_kind == "aura_costs":
         from tests.test_aura_costs import discounted
         state, *_ = discounted(2)

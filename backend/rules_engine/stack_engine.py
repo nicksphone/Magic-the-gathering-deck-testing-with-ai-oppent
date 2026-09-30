@@ -22,6 +22,10 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
     )
     state.stack.append(item)
     state.log.append(f"{state.players[controller].name} casts/activates {label}.")
+    staged_here = not state.trigger_staging
+    if staged_here:
+        state.trigger_staging = True
+        state.trigger_staging_event = "cast_or_activate"
     if is_spell:
         emit_event(
             state,
@@ -33,8 +37,14 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
                 "stack_payload": dict(payload or {}),
             },
         )
+    from rules_engine.ward import mark_stack_targets
+    mark_stack_targets(state, item)
+    if staged_here:
+        from rules_engine.events import flush_staged_triggers
+        flush_staged_triggers(state)
     # MTG priority rule: after casting/activating, the same player receives priority first.
-    state.priority_player = controller
+    if not state.pending_trigger_order:
+        state.priority_player = controller
     state.passed_priority = set()
     return item
 
@@ -266,6 +276,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
 
 
 def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -> bool:
+    from rules_engine.ward import mark_stack_targets
+    for copied in list(state.stack):
+        if copied.payload.get("__stack_copy_kind"):
+            mark_stack_targets(state, copied)
     if payload.get("__stack_copy_kind"):
         if payload.get("__stack_copy_kind") == "spell" and not payload.get("__failed_to_resolve"):
             copied_card = payload.get("__copied_card") or {}

@@ -1,5 +1,14 @@
 # MTG Deck Testing Lab Finish Plan
 
+Ward milestone verified: 2,096 independent final-source backend tests, 246 focused
+checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired
+games repeat across sixteen executions without timeout or cast/target rejection.
+See [scope, source hashes and remaining gaps](docs/testing/ward-resolution.md).
+
+- [x] Replace the ward casting-tax approximation with supported triggered response/payment windows across spells, abilities and copies; provide durable human choices and bounded shared AI payment planning. See [ward scope and evidence](docs/testing/ward-resolution.md).
+- [ ] Extend ward to generic resolution-time X definitions, arbitrary temporary/conditional grants, full ability-layer suppression and cost-prevention/replacement ordering. Improve pre-cast multi-ward and response/opportunity planning; certify supported whole-card clauses rather than infer correctness from keyword recognition.
+- [ ] Profile and bound control/ramp autoplay decision latency without removing legal lines or reducing tactical quality. A ward-release full-suite diagnostic observed more than 90 seconds inside a BO3 autoplay request's strategic search (`_strategic_plan_action` / `_stack_two_ply_value` / effective keyword traversal); this was computation, not a proven deadlock. Measure per-decision time separately from a 100-tick request and CPU contention before choosing optimizations.
+
 Aura-cost milestone: 2,062 isolated final-source backend tests, 178 focused
 checks, frontend lint/build/unit and the complete final Chromium harness pass.
 Eight seeded seat-paired games repeat unchanged reported results/logs across

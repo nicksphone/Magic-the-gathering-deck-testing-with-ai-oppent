@@ -14,6 +14,22 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Ward Mana Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'ward_payment'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.G"), 2);
+  await click("Pay ward: {2}");
+  await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.stack.length === 1");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.G ?? 0"), 0);
+  await click("Ward Discard Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'ward_payment'");
+  await click("Pay ward: Discard a card");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'ward_cost_cards'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('label')].find(e => e.textContent.trim().startsWith('Island') && e.querySelector('input[type=checkbox]')); if (!label) throw new Error('Missing ward discard control'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.players['2'].graveyard.some(c => c.name === 'Island')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS seat-two ward mana and deliberate discard payments through real UI/API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

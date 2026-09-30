@@ -51,6 +51,8 @@ function Harness() {
   return <>
     <p data-testid="ready">{ready ? "Ready" : "Loading"}</p>
     <button onClick={() => reset().catch((failure) => setError(String(failure)))}>Reset Fixture</button>
+    <button onClick={() => reset(false, false, 3, "ward_mana").catch((failure) => setError(String(failure)))}>Ward Mana Fixture</button>
+    <button onClick={() => reset(false, false, 3, "ward_discard").catch((failure) => setError(String(failure)))}>Ward Discard Fixture</button>
     <button onClick={() => reset(false, false, 3, "aura_costs").catch((failure) => setError(String(failure)))}>Discounted Aura Fixture</button>
     <button onClick={() => reset(false, false, 3, "equip_context").catch((failure) => setError(String(failure)))}>Discounted Equip Fixture</button>
     <button onClick={() => reset(false, false, 3, "attached_scaling").catch((failure) => setError(String(failure)))}>Scaling Attachment Fixture</button>

@@ -78,6 +78,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending["kind"] in {"ward_payment", "ward_cost_cards"}:
+        from rules_engine.ward import finish_ward_choice
+        return finish_ward_choice(state, player_id, action)
     if pending and pending["kind"] == "attacking_token_target":
         from effects.registry import resolve_effect
         from rules_engine.combat import _valid_defenders

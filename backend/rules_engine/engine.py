@@ -7,7 +7,7 @@ from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, vali
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
-from rules_engine.mana import add_generic_to_cost, auto_pay_cost, mana_value
+from rules_engine.mana import auto_pay_cost, mana_value
 from rules_engine.mana import land_can_produce_mana, land_mana_amount, land_mana_colors
 from rules_engine.move_generator import legal_moves
 from rules_engine.library_permissions import choose_type_for_realmwalker, top_library_creature_for_type
@@ -20,7 +20,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
 from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, resume_trigger_order, resume_trigger_target
 from rules_engine.restrictions import can_activate_in_current_timing, can_cast_in_current_timing
-from rules_engine.ward import ward_tax_for_targets
+from rules_engine.ward import capture_ward_triggers
 from rules_engine.zone_actions import put_into_graveyard
 from rules_engine.attachments import attachment_target_is_legal
 from effects.registry import resolve_effect
@@ -841,16 +841,8 @@ class RulesEngine:
                         state.log.append(f"Invalid mode targets for {card.name}: {error}")
                         apply_state_based_actions(state)
                         return
-                target_ids: list[str] = []
-                if action_targets.get("target_card_id"):
-                    target_ids.append(action_targets["target_card_id"])
-                target_ids.extend([x for x in (action_targets.get("target_card_ids") or []) if x not in target_ids])
-                for choice in (action_targets.get("mode_targets") or {}).values():
-                    target_id = choice.get("target_card_id")
-                    if target_id and target_id not in target_ids:
-                        target_ids.append(target_id)
-                ward_tax = ward_tax_for_targets(state, player_id, target_ids)
-                adjusted_cost = add_generic_to_cost(chosen.mana_cost, ward_tax)
+                ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
+                adjusted_cost = chosen.mana_cost
                 cost_staging = not state.trigger_staging
                 if cost_staging:
                     state.trigger_staging = True
@@ -869,11 +861,8 @@ class RulesEngine:
                     if cost_staging:
                         state.staged_triggers.clear()
                         state.trigger_staging = False
-                    reject("Cannot pay spell cost and ward tax")
-                    if ward_tax > 0:
-                        state.log.append(f"{player.name} cannot pay ward tax ({ward_tax}) for {card.name}.")
-                    else:
-                        state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
+                    reject("Cannot pay spell cost")
+                    state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
                 if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value):
@@ -887,6 +876,7 @@ class RulesEngine:
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                payload["__ward_trigger_specs"] = ward_specs
                 payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
                 payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
                 if "Planeswalker" in face_card.types and "compleated" in face_card.oracle_text.lower():
@@ -1034,6 +1024,7 @@ class RulesEngine:
                 reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 return
+            ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
             cost_context: dict = {}
             cost_staging = not state.trigger_staging
             if cost_staging:
@@ -1052,6 +1043,7 @@ class RulesEngine:
             resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             resolved_payload = {**resolved.effect.payload,
                                 "__announced_targets": dict(action_targets),
+                                "__ward_trigger_specs": ward_specs,
                                 "__ability_target_text": ability["text"]}
             if state.cards[cid].zone != Zone.BATTLEFIELD and state.cards[cid].last_known_battlefield:
                 resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)
@@ -1136,10 +1128,13 @@ class RulesEngine:
                 state.log.append(f"Invalid targets for {pw.name}: {err_prot}")
                 apply_state_based_actions(state)
                 return
+            ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
             pw.loyalty = next_loyalty
             state.loyalty_activated_this_turn.add(cid)
             ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             effect_key, payload = ability.effect.key, ability.effect.payload
+            payload["__announced_targets"] = dict(action_targets)
+            payload["__ward_trigger_specs"] = ward_specs
             add_to_stack(
                 state,
                 source_card_id=cid,

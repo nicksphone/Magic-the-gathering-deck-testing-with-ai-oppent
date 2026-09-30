@@ -1,0 +1,1048 @@
+[
+  {
+    "name": "Tolarian Terror",
+    "oracle_text": "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nWard {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)",
+    "mana_cost": "{6}{U}",
+    "type_line": "Creature \u2014 Serpent",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Ward"
+    ],
+    "layout": "normal",
+    "oracle_id": "b9d0f2e1-62c2-44fd-ad38-471daf17bb0a",
+    "card_faces": null,
+    "scryfall_id": "2569d4f3-55ed-4f99-9592-34c7df0aab72",
+    "source": "scryfall"
+  },
+  {
+    "name": "Sedgemoor Witch",
+    "oracle_text": "Menace\nWard\u2014Pay 3 life. (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays 3 life.)\nMagecraft \u2014 Whenever you cast or copy an instant or sorcery spell, create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\"",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature \u2014 Human Warlock",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Magecraft",
+      "Menace",
+      "Ward"
+    ],
+    "layout": "normal",
+    "oracle_id": "25dce517-ac0a-4577-89ed-04296c7c4069",
+    "card_faces": null,
+    "scryfall_id": "e900c1eb-968b-4046-b824-c167a7a5b682",
+    "source": "scryfall"
+  },
+  {
+    "name": "Phyrexian Fleshgorger",
+    "oracle_text": "Prototype {1}{B}{B} \u2014 3/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nMenace, lifelink\nWard\u2014Pay life equal to this creature's power.",
+    "mana_cost": "{7}",
+    "type_line": "Artifact Creature \u2014 Phyrexian Wurm",
+    "power": "7",
+    "toughness": "5",
+    "colors": [],
+    "keywords": [
+      "Lifelink",
+      "Menace",
+      "Ward",
+      "Prototype"
+    ],
+    "layout": "prototype",
+    "oracle_id": "d3a5a830-cd14-49da-9412-c50049c74c92",
+    "card_faces": null,
+    "scryfall_id": "62d37423-3445-412a-9abd-0480da404637",
+    "source": "scryfall"
+  },
+  {
+    "name": "Vein Ripper",
+    "oracle_text": "Flying\nWard\u2014Sacrifice a creature.\nWhenever a creature dies, target opponent loses 2 life and you gain 2 life.",
+    "mana_cost": "{3}{B}{B}{B}",
+    "type_line": "Creature \u2014 Vampire Assassin",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flying",
+      "Ward"
+    ],
+    "layout": "normal",
+    "oracle_id": "f83a768c-162d-46f0-8ebd-d9c6b2c69322",
+    "card_faces": null,
+    "scryfall_id": "078933b3-6d82-45f2-94e8-addf54cf1704",
+    "source": "scryfall"
+  },
+  {
+    "name": "Sauron, the Dark Lord",
+    "oracle_text": "Ward\u2014Sacrifice a legendary artifact or legendary creature.\nWhenever an opponent casts a spell, amass Orcs 1.\nWhenever an Army you control deals combat damage to a player, the Ring tempts you.\nWhenever the Ring tempts you, you may discard your hand. If you do, draw four cards.",
+    "mana_cost": "{3}{U}{B}{R}",
+    "type_line": "Legendary Creature \u2014 Avatar Horror",
+    "power": "7",
+    "toughness": "6",
+    "colors": [
+      "B",
+      "R",
+      "U"
+    ],
+    "keywords": [
+      "Amass",
+      "Ward"
+    ],
+    "layout": "normal",
+    "oracle_id": "9f8f29ba-7e64-455d-be05-ec7973f2bd0a",
+    "card_faces": null,
+    "scryfall_id": "034e0929-b2c7-4b5f-94f2-8eaf4fb1a2a1",
+    "source": "scryfall"
+  },
+  {
+    "name": "Valgavoth, Terror Eater",
+    "oracle_text": "Flying, lifelink\nWard\u2014Sacrifice three nonland permanents.\nIf a card you didn't control would be put into an opponent's graveyard from anywhere, exile it instead.\nDuring your turn, you may play cards exiled with Valgavoth. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.",
+    "mana_cost": "{6}{B}{B}{B}",
+    "type_line": "Legendary Creature \u2014 Elder Demon",
+    "power": "9",
+    "toughness": "9",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flying",
+      "Lifelink",
+      "Ward"
+    ],
+    "layout": "normal",
+    "oracle_id": "cae3ec72-436d-4086-9dcb-17b3d92ad5c4",
+    "card_faces": null,
+    "scryfall_id": "7740ff55-67bb-409e-90f7-2c2c8b8c770a",
+    "source": "scryfall"
+  },
+  {
+    "name": "Leather Armor",
+    "oracle_text": "Equipped creature gets +0/+1 and has ward {1}. (Whenever equipped creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nEquip {0}. Activate only once each turn.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact \u2014 Equipment",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Equip"
+    ],
+    "layout": "normal",
+    "oracle_id": "7a6ce270-c261-422f-845f-11c22602a274",
+    "card_faces": null,
+    "scryfall_id": "e62d4e76-cdb0-48c7-aa1c-b1f514057b68",
+    "source": "scryfall"
+  },
+  {
+    "name": "Svyelun of Sea and Sky",
+    "oracle_text": "Svyelun has indestructible as long as you control at least two other Merfolk.\nWhenever Svyelun attacks, draw a card.\nOther Merfolk you control have ward {1}. (Whenever another Merfolk you control becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)",
+    "mana_cost": "{1}{U}{U}",
+    "type_line": "Legendary Creature \u2014 Merfolk God",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "872bebff-720d-459b-8f86-fb9129a8d1fb",
+    "card_faces": null,
+    "scryfall_id": "01f5ab00-5305-4ac4-915d-feeb591f9389",
+    "source": "scryfall"
+  },
+  {
+    "name": "Lightning Bolt",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "card_faces": null,
+    "scryfall_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "source": "scryfall"
+  },
+  {
+    "name": "Counterspell",
+    "oracle_text": "Counter target spell.",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "card_faces": null,
+    "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "source": "scryfall"
+  },
+  {
+    "name": "Stifle",
+    "oracle_text": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+    "card_faces": null,
+    "scryfall_id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+    "source": "scryfall"
+  },
+  {
+    "name": "Abrupt Decay",
+    "oracle_text": "This spell can't be countered.\nDestroy target nonland permanent with mana value 3 or less.",
+    "mana_cost": "{B}{G}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "1c747fe2-289e-492a-a846-aa77707e2dc3",
+    "card_faces": null,
+    "scryfall_id": "a8e328c6-3a84-49cf-a1a3-1d1e5373d274",
+    "source": "scryfall"
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_text": "",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature \u2014 Bear",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "card_faces": null,
+    "scryfall_id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "source": "scryfall"
+  },
+  {
+    "name": "Merfolk of the Pearl Trident",
+    "oracle_text": "",
+    "mana_cost": "{U}",
+    "type_line": "Creature \u2014 Merfolk",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "218d9277-c179-4de3-9c7f-79b5a6d4fa38",
+    "card_faces": null,
+    "scryfall_id": "a360fe4e-c9a6-42fa-a97a-8b5a0c19ef93",
+    "source": "scryfall"
+  },
+  {
+    "name": "Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Plains",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+    "card_faces": null,
+    "scryfall_id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+    "source": "scryfall"
+  },
+  {
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Island",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "card_faces": null,
+    "scryfall_id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+    "source": "scryfall"
+  },
+  {
+    "name": "Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Swamp",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "card_faces": null,
+    "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+    "source": "scryfall"
+  },
+  {
+    "name": "Mountain",
+    "oracle_text": "({T}: Add {R}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Mountain",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+    "card_faces": null,
+    "scryfall_id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+    "source": "scryfall"
+  },
+  {
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Forest",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "card_faces": null,
+    "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "source": "scryfall"
+  },
+  {
+    "name": "Sol Ring",
+    "oracle_text": "{T}: Add {C}{C}.",
+    "mana_cost": "{1}",
+    "type_line": "Artifact",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+    "card_faces": null,
+    "scryfall_id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+    "source": "scryfall"
+  },
+  {
+    "name": "Renowned Weaponsmith",
+    "oracle_text": "{T}: Add {C}{C}. Spend this mana only to cast artifact spells or activate abilities of artifacts.\n{U}, {T}: Search your library for a card named Heart-Piercer Bow or Vial of Dragonfire, reveal it, put it into your hand, then shuffle.",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature \u2014 Human Artificer",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "40c1375b-1d15-4525-894a-16b7a0ac02b4",
+    "card_faces": null,
+    "scryfall_id": "5a397298-9d7d-495f-983a-1683291a7b9f",
+    "source": "scryfall"
+  },
+  {
+    "name": "Font of Agonies",
+    "oracle_text": "Whenever you pay life, put that many blood counters on this enchantment.\n{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
+    "mana_cost": "{B}",
+    "type_line": "Enchantment",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13",
+    "card_faces": null,
+    "scryfall_id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+    "source": "scryfall"
+  },
+  {
+    "name": "Blood Artist",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature \u2014 Vampire",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+    "card_faces": null,
+    "scryfall_id": "b5275d76-2947-4219-be21-614c7421614a",
+    "source": "scryfall"
+  },
+  {
+    "name": "Llanowar Elves",
+    "oracle_text": "{T}: Add {G}.",
+    "mana_cost": "{G}",
+    "type_line": "Creature \u2014 Elf Druid",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "card_faces": null,
+    "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "source": "scryfall"
+  },
+  {
+    "name": "Naturalize",
+    "oracle_text": "Destroy target artifact or enchantment.",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+    "card_faces": null,
+    "scryfall_id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+    "source": "scryfall"
+  },
+  {
+    "name": "Graveyard Trespasser",
+    "oracle_text": "Ward\u2014Discard a card.\nWhenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card was exiled this way, each opponent loses 1 life and you gain 1 life.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature \u2014 Human Werewolf",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": null,
+    "layout": "transform",
+    "oracle_id": "0bbd6cad-9b6f-45a6-9f2e-d7b4853586ae",
+    "card_faces": [
+      {
+        "artist": "Chris Rallis",
+        "artist_id": "a8e7b854-b15a-421a-b66d-6e68187ae285",
+        "colors": [
+          "B"
+        ],
+        "illustration_id": "cf0d9332-9365-4c6a-b8cd-7625244f9c22",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "crop": "https://cards.scryfall.io/crop/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "display": "https://cards.scryfall.io/display/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "grid": "https://cards.scryfall.io/grid/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "large": "https://cards.scryfall.io/large/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "normal": "https://cards.scryfall.io/normal/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "png": "https://cards.scryfall.io/png/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.png?1783925622",
+          "small": "https://cards.scryfall.io/small/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "thumb": "https://cards.scryfall.io/thumb/front/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622"
+        },
+        "mana_cost": "{2}{B}",
+        "name": "Graveyard Trespasser",
+        "object": "card_face",
+        "oracle_text": "Ward\u2014Discard a card.\nWhenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card was exiled this way, each opponent loses 1 life and you gain 1 life.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+        "power": "3",
+        "toughness": "3",
+        "type_line": "Creature \u2014 Human Werewolf"
+      },
+      {
+        "artist": "Chris Rallis",
+        "artist_id": "a8e7b854-b15a-421a-b66d-6e68187ae285",
+        "color_indicator": [
+          "B"
+        ],
+        "colors": [
+          "B"
+        ],
+        "illustration_id": "63579eec-6769-4392-9257-00aac0f556aa",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "crop": "https://cards.scryfall.io/crop/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "display": "https://cards.scryfall.io/display/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "grid": "https://cards.scryfall.io/grid/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622",
+          "large": "https://cards.scryfall.io/large/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "normal": "https://cards.scryfall.io/normal/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "png": "https://cards.scryfall.io/png/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.png?1783925622",
+          "small": "https://cards.scryfall.io/small/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.jpg?1783925622",
+          "thumb": "https://cards.scryfall.io/thumb/back/d/a/daa2a273-488f-4285-a069-ad159ad2d393.webp?1783925622"
+        },
+        "mana_cost": "",
+        "name": "Graveyard Glutton",
+        "object": "card_face",
+        "oracle_text": "Ward\u2014Discard a card.\nWhenever this creature enters or attacks, exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "power": "4",
+        "toughness": "4",
+        "type_line": "Creature \u2014 Werewolf"
+      }
+    ],
+    "scryfall_id": "daa2a273-488f-4285-a069-ad159ad2d393",
+    "source": "scryfall"
+  },
+  {
+    "artist": "Jeremy Jarvis",
+    "artist_ids": [
+      "b40ac320-89b4-4c51-a85f-4a4b63ae614e"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 544701,
+    "cmc": 3.0,
+    "collector_number": "180",
+    "color_identity": [
+      "R"
+    ],
+    "colors": [
+      "R"
+    ],
+    "digital": false,
+    "edhrec_rank": 11666,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "\"Learn to burn!\"\n\u2014Institute of Arcane Studies motto",
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+    "illustration_id": "072dc11f-0bc6-4289-ae8e-14bf545d8b3f",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T07:29:52Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+      "crop": "https://cards.scryfall.io/crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+      "display": "https://cards.scryfall.io/display/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+      "grid": "https://cards.scryfall.io/grid/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+      "large": "https://cards.scryfall.io/large/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+      "normal": "https://cards.scryfall.io/normal/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+      "png": "https://cards.scryfall.io/png/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.png?1783927792",
+      "small": "https://cards.scryfall.io/small/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+      "thumb": "https://cards.scryfall.io/thumb/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "not_legal",
+      "commander": "legal",
+      "competitivebrawl": "not_legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "not_legal",
+      "historic": "not_legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "legal",
+      "pioneer": "not_legal",
+      "predh": "legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "not_legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{2}{R}",
+    "mtgo_id": 86731,
+    "multiverse_ids": [
+      509545
+    ],
+    "name": "Prodigal Pyromancer",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+    "oracle_text": "{T}: This creature deals 1 damage to any target.",
+    "oversized": false,
+    "penny_rank": 16019,
+    "power": "1",
+    "preview": {
+      "previewed_at": "2021-03-02",
+      "source": "Wizards of the Coast",
+      "source_uri": "https://www.youtube.com/watch?v=7wX644_D4io"
+    },
+    "prices": {
+      "eur": "0.10",
+      "eur_foil": "0.26",
+      "tix": "0.04",
+      "usd": "0.21",
+      "usd_etched": null,
+      "usd_foil": "0.33"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A29b3cb3e-aeb1-43eb-8095-9f7881aa34bd&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/86731?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=544701&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F233947%3Fpage%3D1"
+    },
+    "rarity": "uncommon",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Prodigal+Pyromancer",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=509545&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer"
+    },
+    "released_at": "2021-03-19",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/tsr?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/tsr/180/prodigal-pyromancer?utm_source=api",
+    "set": "tsr",
+    "set_id": "11e90d1b-0502-43e6-b056-e24836523c13",
+    "set_name": "Time Spiral Remastered",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atsr&unique=prints",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/11e90d1b-0502-43e6-b056-e24836523c13",
+    "story_spotlight": false,
+    "tcgplayer_id": 233947,
+    "textless": false,
+    "toughness": "1",
+    "type_line": "Creature \u2014 Human Wizard",
+    "uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+    "variation": false
+  },
+  {
+    "artist": "Christopher Moeller",
+    "artist_ids": [
+      "21e10012-06ae-44f2-b38d-3824dd2e73d4"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 21124,
+    "cmc": 2.0,
+    "collector_number": "78",
+    "color_identity": [
+      "U"
+    ],
+    "colors": [
+      "U"
+    ],
+    "digital": false,
+    "edhrec_rank": 6261,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "Imitation is the most dangerous form of flattery.",
+    "foil": true,
+    "frame": "2003",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "f38eec33-a40e-4739-ad2c-2f57008cef4e",
+    "illustration_id": "fd3f3d9b-81a8-48c0-90f0-a36e1a0ba446",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T11:33:07Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.webp?1783942387",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.jpg?1783942387",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.jpg?1783942387",
+      "crop": "https://cards.scryfall.io/crop/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.webp?1783942387",
+      "display": "https://cards.scryfall.io/display/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.webp?1783942387",
+      "grid": "https://cards.scryfall.io/grid/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.webp?1783942387",
+      "large": "https://cards.scryfall.io/large/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.jpg?1783942387",
+      "normal": "https://cards.scryfall.io/normal/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.jpg?1783942387",
+      "png": "https://cards.scryfall.io/png/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.png?1783942387",
+      "small": "https://cards.scryfall.io/small/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.jpg?1783942387",
+      "thumb": "https://cards.scryfall.io/thumb/front/f/3/f38eec33-a40e-4739-ad2c-2f57008cef4e.webp?1783942387"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "not_legal",
+      "commander": "legal",
+      "competitivebrawl": "not_legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "not_legal",
+      "historic": "not_legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "not_legal",
+      "paupercommander": "not_legal",
+      "penny": "legal",
+      "pioneer": "not_legal",
+      "predh": "legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "not_legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{U}{U}",
+    "mtgo_foil_id": 33060,
+    "mtgo_id": 33059,
+    "multiverse_ids": [
+      191322
+    ],
+    "name": "Twincast",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "8f878efc-850f-43d2-a6fe-5ea8d1dd5afb",
+    "oracle_text": "Copy target instant or sorcery spell. You may choose new targets for the copy.",
+    "oversized": false,
+    "penny_rank": 2466,
+    "prices": {
+      "eur": "1.71",
+      "eur_foil": "7.22",
+      "tix": "0.02",
+      "usd": "7.93",
+      "usd_etched": null,
+      "usd_foil": "24.80"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A8f878efc-850f-43d2-a6fe-5ea8d1dd5afb&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/33059?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=21124&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F32748%3Fpage%3D1"
+    },
+    "rarity": "rare",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Twincast",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=191322&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DTwincast",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DTwincast"
+    },
+    "released_at": "2009-07-17",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/f38eec33-a40e-4739-ad2c-2f57008cef4e/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/m10?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/m10/78/twincast?utm_source=api",
+    "set": "m10",
+    "set_id": "0dba38a9-6b9d-4768-9831-4e03e8970a0b",
+    "set_name": "Magic 2010",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am10&unique=prints",
+    "set_type": "core",
+    "set_uri": "https://api.scryfall.com/sets/0dba38a9-6b9d-4768-9831-4e03e8970a0b",
+    "story_spotlight": false,
+    "tcgplayer_id": 32748,
+    "textless": false,
+    "type_line": "Instant",
+    "uri": "https://api.scryfall.com/cards/f38eec33-a40e-4739-ad2c-2f57008cef4e",
+    "variation": false
+  },
+  {
+    "artist": "Matt Stewart",
+    "artist_ids": [
+      "20871267-2d8a-41d5-b03a-be3d557c5734"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 271695,
+    "cmc": 5.0,
+    "collector_number": "111",
+    "color_identity": [
+      "R"
+    ],
+    "colors": [
+      "R"
+    ],
+    "digital": false,
+    "edhrec_rank": 26400,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "\"Take inspiration from your enemies, and make their strengths your own.\"\n\u2014Alesha, Who Smiles at Death",
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "51893dd5-e70f-44bb-85d4-e31480ba84d6",
+    "illustration_id": "8c1f41b7-4f34-4412-a2ae-509d338b0685",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T10:31:26Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.webp?1783938686",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.jpg?1783938686",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.jpg?1783938686",
+      "crop": "https://cards.scryfall.io/crop/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.webp?1783938686",
+      "display": "https://cards.scryfall.io/display/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.webp?1783938686",
+      "grid": "https://cards.scryfall.io/grid/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.webp?1783938686",
+      "large": "https://cards.scryfall.io/large/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.jpg?1783938686",
+      "normal": "https://cards.scryfall.io/normal/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.jpg?1783938686",
+      "png": "https://cards.scryfall.io/png/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.png?1783938686",
+      "small": "https://cards.scryfall.io/small/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.jpg?1783938686",
+      "thumb": "https://cards.scryfall.io/thumb/front/5/1/51893dd5-e70f-44bb-85d4-e31480ba84d6.webp?1783938686"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "not_legal",
+      "commander": "legal",
+      "competitivebrawl": "not_legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "not_legal",
+      "historic": "not_legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "legal",
+      "pioneer": "legal",
+      "predh": "legal",
+      "premodern": "legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "not_legal",
+      "tlr": "not_legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{4}{R}",
+    "mtgo_foil_id": 55467,
+    "mtgo_id": 55466,
+    "multiverse_ids": [
+      391897
+    ],
+    "name": "Pyrotechnics",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "794b9ddf-1660-441f-9cc2-a0f5d4d0cf22",
+    "oracle_text": "Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
+    "oversized": false,
+    "penny_rank": 14252,
+    "prices": {
+      "eur": "0.06",
+      "eur_foil": "0.29",
+      "tix": "0.03",
+      "usd": "0.06",
+      "usd_etched": null,
+      "usd_foil": "0.28"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A794b9ddf-1660-441f-9cc2-a0f5d4d0cf22&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/55466?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=271695&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F95417%3Fpage%3D1"
+    },
+    "rarity": "uncommon",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Pyrotechnics",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=391897&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DPyrotechnics",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DPyrotechnics"
+    },
+    "released_at": "2015-01-23",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/51893dd5-e70f-44bb-85d4-e31480ba84d6/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/frf?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/frf/111/pyrotechnics?utm_source=api",
+    "set": "frf",
+    "set_id": "7bb5cb2b-081a-4c8c-b7e1-494046e6baa1",
+    "set_name": "Fate Reforged",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afrf&unique=prints",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/7bb5cb2b-081a-4c8c-b7e1-494046e6baa1",
+    "story_spotlight": false,
+    "tcgplayer_id": 95417,
+    "textless": false,
+    "type_line": "Sorcery",
+    "uri": "https://api.scryfall.com/cards/51893dd5-e70f-44bb-85d4-e31480ba84d6",
+    "variation": false
+  },
+  {
+    "artist": "Daarken",
+    "artist_ids": [
+      "e607a0d4-fc12-4c01-9e3f-501f5269b9cb"
+    ],
+    "booster": false,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 753377,
+    "cmc": 4.0,
+    "collector_number": "136",
+    "color_identity": [
+      "B"
+    ],
+    "colors": [
+      "B"
+    ],
+    "digital": false,
+    "edhrec_rank": 1132,
+    "finishes": [
+      "nonfoil"
+    ],
+    "flavor_text": "Opening Orazca unleashed more horrors than just the Immortal Sun.",
+    "foil": false,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "a4dfbac0-1849-41c5-853a-1fee108d0b01",
+    "illustration_id": "0628dbf7-dcab-4c6c-9d6b-ec2842f0096e",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T03:23:29Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.webp?1783913009",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.jpg?1783913009",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.jpg?1783913009",
+      "crop": "https://cards.scryfall.io/crop/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.webp?1783913009",
+      "display": "https://cards.scryfall.io/display/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.webp?1783913009",
+      "grid": "https://cards.scryfall.io/grid/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.webp?1783913009",
+      "large": "https://cards.scryfall.io/large/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.jpg?1783913009",
+      "normal": "https://cards.scryfall.io/normal/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.jpg?1783913009",
+      "png": "https://cards.scryfall.io/png/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.png?1783913009",
+      "small": "https://cards.scryfall.io/small/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.jpg?1783913009",
+      "thumb": "https://cards.scryfall.io/thumb/front/a/4/a4dfbac0-1849-41c5-853a-1fee108d0b01.webp?1783913009"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "not_legal",
+      "paupercommander": "not_legal",
+      "penny": "not_legal",
+      "pioneer": "legal",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "legal",
+      "tlr": "not_legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{2}{B}{B}",
+    "mtgo_id": 122412,
+    "multiverse_ids": [
+      650230
+    ],
+    "name": "Ravenous Chupacabra",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "7b459306-149b-4f43-abc1-2dd70c748c0e",
+    "oracle_text": "When this creature enters, destroy target creature an opponent controls.",
+    "oversized": false,
+    "penny_rank": 1167,
+    "power": "2",
+    "prices": {
+      "eur": "0.58",
+      "eur_foil": null,
+      "tix": "0.07",
+      "usd": "1.02",
+      "usd_etched": null,
+      "usd_foil": null
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A7b459306-149b-4f43-abc1-2dd70c748c0e&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/122412?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=753377&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F535750%3Fpage%3D1"
+    },
+    "rarity": "uncommon",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Ravenous+Chupacabra",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=650230&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DRavenous%2BChupacabra",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DRavenous%2BChupacabra"
+    },
+    "released_at": "2024-02-09",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/a4dfbac0-1849-41c5-853a-1fee108d0b01/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/mkc?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/mkc/136/ravenous-chupacabra?utm_source=api",
+    "set": "mkc",
+    "set_id": "286c37ca-ba65-4d3e-8c5d-d1878d88fd95",
+    "set_name": "Murders at Karlov Manor Commander",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amkc&unique=prints",
+    "set_type": "commander",
+    "set_uri": "https://api.scryfall.com/sets/286c37ca-ba65-4d3e-8c5d-d1878d88fd95",
+    "story_spotlight": false,
+    "tcgplayer_id": 535750,
+    "textless": false,
+    "toughness": "2",
+    "type_line": "Creature \u2014 Beast Horror",
+    "uri": "https://api.scryfall.com/cards/a4dfbac0-1849-41c5-853a-1fee108d0b01",
+    "variation": false
+  }
+]

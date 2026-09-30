@@ -2,30 +2,193 @@ from __future__ import annotations
 
 import re
 
+from game_state.state import Zone, object_incarnation
+from rules_engine.oracle_text import without_reminder_text
 
-WARD_NUM_RE = re.compile(r"ward\s*[—-]?\s*\{?(\d+)\}?")
+WARD_LINE = re.compile(r'^ward\s*[—-]?\s*(.+)$', re.I | re.M)
+MANA_WARD = re.compile(r'\bward\s*((?:\{[^}]+\})+)', re.I)
+NUMBERS = {'a': 1, 'an': 1, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
 
 
-def ward_generic_tax(card) -> int:
-    text = (getattr(card, "oracle_text", "") or "").lower()
-    keywords = " ".join(str(k).lower() for k in (getattr(card, "keywords", []) or []))
-    hay = f"{keywords} {text}"
-    match = WARD_NUM_RE.search(hay)
+def parse_ward_cost(text):
+    text = text.lower().strip().rstrip('.')
+    if re.fullmatch(r'(?:\{(?:\d+|[wubrgcs]|[wubrg]/[wubrg]|[wubrg]/p|2/[wubrg])\})+', text):
+        return {'kind': 'mana', 'cost': text.upper()}
+    match = re.fullmatch(r'pay (\d+) life', text)
+    if match:
+        return {'kind': 'life', 'amount': int(match[1])}
+    if text == "pay life equal to this creature's power":
+        return {'kind': 'power_life'}
+    match = re.fullmatch(r'(discard|sacrifice) (a|an|one|two|three|four|five|\d+) (.+?)s?', text)
     if not match:
-        return 0
-    try:
-        return max(0, int(match.group(1)))
-    except Exception:
-        return 0
+        return None
+    kind, count, subject = match.groups()
+    amount = NUMBERS.get(count, int(count) if count.isdigit() else 0)
+    if kind == 'discard' and subject == 'card':
+        return {'kind': kind, 'amount': amount}
+    quality = ''
+    if subject.startswith(('legendary ', 'nonland ', 'nontoken ')):
+        quality, subject = subject.split(' ', 1)
+    if quality == 'legendary' and subject == 'artifact or legendary creature':
+        subject = 'artifact or creature'
+    if kind == 'sacrifice' and subject in {'creature', 'artifact', 'enchantment', 'permanent', 'artifact or creature'}:
+        return {'kind': kind, 'amount': amount, 'subject': subject, 'quality': quality}
+    return None
 
 
-def ward_tax_for_targets(state, source_controller: int, target_ids: list[str]) -> int:
-    total = 0
-    for cid in target_ids:
+def ward_instances(state, target):
+    from rules_engine.continuous import _static_oracle_text, _attached_effects, KW_STATIC_RE, PT_AND_KW_STATIC_RE, _scope_controller, _subject_matches
+    out = [m[1].strip().rstrip('.') for m in WARD_LINE.finditer(without_reminder_text(target.oracle_text or ''))]
+    for player in state.players.values():
+        for cid in player.battlefield:
+            source = state.cards[cid]
+            text = _static_oracle_text(source)
+            if source.attached_to == target.id and 'Creature' not in source.types:
+                for keyword in _attached_effects(state, source, target)[2]:
+                    out.extend(m[1] for m in MANA_WARD.finditer(keyword))
+            for pattern in (KW_STATIC_RE, PT_AND_KW_STATIC_RE):
+                for line in re.split(r'[.\n]', text):
+                    match = pattern.fullmatch(line.strip())
+                    if not match or re.search(r'\b(?:as long as|if|unless|until)\b', match[4]):
+                        continue
+                    if (not (match[1] and source.id == target.id)
+                            and _scope_controller(source.controller, match[3].strip(), target.controller)
+                            and _subject_matches(state, target.id, match[2].strip())):
+                        out.extend(m[1] for m in MANA_WARD.finditer(match[4]))
+    return [cost for cost in out if parse_ward_cost(cost) is not None]
+
+
+def target_ids(payload):
+    announced = payload.get('__announced_targets') or {}
+    ids = {announced.get('target_card_id')}
+    ids.update(announced.get('target_card_ids') or [])
+    ids.update((announced.get('target_distribution') or {}).keys())
+    for choice in (announced.get('mode_targets') or {}).values():
+        ids.add(choice.get('target_card_id'))
+        ids.update(choice.get('target_card_ids') or [])
+        ids.update((choice.get('target_distribution') or {}).keys())
+    if payload.get('__trigger_target_choice'):
+        ids.add(payload.get('target_card_id'))
+    return sorted(cid for cid in ids if isinstance(cid, str))
+
+
+def capture_ward_triggers(state, controller, payload):
+    out = []
+    for cid in target_ids(payload):
         card = state.cards.get(cid)
-        if not card:
+        if card is None or card.zone != Zone.BATTLEFIELD or card.controller == controller:
             continue
-        if card.controller == source_controller:
-            continue
-        total += ward_generic_tax(card)
-    return total
+        for cost in ward_instances(state, card):
+            out.append({'source_card_id': cid, 'controller': card.controller, 'label': f'{card.name} ward {cost}',
+                        'effect_key': 'ward_payment', 'payload': {'ward_cost': cost, 'ward_incarnation': object_incarnation(card)}})
+    return out
+
+
+def mark_stack_targets(state, item):
+    from rules_engine.events import _push_triggers
+    ids = target_ids(item.payload)
+    previous = set(item.payload.get('__last_target_ids') or [])
+    specs = item.payload.pop('__ward_trigger_specs', None)
+    if specs is None:
+        specs = [spec for spec in capture_ward_triggers(state, item.controller, item.payload)
+                 if spec['source_card_id'] not in previous]
+    item.payload['__last_target_ids'] = ids
+    triggers = [{**spec, 'payload': {**spec['payload'], 'target_stack_id': item.id}} for spec in specs]
+    _push_triggers(state, 'becomes_target', triggers)
+
+
+def resolved_cost(state, payload):
+    cost = parse_ward_cost(payload['ward_cost'])
+    if cost and cost['kind'] == 'power_life':
+        from rules_engine.continuous import effective_power
+        card = state.cards.get(payload.get('__source_card_id'))
+        current = card and card.zone == Zone.BATTLEFIELD and object_incarnation(card) == payload['ward_incarnation']
+        power = effective_power(state, card.id) if current else (payload.get('__source_lki') or {}).get('power', 0)
+        cost = {'kind': 'life', 'amount': max(0, int(power or 0))}
+    return cost
+
+
+def payment_cards(state, player, cost):
+    if cost['kind'] == 'discard':
+        return list(state.players[player].hand)
+    if cost['kind'] != 'sacrifice':
+        return []
+    subject, quality = cost['subject'], cost['quality']
+    return [cid for cid in state.players[player].battlefield
+            if (subject == 'permanent' or (subject == 'artifact or creature' and {'Artifact', 'Creature'} & set(state.cards[cid].types)) or subject.title() in state.cards[cid].types)
+            and (quality != 'legendary' or 'Legendary' in state.cards[cid].type_line)
+            and (quality != 'nonland' or 'Land' not in state.cards[cid].types)
+            and (quality != 'nontoken' or not state.cards[cid].is_token)]
+
+
+def can_pay(state, player, cost):
+    if cost is None:
+        return False
+    if cost['kind'] == 'mana':
+        from rules_engine.mana import can_pay_with_pool_and_lands
+        return can_pay_with_pool_and_lands(state, player, cost['cost'], payment_kind='ward')
+    if cost['kind'] == 'life':
+        from rules_engine.replacement import can_pay_life
+        return can_pay_life(state, player, cost['amount'])
+    return len(payment_cards(state, player, cost)) >= cost['amount']
+
+
+def resolve_ward(state, controller, payload):
+    item = next((i for i in state.stack if i.id == payload['target_stack_id']), None)
+    if item is None:
+        return
+    cost = resolved_cost(state, payload)
+    state.pending_mechanic_choice = {'kind': 'ward_payment', 'player_id': item.controller, 'count': 1,
+        'options': ['decline', 'pay'] if can_pay(state, item.controller, cost) else ['decline'],
+        'option_labels': {'pay': f"Pay ward: {payload['ward_cost']}", 'decline': 'Decline ward payment'},
+        'label': f"Ward for {item.label}: {payload['ward_cost']}", 'ward_cost': cost,
+        'effect_payload': dict(payload), 'controller': controller}
+    state.priority_player = item.controller
+    state.passed_priority = set()
+
+
+def finish_ward_choice(state, player, action):
+    from rules_engine.stack_engine import resume_paused_resolution
+    from effects.handlers import counter_spell, counter_ability
+    from rules_engine.targeting import stack_object_kind
+    pending = state.pending_mechanic_choice
+    ids = action.get('card_ids')
+    if (pending['player_id'] != player or not isinstance(ids, list) or len(ids) != pending['count']
+            or len(set(ids)) != len(ids) or any(cid not in pending['options'] for cid in ids)):
+        return False
+    payload, cost = pending['effect_payload'], pending['ward_cost']
+    item = next((i for i in state.stack if i.id == payload['target_stack_id']), None)
+    if pending['kind'] == 'ward_payment' and ids == ['pay']:
+        if not can_pay(state, player, cost):
+            return False
+        if cost['kind'] in {'discard', 'sacrifice'}:
+            pending.update(kind='ward_cost_cards', options=payment_cards(state, player, cost), count=cost['amount'], label=f"Choose cards to {cost['kind']} for ward")
+            return True
+    paid = ids != ['decline']
+    if paid:
+        if not can_pay(state, player, cost):
+            return False
+        if cost['kind'] == 'mana':
+            from rules_engine.mana import auto_pay_cost
+            if not auto_pay_cost(state, player, cost['cost'], payment_kind='ward'):
+                return False
+        elif cost['kind'] == 'life':
+            from rules_engine.replacement import pay_life
+            pay_life(state, player, cost['amount'])
+        elif cost['kind'] == 'discard':
+            from rules_engine.zone_actions import discard_selected
+            if any(cid not in payment_cards(state, player, cost) for cid in ids) or not discard_selected(state, player, ids):
+                return False
+        else:
+            if any(cid not in payment_cards(state, player, cost) for cid in ids):
+                return False
+            from rules_engine.zone_actions import sacrifice_selected
+            if not sacrifice_selected(state, player, ids):
+                return False
+        state.log.append(f"{state.players[player].name} pays ward: {payload['ward_cost']}.")
+    elif item is not None:
+        handler = counter_spell if stack_object_kind(state, item) == 'spell' else counter_ability
+        handler(state, pending['controller'], {'target_stack_id': item.id})
+    state.pending_mechanic_choice = None
+    resume_paused_resolution(state, pending)
+    return True

@@ -6,50 +6,13 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 
 
-def test_ward_tax_blocks_underpaid_targeted_spell() -> None:
-    state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
-    state.pregame_pending = False
-    state.kept_hands = {1, 2}
-    state.active_player = 1
-    state.priority_player = 1
-    state.step = Step.PRECOMBAT_MAIN
-    engine = RulesEngine()
-
-    # Create a warded target for player 2.
-    target_id = state.players[2].hand[0]
-    state.players[2].hand.remove(target_id)
-    state.players[2].battlefield.append(target_id)
-    target = state.cards[target_id]
-    target.zone = Zone.BATTLEFIELD
-    target.types = ["Creature"]
-    target.oracle_text = "Ward {2}"
-
-    # Cast a 1-mana targeted spell with only 1 mana source available.
-    spell_id = state.players[1].hand[0]
-    spell = state.cards[spell_id]
-    spell.name = "Needle Ray"
-    spell.types = ["Instant"]
-    spell.type_line = "Instant"
-    spell.mana_cost = "{U}"
-    spell.oracle_text = "Destroy target creature."
-    land_id = state.players[1].hand[1]
-    state.players[1].battlefield.append(land_id)
-    land = state.cards[land_id]
-    state.players[1].hand.remove(land_id)
-    land.zone = Zone.BATTLEFIELD
-    land.types = ["Land"]
-    land.name = "Island"
-
-    engine.take_action(
-        state,
-        1,
-        {
-            "type": "cast_spell",
-            "card_id": spell_id,
-            "targets": {"target_card_id": target_id},
-        },
-    )
-    assert any("ward tax" in line.lower() for line in state.log)
+def test_ward_allows_underfunded_cast_and_then_offers_decline() -> None:
+    from tests.test_ward_resolution import cast_at, choose
+    state, _, spell_id = cast_at()
+    assert len(state.stack) == 2
+    assert not resolve_top_of_stack(state)
+    state = choose(state, ["decline"])
+    assert not state.stack and state.cards[spell_id].zone == Zone.GRAVEYARD
 
 
 def test_hexproof_blocks_opponent_targeted_spell() -> None:

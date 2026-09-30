@@ -10,6 +10,34 @@ def is_departed_token(card) -> bool:
     return card.zone != Zone.BATTLEFIELD and is_token_card(card)
 
 
+def sacrifice_selected(state, controller, ids):
+    """Sacrifice a selected set simultaneously, preserving LKI and events."""
+    from rules_engine.events import was_creature_on_battlefield, flush_staged_triggers
+    from rules_engine.replacement import replace_die_zone
+    if len(set(ids)) != len(ids) or any(cid not in state.players[controller].battlefield for cid in ids):
+        return False
+    destinations = {cid: replace_die_zone(state, controller, cid) for cid in ids}
+    staged_here = not state.trigger_staging
+    if staged_here:
+        state.trigger_staging = True
+        state.trigger_staging_event = "sacrifice"
+    events = [{"card_id": cid, "controller": controller} for cid in ids]
+    emit_event_batch(state, "leaves_battlefield", events)
+    for cid in ids:
+        card = state.cards[cid]
+        state.players[controller].battlefield.remove(cid)
+        destination = Zone(destinations[cid])
+        card.move_to_zone(destination)
+        getattr(state.players[card.owner], destination.value).append(cid)
+    emit_event_batch(state, "sacrifice", events)
+    died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
+    emit_event_batch(state, "permanent_dies", died)
+    emit_event_batch(state, "creature_dies", [event for event in died if was_creature_on_battlefield(state.cards[event["card_id"]])])
+    if staged_here and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
+    return True
+
+
 def put_into_graveyard(state, cid: str) -> Zone:
     """Move an already-removed card to its actual destination after replacement."""
     card = state.cards[cid]

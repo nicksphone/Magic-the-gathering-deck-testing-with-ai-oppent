@@ -178,12 +178,13 @@ def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]
 
 
 def flush_staged_triggers(state: MatchState) -> None:
-    if not state.trigger_staging or state.pending_replacement_choice:
-        return
-    triggers = state.staged_triggers
-    state.staged_triggers = []
-    state.trigger_staging = False
-    _push_triggers(state, state.trigger_staging_event, triggers)
+    # Choosing a trigger's targets can itself trigger ward. Put that next wave
+    # above the targeted ability before returning priority, not on a later pass.
+    while state.trigger_staging and not state.pending_replacement_choice and not state.pending_trigger_order:
+        triggers = state.staged_triggers
+        state.staged_triggers = []
+        state.trigger_staging = False
+        _push_triggers(state, state.trigger_staging_event, triggers)
 
 
 def _append_trigger_groups(
@@ -202,8 +203,14 @@ def _append_trigger_groups(
             group = [by_id[choice_id] for choice_id in requested if choice_id in by_id]
         ordered.extend(group)
     target_stack_ids: list[str] = []
+    targeted_items = []
     for order_index, trig in enumerate(ordered):
         payload = dict(trig["payload"])
+        if trig["effect_key"] == "ward_payment":
+            source = state.cards.get(trig["source_card_id"])
+            lki = source.last_known_battlefield if source else {}
+            if lki.get("battlefield_incarnation") == payload.get("ward_incarnation"):
+                payload.setdefault("__source_lki", dict(lki))
         item = StackItem(
             id=state.allocate_object_id(),
             source_card_id=trig["source_card_id"],
@@ -239,6 +246,14 @@ def _append_trigger_groups(
                 item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
                 item.payload["__trigger_target_choice"] = True
         state.stack.append(item)
+        if item.payload.get("__trigger_target_choice"):
+            targeted_items.append(item)
+    if targeted_items:
+        from rules_engine.ward import mark_stack_targets
+        state.trigger_staging = True
+        state.trigger_staging_event = "becomes_target"
+        for item in targeted_items:
+            mark_stack_targets(state, item)
     if target_stack_ids:
         _advance_trigger_target(state, event, target_stack_ids)
     state.log.append(f"{len(ordered)} triggered ability(s) added to stack ({event}).")
@@ -397,6 +412,11 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     item.payload.pop("target_player", None)
     item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
+    from rules_engine.ward import mark_stack_targets
+    if not state.trigger_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "becomes_target"
+    mark_stack_targets(state, item)
     state.log.append(f"{state.players[item.controller].name} targets {choice['target_name']} with {item.label}.")
     _advance_trigger_target(state, str(pending["event"]), list(pending["stack_ids"])[1:])
     return True

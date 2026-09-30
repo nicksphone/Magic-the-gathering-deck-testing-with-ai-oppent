@@ -4,11 +4,13 @@ from collections.abc import Callable
 
 from effects import handlers
 from game_state.state import MatchState
+from rules_engine.ward import resolve_ward
 
 
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    "ward_payment": resolve_ward,
     "equip_attachment": handlers.equip_attachment,
     "set_turn_restriction": handlers.set_turn_restriction,
     "deal_damage": handlers.deal_damage,
