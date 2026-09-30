@@ -26,6 +26,12 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "stifle_protection":
+        from tests.test_counterability_scope import add_card, state_with_card
+        state, _ = state_with_card("Allosaurus Shepherd", Zone.BATTLEFIELD)
+        add_card(state, "Stifle", Zone.HAND, 1)
+        state.players[1].mana_pool["U"] = 1
+        return publish(state, [{"quantity": 60, "card_name": "Island"}])
     if face_kind == "surviving_copy":
         from tests.test_copy_stack_characteristics import add_counter, surviving_copy
         state, _, _ = surviving_copy()

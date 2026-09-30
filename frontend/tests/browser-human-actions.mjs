@@ -696,6 +696,16 @@ try {
   assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
   console.log("PASS human Negate counters a surviving Adventure copy after its physical original leaves the stack");
 
+  await click("Stifle Protection Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Stifle'))");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Stifle')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Stifle");
+  await waitFor("window.fixtureState.stack.length === 2 && window.fixtureState.stack[1].label === 'Stifle'");
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Allosaurus Shepherd').length"), 1);
+  console.log("PASS human Stifle counters an ability without inheriting its source's spell-only protection");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

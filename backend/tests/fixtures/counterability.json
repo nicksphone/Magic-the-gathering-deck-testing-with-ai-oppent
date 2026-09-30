@@ -1,0 +1,93 @@
+[
+  {
+    "id": "7afa0ee5-a0b8-472e-9991-09402ddb5de3",
+    "oracle_id": "98295bdc-db58-4e1f-ad4c-63092aea207e",
+    "name": "Allosaurus Shepherd",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Shaman",
+    "oracle_text": "This spell can't be countered.\nGreen spells you control can't be countered.\n{4}{G}{G}: Until end of turn, each Elf creature you control has base power and toughness 5/5 and becomes a Dinosaur in addition to its other creature types.",
+    "colors": [
+      "G"
+    ],
+    "power": "1",
+    "toughness": "1"
+  },
+  {
+    "id": "2cc3804b-3304-4add-81b4-0482bfed8074",
+    "oracle_id": "7dd189f8-a23f-4b43-b0ef-fb174a9664ba",
+    "name": "Destiny Spinner",
+    "mana_cost": "{1}{G}",
+    "type_line": "Enchantment Creature — Human",
+    "oracle_text": "Creature and enchantment spells you control can't be countered.\n{3}{G}: Target land you control becomes an X/X Elemental creature with trample and haste until end of turn, where X is the number of enchantments you control. It's still a land.",
+    "colors": [
+      "G"
+    ],
+    "power": "2",
+    "toughness": "3"
+  },
+  {
+    "id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+    "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+    "name": "Stifle",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
+    "colors": [
+      "U"
+    ],
+    "power": null,
+    "toughness": null
+  },
+  {
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "name": "Counterspell",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "colors": [
+      "U"
+    ],
+    "power": null,
+    "toughness": null
+  },
+  {
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "name": "Llanowar Elves",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "colors": [
+      "G"
+    ],
+    "power": "1",
+    "toughness": "1"
+  },
+  {
+    "id": "e60deb92-f7dd-4f4e-9036-e47dd586f985",
+    "oracle_id": "8b755881-a72d-4e21-a369-d2924eb4585a",
+    "name": "Cultivate",
+    "mana_cost": "{2}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for up to two basic land cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "power": null,
+    "toughness": null
+  },
+  {
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "name": "Lightning Bolt",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "power": null,
+    "toughness": null
+  }
+]

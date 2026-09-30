@@ -41,6 +41,37 @@ def stack_source_card(state: Any, item: Any):
     return source
 
 
+_COUNTER_PROTECTION_TERM = r"(?:white|blue|black|red|green|creature|enchantment|artifact|instant|sorcery|planeswalker)"
+_SPELL_COUNTER_PROTECTION_RE = re.compile(
+    rf"(?:(?P<scope>{_COUNTER_PROTECTION_TERM}(?: and {_COUNTER_PROTECTION_TERM})?) )?"
+    r"spells you control (?:can't|cannot) be countered", re.IGNORECASE,
+)
+
+
+def spell_cant_be_countered(state: Any, item: Any) -> bool:
+    """Evaluate supported self and battlefield spell protection at resolution."""
+    source = stack_source_card(state, item)
+    if source is None:
+        return False
+    self_pattern = rf"(?:this spell|{re.escape(source.name)}) (?:can't|cannot) be countered"
+    if any(re.fullmatch(self_pattern, clause.strip(), re.IGNORECASE)
+           for clause in re.split(r"[.\n]", without_reminder_text(source.oracle_text))):
+        return True
+    from rules_engine.colors import card_color_names
+
+    subjects = {str(kind).lower() for kind in source.types} | card_color_names(source)
+    for player in state.players.values():
+        for cid in player.battlefield:
+            permanent = state.cards.get(cid)
+            if permanent is None or permanent.zone != Zone.BATTLEFIELD or permanent.controller != item.controller:
+                continue
+            for clause in re.split(r"[.\n]", without_reminder_text(permanent.oracle_text)):
+                match = _SPELL_COUNTER_PROTECTION_RE.fullmatch(clause.strip())
+                if match and (not match.group("scope") or subjects.intersection(match.group("scope").lower().split(" and "))):
+                    return True
+    return False
+
+
 def single_player_permanent_alternative(text: str) -> str | None:
     """Return the one-target alternative clause, excluding multi-target text."""
     if len(re.findall(r"\btarget\b", text, re.IGNORECASE)) != 1:

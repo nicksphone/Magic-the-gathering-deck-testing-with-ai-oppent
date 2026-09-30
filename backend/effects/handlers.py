@@ -683,7 +683,7 @@ def destroy_all_artifacts_and_enchantments(state: MatchState, controller: int, p
 
 
 def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
-    from rules_engine.targeting import stack_object_kind, stack_source_card
+    from rules_engine.targeting import spell_cant_be_countered, stack_object_kind, stack_source_card
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
@@ -700,8 +700,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
                     x_value=int((item.payload or {}).get("x_value", 0) or 0),
                 ):
                     return
-            source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
-            if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+            if payload.get("uncounterable") or spell_cant_be_countered(state, item):
                 state.log.append(f"{item.label} can't be countered.")
                 return
             popped = state.stack.pop(i)
@@ -724,14 +723,13 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
     item = next((entry for entry in state.stack if entry.id == target_stack_id), None)
     if item is None:
         return
-    from rules_engine.targeting import stack_object_kind, stack_source_card
+    from rules_engine.targeting import spell_cant_be_countered, stack_object_kind, stack_source_card
     if stack_object_kind(state, item) != "spell":
         return
     source = stack_source_card(state, item)
     if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
         return
-    source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
-    if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+    if payload.get("uncounterable") or spell_cant_be_countered(state, item):
         state.log.append(f"{item.label} can't be countered.")
         return
 
@@ -760,9 +758,7 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
             kind = stack_object_kind(state, item)
             if kind == "spell" or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
                 return
-            source = state.cards.get(item.source_card_id)
-            source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""
-            if payload.get("uncounterable") or "can't be countered" in source_text or "cannot be countered" in source_text:
+            if payload.get("uncounterable") or (item.payload or {}).get("uncounterable"):
                 state.log.append(f"{item.label} can't be countered.")
                 return
             state.stack.pop(i)
