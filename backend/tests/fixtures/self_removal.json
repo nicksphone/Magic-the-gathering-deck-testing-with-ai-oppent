@@ -1,0 +1,58 @@
+[
+  {
+    "id": "6fe6ccad-e303-48f9-9dfa-0db7c1878031",
+    "oracle_id": "c7f33cea-2ec8-4081-9208-a5b1d86721b3",
+    "name": "Bastion of Remembrance",
+    "mana_cost": "{2}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "When this enchantment enters, create a 1/1 white Human Soldier creature token.\nWhenever a creature you control dies, each opponent loses 1 life and you gain 1 life.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "b5275d76-2947-4219-be21-614c7421614a",
+    "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+    "name": "Blood Artist",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Vampire",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "colors": [
+      "B"
+    ],
+    "power": "0",
+    "toughness": "1",
+    "keywords": []
+  },
+  {
+    "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+    "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+    "name": "Leyline of the Void",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nIf a card would be put into an opponent's graveyard from anywhere, exile it instead.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  },
+  {
+    "id": "2c249609-9cf7-46f1-b94c-9329add966bb",
+    "oracle_id": "938b4e2c-88d9-4637-bc00-e228920c9a78",
+    "name": "Murder",
+    "mana_cost": "{1}{B}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target creature.",
+    "colors": [
+      "B"
+    ],
+    "power": null,
+    "toughness": null,
+    "keywords": []
+  }
+]

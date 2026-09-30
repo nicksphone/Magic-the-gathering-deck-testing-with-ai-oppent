@@ -1,4 +1,4 @@
-"""Project announced stack effects without guessing choices or new responses."""
+"""Project declared actions and stack effects without guessing opponents."""
 from __future__ import annotations
 
 from copy import copy, deepcopy
@@ -38,25 +38,63 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
             if state.cards[cid].controller == player_id or has_keyword(state, cid, "indestructible")}
 
 
-def pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:
-    """Project destinations of opposing permanents with own effects pending."""
-    candidates = set(state.players[3 - player_id].battlefield)
-    if not candidates or not any(item.controller == player_id for item in state.stack):
-        return {}
+def _projection_copy(state: MatchState) -> MatchState:
     # Resolution does not read historical logs; avoid copying growing traces.
     projected = deepcopy(state, {id(state.log): []})
     projected.mechanic_choice_players = {1, 2}
     projected.replacement_choice_players = {1, 2}
     projected.trigger_order_choice_players = {1, 2}
+    projected.trigger_order_choice_required = True
+    return projected
+
+
+def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None, own_choice_action=None) -> bool:
     rules = RulesEngine()
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
-        if projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order or projected.winner is not None:
-            return None
-        if not projected.stack:
-            remaining = set().union(*(set(player.battlefield) for player in projected.players.values()))
-            return {cid: projected.cards[cid].zone for cid in candidates - remaining if cid in projected.cards}
+        choice = projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order
+        if choice:
+            chooser = choice.get("player_id", choice.get("current_controller"))
+            if own_choice_action is None or chooser != player_id:
+                return False
+            action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+            if action.get("type") == "pass_priority":
+                return False
+            rules.take_action(projected, player_id, action, reject_invalid=True)
+            continue
+        if projected.winner is not None or not projected.stack:
+            return True
         rules.take_action(projected, projected.priority_player, {"type": "pass_priority"}, reject_invalid=True)
+    return False
+
+
+def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, own_choice_action=None) -> bool | None:
+    """Evaluate a legal announced line, never optimize from hidden-zone changes."""
+    from rules_engine.action_validation import ActionRejected, checked_action
+    projected = _projection_copy(state)
+    libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
+    opponent = 3 - player_id
+    opposing_hand = tuple(state.players[opponent].hand)
+    try:
+        projected = checked_action(projected, RulesEngine(), player_id, action)
+    except ActionRejected:
+        return False
+    if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
+        return None
+    if any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items()) or tuple(projected.players[opponent].hand) != opposing_hand:
+        return None
+    return projected.winner == player_id
+
+
+def pending_removal_destinations(state: MatchState, player_id: int) -> dict | None:
+    """Project destinations of opposing permanents with own effects pending."""
+    candidates = set(state.players[3 - player_id].battlefield)
+    if not candidates or not any(item.controller == player_id for item in state.stack):
+        return {}
+    projected = _projection_copy(state)
+    if _settle_announced_stack(projected) and projected.winner is None:
+        remaining = set().union(*(set(player.battlefield) for player in projected.players.values()))
+        return {cid: projected.cards[cid].zone for cid in candidates - remaining if cid in projected.cards}
     return None
 
 

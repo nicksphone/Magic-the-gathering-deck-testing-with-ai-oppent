@@ -4,6 +4,8 @@
 
 AI target materialization excludes indestructible and friendly permanents for supported pure single-target destruction clauses. It can redirect to a vulnerable opposing target, or conserve its card, sacrifice cost or loyalty. This applies to instant/sorcery casts, a selected single destroy mode, activated abilities and loyalty abilities. It reads the current continuous-effect keyword evaluator rather than assuming printed keywords are permanent.
 
+The later [winning self-removal increment](ai-self-removal.md) allows a friendly target when actual rules projection finds an unanswered win. This is an AI policy exception, not a waiver of cost, timing, indestructible or target legality. Ordinary nonwinning self-removal remains conservative.
+
 After filtering, a selected mode must still have actual target candidates; an old count of available modes cannot authorize a targetless action. Human legality is unchanged: Naturalize can legally target Darksteel Myr, resolve without destroying it, and go to the graveyard.
 
 Full-clause matching and effect inference limit the guard to supported destruction, with optional regeneration prohibition. Recognized secondary-effect verbs prevent classifying a compound spell as pure removal. Slice in Twain can resolve its draw after destruction fails against indestructible. This is not a claim that its removal component has value or that every compound clause is understood. Friendly self-removal synergies are not planned by this conservative policy.

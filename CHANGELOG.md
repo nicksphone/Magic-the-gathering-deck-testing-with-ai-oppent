@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- AI can now commit supported unanswered winning friendly-target destruction lines using actual costs, triggers, replacements and stack resolution. Own choices use a separate configured AI instance; undeclared opposing choices and hidden-zone changes remain unknown. The ordinary conservative guard and human legality are preserved. Sacrifice retention now values recurring payoff clauses separately from spent entry rewards. Canonical spell, activation-cost and loyalty fixtures cover the [bounded behavior](docs/testing/ai-self-removal.md).
+- Self-removal verification: 1,675 isolated backend tests, frontend lint/build/unit, full Chromium harness and a three-game replay with zero determinism failures or drift labels. Eight seat-swapped traced games complete without timeout or logged cast-time target/cost rejection but do not exercise the new self-removal line; feature evidence comes from canonical fixtures and a full-state baseline comparison, not matchup win rates.
+
 - AI now conserves supported pure destruction against indestructible and friendly permanents, including selected single modes, activated sacrifice abilities and loyalty abilities. Materialized modes validate remaining target candidates instead of stale available-mode metadata. Human targeting is unchanged; canonical Slice in Twain still draws after a legal indestructible target survives. See [fixtures, comparison and limits](docs/testing/ai-destruction-targets.md).
 - Destruction-target verification: 1,650 isolated backend tests, frontend lint/build/unit, full Chromium harness and a three-game replay with zero determinism failures or drift labels. Eight seat-swapped Midrange/Drain and Tokens/Ramp games finish without timeout or logged cast-time target/cost rejection; complex metric gaps remain explicitly unavailable. These smoke samples are not a balance or expert-AI certification.
 

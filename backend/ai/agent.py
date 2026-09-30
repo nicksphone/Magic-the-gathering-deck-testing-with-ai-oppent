@@ -286,6 +286,9 @@ class AIAgent:
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
         legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)]
+        self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
+        if self_removal_win is not None:
+            return AIDecision(action=self_removal_win, reasoning="Announced self-removal line wins if unanswered")
         if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
             if bool(getattr(state, "blocks", {})):
                 return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
@@ -2294,7 +2297,40 @@ class AIAgent:
             if target.get("id") in state.cards
         )
 
-    def _materialize_action(self, state: MatchState, move: dict, player_id: int) -> dict:
+    def _winning_self_removal_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
+        if not isinstance(state, MatchState):
+            return None
+        from ai.pending_effects import unanswered_action_wins
+        choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype, opponent_archetype=self.opponent_archetype)
+        friendly = set(state.players[player_id].battlefield)
+        for move in legal_moves:
+            if move.get("type") not in {"cast_spell", "activate_ability", "activate_loyalty"}:
+                continue
+            card = state.cards.get(move.get("card_id"))
+            if card is None:
+                continue
+            text = move.get("ability_label") or card.oracle_text
+            faces = getattr(card, "card_faces", []) or []
+            if move.get("type") == "cast_spell" and faces and move.get("selected_face_index") is not None:
+                text = faces[int(move["selected_face_index"])].get("oracle_text", text)
+            if "destroy target" not in text.lower():
+                continue
+            candidates = {target["id"] for key, options in (move.get("target_hints") or {}).items()
+                          if key.endswith("_targets") and isinstance(options, list)
+                          for target in options if target.get("id") in friendly}
+            for cid in sorted(candidates, key=lambda cid: (self._sacrifice_loss(state, cid, player_id), cid)):
+                candidate = {**move, "targets": {**(move.get("targets") or {}), "target_card_id": cid}}
+                action = self._materialize_action(state, candidate, player_id, allow_friendly_target=True)
+                if action.get("_invalid_ai_choice") or self._is_unplayable_x_action(action):
+                    continue
+                if unanswered_action_wins(
+                    state, player_id, action,
+                    own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action,
+                ) is True:
+                    return action
+        return None
+
+    def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False) -> dict:
         mtype = move.get("type")
         if mtype == "attack":
             out = dict(move)
@@ -2369,6 +2405,9 @@ class AIAgent:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
             excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text)
+            friendly_target = targets.get("target_card_id")
+            if allow_friendly_target and friendly_target in state.players[player_id].battlefield:
+                excluded.discard(friendly_target)
             if mtype == "cast_spell":
                 excluded |= covered_removal_targets(state, card, player_id, targets) or set()
             if excluded:
@@ -3519,6 +3558,12 @@ class AIAgent:
             value -= 4.0
         if getattr(card, "oracle_text", ""):
             value += 1.0
+            # Preserve recurring engines, not already-spent ETB rewards.
+            recurring = "\n".join(line for line in without_reminder_text(card.oracle_text).splitlines()
+                                  if re.search(r"\b(?:whenever|at the beginning)\b", line, re.I))
+            if recurring:
+                roles = tactical_tags(recurring)
+                value += sum(weight for role, weight in {"drain": 6.0, "draw": 3.0, "token": 3.0}.items() if role in roles)
         return value
 
     def _hand_retention_value(self, state: MatchState, cid: str, player_id: int, archetype: str | None = None) -> float:
