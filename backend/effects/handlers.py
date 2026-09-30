@@ -1799,16 +1799,24 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
     if not power and not toughness and not keyword:
         return
     players = [state.players[controller]] if payload.get("controller_only") else state.players.values()
+    required_subtypes = set(payload.get("creature_subtypes") or [])
     for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
             if "Creature" not in card.types:
                 continue
+            if required_subtypes:
+                from rules_engine.library_permissions import creature_types
+
+                if (not required_subtypes.intersection(creature_types(card))
+                        and "changeling" not in {keyword.lower() for keyword in (card.keywords or [])}):
+                    continue
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
             if keyword:
                 card.counters[f"__eot_keyword_{keyword.lower()}"] = 1
-    scope = "Creatures you control" if payload.get("controller_only") else "All creatures"
+    scope = (f"{payload['creature_subtype_label']} you control" if payload.get("creature_subtype_label")
+             else "Creatures you control" if payload.get("controller_only") else "All creatures")
     state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")
 
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Supported once-per-turn grouped creature-subtype entry triggers and subtype-filtered temporary team buffs without card-name exceptions. Irrelevant entries no longer consume trigger allowances; created creature tokens retain their subtype lines, and static subtype anthems use the same singularization. Elvish Warmaster and Zombie fixtures cover controller filtering, countered triggers, snapshots, new battlefield incarnations, activation payment and later entrants. Verification: 1,505 isolated backend tests, frontend lint/build/unit, full Chromium harness, six seeded Tribal games without timeout or logged rule errors, and a two-game deterministic replay without drift. An intermediate full run exposed an overbroad parser match against all-creature buffs; the guard and rerun pass.
+
 - Added a live-route regression for Wedding Announcement from the bundled canonical corpus: names-only match start, legal attack action, SQLite restore, end-step priority passes, and serialized invitation counter/draw result. A fresh isolated backend suite passes 1,497 tests; frontend and browser checks were already green for the unchanged UI.
 
 - Supported counter/attack-count/token-or-draw/transform end-step clauses through reusable effect handlers. Declared attackers are tracked per turn through snapshots; creatures leaving combat still count, while creatures put onto the battlefield attacking do not. Wedding Announcement regressions cover trigger order, three-counter transform, re-entry and turn reset. Verification: 1,496 isolated backend tests, frontend lint/build/unit, full Chromium harness, one seeded White Weenie/Blue Control game with a Wedding draw, and a two-game replay with no drift. Other conditional end-step patterns remain unverified.

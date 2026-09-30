@@ -1086,6 +1086,26 @@ def _infer_clause_effect(
     if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}
 
+    tribal_buff = re.search(
+        r"\b([a-z-]+) you control get ([+-]\d+)/([+-]\d+) and gain "
+        r"(haste|vigilance|trample|lifelink|deathtouch|flying|reach|menace|hexproof|indestructible)"
+        r" until end of turn\b",
+        oracle,
+    )
+    if tribal_buff and tribal_buff.group(1) not in {
+        "creatures", "tokens", "artifacts", "enchantments", "lands", "permanents", "planeswalkers",
+    }:
+        from rules_engine.card_types import creature_subtype_candidates
+
+        return "temporary_pt_buff_all", {
+            "power": int(tribal_buff.group(2)),
+            "toughness": int(tribal_buff.group(3)),
+            "controller_only": True,
+            "keyword": tribal_buff.group(4),
+            "creature_subtypes": sorted(creature_subtype_candidates(tribal_buff.group(1))),
+            "creature_subtype_label": tribal_buff.group(1).title(),
+        }
+
     team_buff = re.search(
         r"\bcreatures you control get ([+-]\d+)/([+-]\d+)"
         r"(?: and gain (haste|vigilance|trample|lifelink|deathtouch|flying|reach|menace|hexproof|indestructible))?"
@@ -1406,6 +1426,8 @@ def _infer_clause_effect(
             "keywords": token_keywords,
             "colors": token_colors,
         }
+        if token_name_match:
+            out["type_line"] = f"Token Creature — {token_name}"
         if "tapped and attacking" in oracle:
             out["tapped_and_attacking"] = True
         if re.search(r"\bfor each basic land type among lands you control\b", oracle):

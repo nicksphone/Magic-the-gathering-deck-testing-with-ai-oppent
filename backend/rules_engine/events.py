@@ -16,6 +16,11 @@ TRANSFORM_DRAW_RE = re.compile(
     re.IGNORECASE,
 )
 TEAM_COUNTER_RE = re.compile(r"\bput a (\+\d+/\+\d+) counter on each creature you control\b")
+TRIBAL_GROUP_ENTRY_RE = re.compile(
+    r"\bwhenever one or more (other )?([a-z-]+) "
+    r"(?:you control enter(?: the battlefield)?|enter(?: the battlefield)? under your control)\b",
+    re.IGNORECASE,
+)
 ATTACK_REWARD_RE = re.compile(
     r"at the beginning of your end step, put (a|an|one|two|three|four|five|\d+) "
     r"([a-z-]+) counters? on this (?:creature|artifact|enchantment|permanent)\. "
@@ -454,9 +459,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
             if transform_draw and event in {"transformed", "enters_battlefield"}:
                 once_each_turn = False
-            trigger_key = f"{cid}:{event}"
+            trigger_key = f"{cid}:{card.effect_timestamp}:{event}"
             if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
                 continue
+            trigger_count_before = len(out)
 
             if transform_draw and event in {"transformed", "enters_battlefield"}:
                 changed = state.cards.get(payload.get("card_id"))
@@ -657,7 +663,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                                 payload=payload,
                             )
                         )
-            if once_each_turn:
+            if once_each_turn and len(out) > trigger_count_before:
                 state.trigger_once_seen_this_turn.add(trigger_key)
     out.sort(key=lambda trig: (0 if trig["controller"] == state.active_player else 1, str(trig["source_card_id"]), str(trig["label"])))
     return out
@@ -825,6 +831,19 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if not entering_id or entering_id not in state.cards:
         return False
     entering_card = state.cards[entering_id]
+    tribal_group = TRIBAL_GROUP_ENTRY_RE.search(oracle)
+    if tribal_group:
+        from rules_engine.card_types import creature_subtype_candidates
+        from rules_engine.library_permissions import creature_types
+
+        subtypes = creature_subtype_candidates(tribal_group.group(2))
+        return (
+            entering_card.controller == card.controller
+            and (not tribal_group.group(1) or entering_id != card.id)
+            and "Creature" in (entering_card.types or [])
+            and (bool(subtypes & creature_types(entering_card))
+                 or "changeling" in {keyword.lower() for keyword in (entering_card.keywords or [])})
+        )
     # Check controller-scoped clauses before their broader prefixes. Without
     # this ordering, "a creature enters" also matches "under your control".
     entering_types = set(getattr(entering_card, "types", []) or [])
@@ -1117,7 +1136,7 @@ def _trigger_from_oracle(
             line.strip() for line in oracle.splitlines()
             if (
                 event == "enters_battlefield"
-                and re.match(r"^(?:when|whenever)\b.*\benters\b", line.strip())
+                and re.match(r"^(?:when|whenever)\b.*\benters?\b", line.strip())
             ) or (
                 event == "creature_dies"
                 and source_card_id in state.cards

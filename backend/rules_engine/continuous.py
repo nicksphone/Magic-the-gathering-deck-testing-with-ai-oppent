@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from game_state.state import Zone
+from rules_engine.card_types import creature_subtype_candidates
 from rules_engine.card_types import is_token_card
 
 PT_STATIC_RE = re.compile(
@@ -429,16 +430,7 @@ def _subject_matches(state, card_id: str, subject: str) -> bool:
     if s.endswith(" creatures"):
         tribe = s.replace(" creatures", "").strip()
         return _has_subtype(card, tribe)
-    # "elves", "goblins", etc.
-    if s.endswith("ves"):
-        singular = f"{s[:-3]}f"
-    elif s.endswith("ies"):
-        singular = f"{s[:-3]}y"
-    elif s.endswith("s"):
-        singular = s[:-1]
-    else:
-        singular = s
-    return _has_subtype(card, singular)
+    return any(_has_subtype(card, singular) for singular in creature_subtype_candidates(s))
 
 
 def _has_subtype(card, subtype: str) -> bool:

@@ -8,6 +8,15 @@ _BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 CARD_TYPES = frozenset({"Artifact", "Battle", "Creature", "Enchantment", "Instant", "Kindred", "Land", "Planeswalker", "Sorcery"})
 
 
+def creature_subtype_candidates(plural: str) -> set[str]:
+    word = str(plural or "").lower()
+    if word.endswith("ves"):
+        return {word[:-3] + "f"}
+    if word.endswith("ies"):
+        return {word[:-3] + "y", word[:-1]}
+    return {word[:-1]} if word.endswith("s") else {word}
+
+
 def printed_card_types(type_line: str) -> list[str]:
     """Read the front face's types, excluding supertypes and subtypes."""
     front = (type_line or "").split("//", 1)[0].split("—", 1)[0].strip()
