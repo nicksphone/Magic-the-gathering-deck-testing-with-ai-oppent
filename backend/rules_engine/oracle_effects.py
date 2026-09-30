@@ -7,7 +7,7 @@ from game_state.state import CardInstance, MatchState, Zone
 from card_data.token_definitions import named_artifact_token
 from rules_engine.mana import choose_mana_color_for_player, parse_mana_cost
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind, validate_hexproof_shroud_targets, validate_protection_targets
+from rules_engine.targeting import single_player_permanent_alternative, stack_object_kind, stack_source_card, validate_hexproof_shroud_targets, validate_protection_targets
 
 
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
@@ -44,6 +44,8 @@ UP_TO_RE = re.compile(r"up to\s+(\d+)\s+target", re.IGNORECASE)
 SEARCH_COUNT_RE = re.compile(r"search your library for (?:up to\s+)?(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+[^.]*?cards?", re.IGNORECASE)
 SEARCH_MV_MAX_RE = re.compile(r"mana value\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or less", re.IGNORECASE)
 TARGET_MV_MAX_RE = re.compile(r"mana value\s+(?:less than or equal to\s+)?(\d+)\s+or less", re.IGNORECASE)
+TARGET_MV_MIN_RE = re.compile(r"\btarget[^.\n]*\bwith mana value\s+(\d+)\s+or greater\b", re.IGNORECASE)
+TARGET_MV_EXACT_RE = re.compile(r"\btarget[^.\n]*\bwith mana value\s+(\d+)(?=\s*[.;]|\s*$)", re.IGNORECASE)
 TARGET_MV_GRAVEYARD_RE = re.compile(
     r"mana value\s+(?:less than or equal to\s+)?the number of cards in (?:its controller's|your) graveyard",
     re.IGNORECASE,
@@ -654,13 +656,13 @@ def inspect_target_hints(
                 allowed_kinds.add(kind.split()[0])
         stack_targets = []
         for item in state.stack:
-            source = state.cards.get(item.source_card_id)
+            source = stack_source_card(state, item)
             if source is None or stack_object_kind(state, item) not in allowed_kinds:
                 continue
             if ("ability you control" in oracle or "spell you control" in oracle) and item.controller != controller:
                 continue
-            if stack_restrictions and not _target_id_matches_restrictions(
-                state, source.id, stack_restrictions, controller,
+            if stack_restrictions and not _target_card_matches_restrictions(
+                state, source, stack_restrictions, controller,
                 x_value=int((item.payload or {}).get("x_value", 0) or 0),
             ):
                 continue
@@ -937,6 +939,12 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Land"]
 
     max_match = TARGET_MV_MAX_RE.search(oracle)
+    min_match = TARGET_MV_MIN_RE.search(oracle)
+    exact_match = TARGET_MV_EXACT_RE.search(oracle)
+    if min_match:
+        restrictions["mana_value_min"] = int(min_match.group(1))
+    if exact_match:
+        restrictions["mana_value_exact"] = int(exact_match.group(1))
     if max_match:
         restrictions["mana_value_max"] = int(max_match.group(1))
     elif TARGET_MV_GRAVEYARD_RE.search(oracle):
@@ -960,7 +968,10 @@ def _target_id_matches_restrictions(
     controller: int,
     x_value: int = 0,
 ) -> bool:
-    card = state.cards.get(card_id)
+    return _target_card_matches_restrictions(state, state.cards.get(card_id), restrictions, controller, x_value)
+
+
+def _target_card_matches_restrictions(state, card, restrictions, controller, x_value=0) -> bool:
     if card is None:
         return False
     types = set(card.types or [])
@@ -982,11 +993,15 @@ def _target_id_matches_restrictions(
             if subtype in {str(t).lower() for t in state.cards[cid].types}
             or subtype in str(state.cards[cid].type_line or "").lower().split()
         )
-    if max_value is not None:
+    min_value = restrictions.get("mana_value_min")
+    exact_value = restrictions.get("mana_value_exact")
+    if max_value is not None or min_value is not None or exact_value is not None:
         cost = parse_mana_cost(card.mana_cost or "", x_value=x_value)
         mana_value = int(cost.get("generic", 0) or 0) + int(cost.get("C", 0) or 0)
         mana_value += sum(int(cost.get(color, 0) or 0) for color in "WUBRG")
-        if mana_value > int(max_value):
+        if ((max_value is not None and mana_value > int(max_value))
+                or (min_value is not None and mana_value < int(min_value))
+                or (exact_value is not None and mana_value != int(exact_value))):
             return False
     return True
 

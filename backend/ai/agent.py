@@ -93,7 +93,8 @@ class AIAgent:
         stack_items = getattr(state, "stack", []) or []
         if len(stack_items) == 1:
             item = stack_items[0]
-            source = state.cards.get(getattr(item, "source_card_id", ""))
+            from rules_engine.targeting import stack_source_card
+            source = stack_source_card(state, item)
             if (
                 getattr(item, "controller", player_id) != player_id
                 and source is not None
@@ -4200,7 +4201,8 @@ class AIAgent:
         item = next((x for x in (getattr(state, "stack", []) or []) if getattr(x, "id", None) == stack_item_id), None)
         if item is None:
             return 0.0
-        source = state.cards.get(getattr(item, "source_card_id", ""))
+        from rules_engine.targeting import stack_source_card
+        source = stack_source_card(state, item)
         if source is None:
             return 1.0
         score = 0.0

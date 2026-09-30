@@ -683,20 +683,20 @@ def destroy_all_artifacts_and_enchantments(state: MatchState, controller: int, p
 
 
 def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
-    from rules_engine.targeting import stack_object_kind
+    from rules_engine.targeting import stack_object_kind, stack_source_card
     target_stack_id = payload.get("target_stack_id")
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
             if stack_object_kind(state, item) != "spell":
                 return
-            source = state.cards.get(item.source_card_id)
+            source = stack_source_card(state, item)
             if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
                 return
             restrictions = payload.get("target_restrictions") or {}
             if restrictions:
-                from rules_engine.oracle_effects import _target_id_matches_restrictions
-                if not _target_id_matches_restrictions(
-                    state, item.source_card_id, restrictions, controller,
+                from rules_engine.oracle_effects import _target_card_matches_restrictions
+                if not _target_card_matches_restrictions(
+                    state, source, restrictions, controller,
                     x_value=int((item.payload or {}).get("x_value", 0) or 0),
                 ):
                     return
@@ -724,10 +724,10 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
     item = next((entry for entry in state.stack if entry.id == target_stack_id), None)
     if item is None:
         return
-    from rules_engine.targeting import stack_object_kind
+    from rules_engine.targeting import stack_object_kind, stack_source_card
     if stack_object_kind(state, item) != "spell":
         return
-    source = state.cards.get(item.source_card_id)
+    source = stack_source_card(state, item)
     if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
         return
     source_text = (getattr(source, "oracle_text", "") or "").lower() if source else ""

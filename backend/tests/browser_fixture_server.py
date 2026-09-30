@@ -26,6 +26,12 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "surviving_copy":
+        from tests.test_copy_stack_characteristics import add_counter, surviving_copy
+        state, _, _ = surviving_copy()
+        add_counter(state, "Negate")
+        deck = [{"quantity": 60, "card_name": "Bonecrusher Giant // Stomp"}]
+        return publish(state, deck)
     if face_kind == "attacking_token_target":
         from game_state.state import assign_static_order_on_battlefield_entry
         from rules_engine.combat import declare_attackers

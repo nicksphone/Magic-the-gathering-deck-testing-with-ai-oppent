@@ -83,6 +83,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "multi_adventure_copy").catch((failure) => setError(String(failure)))}>Adventure Copy Fixture</button>
     <button onClick={() => reset(false, false, 3, "split").catch((failure) => setError(String(failure)))}>Split Card Fixture</button>
     <button onClick={() => reset(false, false, 3, "aftermath").catch((failure) => setError(String(failure)))}>Aftermath Fixture</button>
+    <button onClick={() => reset(false, false, 3, "surviving_copy").catch((failure) => setError(String(failure)))}>Surviving Copy Fixture</button>
     <button onClick={() => reset(false, false, 3, "trigger").catch((failure) => setError(String(failure)))}>Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "damage_trigger").catch((failure) => setError(String(failure)))}>Damage Trigger Fixture</button>
     <button onClick={() => reset(false, false, 3, "player_hexproof").catch((failure) => setError(String(failure)))}>Player Hexproof Fixture</button>

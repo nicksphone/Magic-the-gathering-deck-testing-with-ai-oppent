@@ -1,0 +1,46 @@
+[
+  {
+    "id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+    "oracle_id": "3407fe41-fdd3-4119-8f70-4bc4590a379f",
+    "name": "Negate",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target noncreature spell.",
+    "colors": [
+      "U"
+    ]
+  },
+  {
+    "id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
+    "oracle_id": "d64b0848-0193-4025-ba62-63ecd8fb9f50",
+    "name": "Spell Pierce",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target noncreature spell unless its controller pays {2}.",
+    "colors": [
+      "U"
+    ]
+  },
+  {
+    "id": "b7551b61-656e-4f37-b9da-73174db983b7",
+    "oracle_id": "38877c68-b69b-4ee1-8e8f-5137a184a8f7",
+    "name": "Spell Snare",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell with mana value 2.",
+    "colors": [
+      "U"
+    ]
+  },
+  {
+    "id": "588c6217-c460-417e-98bf-de5475780baf",
+    "oracle_id": "11e02134-7b1a-46a4-a89e-7539dd1efada",
+    "name": "Disdainful Stroke",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell with mana value 4 or greater.",
+    "colors": [
+      "U"
+    ]
+  }
+]

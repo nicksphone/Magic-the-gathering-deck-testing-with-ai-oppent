@@ -683,6 +683,19 @@ try {
   assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Mind'))"), false);
   console.log("PASS human Aftermath casts the graveyard half, draws two and exiles the physical card");
 
+  await click("Surviving Copy Fixture");
+  await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Negate'))");
+  const survivingCopyId = await evaluate("window.fixtureState.stack[0].id");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Negate')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await click("Cast Negate");
+  await waitFor("window.fixtureState.stack.length === 2 && window.fixtureState.stack[1].label === 'Negate'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_stack_id"), survivingCopyId);
+  await click("Resolve Stack");
+  await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['1'].graveyard.some(c => c.name === 'Bonecrusher Giant // Stomp')");
+  assert.equal(await evaluate("window.fixtureState.players['1'].life"), 20);
+  assert.equal(await evaluate("window.fixtureState.players['2'].life"), 20);
+  console.log("PASS human Negate counters a surviving Adventure copy after its physical original leaves the stack");
+
   await click("Trigger Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Reclamation Sage'))");
   await click("Cast Reclamation Sage");

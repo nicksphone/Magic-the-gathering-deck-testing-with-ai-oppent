@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from copy import copy, deepcopy
 from typing import Any
 
 from game_state.state import Zone
@@ -24,6 +25,20 @@ def stack_object_kind(state: Any, item: Any) -> str:
         return "triggered"
     source = state.cards.get(item.source_card_id)
     return "spell" if source is not None and source.zone == Zone.STACK else "activated"
+
+
+def stack_source_card(state: Any, item: Any):
+    """Read a spell copy's saved characteristics independently of its card."""
+    source = state.cards.get(getattr(item, "source_card_id", None))
+    payload = getattr(item, "payload", None) or {}
+    if source is None or payload.get("__stack_copy_kind") != "spell":
+        return source
+    source = copy(source)
+    for key, value in (payload.get("__copied_card") or {}).items():
+        setattr(source, key, deepcopy(value))
+    source.controller = item.controller
+    source.zone = Zone.STACK
+    return source
 
 
 def single_player_permanent_alternative(text: str) -> str | None:

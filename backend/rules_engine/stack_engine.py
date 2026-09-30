@@ -88,13 +88,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
-    card = state.cards.get(item.source_card_id)
-    if card and (item.payload or {}).get("__stack_copy_kind") == "spell":
-        from copy import copy
-        card = copy(card)
-        for key, value in (item.payload.get("__copied_card") or {}).items():
-            setattr(card, key, value)
-        card.zone = Zone.STACK
+    from rules_engine.targeting import stack_source_card
+    card = stack_source_card(state, item)
     if (item.payload or {}).get("__trigger_target_choice"):
         from rules_engine.events import trigger_target_options
         chosen_card = item.payload.get("target_card_id")
