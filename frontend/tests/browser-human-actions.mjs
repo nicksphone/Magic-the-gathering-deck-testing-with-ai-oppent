@@ -14,6 +14,12 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Attacking Token Target Fixture");
+  await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'attacking_token_target' && [...document.querySelectorAll('button')].some(b => b.textContent === 'Attack Teferi, Hero of Dominaria')");
+  await click("Attack Teferi, Hero of Dominaria");
+  await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.attackers.some(id => window.fixtureState.players['1'].battlefield.some(card => card.id === id && card.is_token && window.fixtureState.attack_targets[id] === 'planeswalker:teferi'))");
+  assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["planeswalker:teferi"]);
+  console.log("PASS human chooses attacking token planeswalker through UI/API");
   await click("Variable Ability Fixture");
   await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Activate Valki'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Activate Valki')).disabled"), true);

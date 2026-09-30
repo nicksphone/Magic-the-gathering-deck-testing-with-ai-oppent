@@ -91,7 +91,7 @@ export type MatchState = {
   sideboarding?: Record<string, { mainboard: DeckItem[]; sideboard: DeckItem[]; applied: boolean }>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "cleanup_discard" | "sacrifice" | "draw" | "land_entry" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
+    kind: "cleanup_discard" | "sacrifice" | "draw" | "land_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
     player_id: number;
     options?: string[];
     count?: number;
@@ -119,7 +119,7 @@ export type MatchState = {
 
 export type LegalMove = {
   selected_face_index?: number;
-  kind?: "cleanup_discard" | "sacrifice" | "draw" | "land_entry" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
+  kind?: "cleanup_discard" | "sacrifice" | "draw" | "land_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
   entry_choice?: "tapped" | "pay_two_life";
   player_id?: number;
   count?: number;

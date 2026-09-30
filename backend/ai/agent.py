@@ -151,6 +151,19 @@ class AIAgent:
             if choice["kind"] == "linked_exile_copy":
                 selected = self._choose_library_search(state, options, 1, player_id)
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Copy the most useful eligible exiled creature")
+            if choice["kind"] == "attacking_token_target":
+                opponent = 3 - player_id
+                power = int((choice.get("effect_payload") or {}).get("power", 1) or 1)
+                selected = f"player:{opponent}"
+                if state.players[opponent].life > power:
+                    vulnerable = [key for key in options if key.startswith("planeswalker:")
+                                  and key.split(":", 1)[1] in state.cards
+                                  and (state.cards[key.split(":", 1)[1]].loyalty or 0) <= power]
+                    if vulnerable:
+                        selected = max(vulnerable, key=lambda key: self._noncreature_permanent_threat_score(
+                            state, key.split(":", 1)[1], player_id))
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]},
+                                  reasoning="Choose a legal defender for the attacking token")
             if choice["kind"] == "combat_damage":
                 return AIDecision(
                     action={"type": "choose_mechanic", "damage_assignment": self._choose_combat_damage_allocation(state, choice)},

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Tapped-and-attacking token creation now offers a resolution-time choice between the defending player and their planeswalkers. Multiple tokens can choose different defenders; invalid or stale selections are rejected, AI handles the choice, and it survives snapshot restore. A real Adeline browser fixture covers the human control. Verification: 1,490 isolated backend tests, frontend lint/build/unit, full browser harness, one seeded White Weenie/Blue Control AI game, and a two-game replay with no determinism drift.
+
+- The browser lost-response recovery fixture now warms its action URL's CORS preflight with a rejected, non-mutating request before response interception. This avoids an intermittent preflight-only failure in the current Chromium harness; the full rerun passed.
+
 - Attack-group triggers no longer duplicate for each declared attacker. Adeline now has creature-count power and creates one Human token tapped and attacking, which joins combat without generating a new declared-attack event. Verification: 1,485 isolated backend tests, frontend lint/build/unit, full browser harness and seeded BO3 replay. Planeswalker attack-target selection for that token remains open.
 
 - Browser recovery fixtures now resume intercepted responses with `Fetch.continueResponse`. The previous command prevented the preflight from reaching its action POST under the current Chromium build; the corrected full browser harness passes.

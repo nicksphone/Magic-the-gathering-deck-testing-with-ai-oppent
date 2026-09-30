@@ -26,6 +26,37 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == "attacking_token_target":
+        from game_state.state import assign_static_order_on_battlefield_entry
+        from rules_engine.combat import declare_attackers
+        from rules_engine.stack_engine import resolve_top_of_stack
+
+        deck = [{"quantity": 60, "card_name": "Island"}]
+        state = MatchFactory.from_decks(deck, deck, seed=935)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.mechanic_choice_players = {1, 2}
+        state.active_player = state.priority_player = 1
+        state.step = Step.DECLARE_ATTACKERS
+        cards = [
+            CardInstance("adeline", "Adeline, Resplendent Cathar", 1, 1, Zone.BATTLEFIELD,
+                         ["Creature"], power=2, toughness=4, oracle_text=(
+                             "Vigilance\nAdeline's power is equal to the number of creatures you control.\n"
+                             "Whenever you attack, for each opponent, create a 1/1 white Human creature token "
+                             "that's tapped and attacking that player or a planeswalker they control."),
+                         summoning_sick=False),
+            CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD,
+                         ["Creature"], power=2, toughness=2, summoning_sick=False),
+            CardInstance("teferi", "Teferi, Hero of Dominaria", 2, 2, Zone.BATTLEFIELD,
+                         ["Planeswalker"], loyalty=1),
+        ]
+        for card in cards:
+            state.cards[card.id] = card
+            state.players[card.controller].battlefield.append(card.id)
+            assign_static_order_on_battlefield_entry(state, card.id)
+        declare_attackers(state, ["bear"])
+        resolve_top_of_stack(state)
+        return publish(state, deck)
     if face_kind == "linked_copy_x":
         import json
         from card_data.fallback_cards import fallback_card_payload

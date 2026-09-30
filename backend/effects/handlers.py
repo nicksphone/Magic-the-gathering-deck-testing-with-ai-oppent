@@ -1337,6 +1337,23 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     keywords = list(payload.get("keywords", []))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
     tapped_and_attacking = bool(payload.get("tapped_and_attacking", False))
+    attack_target = payload.get("attack_target")
+    if tapped_and_attacking and amount:
+        from rules_engine.combat import _valid_defenders, _defender_label
+
+        options = sorted(_valid_defenders(state, 3 - token_controller))
+        if attack_target is None and len(options) > 1 and token_controller in state.mechanic_choice_players:
+            state.pending_mechanic_choice = {
+                "kind": "attacking_token_target", "player_id": token_controller,
+                "options": options, "option_labels": {key: _defender_label(state, key) for key in options},
+                "count": 1, "remaining_amount": amount,
+                "effect_payload": {**payload, "per_basic_land_type": False},
+                "label": f"Choose where the next {name} token attacks",
+            }
+            state.priority_player = token_controller
+            state.passed_priority = set()
+            return
+        attack_target = attack_target or f"player:{3 - token_controller}"
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     for _ in range(amount):
         cid = str(uuid.uuid4())
@@ -1368,7 +1385,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         if tapped_and_attacking:
             token.tapped = True
             state.attackers.append(cid)
-            state.attack_targets[cid] = f"player:{3 - token_controller}"
+            state.attack_targets[cid] = attack_target
         token.counters.update(payload.get("counters") or {})
         emit_event(state, "enters_battlefield", {"card_id": cid, "controller": token_controller})
         if sac_next_end:

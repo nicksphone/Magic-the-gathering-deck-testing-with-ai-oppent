@@ -34,6 +34,13 @@ try {
   console.log('PASS full App refresh restores match and overlapping land intents apply once');
 
   id = await fresh();
+  const warmStatus = await evaluate(`fetch(${JSON.stringify(`${backend}/matches/${id}/action`)}, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Match-Revision': '0', 'Idempotency-Key': '00000000000000000000000000000000'},
+    body: JSON.stringify({player_id: 99, action: {type: 'pass_priority'}}),
+  }).then(response => response.status)`);
+  assert.equal(warmStatus >= 400 && warmStatus < 500, true);
+  assert.equal((await (await fetch(`${backend}/matches/${id}`)).json()).revision, 0);
   let discarded = false;
   onIntercept(async event => {
     if (event.request.method === 'POST' && event.responseStatusCode === 200 && !discarded) {
