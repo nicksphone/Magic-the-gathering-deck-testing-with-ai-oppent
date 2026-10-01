@@ -26,6 +26,19 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'linked_counter_entry_batch':
+        from tests.test_linked_entry_counters import hold, release
+        from tests.test_linked_exile import _state
+        from tests.test_counter_prohibitions import source as permanent
+        from tests.test_counter_replacements import source
+        state, jailer = _state()
+        cards = [permanent(state, "Elspeth, Sun's Champion", seat) for seat in (1, 2)]
+        for seat in (1, 2):
+            source(state, 'Doubling Season', seat)
+            source(state, "Lae'zel, Vlaakith's Champion", seat)
+        hold(state, jailer, cards)
+        release(state, jailer)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'token_counter_entry_batch':
         from tests.test_counter_replacements import source
         from tests.test_restricted_mana import clean

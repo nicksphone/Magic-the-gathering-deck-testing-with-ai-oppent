@@ -100,6 +100,18 @@ try {
   assert.ok(await evaluate("window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Incubator').every(c => c.counters['+1/+1'] === 8)"));
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   console.log("PASS human seat-two counter replacement choices keep the token group uncreated until simultaneous commit through UI/API");
+  await click("Linked Entry Batch Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.player_id === 1");
+  assert.ok(await evaluate("Object.values(window.fixtureState.players).every(p => !p.battlefield.some(c => c.name === \"Elspeth, Sun's Champion\"))"));
+  await click("Lae'zel, Vlaakith's Champion");
+  await waitFor("window.fixtureState.pending_replacement_choice?.player_id === 2 && document.querySelector('[data-testid=ready]').textContent === 'Ready'");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 1);
+  assert.ok(await evaluate("Object.values(window.fixtureState.players).every(p => !p.battlefield.some(c => c.name === \"Elspeth, Sun's Champion\"))"));
+  await click("Doubling Season");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].battlefield.some(c => c.name === \"Elspeth, Sun's Champion\")");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.ok(await evaluate("window.fixtureState.players['1'].battlefield.some(c => c.name === \"Elspeth, Sun's Champion\" && c.loyalty === 10) && window.fixtureState.players['2'].battlefield.some(c => c.name === \"Elspeth, Sun's Champion\" && c.loyalty === 9)"));
+  console.log("PASS mixed-owner linked exile return choices switch human seats and commit the batch once through UI/API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

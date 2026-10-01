@@ -46,7 +46,8 @@ if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox);
 browser_pid=$!
 
 wait_for_services() {
-  for _ in $(seq 1 60); do
+  # Empty-cache corpus bootstrap can exceed 15 seconds on a busy test host.
+  for _ in $(seq 1 240); do
     if curl -fsS http://127.0.0.1:10199/health >/dev/null 2>&1 \
       && curl -fsS http://127.0.0.1:15173/ >/dev/null 2>&1 \
       && curl -fsS http://127.0.0.1:19222/json/version >/dev/null 2>&1; then return; fi

@@ -132,6 +132,8 @@ def apply_state_based_actions(state: MatchState) -> None:
         return
     from rules_engine.linked_exile import flush_linked_exile_returns
     flush_linked_exile_returns(state)
+    if state.pending_mechanic_choice or state.pending_replacement_choice:
+        return
     if not state.trigger_staging:
         state.trigger_staging = True
         state.trigger_staging_event = "state_based_actions"
@@ -141,7 +143,7 @@ def apply_state_based_actions(state: MatchState) -> None:
         before = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
-        if state.pending_replacement_choice:
+        if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
         after = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
         if after == before:

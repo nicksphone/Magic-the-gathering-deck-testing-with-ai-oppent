@@ -69,7 +69,8 @@ Evidence is retained on RCHFiles under project diagnostics `entry-routes/`.
 
 ## Known Limitations and Next Upgrades
 
-Special opening entries, linked-exile returns, exile-and-return-transformed and
+Supported linked-exile returns now share preparation; see
+[linked return scope](linked-entry-counters.md). Special opening entries, exile-and-return-transformed and
 other unusual entry routes still need packet integration. General projected
 continuous/copy characteristics, simultaneous multi-kind replacement ordering,
 arbitrary intrinsic entry clauses, cast-linked one-shot expiry semantics and

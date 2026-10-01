@@ -27,7 +27,7 @@ def resume_spell_entry(state, controller, payload):
         finish_stack_resolution(state, StackItem(**data['entry_item']), data['entry_payload'])
 
 
-def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None):
+def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None, controllers=None):
     """Reenter the route with a ready packet; True means caller must stop here."""
     if '__entry_counters_by_id' in payload:
         return False
@@ -36,11 +36,12 @@ def prepare_counter_entries(state, controller, cards, effect_key, payload, *, en
         for key in ('x_value', '__escaped', '__phyrexian_life_symbols'):
             options.pop(key, None)
     resume_entry_batch(state, controller, {
-        'entry_targets': [({'card_id': card.id} if card.id in state.cards else {'candidate': asdict(card)})
+        'entry_targets': [({**({'card_id': card.id} if card.id in state.cards else {'candidate': asdict(card)}),
+                           'controller': (controllers or {}).get(card.id, controller)})
                           for card in cards],
         'entry_target_index': 0, 'entry_results': {},
         'entry_effect': effect_key, 'entry_completion_payload': deepcopy(payload),
-        'entry_options': options,
+        'entry_options': options, 'entry_completion_controller': controller,
     })
     return True
 
@@ -61,7 +62,7 @@ def resume_entry_batch(state, controller, payload):
         data.setdefault('entry_payload', deepcopy(data['entry_options']))
         data.setdefault('entry_prepared', {})
         data.setdefault('entry_index', 0)
-        if not prepare_entry_counters(state, controller, data, card, 'permanent_entry_counters'):
+        if not prepare_entry_counters(state, target.get('controller', controller), data, card, 'permanent_entry_counters'):
             return
         data['entry_results'][card.id] = data['entry_payload']['__entry_counters_ready']
         data['entry_target_index'] += 1
@@ -71,7 +72,7 @@ def resume_entry_batch(state, controller, payload):
     if staged_here:
         state.trigger_staging = True
         state.trigger_staging_event = 'entry_batch'
-    resolve_effect(state, controller, data['entry_effect'], {
+    resolve_effect(state, data.get('entry_completion_controller', controller), data['entry_effect'], {
         **data['entry_completion_payload'], '__entry_counters_by_id': data['entry_results'],
         '__entry_candidates': [target['candidate'] for target in data['entry_targets'] if 'candidate' in target],
     })

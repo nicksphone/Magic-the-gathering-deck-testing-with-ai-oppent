@@ -60,6 +60,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "read_ahead_entry").catch((failure) => setError(String(failure)))}>Read Ahead Entry Fixture</button>
     <button onClick={() => reset(false, false, 3, "compleated_entry_order").catch((failure) => setError(String(failure)))}>Compleated Order Fixture</button>
     <button onClick={() => reset(false, false, 3, "token_counter_entry_batch").catch((failure) => setError(String(failure)))}>Token Entry Batch Fixture</button>
+    <button onClick={() => reset(false, false, 3, "linked_counter_entry_batch").catch((failure) => setError(String(failure)))}>Linked Entry Batch Fixture</button>
     <button onClick={() => reset(false, false, 3, "aura_costs").catch((failure) => setError(String(failure)))}>Discounted Aura Fixture</button>
     <button onClick={() => reset(false, false, 3, "equip_context").catch((failure) => setError(String(failure)))}>Discounted Equip Fixture</button>
     <button onClick={() => reset(false, false, 3, "attached_scaling").catch((failure) => setError(String(failure)))}>Scaling Attachment Fixture</button>

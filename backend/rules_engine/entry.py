@@ -25,24 +25,26 @@ def land_entry_options(state, controller: int, card) -> list[str]:
     return options
 
 
-def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_key: str, payload: dict) -> bool:
+def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_key: str, payload: dict, *, controllers=None) -> bool:
     choices = payload.get("__entry_choices") or {}
     for card_id in card_ids:
         card = state.cards[card_id]
         if not has_two_life_land_entry(card) or card_id in choices:
             continue
-        options = land_entry_options(state, controller, card)
-        reserved_life = 2 * sum(value == "pay_two_life" for value in choices.values())
-        if state.players[controller].life - reserved_life < 2:
+        recipient = (controllers or {}).get(card_id, controller)
+        options = land_entry_options(state, recipient, card)
+        reserved_life = 2 * sum(value == "pay_two_life" and (controllers or {}).get(cid, controller) == recipient
+                                for cid, value in choices.items())
+        if state.players[recipient].life - reserved_life < 2:
             options = [option for option in options if option != "pay_two_life"]
         forced_tapped = bool(payload.get("tapped"))
         state.pending_mechanic_choice = {
-            "kind": "land_entry", "player_id": controller, "options": options,
+            "kind": "land_entry", "player_id": recipient, "options": options,
             "option_labels": {"tapped": "Enter tapped", "pay_two_life": "Pay 2 life (effect still makes it tapped)" if forced_tapped else "Pay 2 life to enter untapped"},
             "entry_card_id": card_id, "effect_key": effect_key, "effect_payload": dict(payload),
             "label": f"Choose how {card.name} enters",
         }
-        state.priority_player = controller
+        state.priority_player = recipient
         state.passed_priority = set()
         return True
     return False

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Owner-aware linked exile entries
+
+- Routed supported linked-exile returns through shared pre-entry counter/chapter preparation and owner-aware land-entry choices. Mixed-owner batches remain off battlefield through all choices, survive snapshots, conserve exile incarnations and commit prepared counters before grouped entry events. Hand returns do not receive battlefield counters.
+- Preserved recipient and completion controllers separately; paused SBA when a linked return creates a mechanic/replacement choice. Extended browser startup allowance from 15 to 60 seconds for empty-cache bootstrap.
+- Added nine canonical/core-packet regressions and a real mixed-seat UI/API scenario. Verified 2,423 isolated backend tests, frontend lint/unit/build, the full Chromium suite and five seat-balanced replay games (ten repeated executions), without determinism failures. These replay decks are existing expansion archetype templates, not tournament lists or AI-strength evidence. Updated README/plan/scope and Graphify; completed evidence is on RCHFiles. [Remaining entry work](docs/testing/linked-entry-counters.md).
+
 ## 2026-10-01 - Shared entry routes and resolution staging
 
 - Extended durable counter/chapter preparation to supported token batches, permanent-spell copies, graveyard returns, library selections and green-creature hand placement. Candidates/off-zone cards remain uncommitted during choices; creature returns now emit entry triggers. Non-cast entries no longer consume cast records or inherit the source effect's X/escape/life choices; spell copies retain copied X but were not cast.
