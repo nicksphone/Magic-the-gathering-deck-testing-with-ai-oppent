@@ -1,5 +1,22 @@
 # MTG Deck Testing Lab Finish Plan
 
+Damage-counter increment: supported infect/wither/toxic and noncombat
+damage-to-counter results now use scalar replacement events with source-controller
+attribution, combat aggregation, durable choices and deferred SBA/lifelink.
+176 focused checks, frontend lint/build/unit and isolated human/AI HTTP probes
+pass; the complete isolated backend suite passes 2,324 tests. Eight seat-paired
+games reproduce complete results/logs across sixteen executions without timeout
+or detected cost/target/action rejection. Full Chromium now passes after fixing
+simulator-fixture storage leakage. Disk capacity and the live backend are
+recovered; completed evidence is archived on RCHFiles. Successful browser runs
+clean their scratch checkouts/profiles automatically.
+[Scope and current evidence](docs/testing/damage-counter-replacements.md).
+
+- [x] Implement and focused-test damage counter routing, effect-only provenance, simultaneous supported combat packets and repeated choice recovery.
+- [x] Recover disk capacity and the LAN-bound backend, pass full Chromium, preserve evidence on RCHFiles and enable automatic successful-run scratch cleanup. Broader rules/release completion is not implied.
+- [ ] Publish this verified increment after final documentation/Graphify checks.
+- [ ] Integrate entry/cost counter events and remaining simultaneous noncombat/prevention/multi-kind semantics, proliferation and resource valuation.
+
 Counter-effect replacement increment: 2,308 isolated backend tests, 257 focused
 counter/AI checks, frontend lint/build/unit and full Chromium pass. A real HTTP
 autoplay probe resolves a seat-two counter trigger; eight seat-paired smoke games

@@ -10,6 +10,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'emit_combat_damage_events': handlers.emit_combat_damage_events,
     "add_player_counters": handlers.add_player_counters,
     "ward_payment": resolve_ward,
     "equip_attachment": handlers.equip_attachment,

@@ -38,6 +38,14 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   assert.equal(await evaluate("document.querySelector('[data-player-counter=\"1-experience\"]').textContent"), "Experience 1");
   console.log("PASS real experience gain, effective anthem, counters display and seat-two resolved-X ward payment");
+  await click("Damage Counter Order Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.resume_kind === 'counter_event' && window.fixtureState.pending_replacement_choice.player_id === 2");
+  assert.equal(await evaluate("window.fixtureState.players['2'].poison"), 0);
+  assert.equal(await evaluate("window.fixtureState.players['1'].life"), 20);
+  await click("Winding Constrictor");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].poison === 4 && window.fixtureState.players['1'].life === 21");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS combat infect replacement order and deferred lifelink through seat-two UI/API");
   await click("Counter Order Fixture");
   await waitFor("window.fixtureState?.pending_replacement_choice?.resume_kind === 'counter_event' && window.fixtureState.pending_replacement_choice.player_id === 2");
   assert.equal(await evaluate("window.fixtureState.players['2'].counters.experience ?? 0"), 0);

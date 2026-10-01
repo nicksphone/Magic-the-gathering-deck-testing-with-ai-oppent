@@ -107,7 +107,7 @@ class AIAgent:
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         pending = getattr(state, 'pending_replacement_choice', None)
         if pending and pending.get('resume_kind') == 'counter_event' and pending.get('player_id') == player_id:
-            from rules_engine.counter_replacements import preferred_counter_option
+            from ai.counter_policy import preferred_counter_option
             selected = preferred_counter_option(pending)
             move = next(move for move in legal_moves if move.get('replacement_source_id') == selected)
             return AIDecision(action=move, reasoning='Order counter replacements by resulting public counter amount')

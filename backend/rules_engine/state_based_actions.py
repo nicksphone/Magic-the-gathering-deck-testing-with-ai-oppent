@@ -128,6 +128,8 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
 def apply_state_based_actions(state: MatchState) -> None:
     if state.pending_mechanic_choice:
         return
+    if state.pending_replacement_choice and state.pending_replacement_choice.get('resume_kind') == 'counter_event':
+        return
     from rules_engine.linked_exile import flush_linked_exile_returns
     flush_linked_exile_returns(state)
     if not state.trigger_staging:

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Damage counter replacement routing
+
+- Routed supported infect/wither/toxic and noncombat damage-to-counter results through shared scalar replacements with source-controller attribution and effect-only provenance. Aggregated supported simultaneous combat contributions and retained queued choices, lifelink credit and SBA ordering through snapshot recovery. Moved amount-order preferences into the AI layer.
+- Added 16 regressions and a seat-two browser scenario. Full backend (2,324), focused (176), frontend lint/build/unit, human/AI HTTP probes and full Chromium pass. Eight seat-paired games reproduce complete results/logs across sixteen executions without timeout or detected cost/target/action rejection. Fixed cross-suite simulator-fixture storage leakage before the successful browser rerun. [Scope and evidence](docs/testing/damage-counter-replacements.md). No printed card data or balance changed.
+- Recovered disk capacity by removing 730 inactive scratch directories after preserving evidence; live databases/uncommitted work and active checkouts were protected. Archived diagnostics now live on RCHFiles with compatible local symlinks. Successful browser runs clean up their generated source copies and profiles; failures retain diagnostic paths. Backend recovered on `0.0.0.0:9999`.
+
 ## 2026-10-01 — Resumable counter-effect replacement order
 
 - Added bounded printed doubling, halving and plus-one modifiers to registered permanent/player counter effects, with independent placer/recipient scope and per-ability usage. Affected players choose competing order; used abilities, amounts, stack resolution and sequence/batch continuations survive snapshots. Zero terminates the chain and supported prohibitions override placement. Separate land animation waits for placement.

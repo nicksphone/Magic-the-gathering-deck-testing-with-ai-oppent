@@ -26,6 +26,22 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'damage_counter_order':
+        from tests.test_counter_replacements import source
+        from tests.test_counter_prohibitions import source as damage_source
+        from tests.test_restricted_mana import clean
+        from effects.handlers import grant_keyword
+        from rules_engine.combat import _resolve_damage_step
+        state = clean()
+        source(state, 'Winding Constrictor', 2)
+        source(state, 'Vorinclex, Monstrous Raider')
+        elf = damage_source(state, 'Glistener Elf')
+        grant_keyword(state, 1, {'target_card_id': elf.id, 'keyword': 'lifelink'})
+        state.attackers = [elf.id]
+        state.step = Step.COMBAT_DAMAGE
+        state.combat_damage_stage = 'regular'
+        _resolve_damage_step(state)
+        return publish(state, [{"quantity": 60, "card_name": "Island"}])
     if face_kind == 'counter_order':
         from tests.test_counter_replacements import source
         from tests.test_player_counters import source as experience_source

@@ -452,6 +452,25 @@ def finish_combat_damage(state: MatchState) -> None:
 
 
 def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set[str], first_strike_only: bool) -> None:
+    from rules_engine.damage_results import collect_damage_counters, flush_damage_counters
+    from effects.registry import resolve_effect
+
+    with collect_damage_counters(state) as packets:
+        damage_events, gain_effects = _combat_damage_results(state, default_defender, first_ids, first_strike_only)
+    flush_damage_counters(state, packets)
+    pending = state.pending_replacement_choice or state.pending_mechanic_choice
+    if pending:
+        pending.setdefault('continuation_effects', []).extend([
+            {'effect_key': 'emit_combat_damage_events', 'payload': {'events': damage_events}},
+            *gain_effects,
+        ])
+    else:
+        emit_event_batch(state, 'combat_damage_dealt', damage_events)
+        if gain_effects:
+            resolve_effect(state, state.active_player, 'effect_sequence', {'effects': gain_effects})
+
+
+def _combat_damage_results(state: MatchState, default_defender: int, first_ids: set[str], first_strike_only: bool):
     def assigns_damage(cid: str) -> bool:
         return _assigns_damage(state, cid, first_strike_only)
 
@@ -538,15 +557,12 @@ def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set
             record_lifelink(blocker_id, blk.controller, actual)
             if actual > 0:
                 damage_events.append({"source_card_id": blocker_id, "target_card_id": attacker, "amount": actual})
-    emit_event_batch(state, "combat_damage_dealt", damage_events)
     gain_effects = []
     for source_id, (controller, amount) in lifelink_gains.items():
         gain_effects.append({"effect_key": "gain_life", "payload": {
             "target_player": controller, "amount": amount, "__source_card_id": source_id,
         }})
-    if gain_effects:
-        from effects.registry import resolve_effect
-        resolve_effect(state, state.active_player, "effect_sequence", {"effects": gain_effects})
+    return damage_events, gain_effects
 
 
 def _remove_dead_creatures(state: MatchState) -> None:

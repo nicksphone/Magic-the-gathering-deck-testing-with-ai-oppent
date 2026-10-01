@@ -12,10 +12,10 @@ frontend/dist/
 backend/.graphify_*.json
 frontend/*.tsbuildinfo
 backend/card_data/image_cache/
-backend/knowledge/data/
-backend/diagnostics/
+backend/knowledge/data
+backend/diagnostics
 backend/backend/
-backend/training_runs/
+backend/training_runs
 graphify-out/cache/
 BUG_AUDIT.md
 FIXES.md

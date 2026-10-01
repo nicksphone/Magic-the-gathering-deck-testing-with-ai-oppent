@@ -69,5 +69,7 @@ try {
   assert.ok(await evaluate("localStorage.getItem('mtg.pendingSimulationStart') !== null"));
   console.log("PASS mismatched start response cannot attach to another simulator job");
 } finally {
+  // The intentionally mismatched final fixture must not launch a real job in later tests.
+  await evaluate("localStorage.removeItem('mtg.pendingSimulationStart'); localStorage.removeItem('mtg.activeSimulationJobId')");
   await close();
 }

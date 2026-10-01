@@ -1,4 +1,4 @@
-"""Resumable counter-effect events; entry, damage and cost routing is separate."""
+"""Resumable scalar counter events, with effect-only replacement provenance."""
 from __future__ import annotations
 
 from functools import lru_cache
@@ -46,7 +46,7 @@ def counter_options(state, controller, payload, used=()):
                 scope, op = instruction
                 controlled = card is not None and card.controller == source.controller
                 applies = (
-                    (scope == 'controlled_permanent' and controlled)
+                    (scope == 'controlled_permanent' and controlled and payload.get('__counter_is_effect', True))
                     or (scope == 'placer_self' and controller == source.controller)
                     or (scope == 'placer_opponent' and controller != source.controller)
                     or (scope == 'controlled_artifact_creature' and controlled and bool({'Artifact', 'Creature'} & set(card.types)))
@@ -93,6 +93,7 @@ def counter_effect_amount(state, controller, effect_key, payload):
                 'player_id': affected, 'controller': controller, 'counter_effect': effect_key,
                 'counter_payload': {**payload, 'amount': amount, '__counter_used': used, '__counter_choice': None},
                 'options': options,
+                'forecast_options': counter_options(state, controller, {**payload, '__counter_is_effect': True}, used),
             }
             state.priority_player = affected
             state.passed_priority = set()
@@ -101,36 +102,7 @@ def counter_effect_amount(state, controller, effect_key, payload):
         used.append(chosen['source_id'])
         before = amount
         amount = modified_count(amount, chosen['operation'])
+        payload = {**payload, '__counter_is_effect': True}
         state.log.append(f"{chosen['name']} replaces {before} {kind} counters with {amount}.")
         selected = None
     return amount
-
-
-def preferred_counter_option(pending):
-    """Bounded exact amount ordering; large boards use deterministic heuristics."""
-    options = pending['options']
-    amount = int(pending['counter_payload']['amount'])
-    harmful = pending['counter_payload']['counter'] in {'poison', '-1/-1', 'stun'}
-    counts = tuple(sum(o['operation'] == op for o in options) for op in ('double', 'half', 'add'))
-
-    @lru_cache(maxsize=None)
-    def final_count(value, remaining):
-        if not value or not any(remaining):
-            return value
-        results = []
-        for index, op in enumerate(('double', 'half', 'add')):
-            if remaining[index]:
-                rest = list(remaining)
-                rest[index] -= 1
-                results.append(final_count(modified_count(value, op), tuple(rest)))
-        return min(results) if harmful else max(results)
-
-    def score(option):
-        value = modified_count(amount, option['operation'])
-        if len(options) <= 24:
-            remaining = list(counts)
-            remaining[('double', 'half', 'add').index(option['operation'])] -= 1
-            value = final_count(value, tuple(remaining))
-        return -value if harmful else value
-
-    return max(options, key=score)['source_id']

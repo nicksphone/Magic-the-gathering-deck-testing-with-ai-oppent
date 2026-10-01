@@ -4,7 +4,6 @@ import re
 
 from rules_engine.continuous import effect_timestamp
 from rules_engine.card_types import is_token_card
-from rules_engine.counter_placement import put_counters
 
 
 def _battlefield_oracle_texts(state, controller: int | None = None):
@@ -211,6 +210,7 @@ def replace_noncombat_damage_to_creature(
     source_card_id: str | None,
     target_card_id: str | None,
     amount: int,
+    *, source_lki: dict | None = None,
 ) -> object | None:
     """Apply source-controlled noncombat damage replacement to a creature.
 
@@ -218,15 +218,18 @@ def replace_noncombat_damage_to_creature(
     amount. The replacement is applied once, and the resulting counters are
     checked by the normal state-based action path in the caller.
     """
-    if not source_card_id or source_card_id not in state.cards or not target_card_id or target_card_id not in state.cards:
+    if not target_card_id or target_card_id not in state.cards:
         return None
-    source = state.cards[source_card_id]
+    from rules_engine.damage_results import damage_controller, queue_damage_counters
+    if source_card_id not in state.cards and not source_lki:
+        return None
+    controller = damage_controller(state, source_card_id, source_lki)
     target = state.cards[target_card_id]
-    if "Creature" not in (getattr(target, "types", []) or []) or source.controller == target.controller or amount <= 0:
+    if "Creature" not in (getattr(target, "types", []) or []) or controller == target.controller or amount <= 0:
         return None
     candidates = [
         (card, text)
-        for card, text in _battlefield_oracle_texts(state, controller=source.controller)
+        for card, text in _battlefield_oracle_texts(state, controller=controller)
         if (
             "would deal noncombat damage to a creature an opponent controls" in text
             or "would deal noncombat damage to a creature your opponent controls" in text
@@ -236,7 +239,8 @@ def replace_noncombat_damage_to_creature(
     chosen = _choose_replacement_candidate(state, candidates, None, f"noncombat damage to {target.name}")
     if chosen is None:
         return None
-    put_counters(state, '-1/-1', amount, target_card_id=target_card_id)
+    queue_damage_counters(state, controller, 'add_counters', {'target_card_id': target_card_id,
+                          'counter': '-1/-1', 'amount': amount, '__counter_is_effect': True})
     state.log.append(f"{chosen.name} replaces {amount} noncombat damage to {target.name} with -1/-1 counters.")
     return chosen
 

@@ -401,6 +401,13 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         or (pending.get("resolving_item") or {}).get("controller")
         or pending["player_id"]
     )
+    counter_queue = list(pending.get('counter_continuation_queue') or [])
+    while counter_queue and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        event = counter_queue.pop(0)
+        resolve_effect(state, event['controller'], event['effect_key'], event['payload'])
+    next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
+    if next_pending:
+        next_pending.setdefault('counter_continuation_queue', []).extend(counter_queue)
     queue = list(pending.get("draw_continuation_queue") or [])
     if not queue and pending.get("remaining_draws"):
         queue = [pending.get("remaining_draw_payload") or {

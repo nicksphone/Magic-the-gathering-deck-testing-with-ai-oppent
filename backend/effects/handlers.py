@@ -174,8 +174,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return 0
         if (card.toughness is not None or "Planeswalker" in card.types) and amount > 0:
-            if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount) is not None:
-                if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+            if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
+                if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
                 return 0
             replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
@@ -194,7 +194,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 return 0
             from rules_engine.damage_results import apply_creature_damage
             if card.toughness is not None:
-                apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki)
+                apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
+                                      controller=controller, counter_is_effect=True)
                 state.log.append(f"{card.name} takes {post} damage.")
             if "Planeswalker" in card.types and card.loyalty is not None:
                 card.loyalty -= int(post)
@@ -202,7 +203,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             if not payload.get("__batch_damage"):
                 _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
-            if not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+            if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)
             return int(post)
     if target_player is not None:
@@ -221,7 +222,8 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         if post <= 0:
             return 0
         from rules_engine.damage_results import apply_player_damage
-        apply_player_damage(state, int(target_player), int(post), source_card_id, source_lki=source_lki)
+        apply_player_damage(state, int(target_player), int(post), source_card_id, source_lki=source_lki,
+                            controller=controller, counter_is_effect=True)
         state.log.append(f"{state.players[target_player].name} takes {post} damage.")
         if not payload.get("__batch_damage"):
             _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
@@ -234,9 +236,14 @@ def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount:
     from rules_engine.damage_results import source_has_keyword
     if amount > 0 and source_has_keyword(state, source_id, "lifelink", source_lki):
         source_controller = int(source_lki["controller"]) if source_lki is not None else state.cards[source_id].controller
-        gain_life(state, source_controller, {
+        payload = {
             "target_player": source_controller, "amount": amount, "__source_card_id": source_id,
-        })
+        }
+        pending = state.pending_replacement_choice or state.pending_mechanic_choice
+        if pending:
+            pending.setdefault('continuation_effects', []).append({'effect_key': 'gain_life', 'payload': payload})
+        else:
+            gain_life(state, source_controller, payload)
 
 
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
@@ -1805,7 +1812,11 @@ def add_player_counters(state: MatchState, controller: int, payload: dict) -> No
     amount = put_counters(state, kind, amount, target_player=player)
     if not amount:
         return
-    state.log.append(f'{target.name} gets {amount} {kind} counter(s).')
+    reason = payload.get('__counter_reason')
+    if reason in {'infect', 'toxic', 'infect/toxic'}:
+        state.log.append(f'{target.name} gets {amount} {kind} counters from {reason}.')
+    else:
+        state.log.append(f'{target.name} gets {amount} {kind} counter(s).')
     emit_event(state, 'player_counters_added', {'player_id': player, 'controller': controller,
                                               'counter': kind, 'amount': amount})
 
@@ -2027,6 +2038,9 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
                 state.passed_priority = set()
                 return
         dealt = deal_damage(state, controller, recipient)
+        from rules_engine.damage_results import source_has_keyword
+        if source_has_keyword(state, source_id, "lifelink", source_lki):
+            lifelink_total += dealt
         pending = state.pending_replacement_choice or state.pending_mechanic_choice
         if pending:
             pending["combat_damage_needs_sba"] = True
@@ -2037,10 +2051,11 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
                             "lifelink_total": lifelink_total},
             })
             return
-        from rules_engine.damage_results import source_has_keyword
-        if source_has_keyword(state, source_id, "lifelink", source_lki):
-            lifelink_total += dealt
     _gain_lifelink_from_damage(state, source_id, lifelink_total, source_lki)
+
+
+def emit_combat_damage_events(state: MatchState, controller: int, payload: dict) -> None:
+    emit_event_batch(state, 'combat_damage_dealt', payload.get('events') or [])
 
 
 def tap_card(state: MatchState, controller: int, payload: dict) -> None:

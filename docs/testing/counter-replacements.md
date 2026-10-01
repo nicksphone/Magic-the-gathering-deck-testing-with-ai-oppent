@@ -67,9 +67,12 @@ This is one measured case, not a guaranteed per-decision time/memory ceiling.
 ## Known Limitations and Next Upgrades
 
 - The shared physical placement helper still handles prohibitions alone for
-  damage consequences, Saga advancement, token/spell entries, opening counters
+  Saga advancement, token/spell entries, opening counters
   and loyalty costs. **Scalar replacements in those routes remain incomplete.**
   Existing player/route-fidelity warnings deliberately remain visible.
+- Supported damage consequences are now routed through scalar events in the
+  [damage increment](damage-counter-replacements.md). Its narrower combat and
+  continuation evidence does not certify general simultaneous damage/prevention.
 - Extend the event model through pre-entry characteristics, source attribution,
   entry/activation costs, simultaneous combat/batches and multi-kind events.
   Resumption must not announce entry triggers or run SBA before placement finishes.

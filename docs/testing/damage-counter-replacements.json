@@ -1,0 +1,187 @@
+{
+  "status": "verified_bounded_increment",
+  "backend": {
+    "passed": 2324,
+    "warnings": 292,
+    "seconds": 174.01,
+    "focused": 176,
+    "new_regressions": 16,
+    "source_matches_full_suite": true
+  },
+  "frontend": {
+    "lint": "pass",
+    "build": "pass",
+    "unit": "pass",
+    "browser": "pass: complete Chromium suite including counter choice and natural controller-mode BO3"
+  },
+  "http": {
+    "human_poison": 4,
+    "ai_poison": 3,
+    "lifelink_life": 21,
+    "pending_cleared": true
+  },
+  "replay": {
+    "games": 8,
+    "executions": 16,
+    "complete_game_results_equal": true,
+    "timeouts": 0,
+    "detected_cost_target_action_rejections": 0,
+    "pairs": [
+      {
+        "a": "Dimir Control",
+        "b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turns": 49,
+        "log_sha256": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae"
+      },
+      {
+        "a": "Tempo",
+        "b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turns": 15,
+        "log_sha256": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a"
+      },
+      {
+        "a": "Tokens",
+        "b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turns": 38,
+        "log_sha256": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7"
+      },
+      {
+        "a": "Ramp",
+        "b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turns": 14,
+        "log_sha256": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+      },
+      {
+        "a": "Midrange",
+        "b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turns": 21,
+        "log_sha256": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1"
+      },
+      {
+        "a": "Drain Deck",
+        "b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turns": 14,
+        "log_sha256": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b"
+      },
+      {
+        "a": "Tribal",
+        "b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turns": 25,
+        "log_sha256": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691"
+      },
+      {
+        "a": "Burn",
+        "b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turns": 16,
+        "log_sha256": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd"
+      }
+    ]
+  },
+  "graphify": {
+    "status": "updated",
+    "nodes": 7339,
+    "edges": 18344,
+    "communities": 327
+  },
+  "source_sha256": {
+    "backend/ai/agent.py": "83aad5725e46a2163e1a995069a4f3ad398a6286ffce5766f2aa2449001e2d00",
+    "backend/effects/handlers.py": "d72ed253d2fe3aa33f6016880cc4f3af5a81966b9950f84b2e41c47c6f913fd7",
+    "backend/effects/registry.py": "3c309b1fcc208f7ce49f1a2eecab7d2d862dd592ec9c4ccf4f0cad8dc437b951",
+    "backend/rules_engine/combat.py": "042385a22cafe8cc88b785f0bc85e9311d1e39bcff951f47005a8b0d484257d9",
+    "backend/rules_engine/counter_replacements.py": "6f37cb1a433671a1b3e4b885b78570bf02b0490bb7407cba48c363466d1f18db",
+    "backend/rules_engine/damage_results.py": "d254e82a1639c2a40efdc9d08751df0c1ca852abe2fa837af704260c47ca9d9e",
+    "backend/rules_engine/replacement.py": "447775c3dc10d752c56e50a715272528c11d46242ec5b1b3f77d980d1a0892a8",
+    "backend/rules_engine/stack_engine.py": "79c7b92daeb7e65041b5b1ed957116749b69a35a50194d7d9940af9beed90f6a",
+    "backend/rules_engine/state_based_actions.py": "1ab5dd2040f50254d3e1d6136184eb73946276d4a2f8d598eb9fb686cf8340c3",
+    "backend/tests/browser_fixture_server.py": "64af220a4d2d785fdda915487bee39218214f8c9b4ee6758104003f2d5de142c",
+    "backend/ai/counter_policy.py": "dd67566dfd80e2cf6274b2ee64599205e4b60de24a1bd8c7c6d16b6dc00cd6b4",
+    "backend/tests/test_damage_counter_replacements.py": "7a385960d0322917628363c850d167004ae7a8e62e5b4e26d3a0a9db25378864"
+  },
+  "evidence_sha256": {
+    "api.log": "c3cbba5041fae96ef076451c8bfdc475ff5903ccc15d7b75450844d3d3d55b31",
+    "browser-cleanup-final.log": "7d781b22dc9103c0f751941b745e3c0c6e43aeb79249bd74a45917ca0d4cafcb",
+    "browser-final.log": "515c2672d69b5dca824164053007b980f2f17a53178c31a5b12032ac3f5a1b7e",
+    "focused.log": "b646bd7a18cf0bb83e3c64969c1caf9e2416132aedaf40bd9610183de1e8ba3e",
+    "full.log": "537b49a89cf2e0d1d4ea400ba042f7010e9a14fc657ddb506c2c05ab0e694f13",
+    "mtg-damage-browser.log": "07939824a4539baae757c2c669d3e19d164fbb1149f1592c2091eb4d62851348",
+    "mtg-damage-graphify.log": "89490c2dd328c6e1c646fc769ad58527d3a9dfa39bbe38d0de1e18a270570564",
+    "replays.tar.gz": "ddfe21e892e237fb9920bff8133f93a49b3877aa33f76ee0c3213618eacbf316",
+    "graphify-final.log": "fbd3ab8eb0bc7cc75acf1ab41897937a28db9ceabf4b947b15cb7952d701f83a"
+  },
+  "files_changed": [
+    ".gitignore",
+    "CHANGELOG.md",
+    "README.md",
+    "backend/ai/agent.py",
+    "backend/effects/handlers.py",
+    "backend/effects/registry.py",
+    "backend/rules_engine/combat.py",
+    "backend/rules_engine/counter_replacements.py",
+    "backend/rules_engine/damage_results.py",
+    "backend/rules_engine/replacement.py",
+    "backend/rules_engine/stack_engine.py",
+    "backend/rules_engine/state_based_actions.py",
+    "backend/tests/browser_fixture_server.py",
+    "docs/testing/counter-replacements.md",
+    "frontend/tests/browser-human-actions.mjs",
+    "frontend/tests/browser-simulation-preflight.mjs",
+    "frontend/tests/human-actions.tsx",
+    "frontend/tests/run-browser-ci.sh",
+    "graphify-out/GRAPH_REPORT.md",
+    "graphify-out/graph.html",
+    "graphify-out/graph.json",
+    "graphify-out/manifest.json",
+    "plan.md",
+    "backend/ai/counter_policy.py",
+    "backend/tests/test_damage_counter_replacements.py",
+    "docs/testing/damage-counter-replacements.json",
+    "docs/testing/damage-counter-replacements.md"
+  ],
+  "live_services": {
+    "frontend_http": 200,
+    "backend_http": 200,
+    "backend_bind": "0.0.0.0:9999"
+  },
+  "publication": "verified, awaiting final Graphify/commit/push",
+  "evidence_archive": {
+    "file": "replays.tar.gz",
+    "members_sha256": {
+      "games1.json": "0c27f361e5c1ccfdef14eb550269ef674d8035d767d3919a9269a80ac7b42d17",
+      "games2.json": "427d25154a0eb800365487d2f922ab67b1d5e2f83eb5aab0d80684e0a729510c"
+    },
+    "byte_verified": true
+  },
+  "storage": {
+    "root": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab",
+    "local_documents_symlinks": true,
+    "live_sqlite": "local SSD",
+    "cleanup_removed_inactive_directories": 730,
+    "cleanup_logical_bytes": 11143809100,
+    "automatic_browser_success_cleanup": true,
+    "failed_browser_artifacts_retained": true,
+    "cold_directory_symlinks": [
+      "backend/diagnostics",
+      "backend/training_runs",
+      "backend/knowledge/data"
+    ],
+    "consistent_backup": "backups/20261001T112958Z: both databases passed quick_check; copied snapshots and uncommitted-source archives passed SHA-256 verification",
+    "archived_diagnostics_http": "200; bounded runs API returns two valid runs after migration"
+  },
+  "browser_fixture_isolation": "Final intentionally invalid simulator fixture clears only its simulator storage keys before closing; all original assertions preserved."
+}

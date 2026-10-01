@@ -7,8 +7,8 @@ if [[ ! -x "$python_bin" ]]; then
   exit 1
 fi
 
-scratch=$(mktemp -d /tmp/mtg-browser-ci-XXXXXX)
-profile=$(mktemp -d /tmp/mtg-browser-profile-XXXXXX)
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/mtg-browser-ci-XXXXXX")
+profile=$(mktemp -d "${TMPDIR:-/tmp}/mtg-browser-profile-XXXXXX")
 git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
 { git diff --name-only -- backend; git ls-files --others --exclude-standard backend; } | sort -u | while IFS= read -r path; do
   if [[ -f "$path" ]]; then install -D "$path" "$scratch/$path"; fi
@@ -18,7 +18,14 @@ backend_pid=''
 frontend_pid=''
 browser_pid=''
 cleanup() {
+  status=$?
   kill "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
+  wait "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
+  if [[ "$status" -eq 0 && "${MTG_KEEP_TEST_ARTIFACTS:-0}" != 1 ]]; then
+    rm -r -- "$scratch" "$profile"
+  else
+    echo "Retained browser test artifacts: $scratch and $profile" >&2
+  fi
 }
 trap cleanup EXIT
 
