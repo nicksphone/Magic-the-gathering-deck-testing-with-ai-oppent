@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor, object_incarnation
 from rules_engine import combat
+from rules_engine.counter_placement import put_counters, counter_placement_forbidden
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
@@ -212,8 +213,9 @@ class RulesEngine:
             chapters = extract_saga_chapters(card.oracle_text)
             if not chapters:
                 continue
-            lore = int(card.counters.get("__lore", 0) or 0) + 1
-            card.counters["__lore"] = lore
+            if not put_counters(state, 'lore', 1, target_card_id=cid):
+                continue
+            lore = int(card.counters.get("__lore", 0) or 0)
             chapter = next((item for item in chapters if int(item["number"]) == lore), None)
             state.log.append(f"{card.name} gets a lore counter ({lore}).")
             if chapter is None:
@@ -1095,6 +1097,9 @@ class RulesEngine:
                     next_loyalty = current_loyalty + x_value
             else:
                 next_loyalty = current_loyalty + int(ability["delta"])
+            if next_loyalty > current_loyalty and counter_placement_forbidden(state, 'loyalty', target_card_id=pw.id):
+                reject('Cannot pay loyalty cost: counters cannot be placed')
+                return
             if next_loyalty < 0:
                 reject("Not enough loyalty for this ability")
                 state.log.append(f"{pw.name} does not have enough loyalty for that ability.")

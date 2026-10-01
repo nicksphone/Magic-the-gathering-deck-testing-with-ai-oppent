@@ -1,0 +1,155 @@
+{
+  "date": "2026-10-01",
+  "parent_revision": "42c97abb4878ae95f747f183a3363ba002a7c17b",
+  "source_sha256": {
+    "backend/effects/handlers.py": "884e67ed59cc77b3db036c4be4dc7c33534795ce43a22aa113172b86dee771c1",
+    "backend/rules_engine/counter_placement.py": "c87da5bf0eb8a0c82591ed79f1fb95421c246b0591ff68024481c3f1e841a717",
+    "backend/rules_engine/coverage.py": "59b0c1dfabbdfd9999756d7dbd9b6c8031bfd547fc25c73fa7886b7ae346d87e",
+    "backend/rules_engine/damage_results.py": "d57eb08a283059794e359766e7f1c18030f139bcd0abed22c51a580b78db52e9",
+    "backend/rules_engine/engine.py": "c3386f3afc399aad1c60b45334b70e2921464fa9da47d717969c6d0977c28318",
+    "backend/rules_engine/move_generator.py": "8be9f534c6654e7f4fe498534c0c0fa0fb007dc83db3fa4626bea955a64662a6",
+    "backend/rules_engine/opening_hand.py": "25361286d29ad5dfbda6a89cc4358dbc9fd3d5eace07d64e4bb5506be213c21a",
+    "backend/rules_engine/replacement.py": "7cae1e6a4c232d026076fce6bb01b7d99fbd9cf6c69a8cba0329d4178b8a2a10",
+    "backend/rules_engine/stack_engine.py": "a393bc6dafffe3580229ce0b61fe739ce0059599d2819cf5983cb98d6b48df67",
+    "backend/tests/fixtures/counter_prohibitions.json": "94fe0b7a42c358835cc4abf1f1e231c5096798a32de7de61a34c5a21d4cdc448",
+    "backend/tests/test_counter_prohibitions.py": "47682cf089c4019140a8690fa3940b0dd4a7c84f5d95855a7bda0340b7168e40"
+  },
+  "backend": {
+    "passed": 2264,
+    "warnings": 292,
+    "seconds": 186.58,
+    "command": "python -m pytest -q",
+    "isolated_checkout": "/tmp/mtg-counter-bans-publish.cvlNTA"
+  },
+  "focused": {
+    "passed": 118,
+    "new_regressions": 44,
+    "seconds": 2.15
+  },
+  "frontend": {
+    "lint": "pass",
+    "build": "pass",
+    "unit": "pass",
+    "full_chromium": "pass",
+    "browser_log": "/tmp/mtg-counter-bans-browser-final.log"
+  },
+  "replay": {
+    "games": 8,
+    "executions": 16,
+    "complete_game_and_log_objects_equal": true,
+    "artifacts": "/tmp/mtg-counter-bans-replay.y2qU4c",
+    "rows": [
+      {
+        "deck_a": "Dimir Control",
+        "deck_b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "ticks": 1309,
+        "log_sha256": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tempo",
+        "deck_b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "ticks": 389,
+        "log_sha256": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tokens",
+        "deck_b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "ticks": 1036,
+        "log_sha256": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Ramp",
+        "deck_b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 405,
+        "log_sha256": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Midrange",
+        "deck_b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "ticks": 580,
+        "log_sha256": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Drain Deck",
+        "deck_b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 420,
+        "log_sha256": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tribal",
+        "deck_b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "ticks": 679,
+        "log_sha256": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Burn",
+        "deck_b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "ticks": 435,
+        "log_sha256": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+        "timeout": false,
+        "detected_rejections": []
+      }
+    ],
+    "scope": "Repeatability smoke only, not AI strength or balance."
+  },
+  "parent_probe": {
+    "experience": 2,
+    "poison": 3,
+    "minus_counters": 3,
+    "incubator_counters": 4,
+    "lore": 1
+  },
+  "current_probe": {
+    "experience": 0,
+    "poison": 0,
+    "minus_counters": 0,
+    "incubator_counters": 0,
+    "lore": 0
+  },
+  "remaining": [
+    "Scalar counter replacements and affected-player ordering",
+    "Complete entry, return, copy and activation-cost counter pathways",
+    "Conditional and turn-limited prohibitions",
+    "Proliferation, spending and arbitrary counter-added triggers",
+    "Full layer/ability suppression and broad-corpus seasoned AI validation",
+    "Previously recorded optional native timed-dump diagnostic remains unresolved"
+  ]
+}

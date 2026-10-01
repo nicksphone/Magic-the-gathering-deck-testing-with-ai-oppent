@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 — Shared counter prohibitions
+
+- Enforced bounded unconditional player, permanent-type and self counter bans through one application-code placement helper. Effects, infect/wither/toxic, supported damage-to-counter replacement, token/Incubate entries, supported spell entries, opening counters and Saga lore now use it. Existing counters, ordinary damage/lifelink, internal markers and separate animation instructions are preserved.
+- Kept poison, Saga lore and planeswalker loyalty storage authoritative without confusing loyalty/lore counters on ordinary creatures. Blocked positive loyalty costs are rejected/filtered; unsupported conditional and turn-limited bans now warn explicitly. Scalar replacements, ordering, full entry/cost coverage and proliferation remain open; no printed card/deck data or balance was changed.
+- Verified 2,264 isolated backend tests, 118 focused checks and 44 new regressions, plus frontend lint/build/unit and full Chromium (including natural AI and both human BO3 flows). Eight seat-paired smoke games repeat identical complete reported results/logs across sixteen executions without timeout or detected cast/target/cost rejection. Actual parent/current probes demonstrate five corrected placement paths under Solemnity. [Scope and evidence](docs/testing/counter-prohibitions.md).
+
 ## Unreleased
 
 - Added persisted named player counters with poison compatibility, typed public views, both-seat display and shared gain effects/events. Supported Oracle cast/entry/death/end-step gain clauses produce stack triggers; departure facts survive source entry/restart and reset at the turn boundary. Added current-controller self/global/CDA P/T scaling and source-attributed traces, correcting the zero-counter flat anthem inference.

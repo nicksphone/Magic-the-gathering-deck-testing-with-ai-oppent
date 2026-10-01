@@ -34,6 +34,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     if any(list(unsupported_ward_costs(text)) for text in texts):
         out.append("unsupported ward cost")
     from rules_engine.player_counters import gain_clause
+    from rules_engine.counter_placement import unsupported_counter_prohibitions
+    if any(unsupported_counter_prohibitions(text) for text in texts):
+        out.append('unsupported counter prohibition')
     from rules_engine.oracle_text import without_reminder_text
     if any(re.search(r'\byou get (?:an?|\d+) [a-z-]+ counters?\b', line, re.I)
            and gain_clause(line) is None

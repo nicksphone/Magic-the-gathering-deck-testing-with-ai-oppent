@@ -4,6 +4,7 @@ import re
 
 from rules_engine.continuous import effect_timestamp
 from rules_engine.card_types import is_token_card
+from rules_engine.counter_placement import put_counters
 
 
 def _battlefield_oracle_texts(state, controller: int | None = None):
@@ -235,7 +236,7 @@ def replace_noncombat_damage_to_creature(
     chosen = _choose_replacement_candidate(state, candidates, None, f"noncombat damage to {target.name}")
     if chosen is None:
         return None
-    target.counters["-1/-1"] = int(target.counters.get("-1/-1", 0)) + int(amount)
+    put_counters(state, '-1/-1', amount, target_card_id=target_card_id)
     state.log.append(f"{chosen.name} replaces {amount} noncombat damage to {target.name} with -1/-1 counters.")
     return chosen
 

@@ -1,5 +1,21 @@
 # MTG Deck Testing Lab Finish Plan
 
+Counter-prohibition increment: 2,264 isolated backend tests and 118 focused
+checks pass, including 44 new regressions. Frontend lint/build/unit and full Chromium pass; eight
+seeded seat-paired games reproduce their complete reported results/logs across
+sixteen executions without timeout or detected cast/target/cost rejection.
+Shared physical placement now enforces supported
+unconditional player/type/self bans across effects, damage consequences,
+Soul-Scar-style replacement, tokens, supported spell entries and Saga lore.
+Existing counters and internal damage/buff markers remain distinct. General
+loyalty-counter effects use the authoritative loyalty field; blocked positive
+loyalty costs are rejected and filtered from ordinary legal moves.
+[Scope and validation](docs/testing/counter-prohibitions.md).
+
+- [x] Implement bounded unconditional counter prohibitions through shared application-code placement, with canonical fixtures and explicit unsupported-clause diagnostics.
+- [ ] Implement doubling/halving/additive counter replacements with correct placer/recipient scope, affected-player order choices, per-ability usage tracking and resumable batch/combat continuations.
+- [ ] Finish all entry/cost/return/copy placement routes, proliferation, removal/spending and variable-resource AI. Initial planeswalker loyalty and arbitrary permanent-entry rules require further integration; do not claim whole-card correctness.
+
 Player-counter milestone: 2,220 isolated backend tests, 181 focused checks,
 frontend lint/build/unit and full Chromium pass. Fourteen canonical rows and
 68 new regressions cover supported counter gains, scaling and ward X. Eight
@@ -7,7 +23,7 @@ seat-paired games repeat across sixteen executions without timeout or rejected
 cast/target. [Scope, evidence and remaining gaps](docs/testing/player-counters.md).
 
 - [x] Add persisted named player counters, poison compatibility and both-seat validated views. Connect supported cast/entry/death/end-step gain triggers, turn-scoped departure facts, self/global/CDA stats and named-counter ward X to shared application rules and human/AI payments.
-- [ ] Implement player-counter replacements/prohibitions and competing choices, proliferation/removal/spending, arbitrary counter-dependent clauses and variable resource strategy. Complete Meren/Daxos/Ezuri/Kelsien/Katara/Zuko/Toph follow-up abilities before claiming those whole cards work.
+- [ ] Implement remaining player-counter replacements/prohibitions and competing choices, proliferation/removal/spending, arbitrary counter-dependent clauses and variable resource strategy. Bounded unconditional bans landed above. Complete Meren/Daxos/Ezuri/Kelsien/Katara/Zuko/Toph follow-up abilities before claiming those whole cards work.
 - [ ] Use the [cached experience inventory](docs/testing/player-counter-corpus.json) to prioritize actual unsupported clauses across all styles: 19 payloads, eight recognized gain clauses, fifteen with known gaps. Empty warning lists and recognized clauses are not whole-card or AI certification.
 
 Ward-form milestone: 2,152 independent backend tests, 53 focused ward checks,

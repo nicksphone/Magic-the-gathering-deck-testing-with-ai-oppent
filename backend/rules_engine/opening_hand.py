@@ -84,7 +84,8 @@ def finish_opening_hand_choice(state, player_id, action) -> bool:
     card.summoning_sick = False
     assign_static_order_on_battlefield_entry(state, cid)
     if spec.get("counter"):
-        card.counters[spec["counter"]] = 1
+        from rules_engine.counter_placement import put_counters
+        put_counters(state, spec['counter'], 1, target_card_id=cid)
     emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
     state.log.append(f"{player.name} begins with {card.name} on the battlefield.")
     if spec.get("exile_hand") and player.hand:

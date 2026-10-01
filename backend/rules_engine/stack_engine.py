@@ -7,6 +7,7 @@ from rules_engine.attachments import attach_if_legal, is_aura
 from rules_engine.events import emit_event
 from rules_engine.library_permissions import choose_type_for_realmwalker
 from rules_engine.replacement import replacement_options, replacement_source_used
+from rules_engine.counter_placement import put_counters
 from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 
@@ -323,7 +324,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                     match = re.search(r"escapes with (a|one|\d+) \+1/\+1 counters?", card.oracle_text, re.IGNORECASE)
                     if match:
                         amount = 1 if match.group(1).lower() in {"a", "one"} else int(match.group(1))
-                        card.counters["+1/+1"] = int(card.counters.get("+1/+1", 0)) + amount
+                        put_counters(state, '+1/+1', amount, target_card_id=card.id)
                 pending = list(getattr(state, "pending_entry_counters", []) or [])
                 remaining: list[dict] = []
                 applied = False
@@ -334,7 +335,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                         and int(entry.get("expires_turn", state.turn)) == int(state.turn)
                     ):
                         counter = str(entry.get("counter", "+1/+1"))
-                        card.counters[counter] = int(card.counters.get(counter, 0)) + max(0, int(entry.get("amount", 1) or 0))
+                        put_counters(state, counter, entry.get('amount', 1) or 0, target_card_id=card.id)
                         applied = True
                     else:
                         remaining.append(entry)
@@ -346,7 +347,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if "enters with x +1/+1 counters" in (card.oracle_text or "").lower():
                 x_value = max(0, int(payload.get("x_value", 0) or 0))
                 if x_value:
-                    card.counters["+1/+1"] = int(card.counters.get("+1/+1", 0)) + x_value
+                    put_counters(state, '+1/+1', x_value, target_card_id=card.id)
             if is_aura(card):
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):

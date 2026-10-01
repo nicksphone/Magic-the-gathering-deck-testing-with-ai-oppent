@@ -320,6 +320,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     next_loyalty = (card.loyalty or 0) + int(ability["delta"])
                 if next_loyalty < 0:
                     continue
+                from rules_engine.counter_placement import counter_placement_forbidden
+                if next_loyalty > (card.loyalty or 0) and counter_placement_forbidden(state, 'loyalty', target_card_id=cid):
+                    continue
                 hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id)
                 if not has_available_targets_for_action(hints):

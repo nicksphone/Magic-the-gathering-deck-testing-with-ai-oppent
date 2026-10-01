@@ -6,6 +6,7 @@ import re
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card, object_incarnation
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
+from rules_engine.counter_placement import put_counters
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
@@ -1466,7 +1467,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             token.tapped = True
             state.attackers.append(cid)
             state.attack_targets[cid] = attack_targets[index] if attack_targets is not None else attack_target
-        token.counters.update(payload.get("counters") or {})
+        for kind, count in (payload.get("counters") or {}).items():
+            put_counters(state, kind, count, target_card_id=cid)
         entry_events.append({"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
@@ -1795,10 +1797,9 @@ def add_player_counters(state: MatchState, controller: int, payload: dict) -> No
     if payload.get('requires_departure') and player not in state.players_with_permanent_departure:
         return
     target = state.players[player]
-    if kind == 'poison':
-        target.poison += amount
-    else:
-        target.counters[kind] = target.counters.get(kind, 0) + amount
+    amount = put_counters(state, kind, amount, target_player=player)
+    if not amount:
+        return
     state.log.append(f'{target.name} gets {amount} {kind} counter(s).')
     emit_event(state, 'player_counters_added', {'player_id': player, 'controller': controller,
                                               'counter': kind, 'amount': amount})
@@ -1812,7 +1813,7 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
         card = state.cards[target]
         if "effect_timestamp" in payload and object_incarnation(card) != payload["effect_timestamp"]:
             return
-        card.counters[counter] = card.counters.get(counter, 0) + amount
+        put_counters(state, counter, amount, target_card_id=target)
         if payload.get("animate_land") and "Land" in card.types:
             card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))
             card.power = 0
