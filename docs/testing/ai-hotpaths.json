@@ -1,0 +1,239 @@
+{
+  "scope": "Shared clone/static-parser optimization plus supported composed keyword prohibitions; not professional-AI, balance, universal rules or worst-case latency certification",
+  "base_revision": "1b07c58a9097b66afe6183480a7207fd433fe815",
+  "verified_at": "2026-10-01T00:04:46.989Z",
+  "canonical_fixture_rows": 12,
+  "added_regressions": 37,
+  "checks": {
+    "standard_backend": {
+      "passed": 2133,
+      "warnings": 292,
+      "seconds": 283.83,
+      "command": "python -m pytest -q",
+      "isolated_source": "/tmp/mtg-ai-hot-final-suite.5MzTKc"
+    },
+    "focused": {
+      "passed": 259,
+      "seconds": 9.71,
+      "isolated_source": "/tmp/mtg-ai-flat.Fz1Lfs"
+    },
+    "frontend": {
+      "lint": "pass",
+      "build": "pass",
+      "unit": "pass",
+      "full_chromium": "pass",
+      "browser_log": "/tmp/mtg-ai-hot-browser.log"
+    },
+    "installation": "Existing pinned interpreter/dependencies reused; not a fresh install"
+  },
+  "benchmark": {
+    "iterations_per_mode": 5,
+    "player_id": 1,
+    "archetype": "Control",
+    "difficulty": "master",
+    "opponent_archetype": "Ramp",
+    "reference_mode": "hotpaths",
+    "actions_and_reasoning_equal": true,
+    "authoritative_state_unchanged": true,
+    "timing": {
+      "optimized": {
+        "median_seconds": 0.5668346397578716,
+        "min_seconds": 0.5593909271992743,
+        "max_seconds": 0.577027483843267,
+        "settle_calls": [
+          8,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "reference_hotpaths": {
+        "median_seconds": 0.834692136850208,
+        "min_seconds": 0.8136596106924117,
+        "max_seconds": 0.8377434001304209,
+        "settle_calls": [
+          8,
+          8,
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    "median_speedup_ratio": 1.4725496261250972,
+    "scope": "single-snapshot performance ablation; not strength, balance or worst-case latency evidence"
+  },
+  "profiled_game": {
+    "a": "Blue Control",
+    "b": "Ramp",
+    "seed": 73,
+    "parent_reported_object_and_log_equal": true,
+    "parent_instrumented_seconds": 29.44547817390412,
+    "optimized_instrumented_seconds": 24.646486163139343,
+    "notes": "cProfile overhead and local host/cache conditions affect timings; no universal speed guarantee",
+    "parent_log": "/tmp/mtg-ai-profile.oqpKGV/profile.log",
+    "optimized_log": "/tmp/mtg-ai-flat.Fz1Lfs/profile-final.log"
+  },
+  "replay": {
+    "executions": 16,
+    "logical_games": 8,
+    "repeat_objects_and_logs_equal": true,
+    "actual_parent_objects_and_logs_equal": true,
+    "timeouts": 0,
+    "cast_target_rejection_lines": 0,
+    "hydration": "Offline built-in seed via hydrate_deck_cards(None,...), not the entire live card cache",
+    "games": [
+      {
+        "a": "Dimir Control",
+        "b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae"
+      },
+      {
+        "a": "Tempo",
+        "b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a"
+      },
+      {
+        "a": "Tokens",
+        "b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7"
+      },
+      {
+        "a": "Ramp",
+        "b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+      },
+      {
+        "a": "Midrange",
+        "b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1"
+      },
+      {
+        "a": "Drain Deck",
+        "b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b"
+      },
+      {
+        "a": "Tribal",
+        "b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691"
+      },
+      {
+        "a": "Burn",
+        "b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd"
+      }
+    ]
+  },
+  "parent_keyword_probes": [
+    {
+      "name": "Archetype of Imagination",
+      "prohibited_keyword": "flying",
+      "incorrectly_restored": true
+    },
+    {
+      "name": "Archetype of Courage",
+      "prohibited_keyword": "first strike",
+      "incorrectly_restored": true
+    },
+    {
+      "name": "Archetype of Endurance",
+      "prohibited_keyword": "hexproof",
+      "incorrectly_restored": true
+    },
+    {
+      "name": "Archetype of Aggression",
+      "prohibited_keyword": "trample",
+      "incorrectly_restored": true
+    },
+    {
+      "name": "Archetype of Finality",
+      "prohibited_keyword": "deathtouch",
+      "incorrectly_restored": true
+    }
+  ],
+  "fixed_keyword_probes": [
+    {
+      "name": "Archetype of Imagination",
+      "prohibited_keyword": "flying",
+      "incorrectly_restored": false
+    },
+    {
+      "name": "Archetype of Courage",
+      "prohibited_keyword": "first strike",
+      "incorrectly_restored": false
+    },
+    {
+      "name": "Archetype of Endurance",
+      "prohibited_keyword": "hexproof",
+      "incorrectly_restored": false
+    },
+    {
+      "name": "Archetype of Aggression",
+      "prohibited_keyword": "trample",
+      "incorrectly_restored": false
+    },
+    {
+      "name": "Archetype of Finality",
+      "prohibited_keyword": "deathtouch",
+      "incorrectly_restored": false
+    }
+  ],
+  "diagnostic_failure": {
+    "status": "Unresolved native timed-dump failure; not counted as passing or claimed fixed",
+    "failed_command": "python -m pytest -q -o faulthandler_timeout=90",
+    "signal": "SIGSEGV",
+    "failed_log": "/tmp/mtg-ai-hot-suite.hzOI6H/full.log",
+    "failed_log_tail": [
+      "........................................................................ [ 60%]",
+      "................................Timeout (0:01:30)!",
+      "Thread 0x00007c759e7296c0 (most recent call first):",
+      "  File \"/tmp/mtg-ai-hot-suite.hzOI6H/backend/rules_engine/continuous.py\", line 770 in <lambda>",
+      "  File timeout: the monitored command dumped core"
+    ],
+    "isolated_bo3_rerun": "2 passed, 105 warnings in 141.32s",
+    "isolated_bo3_log": "/tmp/mtg-ai-hot-live.fQrDHW/live.log",
+    "gdb_timed_rerun": "1 passed, 88 warnings in 192.86s; exited normally",
+    "gdb_log": "/tmp/mtg-ai-hot-native.yN7DXj/native.log",
+    "related_upstream_context": "https://github.com/python/cpython/issues/158200",
+    "upstream_caveat": "Different tested interpreter branch; similar report is not proof of the local Python 3.12.3 cause; no interpreter upgrade performed"
+  },
+  "source_sha256": {
+    "backend/ai/pending_effects.py": "cf810b029dac212c807ab625ff43d274e5da39e9ae3a7c42a952a54d7d51e17e",
+    "backend/rules_engine/continuous.py": "60a6532d97149fe572a508d40ec9a454064bf38a9a4b45ce5a44f68bb7ba6a78",
+    "backend/scripts/benchmark_ai_decisions.py": "8414e5687bb4972f104a2933d40ff0b4ac2642f57f61c26a2a4b9455b9b87d85",
+    "backend/tests/test_ai_projection_scope.py": "2a8d81f9969533e3405db21d595acb21815d48c43ecf964b73b541ab0d5321ef",
+    "backend/tests/fixtures/static_parser_cache.json": "395a72009bb8ed250ace0e3211ad147fc5622b48f96ef8654411fbc36888e919",
+    "backend/tests/test_static_parser_cache.py": "c53b97a03ef2ef90afbde9558de254fa1819d45276f418d48d4aa21f36e1a07e"
+  },
+  "manual_review": [
+    "Worst-case complex/master-plus decision and autoplay-request latency",
+    "Native timed-diagnostic stability and long-session soak",
+    "Arbitrary static/layer/card semantics and broader strategic quality"
+  ]
+}

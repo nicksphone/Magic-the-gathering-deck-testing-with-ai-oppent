@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reduced shared planning-copy dispatch for flat card containers while preserving aliases, cycles and nested metadata isolation. Added bounded immutable static-instruction caches keyed by normalized Oracle text, not cards or effective game state. Expanded paired benchmark modes to isolate card-field copying and the combined hot paths without changing search limits.
+- Fixed supported composed keyword prohibitions so "lose ... and can't have or gain ..." overrides newer grants. Canonical fixtures and independent parent probes cover all five Archetypes; control, zone, counter and attachment updates still recompute from current state. See [scope and evidence](docs/testing/ai-hotpaths.md).
+- Hot-path verification: 2,133 independent standard backend tests, 259 focused checks, frontend lint/build/unit and full Chromium pass. Sixteen smoke executions reproduce eight actual-parent games/logs. A five-pair decision ablation measures 0.567 s versus 0.835 s with equal decisions/reasoning; timings are local samples. An optional timed-dump run's native crash is retained as unresolved despite passing standard and isolated/GDB reruns.
+
 - Replaced upfront ward casting taxes with triggered stack objects and resumable mana, fixed/dynamic-power life, discard and qualified sacrifice payments. Covered actual activated/entry-triggered abilities and spell copies; Stifle can counter ward while the original remains on the stack. Human controls expose pay/decline and deliberate card selection for either seat. Shared AI projects immediate payment versus losing the referenced stack object without mutating the live match. See [scope and verification](docs/testing/ward-resolution.md).
 - Ward verification: 2,096 independent final-source backend tests, 246 focused checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games repeat across sixteen executions without timeout or cast/target rejection. Thirty canonical fixture rows and actual HTTP/UI controls cover the supported boundary, not universal rules or professional AI strength.
 

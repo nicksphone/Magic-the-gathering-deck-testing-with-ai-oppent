@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from functools import lru_cache
+from functools import lru_cache, wraps
 from typing import Any
 
 from game_state.state import Zone
@@ -257,7 +257,8 @@ KW_REMOVE_RE = re.compile(
 )
 KW_CANT_HAVE_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
-    r"(you control|your opponents control)\s+can't have\s+([^.]*)"
+    r"(you control|your opponents control)\s+"
+    r"(?:(?:lose|loses)\s+[^.]+?\s+and\s+)?(?:can't|cannot) have(?: or gain)?\s+([^.]*)"
 )
 PT_AND_KW_REMOVE_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
@@ -533,8 +534,22 @@ def _self_scaling_pt_delta(state, source_card) -> tuple[int, int]:
     return total_p, total_t
 
 
-def _iter_pt_modifiers(source_card):
-    text = _static_oracle_text(source_card)
+def _static_parser(parser):
+    """Cache immutable instructions by text, never effective mutable game state."""
+    cached = lru_cache(maxsize=4096)(lambda text: tuple(parser(text)))
+
+    @wraps(parser)
+    def instructions(source_card):
+        return iter(cached(_static_oracle_text(source_card)))
+
+    instructions.uncached = lambda source_card: parser(_static_oracle_text(source_card))
+    instructions.cache_info = cached.cache_info
+    instructions.cache_clear = cached.cache_clear
+    return instructions
+
+
+@_static_parser
+def _iter_pt_modifiers(text):
     for match in PT_STATIC_RE.finditer(text):
         line_start = text.rfind("\n", 0, match.start()) + 1
         line_end = text.find("\n", match.end())
@@ -549,8 +564,8 @@ def _iter_pt_modifiers(source_card):
         yield (scope, other_only, subject, p_delta, t_delta)
 
 
-def _iter_pt_setters(source_card):
-    text = _static_oracle_text(source_card)
+@_static_parser
+def _iter_pt_setters(text):
     for match in PT_SET_SCOPE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -577,14 +592,14 @@ def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
             and _subject_matches(state, target_id, subject))
 
 
-def _iter_keyword_grants(source_card):
-    text = _static_oracle_text(source_card)
+@_static_parser
+def _iter_keyword_grants(text):
     for match in PT_AND_KW_STATIC_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         granted_text = match.group(4).strip()
-        granted = [kw for kw in KNOWN_KEYWORDS if kw in granted_text]
+        granted = tuple(kw for kw in KNOWN_KEYWORDS if kw in granted_text)
         if granted:
             yield (scope, other_only, subject, granted)
     for match in KW_STATIC_RE.finditer(text):
@@ -592,37 +607,39 @@ def _iter_keyword_grants(source_card):
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         granted_text = match.group(4).strip()
-        granted = [kw for kw in KNOWN_KEYWORDS if kw in granted_text]
+        granted = tuple(kw for kw in KNOWN_KEYWORDS if kw in granted_text)
         if granted:
             yield (scope, other_only, subject, granted)
 
 
-def _iter_keyword_removals(source_card):
-    text = _static_oracle_text(source_card)
+@_static_parser
+def _iter_keyword_removals(text):
     for match in PT_AND_KW_REMOVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         removed_text = match.group(4).strip()
         if "all abilities" in removed_text:
-            yield (scope, other_only, subject, {"all abilities"})
+            yield (scope, other_only, subject, frozenset({"all abilities"}))
             continue
         removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
         if removed:
-            yield (scope, other_only, subject, set(removed))
+            yield (scope, other_only, subject, frozenset(removed))
     for match in KW_REMOVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         removed_text = match.group(4).strip()
         if "all abilities" in removed_text:
-            yield (scope, other_only, subject, {"all abilities"})
+            yield (scope, other_only, subject, frozenset({"all abilities"}))
             continue
         removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
         if removed:
-            yield (scope, other_only, subject, set(removed))
-def _iter_keyword_cant_removals(source_card):
-    text = _static_oracle_text(source_card)
+            yield (scope, other_only, subject, frozenset(removed))
+
+
+@_static_parser
+def _iter_keyword_cant_removals(text):
     for match in KW_CANT_HAVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -630,7 +647,7 @@ def _iter_keyword_cant_removals(source_card):
         removed_text = match.group(4).strip()
         removed = [kw for kw in KNOWN_KEYWORDS if kw in removed_text]
         if removed:
-            yield (scope, other_only, subject, set(removed))
+            yield (scope, other_only, subject, frozenset(removed))
 
 
 def _scope_controller(source_controller: int, scope: str, target_controller: int) -> bool:

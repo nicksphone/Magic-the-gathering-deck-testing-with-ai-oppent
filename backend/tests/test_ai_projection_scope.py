@@ -156,7 +156,63 @@ def test_fast_card_copy_preserves_aliases_cycles_and_isolates_mutable_fields():
     assert "+1/+1" not in state.cards[victim].counters
 
 
-@pytest.mark.parametrize("reference_mode", ["full", "copy-only"])
+@pytest.mark.parametrize("value", [[], {}, set(), ["G", 2, None, Zone.BATTLEFIELD],
+                                  {"+1/+1": 3}, {"flying", "haste"}, [[1]], {"nested": [1]}])
+def test_flat_field_copy_matches_deepcopy_and_preserves_shared_alias(value):
+    memo = {}
+    cloned = pending_effects._copy_card_field(value, memo)
+    assert cloned == deepcopy(value) and cloned is not value
+    assert pending_effects._copy_card_field(value, memo) is cloned
+    if isinstance(value, list):
+        cloned.append("new")
+        assert cloned != value
+    elif isinstance(value, dict):
+        cloned["new"] = 1
+        assert "new" not in value
+    else:
+        cloned.add("new")
+        assert "new" not in value
+
+
+def test_flat_container_aliases_cross_cards_and_player_zones_without_leaking():
+    state, victim, held = fixture()
+    shared = ["flying"]
+    state.cards[victim].keywords = state.cards[held].keywords = shared
+    state.cards[victim].test_hand_alias = state.players[1].hand
+    clone = pending_effects.planning_copy(state)
+    assert clone.cards[victim].keywords is clone.cards[held].keywords
+    assert clone.cards[victim].test_hand_alias is clone.players[1].hand
+    clone.cards[victim].keywords.append("haste")
+    clone.cards[victim].test_hand_alias.clear()
+    assert shared == ["flying"] and state.players[1].hand
+
+
+def test_container_subclass_retains_its_custom_deepcopy_contract():
+    class CustomList(list):
+        def __deepcopy__(self, memo):
+            result = CustomList(["custom"])
+            memo[id(self)] = result
+            return result
+    original = CustomList(["flying"])
+    clone = pending_effects._copy_card_field(original, {})
+    assert type(clone) is CustomList and clone == ["custom"]
+
+
+def test_nested_cycles_and_mutable_scalar_subclasses_use_deepcopy():
+    nested = []
+    nested.append(nested)
+    clone = pending_effects._copy_card_field(nested, {})
+    assert clone is not nested and clone[0] is clone
+    class MutableString(str):
+        pass
+    value = MutableString("flying")
+    value.extra = [1]
+    clone = pending_effects._copy_card_field([value], {})
+    clone[0].extra.append(2)
+    assert value.extra == [1]
+
+
+@pytest.mark.parametrize("reference_mode", ["full", "copy-only", "card-fields", "hotpaths"])
 def test_benchmark_checks_full_decision_and_state_without_timing_threshold(reference_mode):
     from scripts.benchmark_ai_decisions import benchmark
     state, _ = dense_removal_state()
@@ -165,7 +221,7 @@ def test_benchmark_checks_full_decision_and_state_without_timing_threshold(refer
     assert result["actions_and_reasoning_equal"] and result["authoritative_state_unchanged"]
     assert result["timing"]["optimized"]["settle_calls"] == [1, 1]
     assert result["opponent_archetype"] == "Tempo"
-    reference_key = "reference_ablation" if reference_mode == "full" else "reference_copy"
+    reference_key = {"full": "reference_ablation", "copy-only": "reference_copy", "card-fields": "reference_card_fields", "hotpaths": "reference_hotpaths"}[reference_mode]
     assert all(count > 1 if reference_mode == "full" else count == 1
                for count in result["timing"][reference_key]["settle_calls"])
     with pytest.raises(ValueError):

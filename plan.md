@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab Finish Plan
 
+Hot-path/keyword milestone: 2,133 standard backend tests and 259 focused checks,
+frontend gates and full Chromium pass. Shared optimizations preserve the captured
+decision/reasoning and eight parent smoke-game logs. Composed keyword prohibitions
+are corrected across all five Archetypes. [Evidence and open diagnostic risk](docs/testing/ai-hotpaths.md).
+
 Ward milestone verified: 2,096 independent final-source backend tests, 246 focused
 checks, frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired
 games repeat across sixteen executions without timeout or cast/target rejection.
@@ -7,7 +12,8 @@ See [scope, source hashes and remaining gaps](docs/testing/ward-resolution.md).
 
 - [x] Replace the ward casting-tax approximation with supported triggered response/payment windows across spells, abilities and copies; provide durable human choices and bounded shared AI payment planning. See [ward scope and evidence](docs/testing/ward-resolution.md).
 - [ ] Extend ward to generic resolution-time X definitions, arbitrary temporary/conditional grants, full ability-layer suppression and cost-prevention/replacement ordering. Improve pre-cast multi-ward and response/opportunity planning; certify supported whole-card clauses rather than infer correctness from keyword recognition.
-- [ ] Profile and bound control/ramp autoplay decision latency without removing legal lines or reducing tactical quality. A ward-release full-suite diagnostic observed more than 90 seconds inside a BO3 autoplay request's strategic search (`_strategic_plan_action` / `_stack_two_ply_value` / effective keyword traversal); this was computation, not a proven deadlock. Measure per-decision time separately from a 100-tick request and CPU contention before choosing optimizations.
+- [x] Profile control/ramp decisions and reduce measured shared clone/static-parser work without changing tactical search depth or candidate limits. Add paired ablations, mutation/alias safety tests, canonical dynamic-state checks and composed keyword-prohibition fixes. See [hot-path evidence](docs/testing/ai-hotpaths.md).
+- [ ] Bound worst-case per-decision and aggregated autoplay request latency without dropping relevant legal lines. Profile additional complex positions and master-plus search, improve reusable ranking/projection work and distinguish CPU contention from stalls. One optional timed diagnostic run crashed natively while printing a stack dump; standard suite and isolated/GDB BO3 reruns pass, but its root cause remains unverified. Preserve that investigation before stronger release claims.
 
 Aura-cost milestone: 2,062 isolated final-source backend tests, 178 focused
 checks, frontend lint/build/unit and the complete final Chromium harness pass.

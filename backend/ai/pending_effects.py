@@ -45,10 +45,24 @@ def planning_copy(state):
     for card in cards:
         memo[id(card)].__dict__.update({
             key: value if type(value) in _immutable_card_types
-            else deepcopy(value, memo)
+            else _copy_card_field(value, memo)
             for key, value in card.__dict__.items()
         })
     return deepcopy(state, memo)
+
+
+def _copy_card_field(value, memo):
+    """Copy common flat containers without deepcopy's per-scalar dispatch."""
+    if id(value) in memo:
+        return memo[id(value)]
+    kind = type(value)
+    if ((kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
+            or (kind is dict and all(type(key) in _immutable_card_types and type(item) in _immutable_card_types
+                                     for key, item in value.items()))):
+        result = value.copy()
+        memo[id(value)] = result
+        return result
+    return deepcopy(value, memo)
 
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:

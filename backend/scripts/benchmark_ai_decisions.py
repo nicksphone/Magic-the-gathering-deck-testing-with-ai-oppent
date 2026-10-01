@@ -30,9 +30,9 @@ def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype:
               reference_mode: str = "full") -> dict:
     if player_id not in (1, 2) or iterations < 1:
         raise ValueError("Choose player 1/2 and a positive iteration count")
-    if reference_mode not in {"full", "copy-only"}:
-        raise ValueError("Choose full or copy-only reference mode")
-    reference_key = "reference_ablation" if reference_mode == "full" else "reference_copy"
+    if reference_mode not in {"full", "copy-only", "card-fields", "hotpaths"}:
+        raise ValueError("Choose full, copy-only, card-fields or hotpaths reference mode")
+    reference_key = {"full": "reference_ablation", "copy-only": "reference_copy", "card-fields": "reference_card_fields", "hotpaths": "reference_hotpaths"}[reference_mode]
     rows = {"optimized": [], reference_key: []}
     decisions = []
     unchanged = True
@@ -47,12 +47,21 @@ def benchmark(snapshot: dict, player_id: int, iterations: int = 5, *, archetype:
                                          opponent_archetype=opponent_archetype)
             with ExitStack() as scope:
                 if mode == reference_key:
-                    if reference_mode == "full":
+                    if reference_mode in {"card-fields", "hotpaths"}:
+                        scope.enter_context(patch.object(pending_effects, "_copy_card_field", deepcopy))
+                        if reference_mode == "hotpaths":
+                            from rules_engine import continuous
+                            for name in ("_iter_pt_modifiers", "_iter_pt_setters", "_iter_keyword_grants",
+                                         "_iter_keyword_removals", "_iter_keyword_cant_removals"):
+                                parser = getattr(continuous, name)
+                                scope.enter_context(patch.object(continuous, name, parser.uncached))
+                    elif reference_mode == "full":
                         scope.enter_context(patch.object(pending_effects, "decision_projection_scope", lambda *_: nullcontext()))
                         scope.enter_context(patch.object(agent_module, "planning_copy", deepcopy))
                     else:
                         scope.enter_context(patch.object(agent_module, "planning_copy", _reference_planning_copy))
-                    scope.enter_context(patch.object(pending_effects, "planning_copy", _reference_planning_copy))
+                    if reference_mode not in {"card-fields", "hotpaths"}:
+                        scope.enter_context(patch.object(pending_effects, "planning_copy", _reference_planning_copy))
                 settles = scope.enter_context(patch.object(pending_effects, "_settle_announced_stack", wraps=pending_effects._settle_announced_stack))
                 start = perf_counter()
                 decision = agent.choose_action(state, moves, player_id)
@@ -80,7 +89,7 @@ def main() -> int:
     parser.add_argument("--iterations", type=int, default=5)
     parser.add_argument("--archetype", default="Control")
     parser.add_argument("--opponent-archetype")
-    parser.add_argument("--reference-mode", choices=("full", "copy-only"), default="full")
+    parser.add_argument("--reference-mode", choices=("full", "copy-only", "card-fields", "hotpaths"), default="full")
     parser.add_argument("--difficulty", choices=("casual", "strong", "master"), default="master")
     parser.add_argument("--output", default="training_runs/ai_decision_benchmark.json")
     args = parser.parse_args()
