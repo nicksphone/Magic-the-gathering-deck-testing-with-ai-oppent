@@ -1,11 +1,17 @@
 # Changelog
 
-## Unreleased - Loyalty counter costs
+## 2026-10-01 - Saga counter events and trigger dependencies
+
+- Connected supported turn-based and registered-effect lore to shared scalar replacements and crossed-threshold chapter events. Grouped symbols, chapter targeting/ordering, ward, staged/pending chapter lifetime and snapshot recovery use shared engine paths; copied or unrelated abilities no longer delay final sacrifice. Existing legacy chapter labels remain recognized with an explicit provenance limitation.
+- Exposed lore in public card views and both battlefield lanes. Fixed generic temporary subtype buffs without a keyword suffix. Added a bounded card-name-free AI dependency policy for entirely friendly token/team-buff trigger groups, preserving human and unknown/mixed orders.
+- Added 24 checks and two canonical fixtures. All 2,360 backend tests, 199 focused checks, frontend lint/unit/build and full Chromium pass. The new seat-two browser scenario verifies human chapter order, lore display, token buff and delayed sacrifice. Fixed the harness callback/type gaps exposed by those checks. [Scope and evidence](docs/testing/saga-counter-events.md). Entry and arbitrary chapter rules remain open.
+
+## 2026-10-01 - Loyalty counter costs
 
 - Positive loyalty costs now use shared scalar replacements, with cost-versus-effect provenance, resumable order choices and once-only activation. Announced abilities remain on the stack while cost choices are pending; ward triggers wait for completion. Negative costs remain counter removal.
 - Added 12 canonical-fixture checks, including seat-two Ugin, staged ward and snapshot recovery. All 2,336 backend tests, 116 focused checks, frontend lint/unit/build and full existing Chromium harness pass. HTTP/SQLite recovery and a six-game seat-balanced replay also pass their bounded checks. See [scope and evidence](docs/testing/loyalty-counter-costs.md). Entry counters and broader counter costs remain open.
 
-## Unreleased — Damage counter replacement routing
+## 2026-10-01 — Damage counter replacement routing
 
 - Routed supported infect/wither/toxic and noncombat damage-to-counter results through shared scalar replacements with source-controller attribution and effect-only provenance. Aggregated supported simultaneous combat contributions and retained queued choices, lifelink credit and SBA ordering through snapshot recovery. Moved amount-order preferences into the AI layer.
 - Added 16 regressions and a seat-two browser scenario. Full backend (2,324), focused (176), frontend lint/build/unit, human/AI HTTP probes and full Chromium pass. Eight seat-paired games reproduce complete results/logs across sixteen executions without timeout or detected cost/target/action rejection. Fixed cross-suite simulator-fixture storage leakage before the successful browser rerun. [Scope and evidence](docs/testing/damage-counter-replacements.md). No printed card data or balance changed.

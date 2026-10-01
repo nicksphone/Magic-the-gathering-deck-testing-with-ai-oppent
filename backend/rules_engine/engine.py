@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor, object_incarnation
 from rules_engine import combat
-from rules_engine.counter_placement import put_counters, counter_placement_forbidden
+from rules_engine.counter_placement import counter_placement_forbidden
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
@@ -206,40 +206,28 @@ class RulesEngine:
             state.log.append(f"{card.name} is no longer a creature after cleanup." if removed_creature else f"Crew effect ends for {card.name} after cleanup.")
 
     def _advance_sagas(self, state: MatchState) -> None:
+        effects = []
         for cid in list(state.players[state.active_player].battlefield):
             card = state.cards.get(cid)
-            if card is None or "Saga" not in (card.type_line or ""):
+            if card is None or card.zone != Zone.BATTLEFIELD or "Saga" not in (card.type_line or ""):
                 continue
-            chapters = extract_saga_chapters(card.oracle_text)
-            if not chapters:
+            if not extract_saga_chapters(card.oracle_text):
                 continue
-            if not put_counters(state, 'lore', 1, target_card_id=cid):
-                continue
-            lore = int(card.counters.get("__lore", 0) or 0)
-            chapter = next((item for item in chapters if int(item["number"]) == lore), None)
-            state.log.append(f"{card.name} gets a lore counter ({lore}).")
-            if chapter is None:
-                continue
-            proxy = type("SagaChapterProxy", (), {"oracle_text": chapter["text"], "name": card.name, "mana_cost": "", "types": ["Enchantment"]})()
-            ability = build_ability_spec(
-                state,
-                proxy,
-                card.controller,
-                action_targets={"source_card_id": cid, "target_card_id": cid},
-            )
-            state.stack.append(
-                StackItem(
-                    id=state.allocate_object_id(),
-                    source_card_id=cid,
-                    controller=card.controller,
-                    label=f"{card.name} chapter {chapter['number']}",
-                    effect_key=ability.effect.key,
-                    payload=ability.effect.payload,
-                )
-            )
-            state.priority_player = state.active_player
-            state.passed_priority = set()
-            state.log.append(f"{card.name} chapter {chapter['number']} triggers.")
+            effects.append({'effect_key': 'add_counters', 'payload': {
+                'target_card_id': cid, 'counter': 'lore', 'amount': 1,
+                '__counter_is_effect': False, 'effect_timestamp': object_incarnation(card),
+            }})
+        if not effects:
+            return
+        started_staging = not state.trigger_staging
+        if started_staging:
+            state.trigger_staging = True
+            state.trigger_staging_event = 'saga_lore_added'
+        # No priority, SBA or chapter publication between this turn-based batch's
+        # placements. The ordinary durable effect queue resumes a paused batch.
+        resolve_effect(state, state.active_player, 'effect_sequence', {'effects': effects})
+        if started_staging and not state.pending_replacement_choice:
+            flush_staged_triggers(state)
 
     def _revert_expired_control_changes(self, state: MatchState) -> None:
         for cid, data in list(state.temporary_control_changes.items()):

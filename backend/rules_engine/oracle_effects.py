@@ -59,7 +59,7 @@ COPY_CREATURE_TOKEN_RE = re.compile(r"create a token that's a copy of (?:another
 COPY_SPELL_RE = COPY_STACK_RE
 SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
-SAGA_CHAPTER_RE = re.compile(r"^\s*(I{1,3}|IV|V|VI|VII|VIII|IX|X)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
+SAGA_CHAPTER_RE = re.compile(r"^\s*([IVX]+(?:\s*,\s*[IVX]+)*)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
@@ -1064,8 +1064,11 @@ def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
         match = SAGA_CHAPTER_RE.match(line)
         if not match:
             continue
-        roman = match.group(1).upper()
-        chapters.append({"number": values[roman], "text": match.group(2).strip(), "label": f"{roman} — {match.group(2).strip()}"})
+        symbols = [value.strip().upper() for value in match.group(1).split(',')]
+        if any(symbol not in values for symbol in symbols):
+            continue
+        for roman in symbols:
+            chapters.append({"number": values[roman], "text": match.group(2).strip(), "label": f"{roman} — {match.group(2).strip()}"})
     return sorted(chapters, key=lambda item: int(item["number"]))
 
 
@@ -1131,8 +1134,8 @@ def _infer_clause_effect(
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}
 
     tribal_buff = re.search(
-        r"\b([a-z-]+) you control get ([+-]\d+)/([+-]\d+) and gain "
-        r"(haste|vigilance|trample|lifelink|deathtouch|flying|reach|menace|hexproof|indestructible)"
+        r"\b([a-z-]+) you control get ([+-]\d+)/([+-]\d+)"
+        r"(?: and gain (haste|vigilance|trample|lifelink|deathtouch|flying|reach|menace|hexproof|indestructible))?"
         r" until end of turn\b",
         oracle,
     )

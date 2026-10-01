@@ -56,6 +56,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "player_counters").catch((failure) => setError(String(failure)))}>Player Counters Fixture</button>
     <button onClick={() => reset(false, false, 3, "counter_order").catch((failure) => setError(String(failure)))}>Counter Order Fixture</button>
     <button onClick={() => reset(false, false, 3, "damage_counter_order").catch((failure) => setError(String(failure)))}>Damage Counter Order Fixture</button>
+    <button onClick={() => reset(false, false, 3, "saga_counter_order").catch((failure) => setError(String(failure)))}>Saga Counter Order Fixture</button>
     <button onClick={() => reset(false, false, 3, "aura_costs").catch((failure) => setError(String(failure)))}>Discounted Aura Fixture</button>
     <button onClick={() => reset(false, false, 3, "equip_context").catch((failure) => setError(String(failure)))}>Discounted Equip Fixture</button>
     <button onClick={() => reset(false, false, 3, "attached_scaling").catch((failure) => setError(String(failure)))}>Scaling Attachment Fixture</button>
@@ -131,7 +132,8 @@ function Harness() {
       onSubmitBlocks={(blocks) => { act(actor, { type: "block", blocks }).catch((failure) => setError(String(failure))); }}
       onSubmitAttack={(attackers, attackTargets, bands) => { act(actor, { type: "attack", attackers, attack_targets: attackTargets, bands }).catch((failure) => setError(String(failure))); }}
       onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
-      onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }} onChooseTriggerOrder={() => {}}
+      onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }}
+      onChooseTriggerOrder={(order) => { act(actor, { type: "choose_trigger_order", trigger_order: order }).catch((failure) => setError(String(failure))); }}
       onChooseTriggerTarget={(stackId, targetCardId, targetPlayer) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, ...(targetCardId ? { target_card_id: targetCardId } : { target_player: targetPlayer }) }).catch((failure) => setError(String(failure))); }}
       onChooseOptionalEffect={(stackId, accept) => { act(actor, { type: "choose_optional_effect", stack_id: stackId, accept }).catch((failure) => setError(String(failure))); }}
       onChooseMechanic={(playerId, action) => { act(playerId, action).catch((failure) => setError(String(failure))); }}

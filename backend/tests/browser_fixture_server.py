@@ -26,6 +26,19 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'saga_counter_order':
+        from tests.test_saga_counter_events import saga
+        from tests.test_counter_replacements import source
+        from tests.test_restricted_mana import clean
+        state = clean(2)
+        card = saga(state, player=2)
+        card.counters['__lore'] = 1
+        source(state, 'Doubling Season', 2)
+        source(state, 'Vorinclex, Monstrous Raider', 2)
+        state.trigger_order_choice_required = True
+        state.trigger_order_choice_players = {2}
+        RulesEngine()._advance_sagas(state)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'damage_counter_order':
         from tests.test_counter_replacements import source
         from tests.test_counter_prohibitions import source as damage_source

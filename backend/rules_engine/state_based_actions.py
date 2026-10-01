@@ -239,14 +239,29 @@ def _apply_saga_state_actions(state: MatchState) -> None:
         chapters = [int(item) for item in _saga_chapter_numbers(card.oracle_text)]
         if not chapters or int(card.counters.get("__lore", 0) or 0) < max(chapters):
             continue
-        if any(item.source_card_id == cid for item in state.stack):
+        from game_state.state import object_incarnation
+        def chapter_pending(source_id, payload):
+            return (source_id == cid and '__chapter_number' in payload
+                    and not payload.get('__stack_copy_kind')
+                    and payload.get('__chapter_incarnation') == object_incarnation(card))
+        if any(chapter_pending(item.source_card_id, item.payload)
+               # Pre-metadata snapshots used this exact chapter label. They lack
+               # enough provenance to distinguish old battlefield incarnations.
+               or (item.source_card_id == cid and '__chapter_number' not in item.payload
+                   and not item.payload.get('__stack_copy_kind')
+                   and item.label in {f'{card.name} chapter {number}' for number in chapters})
+               for item in state.stack):
+            continue
+        pending_triggers = list(state.staged_triggers) + list(state.cleanup_deferred_triggers)
+        for group in (state.pending_trigger_order or {}).get('groups', {}).values():
+            pending_triggers.extend(group)
+        if any(chapter_pending(item.get('source_card_id'), item.get('payload', {})) for item in pending_triggers):
             continue
         battlefield = state.players[card.controller]
         if cid not in battlefield.battlefield:
             continue
-        emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})
-        battlefield.battlefield.remove(cid)
-        put_into_graveyard(state, cid)
+        from effects.registry import resolve_effect
+        resolve_effect(state, card.controller, 'sacrifice', {'target_card_id': cid})
         state.log.append(f"State-based action: {card.name} is sacrificed after its final chapter.")
 
 

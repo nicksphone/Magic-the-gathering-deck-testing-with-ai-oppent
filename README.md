@@ -1,10 +1,5 @@
 # MTG Deck Testing Lab
 
-Positive loyalty activation costs support the shared counter replacement/order
-system, including snapshot recovery and deferred ward triggers. Negative costs
-remain counter removal; initial loyalty on entry and other counter-cost families
-are not implied to be complete. [Scope and checks](docs/testing/loyalty-counter-costs.md).
-
 MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
 
 It is designed for serious deck work:
@@ -18,6 +13,8 @@ It is designed for serious deck work:
 ## Current Features
 
 ### Gameplay
+- [Saga lore and chapters](docs/testing/saga-counter-events.md): supported turn-based and registered-effect lore placement shares scalar replacements, chapter ordering/targeting and snapshot recovery. Grouped chapter symbols trigger at each crossed threshold; final sacrifice waits for original pending chapters, not copies or unrelated abilities. Both battlefield lanes show lore. Intrinsic entry lore, read ahead and arbitrary chapter effects remain unfinished.
+- [Loyalty counter costs](docs/testing/loyalty-counter-costs.md): positive activation costs support shared replacements, resumable order and deferred ward triggers; negative costs remain removal. Initial loyalty on entry and other counter-cost families are not implied to be complete.
 - [Player counters and dynamic ward](docs/testing/player-counters.md): named counters persist across turns, source departure and snapshots, while poison keeps one authoritative count. Supported cast/entry/death/end-step gain triggers, current-controller P/T scaling and counter-defined ward X feed combat, AI and human views. Both seats see counters and the resolved ward amount; unknown dependent clauses and counter replacements remain explicitly flagged.
 - [Counter prohibitions](docs/testing/counter-prohibitions.md): supported unconditional player/type/self counter bans apply to effects, infect/wither/toxic, supported damage-to-counter replacement, tokens, spell-entry counters and Saga lore. Existing counters, ordinary damage and separate animation effects are preserved. Conditional bans and complete replacement integration across entry/damage/cost routes remain unfinished.
 - [Counter-effect replacement order](docs/testing/counter-replacements.md): supported doubling, halving and plus-one clauses distinguish placer from recipient and pause competing effects for the affected player's choice. Registered counter effects, effect sequences and snapshots resume without duplicate placement; AI selects the resulting counter amount. Entry, costs and general simultaneous multi-kind placement remain incomplete.

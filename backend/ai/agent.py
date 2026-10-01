@@ -105,6 +105,15 @@ class AIAgent:
             return self._choose_action(state, legal_moves, player_id)
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
+        trigger_choice = getattr(state, 'pending_trigger_order', None) or {}
+        if trigger_choice.get('current_controller') == player_id and trigger_choice.get('phase') != 'targets':
+            from ai.trigger_policy import preferred_trigger_order
+            group = trigger_choice.get('groups', {}).get(str(player_id), [])
+            requested = [item['_choice_id'] for item in preferred_trigger_order(group, player_id)]
+            move = next((move for move in legal_moves if move.get('type') == 'choose_trigger_order'
+                         and move.get('trigger_order') == requested), None)
+            if move:
+                return AIDecision(action=move, reasoning='Order supported simultaneous effects by public creation/buff dependencies')
         pending = getattr(state, 'pending_replacement_choice', None)
         if pending and pending.get('resume_kind') == 'counter_event' and pending.get('player_id') == player_id:
             from ai.counter_policy import preferred_counter_option

@@ -209,6 +209,12 @@ def _append_trigger_groups(
         if requested:
             by_id = {str(trigger.get("_choice_id")): trigger for trigger in group}
             group = [by_id[choice_id] for choice_id in requested if choice_id in by_id]
+        else:
+            choice_players = set(state.trigger_order_choice_players or set())
+            human_order = state.trigger_order_choice_required and (not choice_players or controller in choice_players)
+            if not human_order:
+                from ai.trigger_policy import preferred_trigger_order
+                group = preferred_trigger_order(group, controller)
         ordered.extend(group)
     target_stack_ids: list[str] = []
     targeted_items = []
@@ -314,6 +320,14 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
     event = item.payload.get("__trigger_event")
+    if event == 'saga_lore_added':
+        clause = item.payload.get('__chapter_clause', '')
+        if (item.effect_key == 'deal_damage' and 'any target' in clause.lower()
+                or re.search(r'\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b', clause, re.I)
+                and item.effect_key in {'destroy_permanent', 'destroy', 'exile', 'exile_permanent',
+                                       'tap', 'untap', 'return_permanent_to_hand', 'add_counters', 'deal_damage'}):
+            return clause
+        return None
     patterns = {
         "enters_battlefield": r"^(?:when|whenever)\b.*\benters\b",
         "spell_cast": r"^when you cast this spell\b",
@@ -432,6 +446,28 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
+    if event == 'saga_lore_added':
+        from rules_engine.ability_model import build_ability_spec
+        from rules_engine.oracle_effects import extract_saga_chapters
+        saga = state.cards.get(payload.get('card_id'))
+        if saga is None or saga.zone != Zone.BATTLEFIELD or 'Saga' not in saga.type_line:
+            return out
+        state.log.append(f"{saga.name} gets lore counters ({payload['new_lore']}).")
+        for chapter in extract_saga_chapters(saga.oracle_text):
+            if not payload['old_lore'] < chapter['number'] <= payload['new_lore']:
+                continue
+            proxy = copy(saga)
+            proxy.oracle_text = chapter['text']
+            proxy.mana_cost = ''
+            ability = build_ability_spec(state, proxy, saga.controller,
+                                        action_targets={'source_card_id': saga.id, 'target_card_id': saga.id})
+            out.append({'source_card_id': saga.id, 'controller': saga.controller,
+                        'label': f"{saga.name} chapter {chapter['number']}",
+                        'effect_key': ability.effect.key,
+                        'payload': {**ability.effect.payload, '__chapter_number': chapter['number'],
+                                    '__chapter_clause': chapter['text'],
+                                    '__chapter_incarnation': object_incarnation(saga)}})
+        return out
     if event == "attack_declared":
         attacker = state.cards.get(payload.get("card_id"))
         if attacker:

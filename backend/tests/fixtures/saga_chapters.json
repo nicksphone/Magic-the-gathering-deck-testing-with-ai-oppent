@@ -1,0 +1,37 @@
+[
+  {
+    "id": "d134385d-b01c-41c7-bb2d-30722b44dc5a",
+    "oracle_id": "c15bb7eb-aaaa-4468-9641-8f706d6137e8",
+    "name": "History of Benalia",
+    "type_line": "Enchantment \u2014 Saga",
+    "mana_cost": "{1}{W}{W}",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II \u2014 Create a 2/2 white Knight creature token with vigilance.\nIII \u2014 Knights you control get +2/+1 until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dom/21/history-of-benalia?utm_source=api",
+    "set": "dom",
+    "collector_number": "21"
+  },
+  {
+    "id": "41802f18-7d46-431a-acb3-dbcc82eb415a",
+    "oracle_id": "4050e5b3-07c2-461c-9852-a2c081c0198d",
+    "name": "Binding the Old Gods",
+    "type_line": "Enchantment \u2014 Saga",
+    "mana_cost": "{2}{B}{G}",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI \u2014 Destroy target nonland permanent an opponent controls.\nII \u2014 Search your library for a Forest card, put it onto the battlefield tapped, then shuffle.\nIII \u2014 Creatures you control gain deathtouch until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ecc/120/binding-the-old-gods?utm_source=api",
+    "set": "ecc",
+    "collector_number": "120"
+  }
+]

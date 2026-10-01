@@ -27,6 +27,9 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
             return None
     base_power, base_toughness = numeric(card.power), numeric(card.toughness)
     power, toughness = effective_combat_stats(state, cid) if creature else (base_power, base_toughness)
+    counters = dict(card.counters)
+    if 'Saga' in card.type_line and '__lore' in counters:
+        counters['lore'] = counters.pop('__lore')
     outputs = ({color: land_mana_amount(state, card.controller, cid) for color in land_mana_colors(card)}
                if "Land" in card.types else nonland_mana_outputs(state, cid, card)) if card.zone == Zone.BATTLEFIELD else {}
     return {
@@ -35,7 +38,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "power": power, "toughness": toughness,
         "base_power": base_power, "base_toughness": base_toughness,
         "keywords": effective_keywords(state, cid), "base_keywords": list(card.keywords),
-        "counters": dict(card.counters), "damage_marked": int(card.counters.get("__damage_marked", 0)),
+        "counters": counters, "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,

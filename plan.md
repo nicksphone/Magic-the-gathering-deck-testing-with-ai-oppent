@@ -30,6 +30,9 @@ Shared AI evaluates resulting amounts; the browser tests actual seat-two orderin
 
 - [x] Add bounded scalar replacement parsing, affected-player ordering, per-ability usage and durable continuations for registered counter effects; connect shared AI and human controls.
 - [x] Route positive loyalty activation costs through scalar counter replacements with non-effect provenance, once-only payment, snapshot continuation and deferred ward triggers. Negative loyalty costs remain removal. See [bounded scope and checks](docs/testing/loyalty-counter-costs.md).
+- [x] Route supported Saga turn-based lore and registered lore effects through crossed-threshold chapter events; support grouped symbols, human order/targets, ward, durable batches and pending original-chapter lifetime. Expose lore in UI/API and add bounded AI token/team-buff dependencies. Verified 2,360 backend tests, 199 focused checks and full Chromium. See [scope](docs/testing/saga-counter-events.md).
+- [ ] Integrate intrinsic Saga lore on entry and read ahead into projected pre-entry replacement packets, including durable choices and no premature entry triggers/SBA. Complete arbitrary chapter effects, optional/multiple targets and gained/suppressed chapter abilities.
+- [ ] Expand AI simultaneous-trigger planning beyond the verified friendly token/team-buff dependency; evaluate mixed effects and board-state interactions with before/after decision traces.
 - [ ] Route entry/damage/activation costs through the same replacement event model with correct pre-entry characteristics, no premature SBA/triggers and resumable simultaneous batches. Complete multi-kind packets, counter movement/spending and proliferation. Existing route-fidelity warnings remain intentional.
 
 Counter-prohibition increment: 2,264 isolated backend tests and 118 focused

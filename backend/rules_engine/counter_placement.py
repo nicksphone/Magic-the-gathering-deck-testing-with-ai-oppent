@@ -73,7 +73,8 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
 def put_counters(state, kind, amount, *, target_player=None, target_card_id=None):
     """Return actual counters placed; internal damage/buff markers are not counters.
 
-    Scalar replacements and replacement ordering are deliberately not inferred.
+    Scalar replacements and replacement ordering are supplied by callers.
+    Lore placement emits chapter events after the physical count changes.
     Legacy poison, lore and loyalty storage remain authoritative.
     """
     amount = max(0, int(amount))
@@ -97,5 +98,11 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
         target.loyalty = int(target.loyalty or 0) + amount
     else:
         key = '__lore' if target_player is None and kind == 'lore' and 'Saga' in target.type_line else kind
-        target.counters[key] = int(target.counters.get(key, 0)) + amount
+        before = int(target.counters.get(key, 0))
+        target.counters[key] = before + amount
+        if key == '__lore':
+            from rules_engine.events import emit_event
+            emit_event(state, 'saga_lore_added', {
+                'card_id': target.id, 'old_lore': before, 'new_lore': before + amount,
+            })
     return amount

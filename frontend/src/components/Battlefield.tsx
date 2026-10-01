@@ -280,6 +280,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
               {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
+              {card.type_line?.includes("Saga") ? <small>LORE: {card.counters?.lore ?? 0}</small> : null}
             </article>
           ))}
         </div>
@@ -348,6 +349,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
               {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
+              {card.type_line?.includes("Saga") ? <small>LORE: {card.counters?.lore ?? 0}</small> : null}
               {canManualTap && card.mana_source_colors?.length ? (
                 <div className="row" style={{ marginBottom: 0 }}>
                   {card.mana_source_colors.map((color) => (
