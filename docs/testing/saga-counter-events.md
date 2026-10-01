@@ -53,7 +53,8 @@ general simultaneous-trigger planner or professional-play certification.
   executions, with no timeout or detected cost/target/action rejection. The pairs
   cover Mono Red/Midrange, Tempo/Dimir, Tokens/Ramp and Tribal/Drain. This small
   smoke sample is not statistical balance or professional-AI evidence.
-- Graphify's AST refresh passes: 7,396 nodes, 18,492 edges and 301 communities.
+- Graphify's final AST refresh passes: 7,399 nodes, 18,495 edges and 306 communities.
+- Code milestone `77c491c` is confirmed on GitHub `main`.
 - Logs and the runnable replay probe are retained on RCHFiles under project
   diagnostics `saga-counter-events/`. Earlier failing harness/probe results are
   retained separately, not presented as passing acceptance evidence.
