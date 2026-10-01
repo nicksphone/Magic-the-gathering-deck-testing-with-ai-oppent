@@ -715,6 +715,10 @@
     "mtime": 1790595254.7643423,
     "hash": "aa9b14dbac44491b3d67b7ffad9dbfbd"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_loyalty_counter_costs.py": {
+    "mtime": 1790855884.3058884,
+    "hash": "3943fd13347c41bd7f3510fcd24c3228"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_divided_damage_resolution.py": {
     "mtime": 1790719392.2199643,
     "hash": "03bbf727f00412e88fa02bf92c8b70a3"
@@ -1256,8 +1260,8 @@
     "hash": "c0278ea929a148bc1f01df4a435f28bc"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/engine.py": {
-    "mtime": 1790818939.8751462,
-    "hash": "126290fe41f8cce61d59f5ea15a33795"
+    "mtime": 1790855640.23682,
+    "hash": "4cdfdf46aecc8e846f2dcacace120fb7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/dredge.py": {
     "mtime": 1790655889.8482294,
@@ -1304,8 +1308,8 @@
     "hash": "d7bc0b9da510f2124a4c5a6d01320778"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/stack_engine.py": {
-    "mtime": 1790821232.1149452,
-    "hash": "3e40015b1c9173f61224946cb97b8b12"
+    "mtime": 1790855640.23882,
+    "hash": "a309687678a0b462e046ee5a89cab8c7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/oracle_effects.py": {
     "mtime": 1790806133.7097201,
@@ -1476,16 +1480,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790854245.0732377,
-    "hash": "607d8c641ae27783a514819481c6f499"
+    "mtime": 1790855942.3189538,
+    "hash": "930ec3ec6d87bc445b20247112e1d289"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790854081.0038807,
-    "hash": "994379cd430382d345af62e72af5e64a"
+    "mtime": 1790855942.305954,
+    "hash": "e9c3bfb700687ca1aabdc92530292fe2"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790854081.0048807,
-    "hash": "ad83af1f7762cb3f19f06a003f4f31cc"
+    "mtime": 1790856241.7171297,
+    "hash": "5fae23e974689ef73dc456cc2f38ab29"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1615,9 +1619,13 @@
     "mtime": 1790765708.6756446,
     "hash": "79b1813b10860943582a02e1fe678984"
   },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/loyalty-counter-costs.md": {
+    "mtime": 1790856241.7151296,
+    "hash": "8e14f80904650bcdf295e630af9ea8b4"
+  },
   "/home/nick/mtg-deck-testing-lab/docs/testing/damage-counter-replacements.md": {
-    "mtime": 1790854081.001881,
-    "hash": "3448de68f51dedad88e07f077eb78a74"
+    "mtime": 1790854700.1739435,
+    "hash": "21abe41ee61051dbee5a885a49d8e379"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/restricted-mana-equipment.md": {
     "mtime": 1790801235.570052,

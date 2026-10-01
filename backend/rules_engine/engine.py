@@ -1144,12 +1144,19 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
-            pw.loyalty = next_loyalty
+            loyalty_added = next_loyalty - current_loyalty
+            if loyalty_added <= 0:
+                pw.loyalty = next_loyalty
             state.loyalty_activated_this_turn.add(cid)
             ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             effect_key, payload = ability.effect.key, ability.effect.payload
             payload["__announced_targets"] = dict(action_targets)
             payload["__ward_trigger_specs"] = ward_specs
+            # Announce the ability before paying its cost, but do not put
+            # target/ward triggers on the stack until activation is complete.
+            if not state.trigger_staging:
+                state.trigger_staging = True
+                state.trigger_staging_event = "cast_or_activate"
             add_to_stack(
                 state,
                 source_card_id=cid,
@@ -1159,6 +1166,14 @@ class RulesEngine:
                 effect_key=effect_key,
                 payload=payload,
             )
+            if loyalty_added > 0:
+                resolve_effect(state, player_id, 'add_counters', {
+                    'target_card_id': cid, 'counter': 'loyalty', 'amount': loyalty_added,
+                    '__counter_is_effect': False,
+                    'effect_timestamp': object_incarnation(pw),
+                })
+                if state.pending_replacement_choice:
+                    state.pending_replacement_choice['activation_controller'] = player_id
 
         elif kind == "crew":
             vehicle_id = action.get("card_id")

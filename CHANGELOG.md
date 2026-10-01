@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased - Loyalty counter costs
+
+- Positive loyalty costs now use shared scalar replacements, with cost-versus-effect provenance, resumable order choices and once-only activation. Announced abilities remain on the stack while cost choices are pending; ward triggers wait for completion. Negative costs remain counter removal.
+- Added 12 canonical-fixture checks, including seat-two Ugin, staged ward and snapshot recovery. All 2,336 backend tests, 116 focused checks, frontend lint/unit/build and full existing Chromium harness pass. HTTP/SQLite recovery and a six-game seat-balanced replay also pass their bounded checks. See [scope and evidence](docs/testing/loyalty-counter-costs.md). Entry counters and broader counter costs remain open.
+
 ## Unreleased — Damage counter replacement routing
 
 - Routed supported infect/wither/toxic and noncombat damage-to-counter results through shared scalar replacements with source-controller attribution and effect-only provenance. Aggregated supported simultaneous combat contributions and retained queued choices, lifelink credit and SBA ordering through snapshot recovery. Moved amount-order preferences into the AI layer.

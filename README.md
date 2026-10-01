@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+Positive loyalty activation costs support the shared counter replacement/order
+system, including snapshot recovery and deferred ward triggers. Negative costs
+remain counter removal; initial loyalty on entry and other counter-cost families
+are not implied to be complete. [Scope and checks](docs/testing/loyalty-counter-costs.md).
+
 MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
 
 It is designed for serious deck work:

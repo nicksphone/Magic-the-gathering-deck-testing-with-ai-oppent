@@ -418,6 +418,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         draw_cards(state, controller, queue.pop(0))
         next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
+        if pending.get('activation_controller'):
+            next_pending['activation_controller'] = pending['activation_controller']
         next_pending.setdefault("draw_continuation_queue", []).extend(queue)
         if pending.get("combat_damage_needs_sba"):
             next_pending["combat_damage_needs_sba"] = True
@@ -440,5 +442,5 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         from rules_engine.state_based_actions import apply_state_based_actions
         apply_state_based_actions(state)
     if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
-        state.priority_player = state.active_player
+        state.priority_player = int(pending.get('activation_controller') or state.active_player)
         state.passed_priority = set()

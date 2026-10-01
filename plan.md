@@ -29,6 +29,7 @@ Shared AI evaluates resulting amounts; the browser tests actual seat-two orderin
 [Scope and verification](docs/testing/counter-replacements.md).
 
 - [x] Add bounded scalar replacement parsing, affected-player ordering, per-ability usage and durable continuations for registered counter effects; connect shared AI and human controls.
+- [x] Route positive loyalty activation costs through scalar counter replacements with non-effect provenance, once-only payment, snapshot continuation and deferred ward triggers. Negative loyalty costs remain removal. See [bounded scope and checks](docs/testing/loyalty-counter-costs.md).
 - [ ] Route entry/damage/activation costs through the same replacement event model with correct pre-entry characteristics, no premature SBA/triggers and resumable simultaneous batches. Complete multi-kind packets, counter movement/spending and proliferation. Existing route-fidelity warnings remain intentional.
 
 Counter-prohibition increment: 2,264 isolated backend tests and 118 focused
