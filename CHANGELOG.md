@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Compact history previews
+
+- Limited saved matches and persisted diagnostic runs to three visible entries initially, with incremental Show more and Show fewer controls. Expanded lists have bounded scrolling so long histories do not dominate the page.
+- Added isolated browser history fixtures and UI regressions for both lists; no saved matches or diagnostic reports are deleted by the preview controls.
+- Verified frontend lint/unit/TypeScript build and the full Chromium suite, including preview expansion/collapse, saved-game recovery, simulator recovery, sideboarding and natural BO3 flows. Updated README/plan and Graphify; evidence is retained on RCHFiles.
+
 ## 2026-10-01 - Projected transformed entries and loyalty preservation
 
 - Prepared supported exile-return-transformed operations against serialized back-face characteristics while the actual card remains exiled. Added snapshot continuation, incarnation rechecks, projected land-choice inspection and once-only exile/commit.

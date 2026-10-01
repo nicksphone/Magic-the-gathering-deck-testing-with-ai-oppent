@@ -1159,6 +1159,21 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
     return publish(state, deck)
 
 
+@app.post("/fixture/history")
+def fixture_history():
+    import json
+    from main import DIAGNOSTICS_ROOT
+    retained = dict(ACTIVE_MATCHES)
+    for index in range(7):
+        fixture()
+        retained.update(ACTIVE_MATCHES)
+        run = DIAGNOSTICS_ROOT / f'preview-fixture-{index}'
+        run.mkdir(parents=True, exist_ok=True)
+        (run / 'summary.json').write_text(json.dumps({'matches': 1, 'anomaly_count': 0}), encoding='utf-8')
+    ACTIVE_MATCHES.update(retained)
+    return {'matches': len(ACTIVE_MATCHES)}
+
+
 def publish(state, deck):
     ACTIVE_MATCHES.clear()
     ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck}, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)

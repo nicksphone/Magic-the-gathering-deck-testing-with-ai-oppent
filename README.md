@@ -245,6 +245,7 @@ It is designed for serious deck work:
 - SQLite cache resolution is stable across launch directories; API, sync jobs, and diagnostics use `backend/mtg_lab.db`
 
 ### UI
+- Saved-match and persisted diagnostic histories start with three entries, expand three at a time and collapse back to the preview; expanded lists scroll rather than crowding play controls.
 - Desktop-first battlefield layout with readable stack, priority, mana, and hand presentation
 - Explicit interrupt-window state in the controls panel
 - Hover inspection and card zoom for readable long-session testing

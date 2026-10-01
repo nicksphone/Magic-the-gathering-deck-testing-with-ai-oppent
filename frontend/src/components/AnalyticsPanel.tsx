@@ -61,6 +61,7 @@ export function AnalyticsPanel({ decks }: Props) {
   const [preflight, setPreflight] = useState<SimulationCoverage | null>(null);
   const [reviewedDecks, setReviewedDecks] = useState<string | null>(null);
   const [diagnosticRuns, setDiagnosticRuns] = useState<DiagnosticRunSummary[]>([]);
+  const [diagnosticRunLimit, setDiagnosticRunLimit] = useState(3);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState<DiagnosticRunDetail | null>(null);
   const [selectedGameIndex, setSelectedGameIndex] = useState(0);
   const [selectedGamePage, setSelectedGamePage] = useState<{ offset: number; lines: string[]; total_lines: number; has_more: boolean } | null>(null);
@@ -354,7 +355,7 @@ export function AnalyticsPanel({ decks }: Props) {
         </div>
       </div>
       {jobError ? <p className="sim-error">Latest simulator error: {jobError}</p> : null}
-      <div className="analytics-sample-block">
+      <div className="analytics-sample-block" id="diagnostic-history">
         <div className="sim-status-row">
           <strong>Persisted Diagnostic Runs</strong>
           <button type="button" onClick={() => void refreshDiagnosticRuns()}>Refresh</button>
@@ -363,8 +364,8 @@ export function AnalyticsPanel({ decks }: Props) {
         {diagnosticRuns.length === 0 ? (
           <p>No persisted diagnostic runs found.</p>
         ) : (
-          <ul className="analytics-sample-list">
-            {diagnosticRuns.map((run) => {
+          <ul className="analytics-sample-list" id="diagnostic-run-list" style={{ maxHeight: "16rem", overflowY: "auto" }}>
+            {diagnosticRuns.slice(0, diagnosticRunLimit).map((run) => {
               const summary = run.summary;
               return (
                 <li key={run.run_name}>
@@ -375,6 +376,8 @@ export function AnalyticsPanel({ decks }: Props) {
             })}
           </ul>
         )}
+        {diagnosticRuns.length > diagnosticRunLimit ? <button type="button" aria-controls="diagnostic-run-list" onClick={() => setDiagnosticRunLimit((limit) => limit + 3)}>Show more diagnostic runs</button> : null}
+        {diagnosticRunLimit > 3 && diagnosticRuns.length > 3 ? <button type="button" aria-controls="diagnostic-run-list" onClick={() => setDiagnosticRunLimit(3)}>Show fewer diagnostic runs</button> : null}
         {diagnosticRuns.length > 1 ? (
           <div className="row">
             <select value={compareLeft} onChange={(event) => setCompareLeft(event.target.value)}>

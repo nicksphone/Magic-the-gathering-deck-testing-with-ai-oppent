@@ -21,6 +21,24 @@ try {
     assert.equal(await evaluate("[...document.querySelectorAll('button')].some(b => b.textContent.startsWith('Play Land Forest'))"), false);
     console.log('PASS App restores persisted state after a real backend process restart');
   } else {
+  const historyResponse = await fetch(`${backend}/fixture/history`, {method:'POST'});
+  assert.equal(historyResponse.status, 200);
+  await click('Refresh saved matches');
+  await waitFor("document.querySelectorAll('#saved-match-list button').length === 3 && [...document.querySelectorAll('button')].some(b => b.textContent === 'Show more saved matches')");
+  await click('Show more saved matches');
+  await waitFor("document.querySelectorAll('#saved-match-list button').length === 6");
+  await click('Show fewer saved matches');
+  await waitFor("document.querySelectorAll('#saved-match-list button').length === 3");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('#saved-match-list')).overflowY"), 'auto');
+  console.log('PASS saved-match preview limits rows, expands incrementally and collapses without crowding controls');
+  await evaluate("document.querySelector('#diagnostic-history .sim-status-row button').click()");
+  await waitFor("document.querySelectorAll('#diagnostic-run-list li').length === 3");
+  await click('Show more diagnostic runs');
+  await waitFor("document.querySelectorAll('#diagnostic-run-list li').length === 6");
+  await click('Show fewer diagnostic runs');
+  await waitFor("document.querySelectorAll('#diagnostic-run-list li').length === 3");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('#diagnostic-run-list')).overflowY"), 'auto');
+  console.log('PASS diagnostic history preview expands and collapses while remaining scroll bounded');
   let id = await fresh();
   await evaluate("(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.startsWith('Play Land Forest')); button.click(); button.click(); })()");
   await waitFor("!document.body.innerText.includes('Match operation pending') && ![...document.querySelectorAll('button')].some(b => b.textContent.startsWith('Play Land Forest'))");

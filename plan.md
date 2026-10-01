@@ -710,6 +710,7 @@ Acceptance: mutations cannot corrupt concurrent state; job floods remain within 
 - [ ] Test clean-machine dependency install, offline fallback and backup/restore.
 - [ ] Test backend restart recovery and supported worker topology.
 - [ ] Run browser soak tests, accessibility/error-boundary checks and replay inspection flows.
+- [x] Bound saved-match and diagnostic-run history previews to three rows with incremental expansion, collapse and scrolling; verify both controls through the browser. This does not replace long-session/soak acceptance.
 - [ ] Reconcile README features/limitations, changelog and Graphify with final verified behavior.
 
 Gate 3 exit: reproducible install, HTTPS/API/media smoke, bounded jobs, restart/data recovery, long-session usability and dependency/security review all pass.

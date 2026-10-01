@@ -49,6 +49,7 @@ export function App() {
   const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
   const [actionError, setActionError] = useState("");
   const [savedMatches, setSavedMatches] = useState<SavedMatch[]>([]);
+  const [savedMatchLimit, setSavedMatchLimit] = useState(3);
   const [mutationPending, setMutationPending] = useState(false);
   const [restoring, setRestoring] = useState(true);
   const [autoProgressPaused, setAutoProgressPaused] = useState(false);
@@ -409,7 +410,11 @@ export function App() {
           <h2>Saved matches</h2>
           {restoring ? <p role="status">Restoring saved session...</p> : null}
           <button disabled={mutationPending || restoring} onClick={reportAction(async () => { setSavedMatches(await api.savedMatches()); })}>Refresh saved matches</button>
-          {savedMatches.map((saved) => <button key={saved.id} disabled={mutationPending || restoring} onClick={reportAction(() => resumeMatch(saved.id))}>Resume {saved.players.join(" vs ")} | game {saved.game_number}, turn {saved.turn} | {saved.id.slice(0, 8)}</button>)}
+          <div id="saved-match-list" style={{ display: "grid", gap: "0.5rem", maxHeight: "16rem", overflowY: "auto" }}>
+            {savedMatches.slice(0, savedMatchLimit).map((saved) => <button key={saved.id} disabled={mutationPending || restoring} onClick={reportAction(() => resumeMatch(saved.id))}>Resume {saved.players.join(" vs ")} | game {saved.game_number}, turn {saved.turn} | {saved.id.slice(0, 8)}</button>)}
+          </div>
+          {savedMatches.length > savedMatchLimit ? <button type="button" aria-controls="saved-match-list" onClick={() => setSavedMatchLimit((limit) => limit + 3)}>Show more saved matches</button> : null}
+          {savedMatchLimit > 3 && savedMatches.length > 3 ? <button type="button" aria-controls="saved-match-list" onClick={() => setSavedMatchLimit(3)}>Show fewer saved matches</button> : null}
           {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
           {mutationPending ? <p role="status">Match operation pending...</p> : null}
         </article>
