@@ -4,10 +4,12 @@ import re
 
 from game_state.state import Zone, object_incarnation
 from rules_engine.oracle_text import without_reminder_text
+from rules_engine.player_counters import counter_count, PLAYER_COUNT_RE
 
 WARD_LINE = re.compile(r'^ward\s*[—-]?\s*(.+)$', re.I | re.M)
 MANA_WARD = re.compile(r'\bward\s*((?:\{[^}]+\})+)', re.I)
 NUMBERS = {'a': 1, 'an': 1, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
+DYNAMIC_WARD_RE = re.compile(r'\bward\s+((?:\{[^}]+\})+, where X is the ' + PLAYER_COUNT_RE + r')(?=\s*(?:[.\n]|$))', re.I)
 
 
 def printed_ward_costs(target):
@@ -17,6 +19,9 @@ def printed_ward_costs(target):
     out = []
     for line in without_reminder_text(target.oracle_text or '').splitlines():
         line = line.strip().rstrip('.')
+        if (match := WARD_LINE.fullmatch(line)) and parse_ward_cost(match[1]) is not None:
+            out.append(match[1])
+            continue
         parts = [part.strip() for part in line.split(',')]
         if all(part.lower() in keywords or WARD_LINE.fullmatch(part) for part in parts):
             out.extend(match[1] for part in parts if (match := WARD_LINE.fullmatch(part)))
@@ -33,7 +38,11 @@ def printed_ward_costs(target):
 
 def unsupported_ward_costs(text):
     """Scan costs anywhere, including named/granted forms and keyword lists."""
-    for match in re.finditer(r'\bward(?:\s*[—-]\s*|\s+)([^\n.,]+)', without_reminder_text(text or ''), re.I):
+    text = without_reminder_text(text or '')
+    dynamic = {match.start() for match in DYNAMIC_WARD_RE.finditer(text) if parse_ward_cost(match[1]) is not None}
+    for match in re.finditer(r'\bward(?:\s*[—-]\s*|\s+)([^\n.,]+)', text, re.I):
+        if match.start() in dynamic:
+            continue
         cost = re.split(r'\s+(?:as long as|until|and)\s+', match[1], maxsplit=1, flags=re.I)[0]
         if parse_ward_cost(cost) is None:
             yield cost
@@ -41,6 +50,9 @@ def unsupported_ward_costs(text):
 
 def parse_ward_cost(text):
     text = text.lower().strip().rstrip('.')
+    match = re.fullmatch(r'((?:\{(?:\d+|[wubrgcsx]|[wubrg]/[wubrg]|[wubrg]/p|2/[wubrg])\})+), where x is the ' + PLAYER_COUNT_RE, text)
+    if match and '{x}' in match[1]:
+        return {'kind': 'player_counter_mana', 'template': match[1].upper(), 'counter': match[2]}
     if re.fullmatch(r'(?:\{(?:\d+|[wubrgcs]|[wubrg]/[wubrg]|[wubrg]/p|2/[wubrg])\})+', text):
         return {'kind': 'mana', 'cost': text.upper()}
     match = re.fullmatch(r'pay (\d+) life', text)
@@ -126,8 +138,11 @@ def mark_stack_targets(state, item):
     _push_triggers(state, 'becomes_target', triggers)
 
 
-def resolved_cost(state, payload):
+def resolved_cost(state, payload, controller):
     cost = parse_ward_cost(payload['ward_cost'])
+    if cost and cost['kind'] == 'player_counter_mana':
+        amount = counter_count(state.players[controller], cost['counter'])
+        cost = {'kind': 'mana', 'cost': cost['template'].replace('{X}', '{'+str(amount)+'}')}
     if cost and cost['kind'] == 'power_life':
         from rules_engine.continuous import effective_power
         card = state.cards.get(payload.get('__source_card_id'))
@@ -166,11 +181,14 @@ def resolve_ward(state, controller, payload):
     item = next((i for i in state.stack if i.id == payload['target_stack_id']), None)
     if item is None:
         return
-    cost = resolved_cost(state, payload)
+    cost = resolved_cost(state, payload, controller)
+    display_cost = payload['ward_cost']
+    if cost and parse_ward_cost(display_cost)['kind'] == 'player_counter_mana':
+        display_cost = f"{cost['cost']} ({display_cost})"
     state.pending_mechanic_choice = {'kind': 'ward_payment', 'player_id': item.controller, 'count': 1,
         'options': ['decline', 'pay'] if can_pay(state, item.controller, cost) else ['decline'],
-        'option_labels': {'pay': f"Pay ward: {payload['ward_cost']}", 'decline': 'Decline ward payment'},
-        'label': f"Ward for {item.label}: {payload['ward_cost']}", 'ward_cost': cost,
+        'option_labels': {'pay': f"Pay ward: {display_cost}", 'decline': 'Decline ward payment'},
+        'label': f"Ward for {item.label}: {display_cost}", 'ward_cost': cost,
         'effect_payload': dict(payload), 'controller': controller}
     state.priority_player = item.controller
     state.passed_priority = set()

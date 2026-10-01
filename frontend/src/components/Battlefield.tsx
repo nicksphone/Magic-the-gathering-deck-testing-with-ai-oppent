@@ -241,6 +241,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
           <span>Hand {p2.hand_count}</span>
+          {Object.entries(p2.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
+            <span key={kind} data-player-counter={`${opponentSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>
+          ))}
           {restrictedMana(p2)}
           <span>Ready Mana Options (shared sources) {manaSummary(p2Groups.lands) || "-"}</span>
           <span className="mana-pool">
@@ -306,6 +309,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
           <span>Hand {p1.hand_count}</span>
+          {Object.entries(p1.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
+            <span key={kind} data-player-counter={`${viewerSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>
+          ))}
           {restrictedMana(p1)}
           <span>Ready Mana Options (shared sources) {manaSummary(p1Groups.lands) || "-"}</span>
           <span className="mana-pool">

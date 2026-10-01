@@ -47,6 +47,7 @@ export type PlayerView = {
   id: number;
   name: string;
   life: number;
+  counters?: Record<string, number>;
   library_count: number;
   hand_count: number;
   battlefield: CardView[];

@@ -124,6 +124,7 @@ class PlayerState:
     name: str
     life: int = 20
     poison: int = 0
+    counters: dict[str, int] = field(default_factory=dict)
     library: list[str] = field(default_factory=list)
     hand: list[str] = field(default_factory=list)
     battlefield: list[str] = field(default_factory=list)
@@ -195,6 +196,7 @@ class MatchState:
     spells_cast_last_turn: int = 0
     draws_in_current_draw_step: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     draws_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)
     # Delayed entry modifications created by resolving effects such as Saga

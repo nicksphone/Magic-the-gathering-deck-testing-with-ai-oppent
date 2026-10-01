@@ -39,6 +39,11 @@ export function parseMatchState(value: unknown): MatchState {
       || !Number.isInteger(player.exile_count) || (player.exile_count as number) < player.exile.length) {
       throw new Error(`Invalid match response: player ${seat} card view`);
     }
+    if (player.counters !== undefined && (!record(player.counters)
+      || !Object.entries(player.counters).every(([kind, amount]) => /^[a-z]+(?:-[a-z]+)*$/.test(kind)
+        && Number.isInteger(amount) && (amount as number) >= 0))) {
+      throw new Error(`Invalid match response: player ${seat} counters`);
+    }
     if (player.snow_mana_pool !== undefined) {
       const snowPool = player.snow_mana_pool;
       const pool = player.mana_pool;

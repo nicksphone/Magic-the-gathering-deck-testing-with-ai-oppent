@@ -1,0 +1,190 @@
+{
+  "date": "2026-10-01",
+  "parent_revision": "9c6dfa33b81821e8244783b1bde41ff758fb7a76",
+  "source_sha256": {
+    "backend/effects/handlers.py": "d52d18f26003e305c3689661957443bfb5b1ae0dff0402127c7c127af69c44a0",
+    "backend/effects/registry.py": "11259badb34b1040e8701013e96d7bd1337687214f83716378848def861f7dea",
+    "backend/game_state/serializers.py": "40b944a31030aad081db17a621c2197de85ea8ce17046a18162597eb2d922e42",
+    "backend/game_state/state.py": "5473f027f603a32f53828b7854ea12e043abb800577986abdf3ff041d25042b5",
+    "backend/rules_engine/continuous.py": "854defefc8725d9079587437b5dc87cc1e9761d361f31193bb8cd93aa492190b",
+    "backend/rules_engine/coverage.py": "a2c7612fce8da9351e252d0a97d7b580a879b048e934e00bb874f9e43c7cb86e",
+    "backend/rules_engine/engine.py": "076c8236df56f3d6bf6e5b86ed8f0a554c1d2a741bdc39b01be0e748d8b7c696",
+    "backend/rules_engine/events.py": "cb379244352daa2786b217906e59217721541944c148d447ccb893564f52ee46",
+    "backend/rules_engine/player_counters.py": "f1fc5ff56d52ef1593d89128c7ef1ab27692b7d64dfa068d528b64eebe2f5cde",
+    "backend/rules_engine/ward.py": "1ce2a86a964fbb4b72eeead2c133a161e82967f15569dd14430a600425dd5dd9",
+    "backend/tests/browser_fixture_server.py": "a0f02e4aa3ae99dd0c6c60cb909d4f58634386e039e5462e7370788c0f11680d",
+    "backend/tests/fixtures/player_counters.json": "1a999508fa879730388799cd3ec3b46f2faadfc4a042540967dc31f302746288",
+    "backend/tests/test_player_counters.py": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+    "backend/tests/test_ward_forms.py": "f197245e9e2d1a52065ab3e41858abffe81185590f2b982921c5c0b251088298",
+    "frontend/src/api/match-contract.ts": "f3c7501b4ae80c741d7e3595bb53a249a5bd982e5a8205b88ad7ba4e434fde86",
+    "frontend/src/components/Battlefield.tsx": "7c01764a559bc60d4402239123cafc9afea251debb571a4c5f523be09353cd3e",
+    "frontend/src/types/index.ts": "0f7eb28b8514bcb90e1c0e2f5278252bec435759e6007bbdf83ea3b5f31fe4b8",
+    "frontend/tests/browser-human-actions.mjs": "724c7009c1a6c4f621df43e0dd57589c8eea3387625175e93870d5ba8f48e1d9",
+    "frontend/tests/human-actions.tsx": "ad10f349a1bc9b7d6804eec5e9ec31ad2ea389fee88b70814bda5d86e52bf6dc",
+    "frontend/tests/match-contract.mjs": "e72401b4459ba74800d7d231c931687cc8a78fc4ba1551bfb2e54756784bbe31"
+  },
+  "backend": {
+    "passed": 2220,
+    "warnings": 292,
+    "seconds": 175.65,
+    "command": "python -m pytest -q",
+    "isolated_from_live_database": true
+  },
+  "focused_checks": 181,
+  "new_backend_regressions": 68,
+  "canonical_rows": 14,
+  "frontend": {
+    "lint": "pass",
+    "build": "pass",
+    "unit": "pass",
+    "full_chromium": "pass",
+    "new_browser_case": "Actual end-step experience gain, effective anthem, counter display and seat-two resolved-X ward payment"
+  },
+  "replay": {
+    "games": 8,
+    "executions": 16,
+    "equal_reported_game_and_log_objects": true,
+    "timeouts": 0,
+    "cast_target_rejections": 0,
+    "ordinary_optional_payment_failures": 1,
+    "results": [
+      {
+        "a": "Dimir Control",
+        "b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "ticks": 1309,
+        "timeout": false,
+        "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae"
+      },
+      {
+        "a": "Tempo",
+        "b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "ticks": 389,
+        "timeout": false,
+        "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a"
+      },
+      {
+        "a": "Tokens",
+        "b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "ticks": 1036,
+        "timeout": false,
+        "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7"
+      },
+      {
+        "a": "Ramp",
+        "b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 405,
+        "timeout": false,
+        "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+      },
+      {
+        "a": "Midrange",
+        "b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "ticks": 580,
+        "timeout": false,
+        "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1"
+      },
+      {
+        "a": "Drain Deck",
+        "b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 420,
+        "timeout": false,
+        "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b"
+      },
+      {
+        "a": "Tribal",
+        "b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "ticks": 679,
+        "timeout": false,
+        "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691"
+      },
+      {
+        "a": "Burn",
+        "b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "ticks": 435,
+        "timeout": false,
+        "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd"
+      }
+    ]
+  },
+  "parent_probe": {
+    "card": "Minthara, Merciless Soul",
+    "printed_power": 2,
+    "zero_experience_effective_power": 3,
+    "general_counter_store": false,
+    "ward_instances": []
+  },
+  "limitations": [
+    "Counter replacement/prohibition and arbitrary dependent clauses are explicitly warned, not complete",
+    "No expert-AI or broad balance evidence",
+    "Not a fresh dependency install",
+    "Long-session custom-deck/LAN human review remains",
+    "Historical native timed-dump crash remains unresolved"
+  ],
+  "negative_parser_input_tests": 2,
+  "corpus_inventory": {
+    "cached_payloads_with_experience_reference": 19,
+    "payloads_with_parsed_gain_clause": 8,
+    "payloads_with_known_gaps": 15
+  },
+  "superseded_checks": [
+    "Earlier 2207/2209 full runs passed before additional parser/action-path/poison tests; acceptance uses the final 2220-test source copy",
+    "Initial focused collection/fixture mistakes fixed before acceptance gates"
+  ],
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "backend/effects/handlers.py",
+    "backend/effects/registry.py",
+    "backend/game_state/serializers.py",
+    "backend/game_state/state.py",
+    "backend/rules_engine/continuous.py",
+    "backend/rules_engine/coverage.py",
+    "backend/rules_engine/engine.py",
+    "backend/rules_engine/events.py",
+    "backend/rules_engine/player_counters.py",
+    "backend/rules_engine/ward.py",
+    "backend/tests/browser_fixture_server.py",
+    "backend/tests/fixtures/player_counters.json",
+    "backend/tests/test_player_counters.py",
+    "backend/tests/test_ward_forms.py",
+    "docs/testing/player-counter-corpus.json",
+    "docs/testing/player-counters.json",
+    "docs/testing/player-counters.md",
+    "docs/testing/ward-forms.md",
+    "frontend/src/api/match-contract.ts",
+    "frontend/src/components/Battlefield.tsx",
+    "frontend/src/types/index.ts",
+    "frontend/tests/browser-human-actions.mjs",
+    "frontend/tests/human-actions.tsx",
+    "frontend/tests/match-contract.mjs",
+    "graphify-out/GRAPH_REPORT.md",
+    "graphify-out/graph.html",
+    "graphify-out/graph.json",
+    "graphify-out/manifest.json",
+    "plan.md"
+  ]
+}

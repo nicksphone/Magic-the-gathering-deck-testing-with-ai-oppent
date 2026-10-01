@@ -73,6 +73,7 @@ def was_creature_on_battlefield(card) -> bool:
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     if event == "leaves_battlefield":
         capture_last_known_battlefield(state, payload.get("card_id"))
+        _record_departure(state, payload)
     triggers = _collect_triggers(state, event, payload)
     _push_triggers(state, event, triggers)
     if event == "leaves_battlefield":
@@ -88,6 +89,7 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     if event == "leaves_battlefield":
         for payload in payloads:
             capture_last_known_battlefield(state, payload.get("card_id"))
+            _record_departure(state, payload)
     departed_ids = [payload["card_id"] for payload in payloads if payload.get("card_id")] if event in {"permanent_dies", "creature_dies", "sacrifice"} else []
     for payload in payloads:
         event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
@@ -107,6 +109,12 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
     elif event in {"permanent_dies", "creature_dies"}:
         for payload in payloads:
             _finish_death_event(state, event, payload.get("card_id"))
+
+
+def _record_departure(state, payload):
+    card = state.cards.get(payload.get('card_id'))
+    if card is not None and payload.get('controller') in state.players:
+        state.players_with_permanent_departure.add(payload['controller'])
 
 
 def _finish_death_event(state: MatchState, event: str, card_id: str | None) -> None:
@@ -484,6 +492,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             if once_each_turn and trigger_key in state.trigger_once_seen_this_turn:
                 continue
             trigger_count_before = len(out)
+
+            from rules_engine.player_counters import gain_triggers
+            counter_triggers, oracle = gain_triggers(state, card, event, payload, oracle)
+            out.extend(counter_triggers)
 
             if transform_draw and event in {"transformed", "enters_battlefield"}:
                 changed = state.cards.get(payload.get("card_id"))

@@ -1,0 +1,222 @@
+{
+  "date": "2026-10-01",
+  "scope": "Read-only scan of cached canonical payloads mentioning experience counters, not full-card rules certification",
+  "cards": [
+    {
+      "name": "Aang, Airbending Master",
+      "oracle_id": "f3176779-74f7-4136-a701-438feeead7a0",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Atreus, Impulsive Son",
+      "oracle_id": "f6a4298c-3d9d-43e1-b32c-b168c02ad503",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Azlask, the Swelling Scourge",
+      "oracle_id": "55bc7f55-f73b-40b5-8912-9bf76c129ccc",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Azula, Ruthless Firebender",
+      "oracle_id": "7139ead5-86f0-46ae-8a6d-ad66d0408f73",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Daxos the Returned",
+      "oracle_id": "8a9e8f60-eb13-4ae8-82df-d4c46da74451",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever you cast an enchantment spell, you get an experience counter.",
+          "event_family": "cast"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Experience",
+      "oracle_id": "36403fd7-dad1-4c98-b52b-1150d9d566e5",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": []
+    },
+    {
+      "name": "Ezuri, Claw of Progress",
+      "oracle_id": "40eacdae-fae5-46b9-a9e5-9211469f74fc",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever a creature you control with power 2 or less enters, you get an experience counter.",
+          "event_family": "entry"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Kalemne, Disciple of Iroas",
+      "oracle_id": "e100f9fc-b6fb-42ab-b9b3-796bede6804d",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever you cast a creature spell with mana value 5 or greater, you get an experience counter.",
+          "event_family": "cast"
+        }
+      ],
+      "known_gaps": []
+    },
+    {
+      "name": "Katara, Waterbending Master",
+      "oracle_id": "2e3af413-6706-4023-871a-e5e49da5beab",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever you cast a spell during an opponent's turn, you get an experience counter.",
+          "event_family": "cast_opponent_turn"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Kelsien, the Plague",
+      "oracle_id": "5b3326a5-18c5-4d45-90e1-f6d00ca2bced",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause"
+      ]
+    },
+    {
+      "name": "Kratos, Stoic Father",
+      "oracle_id": "c000d5c3-5b0c-4c5c-9919-76640da0a1e4",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Meren of Clan Nel Toth",
+      "oracle_id": "0310dfdb-0498-488d-9f1a-279f8239e024",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever another creature you control dies, you get an experience counter.",
+          "event_family": "another_death"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Minthara, Merciless Soul",
+      "oracle_id": "fad0c174-4c4a-4662-bd1f-224886e826e1",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "at the beginning of your end step, if a permanent you controlled left the battlefield this turn, you get an experience counter.",
+          "event_family": "end_step_departure"
+        }
+      ],
+      "known_gaps": []
+    },
+    {
+      "name": "Mizzix of the Izmagnus",
+      "oracle_id": "f787c6cf-a4ff-487b-a7b0-0f516e68510a",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Otharri, Suns' Glory",
+      "oracle_id": "b081352b-d17b-4031-bbcc-c5c02cbfa6b6",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Spirit",
+      "oracle_id": "78adae1b-3c0f-4ded-9303-bb7db1b570a0",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": []
+    },
+    {
+      "name": "The Goblin Sparring Grounds",
+      "oracle_id": "20f917f4-4430-4d91-8b31-8473a8f0baea",
+      "source": "scryfall",
+      "parsed_gain_clauses": [],
+      "known_gaps": [
+        "unsupported player-counter gain clause",
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Toph, Earthbending Master",
+      "oracle_id": "ad5d3e7e-bf8c-4fa3-a81e-1523aec2585f",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "landfall \u2014 whenever a land you control enters, you get an experience counter.",
+          "event_family": "entry"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    },
+    {
+      "name": "Zuko, Firebending Master",
+      "oracle_id": "33db6dc8-2c88-4a7f-8d4d-3bc9fb6544b2",
+      "source": "scryfall",
+      "parsed_gain_clauses": [
+        {
+          "clause": "whenever you cast a spell during combat, you get an experience counter.",
+          "event_family": "cast_combat"
+        }
+      ],
+      "known_gaps": [
+        "unsupported player-counter dependent clause"
+      ]
+    }
+  ],
+  "summary": {
+    "cached_payloads_with_experience_reference": 19,
+    "payloads_with_parsed_gain_clause": 8,
+    "payloads_with_known_gaps": 15
+  },
+  "warning": "An empty known-gaps list is not semantic validation. Reminder/game pieces and partially implemented payoff cards remain in this inventory."
+}

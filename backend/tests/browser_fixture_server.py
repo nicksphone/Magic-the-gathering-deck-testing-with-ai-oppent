@@ -26,6 +26,30 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'player_counters':
+        from tests.test_player_counters import source
+        from tests.test_ward_resolution import add, resolve
+        from tests.test_restricted_mana import clean
+        from effects.handlers import destroy_permanent
+        from rules_engine.events import emit_event
+        from rules_engine.action_validation import checked_action
+        state = clean(2)
+        state.active_player = 1
+        card = source(state, 'Minthara, Merciless Soul', 1)
+        bear = add(state, 'Grizzly Bears', 1)
+        destroy_permanent(state, 2, {'target_card_id': bear.id})
+        emit_event(state, 'begin_step', {'step': 'end_step', 'active_player': 1})
+        resolve(state)
+        state.step = Step.CLEANUP
+        RulesEngine().next_step(state)
+        state.step = Step.PRECOMBAT_MAIN
+        state.priority_player = 2
+        bolt = add(state, 'Lightning Bolt', 2, Zone.HAND)
+        state.players[2].mana_pool.update(R=1, G=1)
+        state = checked_action(state, RulesEngine(), 2, {'type': 'cast_spell', 'card_id': bolt.id,
+                              'targets': {'target_card_id': card.id}})
+        resolve(state)
+        return publish(state, [{"quantity": 60, "card_name": "Island"}])
     if face_kind in {"ward_mana", "ward_discard"}:
         from tests.test_ward_resolution import cast_at, add
         from rules_engine.stack_engine import resolve_top_of_stack

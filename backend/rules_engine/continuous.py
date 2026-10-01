@@ -8,6 +8,7 @@ from game_state.state import Zone
 from rules_engine.card_types import creature_subtype_candidates, CREATURE_SUBTYPES
 from rules_engine.card_types import is_token_card
 from rules_engine.oracle_text import without_reminder_text
+from rules_engine.player_counters import counter_count, PLAYER_COUNT_RE
 
 STATIC_SUBJECT = r"(creature tokens|(?:[a-z]+(?:-[a-z]+)? )*creatures|[a-z]+s?)"
 _STATIC_TYPE_NOUNS = {kind.lower() + "s": kind for kind in
@@ -251,6 +252,11 @@ PT_AND_KW_STATIC_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:have|has)\s+([^.]*)"
 )
+PLAYER_COUNTER_PT_RE = re.compile(
+    r"(other\s+)?" + STATIC_SUBJECT + r"\s+(you control|your opponents control)\s+"
+    r"get\s+([+-]\d+)/([+-]\d+) for each ([a-z-]+) counter you have"
+)
+SELF_PLAYER_COUNTER_PT_RE = re.compile(r"(.+?) gets ([+-]\d+)/([+-]\d+) for each ([a-z-]+) counter you have")
 KW_REMOVE_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+(?:lose|loses)\s+([^.]*)"
@@ -448,6 +454,11 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
 def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
     """Resolve supported characteristic-defining power/toughness clauses."""
     text = (getattr(card, "oracle_text", "") or "").lower()
+    for line in _static_oracle_text(card).splitlines():
+        match = re.fullmatch(r"this creature's power and toughness are each equal to the " + PLAYER_COUNT_RE + r"\.?", line.strip())
+        if match:
+            count = counter_count(state.players[card.controller], match[1])
+            return count, count
     if "power is equal to the number of creatures you control" in text:
         return (sum("Creature" in state.cards[cid].types for cid in state.players[card.controller].battlefield), None)
     if not CARD_TYPE_COUNT_RE.search(text):
@@ -479,6 +490,9 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         attached_p, attached_t, _, _ = _attached_effects(state, src, card)
         p_bonus += attached_p
         t_bonus += attached_t
+        counter_p, counter_t = _player_counter_pt_bonus(state, src, card)
+        p_bonus += counter_p
+        t_bonus += counter_t
         for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(src):
             if not _scope_controller(src.controller, scope, card.controller):
                 continue
@@ -549,11 +563,41 @@ def _static_parser(parser):
 
 
 @_static_parser
+def _iter_player_counter_modifiers(text):
+    if 'counter you have' not in text:
+        return
+    for line in text.splitlines():
+        line = line.strip().rstrip('.')
+        match = PLAYER_COUNTER_PT_RE.fullmatch(line)
+        if match:
+            yield (match[3], bool(match[1]), match[2], int(match[4]), int(match[5]), match[6])
+        elif (match := SELF_PLAYER_COUNTER_PT_RE.fullmatch(line)):
+            yield ('self', False, match[1], int(match[2]), int(match[3]), match[4])
+
+
+def _player_counter_pt_bonus(state, source, target):
+    power = toughness = 0
+    for scope, other, subject, p, t, counter in _iter_player_counter_modifiers(source):
+        if scope == 'self':
+            if source.id != target.id or subject not in {source.name.lower(), source.name.split(',')[0].lower(), 'this creature', 'this permanent'}:
+                continue
+        elif ((other and source.id == target.id) or not _scope_controller(source.controller, scope, target.controller)
+              or not _subject_matches(state, target.id, subject)):
+            continue
+        count = counter_count(state.players[source.controller], counter)
+        power += p * count
+        toughness += t * count
+    return power, toughness
+
+
+@_static_parser
 def _iter_pt_modifiers(text):
     for match in PT_STATIC_RE.finditer(text):
         line_start = text.rfind("\n", 0, match.start()) + 1
         line_end = text.find("\n", match.end())
         clause = text[line_start:line_end if line_end != -1 else len(text)]
+        if re.search(r'\bfor each [a-z-]+ counter you have\b', clause):
+            continue
         if clause.strip().startswith(("when ", "whenever ", "at the beginning")) or "until end of turn" in clause:
             continue
         other_only = bool(match.group(1))
@@ -847,6 +891,9 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
+    counter_p, counter_t = _player_counter_pt_bonus(state, source_card, target)
+    if counter_p or counter_t:
+        entries.append({"layer": f"pt-mod:{counter_p}/{counter_t}"})
     attached_p, attached_t, attached_keywords, _ = _attached_effects(state, source_card, target)
     if attached_p or attached_t:
         entries.append({"layer": f"pt-mod:{attached_p}/{attached_t}"})

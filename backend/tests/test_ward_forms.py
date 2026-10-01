@@ -95,13 +95,13 @@ def test_effect_body_or_attachment_grant_is_not_printed_self_ward(name):
     assert ward_instances(state, card) == []
 
 
-def test_inline_dynamic_cost_is_explicitly_unsupported():
+def test_inline_player_counter_cost_is_supported():
     row = ROWS['Minthara, Merciless Soul']
-    assert 'unsupported ward cost' in known_unsupported_mechanics(row['oracle_text'])
-    assert 'unsupported ward cost' in known_unsupported_mechanics('', [row])
+    assert 'unsupported ward cost' not in known_unsupported_mechanics(row['oracle_text'])
+    assert 'unsupported ward cost' not in known_unsupported_mechanics('', [row])
     state = clean()
     card = target(state, row['name'], 2)
-    assert ward_instances(state, card) == []
+    assert ward_instances(state, card) == ['{X}, where X is the number of experience counters you have']
 
 
 @pytest.mark.parametrize('name', ['Rith, Liberated Primeval', 'Iymrith, Desert Doom',

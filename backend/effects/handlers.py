@@ -1786,6 +1786,24 @@ def transform_if_counters(state: MatchState, controller: int, payload: dict) -> 
         transform_card(state, controller, {"target_card_id": target_id, "face_index": 1})
 
 
+def add_player_counters(state: MatchState, controller: int, payload: dict) -> None:
+    player = payload.get('target_player', controller)
+    kind = str(payload.get('counter', '')).strip().lower()
+    amount = max(0, int(payload.get('amount', 1)))
+    if player not in state.players or not re.fullmatch(r'[a-z]+(?:-[a-z]+)*', kind) or not amount:
+        return
+    if payload.get('requires_departure') and player not in state.players_with_permanent_departure:
+        return
+    target = state.players[player]
+    if kind == 'poison':
+        target.poison += amount
+    else:
+        target.counters[kind] = target.counters.get(kind, 0) + amount
+    state.log.append(f'{target.name} gets {amount} {kind} counter(s).')
+    emit_event(state, 'player_counters_added', {'player_id': player, 'controller': controller,
+                                              'counter': kind, 'amount': amount})
+
+
 def add_counters(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     counter = payload.get("counter", "+1/+1")

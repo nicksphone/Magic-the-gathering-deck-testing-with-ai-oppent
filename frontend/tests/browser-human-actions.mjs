@@ -30,6 +30,14 @@ try {
   await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.players['2'].graveyard.some(c => c.name === 'Island')");
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   console.log("PASS seat-two ward mana and deliberate discard payments through real UI/API");
+  await click("Player Counters Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.ward_cost?.cost === '{1}' && document.querySelector('[data-player-counter=\"1-experience\"]')?.textContent === 'Experience 1'");
+  assert.equal(await evaluate("window.fixtureState.players['1'].battlefield.find(c => c.name === 'Minthara, Merciless Soul').power"), 3);
+  await evaluate("(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.startsWith('Pay ward: {1} ({X}')); if (!button || button.disabled) throw new Error('Missing resolved X ward payment'); button.click(); })()");
+  await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.players['2'].mana_pool.G === 0");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("document.querySelector('[data-player-counter=\"1-experience\"]').textContent"), "Experience 1");
+  console.log("PASS real experience gain, effective anthem, counters display and seat-two resolved-X ward payment");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

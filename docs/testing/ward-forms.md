@@ -1,5 +1,9 @@
 # Printed and conditional ward forms
 
+Historical ward-form milestone. The later [player-counter increment](player-counters.md)
+implements the named-counter ward X/gain/scaling boundary; the dynamic-cost
+warning findings below describe this milestone's parent and original scope.
+
 This increment fixes shared Oracle parsing, not whole-card interpretation or
 professional AI certification. All eight fixture rows come from the local
 canonical card-data cache; no names, printed costs or abilities were invented.

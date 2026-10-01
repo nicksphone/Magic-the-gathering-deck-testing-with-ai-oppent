@@ -68,6 +68,7 @@ class RulesEngine:
             state.spells_cast_this_turn[state.active_player] = 0
             state.declared_attackers_this_turn = {1: 0, 2: 0}
             state.draws_this_turn = {1: 0, 2: 0}
+            state.players_with_permanent_departure = set()
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
             state.trigger_once_seen_this_turn = set()

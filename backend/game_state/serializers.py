@@ -4,6 +4,7 @@ import random
 from copy import deepcopy
 
 from game_state.state import CardInstance, MatchState, PlayerState, StackItem, Step, TURN_STEPS, Zone
+from rules_engine.player_counters import public_counters
 from rules_engine.card_types import is_token_card
 
 
@@ -100,6 +101,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "spells_cast_last_turn": state.spells_cast_last_turn,
         "draws_in_current_draw_step": {str(key): value for key, value in state.draws_in_current_draw_step.items()},
         "draws_this_turn": {str(key): value for key, value in state.draws_this_turn.items()},
+        "players_with_permanent_departure": sorted(state.players_with_permanent_departure),
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
             for cid, data in state.temporary_control_changes.items()
@@ -124,6 +126,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "name": player.name,
                 "life": player.life,
                 "poison": player.poison,
+                "counters": dict(player.counters),
                 "library": list(player.library),
                 "hand": list(player.hand),
                 "battlefield": list(player.battlefield),
@@ -198,6 +201,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     for raw in payload["players"].values():
         player = PlayerState(id=int(raw["id"]), name=str(raw["name"]), life=int(raw["life"]))
         player.poison = int(raw.get("poison", 0))
+        player.counters = {str(key): int(value) for key, value in raw.get("counters", {}).items() if key != "poison"}
         for key in ("library", "hand", "battlefield", "graveyard", "exile"):
             setattr(player, key, list(raw.get(key, [])))
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
@@ -304,6 +308,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.linked_exiles = [dict(item) for item in payload.get("linked_exiles", [])]
     state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
+    state.players_with_permanent_departure = {int(pid) for pid in payload.get("players_with_permanent_departure", [])}
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
@@ -362,6 +367,7 @@ def serialize_match(state: MatchState) -> dict:
                 "name": p.name,
                 "life": p.life,
                 "poison": p.poison,
+                "counters": public_counters(p),
                 "library_count": len(p.library),
                 "hand_count": len(p.hand),
                 "battlefield": [

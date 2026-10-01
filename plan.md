@@ -1,5 +1,15 @@
 # MTG Deck Testing Lab Finish Plan
 
+Player-counter milestone: 2,220 isolated backend tests, 181 focused checks,
+frontend lint/build/unit and full Chromium pass. Fourteen canonical rows and
+68 new regressions cover supported counter gains, scaling and ward X. Eight
+seat-paired games repeat across sixteen executions without timeout or rejected
+cast/target. [Scope, evidence and remaining gaps](docs/testing/player-counters.md).
+
+- [x] Add persisted named player counters, poison compatibility and both-seat validated views. Connect supported cast/entry/death/end-step gain triggers, turn-scoped departure facts, self/global/CDA stats and named-counter ward X to shared application rules and human/AI payments.
+- [ ] Implement player-counter replacements/prohibitions and competing choices, proliferation/removal/spending, arbitrary counter-dependent clauses and variable resource strategy. Complete Meren/Daxos/Ezuri/Kelsien/Katara/Zuko/Toph follow-up abilities before claiming those whole cards work.
+- [ ] Use the [cached experience inventory](docs/testing/player-counter-corpus.json) to prioritize actual unsupported clauses across all styles: 19 payloads, eight recognized gain clauses, fifteen with known gaps. Empty warning lists and recognized clauses are not whole-card or AI certification.
+
 Ward-form milestone: 2,152 independent backend tests, 53 focused ward checks,
 frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games
 repeat identical reported results/logs across sixteen executions without timeout
@@ -7,7 +17,7 @@ or rejected cast/target; one optional Spell Pierce payment fails normally.
 [Scope, evidence and remaining gaps](docs/testing/ward-forms.md).
 
 - [x] Recognize supported printed keyword-list ward and named self-grants with tapped/untapped conditions; retain triggered payments after the conditional grant ends. Detect unsupported inline/granted costs and preserve human Oracle labels. [Scope](docs/testing/ward-forms.md).
-- [ ] Extend arbitrary ward conditions/grants, dynamic X definitions and player-counter semantics, complete suppression/dependency layers and multi-ward strategic payment planning. A known-gap warning is not implemented card semantics.
+- [ ] Extend arbitrary ward conditions/grants and remaining X definitions, complete suppression/dependency layers and multi-ward strategic payment planning. Named player-counter X/gains/scaling landed above; replacements and arbitrary counter-dependent semantics remain open. A known-gap warning is not implemented card semantics.
 
 Hot-path/keyword milestone: 2,133 standard backend tests and 259 focused checks,
 frontend gates and full Chromium pass. Shared optimizations preserve the captured
