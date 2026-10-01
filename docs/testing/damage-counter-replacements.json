@@ -158,7 +158,7 @@
     "backend_http": 200,
     "backend_bind": "0.0.0.0:9999"
   },
-  "publication": "verified, awaiting final Graphify/commit/push",
+  "publication": "Verified code increment 92e67711be3f4998ccd42e18596f49df8d43f0f9 confirmed on GitHub main; broader project goals remain incomplete.",
   "evidence_archive": {
     "file": "replays.tar.gz",
     "members_sha256": {

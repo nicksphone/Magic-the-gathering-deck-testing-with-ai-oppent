@@ -14,7 +14,7 @@ clean their scratch checkouts/profiles automatically.
 
 - [x] Implement and focused-test damage counter routing, effect-only provenance, simultaneous supported combat packets and repeated choice recovery.
 - [x] Recover disk capacity and the LAN-bound backend, pass full Chromium, preserve evidence on RCHFiles and enable automatic successful-run scratch cleanup. Broader rules/release completion is not implied.
-- [ ] Publish this verified increment after final documentation/Graphify checks.
+- [x] Publish the verified increment after documentation/Graphify checks: `92e6771` is confirmed on GitHub `main`.
 - [ ] Integrate entry/cost counter events and remaining simultaneous noncombat/prevention/multi-kind semantics, proliferation and resource valuation.
 
 Counter-effect replacement increment: 2,308 isolated backend tests, 257 focused
