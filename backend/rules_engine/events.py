@@ -456,6 +456,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         for chapter in extract_saga_chapters(saga.oracle_text):
             if not payload['old_lore'] < chapter['number'] <= payload['new_lore']:
                 continue
+            if (saga.entered_turn == state.turn
+                    and re.search(r'^read ahead\s*$', without_reminder_text(saga.oracle_text), re.I | re.M)
+                    and chapter['number'] != payload['new_lore']):
+                continue
             proxy = copy(saga)
             proxy.oracle_text = chapter['text']
             proxy.mana_cost = ''

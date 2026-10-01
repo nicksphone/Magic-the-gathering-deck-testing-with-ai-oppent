@@ -83,20 +83,11 @@ def test_realmwalker_choice_is_persisted_when_it_enters() -> None:
         ),
     )
     state.cards[walker.id] = walker
-    state.stack.append(
-        type(
-            "Stack",
-            (),
-            {
-                "id": "walker-stack",
-                "source_card_id": walker.id,
-                "controller": 1,
-                "label": walker.name,
-                "effect_key": "noop",
-                "payload": {"chosen_creature_type": "Elf"},
-            },
-        )()
-    )
+    from game_state.state import StackItem
+    state.stack.append(StackItem(
+        id="walker-stack", source_card_id=walker.id, controller=1,
+        label=walker.name, effect_key="noop", payload={"chosen_creature_type": "Elf"},
+    ))
 
     from rules_engine.stack_engine import resolve_top_of_stack
 

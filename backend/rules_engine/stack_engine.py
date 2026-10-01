@@ -277,6 +277,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
 
 
 def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -> bool:
+    entry_staged_here = False
     from rules_engine.ward import mark_stack_targets
     for copied in list(state.stack):
         if copied.payload.get("__stack_copy_kind"):
@@ -307,6 +308,13 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             from rules_engine.alternative_casts import restore_printed_characteristics
             restore_printed_characteristics(card)
         else:
+            if '__entry_counters_ready' not in payload:
+                from rules_engine.entry_counters import begin_spell_entry
+                return begin_spell_entry(state, item, payload)
+            entry_staged_here = not state.trigger_staging
+            if entry_staged_here:
+                state.trigger_staging = True
+                state.trigger_staging_event = 'permanent_entry'
             battlefield_player = state.players[item.controller]
             card.controller = item.controller
             battlefield_player.battlefield.append(card.id)
@@ -315,39 +323,16 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             card.entered_turn = state.turn
             if "Planeswalker" in card.types and card.loyalty is not None:
                 card.printed_characteristics.setdefault("loyalty", card.loyalty)
-                if "compleated" in card.oracle_text.lower():
-                    card.loyalty = max(0, card.loyalty - 2 * int(payload.get("__phyrexian_life_symbols", 0) or 0))
+                card.loyalty = 0
             assign_static_order_on_battlefield_entry(state, card.id)
-            if "Creature" in card.types:
-                if payload.get("__escaped"):
-                    import re
-                    match = re.search(r"escapes with (a|one|\d+) \+1/\+1 counters?", card.oracle_text, re.IGNORECASE)
-                    if match:
-                        amount = 1 if match.group(1).lower() in {"a", "one"} else int(match.group(1))
-                        put_counters(state, '+1/+1', amount, target_card_id=card.id)
-                pending = list(getattr(state, "pending_entry_counters", []) or [])
-                remaining: list[dict] = []
-                applied = False
-                for entry in pending:
-                    if (
-                        not applied
-                        and int(entry.get("controller", -1)) == int(card.controller)
-                        and int(entry.get("expires_turn", state.turn)) == int(state.turn)
-                    ):
-                        counter = str(entry.get("counter", "+1/+1"))
-                        put_counters(state, counter, entry.get('amount', 1) or 0, target_card_id=card.id)
-                        applied = True
-                    else:
-                        remaining.append(entry)
-                state.pending_entry_counters = remaining
+            if '__consume_entry_counter' in payload:
+                state.pending_entry_counters.pop(payload['__consume_entry_counter'])
+            for kind, amount in payload['__entry_counters_ready'].items():
+                put_counters(state, kind, amount, target_card_id=card.id)
             if "as this creature enters, choose a creature type" in (card.oracle_text or "").lower():
                 selected = str(payload.get("chosen_creature_type") or "").strip().lower()
                 card.chosen_creature_type = selected or choose_type_for_realmwalker(state, card.controller)
                 state.log.append(f"{card.name} chooses creature type {card.chosen_creature_type}.")
-            if "enters with x +1/+1 counters" in (card.oracle_text or "").lower():
-                x_value = max(0, int(payload.get("x_value", 0) or 0))
-                if x_value:
-                    put_counters(state, '+1/+1', x_value, target_card_id=card.id)
             if is_aura(card):
                 target_id = payload.get("target_card_id")
                 if not attach_if_legal(state, card.id, target_id):
@@ -355,8 +340,14 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                     zone = put_into_graveyard(state, card.id)
                     state.log.append(f"{card.name} has no legal attachment target and is put into {zone.value}.")
                     state.log.append(f"{item.label} resolves.")
+                    if entry_staged_here:
+                        from rules_engine.state_based_actions import apply_state_based_actions
+                        apply_state_based_actions(state)
                     return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
+    if entry_staged_here:
+        from rules_engine.state_based_actions import apply_state_based_actions
+        apply_state_based_actions(state)
     if not state.pending_mechanic_choice:
         state.log.append(f"{item.label} does not resolve because its target is illegal." if payload.get("__failed_to_resolve") else f"{item.label} resolves.")
     return True

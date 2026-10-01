@@ -1,0 +1,36 @@
+[
+  {
+    "id": "0770eb6a-4f01-4677-a401-14c1b30692c9",
+    "oracle_id": "6b92a5f4-a241-48c8-9aec-c8e9d5b01fa5",
+    "name": "The Phasing of Zhalfir",
+    "type_line": "Enchantment \u2014 Saga",
+    "mana_cost": "{2}{U}{U}",
+    "oracle_text": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI, II \u2014 Another target nonland permanent phases out. It can't phase in for as long as you control this Saga.\nIII \u2014 Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 black Phyrexian creature token.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Read Ahead"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmu/59/the-phasing-of-zhalfir?utm_source=api",
+    "set": "dmu",
+    "collector_number": "59"
+  },
+  {
+    "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+    "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
+    "name": "Walking Ballista",
+    "type_line": "Artifact Creature \u2014 Construct",
+    "mana_cost": "{X}{X}",
+    "oracle_text": "This creature enters with X +1/+1 counters on it.\n{4}: Put a +1/+1 counter on this creature.\nRemove a +1/+1 counter from this creature: It deals 1 damage to any target.",
+    "power": "0",
+    "toughness": "0",
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/306/walking-ballista?utm_source=api",
+    "set": "2xm",
+    "collector_number": "306"
+  }
+]

@@ -351,6 +351,10 @@ def test_selected_planeswalker_has_its_own_stats_and_survives_snapshot():
     assert restored.cards[card.id].zone == Zone.BATTLEFIELD
     assert restored.cards[card.id].name == "Tibalt, Cosmic Impostor"
     assert restored.cards[card.id].loyalty == 5
+    resolve_effect(restored, 2, "destroy_permanent", {"target_card_id": card.id})
+    assert restored.cards[card.id].zone == Zone.GRAVEYARD
+    assert restored.cards[card.id].name == VALKI
+    assert restored.cards[card.id].loyalty is None
 
 
 def test_face_proxy_does_not_retain_front_creature_stats_or_types():

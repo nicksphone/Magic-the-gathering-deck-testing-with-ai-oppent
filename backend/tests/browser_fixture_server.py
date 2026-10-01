@@ -26,6 +26,15 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'read_ahead_entry':
+        from tests.test_spell_entry_counters import ROWS, spell
+        from tests.test_ai_recurring_engines import add as add_card
+        from tests.test_counter_replacements import source
+        from tests.test_restricted_mana import clean
+        state = clean(2)
+        card = add_card(state, 'The Phasing of Zhalfir', 2, cards=ROWS)
+        spell(state, card)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'saga_counter_order':
         from tests.test_saga_counter_events import saga
         from tests.test_counter_replacements import source

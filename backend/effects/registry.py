@@ -93,6 +93,10 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key == 'permanent_spell_entry':
+        from rules_engine.entry_counters import resume_spell_entry
+        resume_spell_entry(state, controller, payload)
+        return
     if effect_key == "effect_sequence":
         source_card_id = payload.get("__source_card_id")
         source_lki = payload.get("__source_lki")

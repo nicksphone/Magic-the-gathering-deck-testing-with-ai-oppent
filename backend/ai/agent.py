@@ -288,6 +288,9 @@ class AIAgent:
                 prefer_dredge = self.archetype in {"Reanimator", "Drain", "Aristocrats", "Combo-lite"}
                 selected = next((option for option in options if option != "draw"), "draw") if prefer_dredge else "draw"
                 return AIDecision(action={"type": "choose_mechanic", "choice_id": selected}, reasoning="Choose draw or graveyard dredge replacement")
+            if choice['kind'] == 'saga_entry':
+                return AIDecision(action={'type': 'choose_mechanic', 'choice_id': options[0]},
+                                  reasoning='Retain all future Saga chapters; tactical read-ahead planning remains limited')
             if choice["kind"] == "land_entry":
                 pay = ("pay_two_life" in options and not (choice.get("effect_payload") or {}).get("tapped")
                        and self._should_pay_two_life_for_land(state, player_id, choice.get("entry_card_id")))

@@ -73,6 +73,14 @@ try {
   await waitFor("window.fixtureState.stack.length === 0 && window.fixtureState.players['2'].graveyard.some(c => c.name === 'History of Benalia')");
   assert.ok(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.is_token && c.power === 4 && c.toughness === 3)"));
   console.log("PASS seat-two grouped Saga chapters, visible lore, deliberate order and delayed final sacrifice through UI/API");
+  await click("Read Ahead Entry Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'saga_entry'");
+  assert.ok(await evaluate("!window.fixtureState.players['2'].battlefield.some(c => c.name === 'The Phasing of Zhalfir')"));
+  await click("Start at chapter 2");
+  await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.players['2'].battlefield.some(c => c.name === 'The Phasing of Zhalfir' && c.counters.lore === 2)");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.deepEqual(await evaluate("window.fixtureState.stack.map(item => item.label).sort()"), ["The Phasing of Zhalfir chapter 2"]);
+  console.log("PASS human seat-two read-ahead choice before entry and exact starting chapter through UI/API; chapter effects remain partially unsupported");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

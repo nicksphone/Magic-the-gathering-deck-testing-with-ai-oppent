@@ -61,8 +61,9 @@ general simultaneous-trigger planner or professional-play certification.
 
 ## Known Limitations and Next Upgrades
 
-Intrinsic lore on entry, read ahead and projected pre-entry characteristics need
-the unfinished general entry-replacement packet design. Arbitrary chapter effects,
+[Normal permanent-spell entry lore and Read Ahead](permanent-spell-entry.md) now
+use a resumable pre-entry packet. Other entry routes and general projected
+pre-entry characteristics remain unfinished. Arbitrary chapter effects,
 multiple/optional chapter targets, gained/suppressed chapter abilities and full
 multi-kind/proliferation coverage remain open. Compound/mixed AI trigger ordering
 needs broader state-aware search and independent decision-quality evaluation.

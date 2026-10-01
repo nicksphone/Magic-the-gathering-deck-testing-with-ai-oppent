@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Permanent-spell entry counters and Read Ahead
+
+- Added resumable off-battlefield counter preparation for normal permanent spells: initial loyalty/lore, supported X/escape/one-shot creature counters and scalar replacement/prohibition choices. Entry commits once after choices complete. Human seats can choose Read Ahead chapters; its entry-turn exact-lore restriction follows current rules, including doubled-counter overshoot and later same-turn placements.
+- Fixed modal planeswalker entry to use active-face loyalty without corrupting the stored original identity. Added 22 entry checks and two canonical card fixtures; expanded the leave-play face regression and honest phasing diagnostics. AI defaults to chapter one; deeper chapter planning and other entry routes remain unfinished.
+- Verified 2,382 isolated backend tests, 146 focused counter checks, 44 entry/face checks, frontend lint/unit/build, full Chromium and sixteen deterministic seat-paired replay executions. Updated README/plan, refreshed Graphify, and retained evidence on RCHFiles. [Scope and limitations](docs/testing/permanent-spell-entry.md).
+
 ## 2026-10-01 - Saga counter events and trigger dependencies
 
 - Connected supported turn-based and registered-effect lore to shared scalar replacements and crossed-threshold chapter events. Grouped symbols, chapter targeting/ordering, ward, staged/pending chapter lifetime and snapshot recovery use shared engine paths; copied or unrelated abilities no longer delay final sacrifice. Existing legacy chapter labels remain recognized with an explicit provenance limitation.
