@@ -265,6 +265,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             state.log.append(f"{item.label} ignores {ignored} illegal target(s).")
     is_trigger = bool(payload.get("__trigger_event"))
     payload["__source_card_id"] = item.source_card_id
+    if not state.trigger_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = 'stack_resolution'
+        item.payload['__resolution_stage_owned'] = True
+        payload['__resolution_stage_owned'] = True
     if payload.get("__once_on_accept"):
         state.trigger_once_seen_this_turn.add(str(payload["__once_on_accept"]))
     resolve_effect(state, item.controller, item.effect_key, payload)
@@ -286,7 +291,11 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
         if payload.get("__stack_copy_kind") == "spell" and not payload.get("__failed_to_resolve"):
             copied_card = payload.get("__copied_card") or {}
             if not {"Instant", "Sorcery"}.intersection(copied_card.get("types") or []):
-                _finish_permanent_spell_copy(state, item, payload)
+                if not _finish_permanent_spell_copy(state, item, payload):
+                    return not (state.pending_mechanic_choice or state.pending_replacement_choice)
+        if payload.get('__resolution_stage_owned'):
+            from rules_engine.state_based_actions import apply_state_based_actions
+            apply_state_based_actions(state)
         state.log.append(
             f"{item.label} does not resolve because its target is illegal."
             if payload.get("__failed_to_resolve") else f"{item.label} resolves."
@@ -340,12 +349,12 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                     zone = put_into_graveyard(state, card.id)
                     state.log.append(f"{card.name} has no legal attachment target and is put into {zone.value}.")
                     state.log.append(f"{item.label} resolves.")
-                    if entry_staged_here:
+                    if entry_staged_here or payload.get('__resolution_stage_owned'):
                         from rules_engine.state_based_actions import apply_state_based_actions
                         apply_state_based_actions(state)
                     return True
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
-    if entry_staged_here:
+    if entry_staged_here or payload.get('__resolution_stage_owned'):
         from rules_engine.state_based_actions import apply_state_based_actions
         apply_state_based_actions(state)
     if not state.pending_mechanic_choice:
@@ -353,12 +362,15 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     return True
 
 
-def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: dict) -> None:
+def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: dict) -> bool:
     from game_state.state import CardInstance
+    from dataclasses import asdict
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
 
     copied = payload["__copied_card"]
     types = list(copied.get("types") or [])
-    token = CardInstance(
+    token = (CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
+             if '__entry_candidates' in payload else CardInstance(
         id=state.allocate_object_id(), name=copied["name"], owner=item.controller,
         controller=item.controller, zone=Zone.BATTLEFIELD, is_token=True,
         types=list(dict.fromkeys([*types, "Token"])),
@@ -370,26 +382,32 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         card_faces=list(copied.get("card_faces") or []),
         selected_face_index=copied.get("selected_face_index"),
         summoning_sick=True, entered_turn=state.turn,
-    )
-    if "Planeswalker" in types and "compleated" in token.oracle_text.lower() and token.loyalty is not None:
-        token.loyalty = max(0, token.loyalty - 2 * int(payload.get("__phyrexian_life_symbols", 0) or 0))
+    ))
+    completion = ({'entry_item': asdict(item), 'entry_payload': payload}
+                  if '__entry_counters_by_id' not in payload else payload)
+    if prepare_counter_entries(state, item.controller, [token], 'permanent_spell_copy_entry',
+                               completion, entry_payload={'x_value': payload.get('x_value', 0)}):
+        return False
     state.cards[token.id] = token
     state.players[item.controller].battlefield.append(token.id)
     if is_aura(token) and not attach_if_legal(state, token.id, payload.get("target_card_id")):
         state.players[item.controller].battlefield.remove(token.id)
         del state.cards[token.id]
-        return
+        return True
     assign_static_order_on_battlefield_entry(state, token.id)
+    commit_entry_counters(state, token, payload)
     emit_event(state, "enters_battlefield", {"card_id": token.id, "controller": item.controller,
                                             "x_value": max(0, int(payload.get("x_value", 0) or 0))})
+    return True
 
 
 def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     from effects.handlers import draw_cards
 
     controller = int(
-        pending.get("controller")
+        pending.get('continuation_controller')
         or (pending.get("resolving_item") or {}).get("controller")
+        or pending.get("controller")
         or pending["player_id"]
     )
     counter_queue = list(pending.get('counter_continuation_queue') or [])
@@ -398,6 +416,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         resolve_effect(state, event['controller'], event['effect_key'], event['payload'])
     next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
+        if pending.get('continuation_controller'):
+            next_pending['continuation_controller'] = pending['continuation_controller']
         next_pending.setdefault('counter_continuation_queue', []).extend(counter_queue)
     queue = list(pending.get("draw_continuation_queue") or [])
     if not queue and pending.get("remaining_draws"):
@@ -409,6 +429,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         draw_cards(state, controller, queue.pop(0))
         next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
+        if pending.get('continuation_controller'):
+            next_pending['continuation_controller'] = pending['continuation_controller']
         if pending.get('activation_controller'):
             next_pending['activation_controller'] = pending['activation_controller']
         next_pending.setdefault("draw_continuation_queue", []).extend(queue)
@@ -422,6 +444,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
         resolve_effect(state, controller, "effect_sequence", {"effects": pending["continuation_effects"]})
     next_pending = state.pending_mechanic_choice or state.pending_replacement_choice
     if next_pending:
+        if pending.get('continuation_controller'):
+            next_pending['continuation_controller'] = pending['continuation_controller']
         if pending.get("combat_damage_needs_sba"):
             next_pending["combat_damage_needs_sba"] = True
         if pending.get("resolving_item"):

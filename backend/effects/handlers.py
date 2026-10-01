@@ -1253,6 +1253,7 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
 
 
 def return_creature_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     target = payload.get("target_card_id")
     if not target or target not in state.cards:
         return
@@ -1264,6 +1265,8 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
             break
     if source_graveyard is None or is_departed_token(card):
         return
+    if prepare_counter_entries(state, controller, [card], 'return_creature_from_graveyard_to_battlefield', payload):
+        return
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
@@ -1273,11 +1276,13 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     card.summoning_sick = "Creature" in card.types
     card.entered_turn = state.turn
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
-    if "Creature" in card.types:
-        assign_static_order_on_battlefield_entry(state, target)
+    assign_static_order_on_battlefield_entry(state, target)
+    commit_entry_counters(state, card, payload)
+    emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': controller})
 
 
 def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     target = payload.get("target_card_id")
     if not target or target not in state.cards:
         return
@@ -1291,6 +1296,8 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
         return
     if pause_for_land_entries(state, controller, [target], "return_permanent_from_graveyard_to_battlefield", payload):
         return
+    if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload):
+        return
     apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"))
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
@@ -1299,6 +1306,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
     card.controller = controller
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, target)
+    commit_entry_counters(state, card, payload)
     if "Creature" in card.types:
         card.summoning_sick = True
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
@@ -1307,6 +1315,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
 
 def search_library(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.oracle_effects import search_card_matches
+    from rules_engine.entry_counters import prepare_counter_entries
 
     subtype = payload.get("contains")
     destination = str(payload.get("destination", "hand") or "hand").strip().lower()
@@ -1349,6 +1358,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     entering = chosen[:1] if destination == "split_battlefield_hand" else chosen if destination == "battlefield" else []
     if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
         return
+    if entering and prepare_counter_entries(state, controller, [state.cards[cid] for cid in entering],
+                                           'search_library', {**payload, 'selected_card_ids': chosen}):
+        return
     found: list[str] = []
     entry_events = []
     for cid in chosen:
@@ -1356,7 +1368,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
         player.library.remove(cid)
         _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")),
-                             entry_choice=choice, emit_entry=destination != "battlefield")
+                             entry_choice=choice, emit_entry=destination != "battlefield", entry_payload=payload)
         if destination == "battlefield":
             entry_events.append({"card_id": cid, "controller": controller})
         found.append(state.cards[cid].name)
@@ -1380,6 +1392,7 @@ def _place_searched_card(
     tapped: bool = False,
     entry_choice: str = "tapped",
     emit_entry: bool = True,
+    entry_payload: dict | None = None,
 ) -> None:
     card = state.cards[card_id]
     player = state.players[controller]
@@ -1397,6 +1410,9 @@ def _place_searched_card(
         card.summoning_sick = True
         card.entered_turn = state.turn
         assign_static_order_on_battlefield_entry(state, card_id)
+        if entry_payload is not None:
+            from rules_engine.entry_counters import commit_entry_counters
+            commit_entry_counters(state, card, entry_payload)
         if emit_entry:
             emit_event(state, "enters_battlefield", {"card_id": card_id, "controller": controller})
         return
@@ -1406,6 +1422,7 @@ def _place_searched_card(
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import CardInstance
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     from rules_engine.domain import basic_land_type_count
     from copy import deepcopy
 
@@ -1415,6 +1432,11 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     token_controller = int(payload.get("controller", controller))
     amount = (basic_land_type_count(state, token_controller) if payload.get("per_basic_land_type")
               else max(0, int(payload.get("amount", 1))))
+    if not payload.get('__token_creation_modified'):
+        from rules_engine.token_replacements import token_creation_amount
+        amount = token_creation_amount(state, token_controller, amount)
+        payload = {**payload, 'amount': amount, 'per_basic_land_type': False,
+                   '__token_creation_modified': True}
     types = list(payload.get("types", ["Creature", "Token"]))
     keywords = list(payload.get("keywords", []))
     sac_next_end = bool(payload.get("sacrifice_next_end_step", False))
@@ -1444,7 +1466,10 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         attack_target = attack_target or f"player:{3 - token_controller}"
     token_image_uri = payload.get("image_uri") or resolve_token_image_uri(name, p, t)
     entry_events = []
-    for index in range(amount):
+    candidates = []
+    for raw in payload.get('__entry_candidates', []):
+        candidates.append(CardInstance(**{**raw, 'zone': Zone(raw['zone'])}))
+    for index in range(amount if '__entry_candidates' not in payload else 0):
         cid = state.allocate_object_id()
         token = CardInstance(
             id=cid,
@@ -1457,6 +1482,7 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             mana_cost=payload.get("mana_cost", ""),
             power=p if "Creature" in types else None,
             toughness=t if "Creature" in types else None,
+            loyalty=payload.get('loyalty'),
             type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
             oracle_text=payload.get("oracle_text", ""),
             summoning_sick=True,
@@ -1468,15 +1494,21 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             colors=list(payload.get("colors", [])),
             image_uri=token_image_uri,
         )
+        candidates.append(token)
+    if prepare_counter_entries(state, token_controller, candidates, 'create_token', payload):
+        return
+    for index, token in enumerate(candidates):
+        cid = token.id
         state.cards[cid] = token
         state.players[token_controller].battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
+    for index, token in enumerate(candidates):
+        cid = token.id
         if tapped_and_attacking:
             token.tapped = True
             state.attackers.append(cid)
             state.attack_targets[cid] = attack_targets[index] if attack_targets is not None else attack_target
-        for kind, count in (payload.get("counters") or {}).items():
-            put_counters(state, kind, count, target_card_id=cid)
+        commit_entry_counters(state, token, payload)
         entry_events.append({"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
@@ -1877,6 +1909,7 @@ def set_next_creature_entry_counter(state: MatchState, controller: int, payload:
 
 
 def put_green_creature_from_hand(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     player = state.players[controller]
     target = next(
         (
@@ -1891,6 +1924,8 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
     )
     if not target:
         return
+    if prepare_counter_entries(state, controller, [state.cards[target]], 'put_green_creature_from_hand', payload):
+        return
     player.hand.remove(target)
     player.battlefield.append(target)
     card = state.cards[target]
@@ -1899,6 +1934,7 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
     card.summoning_sick = True
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, target)
+    commit_entry_counters(state, card, payload)
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
     state.log.append(f"{player.name} puts {card.name} from hand onto the battlefield.")
 
@@ -2253,6 +2289,7 @@ def _pause_topdeck_put(state: MatchState, controller: int, payload: dict, top_id
 
 
 def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 6)))
     max_creatures = max(1, int(payload.get("max_creatures", 2)))
@@ -2287,6 +2324,10 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     else:
         chosen = eligibles[:max_creatures]
 
+    if chosen and prepare_counter_entries(state, controller, [state.cards[cid] for cid in chosen],
+                                         'topdeck_put_creatures_battlefield', {**payload, 'selected_card_ids': chosen}):
+        return
+
     # Remove inspected cards from library in top-to-bottom order.
     inspected_set = set(top_slice)
     remaining_library = [cid for cid in player.library if cid not in inspected_set]
@@ -2301,6 +2342,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
+        commit_entry_counters(state, card, payload)
         entry_events.append({"card_id": cid, "controller": controller})
     emit_event_batch(state, "enters_battlefield", entry_events)
 
@@ -2327,6 +2369,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
 
 
 def topdeck_put_permanents_battlefield(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 5)))
     max_permanents = max(1, int(payload.get("max_permanents", 2)))
@@ -2355,6 +2398,9 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         chosen = eligible[:max_permanents]
     if pause_for_land_entries(state, controller, chosen, "topdeck_put_permanents_battlefield", {**payload, "selected_card_ids": chosen}):
         return
+    if chosen and prepare_counter_entries(state, controller, [state.cards[cid] for cid in chosen],
+                                         'topdeck_put_permanents_battlefield', {**payload, 'selected_card_ids': chosen}):
+        return
     chosen_set = set(chosen)
     player.library = [cid for cid in player.library if cid not in set(top_slice)]
     entry_events = []
@@ -2370,6 +2416,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
+        commit_entry_counters(state, card, payload)
         entry_events.append({"card_id": cid, "controller": controller})
     emit_event_batch(state, "enters_battlefield", entry_events)
     rest = [cid for cid in top_slice if cid not in chosen_set]

@@ -87,9 +87,9 @@ def test_x_life_is_checked_before_payment_and_all_creatures_are_affected():
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert resolve_top_of_stack(state)
     assert effective_toughness(state, "own-three") == 1
-    assert effective_toughness(state, "their-two") == 0
+    assert state.cards['their-two'].zone == Zone.GRAVEYARD
+    assert effective_toughness(state, "their-two") == 2  # old temporary effect ended on zone change
     assert effective_toughness(state, "their-four") == 2
-    apply_state_based_actions(state)
     assert "their-two" in state.players[2].graveyard
     assert "own-three" in state.players[1].battlefield
     _creature(state, 2, "late-two", 2)

@@ -35,7 +35,7 @@ def test_positive_loyalty_cost_is_not_initially_an_effect(name, controller, expe
     assert state.priority_player == 1 and not state.trigger_staging
     # A replacement reducing the +1 cost to zero still pays that cost.
     resolve_top_of_stack(state)
-    assert len([cid for cid in state.players[1].battlefield if state.cards[cid].is_token]) == 3
+    assert len([cid for cid in state.players[1].battlefield if state.cards[cid].is_token]) == (6 if name == 'Doubling Season' else 3)
 
 
 @pytest.mark.parametrize('name', ['Doubling Season', 'Vorinclex, Monstrous Raider', "Lae'zel, Vlaakith's Champion"])
@@ -81,7 +81,7 @@ def test_cost_choice_resume_announces_and_pays_exactly_once(first, expected):
     with pytest.raises(ActionRejected):
         activate(state, state.cards[walker.id])
     resolve_top_of_stack(state)
-    assert len([cid for cid in state.players[1].battlefield if state.cards[cid].is_token]) == 3
+    assert len([cid for cid in state.players[1].battlefield if state.cards[cid].is_token]) == 6
 
 
 def test_target_ward_waits_until_positive_cost_is_fully_paid():

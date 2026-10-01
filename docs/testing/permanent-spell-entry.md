@@ -47,8 +47,10 @@ Completed evidence is on RCHFiles under project diagnostics
 
 ## Known Limitations and Next Upgrades
 
-Token creation, permanent-spell copies, graveyard/library returns and special
-opening entries do not yet share this packet. General projected continuous/copy
+[Shared entry routes](entry-routes.md) now extend this packet to created tokens,
+permanent-spell copies, supported graveyard/library returns and green-creature
+hand placement. Special opening and unusual exile-return routes remain open.
+General projected continuous/copy
 characteristics, arbitrary entry replacements, simultaneous multi-kind ordering,
 and cast-linked one-shot expiry semantics remain unfinished. [Compleated ordering
 and entry commit](entry-replacement-order.md) now use shared scalar choices without

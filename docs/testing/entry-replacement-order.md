@@ -51,9 +51,9 @@ core-event packets, not invented card text or card statistics.
 
 ## Known Limitations and Next Upgrades
 
-This packet still covers normal permanent-spell resolution only. Token/copy/return
-routes, generalized projected pre-entry characteristics and simultaneous
-multi-kind ordering remain unfinished. The AI amount policy does not evaluate
+[Shared token/copy/return/library routes](entry-routes.md) now reuse preparation.
+Unusual entry routes, generalized projected pre-entry characteristics and
+simultaneous multi-kind ordering remain unfinished. The AI amount policy does not evaluate
 every downstream consequence of counters, including Saga overshoot, loyalty
 ability availability and nonlinear board interactions. Current bounded checks
 cannot establish unrestricted Magic correctness or seasoned-player performance.

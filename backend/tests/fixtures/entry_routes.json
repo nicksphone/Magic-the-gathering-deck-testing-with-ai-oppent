@@ -1,0 +1,74 @@
+[
+  {
+    "id": "6d2f4a37-453f-4a2c-bfba-2d1227394c90",
+    "oracle_id": "c6a3a882-a127-4590-93d7-679ef4313efe",
+    "name": "Elvish Visionary",
+    "type_line": "Creature \u2014 Elf Shaman",
+    "mana_cost": "{1}{G}",
+    "oracle_text": "When this creature enters, draw a card.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/hoc/206/elvish-visionary?utm_source=api",
+    "set": "hoc",
+    "collector_number": "206",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  {
+    "id": "58da074a-a776-4e3f-be04-9e7f18320ae1",
+    "oracle_id": "bda83ef4-e345-495d-878c-4da171f997ba",
+    "name": "Elvish Warmaster",
+    "type_line": "Creature \u2014 Elf Warrior",
+    "mana_cost": "{1}{G}",
+    "oracle_text": "Whenever one or more other Elves you control enter, create a 1/1 green Elf Warrior creature token. This ability triggers only once each turn.\n{5}{G}{G}: Elves you control get +2/+2 and gain deathtouch until end of turn.",
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/khm/167/elvish-warmaster?utm_source=api",
+    "set": "khm",
+    "collector_number": "167",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  {
+    "id": "d96266b3-a7cb-40ce-a328-ac13719fe5f0",
+    "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b",
+    "name": "Soul Warden",
+    "type_line": "Creature \u2014 Human Cleric",
+    "mana_cost": "{W}",
+    "oracle_text": "Whenever another creature enters, you gain 1 life.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mm3/24/soul-warden?utm_source=api",
+    "set": "mm3",
+    "collector_number": "24",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  }
+]

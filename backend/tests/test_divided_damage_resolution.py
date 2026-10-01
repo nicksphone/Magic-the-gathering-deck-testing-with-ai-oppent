@@ -119,14 +119,22 @@ def test_player_recipient_still_gets_announced_share_when_card_target_leaves():
     assert game.cards["first"].counters.get("__damage_marked", 0) == 0
 
 
-def test_divided_damage_defers_lethal_checks_until_all_shares_are_dealt():
+def test_divided_damage_defers_lethal_checks_until_all_shares_are_dealt(monkeypatch):
+    import rules_engine.state_based_actions as sba
     game = _setup()
     game.cards["first"].toughness = game.cards["second"].toughness = 2
     game = _cast(game)
+    checks = []
+    original = sba.apply_state_based_actions
+
+    def check_complete_damage(state):
+        checks.append(tuple(state.cards[cid].counters.get('__damage_marked', 0)
+                            for cid in ('first', 'second')))
+        original(state)
+
+    monkeypatch.setattr(sba, 'apply_state_based_actions', check_complete_damage)
     assert resolve_top_of_stack(game)
-    assert game.cards["first"].counters["__damage_marked"] == 2
-    assert game.cards["second"].counters["__damage_marked"] == 2
-    apply_state_based_actions(game)
+    assert checks[0] == (2, 2)
     assert game.cards["first"].zone == game.cards["second"].zone == Zone.GRAVEYARD
 
 

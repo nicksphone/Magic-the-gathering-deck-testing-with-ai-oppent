@@ -116,8 +116,6 @@ def test_crypt_rats_damage_is_simultaneous_and_both_players_can_lose() -> None:
         "ability_index": 0, "targets": {"x_value": 2},
     }, reject_invalid=True)
     assert resolve_top_of_stack(state)
-    assert state.cards[source_id].zone == state.cards[bear.id].zone == Zone.BATTLEFIELD
-    apply_state_based_actions(state)
     assert state.winner == 0
     assert state.cards[source_id].zone == state.cards[bear.id].zone == Zone.GRAVEYARD
     assert state.players[1].life == state.players[2].life == 0

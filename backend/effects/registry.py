@@ -97,6 +97,18 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         from rules_engine.entry_counters import resume_spell_entry
         resume_spell_entry(state, controller, payload)
         return
+    if effect_key == 'permanent_entry_counters':
+        from rules_engine.entry_counters import resume_entry_batch
+        resume_entry_batch(state, controller, payload)
+        return
+    if effect_key == 'permanent_spell_copy_entry':
+        from game_state.state import StackItem
+        from rules_engine.stack_engine import finish_stack_resolution
+        finish_stack_resolution(state, StackItem(**payload['entry_item']), {
+            **payload['entry_payload'], '__entry_candidates': payload['__entry_candidates'],
+            '__entry_counters_by_id': payload['__entry_counters_by_id'],
+        })
+        return
     if effect_key == "effect_sequence":
         source_card_id = payload.get("__source_card_id")
         source_lki = payload.get("__source_lki")
@@ -118,6 +130,7 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
             resolve_effect(state, controller, key, data)
             pending = state.pending_mechanic_choice or state.pending_replacement_choice
             if pending:
+                pending.setdefault('continuation_controller', controller)
                 remaining = []
                 for next_effect in effects[index + 1:]:
                     next_data = dict(next_effect.get("payload", {}))

@@ -41,7 +41,7 @@ def unsupported_counter_prohibitions(oracle_text):
 
 def counter_placement_forbidden(state, kind, *, target_player=None, target_card_id=None):
     target = state.cards.get(target_card_id)
-    if target is not None and target.zone != Zone.BATTLEFIELD:
+    if target is not None and not any(target.id in player.battlefield for player in state.players.values()):
         for clause in re.split(r'[.\n]', _static_oracle_text(target)):
             instruction = parse_counter_prohibition(clause.strip(), target.name)
             if instruction is not None and instruction[0] == 'self':

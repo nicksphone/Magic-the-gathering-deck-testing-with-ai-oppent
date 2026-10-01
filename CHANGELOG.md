@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Shared entry routes and resolution staging
+
+- Extended durable counter/chapter preparation to supported token batches, permanent-spell copies, graveyard returns, library selections and green-creature hand placement. Candidates/off-zone cards remain uncommitted during choices; creature returns now emit entry triggers. Non-cast entries no longer consume cast records or inherit the source effect's X/escape/life choices; spell copies retain copied X but were not cast.
+- Added bounded commuting token-creation doublers, separate from entry counters and never applied to resolving permanent-spell copies. Staged common stack resolution until later effects and SBA finish; preserved original continuation ownership across affected-player choices.
+- Added eighteen route checks and canonical fixtures. Updated seven earlier completion-time/token-count assertions; strengthened divided-damage coverage to inspect the first SBA boundary. Verified 2,414 isolated backend tests, 72 focused checks, frontend lint/unit/build, full Chromium including seat-two token batches, and sixteen deterministic replay executions without timeout. Updated docs/plan and Graphify; evidence is on RCHFiles. [Scope and remaining work](docs/testing/entry-routes.md).
+
 ## 2026-10-01 - Entry reduction ordering and counter commit
 
 - Made compleated loyalty reductions orderable against supported scalar modifiers, using announced life-payment counts, affected-player choices, per-ability usage and durable off-battlefield continuations. Shared AI now compares operand-bearing reductions without card-name branches.

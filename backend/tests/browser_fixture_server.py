@@ -26,6 +26,15 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'token_counter_entry_batch':
+        from tests.test_counter_replacements import source
+        from tests.test_restricted_mana import clean
+        from effects.registry import resolve_effect
+        state = clean(2)
+        source(state, 'Doubling Season', 2)
+        source(state, 'Winding Constrictor', 2)
+        resolve_effect(state, 2, 'incubate', {'counters': 3})
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'compleated_entry_order':
         from tests.test_entry_replacement_order import walker
         from tests.test_counter_replacements import source

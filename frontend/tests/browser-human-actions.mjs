@@ -89,6 +89,17 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Tamiyo, Compleated Sage').length"), 1);
   console.log("PASS human seat-two entry replacement order doubles loyalty before compleated reduction and commits once through UI/API");
+  await click("Token Entry Batch Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.player_id === 2");
+  assert.ok(await evaluate("!window.fixtureState.players['2'].battlefield.some(c => c.name === 'Incubator')"));
+  await click("Winding Constrictor");
+  await waitFor("window.fixtureState.pending_replacement_choice?.counter_payload?.entry_target_index === 1 && document.querySelector('[data-testid=ready]').textContent === 'Ready'");
+  assert.ok(await evaluate("!window.fixtureState.players['2'].battlefield.some(c => c.name === 'Incubator')"));
+  await click("Winding Constrictor");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Incubator').length === 2");
+  assert.ok(await evaluate("window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Incubator').every(c => c.counters['+1/+1'] === 8)"));
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS human seat-two counter replacement choices keep the token group uncreated until simultaneous commit through UI/API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

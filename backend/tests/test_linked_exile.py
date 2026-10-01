@@ -53,7 +53,9 @@ def test_temporary_lockdown_returns_owned_cards_after_source_is_destroyed() -> N
     _permanent(state, "token", 2, 2, ["Creature"], "", token=True)
     _resolve_entry(state, source)
     assert {"own", "stolen"} <= set(state.players[1].exile)
-    assert {"opp", "token"} <= set(state.players[2].exile)
+    assert 'opp' in state.players[2].exile
+    assert 'token' not in state.players[2].exile
+    assert state.cards['token'].zone == Zone.CEASED
     assert {"big", "land"} <= set(state.players[2].battlefield)
     assert len(state.linked_exiles) == 1
     assert set(state.linked_exiles[0]["card_ids"]) == {"own", "stolen", "opp"}
@@ -64,7 +66,7 @@ def test_temporary_lockdown_returns_owned_cards_after_source_is_destroyed() -> N
     assert {"own", "stolen"} <= set(state.players[1].battlefield)
     assert "opp" in state.players[2].battlefield
     assert state.cards["stolen"].controller == 1
-    assert state.cards["token"].zone == Zone.EXILE
+    assert state.cards["token"].zone == Zone.CEASED
     apply_state_based_actions(state)
     assert state.cards["token"].zone == Zone.CEASED
 
