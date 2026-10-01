@@ -81,6 +81,14 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   assert.deepEqual(await evaluate("window.fixtureState.stack.map(item => item.label).sort()"), ["The Phasing of Zhalfir chapter 2"]);
   console.log("PASS human seat-two read-ahead choice before entry and exact starting chapter through UI/API; chapter effects remain partially unsupported");
+  await click("Compleated Order Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.player_id === 2");
+  assert.ok(await evaluate("!window.fixtureState.players['2'].battlefield.some(c => c.name === 'Tamiyo, Compleated Sage')"));
+  await click("Doubling Season");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].battlefield.some(c => c.name === 'Tamiyo, Compleated Sage' && c.loyalty === 8)");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.filter(c => c.name === 'Tamiyo, Compleated Sage').length"), 1);
+  console.log("PASS human seat-two entry replacement order doubles loyalty before compleated reduction and commits once through UI/API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

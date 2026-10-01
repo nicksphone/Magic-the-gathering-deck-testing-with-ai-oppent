@@ -1,0 +1,55 @@
+[
+  {
+    "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+    "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196",
+    "name": "Tamiyo, Compleated Sage",
+    "type_line": "Legendary Planeswalker \u2014 Tamiyo",
+    "mana_cost": "{2}{G}{G/U/P}{U}",
+    "oracle_text": "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.)\n+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step.\n\u2212X: Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card.\n\u22127: Create Tamiyo's Notebook, a legendary colorless Book artifact token with \"Spells you cast cost {2} less to cast\" and \"{T}: Draw a card.\"",
+    "power": null,
+    "toughness": null,
+    "loyalty": "5",
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [
+      "Compleated"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/neo/238/tamiyo-compleated-sage?utm_source=api",
+    "set": "neo",
+    "collector_number": "238",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  },
+  {
+    "id": "1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3",
+    "oracle_id": "9c8845d6-fa65-4731-b348-dc724fc2d285",
+    "name": "Nissa, Ascended Animist",
+    "type_line": "Legendary Planeswalker \u2014 Nissa",
+    "mana_cost": "{3}{G}{G}{G/P}{G/P}",
+    "oracle_text": "Compleated ({G/P} can be paid with {G} or 2 life. For each {G/P} paid with life, this planeswalker enters with two fewer loyalty counters.)\n+1: Create an X/X green Phyrexian Horror creature token, where X is Nissa's loyalty.\n\u22121: Destroy target artifact or enchantment.\n\u22127: Until end of turn, creatures you control get +1/+1 for each Forest you control and gain trample.",
+    "power": null,
+    "toughness": null,
+    "loyalty": "7",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Compleated"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/one/175/nissa-ascended-animist?utm_source=api",
+    "set": "one",
+    "collector_number": "175",
+    "provenance": {
+      "download_uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260927090157.jsonl.gz",
+      "source": "scryfall",
+      "type": "oracle_cards",
+      "updated_at": "2026-09-27T09:01:57.616+00:00"
+    }
+  }
+]

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Entry reduction ordering and counter commit
+
+- Made compleated loyalty reductions orderable against supported scalar modifiers, using announced life-payment counts, affected-player choices, per-ability usage and durable off-battlefield continuations. Shared AI now compares operand-bearing reductions without card-name branches.
+- Fixed prepared entry counters being retroactively blocked by newly active incoming global bans. Existing battlefield and applicable self-only bans still apply before entry; ordinary post-entry placements continue to check bans.
+- Added fourteen cases and two canonical fixtures. Seven new cases fail against the preceding revision and pass after the fixes. Verified all 2,396 isolated backend tests, 173 focused checks, frontend lint/unit/build, full Chromium including seat-two ordering, and sixteen deterministic replay executions without timeout. Updated docs/plan and Graphify; evidence lives on RCHFiles. [Scope and limitations](docs/testing/entry-replacement-order.md).
+
 ## 2026-10-01 - Permanent-spell entry counters and Read Ahead
 
 - Added resumable off-battlefield counter preparation for normal permanent spells: initial loyalty/lore, supported X/escape/one-shot creature counters and scalar replacement/prohibition choices. Entry commits once after choices complete. Human seats can choose Read Ahead chapters; its entry-turn exact-lore restriction follows current rules, including doubled-counter overshoot and later same-turn placements.

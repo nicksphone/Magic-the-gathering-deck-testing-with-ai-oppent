@@ -75,12 +75,14 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
     return False
 
 
-def put_counters(state, kind, amount, *, target_player=None, target_card_id=None):
+def put_counters(state, kind, amount, *, target_player=None, target_card_id=None, placement_checked=False):
     """Return actual counters placed; internal damage/buff markers are not counters.
 
     Scalar replacements and replacement ordering are supplied by callers.
     Lore placement emits chapter events after the physical count changes.
     Legacy poison, lore and loyalty storage remain authoritative.
+    Entry packets commit an already checked event without consulting abilities
+    that only became active when the recipient entered.
     """
     amount = max(0, int(amount))
     if not amount or str(kind).startswith('__'):
@@ -93,7 +95,7 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
             return 0
     if target is None:
         return 0
-    if counter_placement_forbidden(state, kind, target_player=target_player, target_card_id=target_card_id):
+    if not placement_checked and counter_placement_forbidden(state, kind, target_player=target_player, target_card_id=target_card_id):
         state.log.append(f'{target.name} cannot get {kind} counters.')
         return 0
     if target_player is not None and kind == 'poison':

@@ -8,25 +8,28 @@ def preferred_counter_option(pending):
     forecast = pending.get('forecast_options') or options
     amount = int(pending['counter_payload']['amount'])
     harmful = pending['counter_payload']['counter'] in {'poison', '-1/-1', 'stun'}
-    counts = tuple(sum(o['operation'] == op for o in forecast) for op in ('double', 'half', 'add'))
+    operations = tuple(sorted({(o['operation'], o.get('operand', 1)) for o in forecast}))
+    counts = tuple(sum((o['operation'], o.get('operand', 1)) == op for o in forecast)
+                   for op in operations)
 
     @lru_cache(maxsize=None)
     def final_count(value, remaining):
         if not value or not any(remaining):
             return value
         results = []
-        for index, op in enumerate(('double', 'half', 'add')):
+        for index, (op, operand) in enumerate(operations):
             if remaining[index]:
                 rest = list(remaining)
                 rest[index] -= 1
-                results.append(final_count(modified_count(value, op), tuple(rest)))
+                results.append(final_count(modified_count(value, op, operand), tuple(rest)))
         return min(results) if harmful else max(results)
 
     def score(option):
-        value = modified_count(amount, option['operation'])
+        operation = (option['operation'], option.get('operand', 1))
+        value = modified_count(amount, *operation)
         if len(forecast) <= 24:
             remaining = list(counts)
-            remaining[('double', 'half', 'add').index(option['operation'])] -= 1
+            remaining[operations.index(operation)] -= 1
             value = final_count(value, tuple(remaining))
         return -value if harmful else value
 

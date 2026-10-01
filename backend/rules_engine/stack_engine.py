@@ -328,7 +328,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if '__consume_entry_counter' in payload:
                 state.pending_entry_counters.pop(payload['__consume_entry_counter'])
             for kind, amount in payload['__entry_counters_ready'].items():
-                put_counters(state, kind, amount, target_card_id=card.id)
+                put_counters(state, kind, amount, target_card_id=card.id, placement_checked=True)
             if "as this creature enters, choose a creature type" in (card.oracle_text or "").lower():
                 selected = str(payload.get("chosen_creature_type") or "").strip().lower()
                 card.chosen_creature_type = selected or choose_type_for_realmwalker(state, card.controller)

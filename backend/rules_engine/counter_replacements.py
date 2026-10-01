@@ -32,7 +32,8 @@ def counter_options(state, controller, payload, used=()):
     player = payload.get('target_player')
     card = state.cards.get(payload.get('target_card_id'))
     kind = payload['counter']
-    out = []
+    out = [dict(option) for option in payload.get('__counter_entry_modifiers', [])
+           if option['source_id'] not in used]
     for pid in sorted(state.players):
         for cid in state.players[pid].battlefield:
             source = state.cards.get(cid)
@@ -63,8 +64,16 @@ def counter_options(state, controller, payload, used=()):
     return out
 
 
-def modified_count(amount, op):
-    return amount*2 if op == 'double' else amount//2 if op == 'half' else amount+1
+def modified_count(amount, op, operand=1):
+    if op == 'double':
+        return amount*2
+    if op == 'half':
+        return amount//2
+    if op == 'add':
+        return amount+operand
+    if op == 'subtract':
+        return max(0, amount-operand)
+    raise ValueError(f'Unknown counter replacement operation: {op}')
 
 
 def counter_effect_amount(state, controller, effect_key, payload):
@@ -101,7 +110,7 @@ def counter_effect_amount(state, controller, effect_key, payload):
         chosen = chosen or options[0]
         used.append(chosen['source_id'])
         before = amount
-        amount = modified_count(amount, chosen['operation'])
+        amount = modified_count(amount, chosen['operation'], chosen.get('operand', 1))
         payload = {**payload, '__counter_is_effect': True}
         state.log.append(f"{chosen['name']} replaces {before} {kind} counters with {amount}.")
         selected = None

@@ -50,8 +50,9 @@ Completed evidence is on RCHFiles under project diagnostics
 Token creation, permanent-spell copies, graveyard/library returns and special
 opening entries do not yet share this packet. General projected continuous/copy
 characteristics, arbitrary entry replacements, simultaneous multi-kind ordering,
-cast-linked one-shot expiry semantics, and ordering compleated's reduction against
-competing entry modifiers remain unfinished. Recipient projection
+and cast-linked one-shot expiry semantics remain unfinished. [Compleated ordering
+and entry commit](entry-replacement-order.md) now use shared scalar choices without
+retroactive incoming global bans. Recipient projection
 currently preserves existing types/face and changes controller only. Arbitrary
 Saga chapter effects, phasing, gained/suppressed chapter abilities and deeper AI
 chapter selection remain open. No universal rules or professional-AI certification

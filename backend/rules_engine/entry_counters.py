@@ -41,8 +41,6 @@ def resume_spell_entry(state, controller, payload):
         counts = {}
         if 'Planeswalker' in card.types and card.loyalty is not None:
             loyalty = int(card.loyalty)
-            if 'compleated' in card.oracle_text.lower():
-                loyalty = max(0, loyalty - 2*int(entry.get('__phyrexian_life_symbols', 0)))
             counts['loyalty'] = loyalty
         if chapters:
             counts['lore'] = int(entry.get('__read_ahead_chapter', 1))
@@ -70,12 +68,20 @@ def resume_spell_entry(state, controller, payload):
             kind, amount = data['entry_counts'][data['entry_index']]
             event = {**data, 'target_card_id': card.id, 'counter': kind,
                      'amount': data.get('amount', amount), '__counter_is_effect': True}
+            life_symbols = int(entry.get('__phyrexian_life_symbols', 0))
+            if (kind == 'loyalty' and life_symbols > 0
+                    and re.search(r'^compleated\s*$', without_reminder_text(card.oracle_text), re.I | re.M)):
+                event['__counter_entry_modifiers'] = [{
+                    'source_id': f'{card.id}:entry:compleated', 'source_card_id': card.id,
+                    'name': card.name, 'operation': 'subtract', 'operand': 2*life_symbols,
+                    'clause': 'Compleated entry loyalty reduction',
+                }]
             result = counter_effect_amount(state, controller, 'permanent_spell_entry', event)
             if result is None:
                 return
             data['entry_prepared'][kind] = result
             data['entry_index'] += 1
-            for key in ('amount', '__counter_used', '__counter_choice'):
+            for key in ('amount', '__counter_used', '__counter_choice', '__counter_entry_modifiers'):
                 data.pop(key, None)
     finally:
         state.cards[card.id] = card
