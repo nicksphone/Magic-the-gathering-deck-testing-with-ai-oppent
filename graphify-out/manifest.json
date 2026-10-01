@@ -531,6 +531,10 @@
     "mtime": 1790706907.2261324,
     "hash": "cac8bbb42d60dbcde97459c0171360fa"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ward_forms.py": {
+    "mtime": 1790813690.5144942,
+    "hash": "78cd0ad837654a605cb26668318d77be"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_combat_progression.py": {
     "mtime": 1777152161.9847982,
     "hash": "b6737500647eee04222faffd170d18d1"
@@ -1268,8 +1272,8 @@
     "hash": "03f2a0a22e2a6fa536cab6e4fc3eafda"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/coverage.py": {
-    "mtime": 1790809040.1647046,
-    "hash": "dd24c66bc449ca9c641d63115de1eff2"
+    "mtime": 1790813486.9391494,
+    "hash": "f61e42c00bf679b7f51607dbc8f8e3e3"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/stack_engine.py": {
     "mtime": 1790809938.9108384,
@@ -1292,8 +1296,8 @@
     "hash": "1f67a0f2e560b2595f0d25b551fb1882"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/ward.py": {
-    "mtime": 1790810108.5508628,
-    "hash": "a8dc332549a0844fa8ea23dd62d3910f"
+    "mtime": 1790813659.0859165,
+    "hash": "21cb537050c6c13ae98581b3f18d2f47"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/vite.config.ts": {
     "mtime": 1779011317.6773744,
@@ -1440,16 +1444,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790812916.0906208,
-    "hash": "0fa1d3a50885939272c7171411bcca92"
+    "mtime": 1790813845.1883626,
+    "hash": "3bfcef7bcab13a05d9bcdcb9d935c024"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790813087.036884,
-    "hash": "c122988f63991b9e35b23d38d43d322d"
+    "mtime": 1790814038.706599,
+    "hash": "05bbece64bf2bde7e710bcd1bcb86738"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790813087.035884,
-    "hash": "81a45d87561d61f7cb9d63139352f921"
+    "mtime": 1790814038.705599,
+    "hash": "3a80ec8d71c8d9ce0de9ce23798a7e58"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1526,6 +1530,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/audits/2026-09-27-app-audit.md": {
     "mtime": 1790525223.5599864,
     "hash": "6eef3ecfe940916b38b201a0258c17c4"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ward-forms.md": {
+    "mtime": 1790814038.7045991,
+    "hash": "f1c6e29d6228c5b79e97f08bfd034f32"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/attached-scaling.md": {
     "mtime": 1790802352.8810775,

@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-01",
+  "parent_revision": "6764b35667e6e94ab119a3ba47063bde3f3a9d2c",
+  "source_sha256": {
+    "backend/rules_engine/ward.py": "23101a5c2db91fa6de99f3cbffe13f529215bb3cf462a1ce20f7fadae9086479",
+    "backend/rules_engine/coverage.py": "a218b1cb7d3414f73e8270d5308f5dfeebbc091cffcc9b7b6fbe592a6fc81ace",
+    "backend/tests/test_ward_forms.py": "a39c9cfa61d93be5e32b801395a60a0d60a4af46cd2b46cc881b64e1d21715db",
+    "backend/tests/fixtures/ward_forms.json": "2b1f1b830929f9a669fb84969e9ed4ad5a5df5f486d22acfe90a9e79f0ced538"
+  },
+  "backend": {
+    "passed": 2152,
+    "warnings": 292,
+    "seconds": 231.82,
+    "command": "python -m pytest -q",
+    "isolated_from_live_database": true
+  },
+  "focused_ward_tests": 53,
+  "frontend": {
+    "lint": "pass",
+    "build": "pass",
+    "unit": "pass",
+    "full_chromium": "pass"
+  },
+  "replay": {
+    "games": 8,
+    "executions": 16,
+    "reported_objects_and_logs_equal": true,
+    "timeouts": 0,
+    "cast_target_rejections": 0,
+    "ordinary_optional_payment_failures": 1,
+    "results": [
+      {
+        "a": "Dimir Control",
+        "b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "ticks": 1309,
+        "timeout": false,
+        "log_hash": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae"
+      },
+      {
+        "a": "Tempo",
+        "b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "ticks": 389,
+        "timeout": false,
+        "log_hash": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a"
+      },
+      {
+        "a": "Tokens",
+        "b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "ticks": 1036,
+        "timeout": false,
+        "log_hash": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7"
+      },
+      {
+        "a": "Ramp",
+        "b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 405,
+        "timeout": false,
+        "log_hash": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57"
+      },
+      {
+        "a": "Midrange",
+        "b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "ticks": 580,
+        "timeout": false,
+        "log_hash": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1"
+      },
+      {
+        "a": "Drain Deck",
+        "b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "ticks": 420,
+        "timeout": false,
+        "log_hash": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b"
+      },
+      {
+        "a": "Tribal",
+        "b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "ticks": 679,
+        "timeout": false,
+        "log_hash": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691"
+      },
+      {
+        "a": "Burn",
+        "b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "ticks": 435,
+        "timeout": false,
+        "log_hash": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd"
+      }
+    ]
+  },
+  "limitations": [
+    "No arbitrary-card or expert-AI certification",
+    "No new-card full browser certification",
+    "Dynamic X/player-counter and arbitrary conditional ward remain open",
+    "Historical optional timed-dump native crash unresolved"
+  ],
+  "discarded_checks": [
+    "Initial browser run failed due to lowercased Oracle payment labels; corrected and full rerun passed",
+    "Superseded pre-label-fix backend run interrupted; not counted as green"
+  ]
+}

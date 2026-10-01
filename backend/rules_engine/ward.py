@@ -10,6 +10,35 @@ MANA_WARD = re.compile(r'\bward\s*((?:\{[^}]+\})+)', re.I)
 NUMBERS = {'a': 1, 'an': 1, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
 
 
+def printed_ward_costs(target):
+    """Printed keyword lists and bounded self-grants, not later effect bodies."""
+    keywords = {str(k).lower() for k in target.keywords or []}
+    names = {target.name.lower(), target.name.split(',')[0].lower(), 'this creature', 'this permanent'}
+    out = []
+    for line in without_reminder_text(target.oracle_text or '').splitlines():
+        line = line.strip().rstrip('.')
+        parts = [part.strip() for part in line.split(',')]
+        if all(part.lower() in keywords or WARD_LINE.fullmatch(part) for part in parts):
+            out.extend(match[1] for part in parts if (match := WARD_LINE.fullmatch(part)))
+            continue
+        match = re.fullmatch(r'(.+?) has ward (.+?)(?: as long as (.+))?', line, re.I)
+        if not match or match[1].lower() not in names:
+            continue
+        condition = match[3].lower() if match[3] else None
+        conditions = {"it's untapped": False, 'it is untapped': False, "it's tapped": True, 'it is tapped': True}
+        if condition is None or (condition in conditions and target.tapped == conditions[condition]):
+            out.append(match[2])
+    return out
+
+
+def unsupported_ward_costs(text):
+    """Scan costs anywhere, including named/granted forms and keyword lists."""
+    for match in re.finditer(r'\bward(?:\s*[—-]\s*|\s+)([^\n.,]+)', without_reminder_text(text or ''), re.I):
+        cost = re.split(r'\s+(?:as long as|until|and)\s+', match[1], maxsplit=1, flags=re.I)[0]
+        if parse_ward_cost(cost) is None:
+            yield cost
+
+
 def parse_ward_cost(text):
     text = text.lower().strip().rstrip('.')
     if re.fullmatch(r'(?:\{(?:\d+|[wubrgcs]|[wubrg]/[wubrg]|[wubrg]/p|2/[wubrg])\})+', text):
@@ -38,7 +67,7 @@ def parse_ward_cost(text):
 
 def ward_instances(state, target):
     from rules_engine.continuous import _static_oracle_text, _attached_effects, KW_STATIC_RE, PT_AND_KW_STATIC_RE, _scope_controller, _subject_matches
-    out = [m[1].strip().rstrip('.') for m in WARD_LINE.finditer(without_reminder_text(target.oracle_text or ''))]
+    out = printed_ward_costs(target)
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]

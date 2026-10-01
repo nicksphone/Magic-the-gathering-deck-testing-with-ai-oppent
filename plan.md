@@ -1,5 +1,14 @@
 # MTG Deck Testing Lab Finish Plan
 
+Ward-form milestone: 2,152 independent backend tests, 53 focused ward checks,
+frontend lint/build/unit and full Chromium pass. Eight seeded seat-paired games
+repeat identical reported results/logs across sixteen executions without timeout
+or rejected cast/target; one optional Spell Pierce payment fails normally.
+[Scope, evidence and remaining gaps](docs/testing/ward-forms.md).
+
+- [x] Recognize supported printed keyword-list ward and named self-grants with tapped/untapped conditions; retain triggered payments after the conditional grant ends. Detect unsupported inline/granted costs and preserve human Oracle labels. [Scope](docs/testing/ward-forms.md).
+- [ ] Extend arbitrary ward conditions/grants, dynamic X definitions and player-counter semantics, complete suppression/dependency layers and multi-ward strategic payment planning. A known-gap warning is not implemented card semantics.
+
 Hot-path/keyword milestone: 2,133 standard backend tests and 259 focused checks,
 frontend gates and full Chromium pass. Shared optimizations preserve the captured
 decision/reasoning and eight parent smoke-game logs. Composed keyword prohibitions
