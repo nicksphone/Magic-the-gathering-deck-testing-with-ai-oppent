@@ -80,6 +80,7 @@ class CardInstance:
     effect_timestamp: int = 0
     battlefield_incarnation: int | None = None
     instance_order: int = 0
+    zone_change_sequence: int = 0
     card_faces: list[dict] = field(default_factory=list)
     layout: str = ""
     selected_face_index: int | None = None
@@ -97,6 +98,8 @@ class CardInstance:
             self.counters.clear()
 
     def move_to_zone(self, zone: Zone) -> None:
+        if zone != self.zone:
+            self.zone_change_sequence += 1
         # Battlefield deaths defer this reset until their die triggers have
         # consumed last-known counters and combat state.
         if zone != self.zone and (zone in {Zone.HAND, Zone.LIBRARY, Zone.EXILE}

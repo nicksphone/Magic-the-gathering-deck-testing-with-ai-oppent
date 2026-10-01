@@ -378,7 +378,7 @@ class RulesEngine:
                 from rules_engine.opening_hand import finish_opening_hand_choice
                 if kind != "choose_mechanic" or not finish_opening_hand_choice(state, player_id, action):
                     reject("Invalid opening-hand action")
-                elif state.pending_mechanic_choice is None:
+                elif state.pending_mechanic_choice is None and not state.pending_replacement_choice:
                     self._finish_pregame(state)
                 return
             if state.pending_mechanic_choice["kind"] == "mulligan_bottom":
@@ -406,7 +406,7 @@ class RulesEngine:
                     reject("Invalid mechanic choice")
             return
 
-        if state.pregame_pending:
+        if state.pregame_pending and not state.pending_replacement_choice:
             if player_id != pregame_actor(state) or kind not in {"keep_hand", "mulligan"}:
                 reject("Not this player's mulligan declaration window")
                 return
@@ -455,7 +455,10 @@ class RulesEngine:
                 resolve_effect(state, int(pending['controller']), pending['counter_effect'],
                                {**pending['counter_payload'], '__counter_choice': chosen_id})
                 resume_paused_resolution(state, pending)
-                if not state.pending_replacement_choice and not state.pending_mechanic_choice:
+                if state.pregame_pending:
+                    if not state.pending_replacement_choice and not state.pending_mechanic_choice:
+                        self._finish_pregame(state)
+                elif not state.pending_replacement_choice and not state.pending_mechanic_choice:
                     apply_state_based_actions(state)
                 return
             if pending.get("resume_kind") == "gain_event":

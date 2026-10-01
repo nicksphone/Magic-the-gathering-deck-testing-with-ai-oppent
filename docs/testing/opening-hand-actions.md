@@ -20,7 +20,16 @@ pregame trigger interaction.
 The printed nonstarting-player permission with one named counter followed by
 exiling a hand card is also recognized generically. Gemstone Caverns is the
 canonical fixture. Its counter is assigned after new-object initialization and
-before entry events. The follow-up exile selection is mandatory when cards
+before entry events. Supported opening actions now prepare their counter packet
+through the same shared pipeline as other permanent entries. Competing scalar
+replacements pause with the recipient still in hand; the affected player chooses
+the order, and SQLite/snapshot recovery preserves that continuation. Counter
+prohibitions are checked before commitment. The callback checks the hand object
+incarnation and shared zone-move sequence and commits only once, without
+consuming a next-cast entry record. The move sequence survives snapshots, with
+zero as the compatibility default for older snapshots. It protects this route;
+it is not certification of every legacy direct zone-assignment path.
+The follow-up exile selection is mandatory when cards
 remain and survives restoration; it is an instruction, not an additional cost.
 An otherwise empty hand therefore does not prevent entry. Normal land play
 does not receive the opening counter.
@@ -66,12 +75,38 @@ keeping the land has no deeper matchup or long-horizon search yet.
   for a second-seat entry, with stale mulligan controls suppressed, and covers
   conditional entry, mandatory exile and a colored land tap.
 
-Latest verification (2026-09-30): 1,737 isolated backend tests, frontend
+Historical verification (2026-09-30): 1,737 isolated backend tests, frontend
 lint/build/unit contracts and the full Chromium harness pass. A six-series,
 13-game seat-balanced BO3 smoke reports no timeout, anomaly or determinism
 drift; its decklists do not exercise conditional opening entry, which is
 covered by the canonical fixtures and HTTP/browser paths above. This is not
 statistical balance or expert-AI evidence.
+
+The new `test_opening_entry_counters.py` cases exercise canonical Gemstone
+Caverns and printed replacement/prohibition fixtures. Boards with Vorinclex or
+Solemnity already present during the opening window are deliberately constructed
+core event fixtures, not a claim that a legal deck can begin with those cards.
+They isolate order sensitivity, bans and paused-entry continuity. Actual opening
+permissions remain covered separately by the names-only cached HTTP tests.
+
+Opening placement and entry-counter attribution follow [Comprehensive Rules
+103.6a, 122.6 and 122.6a](https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt).
+
+2026-10-01 verification: **2,453 backend tests passed**, with 294 deprecation
+warnings, in a fresh tracked-source checkout with its own initially empty
+database/cache and the existing pinned Python environment. The focused set
+passed 111 checks. Final-source Chromium passed action, recovery/restart,
+simulator preflight, sideboarding and natural AI/human BO3 scenarios. No fresh
+dependency-install, arbitrary-card semantic certification or alpha-UI redesign
+acceptance is claimed. Completed evidence is archived under project diagnostics
+`opening-entry-counters/` on RCHFiles.
+
+A four-template, six-pair seat-balanced smoke ran twelve logical games and
+twenty-four repeatability executions at a 3,000-tick cap. Aetherdrift/Foundations
+aggro, Duskmourn tempo and Bloomburrow tokens completed with zero reported
+timeout, anomaly trace or determinism drift. These template games do not exercise
+opening counter entries; the canonical core and HTTP tests above do. This small
+sample is repeatability evidence, not balance, whole-card or AI-strength evidence.
 
 One diagnostics-enabled full run segfaulted while printing a timeout stack.
 Two fresh uninstrumented full runs passed (1,736 before the extra cache case,

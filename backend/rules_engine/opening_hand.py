@@ -1,7 +1,7 @@
 """Bounded printed opening actions with durable follow-up instructions."""
 import re
 
-from game_state.state import Zone, assign_static_order_on_battlefield_entry
+from game_state.state import Zone, assign_static_order_on_battlefield_entry, object_incarnation
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.events import emit_event
 
@@ -76,6 +76,29 @@ def finish_opening_hand_choice(state, player_id, action) -> bool:
         return False
     card = state.cards[cid]
     spec = opening_entry_spec(card)
+    from rules_engine.entry_counters import prepare_counter_entries
+    state.pending_mechanic_choice = None
+    payload = {'card_id': cid, 'remaining_players': pending['remaining_players'],
+               'spec': spec, 'incarnation': object_incarnation(card),
+               'zone_sequence': card.zone_change_sequence}
+    prepare_counter_entries(state, player_id, [card], 'opening_hand_entry', payload,
+                            entry_payload={'counters': {spec['counter']: 1} if spec.get('counter') else {}})
+    return True
+
+
+def complete_opening_entry(state, player_id, payload):
+    """Commit only after the off-battlefield entry counter packet is complete."""
+    from rules_engine.entry_counters import commit_entry_counters
+    cid = payload['card_id']
+    player = state.players[player_id]
+    card = state.cards.get(cid)
+    if (card is None or card.zone != Zone.HAND or cid not in player.hand
+            or object_incarnation(card) != payload['incarnation']
+            or card.zone_change_sequence != payload['zone_sequence']):
+        state.log.append('Opening entry lost its hand recipient; entry aborted.')
+        begin_opening_hand_choices(state, [player_id, *payload['remaining_players']])
+        return
+    spec = payload['spec']
     player.hand.remove(cid)
     player.battlefield.append(cid)
     card.move_to_zone(Zone.BATTLEFIELD)
@@ -83,18 +106,15 @@ def finish_opening_hand_choice(state, player_id, action) -> bool:
     card.entered_turn = state.turn
     card.summoning_sick = False
     assign_static_order_on_battlefield_entry(state, cid)
-    if spec.get("counter"):
-        from rules_engine.counter_placement import put_counters
-        put_counters(state, spec['counter'], 1, target_card_id=cid)
+    commit_entry_counters(state, card, payload)
     emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
     state.log.append(f"{player.name} begins with {card.name} on the battlefield.")
     if spec.get("exile_hand") and player.hand:
         state.pending_mechanic_choice = {
             "kind": "opening_hand_exile", "player_id": player_id,
             "options": list(player.hand), "count": 1, "min_count": 1,
-            "remaining_players": pending["remaining_players"], "source_id": cid,
+            "remaining_players": payload["remaining_players"], "source_id": cid,
             "label": f"{card.name}: exile one card from your hand to finish the opening action",
         }
-        return True
-    begin_opening_hand_choices(state, [player_id, *pending["remaining_players"]])
-    return True
+        return
+    begin_opening_hand_choices(state, [player_id, *payload["remaining_players"]])

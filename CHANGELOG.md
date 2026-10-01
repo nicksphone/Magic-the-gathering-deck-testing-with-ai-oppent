@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-01 - Shared opening-entry counter preparation
+
+- Routed supported opening-hand battlefield actions through the shared counter-entry pipeline. Competing replacements retain the real card in hand until ordering completes; the commit checks its object incarnation and preserves mandatory follow-up hand exile.
+- Allowed authoritative replacement choices during the opening-action window without prematurely starting the turn or applying state-based actions during a paused entry. Added both-seat ordering, prohibition, AI, snapshot and HTTP/SQLite restore regressions using canonical card fixtures.
+- Added a persisted sequence to the shared zone-move helper so a hand/exile/hand round trip cannot reuse a stale opening-entry packet. Older snapshots default the sequence to zero; battlefield incarnation checks remain separate.
+- Deferred UI redesign and archived the unfinished layout patch/browser evidence on RCHFiles; the published UI source is unchanged. Backend and broader release work remains open.
+- Verified 2,453 isolated backend tests, 111 focused checks and the final-source full Chromium harness. Existing Python deprecation warnings remain; this does not certify arbitrary-card semantics or professional AI strength.
+
 ## 2026-10-01 - Compact history previews
 
 - Limited saved matches and persisted diagnostic runs to three visible entries initially, with incremental Show more and Show fewer controls. Expanded lists have bounded scrolling so long histories do not dominate the page.

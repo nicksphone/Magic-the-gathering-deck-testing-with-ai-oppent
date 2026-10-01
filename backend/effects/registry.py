@@ -101,6 +101,10 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         from rules_engine.entry_counters import resume_entry_batch
         resume_entry_batch(state, controller, payload)
         return
+    if effect_key == 'opening_hand_entry':
+        from rules_engine.opening_hand import complete_opening_entry
+        complete_opening_entry(state, controller, payload)
+        return
     if effect_key == 'linked_exile_return':
         from rules_engine.linked_exile import return_linked_exiles
         return_linked_exiles(state, controller, payload)

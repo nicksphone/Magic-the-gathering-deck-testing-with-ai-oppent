@@ -1,5 +1,24 @@
 # MTG Deck Testing Lab Finish Plan
 
+## Current Priority: Backend First
+
+The user deferred alpha-UI fixes and the redesign on 2026-10-01. The unpublished
+layout patch and browser evidence are preserved on RCHFiles under
+`diagnostics/deferred-ui-20261001/`; the tracked UI remains the published version.
+Do not treat passing fixture tests as proof that the current UI is ergonomic.
+Finish backend rules, supported-corpus correctness and simulation/AI evidence
+before returning to the redesign. Broad release gates below remain open.
+
+- [x] Route supported opening-hand permanent entries through shared off-zone counter preparation, affected-player replacement ordering and guarded once-only commitment. Keep mandatory exile instructions resumable; do not consume cast-only entry records.
+- [ ] Complete generalized pre-entry characteristics, remaining multi-kind events, proliferation, counter movement/spending and arbitrary replacement clauses.
+- [ ] Expand tactical decision-quality and corpus-wide latency evidence, then replay/restart matrices and operational backend gates.
+- [ ] Redesign the alpha UI after backend milestones; use real pointer/viewport tests as well as fixture action tests.
+
+Opening-route evidence is documented in [opening-hand scope](docs/testing/opening-hand-actions.md).
+The final isolated backend suite passed 2,453 tests; focused tests passed 111,
+and the final-source full Chromium harness passed. These close this bounded
+opening-entry increment only, not the larger rules or release gates.
+
 Damage-counter increment: supported infect/wither/toxic and noncombat
 damage-to-counter results now use scalar replacement events with source-controller
 attribution, combat aggregation, durable choices and deferred SBA/lifelink.
@@ -36,7 +55,7 @@ Shared AI evaluates resulting amounts; the browser tests actual seat-two orderin
 - [x] Share counter preparation across supported created-token batches, permanent-spell copies, graveyard returns, library selections and green-creature hand placement. Keep candidates/off-zone cards uncommitted through choices; separate creation doublers from entry counters. Stage complete stack resolution and preserve original continuation ownership. See [scope](docs/testing/entry-routes.md).
 - [x] Extend supported linked-exile returns to durable owner-aware counter/chapter and land-entry choices before atomic group commit; pause SBA around those choices. See [scope and remaining entry families](docs/testing/linked-entry-counters.md).
 - [x] Prepare supported exile-return-transformed entries against durable back-face projections, distinguish entry loyalty from in-place counters and retain front-face restoration metadata. See [scope](docs/testing/transformed-entry.md).
-- [ ] Connect special opening entries and general projected pre-entry characteristics; complete simultaneous multi-kind ordering, conditional/non-doubling token replacements and cast-linked one-shot semantics. Complete arbitrary chapter effects, optional/multiple targets, phasing and gained/suppressed chapter abilities; improve AI Read Ahead planning.
+- [ ] Extend the now-shared supported opening-entry pipeline to remaining special entry families and general projected pre-entry characteristics; complete simultaneous multi-kind ordering, conditional/non-doubling token replacements and cast-linked one-shot semantics. Complete arbitrary chapter effects, optional/multiple targets, phasing and gained/suppressed chapter abilities; improve AI Read Ahead planning.
 - [ ] Expand AI simultaneous-trigger planning beyond the verified friendly token/team-buff dependency; evaluate mixed effects and board-state interactions with before/after decision traces.
 - [ ] Route entry/damage/activation costs through the same replacement event model with correct pre-entry characteristics, no premature SBA/triggers and resumable simultaneous batches. Complete multi-kind packets, counter movement/spending and proliferation. Existing route-fidelity warnings remain intentional.
 
