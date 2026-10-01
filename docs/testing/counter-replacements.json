@@ -1,0 +1,146 @@
+{
+  "date": "2026-10-01",
+  "parent_revision": "187d091788a97764538e0c886a2ae0d651643a1e",
+  "source_sha256": {
+    "backend/ai/agent.py": "35ab15f1dbf381bd33501f797a833ee0f9a6f98ac4d4fd746f3266a1f660b9fe",
+    "backend/effects/handlers.py": "ca3db6355879ae4f7303f32fb8abed323a49ca58fb9b7a4f0c0fbfcb324b1eb4",
+    "backend/rules_engine/counter_replacements.py": "a8f30590a2fa5204209668f02ee214bc77c75317d37a2e922d9b777c70e730f7",
+    "backend/rules_engine/coverage.py": "fb5a2f250d17204ee861f4e79fddbffbde12f9452e385b72116e7c6167f89f7c",
+    "backend/rules_engine/engine.py": "aac699df0df5a32075308d2bb30cf47a4f0a068822009cbe958bc2b6fedacf15",
+    "backend/tests/browser_fixture_server.py": "a9d226ce85c811257cf94cf5b85c347af52ff1d898c6e5a7e120a3874b399a81",
+    "backend/tests/fixtures/counter_replacements.json": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "backend/tests/test_counter_replacements.py": "a046fd912a4fe1f19bd34fc91ecb5c08114ba8e3a76d625aadd8e63cbc5c3d7b"
+  },
+  "backend": {
+    "passed": 2308,
+    "warnings": 292,
+    "seconds": 231.91,
+    "isolated_checkout": "/tmp/mtg-counter-order-publish.30Qc6D",
+    "command": "python -m pytest -q"
+  },
+  "focused": {
+    "passed": 257,
+    "seconds": 3.39,
+    "new_backend_regressions": 44
+  },
+  "canonical_fixture_rows": 9,
+  "frontend": {
+    "lint": "pass",
+    "build": "pass",
+    "unit": "pass",
+    "full_chromium": "pass",
+    "browser_log": "/tmp/mtg-counter-order-browser-final.log",
+    "new_case": "Seat-two real Minthara trigger, order choice, experience=4 and effective power=6"
+  },
+  "http_autoplay": {
+    "result": "pass",
+    "ticks": 1,
+    "experience": 4,
+    "pending_choice": false,
+    "log": "/tmp/mtg-counter-order-api.XLhU4q/api-probe.log"
+  },
+  "replay": {
+    "games": 8,
+    "executions": 16,
+    "complete_game_and_log_objects_equal": true,
+    "artifacts": "/tmp/mtg-counter-order-replay.FOVVpc",
+    "rows": [
+      {
+        "deck_a": "Dimir Control",
+        "deck_b": "Tempo",
+        "seed": 73,
+        "winner": 1,
+        "turn": 49,
+        "log_sha256": "245e991a95f13781010dd03a8ee49489731f8e44e6aee8f694c8adc611a71eae",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tempo",
+        "deck_b": "Dimir Control",
+        "seed": 73,
+        "winner": 2,
+        "turn": 15,
+        "log_sha256": "bc14d175f6aa2cb7c158cd627b69c0f238c6cdf789e7643888b636848bbede4a",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tokens",
+        "deck_b": "Ramp",
+        "seed": 74,
+        "winner": 2,
+        "turn": 38,
+        "log_sha256": "be59fc436cc46c67aacd360ee4ea37c037f26bf01cf5b1129f97ed0bba428ce7",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Ramp",
+        "deck_b": "Tokens",
+        "seed": 74,
+        "winner": 2,
+        "turn": 14,
+        "log_sha256": "f1718a176f472355c1cc58cb2e6380e54668056f4a9a21d079511a9038c73c57",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Midrange",
+        "deck_b": "Drain Deck",
+        "seed": 75,
+        "winner": 1,
+        "turn": 21,
+        "log_sha256": "2ed9564b4710540745e9be07e33dda6ff84d7a89577d26f9ab0aec5f6c4ee7d1",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Drain Deck",
+        "deck_b": "Midrange",
+        "seed": 75,
+        "winner": 2,
+        "turn": 14,
+        "log_sha256": "0b7b59c357cccde0eed09132175b04f1801b5c32dfca7f4852bbb6b95ed2ea7b",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Tribal",
+        "deck_b": "Burn",
+        "seed": 76,
+        "winner": 1,
+        "turn": 25,
+        "log_sha256": "7c294872c4f91f5aba667ca399fba82b1e2e99510d9a9083a2193b215bb01691",
+        "timeout": false,
+        "detected_rejections": []
+      },
+      {
+        "deck_a": "Burn",
+        "deck_b": "Tribal",
+        "seed": 76,
+        "winner": 2,
+        "turn": 16,
+        "log_sha256": "e14dfa0880a5dc9d920bec9f113848d49396d118b07953a2ea6a2f8d5bfe33dd",
+        "timeout": false,
+        "detected_rejections": []
+      }
+    ],
+    "scope": "Repeatability smoke, not broad AI strength/balance certification"
+  },
+  "fixed_initial_gate_failure": "37 existing AI test doubles lacked optional pending_replacement_choice; restored getattr default without changing assertions",
+  "policy_benchmark": {
+    "abstract_options": 24,
+    "seconds": 0.465,
+    "peak_mib_with_tracemalloc": 6.06,
+    "scope": "One sample, not a hard resource ceiling"
+  },
+  "remaining": [
+    "Entry, damage and activation-cost scalar replacements",
+    "Pre-entry characteristics and simultaneous multi-kind/combat continuations",
+    "Counter caps, movement/spending and proliferation",
+    "Full ability suppression and layer dependencies",
+    "Counter-resource outcome strategy beyond amount maximization/minimization",
+    "Broader rules/AI/release gates in plan.md remain open"
+  ]
+}

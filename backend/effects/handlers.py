@@ -7,6 +7,7 @@ from game_state.state import MatchState, Zone, assign_static_order_on_battlefiel
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.counter_placement import put_counters
+from rules_engine.counter_replacements import counter_effect_amount
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
@@ -1796,6 +1797,10 @@ def add_player_counters(state: MatchState, controller: int, payload: dict) -> No
         return
     if payload.get('requires_departure') and player not in state.players_with_permanent_departure:
         return
+    amount = counter_effect_amount(state, controller, 'add_player_counters',
+                                   {**payload, 'target_player': player, 'counter': kind, 'amount': amount})
+    if amount is None:
+        return
     target = state.players[player]
     amount = put_counters(state, kind, amount, target_player=player)
     if not amount:
@@ -1813,6 +1818,10 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
         card = state.cards[target]
         if "effect_timestamp" in payload and object_incarnation(card) != payload["effect_timestamp"]:
             return
+        amount = counter_effect_amount(state, controller, 'add_counters',
+                                       {**payload, 'counter': counter, 'amount': amount})
+        if amount is None:
+            return
         put_counters(state, counter, amount, target_card_id=target)
         if payload.get("animate_land") and "Land" in card.types:
             card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))
@@ -1828,9 +1837,13 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def add_counters_each_creature(state: MatchState, controller: int, payload: dict) -> None:
-    for card_id in list(state.players[controller].battlefield):
-        if card_id in state.cards and "Creature" in state.cards[card_id].types:
-            add_counters(state, controller, {**payload, "target_card_id": card_id})
+    from effects.registry import resolve_effect
+    resolve_effect(state, controller, 'effect_sequence', {'effects': [
+        {'effect_key': 'add_counters', 'payload': {**payload, 'target_card_id': cid,
+                                                'effect_timestamp': object_incarnation(state.cards[cid])}}
+        for cid in list(state.players[controller].battlefield)
+        if cid in state.cards and 'Creature' in state.cards[cid].types
+    ]})
 
 
 def set_next_creature_entry_counter(state: MatchState, controller: int, payload: dict) -> None:

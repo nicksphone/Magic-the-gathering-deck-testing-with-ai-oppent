@@ -105,6 +105,12 @@ class AIAgent:
             return self._choose_action(state, legal_moves, player_id)
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
+        pending = getattr(state, 'pending_replacement_choice', None)
+        if pending and pending.get('resume_kind') == 'counter_event' and pending.get('player_id') == player_id:
+            from rules_engine.counter_replacements import preferred_counter_option
+            selected = preferred_counter_option(pending)
+            move = next(move for move in legal_moves if move.get('replacement_source_id') == selected)
+            return AIDecision(action=move, reasoning='Order counter replacements by resulting public counter amount')
         legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
         def useful_variable_sweep(move: dict) -> bool:
             if move.get("type") != "cast_spell":

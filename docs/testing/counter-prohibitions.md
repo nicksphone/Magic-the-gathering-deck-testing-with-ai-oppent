@@ -68,7 +68,10 @@ This is a focused rules comparison, not a broad AI or whole-card certification.
 
 - Multiplication, halving, additive replacements, affected-player ordering,
   placer-versus-recipient attribution and resumable competing counter packets
-  are not implemented by this helper. Existing replacement warnings remain.
+  are not implemented by this physical placement helper. A separate
+  [registered counter-effect resolver](counter-replacements.md) now implements
+  bounded scalar clauses and ordering; the other routes still need integration.
+  Existing replacement warnings remain.
 - General counter placement on entry, returned/copied permanents, initial
   planeswalker loyalty, arbitrary additional/activation costs and battle defense
   need a full placement-path audit. Wiring supported entry paths does not certify

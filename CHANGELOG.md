@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 — Resumable counter-effect replacement order
+
+- Added bounded printed doubling, halving and plus-one modifiers to registered permanent/player counter effects, with independent placer/recipient scope and per-ability usage. Affected players choose competing order; used abilities, amounts, stack resolution and sequence/batch continuations survive snapshots. Zero terminates the chain and supported prohibitions override placement. Separate land animation waits for placement.
+- Connected shared AI amount-order evaluation and existing human controls. Nine canonical fixture rows cover controlled/global scope, typed/kind restrictions and pronoun variants; route-fidelity warnings remain because entry, damage and costs are not yet connected. No card rules, stats or deck balance were invented/changed.
+- Final verification: 2,308 isolated backend tests, 257 focused checks, 44 new regressions, frontend lint/build/unit and full Chromium. A real seat-two Minthara order choice updates four experience counters and effective stats through UI/API; a separate HTTP autoplay probe resolves that trigger in one tick. Eight seat-paired smoke games repeat complete results/logs across sixteen executions without timeout or detected cast/target/cost rejection. Fixed an optional-field access exposed by 37 pre-existing AI test doubles before rerunning all gates. [Scope and evidence](docs/testing/counter-replacements.md).
+
 ## 2026-10-01 — Shared counter prohibitions
 
 - Enforced bounded unconditional player, permanent-type and self counter bans through one application-code placement helper. Effects, infect/wither/toxic, supported damage-to-counter replacement, token/Incubate entries, supported spell entries, opening counters and Saga lore now use it. Existing counters, ordinary damage/lifelink, internal markers and separate animation instructions are preserved.

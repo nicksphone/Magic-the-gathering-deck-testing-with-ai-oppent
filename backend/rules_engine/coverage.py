@@ -44,6 +44,13 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
         out.append('unsupported player-counter gain clause')
     if any(re.search(r'\bif .+counters?.+(?:player|yourself|you (?:would )?get)\b', text, re.I) for text in texts):
         out.append('player-counter replacement fidelity')
+    from rules_engine.counter_replacements import counter_modifier
+    replacement_lines = [line for text in texts for line in without_reminder_text(text).splitlines()
+                         if re.match(r'if\b', line, re.I) and re.search(r'\bcounters?\b.*instead', line, re.I)]
+    if replacement_lines:
+        out.append('counter replacement route fidelity')
+        if any(counter_modifier(line) is None for line in replacement_lines):
+            out.append('unsupported counter replacement clause')
     from rules_engine.continuous import PLAYER_COUNTER_PT_RE, SELF_PLAYER_COUNTER_PT_RE
     from rules_engine.player_counters import PLAYER_COUNT_RE
     from rules_engine.ward import DYNAMIC_WARD_RE, parse_ward_cost

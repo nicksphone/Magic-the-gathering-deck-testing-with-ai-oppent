@@ -38,6 +38,15 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   assert.equal(await evaluate("document.querySelector('[data-player-counter=\"1-experience\"]').textContent"), "Experience 1");
   console.log("PASS real experience gain, effective anthem, counters display and seat-two resolved-X ward payment");
+  await click("Counter Order Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.resume_kind === 'counter_event' && window.fixtureState.pending_replacement_choice.player_id === 2");
+  assert.equal(await evaluate("window.fixtureState.players['2'].counters.experience ?? 0"), 0);
+  await click("Winding Constrictor");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].counters.experience === 4");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Minthara, Merciless Soul').power"), 6);
+  assert.equal(await evaluate("document.querySelector('[data-player-counter=\"2-experience\"]').textContent"), "Experience 4");
+  console.log("PASS seat-two counter replacement order through real trigger, Controls and API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

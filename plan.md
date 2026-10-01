@@ -1,5 +1,19 @@
 # MTG Deck Testing Lab Finish Plan
 
+Counter-effect replacement increment: 2,308 isolated backend tests, 257 focused
+counter/AI checks, frontend lint/build/unit and full Chromium pass. A real HTTP
+autoplay probe resolves a seat-two counter trigger; eight seat-paired smoke games
+repeat complete reported results/logs across sixteen executions without timeout
+or detected cast/target/cost rejection. Canonical doubling, halving and plus-one
+clauses now modify registered counter effects with placer/recipient scope,
+per-ability usage and affected-player choices. Resumption preserves effect
+sequence/batch continuations and actual triggered stack items across snapshots.
+Shared AI evaluates resulting amounts; the browser tests actual seat-two ordering.
+[Scope and verification](docs/testing/counter-replacements.md).
+
+- [x] Add bounded scalar replacement parsing, affected-player ordering, per-ability usage and durable continuations for registered counter effects; connect shared AI and human controls.
+- [ ] Route entry/damage/activation costs through the same replacement event model with correct pre-entry characteristics, no premature SBA/triggers and resumable simultaneous batches. Complete multi-kind packets, counter movement/spending and proliferation. Existing route-fidelity warnings remain intentional.
+
 Counter-prohibition increment: 2,264 isolated backend tests and 118 focused
 checks pass, including 44 new regressions. Frontend lint/build/unit and full Chromium pass; eight
 seeded seat-paired games reproduce their complete reported results/logs across
@@ -13,7 +27,7 @@ loyalty costs are rejected and filtered from ordinary legal moves.
 [Scope and validation](docs/testing/counter-prohibitions.md).
 
 - [x] Implement bounded unconditional counter prohibitions through shared application-code placement, with canonical fixtures and explicit unsupported-clause diagnostics.
-- [ ] Implement doubling/halving/additive counter replacements with correct placer/recipient scope, affected-player order choices, per-ability usage tracking and resumable batch/combat continuations.
+- [ ] Finish doubling/halving/additive replacements across entry, damage and costs with correct attribution and resumable simultaneous/combat continuations. Registered counter-effect ordering landed above; general route coverage remains open.
 - [ ] Finish all entry/cost/return/copy placement routes, proliferation, removal/spending and variable-resource AI. Initial planeswalker loyalty and arbitrary permanent-entry rules require further integration; do not claim whole-card correctness.
 
 Player-counter milestone: 2,220 isolated backend tests, 181 focused checks,

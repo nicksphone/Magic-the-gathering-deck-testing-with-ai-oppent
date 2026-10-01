@@ -461,6 +461,15 @@ class RulesEngine:
                 reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
+            if pending.get('resume_kind') == 'counter_event':
+                from rules_engine.stack_engine import resume_paused_resolution
+                state.pending_replacement_choice = None
+                resolve_effect(state, int(pending['controller']), pending['counter_effect'],
+                               {**pending['counter_payload'], '__counter_choice': chosen_id})
+                resume_paused_resolution(state, pending)
+                if not state.pending_replacement_choice and not state.pending_mechanic_choice:
+                    apply_state_based_actions(state)
+                return
             if pending.get("resume_kind") == "gain_event":
                 from rules_engine.stack_engine import resume_paused_resolution
 

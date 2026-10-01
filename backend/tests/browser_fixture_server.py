@@ -26,6 +26,23 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'counter_order':
+        from tests.test_counter_replacements import source
+        from tests.test_player_counters import source as experience_source
+        from tests.test_ward_resolution import add
+        from tests.test_restricted_mana import clean
+        from effects.handlers import destroy_permanent
+        from rules_engine.events import emit_event
+        from rules_engine.stack_engine import resolve_top_of_stack
+        state = clean(2)
+        experience_source(state, 'Minthara, Merciless Soul', 2)
+        source(state, 'Winding Constrictor', 2)
+        source(state, 'Vorinclex, Monstrous Raider', 2)
+        bear = add(state, 'Grizzly Bears', 2)
+        destroy_permanent(state, 1, {'target_card_id': bear.id})
+        emit_event(state, 'begin_step', {'step': 'end_step', 'active_player': 2})
+        resolve_top_of_stack(state)
+        return publish(state, [{"quantity": 60, "card_name": "Island"}])
     if face_kind == 'player_counters':
         from tests.test_player_counters import source
         from tests.test_ward_resolution import add, resolve
