@@ -1754,7 +1754,16 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
         return
     from rules_engine.card_faces import apply_transform_face
     previous_face = getattr(card, "selected_face_index", None)
+    loyalty_counters = int(card.loyalty or 0) if 'Planeswalker' in card.types else int(card.counters.pop('loyalty', 0))
     apply_transform_face(card, index)
+    # Transforming is not entering: preserve physical loyalty counters instead
+    # of replacing them with the newly displayed face's printed starting value.
+    if 'Planeswalker' in card.types:
+        card.loyalty = loyalty_counters
+    else:
+        card.loyalty = None
+        if loyalty_counters:
+            card.counters['loyalty'] = loyalty_counters
     state.log.append(f"{card.name} transforms.")
     if not payload.get("__defer_transform_event"):
         emit_event(state, "transformed", {
@@ -1764,28 +1773,45 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def exile_return_transformed(state: MatchState, controller: int, payload: dict) -> None:
-    """Exile a transforming Saga and return it as a new back-face permanent."""
+    """Prepare a new back-face permanent while its actual card stays exiled."""
+    from rules_engine.entry import pause_for_land_entries, apply_entry_choice
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.card_faces import apply_transform_face, select_cast_face
+    from game_state.state import object_incarnation
+
     target_id = payload.get("target_card_id")
     card = state.cards.get(target_id) if target_id else None
-    if card is None or card.zone != Zone.BATTLEFIELD or target_id not in state.players[card.controller].battlefield:
+    if card is None:
         return
-    exile_permanent(state, controller, {"target_card_id": target_id})
+    if not payload.get('__return_from_exile'):
+        if card.zone != Zone.BATTLEFIELD or target_id not in state.players[card.controller].battlefield:
+            return
+        exile_permanent(state, controller, {"target_card_id": target_id})
+        payload = {**payload, '__return_from_exile': True, '__return_incarnation': object_incarnation(card)}
     owner_exile = state.players[card.owner].exile
     if card.zone != Zone.EXILE or target_id not in owner_exile:
         return
-    if card.layout != "transform" or len(card.card_faces) < 2 or is_departed_token(card):
+    if (card.layout != "transform" or len(card.card_faces) < 2 or is_departed_token(card)
+            or object_incarnation(card) != payload['__return_incarnation']):
         return
-    from rules_engine.card_faces import apply_transform_face
+    projections = {card.id: select_cast_face(card, 1)}
+    if pause_for_land_entries(state, controller, [card.id], 'exile_return_transformed', payload,
+                              projections=projections):
+        return
+    if prepare_counter_entries(state, controller, [card], 'exile_return_transformed', payload,
+                               projections=projections):
+        return
 
     owner_exile.remove(target_id)
     apply_transform_face(card, 1)
     card.zone = Zone.BATTLEFIELD
     card.controller = controller
-    card.tapped = False
+    apply_entry_choice(state, controller, card, choice=(payload.get('__entry_choices') or {}).get(card.id, 'tapped'))
     card.summoning_sick = "Creature" in card.types
     card.entered_turn = state.turn
     state.players[controller].battlefield.append(target_id)
     assign_static_order_on_battlefield_entry(state, target_id)
+    commit_entry_counters(state, card, payload)
     state.log.append(f"{card.name} returns to the battlefield transformed.")
     emit_event(state, "enters_battlefield", {"card_id": target_id, "controller": controller})
 

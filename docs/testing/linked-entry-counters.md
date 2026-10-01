@@ -52,8 +52,8 @@ backend source and fixtures matched the final tested copy byte-for-byte.
 
 ## Known Limitations and Next Upgrades
 
-Exile-return-transformed and special opening entries still need shared projected
-entry preparation. General replacement-choice ordering across different entry
+Supported [transformed returns](transformed-entry.md) now share projected entry
+preparation; special opening entries remain disconnected. General replacement-choice ordering across different entry
 families, arbitrary intrinsic entry clauses, Aura attachment on noncast entry,
 conditional replacement semantics and general continuous/copy projection remain
 open. These tests establish supported return paths, not all card mechanics,

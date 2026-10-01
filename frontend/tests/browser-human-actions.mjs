@@ -112,6 +112,16 @@ try {
   assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
   assert.ok(await evaluate("window.fixtureState.players['1'].battlefield.some(c => c.name === \"Elspeth, Sun's Champion\" && c.loyalty === 10) && window.fixtureState.players['2'].battlefield.some(c => c.name === \"Elspeth, Sun's Champion\" && c.loyalty === 9)"));
   console.log("PASS mixed-owner linked exile return choices switch human seats and commit the batch once through UI/API");
+  await click("Transformed Entry Fixture");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.player_id === 2");
+  assert.ok(await evaluate("window.fixtureState.players['1'].exile.some(c => c.name === \"Jace, Vryn's Prodigy\" && c.selected_face_index === 0)"));
+  assert.ok(await evaluate("!window.fixtureState.players['2'].battlefield.some(c => c.name === 'Jace, Telepath Unbound')"));
+  await click("Lae'zel, Vlaakith's Champion");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].battlefield.some(c => c.name === 'Jace, Telepath Unbound')");
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  assert.ok(await evaluate("window.fixtureState.players['2'].battlefield.some(c => c.name === 'Jace, Telepath Unbound' && c.loyalty === 12 && c.selected_face_index === 1 && c.types.includes('Planeswalker'))"));
+  assert.ok(await evaluate("!window.fixtureState.players['1'].exile.some(c => c.name.includes('Jace'))"));
+  console.log("PASS projected transformed entry stays exiled front-face through choice and commits back-face loyalty through UI/API");
   await click("Discounted Aura Fixture");
   await waitFor("window.fixtureState?.priority_player === 2 && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Octopus Umbra'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Cast Octopus Umbra')).disabled"), true);

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 - Projected transformed entries and loyalty preservation
+
+- Prepared supported exile-return-transformed operations against serialized back-face characteristics while the actual card remains exiled. Added snapshot continuation, incarnation rechecks, projected land-choice inspection and once-only exile/commit.
+- Preserved physical loyalty counters through in-place transformations, including nonplaneswalker faces, rather than replacing them with printed starting loyalty. Retained front-face restoration metadata; faces without printed loyalty enter with zero and undergo the normal SBA check.
+- Added twelve primitive/card-face regressions using canonical Scryfall Jace, Arlinn and Garruk fixtures, plus a seat-two UI/API projected-entry scenario. Verified 2,435 isolated backend tests, 68 focused tests, frontend lint/unit/build, full Chromium and eight seat-paired games across sixteen identical replay executions without timeout. This does not implement every Oracle clause on the fixture cards or establish expert AI. [Scope and remaining work](docs/testing/transformed-entry.md).
+
 ## 2026-10-01 - Owner-aware linked exile entries
 
 - Routed supported linked-exile returns through shared pre-entry counter/chapter preparation and owner-aware land-entry choices. Mixed-owner batches remain off battlefield through all choices, survive snapshots, conserve exile incarnations and commit prepared counters before grouped entry events. Hand returns do not receive battlefield counters.

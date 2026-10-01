@@ -1,0 +1,650 @@
+[
+  {
+    "object": "card",
+    "id": "02d6d693-f1f3-4317-bcc0-c21fa8490d38",
+    "oracle_id": "594f6881-c059-46f8-aa4e-7151d502de73",
+    "multiverse_ids": [
+      398434,
+      398435
+    ],
+    "mtgo_id": 57880,
+    "mtgo_foil_id": 57881,
+    "tcgplayer_id": 100191,
+    "cardmarket_id": 283370,
+    "name": "Jace, Vryn's Prodigy // Jace, Telepath Unbound",
+    "lang": "en",
+    "released_at": "2015-07-17",
+    "uri": "https://api.scryfall.com/cards/02d6d693-f1f3-4317-bcc0-c21fa8490d38",
+    "scryfall_uri": "https://scryfall.com/card/ori/60/jace-vryns-prodigy-jace-telepath-unbound?utm_source=api",
+    "layout": "transform",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T10:25:53Z",
+    "cmc": 2,
+    "type_line": "Legendary Creature — Human Wizard // Legendary Planeswalker — Jace",
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Transform",
+      "Mill"
+    ],
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Jace, Vryn's Prodigy",
+        "mana_cost": "{1}{U}",
+        "type_line": "Legendary Creature — Human Wizard",
+        "oracle_text": "{T}: Draw a card, then discard a card. If there are five or more cards in your graveyard, exile Jace, then return him to the battlefield transformed under his owner's control.",
+        "colors": [
+          "U"
+        ],
+        "power": "0",
+        "toughness": "2",
+        "flavor_text": "\"People's thoughts just come to me. Sometimes I don't know if it's them or me thinking.\"",
+        "artist": "Jaime Jones",
+        "artist_id": "92f6c2c1-fa57-4b52-99c4-0fd866c13dc9",
+        "illustration_id": "ea8de167-ee93-4282-95b4-d82291dbfe1f",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "normal": "https://cards.scryfall.io/normal/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "large": "https://cards.scryfall.io/large/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "png": "https://cards.scryfall.io/png/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.png?1783938353",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "thumb": "https://cards.scryfall.io/thumb/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "grid": "https://cards.scryfall.io/grid/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "display": "https://cards.scryfall.io/display/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "art": "https://cards.scryfall.io/art/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "crop": "https://cards.scryfall.io/crop/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "Jace, Telepath Unbound",
+        "mana_cost": "",
+        "type_line": "Legendary Planeswalker — Jace",
+        "oracle_text": "+1: Up to one target creature gets -2/-0 until your next turn.\n−3: You may cast target instant or sorcery card from your graveyard this turn. If that spell would be put into your graveyard, exile it instead.\n−9: You get an emblem with \"Whenever you cast a spell, target opponent mills five cards.\"",
+        "colors": [
+          "U"
+        ],
+        "color_indicator": [
+          "U"
+        ],
+        "loyalty": "5",
+        "artist": "Jaime Jones",
+        "artist_id": "92f6c2c1-fa57-4b52-99c4-0fd866c13dc9",
+        "illustration_id": "8ce7af86-2a0b-426b-8f7b-a49d6c956141",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "normal": "https://cards.scryfall.io/normal/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "large": "https://cards.scryfall.io/large/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "png": "https://cards.scryfall.io/png/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.png?1783938353",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+          "thumb": "https://cards.scryfall.io/thumb/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "grid": "https://cards.scryfall.io/grid/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "display": "https://cards.scryfall.io/display/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "art": "https://cards.scryfall.io/art/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353",
+          "crop": "https://cards.scryfall.io/crop/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.webp?1783938353"
+        }
+      }
+    ],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "f3dcc7b5-c911-44c9-be5a-087298ddb492",
+        "component": "combo_piece",
+        "name": "Magic Origins Checklist",
+        "type_line": "Card",
+        "uri": "https://api.scryfall.com/cards/f3dcc7b5-c911-44c9-be5a-087298ddb492"
+      },
+      {
+        "object": "related_card",
+        "id": "02d6d693-f1f3-4317-bcc0-c21fa8490d38",
+        "component": "combo_piece",
+        "name": "Jace, Vryn's Prodigy // Jace, Telepath Unbound",
+        "type_line": "Legendary Creature — Human Wizard // Legendary Planeswalker — Jace",
+        "uri": "https://api.scryfall.com/cards/02d6d693-f1f3-4317-bcc0-c21fa8490d38"
+      },
+      {
+        "object": "related_card",
+        "id": "458e37b1-a849-41ae-b63c-3e09ffd814e4",
+        "component": "combo_piece",
+        "name": "Jace, Telepath Unbound Emblem",
+        "type_line": "Emblem — Jace",
+        "uri": "https://api.scryfall.com/cards/458e37b1-a849-41ae-b63c-3e09ffd814e4"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "not_legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "legal"
+    },
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": false,
+    "variation": false,
+    "set_id": "0eeb9a9a-20ac-404d-b55f-aeb7a43a7f62",
+    "set": "ori",
+    "set_name": "Magic Origins",
+    "set_type": "core",
+    "set_uri": "https://api.scryfall.com/sets/0eeb9a9a-20ac-404d-b55f-aeb7a43a7f62",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aori&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/ori?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/02d6d693-f1f3-4317-bcc0-c21fa8490d38/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A594f6881-c059-46f8-aa4e-7151d502de73&unique=prints",
+    "collector_number": "60",
+    "digital": false,
+    "rarity": "mythic",
+    "artist": "Jaime Jones",
+    "artist_ids": [
+      "92f6c2c1-fa57-4b52-99c4-0fd866c13dc9"
+    ],
+    "border_color": "black",
+    "frame": "2015",
+    "frame_effects": [
+      "originpwdfc"
+    ],
+    "security_stamp": "oval",
+    "full_art": false,
+    "textless": false,
+    "booster": true,
+    "story_spotlight": false,
+    "edhrec_rank": 6448,
+    "prices": {
+      "usd": "6.45",
+      "usd_foil": "14.76",
+      "usd_etched": null,
+      "eur": "4.28",
+      "eur_foil": "9.55",
+      "tix": "0.20"
+    },
+    "related_uris": {
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=398434&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DJace%252C%2BVryn%2527s%2BProdigy%2B%252F%252F%2BJace%252C%2BTelepath%2BUnbound",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DJace%252C%2BVryn%2527s%2BProdigy%2B%252F%252F%2BJace%252C%2BTelepath%2BUnbound",
+      "edhrec": "https://edhrec.com/route/?cc=Jace%2C+Vryn%27s+Prodigy"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F100191%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=283370&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards/57880?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    },
+    "fixture_provenance": {
+      "source": "https://scryfall.com/card/ori/60/jace-vryns-prodigy-jace-telepath-unbound?utm_source=api",
+      "endpoint": "https://api.scryfall.com/cards/named",
+      "retrieved_at": "2026-10-01T14:48:54.300Z"
+    }
+  },
+  {
+    "object": "card",
+    "id": "50d4b0df-a1d8-494f-a019-70ce34161320",
+    "oracle_id": "f227ce07-7e96-4a36-ab7c-9be6e777d649",
+    "multiverse_ids": [
+      535002,
+      535003
+    ],
+    "resource_id": "1EE14DF3AA63C25489B92D67F8B11F696957C679B559C6A80F5166B04A85D2E5",
+    "mtgo_id": 93418,
+    "arena_id": 78573,
+    "tcgplayer_id": 247801,
+    "cardmarket_id": 574728,
+    "name": "Arlinn, the Pack's Hope // Arlinn, the Moon's Fury",
+    "lang": "en",
+    "released_at": "2021-09-24",
+    "uri": "https://api.scryfall.com/cards/50d4b0df-a1d8-494f-a019-70ce34161320",
+    "scryfall_uri": "https://scryfall.com/card/mid/211/arlinn-the-packs-hope-arlinn-the-moons-fury?utm_source=api",
+    "layout": "transform",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T06:52:52Z",
+    "cmc": 4,
+    "type_line": "Legendary Planeswalker — Arlinn // Legendary Planeswalker — Arlinn",
+    "color_identity": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Transform",
+      "Daybound",
+      "Nightbound"
+    ],
+    "produced_mana": [
+      "G",
+      "R"
+    ],
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Arlinn, the Pack's Hope",
+        "mana_cost": "{2}{R}{G}",
+        "type_line": "Legendary Planeswalker — Arlinn",
+        "oracle_text": "Daybound (If a player casts no spells during their own turn, it becomes night next turn.)\n+1: Until your next turn, you may cast creature spells as though they had flash, and each creature you control enters with an additional +1/+1 counter on it.\n−3: Create two 2/2 green Wolf creature tokens.",
+        "colors": [
+          "G",
+          "R"
+        ],
+        "loyalty": "4",
+        "artist": "Anna Steinbauer",
+        "artist_id": "3516496c-c279-4b56-8239-720683d03ae0",
+        "illustration_id": "810f9359-c82f-4962-9f42-0d0a79ee4cae",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "normal": "https://cards.scryfall.io/normal/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "large": "https://cards.scryfall.io/large/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "png": "https://cards.scryfall.io/png/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.png?1783925572",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "thumb": "https://cards.scryfall.io/thumb/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "grid": "https://cards.scryfall.io/grid/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "display": "https://cards.scryfall.io/display/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "art": "https://cards.scryfall.io/art/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "crop": "https://cards.scryfall.io/crop/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "Arlinn, the Moon's Fury",
+        "mana_cost": "",
+        "type_line": "Legendary Planeswalker — Arlinn",
+        "oracle_text": "Nightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)\n+2: Add {R}{G}.\n0: Until end of turn, Arlinn becomes a 5/5 Werewolf creature with trample, indestructible, and haste.",
+        "colors": [
+          "G",
+          "R"
+        ],
+        "color_indicator": [
+          "G",
+          "R"
+        ],
+        "loyalty": "4",
+        "artist": "Anna Steinbauer",
+        "artist_id": "3516496c-c279-4b56-8239-720683d03ae0",
+        "illustration_id": "9d3b73cb-6d91-48f1-ab96-89971207556d",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "normal": "https://cards.scryfall.io/normal/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "large": "https://cards.scryfall.io/large/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "png": "https://cards.scryfall.io/png/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.png?1783925572",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572",
+          "thumb": "https://cards.scryfall.io/thumb/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "grid": "https://cards.scryfall.io/grid/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "display": "https://cards.scryfall.io/display/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "art": "https://cards.scryfall.io/art/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572",
+          "crop": "https://cards.scryfall.io/crop/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.webp?1783925572"
+        }
+      }
+    ],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "9c0f7843-4cbb-4d0f-8887-ec823a9238da",
+        "component": "combo_piece",
+        "name": "Day // Night",
+        "type_line": "Card // Card",
+        "uri": "https://api.scryfall.com/cards/9c0f7843-4cbb-4d0f-8887-ec823a9238da"
+      },
+      {
+        "object": "related_card",
+        "id": "364e04d9-9a8a-49df-921c-7a9bf62dc731",
+        "component": "token",
+        "name": "Wolf",
+        "type_line": "Token Creature — Wolf",
+        "uri": "https://api.scryfall.com/cards/364e04d9-9a8a-49df-921c-7a9bf62dc731"
+      },
+      {
+        "object": "related_card",
+        "id": "e48c24fe-a584-4b93-8275-240d1c202b26",
+        "component": "combo_piece",
+        "name": "Arlinn, the Pack's Hope // Arlinn, the Moon's Fury",
+        "type_line": "Legendary Planeswalker — Arlinn // Legendary Planeswalker — Arlinn",
+        "uri": "https://api.scryfall.com/cards/e48c24fe-a584-4b93-8275-240d1c202b26"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "arena",
+      "paper",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": false,
+    "variation": false,
+    "set_id": "44b8eb8f-fa23-401a-98b5-1fbb9871128e",
+    "set": "mid",
+    "set_name": "Innistrad: Midnight Hunt",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/44b8eb8f-fa23-401a-98b5-1fbb9871128e",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amid&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/mid?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/50d4b0df-a1d8-494f-a019-70ce34161320/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Af227ce07-7e96-4a36-ab7c-9be6e777d649&unique=prints",
+    "collector_number": "211",
+    "digital": false,
+    "rarity": "mythic",
+    "artist": "Anna Steinbauer",
+    "artist_ids": [
+      "3516496c-c279-4b56-8239-720683d03ae0"
+    ],
+    "border_color": "black",
+    "frame": "2015",
+    "frame_effects": [
+      "sunmoondfc"
+    ],
+    "security_stamp": "oval",
+    "full_art": false,
+    "textless": false,
+    "booster": true,
+    "story_spotlight": false,
+    "edhrec_rank": 8913,
+    "penny_rank": 5469,
+    "preview": {
+      "source": "Wizards of the Coast",
+      "source_uri": "https://twitter.com/wizards_magic/status/1433437059818131456",
+      "previewed_at": "2021-09-02"
+    },
+    "prices": {
+      "usd": "3.19",
+      "usd_foil": "4.52",
+      "usd_etched": null,
+      "eur": "3.55",
+      "eur_foil": "3.47",
+      "tix": "0.02"
+    },
+    "related_uris": {
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=535002&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DArlinn%252C%2Bthe%2BPack%2527s%2BHope%2B%252F%252F%2BArlinn%252C%2Bthe%2BMoon%2527s%2BFury",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DArlinn%252C%2Bthe%2BPack%2527s%2BHope%2B%252F%252F%2BArlinn%252C%2Bthe%2BMoon%2527s%2BFury",
+      "edhrec": "https://edhrec.com/route/?cc=Arlinn%2C+the+Pack%27s+Hope"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F247801%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=574728&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards/93418?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    },
+    "fixture_provenance": {
+      "source": "https://scryfall.com/card/mid/211/arlinn-the-packs-hope-arlinn-the-moons-fury?utm_source=api",
+      "endpoint": "https://api.scryfall.com/cards/named",
+      "retrieved_at": "2026-10-01T14:51:22.517Z"
+    }
+  },
+  {
+    "object": "card",
+    "id": "6897514f-e396-46d6-91e3-158366c741bb",
+    "oracle_id": "7cec9021-6f25-4fd8-b40e-adf4ffd3a7b8",
+    "multiverse_ids": [
+      686039
+    ],
+    "mtgo_id": 135808,
+    "tcgplayer_id": 609909,
+    "cardmarket_id": 805824,
+    "name": "Garruk Relentless // Garruk, the Veil-Cursed",
+    "lang": "en",
+    "released_at": "2025-01-24",
+    "uri": "https://api.scryfall.com/cards/6897514f-e396-46d6-91e3-158366c741bb",
+    "scryfall_uri": "https://scryfall.com/card/inr/197/garruk-relentless-garruk-the-veil-cursed?utm_source=api",
+    "layout": "transform",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T02:01:44Z",
+    "cmc": 4,
+    "type_line": "Legendary Planeswalker — Garruk // Legendary Planeswalker — Garruk",
+    "color_identity": [
+      "B",
+      "G"
+    ],
+    "keywords": [
+      "Transform"
+    ],
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Garruk Relentless",
+        "mana_cost": "{3}{G}",
+        "type_line": "Legendary Planeswalker — Garruk",
+        "oracle_text": "When Garruk has two or fewer loyalty counters on him, transform him.\n0: Garruk deals 3 damage to target creature. That creature deals damage equal to its power to him.\n0: Create a 2/2 green Wolf creature token.",
+        "colors": [
+          "G"
+        ],
+        "loyalty": "3",
+        "artist": "Eric Deschamps",
+        "artist_id": "37970e22-9cee-44c1-af44-5ee27cf26b76",
+        "illustration_id": "2379c842-37c9-4a10-baaf-a14940bae97d",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "normal": "https://cards.scryfall.io/normal/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "large": "https://cards.scryfall.io/large/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "png": "https://cards.scryfall.io/png/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.png?1783908104",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "thumb": "https://cards.scryfall.io/thumb/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "grid": "https://cards.scryfall.io/grid/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "display": "https://cards.scryfall.io/display/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "art": "https://cards.scryfall.io/art/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "crop": "https://cards.scryfall.io/crop/front/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "Garruk, the Veil-Cursed",
+        "mana_cost": "",
+        "type_line": "Legendary Planeswalker — Garruk",
+        "oracle_text": "+1: Create a 1/1 black Wolf creature token with deathtouch.\n−1: Sacrifice a creature. If you do, search your library for a creature card, reveal it, put it into your hand, then shuffle.\n−3: Creatures you control gain trample and get +X/+X until end of turn, where X is the number of creature cards in your graveyard.",
+        "colors": [
+          "B",
+          "G"
+        ],
+        "color_indicator": [
+          "B",
+          "G"
+        ],
+        "artist": "Eric Deschamps",
+        "artist_id": "37970e22-9cee-44c1-af44-5ee27cf26b76",
+        "illustration_id": "06ec1f49-d380-4298-a67f-988cd3262007",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "normal": "https://cards.scryfall.io/normal/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "large": "https://cards.scryfall.io/large/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "png": "https://cards.scryfall.io/png/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.png?1783908104",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.jpg?1783908104",
+          "thumb": "https://cards.scryfall.io/thumb/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "grid": "https://cards.scryfall.io/grid/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "display": "https://cards.scryfall.io/display/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "art": "https://cards.scryfall.io/art/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104",
+          "crop": "https://cards.scryfall.io/crop/back/6/8/6897514f-e396-46d6-91e3-158366c741bb.webp?1783908104"
+        }
+      }
+    ],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "f5561f57-34e2-4c01-8094-0ecb101c7fa1",
+        "component": "token",
+        "name": "Wolf",
+        "type_line": "Token Creature — Wolf",
+        "uri": "https://api.scryfall.com/cards/f5561f57-34e2-4c01-8094-0ecb101c7fa1"
+      },
+      {
+        "object": "related_card",
+        "id": "6897514f-e396-46d6-91e3-158366c741bb",
+        "component": "combo_piece",
+        "name": "Garruk Relentless // Garruk, the Veil-Cursed",
+        "type_line": "Legendary Planeswalker — Garruk // Legendary Planeswalker — Garruk",
+        "uri": "https://api.scryfall.com/cards/6897514f-e396-46d6-91e3-158366c741bb"
+      },
+      {
+        "object": "related_card",
+        "id": "99ce1bee-8f95-4284-8e06-9de9bfcb53b5",
+        "component": "combo_piece",
+        "name": "Innistrad Checklist",
+        "type_line": "Card",
+        "uri": "https://api.scryfall.com/cards/99ce1bee-8f95-4284-8e06-9de9bfcb53b5"
+      },
+      {
+        "object": "related_card",
+        "id": "89b89a55-3ea2-4186-b946-06831bc16169",
+        "component": "token",
+        "name": "Wolf",
+        "type_line": "Token Creature — Wolf",
+        "uri": "https://api.scryfall.com/cards/89b89a55-3ea2-4186-b946-06831bc16169"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "not_legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": true,
+    "variation": false,
+    "set_id": "b9618c8c-9f31-4b42-9798-2991893c27bf",
+    "set": "inr",
+    "set_name": "Innistrad Remastered",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/b9618c8c-9f31-4b42-9798-2991893c27bf",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ainr&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/inr?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/6897514f-e396-46d6-91e3-158366c741bb/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A7cec9021-6f25-4fd8-b40e-adf4ffd3a7b8&unique=prints",
+    "collector_number": "197",
+    "digital": false,
+    "rarity": "mythic",
+    "artist": "Eric Deschamps",
+    "artist_ids": [
+      "37970e22-9cee-44c1-af44-5ee27cf26b76"
+    ],
+    "border_color": "black",
+    "frame": "2015",
+    "security_stamp": "oval",
+    "full_art": false,
+    "textless": false,
+    "booster": true,
+    "story_spotlight": false,
+    "edhrec_rank": 13413,
+    "penny_rank": 971,
+    "prices": {
+      "usd": "2.10",
+      "usd_foil": "2.85",
+      "usd_etched": null,
+      "eur": "0.90",
+      "eur_foil": "1.01",
+      "tix": "0.03"
+    },
+    "related_uris": {
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=686039&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DGarruk%2BRelentless%2B%252F%252F%2BGarruk%252C%2Bthe%2BVeil-Cursed",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DGarruk%2BRelentless%2B%252F%252F%2BGarruk%252C%2Bthe%2BVeil-Cursed",
+      "edhrec": "https://edhrec.com/route/?cc=Garruk+Relentless"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F609909%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=805824&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards/135808?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    },
+    "fixture_provenance": {
+      "source": "https://scryfall.com/card/inr/197/garruk-relentless-garruk-the-veil-cursed?utm_source=api",
+      "endpoint": "https://api.scryfall.com/cards/named",
+      "retrieved_at": "2026-10-01T20:39:00.605Z"
+    }
+  }
+]

@@ -25,10 +25,10 @@ def land_entry_options(state, controller: int, card) -> list[str]:
     return options
 
 
-def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_key: str, payload: dict, *, controllers=None) -> bool:
+def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_key: str, payload: dict, *, controllers=None, projections=None) -> bool:
     choices = payload.get("__entry_choices") or {}
     for card_id in card_ids:
-        card = state.cards[card_id]
+        card = (projections or {}).get(card_id, state.cards[card_id])
         if not has_two_life_land_entry(card) or card_id in choices:
             continue
         recipient = (controllers or {}).get(card_id, controller)

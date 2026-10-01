@@ -26,6 +26,17 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'transformed_counter_entry':
+        from tests.test_transformed_entry import jace
+        from tests.test_counter_replacements import source
+        from tests.test_restricted_mana import clean
+        from effects.registry import resolve_effect
+        state = clean(2)
+        card = jace(state)
+        source(state, 'Doubling Season', 2)
+        source(state, "Lae'zel, Vlaakith's Champion", 2)
+        resolve_effect(state, 2, 'exile_return_transformed', {'target_card_id': card.id})
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'linked_counter_entry_batch':
         from tests.test_linked_entry_counters import hold, release
         from tests.test_linked_exile import _state

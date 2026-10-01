@@ -27,7 +27,7 @@ def resume_spell_entry(state, controller, payload):
         finish_stack_resolution(state, StackItem(**data['entry_item']), data['entry_payload'])
 
 
-def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None, controllers=None):
+def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None, controllers=None, projections=None):
     """Reenter the route with a ready packet; True means caller must stop here."""
     if '__entry_counters_by_id' in payload:
         return False
@@ -37,7 +37,8 @@ def prepare_counter_entries(state, controller, cards, effect_key, payload, *, en
             options.pop(key, None)
     resume_entry_batch(state, controller, {
         'entry_targets': [({**({'card_id': card.id} if card.id in state.cards else {'candidate': asdict(card)}),
-                           'controller': (controllers or {}).get(card.id, controller)})
+                           'controller': (controllers or {}).get(card.id, controller),
+                           **({'projection': asdict(projections[card.id])} if card.id in (projections or {}) else {})})
                           for card in cards],
         'entry_target_index': 0, 'entry_results': {},
         'entry_effect': effect_key, 'entry_completion_payload': deepcopy(payload),
@@ -59,6 +60,9 @@ def resume_entry_batch(state, controller, payload):
             if card is None or card.zone == Zone.BATTLEFIELD:
                 state.log.append('Entry packet lost its off-battlefield recipient; entry aborted.')
                 return
+            if 'projection' in target:
+                raw = target['projection']
+                card = CardInstance(**{**raw, 'zone': Zone(raw['zone'])})
         data.setdefault('entry_payload', deepcopy(data['entry_options']))
         data.setdefault('entry_prepared', {})
         data.setdefault('entry_index', 0)
@@ -83,7 +87,7 @@ def resume_entry_batch(state, controller, payload):
 
 def commit_entry_counters(state, card, payload):
     from rules_engine.counter_placement import put_counters
-    if 'Planeswalker' in card.types and card.loyalty is not None:
+    if 'Planeswalker' in card.types:
         card.printed_characteristics.setdefault('loyalty', card.loyalty)
         card.loyalty = 0
     for kind, amount in payload['__entry_counters_by_id'].get(card.id, {}).items():

@@ -42,7 +42,9 @@ def apply_cast_face(card, face):
 def apply_transform_face(card, index):
     """Apply a battlefield face without changing the card's printed identity."""
     face = select_cast_face(card, index)
+    front = select_cast_face(card, 0)
     for field in FACE_FIELDS:
+        card.printed_characteristics.setdefault(field, copy(getattr(front, field)))
         setattr(card, field, copy(getattr(face, field)))
 
 
