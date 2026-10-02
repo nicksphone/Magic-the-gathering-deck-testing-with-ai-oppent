@@ -235,10 +235,9 @@ def test_http_restart_preserves_both_mechanic_families_and_atomic_rejections(gam
     assert response.status_code == 200, response.text
 
 
-def test_coverage_distinguishes_supported_numeric_costs_and_target_requirements_from_phyrexian_tax():
-    for name in ('Propaganda', 'Ghostly Prison', 'Sphere of Safety', 'Lure', 'Nemesis Mask', 'Prized Unicorn', 'Taunting Elf'):
+def test_coverage_recognizes_supported_mana_costs_and_target_requirements():
+    for name in ('Propaganda', 'Ghostly Prison', 'Sphere of Safety', 'Lure', 'Nemesis Mask', 'Prized Unicorn', 'Taunting Elf', "Norn's Annex"):
         assert combat_clause_coverage(ROWS[name]['oracle_text'], name) == []
-    assert any('unsupported combat payment' in row['reasons'] for row in combat_clause_coverage(ROWS["Norn's Annex"]['oracle_text'], "Norn's Annex"))
 
 
 def test_many_blockers_with_competing_targets_and_unequal_requirement_weights():

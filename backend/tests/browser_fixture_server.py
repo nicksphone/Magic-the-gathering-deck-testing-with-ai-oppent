@@ -28,8 +28,8 @@ def fixture_start_decks():
 def fixture_combat_coverage_decks():
     import json
     from main import SIM_JOBS
-    rows = json.loads((Path(__file__).parent / 'fixtures/combat_payments_requirements.json').read_text())
-    card = next(row for row in rows if row['name'] == "Norn's Annex")
+    rows = json.loads((Path(__file__).parent / 'fixtures/combat_minimums.json').read_text())
+    card = next(row for row in rows if row['name'] == "Collective Restraint")
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': card['id'], 'name': card['name'],
@@ -50,6 +50,15 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'combat_branches_1', 'combat_branches_2'}:
+        from tests.test_combat_minimums_payments import board
+        from tests.test_combat_payments_requirements import add, zero_mana, attack_step
+        seat = int(face_kind[-1])
+        state, _, _ = board(seat)
+        zero_mana(state)
+        add(state, "Norn's Annex", 3-seat)
+        attack_step(state, seat)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind == 'combat_payments_requirements':
         from tests.test_combat_payments_requirements import fixture as clean_state, add, zero_mana, attack_step
         state = clean_state()

@@ -1,5 +1,6 @@
 """Maximize recognized requirements without disobeying combat restrictions."""
 from itertools import combinations
+from fractions import Fraction
 import re
 
 from game_state.state import Zone
@@ -45,7 +46,7 @@ def best_required_attack(state, pinned=(), targets=None):
             continue
         for defender in defenders:
             proposal = {**targets, cid: defender}
-            if attack_payment_view(state, [cid], {cid: defender})['total_generic']:
+            if attack_payment_view(state, [cid], {cid: defender})['payments']:
                 continue  # Paying an attack tax is optional, even for a requirement.
             if attackers_within_limits(state, selected + [cid], proposal):
                 selected.append(cid)
@@ -57,7 +58,7 @@ def best_required_attack(state, pinned=(), targets=None):
                 continue
             for defender in defenders:
                 proposal = {**targets, cid: defender}
-                if attack_payment_view(state, [cid], {cid: defender})['total_generic']:
+                if attack_payment_view(state, [cid], {cid: defender})['payments']:
                     continue
                 if attackers_within_limits(state, selected + [cid], proposal):
                     return selected + [cid], proposal
@@ -70,10 +71,25 @@ def attack_requirement_score(state, ids):
 
 
 def parse_target_block_requirement(clause, card_name=''):
-    match = re.fullmatch(r'all creatures able to block (.+) do so', clause)
-    if match and match[1] in {'this creature', 'cardname', card_name.lower(), 'enchanted creature', 'equipped creature'}:
-        return match[1]
-    return None
+    def subject_supported(subject):
+        return subject in {'this creature', 'cardname', card_name.lower(), 'enchanted creature', 'equipped creature'} or bool(
+            card_name and card_name.lower().startswith(subject + ' '))
+
+    specs = []
+    for part in clause.split(', and '):
+        match = re.fullmatch(r'all creatures able to block (.+) do so', part)
+        if match and subject_supported(match[1]):
+            specs.append({'subject': match[1], 'kind': 'all', 'minimum': None})
+            continue
+        match = re.fullmatch(r'(.+) must be blocked(?: by (\d+|one|two|three|four|five|six|seven|eight|nine|ten) or more creatures)? if able', part)
+        if not match or not subject_supported(match[1]):
+            return None
+        from rules_engine.static_conditions import number
+        minimum = number(match[2]) if match[2] else 1
+        if minimum < 1:
+            return None
+        specs.append({'subject': match[1], 'kind': 'minimum', 'minimum': minimum})
+    return specs or None
 
 
 def target_block_requirements(state):
@@ -91,13 +107,21 @@ def target_block_requirements(state):
                 continue
             if printed_abilities_suppressed(state, cid, losses=losses):
                 continue
-            for clause, spec in specs:
-                if spec:
-                    target = source.attached_to if spec in {'enchanted creature', 'equipped creature'} else cid
+            for clause, parsed in specs:
+                for spec in parsed or []:
+                    target = source.attached_to if spec['subject'] in {'enchanted creature', 'equipped creature'} else cid
                     if target in state.attackers and state.cards[target].zone == Zone.BATTLEFIELD:
                         rows.append({'source_id': cid, 'source_name': source.name,
-                                     'attacker_id': target, 'clause': clause})
+                                     'attacker_id': target, 'clause': clause,
+                                     'kind': spec['kind'], 'minimum': spec['minimum']})
     return rows
+
+
+def targeted_block_score(requirements, blocks):
+    """Pair requirements are independent; minimum-count requirements saturate."""
+    return sum(len(set(blocks.get(row['attacker_id'], []))) if row['kind'] == 'all'
+               else int(len(set(blocks.get(row['attacker_id'], []))) >= row['minimum'])
+               for row in requirements)
 
 
 def best_required_blocks(state, pinned=None):
@@ -125,20 +149,40 @@ def best_required_blocks(state, pinned=None):
     # A minimum larger than the available distinct blockers can never be met.
     edges = {bid: [aid for aid in aids if minima[aid] <= (cap if cap is not None else len(blockers))
                    and sum(aid in other for other in edges.values()) >= minima[aid]] for bid, aids in edges.items()}
-    target_weights = {aid: sum(row['attacker_id'] == aid for row in requirements) for aid in state.attackers}
+    # Pair requirements can be worth one point per blocker; group requirements
+    # can be worth only one each. Prefer pair edges on wide mixed boards.
+    target_weights = {aid: sum((len(blockers) + 1 if row['kind'] == 'all' else 1)
+                              for row in requirements if row['attacker_id'] == aid) for aid in state.attackers}
     edges = {bid: sorted(aids, key=lambda aid: (target_weights[aid], aid)) for bid, aids in edges.items()}
     capacities = {bid: int(min(len(edges[bid]), _max_attackers_blockable_by_creature(state, state.cards[bid]))) for bid in blockers}
-    potentials = {bid: weights[bid] + sum(sorted((target_weights[aid] for aid in edges[bid]), reverse=True)[:capacities[bid]]) for bid in blockers}
+    edge_weights = {}
+    pair_targets = set()
+    for aid in state.attackers:
+        paired = sum(row['attacker_id'] == aid and row['kind'] == 'all' for row in requirements)
+        thresholds = [row['minimum'] for row in requirements if row['attacker_id'] == aid and row['kind'] == 'minimum']
+        # Saturated group score is bounded by slope * distinct blocker count.
+        # Exact fractions avoid underestimating a bound through rounding.
+        slope = max((Fraction(sum(minimum <= n for minimum in thresholds), n) for n in thresholds), default=0)
+        edge_weights[aid] = paired + slope
+        if paired:
+            pair_targets.add(aid)
+    potentials = {bid: weights[bid] + sum(sorted((edge_weights[aid] for aid in edges[bid]), reverse=True)[:capacities[bid]]) for bid in blockers}
     pinned = pinned or {}
     required_pairs = {bid: {aid for aid, ids in pinned.items() if bid in ids} for bid in blockers}
     order = sorted(blockers, key=lambda bid: (-potentials[bid], bid))
     max_score = sum(sorted(potentials.values(), reverse=True)[:cap]) if cap is not None else sum(potentials.values())
+    saturated_bound = sum(sorted(weights.values(), reverse=True)[:cap]) if cap is not None else sum(weights.values())
+    for row in requirements:
+        available = sum(row['attacker_id'] in edges[bid] and capacities[bid] > 0 for bid in blockers)
+        available = min(available, cap) if cap is not None else available
+        saturated_bound += available if row['kind'] == 'all' else int(available >= row['minimum'])
+    max_score = int(min(max_score, saturated_bound))
     best, best_score = None, -1
     stack = [(0, {})]
     while stack:
         index, selected = stack.pop()
         slots = len(order) if cap is None else cap - len(selected)
-        upper = sum(potentials[bid] for bid in selected) + sum(sorted((potentials[bid] for bid in order[index:]), reverse=True)[:slots])
+        upper = min(max_score, sum(potentials[bid] for bid in selected) + sum(sorted((potentials[bid] for bid in order[index:]), reverse=True)[:slots]))
         if upper <= best_score:
             continue
         if index == len(order):
@@ -149,24 +193,29 @@ def best_required_blocks(state, pinned=None):
                 continue
             if any(not set(ids).issubset(groups.get(aid, [])) for aid, ids in pinned.items()):
                 continue
-            score = sum(weights[bid] for bid in used) + sum(len(groups.get(row['attacker_id'], [])) for row in requirements)
+            score = sum(weights[bid] for bid in used) + targeted_block_score(requirements, groups)
             if score > best_score:
                 best, best_score = groups, score
             if score == max_score:
                 break
             continue
         bid = order[index]
-        if not required_pairs[bid]:
+        prefer_skip = not weights[bid] and not any(aid in pair_targets for aid in edges[bid])
+        if not required_pairs[bid] and not prefer_skip:
             stack.append((index + 1, selected))
         if slots <= 0:
+            if not required_pairs[bid] and prefer_skip:
+                stack.append((index + 1, selected))
             continue
         size = capacities[bid]
         for aids in combinations(edges[bid], int(size)):
             if aids and required_pairs[bid].issubset(aids):
                 stack.append((index + 1, {**selected, bid: aids}))
+        if not required_pairs[bid] and prefer_skip:
+            stack.append((index + 1, selected))
     return best
 
 
 def block_requirement_score(state, blocks):
-    return sum(requirement_weights(state, {bid for ids in blocks.values() for bid in ids}, 'block').values()) + sum(
-        len(set(blocks.get(row['attacker_id'], []))) for row in target_block_requirements(state))
+    return sum(requirement_weights(state, {bid for ids in blocks.values() for bid in ids}, 'block').values()) + targeted_block_score(
+        target_block_requirements(state), blocks)

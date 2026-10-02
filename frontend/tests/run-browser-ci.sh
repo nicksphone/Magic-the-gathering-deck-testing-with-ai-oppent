@@ -75,6 +75,8 @@ echo 'Browser CI: declaration limits'
 (cd frontend && timeout 90s node tests/browser-declaration-limits.mjs)
 echo 'Browser CI: combat payments and target requirements'
 (cd frontend && timeout 90s node tests/browser-combat-payments-requirements.mjs)
+echo 'Browser CI: deliberate hybrid attack payments and minimum blocker requirements'
+(cd frontend && timeout 120s node tests/browser-combat-branches.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

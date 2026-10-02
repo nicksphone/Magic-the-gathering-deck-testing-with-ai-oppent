@@ -993,7 +993,7 @@ class RulesEngine:
         elif kind == "attack":
             ids = action.get("attackers", [])
             attack_targets = action.get("attack_targets", {})
-            combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {}, action.get("bands", []))
+            combat.declare_attackers(state, ids, attack_targets if isinstance(attack_targets, dict) else {}, action.get("bands", []), action.get('hybrid_choices'))
             state.attackers_declared = True
 
         elif kind == "activate_ability":

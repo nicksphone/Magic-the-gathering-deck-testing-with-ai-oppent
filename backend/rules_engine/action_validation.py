@@ -96,8 +96,13 @@ def checked_action(state, rules, player_id: int, action: dict):
         optimum = best_required_attack(candidate)
         require(optimum is None or attack_requirement_score(candidate, action['attackers']) >= attack_requirement_score(candidate, optimum[0]),
                 'Declare attackers that satisfy the maximum possible requirements')
-        from rules_engine.combat_payments import attack_payment_state
-        require(attack_payment_state(candidate, action['attackers'], action.get('attack_targets')) is not None,
+        from rules_engine.combat_payments import attack_payment_state, attack_payment_view
+        symbols = attack_payment_view(candidate, action['attackers'], action.get('attack_targets'))['hybrid_symbols']
+        choices = action.get('hybrid_choices')
+        require(not symbols or choices is not None, 'Choose each hybrid attack payment branch explicitly')
+        require(choices is None or len(choices) == len(symbols) and all(
+            branch in symbol['choices'] for branch, symbol in zip(choices, symbols)), 'Invalid hybrid attack payment branch')
+        require(attack_payment_state(candidate, action['attackers'], action.get('attack_targets'), choices) is not None,
                 'Cannot pay the declared attack costs')
     elif action['type'] == 'block':
         from rules_engine.declaration_limits import blockers_within_limits

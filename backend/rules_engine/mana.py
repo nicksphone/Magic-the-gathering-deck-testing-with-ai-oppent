@@ -167,6 +167,7 @@ def _payment_requirements(
     mana_cost: str, is_land: bool, x_value: int, generic_reduction: int, generic_increase: int,
     hybrid_choices: list[str] | None = None,
     restricted_x_color: str | None = None,
+    branch_output: list[list[str]] | None = None,
 ) -> list[dict[str, int]]:
     if is_land:
         return [parse_mana_cost("", is_land=True)]
@@ -180,6 +181,7 @@ def _payment_requirements(
         return []
     keys = ("generic", "W", "U", "B", "R", "G", "C", "S", "life")
     choices: list[dict[str, int]] = [{key: 0 for key in keys}]
+    paths = [[]]
     hybrid_index = 0
     for symbol in MANA_SYMBOL_RE.findall((mana_cost or "").upper()):
         parts = symbol.split("/")
@@ -196,8 +198,9 @@ def _payment_requirements(
             parsed = parse_mana_cost("{" + symbol + "}", x_value=x_value)
             options = [(key, amount) for key, amount in parsed.items() if amount]
         next_choices = []
+        next_paths = []
         seen: set[tuple[int, ...]] = set()
-        for base in choices:
+        for base, path in zip(choices, paths):
             for key, amount in options or [("generic", 0)]:
                 option = dict(base)
                 option[key] += amount
@@ -205,9 +208,14 @@ def _payment_requirements(
                 if signature not in seen:
                     seen.add(signature)
                     next_choices.append(option)
+                    branch = 'P' if key == 'life' else '2' if key == 'generic' else key
+                    next_paths.append(path + [branch] if any(item['symbol'] == symbol for item in hybrid_symbols) else path)
         choices = next_choices
+        paths = next_paths
     for option in choices:
         option["generic"] = max(0, option["generic"] + generic_increase - generic_reduction)
+    if branch_output is not None:
+        branch_output.extend(paths)
     return choices
 
 
@@ -385,10 +393,13 @@ def auto_pay_cost(
         source_card_id=source_card_id, target_card_id=target_card_id,
     ))
     from rules_engine.replacement import can_pay_life, pay_life
+    branches = []
+    requirements = _payment_requirements(
+        context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase,
+        hybrid_choices, restricted_x_color, branches,
+    )
     payment = next(
-        ((req, plan) for req in _payment_requirements(
-            context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color,
-        ) if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
+        ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
         and (plan := _plan_payment(state, player_id, req, payment_context=payment_context)) is not None),
         None,
     )
@@ -398,6 +409,7 @@ def auto_pay_cost(
     player = state.players[player_id]
     if payment_details is not None:
         payment_details["phyrexian_life_symbols"] = req.get("life", 0) // 2
+        payment_details['hybrid_choices'] = branches[requirements.index(req)] if branches else []
     if req.get("life", 0):
         if not pay_life(state, player_id, req["life"]):
             return False

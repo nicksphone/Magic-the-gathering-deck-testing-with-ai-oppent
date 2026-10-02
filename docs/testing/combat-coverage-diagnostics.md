@@ -24,11 +24,12 @@ a suppressed source may retain a printed semantic gap without applying a rule.
 The endpoint is not an authorization system or a network-release certificate.
 
 Canonical fixtures cover Propaganda, Ghostly Prison, Sphere of Safety and Archon
-of Absolution's now-supported numeric payments; Norn's Annex's still-unsupported
-Phyrexian payment; Stormtide Leviathan's unimplemented
+of Absolution's supported numeric payments; Norn's Annex's now-supported
+Phyrexian payment; Collective Restraint's unsupported domain-dependent tax;
+Stormtide Leviathan's unimplemented
 qualified subject; Silent Arbiter's declaration limits; and Goblin War Drums'
 already-supported keyword grant/reminder. Fetch provenance is retained in
-`backend/tests/fixtures/combat_coverage.json`. No card-name gameplay dispatch or
+the combat coverage/payment/minimum fixture files. No card-name gameplay dispatch or
 fabricated competitive deck additions were introduced.
 
 Known supported clauses from the previous nine-card conditional-combat fixture
@@ -45,7 +46,7 @@ cached completeness without external sync. Tests run in isolated source copies,
 not against the live database.
 
 `frontend/tests/browser-combat-coverage.mjs` uses the actual App and production
-preflight route with a canonical cached Norn's Annex fixture. It checks that the
+preflight route with a canonical cached Collective Restraint fixture. It checks that the
 warning and exploratory-review button appear without creating a simulator job.
 The fixture routes exist only in the guarded, copied browser fixture server.
 

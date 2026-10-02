@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Batched attack payment branches and minimum block requirements
+
+- Extended shared attack taxes to fixed colored/colorless/snow/hybrid/Phyrexian mana costs. Human declarations explicitly choose branches through either seat's controls; AI records the existing planner's payable branches and avoids spending its last life. Zero-valued taxes remain optional for required attacks. Conditional/nonmana costs and block payments remain open.
+- Added generic static self/Aura/Equipment "must be blocked" and minimum-count requirements, including canonical compound and shortened self-name clauses. Scoring saturates each group requirement independently rather than turning it into menace or a per-blocker Lure requirement. Exact rational capacity bounds and skip-first group search avoid overcounting and unnecessary optional blockers in tested wide-board cases.
+- Added canonical Gorm/Maarika/Collective Restraint fixtures, small independent exhaustive comparisons, 101-blocker mixed cases, atomic branch rejection, both-seat HTTP/SQLite restoration and actual App payment/minimum-block flows. Unsupported qualified blocker clauses now warn explicitly. Domain-based Collective Restraint replaces now-supported Annex in unsupported-tax preflight checks.
+- Validation: 2,977 isolated backend tests passed (316 deprecation warnings), 186 focused checks passed, frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced template games, each repeated twice, resolved with no determinism failures, drift labels or reported anomalies. Sixteen controlled actual AI decision scenarios include twelve paid attacks/maximum-required blocks and four Casual passes; four snow grammar probes passed. These do not measure expert strength, universal card correctness or competitive balance.
+- README, finish plan and scope documents updated; Graphify refreshed. Verified evidence and superseded/failed runs archived on RCHFiles `diagnostics/combat-branches-minimums/20261002T231128Z`. Alpha UI redesign and broader backend/operational goals remain unfinished.
+
 ## 2026-10-02 - Batched combat payments, targeted requirements and declaration timing
 
 - Added shared fixed generic and enchantment-count attack payments, player/planeswalker scopes, locked costs, optional-payment-aware attack requirements, restricted-mana handling and source suppression. Costs commit once; rejected declarations preserve authoritative memory and SQLite.

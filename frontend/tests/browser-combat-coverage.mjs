@@ -18,7 +18,7 @@ try {
     })()`);
   }
   await click('Run 20 Matches');
-  await waitFor("[...document.querySelectorAll('[role=alert]')].some(node => node.textContent.includes(\"Norn's Annex\") && node.textContent.includes('unsupported combat payment'))");
+  await waitFor("[...document.querySelectorAll('[role=alert]')].some(node => node.textContent.includes(\"Collective Restraint\") && node.textContent.includes('unsupported combat payment'))");
   await waitFor("[...document.querySelectorAll('button')].some(node => node.textContent.includes('Run Anyway (Exploratory)'))");
   const count = await (await fetch(`${backend}/fixture/simulation-job-count`)).json();
   assert.equal(count.jobs, decks.jobs);

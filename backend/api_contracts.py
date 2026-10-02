@@ -157,6 +157,7 @@ class AttackAction(InputModel):
     attackers: CardIDs
     attack_targets: dict[CardID, CardID] = Field(default_factory=dict, max_length=250)
     bands: list[CardIDs] = Field(default_factory=list, max_length=125)
+    hybrid_choices: Annotated[list[Literal['W', 'U', 'B', 'R', 'G', 'C', '2', 'P']], Field(max_length=62500)] | None = None
 
 
 class BlockAction(InputModel):

@@ -24,7 +24,7 @@ type Props = {
   autoplayDelayMs: number;
   setAutoplayDelayMs: (ms: number) => void;
   onSubmitBlocks: (blocks: Record<string, string[]>) => void;
-  onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>, bands: string[][]) => void;
+  onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>, bands: string[][], hybridChoices?: string[]) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: (playFirst?: boolean) => void;
   onSetPriorityStops: (playerId: number, stops: string[]) => void;
@@ -105,10 +105,12 @@ export function Controls(props: Props) {
   );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
+  const [attackPaymentChoices, setAttackPaymentChoices] = useState<Record<string, string>>({});
   const [excludedAttackers, setExcludedAttackers] = useState<string[]>([]);
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
   useEffect(() => {
     setAttackTargets({});
+    setAttackPaymentChoices({});
     setExcludedAttackers([]);
     setAttackBandNumbers({});
   }, [props.match?.id, props.match?.game_number, props.match?.turn, props.match?.step]);
@@ -487,6 +489,8 @@ export function Controls(props: Props) {
           <h3>Declare Attackers</h3>
           <p>Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without.</p>
           {(attackMove.options ?? []).map((attackerId) => {
+            const defender = attackTargets[attackerId] || `player:${3 - (props.match?.active_player ?? 1)}`;
+            const payment = attackMove.attack_costs?.[attackerId]?.[defender];
             const attacker = props.match?.players?.["1"]?.battlefield?.find((c) => c.id === attackerId)
               || props.match?.players?.["2"]?.battlefield?.find((c) => c.id === attackerId);
             return (
@@ -510,10 +514,25 @@ export function Controls(props: Props) {
                     </option>
                   ))}
                 </select>
+                {!excludedAttackers.includes(attackerId) && payment?.mana_cost ? <span>Attack cost: {payment.mana_cost}</span> : null}
+                {!excludedAttackers.includes(attackerId) ? payment?.hybrid_symbols.map((symbol, index) => {
+                  const key = `${attackerId}:${defender}:${payment.mana_cost}:${index}`;
+                  return <label key={key}>Pay {`{${symbol.symbol}}`} <select
+                    aria-label={`Attack payment ${index + 1} for ${attacker?.name ?? attackerId}`}
+                    value={attackPaymentChoices[key] ?? ""}
+                    onChange={(e) => setAttackPaymentChoices((prev) => ({ ...prev, [key]: e.target.value }))}>
+                    <option value="">Choose payment</option>
+                    {symbol.choices.map((branch) => <option key={branch} value={branch}>{branch === "P" ? "2 life" : `{${branch}} mana`}</option>)}
+                  </select></label>;
+                }) : null}
               </div>
             );
           })}
-          <button onClick={() => {
+          <button disabled={(attackMove.options ?? []).filter((id) => !excludedAttackers.includes(id)).some((id) => {
+            const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
+            const cost = attackMove.attack_costs?.[id]?.[defender];
+            return cost?.hybrid_symbols.some((_, index) => !attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]);
+          })} onClick={() => {
             const attackers = (attackMove.options ?? []).filter((id) => !excludedAttackers.includes(id));
             const targets = Object.fromEntries(Object.entries(attackTargets).filter(([id, target]) => attackers.includes(id) && target));
             const grouped = new Map<number, string[]>();
@@ -521,7 +540,12 @@ export function Controls(props: Props) {
               const number = attackBandNumbers[id] ?? 0;
               if (number > 0) grouped.set(number, [...(grouped.get(number) ?? []), id]);
             }
-            props.onSubmitAttack(attackers, targets, [...grouped.values()]);
+            const choices = attackers.flatMap((id) => {
+              const defender = targets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
+              const cost = attackMove.attack_costs?.[id]?.[defender];
+              return cost?.hybrid_symbols.map((_, index) => attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]) ?? [];
+            });
+            props.onSubmitAttack(attackers, targets, [...grouped.values()], choices.length ? choices : undefined);
           }}>
             Submit Attackers
           </button>

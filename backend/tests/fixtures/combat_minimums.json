@@ -1,0 +1,55 @@
+[
+  {
+    "id": "41603938-9527-42fc-a870-b662c3871ae3",
+    "name": "Gorm the Great",
+    "mana_cost": "{3}{G}",
+    "type_line": "Legendary Creature — Giant Warrior",
+    "oracle_text": "Partner with Virtus the Veiled (When this creature enters, target player may put Virtus into their hand from their library, then shuffle.)\nVigilance\nGorm must be blocked if able, and Gorm must be blocked by two or more creatures if able.",
+    "power": "2",
+    "toughness": "7",
+    "keywords": [
+      "Partner with",
+      "Vigilance",
+      "Partner"
+    ],
+    "colors": [
+      "G"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Gorm%20the%20Great",
+    "fetched_at": "2026-10-02T22:58:09.345Z"
+  },
+  {
+    "id": "86123ab7-ee60-4ef2-8467-1ad420213eb1",
+    "name": "Maarika, Brutal Gladiator",
+    "mana_cost": "{2}{B}{R}{G}",
+    "type_line": "Legendary Creature — Human Warrior",
+    "oracle_text": "Maarika, Brutal Gladiator must be blocked if able.\nAs long as it's your turn, Maarika has indestructible.\nWhenever Maarika deals damage to a creature, if that creature was dealt excess damage this turn, that creature's controller sacrifices a noncreature, nonland permanent.",
+    "power": "7",
+    "toughness": "4",
+    "keywords": [],
+    "colors": [
+      "B",
+      "G",
+      "R"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Maarika%2C%20Brutal%20Gladiator",
+    "fetched_at": "2026-10-02T22:58:09.354Z"
+  },
+  {
+    "id": "d71daa57-ac02-4dd9-8c90-d38bdd45fb51",
+    "name": "Collective Restraint",
+    "mana_cost": "{3}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "Domain — Creatures can't attack you unless their controller pays {X} for each creature they control that's attacking you, where X is the number of basic land types among lands you control.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Domain"
+    ],
+    "colors": [
+      "U"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Collective%20Restraint",
+    "fetched_at": "2026-10-02T22:58:09.354Z"
+  }
+]

@@ -62,8 +62,9 @@ not an alpha UI redesign or visual usability certification.
 - Arbitrary compound conditions, broader paid attack/block costs, and general granted
   nonkeyword abilities remain unsupported. Unknown predicates are not applied
   as unconditional restrictions; diagnostics must be consulted.
-  Subsequent [payment/target work](combat-payments-requirements.md) handles numeric
-  attack taxes and Lure-style requirements, not all paid costs or requirements.
+  Subsequent [payment/target work](combat-payments-requirements.md) and
+  [branch/minimum work](combat-branches-minimums.md) handle supported mana attack
+  taxes and static target requirements, not all paid costs or requirements.
 - Continuous type/color changes, dependency ordering, multiplayer defending
   players, and complete restrictions-versus-requirements optimization need
   separate acceptance fixtures.

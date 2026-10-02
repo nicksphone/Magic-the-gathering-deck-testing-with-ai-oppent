@@ -156,6 +156,10 @@ export type LegalMove = {
   card_name?: string;
   mana_cost?: string;
   hybrid_symbols?: { symbol: string; choices: string[] }[];
+  attack_costs?: Record<string, Record<string, {
+    mana_cost: string;
+    hybrid_symbols: { symbol: string; choices: string[] }[];
+  }>>;
   x_value?: number;
   cost_options?: {
     id: string;

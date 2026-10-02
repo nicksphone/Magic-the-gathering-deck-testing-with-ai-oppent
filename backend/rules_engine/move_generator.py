@@ -151,9 +151,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
             )
             from rules_engine.declaration_limits import declaration_limit_view
-            from rules_engine.combat_payments import attack_tax_sources
+            from rules_engine.combat_payments import attack_tax_sources, attack_payment_view
             moves.append({"type": "attack", "options": attackers, "defenders": defenders,
                           'attack_taxes': attack_tax_sources(state),
+                          'attack_costs': {cid: {target['id']: attack_payment_view(state, [cid], {cid: target['id']})
+                                                for target in defenders} for cid in attackers},
                           'declaration_limits': declaration_limit_view(state, 'attack')})
         moves.extend(restricted_attackers)
     if (

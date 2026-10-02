@@ -37,7 +37,7 @@ def valid_attack_bands(state: MatchState, attackers: list[str], targets: dict[st
     return True
 
 
-def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None, bands: list[list[str]] | None = None) -> None:
+def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets: dict[str, str] | None = None, bands: list[list[str]] | None = None, hybrid_choices: list[str] | None = None) -> None:
     attack_targets = attack_targets or {}
     bands = bands or []
     if not valid_attack_bands(state, attacker_ids, attack_targets, bands):
@@ -85,7 +85,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             raise ValueError('Attacker declaration must satisfy the maximum possible requirements')
         legal, legal_targets = completion
     from rules_engine.combat_payments import attack_payment_state
-    paid = attack_payment_state(state, legal, legal_targets)
+    paid = attack_payment_state(state, legal, legal_targets, hybrid_choices)
     if paid is None:
         raise ValueError('Cannot pay the declared attack costs')
     if paid is not state:
@@ -184,8 +184,8 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
     if len(blocking_ids) == 1 and card_cant_block_alone(state, next(iter(blocking_ids))):
         legal = {}
     state.blocks = legal
-    from rules_engine.combat_requirements import target_block_requirements
-    targeted = sum(len(legal.get(row['attacker_id'], [])) for row in target_block_requirements(state))
+    from rules_engine.combat_requirements import target_block_requirements, targeted_block_score
+    targeted = targeted_block_score(target_block_requirements(state), legal)
     if targeted:
         state.log.append(f'Targeted block requirements satisfied: {targeted}.')
     events = []

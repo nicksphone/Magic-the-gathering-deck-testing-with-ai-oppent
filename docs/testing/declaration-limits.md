@@ -54,7 +54,8 @@ copies, never the live database; archived SQLite is not used as running storage.
 ## Known Limitations and Next Upgrades
 
 - Subsequent [payment/target work](combat-payments-requirements.md) implements
-  numeric attack taxes and Lure-style target requirements. Other attack/block
+  mana attack taxes, deliberate hybrid/Phyrexian branches, Lure-style and static
+  minimum-number target requirements. Other attack/block
   costs and conditional numeric limits remain unsupported.
 - Mandatory attacks at a particular defender and attacker-controlled block
   assignment remain unfinished. Invasion

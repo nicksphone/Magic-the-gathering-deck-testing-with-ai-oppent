@@ -2,6 +2,10 @@
 
 ## Combined backend batch
 
+This records the original numeric/Lure acceptance. The subsequent
+[mana-branch/minimum-requirement batch](combat-branches-minimums.md) extends
+current support; historical counts below are not the newer batch's evidence.
+
 Two related mechanic families share declaration validation, AI finalization and
 diagnostics. Gameplay remains application code; SQLite stores snapshots only.
 
@@ -51,9 +55,10 @@ Blocker declaration precedes the active player's priority window. Passing cannot
 bypass required attackers/blockers; a legal empty declaration is recorded before
 priority resumes. Existing first/double-strike and lifelink assertions are retained.
 
-Coverage uses the implemented clause parsers: numeric taxes stop producing false
-unsupported-payment warnings. Norn's Annex's Phyrexian tax remains unsupported
-and retains simulator exploratory review. No silent all-card certification follows.
+Coverage uses the implemented clause parsers: supported mana taxes stop producing
+false unsupported-payment warnings. Norn's Annex is now handled by the later
+branch-payment batch. Collective Restraint's domain-dependent tax remains
+unsupported and retains simulator exploratory review. No all-card certification follows.
 
 ## Acceptance contracts
 
@@ -69,8 +74,8 @@ Large competing-target boards verify capacity-aware upper bounds.
 
 `browser-combat-payments-requirements.mjs` uses the actual App/API to reject an
 unpayable two-attacker declaration, pay for one attacker, reject a missing required
-block and submit a legal block. The separate preflight check uses canonical Norn's
-Annex to ensure still-unsupported payments continue to warn without admitting a job.
+block and submit a legal block. The separate preflight check now uses canonical
+Collective Restraint to ensure unsupported payments warn without admitting a job.
 These are functional flows, not the deferred UI redesign or a visual usability audit.
 
 Verified 2026-10-02: 2,922 full backend tests passed (314 deprecation warnings),
@@ -89,13 +94,13 @@ All running test SQLite files stayed local and isolated from the live database.
 
 ## Known Limitations and Next Upgrades
 
-- Phyrexian/colored/hybrid, life, sacrifice, discard and optional attack costs;
-  conditional taxes and block-payment costs remain unfinished.
-- Zero-valued optional-payment/requirement interactions still need dedicated
-  acceptance fixtures; the canonical payment acceptance here uses positive costs.
-- Specific-defender attack requirements, "must be blocked if able," required
-  minimum numbers, qualified blocker subsets and attacker-chosen block assignment
-  remain unfinished. Unknown targeted-block clauses receive explicit coverage gaps.
+- Nonmana life/sacrifice/discard costs, conditional taxes, block payments and
+  optional additional attack costs remain unfinished. The later batch handles
+  recognized mana/Phyrexian branches and zero-valued optionality.
+- Specific-defender attack requirements, temporary/granted nonkeyword requirements,
+  qualified blocker subsets and attacker-chosen block assignment remain unfinished.
+  The later batch handles static "must be blocked" and minimum-number requirements.
+  Unknown targeted-block clauses receive explicit coverage gaps.
 - Full dependency/type/color layers, arbitrary gained nonkeyword abilities,
   complex band interactions and pre-entry rules are not certified.
 - Exact blocker search can still be exponential. Simple 101-blocker tests are not

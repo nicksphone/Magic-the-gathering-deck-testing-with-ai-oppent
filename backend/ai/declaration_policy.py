@@ -47,10 +47,11 @@ def finalize_declaration(state, action):
             desired = (action.get('attack_targets') or {}).get(cid, default)
             for target in list(dict.fromkeys([desired, *defenders])):
                 proposal = {**targets, cid: target}
-                if cid not in requested and attack_payment_view(state, [cid], {cid: target})['total_generic']:
+                if cid not in requested and attack_payment_view(state, [cid], {cid: target})['payments']:
                     continue
                 paid = attack_payment_state(state, selected + [cid], proposal) if target in defenders else None
-                if (paid is not None and attackers_within_limits(state, selected + [cid], proposal)
+                if (paid is not None and paid.players[state.active_player].life > 0
+                        and attackers_within_limits(state, selected + [cid], proposal)
                         and all(paid.cards[chosen].zone == Zone.BATTLEFIELD and paid.cards[chosen].controller == state.active_player
                                 and 'Creature' in paid.cards[chosen].types
                                 for chosen in selected + [cid])):
@@ -64,7 +65,10 @@ def finalize_declaration(state, action):
         if completion is None or optimum and attack_requirement_score(state, completion[0]) < attack_requirement_score(state, optimum[0]):
             completion = optimum
         selected, targets = completion or ([], {})
+        details = {}
+        attack_payment_state(state, selected, targets, payment_details=details)
         return {**action, 'attackers': selected, 'attack_targets': targets,
+                'hybrid_choices': details.get('hybrid_choices') or None,
                 'bands': [band for band in action.get('bands', []) if all(cid in selected for cid in band)]}
     blocks = {aid: bids if isinstance(bids, list) else [bids] for aid, bids in (action.get('blocks') or {}).items()}
     selected = {bid for bids in blocks.values() for bid in bids}
