@@ -160,6 +160,7 @@ export type LegalMove = {
     mana_cost: string;
     hybrid_symbols: { symbol: string; choices: string[] }[];
   }>>;
+  block_costs?: Record<string, { mana_cost: string; hybrid_symbols: { symbol: string; choices: string[] }[] }>;
   x_value?: number;
   cost_options?: {
     id: string;

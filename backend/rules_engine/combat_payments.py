@@ -8,10 +8,11 @@ from game_state.state import Zone
 
 @lru_cache(maxsize=2048)
 def parse_attack_tax(clause):
+    clause = re.sub(r'^domain\s*[—–-]\s*', '', clause)
     match = re.fullmatch(
         r"creatures can't attack you( or planeswalkers you control)? unless their controller pays "
         r"((?:\{[^{}]+\})+) for each (?:creature they control that's attacking you|of those creatures)"
-        r"(, where x is the number of enchantments you control)?", clause)
+        r"(, where x is the number of (?:enchantments you control|basic land types among lands you control))?", clause)
     if not match or (match[2] == '{x}') != bool(match[3]):
         return None
     from rules_engine.mana import hybrid_payment_symbols
@@ -21,7 +22,26 @@ def parse_attack_tax(clause):
         return None
     return {'planeswalkers': bool(match[1]), 'amount': None if match[2] == '{x}' else sum(int(s) for s in symbols if s.isdigit()),
             'mana_cost': match[2].upper(),
-            'scaling': 'enchantments' if match[3] else None}
+            'scaling': ('domain' if 'basic land types' in match[3] else 'enchantments') if match[3] else None}
+
+
+@lru_cache(maxsize=2048)
+def temporary_combat_tax(clause):
+    """A rule-changing global tax, not a grant to only current creatures."""
+    match = re.fullmatch(r"this turn, creatures can't (attack|block) unless their controller pays "
+                         r"((?:\{[^{}]+\})+) for each (attacking|blocking) creature they control", clause)
+    if not match or match[3] != {'attack': 'attacking', 'block': 'blocking'}[match[1]]:
+        return None
+    # Reuse the mana grammar; resolving X is supplied by the announced action.
+    cost = match[2].upper()
+    fixed = cost.replace('{X}', '{0}')
+    parsed = parse_attack_tax(f"creatures can't attack you unless their controller pays {fixed.lower()} for each of those creatures")
+    return {'kind': match[1], 'mana_cost': cost} if parsed else None
+
+
+def active_combat_cost_effects(state, kind):
+    return [row for row in state.combat_cost_effects
+            if row['kind'] == kind and row['expires_turn'] >= state.turn]
 
 
 def attack_tax_sources(state):
@@ -40,12 +60,15 @@ def attack_tax_sources(state):
             for clause, spec in specs:
                 if spec:
                     amount = spec['amount']
-                    if amount is None:
+                    if spec['scaling'] == 'domain':
+                        from rules_engine.domain import basic_land_type_count
+                        amount = basic_land_type_count(state, source.controller)
+                    elif amount is None:
                         amount = sum('Enchantment' in state.cards[other].types and state.cards[other].zone == Zone.BATTLEFIELD
                                      for other in state.players[source.controller].battlefield)
                     rows.append({**spec, 'amount': amount, 'mana_cost': f'{{{amount}}}' if spec['scaling'] else spec['mana_cost'], 'controller': source.controller,
                                  'source_id': cid, 'source_name': source.name, 'clause': clause})
-    return rows
+    return rows + active_combat_cost_effects(state, 'attack')
 
 
 def attack_payment_view(state, ids, targets=None):
@@ -55,8 +78,8 @@ def attack_payment_view(state, ids, targets=None):
     for cid in ids:
         target = targets.get(cid, f'player:{3-state.active_player}')
         for source in sources:
-            taxed = target == f"player:{source['controller']}"
-            if source['planeswalkers'] and target.startswith('planeswalker:'):
+            taxed = source.get('scope') == 'all' or target == f"player:{source['controller']}"
+            if source.get('planeswalkers') and target.startswith('planeswalker:') and source.get('scope') != 'all':
                 walker = state.cards.get(target.removeprefix('planeswalker:'))
                 taxed = walker is not None and walker.controller == source['controller']
             if taxed:
@@ -87,4 +110,30 @@ def attack_payment_state(state, ids, targets=None, hybrid_choices=None, payment_
         paid.log.append(f"{paid.players[paid.active_player].name} pays {view['total_generic']} mana in attack costs.")
     else:
         paid.log.append(f"{paid.players[paid.active_player].name} pays {view['mana_cost']} in attack costs.")
+    return paid
+
+
+def block_tax_sources(state):
+    return active_combat_cost_effects(state, 'block')
+
+
+def block_payment_view(state, ids):
+    payments = [{**source, 'blocker_id': cid} for cid in dict.fromkeys(ids) for source in block_tax_sources(state)]
+    cost = ''.join(row['mana_cost'] for row in payments)
+    from rules_engine.mana import hybrid_payment_symbols
+    return {'mana_cost': cost, 'payments': payments, 'hybrid_symbols': hybrid_payment_symbols(cost)}
+
+
+def block_payment_state(state, ids, hybrid_choices=None, payment_details=None):
+    """Chosen blockers may tap for mana before actually becoming blockers."""
+    view = block_payment_view(state, ids)
+    if not view['payments']:
+        return state
+    from rules_engine.mana import auto_pay_cost
+    paid = deepcopy(state)
+    defender = 3-state.active_player
+    if not auto_pay_cost(paid, defender, view['mana_cost'], payment_kind='combat', payment_types=set(),
+                         hybrid_choices=hybrid_choices, payment_details=payment_details):
+        return None
+    paid.log.append(f"{paid.players[defender].name} pays {view['mana_cost']} in block costs.")
     return paid

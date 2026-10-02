@@ -28,13 +28,14 @@ def fixture_start_decks():
 def fixture_combat_coverage_decks():
     import json
     from main import SIM_JOBS
-    rows = json.loads((Path(__file__).parent / 'fixtures/combat_minimums.json').read_text())
-    card = next(row for row in rows if row['name'] == "Collective Restraint")
+    rows = json.loads((Path(__file__).parent / 'fixtures/combat_temporary_costs.json').read_text())
+    card = next(row for row in rows if row['name'] == "Archangel of Tithes")
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': card['id'], 'name': card['name'],
                          'oracle_text': card['oracle_text'], 'type_line': card['type_line'],
-                         'mana_cost': card['mana_cost']})
+                         'mana_cost': card['mana_cost'], 'power': card['power'], 'toughness': card['toughness'],
+                         'colors': ''.join(card['colors'])})
         a = repo.save_deck('Canonical tax coverage fixture', 'fixture',
                            [{'quantity': 4, 'card_name': card['name']}, {'quantity': 56, 'card_name': 'Island'}], [], 'Control')
         b = repo.save_deck('Canonical land coverage fixture', 'fixture',
@@ -50,6 +51,30 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'combat_domain_1', 'combat_domain_2', 'combat_temporary_1', 'combat_temporary_2'}:
+        from tests.test_combat_domain_temporary_costs import fixture as clean_state, add, zero_mana, attack_step
+        seat = int(face_kind[-1])
+        state = clean_state()
+        zero_mana(state)
+        if face_kind.startswith('combat_domain_'):
+            add(state, 'Collective Restraint', 3-seat)
+            add(state, 'Hallowed Fountain', 3-seat)
+            add(state, 'Forest', 3-seat)
+            add(state, 'Grizzly Bears', seat)
+            add(state, 'Llanowar Elves', seat)
+            state.players[seat].mana_pool['U'] = 3
+            attack_step(state, seat)
+        else:
+            attacker = add(state, 'Prized Unicorn', seat)
+            add(state, 'War Cadence', seat)
+            add(state, 'Llanowar Elves', 3-seat)
+            add(state, 'Grizzly Bears', 3-seat)
+            state.active_player = state.priority_player = seat
+            state.step = Step.DECLARE_ATTACKERS
+            state.attackers, state.attackers_declared = [attacker.id], True
+            state.cards[attacker.id].tapped = True
+            state.players[seat].mana_pool['R'] = 2
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'combat_branches_1', 'combat_branches_2'}:
         from tests.test_combat_minimums_payments import board
         from tests.test_combat_payments_requirements import add, zero_mana, attack_step

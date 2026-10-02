@@ -49,8 +49,15 @@ def combat_clause_coverage(oracle, card_name=''):
     """Known unsupported static combat clauses, without fabricating a game state."""
     body_search = re.compile(BODY.pattern.removeprefix('^') + r'|\bcan (?:attack|be blocked)\b')
     records = []
+    from rules_engine.combat_payments import temporary_combat_tax
+    for line in without_reminder_text(oracle or '').lower().splitlines():
+        text = line.split(':', 1)[-1].strip().rstrip('.')
+        if text.startswith('this turn, ') and re.search(r"creatures can't (?:attack|block) unless", text) and not temporary_combat_tax(text):
+            records.append({'clause': text, 'reasons': ['unsupported combat payment']})
     previous = None
     for clause in static_clauses(oracle):
+        if clause.startswith('this turn, ') and re.search(r"creatures can't (?:attack|block) unless", clause):
+            continue  # The resolving-instruction coverage above owns this clause.
         if clause.startswith('otherwise, '):
             body, condition, _ = clause.removeprefix('otherwise, '), previous, False
             missing_condition = previous is None
@@ -76,7 +83,7 @@ def combat_clause_coverage(oracle, card_name=''):
         reasons = []
         if condition and (parse_static_condition(condition) is None or limit) or missing_condition:
             reasons.append('unsupported combat condition')
-        if condition and re.search(r'\bpay(?:s)?\b', condition):
+        if re.search(r'\bunless\b.+\bpay(?:s)?\b', clause):
             reasons.append('unsupported combat payment')
         if not supported_body(recipient):
             reasons.append('unsupported combat clause')

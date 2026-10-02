@@ -322,6 +322,13 @@ def infer_effect_from_oracle(
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any], str]] = []
     for clause in clauses:
+        from rules_engine.combat_payments import temporary_combat_tax
+        combat_tax = temporary_combat_tax(clause)
+        if combat_tax:
+            effects.append(('set_combat_cost', {**combat_tax,
+                            'mana_cost': combat_tax['mana_cost'].replace('{X}', f'{{{max(0, x_value)}}}'),
+                            'source_name': card.name, 'clause': clause}, clause))
+            continue
         effects.extend((key, payload, clause) for key, payload in _infer_turn_restriction_effects(clause, controller))
         scry_clause = re.fullmatch(r'scry (\d+)', clause)
         if scry_clause:

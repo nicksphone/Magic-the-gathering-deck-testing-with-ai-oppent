@@ -175,6 +175,7 @@ class RulesEngine:
             if int(entry.get("expires_turn", state.turn)) > int(state.turn)
         ]
         state.turn_cant_gain_life = set()
+        state.combat_cost_effects = [row for row in state.combat_cost_effects if row['expires_turn'] > state.turn]
         state.turn_damage_cant_be_prevented = False
         performed_sba = False
         while True:
@@ -1266,7 +1267,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             blocks = action.get("blocks", {})
-            combat.declare_blockers(state, blocks)
+            combat.declare_blockers(state, blocks, action.get('hybrid_choices'))
             state.blockers_declared = True
             # After blockers are declared, the active player receives priority.
             # Without this handoff, the defending player can be re-queried in declare_blockers

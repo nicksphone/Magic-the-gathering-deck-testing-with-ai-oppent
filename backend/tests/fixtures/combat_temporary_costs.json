@@ -1,0 +1,66 @@
+[
+  {
+    "id": "e7c15159-8466-43e5-9dc5-a8cc94619931",
+    "name": "War Tax",
+    "mana_cost": "{2}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "{X}{U}: This turn, creatures can't attack unless their controller pays {X} for each attacking creature they control.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "U"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=War%20Tax",
+    "fetched_at": "2026-10-02T23:23:41.014Z"
+  },
+  {
+    "id": "359434c4-7123-435b-890b-4e88f5bf2f49",
+    "name": "War Cadence",
+    "mana_cost": "{2}{R}",
+    "type_line": "Enchantment",
+    "oracle_text": "{X}{R}: This turn, creatures can't block unless their controller pays {X} for each blocking creature they control.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "R"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=War%20Cadence",
+    "fetched_at": "2026-10-02T23:23:41.014Z"
+  },
+  {
+    "id": "c853d04c-864b-491c-8c6f-72d2d4874d2f",
+    "name": "Archangel of Tithes",
+    "mana_cost": "{1}{W}{W}{W}",
+    "type_line": "Creature — Angel",
+    "oracle_text": "Flying\nAs long as this creature is untapped, creatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.\nAs long as this creature is attacking, creatures can't block unless their controller pays {1} for each of those creatures.",
+    "power": "3",
+    "toughness": "5",
+    "keywords": [
+      "Flying"
+    ],
+    "colors": [
+      "W"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Archangel%20of%20Tithes",
+    "fetched_at": "2026-10-02T23:23:41.014Z"
+  },
+  {
+    "id": "5f159193-fcf8-437c-b14a-06718a446a5c",
+    "name": "Wall of Glare",
+    "mana_cost": "{1}{W}",
+    "type_line": "Creature — Wall",
+    "oracle_text": "Defender (This creature can't attack.)\nThis creature can block any number of creatures.",
+    "power": "0",
+    "toughness": "5",
+    "keywords": [
+      "Defender"
+    ],
+    "colors": [
+      "W"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Wall%20of%20Glare",
+    "fetched_at": "2026-10-02T23:29:19.894Z"
+  }
+]

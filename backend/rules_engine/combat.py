@@ -123,7 +123,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             )
 
 
-def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> None:
+def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybrid_choices: list[str] | None = None) -> None:
     defender = 1 if state.active_player == 2 else 2
     legal: dict[str, list[str]] = {}
     blocker_assignments: dict[str, int] = {}
@@ -140,7 +140,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
             block_cap = _max_attackers_blockable_by_creature(state, block_card)
             if assigned >= block_cap:
                 continue
-            if block_card.controller != defender:
+            if block_card.zone != Zone.BATTLEFIELD or block_card.controller != defender:
                 continue
             if block_card.tapped:
                 continue
@@ -166,12 +166,26 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
     from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
     if not blockers_within_limits(state, legal):
         raise ValueError('Blocker declaration exceeds a static combat limit')
-    optimum = best_required_blocks(state)
+    chosen = {bid for bids in legal.values() for bid in bids}
+    optimum = best_required_blocks(state, volunteered=chosen)
     if optimum is not None and block_requirement_score(state, legal) < block_requirement_score(state, optimum):
         completion = best_required_blocks(state, legal)
         if completion is None or block_requirement_score(state, completion) < block_requirement_score(state, optimum):
             raise ValueError('Blocker declaration must satisfy the maximum possible requirements')
         legal = completion
+    from rules_engine.combat_payments import block_payment_state
+    chosen = sorted({bid for bids in legal.values() for bid in bids})
+    paid = block_payment_state(state, chosen, hybrid_choices)
+    if paid is None:
+        raise ValueError('Cannot pay the declared block costs')
+    if paid is not state:
+        state.__dict__.update(paid.__dict__)
+    # Eligibility/restrictions were checked before locked costs. Tapping a
+    # chosen blocker for mana does not prevent it from becoming a blocker.
+    legal = {aid: [bid for bid in bids if state.cards[bid].zone == Zone.BATTLEFIELD
+                  and state.cards[bid].controller == defender and 'Creature' in state.cards[bid].types]
+             for aid, bids in legal.items()}
+    legal = {aid: bids for aid, bids in legal.items() if bids}
     # A legal direct block of one band member blocks every member, regardless
     # of whether the blocker could have blocked those other members directly.
     for band in state.attack_bands:

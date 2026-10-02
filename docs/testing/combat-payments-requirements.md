@@ -57,8 +57,9 @@ priority resumes. Existing first/double-strike and lifelink assertions are retai
 
 Coverage uses the implemented clause parsers: supported mana taxes stop producing
 false unsupported-payment warnings. Norn's Annex is now handled by the later
-branch-payment batch. Collective Restraint's domain-dependent tax remains
-unsupported and retains simulator exploratory review. No all-card certification follows.
+branch-payment batch. The subsequent domain/temporary-cost batch handles Collective
+Restraint; Archangel of Tithes's conditional taxes retain simulator exploratory
+review. No all-card certification follows.
 
 ## Acceptance contracts
 
@@ -75,7 +76,7 @@ Large competing-target boards verify capacity-aware upper bounds.
 `browser-combat-payments-requirements.mjs` uses the actual App/API to reject an
 unpayable two-attacker declaration, pay for one attacker, reject a missing required
 block and submit a legal block. The separate preflight check now uses canonical
-Collective Restraint to ensure unsupported payments warn without admitting a job.
+Archangel of Tithes to ensure unsupported payments warn without admitting a job.
 These are functional flows, not the deferred UI redesign or a visual usability audit.
 
 Verified 2026-10-02: 2,922 full backend tests passed (314 deprecation warnings),

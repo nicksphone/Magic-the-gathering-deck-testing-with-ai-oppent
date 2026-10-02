@@ -23,7 +23,7 @@ type Props = {
   onAutoplayTick: (ticks: number) => void;
   autoplayDelayMs: number;
   setAutoplayDelayMs: (ms: number) => void;
-  onSubmitBlocks: (blocks: Record<string, string[]>) => void;
+  onSubmitBlocks: (blocks: Record<string, string[]>, hybridChoices?: string[]) => void;
   onSubmitAttack: (attackers: string[], attackTargets: Record<string, string>, bands: string[][], hybridChoices?: string[]) => void;
   onApplySideboard: (playerId: number, outCards: DeckItem[], inCards: DeckItem[]) => void;
   onNextGame: (playFirst?: boolean) => void;
@@ -104,12 +104,16 @@ export function Controls(props: Props) {
     [props.legalMoves],
   );
   const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
+  const [blockPaymentChoices, setBlockPaymentChoices] = useState<Record<string, string>>({});
+  const selectedBlockers = [...new Set(Object.values(blockMap).flat())].sort();
   const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
   const [attackPaymentChoices, setAttackPaymentChoices] = useState<Record<string, string>>({});
   const [excludedAttackers, setExcludedAttackers] = useState<string[]>([]);
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
   useEffect(() => {
     setAttackTargets({});
+    setBlockMap({});
+    setBlockPaymentChoices({});
     setAttackPaymentChoices({});
     setExcludedAttackers([]);
     setAttackBandNumbers({});
@@ -478,7 +482,31 @@ export function Controls(props: Props) {
               </select>
             </div>
           ))}
-          <button onClick={() => props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, v]) => v.length > 0)))}>
+          {selectedBlockers.map((id) => {
+            const cost = blockMove.block_costs?.[id];
+            const name = blockMove.blockers?.find((card) => card.id === id)?.name ?? id;
+            return cost?.mana_cost ? <div key={`block-cost-${id}`}>Block cost for {name}: {cost.mana_cost}
+              {cost.hybrid_symbols.map((symbol, index) => {
+                const key = `${id}:${cost.mana_cost}:${index}`;
+                return <label key={key}>Pay {`{${symbol.symbol}}`} <select
+                  aria-label={`Block payment ${index + 1} for ${name}`} value={blockPaymentChoices[key] ?? ""}
+                  onChange={(e) => setBlockPaymentChoices((prev) => ({ ...prev, [key]: e.target.value }))}>
+                  <option value="">Choose payment</option>
+                  {symbol.choices.map((branch) => <option key={branch} value={branch}>{branch === "P" ? "2 life" : `{${branch}} mana`}</option>)}
+                </select></label>;
+              })}
+            </div> : null;
+          })}
+          <button disabled={selectedBlockers.some((id) => {
+            const cost = blockMove.block_costs?.[id];
+            return cost?.hybrid_symbols.some((_, index) => !blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]);
+          })} onClick={() => {
+            const choices = selectedBlockers.flatMap((id) => {
+              const cost = blockMove.block_costs?.[id];
+              return cost?.hybrid_symbols.map((_, index) => blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]) ?? [];
+            });
+            props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, v]) => v.length > 0)), choices.length ? choices : undefined);
+          }}>
             Submit Blocks
           </button>
         </div>

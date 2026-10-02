@@ -216,6 +216,7 @@ class MatchState:
     adventure_permissions: dict[str, int] = field(default_factory=dict)
     # Restrictions created by resolving spells that last through cleanup.
     turn_cant_gain_life: set[int] = field(default_factory=set)
+    combat_cost_effects: list[dict] = field(default_factory=list)
     turn_damage_cant_be_prevented: bool = False
     # Human-controlled matches can pause resolution when multiple replacement
     # effects apply. AI/replay runs keep deterministic automatic selection.

@@ -163,6 +163,7 @@ class AttackAction(InputModel):
 class BlockAction(InputModel):
     type: Literal["block"]
     blocks: dict[CardID, CardIDs] = Field(max_length=250)
+    hybrid_choices: Annotated[list[Literal['W', 'U', 'B', 'R', 'G', 'C', '2', 'P']], Field(max_length=62500)] | None = None
 
 
 class MechanicChoice(InputModel):

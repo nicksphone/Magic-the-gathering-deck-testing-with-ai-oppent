@@ -1372,6 +1372,10 @@ class AIAgent:
             elif mtype == "activate_ability":
                 base += 2.5
                 label = str(move.get("ability_label", "")).lower()
+                from ai.combat_tax_policy import combat_tax_plan
+                tax_plan = combat_tax_plan(state, move, player_id)
+                if tax_plan is not None:
+                    base += tax_plan['score'] - 2.5
                 if "look at the top" in label or "draw" in label or "search" in label:
                     base += 4.0
                 if "x damage to each creature and each player" in label:
@@ -2841,7 +2845,9 @@ class AIAgent:
             selected = self._choose_library_search(state, eligible, 1, player_id)
             targets["x_value"] = mana_value(state.cards[selected[0]].mana_cost or "") if selected else 0
         elif "{X}" in mana_cost.upper() and "x_value" not in targets:
-            targets["x_value"] = self._choose_x_value(state, player_id, mana_cost, card=card, restricted_x_color=x_color)
+            from ai.combat_tax_policy import combat_tax_plan
+            tax_plan = combat_tax_plan(state, move, player_id) if mtype == 'activate_ability' else None
+            targets["x_value"] = tax_plan['x_value'] if tax_plan is not None else self._choose_x_value(state, player_id, mana_cost, card=card, restricted_x_color=x_color)
         elif hints.get("requires_x_value") and "x_value" not in targets:
             if mtype == "activate_loyalty" and cid:
                 loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)

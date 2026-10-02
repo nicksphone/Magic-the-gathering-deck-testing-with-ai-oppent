@@ -98,6 +98,21 @@ def noop(state: MatchState, controller: int, payload: dict) -> None:
     del state, controller, payload
 
 
+def set_combat_cost(state: MatchState, controller: int, payload: dict) -> None:
+    from game_state.state import allocate_effect_timestamp
+    source = state.cards.get(payload.get('__source_card_id'))
+    cost = payload['mana_cost']
+    state.combat_cost_effects.append({
+        'kind': payload['kind'], 'scope': 'all', 'mana_cost': cost,
+        'amount': sum(int(symbol) for symbol in re.findall(r'\{(\d+)\}', cost)),
+        'controller': controller, 'source_id': source.id if source else payload.get('__source_card_id'),
+        'source_name': source.name if source else payload.get('source_name'),
+        'timestamp': allocate_effect_timestamp(state), 'expires_turn': state.turn,
+        'clause': payload['clause'], 'origin': 'resolution',
+    })
+    state.log.append(f"Combat {payload['kind']} cost {cost} applies to each declared creature this turn.")
+
+
 def set_turn_restriction(state: MatchState, controller: int, payload: dict) -> None:
     """Apply a spell-created restriction until the active turn's cleanup."""
     kind = str(payload.get("kind", "") or "").lower()

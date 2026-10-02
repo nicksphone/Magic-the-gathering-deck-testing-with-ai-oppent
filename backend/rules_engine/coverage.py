@@ -48,6 +48,14 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    if 'domain' in out:
+        from rules_engine.combat_payments import parse_attack_tax
+        from rules_engine.oracle_text import without_reminder_text
+        domain_clauses = [line.lower().strip().rstrip('.') for text in texts
+                          for line in without_reminder_text(text).splitlines()
+                          if re.match(r'domain\s*[—–-]', line.strip(), re.I)]
+        if domain_clauses and all(parse_attack_tax(line) and parse_attack_tax(line)['scaling'] == 'domain' for line in domain_clauses):
+            out.remove('domain')
     from rules_engine.attachments import enchant_restriction
     if any(re.search(r"^enchant ", value, re.I | re.M) and enchant_restriction(value) is None for value in texts):
         out.append("unsupported enchant restriction")

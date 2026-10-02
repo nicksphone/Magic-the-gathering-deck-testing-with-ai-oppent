@@ -3,7 +3,7 @@ from rules_engine import combat
 from rules_engine.continuous import effective_power
 from rules_engine.declaration_limits import declaration_limit_view, attackers_within_limits
 from rules_engine.combat_requirements import attack_candidates, requirement_weights, best_required_attack, best_required_blocks, attack_requirement_score, target_block_requirements
-from rules_engine.combat_payments import attack_tax_sources, attack_payment_view, attack_payment_state
+from rules_engine.combat_payments import attack_tax_sources, attack_payment_view, attack_payment_state, block_tax_sources, block_payment_state
 from rules_engine.restrictions import card_cant_attack_alone
 
 
@@ -31,7 +31,7 @@ def finalize_declaration(state, action):
     weights = requirement_weights(state, candidates, kind)
     view = declaration_limit_view(state, kind)
     if not view['sources'] and not any(weights.values()) and not (
-            attack_tax_sources(state) if kind == 'attack' else target_block_requirements(state)):
+            attack_tax_sources(state) if kind == 'attack' else target_block_requirements(state) or block_tax_sources(state)):
         return action
     if kind == 'attack':
         from rules_engine.combat import _valid_defenders
@@ -72,6 +72,17 @@ def finalize_declaration(state, action):
                 'bands': [band for band in action.get('bands', []) if all(cid in selected for cid in band)]}
     blocks = {aid: bids if isinstance(bids, list) else [bids] for aid, bids in (action.get('blocks') or {}).items()}
     selected = {bid for bids in blocks.values() for bid in bids}
+    if block_tax_sources(state):
+        affordable = set()
+        for bid in sorted(selected, key=lambda bid: (-sum(effective_power(state, aid) for aid, bids in blocks.items() if bid in bids), bid)):
+            proposed = sorted(affordable | {bid})
+            paid = block_payment_state(state, proposed)
+            if paid is not None and paid.players[3-state.active_player].life > 0 and all(
+                    paid.cards[cid].zone == Zone.BATTLEFIELD and paid.cards[cid].controller == 3-state.active_player
+                    and 'Creature' in paid.cards[cid].types for cid in proposed):
+                affordable.add(bid)
+        selected = affordable
+        blocks = {aid: [bid for bid in bids if bid in selected] for aid, bids in blocks.items()}
     if view['maximum'] is not None and len(selected) > view['maximum']:
         selected = set(sorted(selected, key=lambda bid: (-weights.get(bid, 0),
                        -sum(effective_power(state, aid) for aid, bids in blocks.items() if bid in bids), bid))[:view['maximum']])
@@ -82,5 +93,9 @@ def finalize_declaration(state, action):
         combat.declare_blockers(sim, blocks)
         blocks = sim.blocks
     except ValueError:
-        blocks = best_required_blocks(state) or {}
-    return {**action, 'blocks': blocks}
+        blocks = best_required_blocks(state, volunteered=selected) or {}
+        if block_payment_state(state, sorted({bid for bids in blocks.values() for bid in bids})) is None:
+            blocks = best_required_blocks(state) or {}
+    details = {}
+    block_payment_state(state, sorted({bid for bids in blocks.values() for bid in bids}), payment_details=details)
+    return {**action, 'blocks': blocks, 'hybrid_choices': details.get('hybrid_choices') or None}

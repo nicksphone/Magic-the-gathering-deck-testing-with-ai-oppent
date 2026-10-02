@@ -718,12 +718,13 @@ def get_match_rules_diagnostics(match_id: str) -> dict:
                           'unresolved_combat_constraints': view['unsupported'],
                           'printed_combat_coverage_gaps': combat_clause_coverage(card.oracle_text, card.name)})
     from rules_engine.declaration_limits import declaration_limit_view
-    from rules_engine.combat_payments import attack_tax_sources
+    from rules_engine.combat_payments import attack_tax_sources, block_tax_sources
     from rules_engine.combat_requirements import target_block_requirements
     return {'match_id': match_id, 'revision': ACTIVE_MATCHES[match_id].revision,
             'attack_taxes': attack_tax_sources(state), 'target_block_requirements': target_block_requirements(state),
+            'block_taxes': block_tax_sources(state),
             'declaration_limits': {kind: declaration_limit_view(state, kind) for kind in ('attack', 'block')},
-            'status': 'exploratory', 'scope': 'public battlefield static combat clauses', 'cards': cards}
+            'status': 'exploratory', 'scope': 'public battlefield clauses and resolved combat-cost effects', 'cards': cards}
 
 
 @app.get("/matches/{match_id}/replay")

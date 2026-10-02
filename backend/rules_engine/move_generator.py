@@ -173,8 +173,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         blocker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in blockers]
         from rules_engine.declaration_limits import declaration_limit_view
         from rules_engine.combat_requirements import target_block_requirements
+        from rules_engine.combat_payments import block_payment_view, block_tax_sources
         moves.append({"type": "block", "attackers": attacker_opts, "blockers": blocker_opts,
                       'target_requirements': target_block_requirements(state),
+                      'block_taxes': block_tax_sources(state),
+                      'block_costs': {bid: block_payment_view(state, [bid]) for bid in blockers},
                       'declaration_limits': declaration_limit_view(state, 'block')})
 
     for cid in list(player.hand) + list(player.graveyard):

@@ -124,7 +124,7 @@ def targeted_block_score(requirements, blocks):
                for row in requirements)
 
 
-def best_required_blocks(state, pinned=None):
+def best_required_blocks(state, pinned=None, volunteered=()):
     """Exact branch-and-bound for recognized blocker requirements; no silent size cap.
 
     Only requirement-bearing boards enter the search. Optional blockers can be
@@ -133,9 +133,12 @@ def best_required_blocks(state, pinned=None):
     """
     from rules_engine.combat import _can_block_attacker, _minimum_blockers_required, _max_attackers_blockable_by_creature
     defender = 3-state.active_player
+    from rules_engine.combat_payments import block_payment_view
+    volunteered = set(volunteered) | {bid for ids in (pinned or {}).values() for bid in ids}
     blockers = [cid for cid in state.players[defender].battlefield
                 if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in state.cards[cid].types
-                and not state.cards[cid].tapped and not card_cant_block(state, cid)]
+                and not state.cards[cid].tapped and not card_cant_block(state, cid)
+                and (cid in volunteered or not block_payment_view(state, [cid])['payments'])]
     weights = requirement_weights(state, blockers, 'block')
     requirements = target_block_requirements(state)
     if not any(weights.values()) and not requirements:

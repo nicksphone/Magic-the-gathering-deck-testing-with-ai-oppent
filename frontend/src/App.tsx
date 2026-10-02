@@ -270,9 +270,9 @@ export function App() {
     }, write));
   }
 
-  async function onSubmitBlocks(blocks: Record<string, string[]>) {
+  async function onSubmitBlocks(blocks: Record<string, string[]>, hybridChoices?: string[]) {
     const filtered = Object.fromEntries(Object.entries(blocks).filter(([, v]) => v.length > 0));
-    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered }, write));
+    await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "block", blocks: filtered, hybrid_choices: hybridChoices }, write));
   }
 
   async function onSubmitAttack(attackers: string[], attackTargets: Record<string, string>, bands: string[][], hybridChoices?: string[]) {

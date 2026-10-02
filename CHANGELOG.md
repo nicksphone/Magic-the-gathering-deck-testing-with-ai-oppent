@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-02 - Domain and temporary combat-cost batch
+
+- Added controller-relative basic-land-type attack taxes and resolution-created global attack/block mana taxes through shared rules, not card-name dispatch. Resolved effects retain announced X, survive source departure, affect later creatures, expire at cleanup and restore from snapshots.
+- Added distinct-blocker payment, optional-cost-aware requirements, mana creatures that tap to pay and still block, sacrifice/departure handling, explicit hybrid/life choices and atomic rejection. Both human seats receive block-cost hints and controls.
+- Added bounded public-board AI planning for defensive attack taxes and offensive block taxes, using actual activated-cost and declaration payment paths. Conditional/static block taxes and broader combat timing remain open.
+- Added canonical fixtures, both-seat HTTP/SQLite regressions and actual App flows. Corrected missing creature metadata in the browser preflight fixture without weakening readiness checks.
+- Validation: 3,011 isolated backend tests passed (322 deprecation warnings), 202 focused checks passed, frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced template games repeated twice resolved with no determinism failures, drift labels or reported anomalies. Sixteen controlled actual AI scenarios produced twelve X=1 tax activations with valid opponent replies and four Casual passes. This is not expert-strength, competitive-balance or universal-rules evidence.
+- Updated README, finish plan and scope documents; Graphify refreshed. Verified evidence, including superseded/failed runs, archived on RCHFiles `diagnostics/combat-domain-temporary/20261002T234826Z`. Alpha UI redesign and broader backend/operational goals remain unfinished.
+
 ## 2026-10-02 - Batched attack payment branches and minimum block requirements
 
 - Extended shared attack taxes to fixed colored/colorless/snow/hybrid/Phyrexian mana costs. Human declarations explicitly choose branches through either seat's controls; AI records the existing planner's payable branches and avoids spending its last life. Zero-valued taxes remain optional for required attacks. Conditional/nonmana costs and block payments remain open.

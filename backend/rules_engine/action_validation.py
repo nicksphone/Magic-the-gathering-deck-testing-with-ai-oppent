@@ -108,10 +108,30 @@ def checked_action(state, rules, player_id: int, action: dict):
         from rules_engine.declaration_limits import blockers_within_limits
         from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
         blocks = {aid: bids if isinstance(bids, list) else [bids] for aid, bids in action['blocks'].items()}
+        from rules_engine.combat import _can_block_attacker, _minimum_blockers_required, _max_attackers_blockable_by_creature
+        from rules_engine.restrictions import card_cant_block, card_cant_block_alone
+        selected = {bid for bids in blocks.values() for bid in bids}
+        for aid, bids in blocks.items():
+            require(not bids or len(bids) >= _minimum_blockers_required(candidate, aid), 'Illegal block assignment')
+            for bid in bids:
+                card = candidate.cards[bid]
+                require(card.zone == Zone.BATTLEFIELD and card.controller == player_id and not card.tapped
+                        and 'Creature' in card.types and not card_cant_block(candidate, bid)
+                        and _can_block_attacker(candidate, candidate.cards[aid], card), 'Illegal block assignment')
+        require(len(selected) != 1 or not card_cant_block_alone(candidate, next(iter(selected))), 'Illegal block assignment')
+        require(all(sum(bid in bids for bids in blocks.values()) <= _max_attackers_blockable_by_creature(candidate, candidate.cards[bid])
+                    for bid in selected), 'Illegal block assignment')
         require(blockers_within_limits(candidate, blocks), 'Blocker declaration exceeds a static combat limit')
-        optimum = best_required_blocks(candidate)
+        optimum = best_required_blocks(candidate, volunteered=selected)
         require(optimum is None or block_requirement_score(candidate, blocks) >= block_requirement_score(candidate, optimum),
                 'Declare blockers that satisfy the maximum possible requirements')
+        from rules_engine.combat_payments import block_payment_view, block_payment_state
+        symbols = block_payment_view(candidate, sorted(selected))['hybrid_symbols']
+        choices = action.get('hybrid_choices')
+        require(not symbols or choices is not None, 'Choose each hybrid block payment branch explicitly')
+        require(choices is None or len(choices) == len(symbols) and all(
+            branch in symbol['choices'] for branch, symbol in zip(choices, symbols)), 'Invalid hybrid block payment branch')
+        require(block_payment_state(candidate, sorted(selected), choices) is not None, 'Cannot pay the declared block costs')
     rules.take_action(candidate, player_id, action, reject_invalid=True)
     if action["type"] == "attack":
         remaining = {cid for cid in action['attackers'] if candidate.cards[cid].zone == Zone.BATTLEFIELD
@@ -119,7 +139,9 @@ def checked_action(state, rules, player_id: int, action: dict):
         require(remaining.issubset(candidate.attackers), "An attacker cannot attack in this declaration")
     if action["type"] == "block":
         for attacker, blockers in action["blocks"].items():
-            require(set(blockers).issubset(candidate.blocks.get(attacker, [])), "Illegal block assignment")
+            remaining = {bid for bid in blockers if candidate.cards[bid].zone == Zone.BATTLEFIELD
+                         and candidate.cards[bid].controller == player_id and 'Creature' in candidate.cards[bid].types}
+            require(remaining.issubset(candidate.blocks.get(attacker, [])), "Illegal block assignment")
     return candidate
 
 

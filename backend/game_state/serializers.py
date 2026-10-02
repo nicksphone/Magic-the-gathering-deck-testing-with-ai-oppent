@@ -115,6 +115,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
         "adventure_permissions": dict(state.adventure_permissions),
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
+        'combat_cost_effects': deepcopy(state.combat_cost_effects),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "replacement_choice_required": state.replacement_choice_required,
         "replacement_choice_players": sorted(state.replacement_choice_players),
@@ -325,6 +326,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.players_with_permanent_departure = {int(pid) for pid in payload.get("players_with_permanent_departure", [])}
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
+    state.combat_cost_effects = deepcopy(payload.get('combat_cost_effects', []))
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))
     state.replacement_choice_required = bool(payload.get("replacement_choice_required", False))
     state.replacement_choice_players = {int(value) for value in payload.get("replacement_choice_players", [])}
