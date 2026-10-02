@@ -6,7 +6,7 @@ from game_state.state import MatchState, Step, Zone, pregame_actor
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action, available_cast_options_and_hints
 from rules_engine.card_types import is_land_card as _is_land_card
-from rules_engine.continuous import effective_power, has_keyword
+from rules_engine.continuous import effective_power, has_keyword, printed_abilities_suppressed
 from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost, restricted_x_color
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.entry import land_entry_options
@@ -310,6 +310,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             card = state.cards[cid]
             if "Planeswalker" not in card.types:
                 continue
+            if printed_abilities_suppressed(state, cid):
+                continue
             if cid in state.loyalty_activated_this_turn:
                 continue
             abilities = extract_loyalty_abilities(card)
@@ -346,6 +348,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     # Activated abilities expose common tap/mana/life/discard/sacrifice costs.
     for cid in player.battlefield:
         card = state.cards[cid]
+        if printed_abilities_suppressed(state, cid):
+            continue
         for ability in extract_activated_abilities(card):
             if not can_activate_in_current_timing(state, ability["text"], player_id):
                 continue
@@ -381,6 +385,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             card = state.cards[cid]
             if "Artifact" not in card.types:
                 continue
+            if printed_abilities_suppressed(state, cid):
+                continue
             equip_cost = _extract_equip_cost(card.oracle_text or "")
             if not equip_cost:
                 continue
@@ -408,6 +414,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     from rules_engine.oracle_effects import crew_value
     for vehicle_id in player.battlefield:
         vehicle = state.cards[vehicle_id]
+        if printed_abilities_suppressed(state, vehicle_id):
+            continue
         crew = crew_value(vehicle)
         if crew is None or "Artifact" not in vehicle.types:
             continue

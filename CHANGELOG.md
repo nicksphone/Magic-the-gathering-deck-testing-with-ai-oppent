@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Printed activation and trigger suppression
+
+- Connected supported battlefield all-ability loss to shared mana capacity/payment, activated/loyalty/equip/crew move generation and checked activation writes. New keyword grants do not restore printed Oracle abilities; unaffected basic lands retain intrinsic mana abilities.
+- Applied suppression to printed trigger collection and persisted pre-departure suppression in last-known information for supported self-death triggers. Already-stacked triggers/activations remain independent. Canonical Humility, Dress Down, mana, activation, entry and death fixtures cover both seats; HTTP/SQLite tests reject illegal writes without state changes.
+- Verified 2,716 isolated backend tests (295 deprecation warnings), 173 focused checks, frontend lint/unit/build and the full final-source Chromium harness. Twelve logical seat-balanced smoke games repeat twice with no reported determinism failures, timeouts or anomaly labels. Focused testing found and fixed an optional card-identity adapter regression; failed and final checks are retained with canonical fixtures on RCHFiles under `diagnostics/printed-ability-suppression/20261002T040613Z/`.
+- Updated README, finish plan and AST graph. Static/replacement/prevention/permission Oracle readers, arbitrary gained abilities, full dependencies and simultaneous departure/reentry LKI remain unfinished; the full suppression gate stays open. Broad AI strength and operational gates are not certified. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Resolution-created keyword timestamps and target projection
 
 - Replaced metadata-only resolved grants with durable object-bound effect records carrying creation timestamps, duration, operation and available source provenance. Supported grants/removals interleave with static/attached effects and keyword counters, survive restart and expire independently of physical counters. Legacy snapshot timing is explicitly inferred, not invented.

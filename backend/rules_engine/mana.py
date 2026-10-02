@@ -70,9 +70,11 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
 
 
 def land_can_produce_mana(state: MatchState, card_id: str) -> bool:
+    from rules_engine.continuous import printed_abilities_suppressed
     card = state.cards[card_id]
     return (
         "Land" in card.types and not card.tapped
+        and not printed_abilities_suppressed(state, card_id)
         and ("Creature" not in card.types or not card.summoning_sick or has_keyword(state, card_id, "haste"))
     )
 
@@ -552,6 +554,9 @@ def _nonland_mana_source_colors(state: MatchState, card_id: str, card) -> Set[st
 
 
 def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int]:
+    from rules_engine.continuous import printed_abilities_suppressed
+    if printed_abilities_suppressed(state, card_id):
+        return {}
     card_types = set(getattr(card, "types", []) or [])
     if "Land" in card_types:
         return {}
@@ -575,6 +580,10 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
 
 def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -> dict[str, int]:
     """Printed tap-only capacity; never an assertion that it is usable now."""
+    if state is not None:
+        from rules_engine.continuous import printed_abilities_suppressed
+        if printed_abilities_suppressed(state, getattr(card, 'id', None)):
+            return {}
     if "Land" in (getattr(card, "types", []) or []):
         return {}
     text = getattr(card, "oracle_text", "") or ""

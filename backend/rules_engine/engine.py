@@ -377,6 +377,11 @@ class RulesEngine:
         if state.winner is not None:
             return
         kind = action.get("type")
+        if kind in {'activate_ability', 'activate_loyalty', 'equip', 'crew'}:
+            from rules_engine.continuous import printed_abilities_suppressed
+            if printed_abilities_suppressed(state, action.get('card_id')):
+                reject("This permanent has lost its printed abilities")
+                return
         if state.pending_mechanic_choice:
             if state.pending_mechanic_choice["kind"] in {"opening_hand", "opening_hand_exile"}:
                 from rules_engine.opening_hand import finish_opening_hand_choice

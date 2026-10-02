@@ -491,6 +491,22 @@ def _apply_keyword_modifier(keywords, effect):
         keywords[effect['keyword']] += effect['count']
 
 
+def printed_abilities_suppressed(state, card_id: str) -> bool:
+    """Supported all-ability losses; new keyword grants do not restore Oracle abilities."""
+    card = state.cards.get(card_id)
+    if card is None or not _is_battlefield(card):
+        return False
+    for source_id in _all_battlefield_ids(state):
+        source = state.cards[source_id]
+        for scope, other_only, subject, removed in _iter_keyword_removals(source):
+            if ('all abilities' in removed
+                    and (not other_only or source_id != card_id)
+                    and _scope_controller(source.controller, scope, card.controller)
+                    and _subject_matches(state, card_id, subject)):
+                return True
+    return False
+
+
 def has_keyword(state, card_id: str, keyword: str) -> bool:
     k = (keyword or "").lower()
     keywords = effective_keywords(state, card_id)

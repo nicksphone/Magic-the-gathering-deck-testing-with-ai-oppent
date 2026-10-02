@@ -35,7 +35,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD:
         return
-    from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+    from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, printed_abilities_suppressed
     from rules_engine.colors import card_color_names, card_color_symbols
     card.last_known_battlefield = {
         "name": card.name,
@@ -50,6 +50,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "selected_face_index": card.selected_face_index,
         "battlefield_incarnation": object_incarnation(card),
         "effect_timestamp": card.effect_timestamp,
+        "printed_abilities_suppressed": printed_abilities_suppressed(state, card_id),
     }
     for item in state.stack:
         if item.source_card_id == card_id:
@@ -450,6 +451,7 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
     if event == 'saga_lore_added':
@@ -457,6 +459,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
         from rules_engine.oracle_effects import extract_saga_chapters
         saga = state.cards.get(payload.get('card_id'))
         if saga is None or saga.zone != Zone.BATTLEFIELD or 'Saga' not in saga.type_line:
+            return out
+        if printed_abilities_suppressed(state, saga.id):
             return out
         state.log.append(f"{saga.name} gets lore counters ({payload['new_lore']}).")
         for chapter in extract_saga_chapters(saga.oracle_text):
@@ -497,7 +501,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         "payload": {"target_card_id": attacker.id, "counter": "+1/+1", "amount": 1,
                                     "effect_timestamp": object_incarnation(attacker)},
                     })
-            for amount in re.findall(r"\bannihilator\s+(\d+)", without_reminder_text(attacker.oracle_text or ""), re.IGNORECASE):
+            attack_oracle = '' if printed_abilities_suppressed(state, attacker.id) else attacker.oracle_text or ''
+            for amount in re.findall(r"\bannihilator\s+(\d+)", without_reminder_text(attack_oracle), re.IGNORECASE):
                 out.append({"source_card_id": attacker.id, "controller": attacker.controller, "label": f"{attacker.name} annihilator {amount}", "effect_key": "annihilator", "payload": {"target_player": 3 - attacker.controller, "amount": int(amount)}})
     if event == "spell_cast":
         source_card_id = str(payload.get("source_card_id", "") or "")
@@ -529,6 +534,9 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             )
         for cid in dict.fromkeys(source_ids):
             card = _departed_card_view(state, cid)
+            if (printed_abilities_suppressed(state, cid) if card.zone == Zone.BATTLEFIELD
+                    else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
+                continue
             oracle = without_reminder_text((card.oracle_text or "").lower())
             transform_draw = bool(TRANSFORM_DRAW_RE.search(oracle))
             once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
