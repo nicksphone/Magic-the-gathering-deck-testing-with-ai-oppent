@@ -2699,6 +2699,14 @@ class AIAgent:
                         and not has_keyword(state, target["id"], "indestructible")
                     ]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            keyword_scores = {}
+            if mtype == 'cast_spell' and isinstance(state,MatchState) and card is not None:
+                from ai.pending_effects import keyword_target_value
+                keyword_scores = {target['id']: keyword_target_value(state,card,player_id,{**targets,'target_card_id':target['id']})
+                                  for target in creature_targets}
+            if keyword_scores and all(value is not None for value in keyword_scores.values()):
+                best_score = max(keyword_scores.values())
+                creature_targets = [target for target in creature_targets if keyword_scores[target['id']] == best_score]
             best = max(
                 creature_targets,
                 key=lambda t: (self._creature_threat_score(state, t.get("id"), player_id), str(t.get("name") or t.get("label") or "")),

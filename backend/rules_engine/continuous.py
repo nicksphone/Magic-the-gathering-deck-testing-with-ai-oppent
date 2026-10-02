@@ -413,18 +413,18 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
         return dict(sorted(out.items()))
-    out.update(getattr(card,'granted_keywords',[]) or [])
-    for key, amount in (card.counters or {}).items():
-        if key.startswith('__eot_keyword_') and amount > 0:
-            out[key.removeprefix('__eot_keyword_')] += amount
-    counter_index = 0
+    modifiers = _resolved_keyword_modifiers(card)
+    modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
+                     for stamp, keyword in counter_grants)
+    modifiers.sort(key=lambda effect: effect['timestamp'])
+    modifier_index = 0
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
             continue
-        while counter_index < len(counter_grants) and counter_grants[counter_index][0] <= effect_timestamp(src):
-            out[counter_grants[counter_index][1]] += 1
-            counter_index += 1
+        while modifier_index < len(modifiers) and modifiers[modifier_index]['timestamp'] <= effect_timestamp(src):
+            _apply_keyword_modifier(out,modifiers[modifier_index])
+            modifier_index += 1
         out.update(_attached_effects(state, src, card)[2])
         for scope, other_only, subject, granted in _iter_keyword_grants(src):
             if _scope_controller(src.controller, scope, card.controller):
@@ -442,7 +442,8 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
                     else:
                         for keyword in removed:
                             _remove_keyword_family(out, keyword)
-    out.update(keyword for _, keyword in counter_grants[counter_index:])
+    for modifier in modifiers[modifier_index:]:
+        _apply_keyword_modifier(out,modifier)
     # "Can't have" is an override in the keyword layer, not a timestamped
     # ordinary removal. Apply it after all grants and normal removals.
     for src_id in _all_battlefield_ids(state):
@@ -470,6 +471,24 @@ def _remove_keyword_family(keywords, keyword):
     for present in list(keywords):
         if present == keyword or keyword == 'hexproof' and present.startswith('hexproof from '):
             keywords.pop(present, None)
+
+
+def _resolved_keyword_modifiers(card):
+    from rules_engine.keyword_effects import active_keyword_effects
+    effects = [{**effect, 'count': 1} for effect in active_keyword_effects(card)]
+    effects.extend({'keyword': key.removeprefix('__eot_keyword_'), 'operation': 'grant',
+                    'timestamp': effect_timestamp(card), 'count': amount,
+                    'until_end_of_turn': True, 'timestamp_origin': 'legacy_inferred'}
+                   for key,amount in (getattr(card,'counters',{}) or {}).items()
+                   if key.startswith('__eot_keyword_') and amount > 0)
+    return effects
+
+
+def _apply_keyword_modifier(keywords, effect):
+    if effect['operation'] == 'remove':
+        _remove_keyword_family(keywords,effect['keyword'])
+    else:
+        keywords[effect['keyword']] += effect['count']
 
 
 def has_keyword(state, card_id: str, keyword: str) -> bool:
@@ -901,6 +920,16 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     trace: list[dict[str, Any]] = []
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
+    if _is_battlefield(card):
+        for effect in _resolved_keyword_modifiers(card):
+            layer = f"keyword-{'remove' if effect['operation'] == 'remove' else 'grant'}:{effect['keyword']}"
+            key = _continuous_layer_sort_key(state,card_id,layer)
+            applied_layers.append(((key[0],key[1],effect['timestamp'],*key[3:]), {
+                'source_id': effect.get('source_card_id'), 'source_name': effect.get('source_name'),
+                'target_id': card_id, 'layer': layer,
+                'effect_timestamp': effect['timestamp'], 'timestamp_origin': effect['timestamp_origin'],
+                'until_end_of_turn': effect['until_end_of_turn'], 'instance_count': effect['count'],
+            }))
     from rules_engine.named_counters import keyword_counter
     for kind, amount in (getattr(card, 'counters', {}) or {}).items():
         keyword = keyword_counter(kind)

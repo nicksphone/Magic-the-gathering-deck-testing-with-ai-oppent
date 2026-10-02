@@ -311,6 +311,7 @@ class RulesEngine:
 
     def _clear_marked_damage(self, state: MatchState) -> None:
         for card in state.cards.values():
+            card.keyword_effects = [effect for effect in getattr(card,'keyword_effects',[]) if not effect['until_end_of_turn']]
             if "__damage_marked" in card.counters:
                 card.counters.pop("__damage_marked", None)
             if "__deathtouch_damaged" in card.counters:

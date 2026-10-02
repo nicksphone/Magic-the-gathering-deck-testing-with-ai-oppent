@@ -171,7 +171,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "oracle_text": card.oracle_text,
                 "type_line": card.type_line,
                 "image_uri": card.image_uri,
-                "granted_keywords": list(card.granted_keywords),
+                "keyword_effects": deepcopy(card.keyword_effects),
                 "attached_to": card.attached_to,
                 "static_order": card.static_order,
                 "effect_timestamp": card.effect_timestamp,
@@ -224,6 +224,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         players[player.id] = player
 
     cards = {}
+    from rules_engine.keyword_effects import restore_keyword_effects
     for cid, raw in payload["cards"].items():
         cards[cid] = CardInstance(
             id=str(raw["id"]), name=str(raw["name"]), owner=int(raw["owner"]),
@@ -234,7 +235,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
             entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
             counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
-            keywords=list(raw.get("keywords", [])), granted_keywords=list(raw.get('granted_keywords', [])), oracle_text=str(raw.get("oracle_text", "")),
+            keywords=list(raw.get("keywords", [])), keyword_effects=restore_keyword_effects(raw), oracle_text=str(raw.get("oracle_text", "")),
             type_line=str(raw.get("type_line", "")), image_uri=raw.get("image_uri"),
             attached_to=raw.get("attached_to"), static_order=int(raw.get("static_order", 0)),
             effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),

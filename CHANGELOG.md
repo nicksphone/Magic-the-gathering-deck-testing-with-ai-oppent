@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Resolution-created keyword timestamps and target projection
+
+- Replaced metadata-only resolved grants with durable object-bound effect records carrying creation timestamps, duration, operation and available source provenance. Supported grants/removals interleave with static/attached effects and keyword counters, survive restart and expire independently of physical counters. Legacy snapshot timing is explicitly inferred, not invented.
+- Added bounded targeted/self keyword gain/loss clauses and preserved later draw instructions. Shared AI projects only recognized public-board keyword changes when choosing targets, without drawing or mutating authoritative state. Canonical Jump, Leap, Canopy Claws, Act of Treason and Twiddle fixtures retain provenance.
+- Fixed lexical tap/untap confusion and missing standalone untap clauses; real control-change sequences now verify control, untap and haste. Land-animation's integrated untap remains once-only. Optional tap/untap choices are reported as unsupported instead of guessed.
+- Verified 2,698 isolated backend tests (293 deprecation warnings), 271 focused checks, frontend lint/unit/build and the full final-source Chromium harness. Twelve logical seat-balanced smoke games repeat twice without reported drift, timeouts or anomaly labels. Earlier failed/superseded runs are preserved with final evidence on RCHFiles under `diagnostics/keyword-effect-timestamps/20261002T035328Z/`.
+- Updated feature scopes, finish plan and AST graph. Full dependencies, non-keyword suppression, generalized durations/replacements, broad AI strength and operational release gates remain open. No UI redesign was performed.
+
 ## 2026-10-02 - Source-specific hexproof and object-bound grants
 
 - Corrected Scryfall variant-family metadata so supported printed color/type hexproof does not become unrestricted immunity. Source-aware checks now feed cast/ability/loyalty hints, modal/divided targets, trigger choices and resolution rechecks; loyalty proxies retain source identity.

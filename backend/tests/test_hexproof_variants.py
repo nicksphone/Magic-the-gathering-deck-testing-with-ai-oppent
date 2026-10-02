@@ -91,7 +91,7 @@ def test_variant_counter_removal_and_actual_unrestricted_grants_are_distinct():
     assert validate_hexproof_shroud_targets(state,1,{'target_card_id':target.id},black)[0]
     resolve_effect(state,2,'grant_keyword',{'target_card_id':target.id,'keyword':'hexproof'})
     assert not validate_hexproof_shroud_targets(state,1,{'target_card_id':target.id},black)[0]
-    assert target.granted_keywords == ['hexproof']
+    assert [effect['keyword'] for effect in target.keyword_effects] == ['hexproof']
     assert not target.counters
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert not validate_hexproof_shroud_targets(restored,1,{'target_card_id':target.id},black)[0]
@@ -179,13 +179,13 @@ def test_resolved_grants_keep_base_metadata_and_physical_counters_unchanged(keyw
     assert effective_keyword_counts(state,target.id)[keyword] == 2
     saved = serialize_match_snapshot(state)
     restored = deserialize_match_snapshot(saved)
-    saved['cards'][target.id]['granted_keywords'].clear()
-    assert restored.cards[target.id].granted_keywords == [keyword,keyword]
+    saved['cards'][target.id]['keyword_effects'].clear()
+    assert [effect['keyword'] for effect in restored.cards[target.id].keyword_effects] == [keyword,keyword]
     target.reset_zone_counters(Zone.GRAVEYARD)
     assert keyword not in effective_keywords(state,target.id)
     old = serialize_match_snapshot(state)
-    old['cards'][target.id].pop('granted_keywords')
-    assert deserialize_match_snapshot(old).cards[target.id].granted_keywords == []
+    old['cards'][target.id].pop('keyword_effects')
+    assert deserialize_match_snapshot(old).cards[target.id].keyword_effects == []
 
 
 def test_trigger_target_options_use_original_departed_source_not_a_new_incarnation():

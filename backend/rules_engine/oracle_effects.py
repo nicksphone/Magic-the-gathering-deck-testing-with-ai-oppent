@@ -335,6 +335,13 @@ def infer_effect_from_oracle(
             continue
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
+            # The existing land-animation handler already performs its untap.
+            if inferred[0] == "untap" and any(
+                payload.get("animate_untap")
+                and payload.get("target_card_id") == inferred[1].get("target_card_id")
+                for _, payload, _ in effects
+            ):
+                continue
             if (
                 inferred[0] == "add_counters"
                 and inferred[1].get("target_card_id")
@@ -1144,12 +1151,22 @@ def _infer_clause_effect(
             amount = x_value if raw == "x" else int(raw)
         return "incubate", {"counters": amount, "times": 2 if re.search(r"\bincubate\s+(?:\d+|x)\s+twice\b", oracle) else 1}
 
-    for keyword in ("infect", "wither", "flying", "haste", "vigilance", "trample", "lifelink",
-                    "deathtouch", "menace", "reach", "hexproof", "indestructible", "first strike", "double strike"):
-        if oracle in {f"{card.name.lower()} gains {keyword} until end of turn",
-                      f"this creature gains {keyword} until end of turn",
-                      f"this permanent gains {keyword} until end of turn"}:
-            return "grant_keyword", {"target_card_id": card.id, "keyword": keyword, "until_end_of_turn": True}
+    keyword_change = re.fullmatch(
+        rf'(target (?:creature|permanent)(?: you control| an opponent controls)?|it|this (?:creature|permanent|artifact)|{re.escape(card.name.lower())}) '
+        r'(gains|loses) (.+) until end of turn', oracle.strip(' .'),
+    )
+    if keyword_change:
+        from rules_engine.continuous import _attached_keywords
+        keywords = _attached_keywords(keyword_change[3])
+        if keywords and all(keyword != 'ward' and not keyword.startswith('ward ') for keyword in keywords):
+            subject = keyword_change[1]
+            recipient = target_card_id if subject.startswith('target ') or subject == 'it' else card.id
+            if recipient is not None:
+                payload = {'target_card_id': recipient, 'until_end_of_turn': True}
+                payload['keyword' if len(keywords) == 1 else 'keywords'] = keywords[0] if len(keywords) == 1 else keywords
+                if keyword_change[2] == 'loses':
+                    payload['operation'] = 'remove'
+                return 'grant_keyword', payload
 
     targeted_pt = TARGET_PT_CHANGE_RE.fullmatch(oracle.strip())
     if targeted_pt:
@@ -1394,10 +1411,10 @@ def _infer_clause_effect(
         target = target_card_id or _first_creature(state, opponent)
         return "exile", {"target_card_id": target}
 
-    if "tap all creatures your opponents control" in oracle:
+    if re.search(r'\btap all creatures your opponents control\b',oracle):
         return "tap_all_opponent_creatures", {}
 
-    if "tap target" in oracle:
+    if re.search(r'\btap target\b',oracle):
         if "nonland permanent" in oracle:
             target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
         else:
@@ -1405,7 +1422,7 @@ def _infer_clause_effect(
         if target:
             return "tap", {"target_card_id": target}
 
-    if "untap target" in oracle:
+    if re.fullmatch(r'untap (?:target (?:(?:nonland|noncreature|tapped) )?(?:artifact|creature|land|permanent)(?: you control| an opponent controls)?|it|that (?:creature|artifact|land|permanent))',oracle.strip(' .')):
         target = target_card_id
         if target:
             return "untap", {"target_card_id": target}

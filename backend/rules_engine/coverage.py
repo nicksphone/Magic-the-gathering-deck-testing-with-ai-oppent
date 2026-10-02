@@ -4,6 +4,7 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ('tap/untap choice fidelity', re.compile(r'\btap or untap\b',re.IGNORECASE)),
     ("scry replacement fidelity", re.compile(r'if .+scry.+instead', re.IGNORECASE)),
     ("scry trigger fidelity", re.compile(r'whenever .+scry', re.IGNORECASE)),
     ("dynamic scry", re.compile(r'\bscry x\b', re.IGNORECASE)),

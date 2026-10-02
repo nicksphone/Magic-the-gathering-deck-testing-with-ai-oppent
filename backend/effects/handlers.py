@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import re
 
-from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card, object_incarnation
+from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card, object_incarnation, allocate_effect_timestamp
 from card_data.token_images import resolve_token_image_uri
 from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
 from rules_engine.counter_placement import put_counters
@@ -1994,6 +1994,7 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
         return
     players = [state.players[controller]] if payload.get("controller_only") else state.players.values()
     required_subtypes = set(payload.get("creature_subtypes") or [])
+    keyword_timestamp = allocate_effect_timestamp(state) if keyword else None
     for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
@@ -2008,8 +2009,9 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
             if keyword:
-                key = f'__eot_keyword_{keyword.lower()}'
-                card.counters[key] = card.counters.get(key, 0) + 1
+                from rules_engine.keyword_effects import add_keyword_effect
+                add_keyword_effect(state,card_id,[keyword],until_end_of_turn=True,timestamp=keyword_timestamp,
+                                   source_card_id=payload.get('__source_card_id'))
     scope = (f"{payload['creature_subtype_label']} you control" if payload.get("creature_subtype_label")
              else "Creatures you control" if payload.get("controller_only") else "All creatures")
     state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")
@@ -2187,17 +2189,11 @@ def continuous_buff(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
-    target = payload.get("target_card_id")
-    keyword = payload.get("keyword")
-    if target in state.cards and keyword:
-        card = state.cards[target]
-        if payload.get("until_end_of_turn") and card.zone == Zone.BATTLEFIELD:
-            key = f'__eot_keyword_{keyword.lower()}'
-            card.counters[key] = card.counters.get(key, 0) + 1
-        elif card.zone == Zone.BATTLEFIELD:
-            # Resolved grants are object-bound abilities, not printed metadata
-            # or physical counters. They end when the permanent leaves.
-            card.granted_keywords.append(keyword)
+    from rules_engine.keyword_effects import add_keyword_effect
+    keywords = payload.get('keywords') or ([payload['keyword']] if payload.get('keyword') else [])
+    add_keyword_effect(state,payload.get('target_card_id'),keywords,
+                       operation=payload.get('operation','grant'),until_end_of_turn=bool(payload.get('until_end_of_turn')),
+                       source_card_id=payload.get('__source_card_id'))
 
 
 def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:

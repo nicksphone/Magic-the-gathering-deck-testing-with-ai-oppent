@@ -25,12 +25,13 @@ targets for both humans and AI. Supported departed-source trigger choices use
 stored last-known colors/types rather than a returning card's new incarnation.
 This is not a complete type/color/layer or arbitrary-source LKI implementation.
 
-Resolved battlefield keyword grants now have their own durable
-`granted_keywords` list. They leave printed metadata and physical counters
-unchanged, preserve independent instances, survive snapshots and disappear on
-zone reset. Legacy snapshots default to an empty list. End-of-turn grants retain
-the existing cleanup markers. Exact grant/removal timestamp interleaving remains
-unfinished; this change is not full layer-six certification.
+Resolved battlefield keyword grants now use durable timestamped
+`keyword_effects` records, leaving printed metadata and physical counters
+unchanged. They preserve independent instances, survive snapshots, expire by
+duration and disappear on zone reset. Legacy `granted_keywords` snapshots use
+an explicitly inferred timestamp fallback. Supported grant/removal interleaving
+is covered by the subsequent [keyword-effect milestone](keyword-effect-timestamps.md);
+full dependency and non-keyword suppression fidelity remains unfinished.
 
 ## Rules, fixtures and checks
 

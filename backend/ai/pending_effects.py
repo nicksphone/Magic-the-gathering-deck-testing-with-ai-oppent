@@ -65,6 +65,26 @@ def _copy_card_field(value, memo):
     return deepcopy(value, memo)
 
 
+def keyword_target_value(state, card, player_id, targets):
+    """Rank known keyword instructions only, without executing later draws."""
+    if not re.search(r'\b(?:gains|loses)\b.+until end of turn', card.oracle_text or '', re.I):
+        return None
+    key, payload = infer_effect_from_oracle(state,card,player_id,targets,report_unsupported=False)
+    effects = payload.get('effects',[]) if key == 'effect_sequence' else [{'effect_key':key,'payload':payload}]
+    if not effects or any(effect['effect_key'] not in {'grant_keyword','draw_cards'} for effect in effects):
+        return None
+    changes = [effect for effect in effects if effect['effect_key'] == 'grant_keyword'
+               and effect['payload'].get('target_card_id') == targets.get('target_card_id')]
+    if not changes:
+        return None
+    from effects.handlers import grant_keyword
+    from ai.heuristics import evaluate_board
+    projected = planning_copy(state)
+    for effect in changes:
+        grant_keyword(projected,player_id,effect['payload'])
+    return evaluate_board(projected,player_id) - evaluate_board(state,player_id)
+
+
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:
     """Conserve pure destruction against indestructible or friendly targets."""
     if ability_text is None and not set(card.types).intersection({"Instant", "Sorcery"}):

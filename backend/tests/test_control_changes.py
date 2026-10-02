@@ -18,34 +18,27 @@ def _state() -> object:
 
 
 def test_temporary_control_change_moves_permanent_and_returns_at_cleanup() -> None:
+    from tests.test_keyword_effect_timestamps import add
+    from rules_engine.continuous import has_keyword
     state = _state()
-    creature = CardInstance("creature", "Bear", 2, 2, Zone.BATTLEFIELD, ["Creature"], type_line="Creature — Bear")
-    spell = CardInstance(
-        "threaten",
-        "Threaten",
-        1,
-        1,
-        Zone.HAND,
-        ["Sorcery"],
-        mana_cost="{2}{R}",
-        oracle_text="Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
-    )
-    state.cards[creature.id] = creature
-    state.cards[spell.id] = spell
-    state.players[2].battlefield.append(creature.id)
-    state.players[1].hand.append(spell.id)
+    creature = add(state,player=2)
+    creature.tapped = True
+    spell = add(state,'Act of Treason',zone=Zone.HAND)
 
     spec = build_ability_spec(state, spell, 1, {"target_card_id": creature.id})
-    assert spec.effect.key == "change_control"
+    assert spec.effect.key == 'effect_sequence'
+    assert [effect['effect_key'] for effect in spec.effect.payload['effects']] == ['change_control','untap','grant_keyword']
     resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
     assert creature.controller == 1
     assert creature.id in state.players[1].battlefield
     assert creature.id not in state.players[2].battlefield
+    assert not creature.tapped and has_keyword(state,creature.id,'haste')
 
     state.step = Step.CLEANUP
     RulesEngine()._apply_step_start_actions(state)
     assert creature.controller == 2
     assert creature.id in state.players[2].battlefield
+    assert not has_keyword(state,creature.id,'haste')
 
 
 def test_control_change_duration_is_snapshot_safe() -> None:

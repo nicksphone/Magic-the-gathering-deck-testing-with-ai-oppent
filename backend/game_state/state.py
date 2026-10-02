@@ -71,7 +71,7 @@ class CardInstance:
     counters: dict[str, int] = field(default_factory=dict)
     counter_timestamps: dict[str, int] = field(default_factory=dict)
     keywords: list[str] = field(default_factory=list)
-    granted_keywords: list[str] = field(default_factory=list)
+    keyword_effects: list[dict] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
     image_uri: str | None = None
@@ -94,7 +94,7 @@ class CardInstance:
     exile_face_down: bool = False
 
     def reset_zone_counters(self, zone: Zone) -> None:
-        self.granted_keywords.clear()
+        self.keyword_effects.clear()
         if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
             self.counters = {key: value for key, value in self.counters.items() if not key.startswith("__")}
             self.counter_timestamps = {key: value for key, value in self.counter_timestamps.items() if self.counters.get(key, 0) > 0}
