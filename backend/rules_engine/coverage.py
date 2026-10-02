@@ -4,6 +4,8 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ("proliferate event replacement", re.compile(r"if you would proliferate", re.IGNORECASE)),
+    ("conditional proliferation", re.compile(r"if you do, proliferate", re.IGNORECASE)),
     ("read ahead entry route fidelity", re.compile(r"\bread ahead\b", re.IGNORECASE)),
     ("phasing", re.compile(r"\bphases? (?:in|out)\b|\bphasing\b", re.IGNORECASE)),
     ("reconfigure", re.compile(r"\breconfigure\b", re.IGNORECASE)),

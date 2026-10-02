@@ -558,7 +558,12 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 if event == "enters_battlefield":
                     oracle = TRANSFORM_DRAW_RE.sub("", oracle)
 
-            if event == "draw_card" and payload.get("player_id") == card.controller and "whenever you draw a card" in oracle:
+            if event == 'proliferated' and payload.get('controller') == card.controller:
+                for line in oracle.splitlines():
+                    if re.fullmatch(r'whenever you proliferate, [^.]+\.', line.strip()):
+                        out.append(_trigger_from_oracle(state, cid, card.controller, line.strip(),
+                                   default_label=f'{card.name} proliferate trigger', event=event, payload=payload))
+            elif event == "draw_card" and payload.get("player_id") == card.controller and "whenever you draw a card" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "draw_card" and payload.get("player_id") != card.controller and "whenever an opponent draws a card" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
@@ -1204,6 +1209,28 @@ def _trigger_from_oracle(
     payload: dict[str, Any],
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
+    source = state.cards.get(source_card_id)
+    matchers = {
+        'enters_battlefield': _matches_enters_battlefield_trigger,
+        'creature_dies': _matches_creature_dies_trigger,
+        'combat_damage_dealt': _matches_combat_damage_trigger,
+        'attack_declared': _matches_attack_trigger,
+        'sacrifice': _matches_sacrifice_trigger,
+    }
+    if source:
+        for line in oracle.splitlines():
+            instruction = re.fullmatch(r'.+,\s*proliferate( twice)?\.', line.strip())
+            if not instruction:
+                continue
+            matcher = matchers.get(event)
+            matches = bool(matcher and matcher(state, source, line, payload))
+            if event == 'spell_cast':
+                matches = (payload.get('controller') == controller
+                           and re.fullmatch(r'whenever you cast a spell, proliferate(?: twice)?\.', line.strip()))
+            if matches:
+                effects = [{'effect_key': 'proliferate', 'payload': {}} for _ in range(2 if instruction[1] else 1)]
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'effect_sequence', 'payload': {'effects': effects}}
     if event in {"enters_battlefield", "creature_dies"}:
         matching_clauses = [
             line.strip() for line in oracle.splitlines()

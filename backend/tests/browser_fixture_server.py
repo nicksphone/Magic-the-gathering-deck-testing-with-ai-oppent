@@ -16,9 +16,16 @@ init_db()
 
 @app.post("/fixture/start-decks")
 def fixture_start_decks():
+    from card_data.fallback_cards import fallback_card_payload
+    from card_data.placeholders import ensure_placeholder_image
     deck = [{"quantity": 60, "card_name": "Island"}]
     with Session(engine) as session:
         repo = Repository(session)
+        # Response-loss recovery is not a Scryfall/network availability test.
+        seed = fallback_card_payload('Island')
+        repo.upsert_card({**seed, 'colors': ','.join(seed.get('colors', [])),
+                          'image_uri': ensure_placeholder_image(name=seed['name'],
+                              type_line=seed['type_line'], token=False)})
         a = repo.save_deck("Start retry A", "fixture", deck, [], "Control")
         b = repo.save_deck("Start retry B", "fixture", deck, [], "Control")
         return {"a": a.id, "b": b.id}
@@ -26,6 +33,18 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'proliferate':
+        from tests.test_counter_replacements import source
+        from tests.test_restricted_mana import clean
+        from effects.registry import resolve_effect
+        state = clean(2)
+        state.players[2].counters['energy'] = 1
+        state.players[2].poison = 1
+        source(state, 'Winding Constrictor', 2)
+        source(state, "Lae'zel, Vlaakith's Champion", 2)
+        state.mechanic_choice_players = {2}
+        resolve_effect(state, 2, 'proliferate', {})
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'transformed_counter_entry':
         from tests.test_transformed_entry import jace
         from tests.test_counter_replacements import source

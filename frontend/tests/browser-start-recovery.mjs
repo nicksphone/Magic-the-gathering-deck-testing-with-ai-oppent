@@ -27,6 +27,8 @@ async function matchIds() {
 async function startWithDroppedResponses(dropCount) {
   let dropped = 0;
   onIntercept(async (event) => {
+    console.log('Start recovery response', JSON.stringify({ method: event.request.method,
+      status: event.responseStatusCode, error: event.responseErrorReason, dropped }));
     if (event.request.method === 'POST' && event.responseStatusCode === 200 && dropped < dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });

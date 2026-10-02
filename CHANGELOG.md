@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Proliferation and atomic multi-kind counter events
+
+- Added non-targeting any-number proliferation selections for permanents and players, with every existing counter kind mandatory for selected recipients and authoritative poison/loyalty/lore storage.
+- Added per-ability multi-kind replacement preparation, APNAP decisions, atomic placement, stale-recipient protection and snapshot/spell continuations. Canonical fixtures cover actual spell order, landfall/cast/combat triggers and proliferation watchers.
+- Connected both-seat existing choice controls and shared public-counter AI policies. Counter-resource strategy, conditional paid instructions and proliferation-event replacements remain unfinished and explicitly scoped in the feature documentation.
+- Isolated dropped-response browser recovery from cold Scryfall sync by priming its canonical fixture cache. Added response-phase diagnostics and an exclusive harness lock for fixed test ports. Production cold-cache match-start latency remains an explicit backend task.
+- Verified 2,490 isolated backend tests, 183 focused counter/proliferation checks, frontend lint/unit/build, the full sequential Chromium harness and 12 logical seat-balanced replay smoke games without reported drift/timeout. Evidence, including superseded failures, is retained on RCHFiles; UI redesign and broader rules/AI completion remain open.
+
 ## 2026-10-01 - Shared opening-entry counter preparation
 
 - Routed supported opening-hand battlefield actions through the shared counter-entry pipeline. Competing replacements retain the real card in hand until ordering completes; the commit checks its object incarnation and preserves mandatory follow-up hand exile.

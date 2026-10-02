@@ -115,3 +115,54 @@ def counter_effect_amount(state, controller, effect_key, payload):
         state.log.append(f"{chosen['name']} replaces {before} {kind} counters with {amount}.")
         selected = None
     return amount
+
+
+def counter_vector_options(state, controller, payload, used=()):
+    """One replacement ability modifies every applicable kind in this event."""
+    options = {}
+    for kind, amount in sorted(payload['counter_amounts'].items()):
+        if not amount:
+            continue
+        for option in counter_options(state, controller, {**payload, 'counter': kind}, used):
+            entry = options.setdefault(option['source_id'], {**option, 'counter_kinds': []})
+            entry['counter_kinds'].append(kind)
+    return list(options.values())
+
+
+def counter_effect_amounts(state, controller, effect_key, payload):
+    """Prepare a multi-kind event without physically placing any counters."""
+    amounts = {kind: max(0, int(value)) for kind, value in payload['counter_amounts'].items()}
+    for kind in amounts:
+        if counter_placement_forbidden(state, kind, target_player=payload.get('target_player'),
+                                       target_card_id=payload.get('target_card_id')):
+            amounts[kind] = 0
+    used = list(payload.get('__counter_used') or [])
+    selected = payload.get('__counter_choice')
+    while any(amounts.values()):
+        event = {**payload, 'counter_amounts': amounts}
+        options = counter_vector_options(state, controller, event, used)
+        if not options:
+            break
+        chosen = next((option for option in options if option['source_id'] == selected), None)
+        if chosen is None and len(options) > 1:
+            affected = payload.get('target_player')
+            if affected is None:
+                affected = state.cards[payload['target_card_id']].controller
+            state.pending_replacement_choice = {
+                'resume_kind': 'counter_event', 'event': 'counter_placement',
+                'player_id': affected, 'controller': controller, 'counter_effect': effect_key,
+                'counter_payload': {**event, '__counter_used': used, '__counter_choice': None},
+                'options': options, 'forecast_options': options,
+            }
+            state.priority_player = affected
+            state.passed_priority = set()
+            return None
+        chosen = chosen or options[0]
+        used.append(chosen['source_id'])
+        before = dict(amounts)
+        for kind in chosen['counter_kinds']:
+            amounts[kind] = modified_count(amounts[kind], chosen['operation'], chosen.get('operand', 1))
+        state.log.append(f"{chosen['name']} replaces counters {before} with {amounts}.")
+        payload = {**payload, '__counter_is_effect': True}
+        selected = None
+    return amounts

@@ -1103,6 +1103,10 @@ def _infer_clause_effect(
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
 
+    if oracle.strip(' .') == 'proliferate':
+        return 'proliferate', {}
+    if oracle.strip(' .') == 'proliferate twice':
+        return 'effect_sequence', {'effects': [{'effect_key': 'proliferate', 'payload': {}} for _ in range(2)]}
     if oracle.strip(" .") == "transform this artifact":
         return "transform_card", {"target_card_id": card.id, "face_index": 1}
     incubate_match = re.search(r"\bincubate\s+(\d+|x)\b", oracle)

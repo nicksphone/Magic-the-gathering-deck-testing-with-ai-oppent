@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The harness owns fixed loopback ports; concurrent runs must not share them.
+exec 9>"${TMPDIR:-/tmp}/mtg-browser-ci.lock"
+if ! flock -n 9; then
+  echo "Another browser CI run owns the test ports; wait for it to finish." >&2
+  exit 1
+fi
+
 python_bin="${MTG_TEST_PYTHON:-$PWD/backend/.venv/bin/python}"
 if [[ ! -x "$python_bin" ]]; then
   echo "Browser CI requires backend/.venv/bin/python or MTG_TEST_PYTHON" >&2

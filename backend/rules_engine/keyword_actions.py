@@ -78,6 +78,19 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending['kind'] == 'proliferate':
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list)
+                or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids) or any(cid not in pending['options'] for cid in ids)):
+            return False
+        from effects.registry import resolve_effect
+        from rules_engine.stack_engine import resume_paused_resolution
+        state.pending_mechanic_choice = None
+        resolve_effect(state, pending['controller'], 'proliferate',
+                       {**pending['effect_payload'], 'recipients': ids})
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] in {"ward_payment", "ward_cost_cards"}:
         from rules_engine.ward import finish_ward_choice
         return finish_ward_choice(state, player_id, action)

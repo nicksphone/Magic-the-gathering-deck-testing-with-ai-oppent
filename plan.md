@@ -10,8 +10,11 @@ Finish backend rules, supported-corpus correctness and simulation/AI evidence
 before returning to the redesign. Broad release gates below remain open.
 
 - [x] Route supported opening-hand permanent entries through shared off-zone counter preparation, affected-player replacement ordering and guarded once-only commitment. Keep mandatory exile instructions resumable; do not consume cast-only entry records.
-- [ ] Complete generalized pre-entry characteristics, remaining multi-kind events, proliferation, counter movement/spending and arbitrary replacement clauses.
+- [x] Implement bounded proliferation instructions, all-kinds non-targeting selection, resumable atomic counter vectors, canonical triggers/spell continuation, both-seat controls and shared AI choices. See [scope and remaining gaps](docs/testing/proliferation.md).
+- [ ] Complete generalized pre-entry characteristics, remaining multi-kind entry/damage/cost events, proliferation-event replacements, conditional instructions, counter movement/spending and arbitrary replacement clauses.
+- [ ] Implement named-counter consequences, not just their storage: keyword counters in effective abilities, stun counters in untap and shield counters in damage/destruction replacement; validate shared human/AI views and counter valuation against those actual rules.
 - [ ] Expand tactical decision-quality and corpus-wide latency evidence, then replay/restart matrices and operational backend gates.
+- [ ] Separate external card/image/ruling sync from latency-sensitive match creation. A cold-cache browser recovery fixture demonstrated that synchronous Scryfall work can outlast both 30-second frontend attempts even though the match is eventually persisted; preserve idempotent recovery while adding bounded canonical-data admission and visible sync status. Recovery fixtures now seed canonical data offline to test response loss independently.
 - [ ] Redesign the alpha UI after backend milestones; use real pointer/viewport tests as well as fixture action tests.
 
 Opening-route evidence is documented in [opening-hand scope](docs/testing/opening-hand-actions.md).
@@ -742,4 +745,4 @@ The scoped release is finished only after all three gates pass. Any remaining un
 
 ## Known Limitations and Next Upgrades
 
-Start with Gate 1 steps 1-5, then input/recovery/BO3/contracts. The current priority is reliable human play over deeper search or cosmetic polish. Broader rules fidelity, knowledge-driven AI, statistical validation and operational release checks follow in Gates 2 and 3.
+Current priority is backend rules, supported-corpus simulation and measured AI decisions. The alpha UI redesign is deferred at the user's request; existing functional choice controls still receive necessary regression coverage. Broader rules fidelity, knowledge-driven AI, statistical validation and operational release checks remain open in Gates 2 and 3, alongside the unfinished human-release acceptance gates.

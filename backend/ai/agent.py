@@ -189,6 +189,13 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'proliferate':
+                from ai.proliferation_policy import preferred_recipients
+                from rules_engine.proliferation import recipients
+                available = {key: value for key, value in recipients(state).items() if key in options}
+                selected = preferred_recipients(state, player_id, available)
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
+                                  reasoning='Evaluate all counter kinds together; avoid self-poison and strengthen favorable public recipients')
             if choice["kind"] in {"ward_payment", "ward_cost_cards"}:
                 selected = self._ward_selection(state, player_id, choice)
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected},

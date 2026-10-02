@@ -14,6 +14,24 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click("Proliferate Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'proliferate'");
+  assert.ok(await evaluate("document.body.textContent.includes('including none')"));
+  await click("Confirm Selection");
+  await waitFor("!window.fixtureState.pending_mechanic_choice");
+  assert.equal(await evaluate("window.fixtureState.players['2'].counters.energy"), 1);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  await click("Proliferate Fixture");
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'proliferate'");
+  await evaluate("(() => { const label = [...document.querySelectorAll('label')].find(e => e.textContent.includes('Player B:') && e.querySelector('input[type=checkbox]')); if (!label) throw new Error('Missing player proliferation control'); label.querySelector('input').click(); })()");
+  await click("Confirm Selection");
+  await waitFor("window.fixtureState?.pending_replacement_choice?.resume_kind === 'counter_event'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].counters.energy"), 1);
+  await click("Winding Constrictor");
+  await waitFor("!window.fixtureState.pending_replacement_choice && window.fixtureState.players['2'].counters.energy === 4");
+  assert.equal(await evaluate("window.fixtureState.players['2'].poison"), 4);
+  assert.equal(await evaluate("window.fixtureActions.at(-1).player_id"), 2);
+  console.log("PASS seat-two non-targeting proliferation, deliberate none/all-kinds choices and nested replacement through UI/API");
   await click("Ward Mana Fixture");
   await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'ward_payment'");
   assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.G"), 2);

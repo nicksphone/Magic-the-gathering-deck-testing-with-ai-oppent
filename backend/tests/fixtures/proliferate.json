@@ -1,0 +1,158 @@
+[
+  {
+    "id": "8e30deb6-9e1f-4545-ae30-c30ba6c7b3a0",
+    "oracle_id": "2fc6de19-9d04-422b-90bc-eee2f9f8c84c",
+    "name": "Contentious Plan",
+    "mana_cost": "{1}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/war/46/contentious-plan?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Contentious%20Plan",
+    "retrieved_at": "2026-10-01T23:48:22.326Z"
+  },
+  {
+    "id": "29ad5bb3-927d-41d0-a000-3826ea117e52",
+    "oracle_id": "b33d2b77-f068-4fdc-a1a8-0353a35e3973",
+    "name": "Tezzeret's Gambit",
+    "mana_cost": "{3}{U/P}",
+    "type_line": "Sorcery",
+    "oracle_text": "({U/P} can be paid with either {U} or 2 life.)\nDraw two cards, then proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/eoc/47/tezzerets-gambit?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Tezzeret's%20Gambit",
+    "retrieved_at": "2026-10-01T23:48:22.855Z"
+  },
+  {
+    "id": "f10db847-6598-49a5-8f10-67afd5187d32",
+    "oracle_id": "eac94269-4baa-4b8e-a0fd-d6b227d1cde3",
+    "name": "Thrummingbird",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature — Phyrexian Bird Horror",
+    "oracle_text": "Flying\nWhenever this creature deals combat damage to a player, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "power": "1",
+    "toughness": "1",
+    "scryfall_uri": "https://scryfall.com/card/eoc/80/thrummingbird?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Thrummingbird",
+    "retrieved_at": "2026-10-01T23:48:23.369Z"
+  },
+  {
+    "id": "1d58d08d-cd62-416d-8d8e-7d9c56d5c4da",
+    "oracle_id": "b45fdeab-00cc-4422-af9f-66f30a880a7c",
+    "name": "Evolution Sage",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "Landfall — Whenever a land you control enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Proliferate",
+      "Landfall"
+    ],
+    "layout": "normal",
+    "power": "3",
+    "toughness": "2",
+    "scryfall_uri": "https://scryfall.com/card/ecc/105/evolution-sage?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Evolution%20Sage",
+    "retrieved_at": "2026-10-01T23:48:23.908Z"
+  },
+  {
+    "id": "40441345-23ca-47e4-b349-bd13d986e41e",
+    "oracle_id": "40ec0a47-badf-4074-b0a8-749bb7c17b95",
+    "name": "Inexorable Tide",
+    "mana_cost": "{3}{U}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "Whenever you cast a spell, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/mm2/49/inexorable-tide?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Inexorable%20Tide",
+    "retrieved_at": "2026-10-01T23:48:24.362Z"
+  },
+  {
+    "id": "d38961ce-0257-412f-acec-c5c9886061f8",
+    "oracle_id": "cffec16f-373b-43e7-a04c-4452987d7e02",
+    "name": "Ezuri, Stalker of Spheres",
+    "mana_cost": "{2}{G}{U}",
+    "type_line": "Legendary Creature — Phyrexian Elf Warrior",
+    "oracle_text": "When Ezuri enters, you may pay {3}. If you do, proliferate twice.\nWhenever you proliferate, draw a card.",
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "power": "3",
+    "toughness": "3",
+    "scryfall_uri": "https://scryfall.com/card/one/201/ezuri-stalker-of-spheres?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Ezuri%2C%20Stalker%20of%20Spheres",
+    "retrieved_at": "2026-10-01T23:48:24.572Z"
+  },
+  {
+    "id": "bf148ef4-0ed7-4fbe-8ab6-01dd3981c8d3",
+    "oracle_id": "e4912bc3-bee9-4a2f-a13e-3a99018f8a65",
+    "name": "Drown in Ichor",
+    "mana_cost": "{1}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gets -4/-4 until end of turn. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/one/91/drown-in-ichor?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Drown%20in%20Ichor",
+    "retrieved_at": "2026-10-01T23:48:25.032Z"
+  },
+  {
+    "id": "2d389264-e2d2-4589-9636-faa11fe46710",
+    "oracle_id": "4716ab91-30e6-4c63-8389-a9db8f9414d8",
+    "name": "Tekuthal, Inquiry Dominus",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Legendary Creature — Phyrexian Horror",
+    "oracle_text": "Flying\nIf you would proliferate, proliferate twice instead.\n{1}{U/P}{U/P}, Remove three counters from among other artifacts, creatures, and planeswalkers you control: Put an indestructible counter on Tekuthal. ({U/P} can be paid with either {U} or 2 life.)",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Proliferate"
+    ],
+    "layout": "normal",
+    "power": "3",
+    "toughness": "5",
+    "scryfall_uri": "https://scryfall.com/card/eoc/78/tekuthal-inquiry-dominus?utm_source=api",
+    "source_url": "https://api.scryfall.com/cards/named?exact=Tekuthal%2C%20Inquiry%20Dominus",
+    "retrieved_at": "2026-10-01T23:48:25.555Z"
+  }
+]
