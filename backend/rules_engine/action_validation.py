@@ -73,6 +73,21 @@ def checked_action(state, rules, player_id: int, action: dict):
     # authoritative state, RNG, logs, cost payments or pending continuations.
     candidate = deepcopy(state)
     validate_action(candidate, rules, player_id, action)
+    if action['type'] == 'attack':
+        from rules_engine.declaration_limits import attackers_within_limits
+        from rules_engine.combat_requirements import best_required_attack, attack_requirement_score
+        require(attackers_within_limits(candidate, action['attackers'], action.get('attack_targets')), 'Attacker declaration exceeds a static combat limit')
+        optimum = best_required_attack(candidate)
+        require(optimum is None or attack_requirement_score(candidate, action['attackers']) >= attack_requirement_score(candidate, optimum[0]),
+                'Declare attackers that satisfy the maximum possible requirements')
+    elif action['type'] == 'block':
+        from rules_engine.declaration_limits import blockers_within_limits
+        from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
+        blocks = {aid: bids if isinstance(bids, list) else [bids] for aid, bids in action['blocks'].items()}
+        require(blockers_within_limits(candidate, blocks), 'Blocker declaration exceeds a static combat limit')
+        optimum = best_required_blocks(candidate)
+        require(optimum is None or block_requirement_score(candidate, blocks) >= block_requirement_score(candidate, optimum),
+                'Declare blockers that satisfy the maximum possible requirements')
     rules.take_action(candidate, player_id, action, reject_invalid=True)
     if action["type"] == "attack":
         require(set(action["attackers"]).issubset(candidate.attackers), "An attacker cannot attack in this declaration")

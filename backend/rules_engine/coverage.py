@@ -4,6 +4,7 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ('blocking assignment controller fidelity', re.compile(r'(?:attacking|defending) player chooses how .*blocks', re.IGNORECASE)),
     ('tap/untap choice fidelity', re.compile(r'\btap or untap\b',re.IGNORECASE)),
     ("scry replacement fidelity", re.compile(r'if .+scry.+instead', re.IGNORECASE)),
     ("scry trigger fidelity", re.compile(r'whenever .+scry', re.IGNORECASE)),

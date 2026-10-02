@@ -9,6 +9,8 @@ Do not treat passing fixture tests as proof that the current UI is ergonomic.
 Finish backend rules, supported-corpus correctness and simulation/AI evidence
 before returning to the redesign. Broad release gates below remain open.
 
+- [x] Enforce unconditional numeric attack/block declaration limits, player-only attack caps, and maximum recognized each-combat requirements across checked human actions, internal completion and all AI difficulties. Expose active limits in legal hints/live diagnostics. See [scope and regression contracts](docs/testing/declaration-limits.md). Paid costs, conditional limits, targeted requirements and attacker-chosen blocking remain open.
+
 - [x] Share bounded condition-aware static combat clauses across self, attachment and global sources, with source suppression, effective-power limits, cumulative extra blockers and unresolved-clause engine traces. See [scope and remaining gaps](docs/testing/conditional-combat.md). Broader predicates, paid taxes and dedicated in-match visual diagnostics remain open.
 - [x] Reuse supported static predicates for known-gap coverage and live evaluation; expose card/face-specific combat gaps in completeness, simulator preflight/results and a locked public-battlefield diagnostics API. Verify canonical warning admission through the real browser flow. See [scope](docs/testing/combat-coverage-diagnostics.md). This does not implement taxes or certify arbitrary cards.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Combat declaration limits and requirement fulfillment
+
+- Added shared unconditional numeric attack/block limits, player-specific attack caps, distinct-blocker accounting and source suppression. Checked human declarations reject violations without changing memory or SQLite state, including restored matches.
+- Replaced unsafe mandatory-creature auto-addition with maximum recognized requirement fulfillment respecting Menace, alone restrictions and multiple-block capacity. All AI difficulties finalize legal combat intent while preserving tactical ties and pending choices.
+- Added live diagnostic/legal-hint limit provenance, canonical eight-card fixtures, both-seat HTTP/restart cases, a 101-required-blocker regression and actual App/API atomic rejection/retry coverage. Conditional limits, paid taxes, targeted requirements and attacker-chosen block assignment remain unsupported; the latter is explicitly flagged.
+- Validation: 2,883 backend tests passed (312 deprecation warnings); 122 focused checks, frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced games repeated twice completed without determinism failures, drift labels or reported anomalies. Evidence: RCHFiles `diagnostics/declaration-limits/20261002T073832Z`. Alpha UI redesign remains deferred; this does not certify universal rules or expert AI.
+
 ## 2026-10-02 - Static combat coverage and live diagnostics
 
 - Unified supported static predicate parsing/evaluation across attachments, combat and coverage. Added clause/face provenance for known unsupported combat conditions, subjects, bodies and payments to cached-card readiness and simulator preflight/results.

@@ -45,7 +45,7 @@ def card_cant_attack(state, card_id: str) -> bool:
 def card_must_attack_if_able(state, card_id: str) -> bool:
     from rules_engine.combat_constraints import combat_rule_text
     text = combat_rule_text(state, card_id)
-    return "attacks each combat if able" in text or "must attack each combat if able" in text
+    return any(clause in {'attacks each combat if able', 'attack each combat if able', 'must attack each combat if able'} for clause in text.splitlines())
 
 
 def card_cant_block(state, card_id: str) -> bool:
@@ -60,7 +60,7 @@ def card_cant_block(state, card_id: str) -> bool:
 def card_must_block_if_able(state, card_id: str) -> bool:
     from rules_engine.combat_constraints import combat_rule_text
     text = combat_rule_text(state, card_id)
-    return "blocks each combat if able" in text or "must block each combat if able" in text
+    return any(clause in {'blocks each combat if able', 'block each combat if able', 'must block each combat if able'} for clause in text.splitlines())
 
 
 def card_cant_attack_alone(state, card_id: str) -> bool:

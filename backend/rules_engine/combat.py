@@ -49,22 +49,6 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
     defender = 1 if state.active_player == 2 else 2
     valid_defenders = _valid_defenders(state, defender)
     requested = list(attacker_ids)
-    must_attack: list[str] = []
-    for cid in state.players[state.active_player].battlefield:
-        card = state.cards[cid]
-        if (
-            "Creature" in card.types
-            and card.zone == Zone.BATTLEFIELD
-            and not card.tapped
-            and (not card.summoning_sick or has_keyword(state, cid, "haste"))
-            and not has_keyword(state, cid, "defender")
-            and not card_cant_attack(state, cid)
-            and card_must_attack_if_able(state, cid)
-        ):
-            must_attack.append(cid)
-    for cid in must_attack:
-        if cid not in requested:
-            requested.append(cid)
 
     for cid in requested:
         if cid not in state.cards:
@@ -92,6 +76,16 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         state.log.append(f"{state.cards[lone].name} can't attack alone.")
         legal = []
         legal_targets = {}
+    from rules_engine.declaration_limits import attackers_within_limits
+    from rules_engine.combat_requirements import best_required_attack, attack_requirement_score
+    if not attackers_within_limits(state, legal, legal_targets):
+        raise ValueError('Attacker declaration exceeds a static combat limit')
+    optimum = best_required_attack(state)
+    if optimum and attack_requirement_score(state, legal) < attack_requirement_score(state, optimum[0]):
+        completion = best_required_attack(state, legal, legal_targets)
+        if completion is None or attack_requirement_score(state, completion[0]) < attack_requirement_score(state, optimum[0]):
+            raise ValueError('Attacker declaration must satisfy the maximum possible requirements')
+        legal, legal_targets = completion
     for cid in legal:
         if not has_keyword(state, cid, "vigilance"):
             state.cards[cid].tapped = True
@@ -160,28 +154,16 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
         if atk_card and len(legal[attacker]) < min_blockers:
             legal.pop(attacker, None)
 
-    # Enforce "must block each combat if able" for unassigned blockers.
-    for blocker_id in state.players[defender].battlefield:
-        card = state.cards[blocker_id]
-        if blocker_assignments.get(blocker_id, 0) > 0:
-            continue
-        if "Creature" not in card.types or card.tapped or card_cant_block(state, blocker_id):
-            continue
-        if not card_must_block_if_able(state, blocker_id):
-            continue
-        for attacker_id in state.attackers:
-            atk_card = state.cards.get(attacker_id)
-            if not atk_card or atk_card.zone != Zone.BATTLEFIELD:
-                continue
-            min_blockers = _minimum_blockers_required(state, attacker_id)
-            current = legal.get(attacker_id, [])
-            if len(current) >= max(min_blockers, 1):
-                continue
-            if not _can_block_attacker(state, atk_card, card):
-                continue
-            legal.setdefault(attacker_id, []).append(blocker_id)
-            blocker_assignments[blocker_id] = blocker_assignments.get(blocker_id, 0) + 1
-            break
+    from rules_engine.declaration_limits import blockers_within_limits
+    from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
+    if not blockers_within_limits(state, legal):
+        raise ValueError('Blocker declaration exceeds a static combat limit')
+    optimum = best_required_blocks(state)
+    if optimum is not None and block_requirement_score(state, legal) < block_requirement_score(state, optimum):
+        completion = best_required_blocks(state, legal)
+        if completion is None or block_requirement_score(state, completion) < block_requirement_score(state, optimum):
+            raise ValueError('Blocker declaration must satisfy the maximum possible requirements')
+        legal = completion
     # A legal direct block of one band member blocks every member, regardless
     # of whether the blocker could have blocked those other members directly.
     for band in state.attack_bands:

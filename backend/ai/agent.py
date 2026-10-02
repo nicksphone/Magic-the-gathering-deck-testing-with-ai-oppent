@@ -102,7 +102,9 @@ class AIAgent:
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
         with decision_projection_scope(state, player_id):
-            return self._choose_action(state, legal_moves, player_id)
+            decision = self._choose_action(state, legal_moves, player_id)
+            from ai.declaration_policy import finalize_declaration
+            return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning)
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         trigger_choice = getattr(state, 'pending_trigger_order', None) or {}

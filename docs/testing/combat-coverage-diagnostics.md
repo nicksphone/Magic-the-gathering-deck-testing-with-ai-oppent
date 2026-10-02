@@ -60,13 +60,15 @@ failures, is archived under RCHFiles
 
 ## Known Limitations and Next Upgrades
 
-- Attack/block taxes and declaration limits are reported, not implemented by
-  this milestone. Choosing exploratory simulation can still produce inaccurate
+- Attack/block taxes were reported, not implemented by this milestone. Subsequent
+  [declaration work](declaration-limits.md) implements unconditional numeric limits;
+  conditional limits and taxes remain unsupported. Exploratory simulation can still produce inaccurate
   results for those cards; direct API clients must inspect coverage themselves.
 - This classifier detects known static grammar gaps, not all missing clauses,
   replacement interactions, arbitrary gained abilities or complete Magic rules.
   An empty report remains `exploratory`/`not_certified`.
-- Full compound predicates, dependency/type/color layers, restrictions versus
-  requirements, combat payment choices and strategic AI remain open.
+- Full compound predicates, dependency/type/color layers, targeted requirements,
+  combat payment choices and strategic AI remain open. Recognized each-combat
+  requirements now use the subsequent declaration solver.
 - The dedicated in-match visual diagnostics interface belongs to the deferred
   UI work. Existing preflight warnings are functional coverage, not a redesign.

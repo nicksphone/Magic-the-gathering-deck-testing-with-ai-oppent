@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+Backend combat declarations share unconditional numeric attack/block limits and
+recognized each-combat requirement maximization across checked actions and all
+AI difficulties. Limits, source provenance and remaining gaps are exposed through
+legal hints and live rules diagnostics. See [implemented scope and limitations](docs/testing/declaration-limits.md).
+
 MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
 
 It is designed for serious deck work:

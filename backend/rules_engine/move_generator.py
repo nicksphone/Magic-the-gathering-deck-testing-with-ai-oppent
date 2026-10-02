@@ -150,7 +150,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 for cid in state.players[defender_id].battlefield
                 if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
             )
-            moves.append({"type": "attack", "options": attackers, "defenders": defenders})
+            from rules_engine.declaration_limits import declaration_limit_view
+            moves.append({"type": "attack", "options": attackers, "defenders": defenders,
+                          'declaration_limits': declaration_limit_view(state, 'attack')})
         moves.extend(restricted_attackers)
     if (
         state.step == Step.DECLARE_BLOCKERS
@@ -165,7 +167,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         ]
         attacker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in state.attackers]
         blocker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in blockers]
-        moves.append({"type": "block", "attackers": attacker_opts, "blockers": blocker_opts})
+        from rules_engine.declaration_limits import declaration_limit_view
+        moves.append({"type": "block", "attackers": attacker_opts, "blockers": blocker_opts,
+                      'declaration_limits': declaration_limit_view(state, 'block')})
 
     for cid in list(player.hand) + list(player.graveyard):
         card = state.cards[cid]

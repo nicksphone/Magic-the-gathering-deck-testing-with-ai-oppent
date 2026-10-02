@@ -71,6 +71,8 @@ echo 'Browser CI: simulation preflight'
 (cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: canonical combat coverage preflight'
 (cd frontend && timeout 90s node tests/browser-combat-coverage.mjs)
+echo 'Browser CI: declaration limits'
+(cd frontend && timeout 90s node tests/browser-declaration-limits.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

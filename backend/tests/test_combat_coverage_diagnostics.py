@@ -27,15 +27,15 @@ def test_canonical_attack_taxes_are_not_silently_certified(name):
     assert report['status'] == 'exploratory'
 
 
-@pytest.mark.parametrize('name', ['Stormtide Leviathan', 'Silent Arbiter'])
-def test_unimplemented_qualified_subject_and_declaration_limits_are_visible(name):
+@pytest.mark.parametrize('name', ['Stormtide Leviathan'])
+def test_unimplemented_qualified_subject_is_visible(name):
     gaps = combat_clause_coverage(ROWS[name]['oracle_text'], name)
     assert gaps
-    if name == 'Silent Arbiter':
-        assert len(gaps) == 2
-        assert any('can attack' in row['clause'] for row in gaps)
-    else:
-        assert any('unsupported combat subject' in row['reasons'] for row in gaps)
+    assert any('unsupported combat subject' in row['reasons'] for row in gaps)
+
+
+def test_declaration_limit_coverage_now_uses_the_implemented_parser():
+    assert not combat_clause_coverage(ROWS['Silent Arbiter']['oracle_text'], 'Silent Arbiter')
 
 
 @pytest.mark.parametrize('name', list(SUPPORTED) + ['Goblin War Drums'])

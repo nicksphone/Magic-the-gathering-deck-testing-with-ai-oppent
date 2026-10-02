@@ -50,6 +50,19 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'declaration_limits':
+        from tests.test_ai_recurring_engines import fixture as clean_state
+        from tests.test_declaration_limits import add, attack_step
+        from tests.test_ability_suppression import add as printed
+        state = clean_state()
+        for player in state.players.values():
+            player.mana_pool = {color: 0 for color in player.snow_mana_pool}
+        add(state, 'Silent Arbiter', 1)
+        for _ in range(2):
+            card = printed(state, 'Llanowar Elves', 2)
+            card.summoning_sick = False
+        attack_step(state, 2)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind == 'scry':
         from tests.test_named_counters import CARDS
         from tests.test_ai_recurring_engines import add as add_card

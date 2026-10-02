@@ -717,7 +717,9 @@ def get_match_rules_diagnostics(match_id: str) -> dict:
                           'active_combat_constraints': view['active'],
                           'unresolved_combat_constraints': view['unsupported'],
                           'printed_combat_coverage_gaps': combat_clause_coverage(card.oracle_text, card.name)})
+    from rules_engine.declaration_limits import declaration_limit_view
     return {'match_id': match_id, 'revision': ACTIVE_MATCHES[match_id].revision,
+            'declaration_limits': {kind: declaration_limit_view(state, kind) for kind in ('attack', 'block')},
             'status': 'exploratory', 'scope': 'public battlefield static combat clauses', 'cards': cards}
 
 

@@ -7,7 +7,7 @@ from rules_engine.oracle_text import without_reminder_text
 
 from rules_engine.static_conditions import NUMBERS, number, parse_static_condition, evaluate_static_condition
 
-BODY = re.compile(r"^(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks each combat|blocks each combat|must (?:attack|block))\b")
+BODY = re.compile(r"^(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks? each combat|blocks? each combat|must (?:attack|block))\b")
 
 
 def supported_body(text):
@@ -18,7 +18,7 @@ def supported_body(text):
         r"|can block (?:any number of creatures|an additional creature each combat"
         r"|(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten) additional creatures each combat"
         r"|only creatures with flying)"
-        r"|(?:attacks|blocks) each combat if able|must (?:attack|block) each combat if able)", text))
+        r"|(?:attacks?|blocks?) each combat if able|must (?:attack|block) each combat if able)", text))
 @lru_cache(maxsize=4096)
 def static_clauses(oracle):
     lines = []
@@ -58,12 +58,16 @@ def combat_clause_coverage(oracle, card_name=''):
             body, condition, _ = conditional_clause(clause)
             previous = condition
             missing_condition = False
+        from rules_engine.declaration_limits import parse_declaration_limit
+        limit = parse_declaration_limit(body)
+        if limit and condition is None and not missing_condition:
+            continue
         match = body_search.search(body)
         if match is None:
             continue
         subject, recipient = body[:match.start()].strip(), body[match.start():]
         reasons = []
-        if condition and parse_static_condition(condition) is None or missing_condition:
+        if condition and (parse_static_condition(condition) is None or limit) or missing_condition:
             reasons.append('unsupported combat condition')
         if condition and re.search(r'\bpay(?:s)?\b', condition):
             reasons.append('unsupported combat payment')
@@ -83,7 +87,7 @@ def _supported_combat_subject(subject, card_name):
         return True
     from rules_engine.card_types import CREATURE_SUBTYPES
     from rules_engine.static_conditions import COLORS, TYPES
-    subject = re.sub(r'^(?:other |each )', '', subject)
+    subject = re.sub(r'^(?:other |each |all )', '', subject)
     subject = re.sub(r' (?:you control|your opponents control)$', '', subject)
     if subject.endswith(' creature'):
         subject += 's'
@@ -112,12 +116,12 @@ def _recipient_body(state, source, target, text):
             return text[match.end():]
     if re.match(r'(?:this|it|enchanted|equipped|fortified)\b', text):
         return None
-    global_subject = re.fullmatch(r'(other )?(?:each )?([a-z -]+?) (you control|your opponents control)?\s*('
-                                  r"(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks each combat|blocks each combat|must (?:attack|block))\b.*)", text)
+    global_subject = re.fullmatch(r'(other |all )?(?:each )?([a-z -]+?) (you control|your opponents control)?\s*('
+                                  r"(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks? each combat|blocks? each combat|must (?:attack|block))\b.*)", text)
     if global_subject and BODY.match(global_subject[4]):
         from rules_engine.continuous import _scope_controller, _subject_matches
         scope = global_subject[3]
-        if (not global_subject[1] or source.id != target.id) and (scope is None or _scope_controller(source.controller, scope, target.controller)):
+        if (global_subject[1] != 'other ' or source.id != target.id) and (scope is None or _scope_controller(source.controller, scope, target.controller)):
             subject = global_subject[2]
             if subject.endswith('creature') or subject.endswith('permanent'):
                 subject += 's'
