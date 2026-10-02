@@ -34,7 +34,7 @@ from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
 from card_data.service import CardService
-from card_data.sync import CACHE_DIR, ScryfallSyncService, needs_split_color_sync
+from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.sideboard import SideboardError, apply_sideboard_swaps
@@ -207,6 +207,7 @@ class BulkSyncRequest(BaseModel):
     include_expansion_top_decks: bool = True
     include_saved_decks: bool = True
     limit: int = 300
+    force: bool = False
 
 
 class TournamentIngestRequest(BaseModel):
@@ -386,8 +387,8 @@ def health() -> dict:
 
 
 @app.post("/cards/sync")
-def sync_card(name: str, repo: Repository = Depends(get_repo)) -> dict:
-    return ScryfallSyncService(repo).sync_card_by_name(name)
+def sync_card(name: str, force: bool = False, repo: Repository = Depends(get_repo)) -> dict:
+    return ScryfallSyncService(repo).sync_card_by_name(name, force=force)
 
 
 @app.post("/cards/sync-bulk")
@@ -415,7 +416,7 @@ def sync_cards_bulk(payload: BulkSyncRequest, repo: Repository = Depends(get_rep
     failed: list[dict] = []
     for name in sorted(names)[: max(1, payload.limit)]:
         try:
-            sync.sync_card_by_name(name)
+            sync.sync_card_by_name(name, force=payload.force)
             ok.append(name)
         except Exception as exc:
             failed.append({"name": name, "error": str(exc)})
@@ -433,7 +434,7 @@ def suggest_card(name: str, repo: Repository = Depends(get_repo)) -> dict:
 
 
 @app.get("/cards/completeness")
-def card_completeness(names: list[str] = Query(default_factory=list), repo: Repository = Depends(get_repo)) -> dict:
+def card_completeness(names: list[Annotated[str, Field(min_length=1, max_length=200)]] = Query(default_factory=list, max_length=250), repo: Repository = Depends(get_repo)) -> dict:
     """Report cached metadata and asset gaps for a deck's distinct card names."""
     return CardService(repo).completeness_report(names)
 
@@ -1461,10 +1462,10 @@ def _serialize_match_controller(match: MatchController) -> dict:
 
 def _validated_deck_cards(repo, entries: list[DeckEntry]) -> list[dict]:
     deck = _hydrate_deck_cards(repo, [entry.model_dump() for entry in entries])
-    missing = sorted({item["card_name"] for item in deck if not item.get("type_line")})
+    from card_data.hydration import ready_for_match, is_playable_deck_card
+    missing = sorted({item['card_name'] for item in deck if not item.get('type_line') or (is_playable_deck_card(item) and not ready_for_match(item))})
     if missing:
-        raise HTTPException(status_code=422, detail={"code": "card_data_unavailable", "message": "Sync card data or correct these names before starting", "cards": missing})
-    from card_data.hydration import is_playable_deck_card
+        raise HTTPException(status_code=422, detail={"code": "card_data_unavailable", "message": "Sync complete card data or correct these names before starting", "cards": missing, "sync_endpoint": "/cards/sync-bulk", "readiness_endpoint": "/cards/completeness"})
     nonplayable = sorted({item["card_name"] for item in deck if not is_playable_deck_card(item)})
     if nonplayable:
         raise HTTPException(status_code=422, detail={"code": "nonplayable_card", "message": "Art-series, token and emblem objects cannot be put in a deck", "cards": nonplayable})
@@ -1472,30 +1473,6 @@ def _validated_deck_cards(repo, entries: list[DeckEntry]) -> list[dict]:
 
 
 def _hydrate_deck_cards(repo: Repository | None, deck: list[dict]) -> list[dict]:
-    names = [item["card_name"] for item in deck]
-    cached = repo.get_cached_cards_by_names(names) if repo else {}
-    if repo:
-        missing = sorted({name for name in names if name.strip() and name.strip().lower() not in cached})
-        stale = sorted(
-            {
-                row.name
-                for row in cached.values()
-                if not (getattr(row, "image_uri", None) and getattr(row, "mana_cost", None) is not None and getattr(row, "type_line", None))
-                or (not getattr(row, "layout", None) and getattr(row, "card_faces_json", "[]") not in {"", "[]"})
-                or needs_split_color_sync(row)
-            }
-        )
-        to_sync = sorted(set(missing + stale))
-        if to_sync:
-            sync = ScryfallSyncService(repo)
-            for name in to_sync:
-                try:
-                    if not sync.sync_card_from_local_knowledge(name):
-                        sync.sync_card_by_name(name, force=name in stale)
-                except Exception:
-                    # Match start should still proceed if external sync is unavailable.
-                    continue
-            cached = repo.get_cached_cards_by_names(names)
     from card_data.hydration import hydrate_deck_cards
     return hydrate_deck_cards(repo, deck)
 

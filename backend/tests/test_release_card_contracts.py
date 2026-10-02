@@ -13,7 +13,7 @@ def test_live_hydration_matches_diagnostic_faces_and_preserves_zero_stats():
     import main
     faces = [{"name": "Brutal Cathar", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2"},
              {"name": "Moonrage Brute", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3"}]
-    row = SimpleNamespace(name="Brutal Cathar", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power=0, toughness=2, loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
+    row = SimpleNamespace(name="Brutal Cathar", layout="transform", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power=0, toughness=2, loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {"brutal cathar": row})
     deck = [{"quantity": 60, "card_name": row.name}]
     live = main._hydrate_deck_cards(repo, deck)
@@ -83,7 +83,7 @@ def test_http_start_exposes_cached_faces_and_transformed_snapshot(monkeypatch):
     from effects.handlers import transform_card
     faces = [{"name": "Brutal Cathar", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2", "oracle_text": "Daybound"},
              {"name": "Moonrage Brute", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3", "oracle_text": "First strike\nNightbound"}]
-    row = SimpleNamespace(name="Brutal Cathar", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power="2", toughness="2", loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
+    row = SimpleNamespace(name="Brutal Cathar", layout="transform", oracle_text="Daybound", mana_cost="{2}{W}", type_line=faces[0]["type_line"], power="2", toughness="2", loyalty=None, image_uri="/card-images/cathar.jpg", card_faces_json=json.dumps(faces))
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {"brutal cathar": row})
     monkeypatch.setitem(main.app.dependency_overrides, main.get_repo, lambda: repo)
     monkeypatch.setattr(main, "_persist_active_match", lambda *args: None)

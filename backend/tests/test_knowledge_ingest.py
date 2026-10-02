@@ -200,7 +200,7 @@ def test_verified_empty_rulings_are_not_reported_missing(repo, bolt):
     assert report["missing"]["rulings"] == 0
 
 
-def test_live_hydration_materializes_bulk_faces_without_prior_deck_import(repo, bolt, monkeypatch):
+def test_live_hydration_reads_bulk_faces_without_prior_deck_import_or_cache_write(repo, bolt, monkeypatch):
     from main import _hydrate_deck_cards
 
     delver = {
@@ -218,7 +218,8 @@ def test_live_hydration_materializes_bulk_faces_without_prior_deck_import(repo, 
     assert [face["name"] for face in cards[0]["card_faces"]] == ["Delver of Secrets", "Insectile Aberration"]
     assert cards[0]["power"] == "1"
     assert cards[0]["colors"] == ["U"]
-    assert json.loads(repo.get_cached_card_by_name(delver["name"]).card_faces_json)[1]["power"] == "3"
+    assert cards[0]['card_faces'][1]['power'] == '3'
+    assert repo.get_cached_card_by_name(delver['name']) is None
 
 
 def test_unverified_manual_knowledge_is_not_materialized(repo, bolt):
@@ -264,7 +265,7 @@ def test_http_match_start_uses_bulk_only_cards_offline(tmp_path, bolt, monkeypat
         match_id = response.json()["id"]
         state = main.ACTIVE_MATCHES[match_id].state
         assert any(card.name == "Lightning Bolt" and card.oracle_text == bolt["oracle_text"] for card in state.cards.values())
-        assert repo.get_cached_card_by_name("Lightning Bolt").scryfall_id == bolt["id"]
+        assert repo.get_cached_card_by_name('Lightning Bolt') is None
     finally:
         main.app.dependency_overrides.pop(main.get_repo, None)
         if match_id:

@@ -16,16 +16,9 @@ init_db()
 
 @app.post("/fixture/start-decks")
 def fixture_start_decks():
-    from card_data.fallback_cards import fallback_card_payload
-    from card_data.placeholders import ensure_placeholder_image
     deck = [{"quantity": 60, "card_name": "Island"}]
     with Session(engine) as session:
         repo = Repository(session)
-        # Response-loss recovery is not a Scryfall/network availability test.
-        seed = fallback_card_payload('Island')
-        repo.upsert_card({**seed, 'colors': ','.join(seed.get('colors', [])),
-                          'image_uri': ensure_placeholder_image(name=seed['name'],
-                              type_line=seed['type_line'], token=False)})
         a = repo.save_deck("Start retry A", "fixture", deck, [], "Control")
         b = repo.save_deck("Start retry B", "fixture", deck, [], "Control")
         return {"a": a.id, "b": b.id}

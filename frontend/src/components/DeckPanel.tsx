@@ -196,8 +196,11 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
         <div className="data-report" role="status">
           <strong>Card metadata: {completeness.complete}/{completeness.requested} available</strong>
           <span>Oracle fallback: {completeness.cards.filter((card) => card.oracle_source === "fallback").length}</span>
+          {completeness.cards.every((card) => typeof card.match_ready === "boolean") && <span>Local match data ready: {completeness.cards.filter((card) => card.match_ready).length}/{completeness.requested}. Art and rulings sync separately.</span>}
+          {completeness.cards.some((card) => card.needs_card_sync) && <span role="alert">Sync complete card data before playing: {completeness.cards.filter((card) => card.needs_card_sync).map((card) => card.name).join(", ")}</span>}
           <span>Uncached: {completeness.missing.cached}</span>
           <span>Placeholder art: {completeness.missing.real_image}</span>
+          {completeness.cards.every((card) => card.image_status) && <span>Art: {completeness.cards.filter((card) => card.image_status === "local").length} local; {completeness.cards.filter((card) => card.image_status === "remote").length} remote; {completeness.cards.filter((card) => card.image_status === "fallback").length} fallback.</span>}
           <span>Rulings unavailable or unverified: {completeness.missing.rulings}</span>
           <span>Metadata availability does not guarantee rules support.</span>
           <span>Rules coverage: {completeness.cards.filter((card) => card.rules_coverage === "known_unsupported").length} known unsupported; {completeness.cards.filter((card) => card.rules_coverage !== "known_unsupported").length} not certified. Match statistics are exploratory.</span>

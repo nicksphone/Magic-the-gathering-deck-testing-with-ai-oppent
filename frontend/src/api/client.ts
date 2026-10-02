@@ -78,6 +78,10 @@ export type CardCompletenessReport = {
   cards: {
     name: string;
     cached: boolean;
+    match_ready?: boolean;
+    needs_card_sync?: boolean;
+    card_data_sources?: string[];
+    image_status?: "fallback" | "remote" | "local";
     oracle_source: "cache" | "knowledge" | "fallback" | "missing";
     placeholder_image: boolean;
     unsupported_mechanics?: string[];

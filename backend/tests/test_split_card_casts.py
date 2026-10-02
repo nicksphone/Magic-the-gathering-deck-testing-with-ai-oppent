@@ -158,11 +158,12 @@ def test_match_hydration_backfills_stale_faces_from_local_canonical_data(monkeyp
         def get_cached_card_by_name(self, name):
             return self.row if name == raw["name"] else None
 
-        def get_card_knowledge(self, name):
-            return SimpleNamespace(
+        def list_card_knowledge(self, names):
+            return [SimpleNamespace(
+                name=raw['name'],
                 oracle_source="scryfall", scryfall_id=raw["id"],
                 profiles_json=json.dumps({"card_data": {**raw, "object": "card"}}),
-            ) if name == raw["name"] else None
+            )] if raw['name'] in names else []
 
         def upsert_card(self, payload):
             self.upserts += 1
@@ -181,7 +182,7 @@ def test_match_hydration_backfills_stale_faces_from_local_canonical_data(monkeyp
     assert first[0]["layout"] == second[0]["layout"] == "split"
     assert first[0]["card_faces"][1]["name"] == "Ice"
     assert first[0]["card_faces"][1]["colors"] is None
-    assert repo.upserts == 1
+    assert repo.upserts == 0
 
 
 def test_split_face_color_fallback_does_not_inherit_the_other_halfs_color():

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Local-only canonical match admission
+
+- Removed synchronous card/image/ruling sync and database cache materialization from match hydration. Live games and diagnostics read canonical local bulk records, cache metadata and the shipped seed; structured missing-data errors point to explicit sync and readiness endpoints.
+- Added bounded completeness queries and local readiness/source/art status in the existing deck data report. Unknown stats/faces and unresolved legacy split colors fail admission; recognized stale metadata is repaired in memory while preserving cached face artwork.
+- Added front/back knowledge aliases without whole-corpus row loading, exact-name precedence and escaped wildcard matching. Preserved printed loyalty through canonical normalization, nullable cache migration and serialization; verified a live SQLite backup on RCHFiles before migration.
+- Added explicit force refresh to single/bulk sync; existing art cannot short-circuit incomplete metadata. Sync remains synchronous and outage fallback requires a readiness recheck. No broad rules or AI certification is implied.
+- Verified 2,526 backend tests in an isolated fresh checkout/database, 139 focused checks, frontend lint/unit/build, 103 Chromium scenario assertions and 12 logical seat-balanced smoke games (24 repeatability executions) with zero reported drift, timeouts or classified anomalies. Reused installed dependencies; no fresh installation or visual/pointer certification. Archived failures, source/provenance and final evidence on RCHFiles; alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Proliferation and atomic multi-kind counter events
 
 - Added non-targeting any-number proliferation selections for permanents and players, with every existing counter kind mandatory for selected recipients and authoritative poison/loyalty/lore storage.

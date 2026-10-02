@@ -4,6 +4,7 @@ import json
 
 from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
+from card_data.hydration import hydrate_deck_cards, ready_for_match, cached_json, local_knowledge
 from card_data.search import fuzzy_card_lookup
 from card_data.sync import ScryfallSyncService
 from persistence.models import CardCache
@@ -27,6 +28,7 @@ class CardService:
                 "oracle_text": card.oracle_text or (fallback_card_payload(card.name) or {}).get("oracle_text", ""),
                 "image_uri": select_display_image_uri(card, name=card.name, type_line=card.type_line or ""),
                 "colors": card.colors.split(",") if card.colors else [],
+                'loyalty': getattr(card, 'loyalty', None),
                 "legalities": json.loads(card.legalities_json),
                 "card_faces": json.loads(getattr(card, "card_faces_json", "[]") or "[]"),
                 "rulings": json.loads(getattr(card, "rulings_json", "[]") or "[]"),
@@ -43,50 +45,44 @@ class CardService:
     def completeness_report(self, names: list[str]) -> dict:
         requested = [name.strip() for name in names if name and name.strip()]
         cached = self.repo.get_cached_cards_by_names(requested)
-        knowledge = {
-            row.name.casefold(): row for row in self.repo.list_card_knowledge(requested)
-        } if hasattr(self.repo, "list_card_knowledge") else {}
+        knowledge = local_knowledge(self.repo, requested)
+        hydrated = hydrate_deck_cards(self.repo, [{'card_name': name, 'quantity': 1} for name in requested])
         cards: list[dict] = []
-        for name in requested:
+        for name, metadata in zip(requested, hydrated):
             card = cached.get(name.lower())
             profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
             raw = profile["card_data"] if profile else {}
             fallback = fallback_card_payload(name) or {}
-            cached_faces = json.loads(getattr(card, "card_faces_json", "[]") or "[]") if card else []
-            faces = cached_faces or raw.get("card_faces") or []
-            rulings = json.loads(getattr(card, "rulings_json", "[]") or "[]") if card else []
-            type_line = str((getattr(card, "type_line", "") if card else "") or raw.get("type_line") or fallback.get("type_line") or "")
-            oracle_text = str((getattr(card, "oracle_text", "") if card else "") or raw.get("oracle_text") or fallback.get("oracle_text") or "")
+            faces = metadata.get('card_faces') or []
+            rulings = cached_json(getattr(card, 'rulings_json', ''), list) if card else []
+            type_line = str(metadata.get('type_line') or '')
+            oracle_text = str(metadata.get('oracle_text') or '')
             if card and card.oracle_text:
                 oracle_source = "cache"
             elif raw:
                 oracle_source = "knowledge"
-            elif fallback.get("oracle_text"):
+            elif fallback:
                 oracle_source = "fallback"
             else:
                 oracle_source = "cache" if card and card.type_line else "missing"
             unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces)
-            image_source = card if card and card.image_uri else {
-                "image_uri": ScryfallSyncService._extract_remote_image_uri(raw) if raw else None,
-                "card_faces": faces,
-            }
-            image_uri = select_display_image_uri(
-                image_source,
-                name=name,
-                type_line=type_line,
-            )
+            image_uri = metadata['image_uri']
             has_placeholder = "placeholder-" in image_uri or "generic-token" in image_uri
             cards.append(
                 {
                     "name": name,
                     "cached": card is not None,
-                    "oracle": bool(oracle_text or (oracle_source in {"cache", "knowledge"} and type_line)),
+                    'match_ready': ready_for_match(metadata),
+                    'card_data_sources': metadata['card_data_sources'],
+                    'needs_card_sync': not ready_for_match(metadata),
+                    'image_status': 'fallback' if has_placeholder else 'remote' if image_uri.startswith(('http://', 'https://')) else 'local',
+                    "oracle": bool(oracle_text or (oracle_source in {"cache", "knowledge", "fallback"} and type_line)),
                     "oracle_source": oracle_source,
                     "unsupported_mechanics": unsupported_mechanics,
                     "rules_coverage": "known_unsupported" if unsupported_mechanics else "not_certified",
-                    "mana_cost": bool((getattr(card, "mana_cost", "") if card else "") or raw.get("mana_cost") or fallback.get("mana_cost") or is_land_card({"name": name, "type_line": type_line})),
+                    "mana_cost": bool(metadata.get('mana_cost') or is_land_card({"name": name, "type_line": type_line})),
                     "type_line": bool(type_line),
-                    "legalities": bool(json.loads(getattr(card, "legalities_json", "{}") or "{}")) or bool(raw.get("legalities")),
+                    "legalities": bool(cached_json(getattr(card, 'legalities_json', ''), dict)) or bool(raw.get("legalities")),
                     "rulings": bool(profile.get("rulings_verified") is True) if profile else bool(rulings),
                     "faces": faces,
                     "faces_complete": all(face.get("name") and face.get("type_line") for face in faces) if faces else True,

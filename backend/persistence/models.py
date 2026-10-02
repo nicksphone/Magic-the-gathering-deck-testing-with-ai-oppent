@@ -17,6 +17,7 @@ class CardCache(SQLModel, table=True):
     colors: str = ""
     power: Optional[str] = None
     toughness: Optional[str] = None
+    loyalty: Optional[str] = None
     image_uri: Optional[str] = None
     legalities_json: str = "{}"
     card_faces_json: str = "[]"

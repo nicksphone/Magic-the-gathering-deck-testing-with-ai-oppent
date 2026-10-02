@@ -23,6 +23,8 @@ def _ensure_card_cache_columns() -> None:
     with engine.begin() as conn:
         rows = conn.exec_driver_sql("PRAGMA table_info(cardcache)").all()
         columns = {str(row[1]) for row in rows}
+        if 'loyalty' not in columns:
+            conn.exec_driver_sql('ALTER TABLE cardcache ADD COLUMN loyalty TEXT')
         if "layout" not in columns:
             conn.exec_driver_sql("ALTER TABLE cardcache ADD COLUMN layout TEXT NOT NULL DEFAULT ''")
         if "card_faces_json" not in columns:

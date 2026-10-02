@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Iterable
 
 from sqlmodel import Session, func, select
+from sqlalchemy import or_
 
 from knowledge.models import CardKnowledge
 from persistence.models import (
@@ -70,13 +71,40 @@ class Repository:
         return row
 
     def get_card_knowledge(self, name: str) -> CardKnowledge | None:
-        normalized = str(name or "").strip()
-        if not normalized:
-            return None
-        query = select(CardKnowledge).where(
-            func.lower(CardKnowledge.name) == normalized.lower()
-        )
-        return self.session.exec(query).first()
+        return self.get_card_knowledge_by_names([name]).get(str(name or '').strip().casefold())
+
+    def get_card_knowledge_by_names(self, names: list[str]) -> dict[str, CardKnowledge]:
+        requested = {str(name).strip() for name in names if str(name or '').strip()}
+        if not requested:
+            return {}
+        normalized = {name.casefold() for name in requested}
+        rows = self.session.exec(select(CardKnowledge).where(CardKnowledge.name.in_(requested))).all()
+        out = {row.name.casefold(): row for row in rows}
+        missing = normalized - out.keys()
+        if missing:
+            rows = self.session.exec(select(CardKnowledge).where(func.lower(CardKnowledge.name).in_(missing))).all()
+            out.update({row.name.casefold(): row for row in rows})
+        missing = normalized - out.keys()
+        if not missing:
+            return out
+        predicates = []
+        for name in requested:
+            if name.casefold() not in missing:
+                continue
+            predicates.extend([CardKnowledge.name.startswith(name + ' // ', autoescape=True),
+                               CardKnowledge.name.endswith(' // ' + name, autoescape=True)])
+        rows = self.session.exec(select(CardKnowledge).where(or_(*predicates)).order_by(CardKnowledge.id)).all()
+        for row in rows:
+            try:
+                raw = json.loads(row.profiles_json).get('card_data') or {}
+            except (TypeError, ValueError, AttributeError):
+                raw = {}
+            if not isinstance(raw, dict):
+                raw = {}
+            for alias in _name_aliases(row.name, str(raw.get('layout') or ''), str(raw.get('type_line') or '')):
+                if alias.casefold() in normalized:
+                    out.setdefault(alias.casefold(), row)
+        return out
 
     def list_card_knowledge(self, names: list[str] | None = None) -> list[CardKnowledge]:
         query = select(CardKnowledge)
@@ -94,18 +122,7 @@ class Repository:
         return list(self.session.exec(query).all())
 
     def get_cached_card_by_name(self, name: str) -> CardCache | None:
-        normalized = name.strip().lower()
-        if not normalized:
-            return None
-        query = select(CardCache).where(func.lower(CardCache.name) == normalized)
-        hit = self.session.exec(query).first()
-        if hit is not None:
-            return hit
-        # Handle split/DFC names cached as "Front Face // Back Face".
-        for row in self.session.exec(select(CardCache)).all():
-            if normalized in _name_aliases(row.name, row.layout, row.type_line):
-                return row
-        return None
+        return self.get_cached_cards_by_names([name]).get(name.strip().lower())
 
     def get_cached_cards_by_names(self, names: list[str]) -> dict[str, CardCache]:
         if not names:
@@ -116,11 +133,17 @@ class Repository:
         # Exact Oracle names must win over face aliases regardless of row order.
         out: dict[str, CardCache] = {
             row.name.strip().lower(): row
-            for row in self.session.exec(select(CardCache).where(func.lower(CardCache.name).in_(lowered))).all()
+            for row in self.session.exec(select(CardCache).where(or_(
+                CardCache.name.in_({name.strip() for name in names}), func.lower(CardCache.name).in_(lowered)))).all()
         }
         if len(out) == len(lowered):
             return out
-        rows = self.session.exec(select(CardCache).order_by(CardCache.id)).all()
+        missing = lowered - out.keys()
+        predicates = []
+        for name in missing:
+            predicates.extend([func.lower(CardCache.name).startswith(name + ' // ', autoescape=True),
+                               func.lower(CardCache.name).endswith(' // ' + name, autoescape=True)])
+        rows = self.session.exec(select(CardCache).where(or_(*predicates)).order_by(CardCache.id)).all()
         for row in rows:
             for alias in _name_aliases(row.name, row.layout, row.type_line):
                 if alias in lowered:

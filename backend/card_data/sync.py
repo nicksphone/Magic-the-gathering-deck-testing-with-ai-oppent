@@ -20,10 +20,10 @@ CACHE_ROUTE_PREFIX = "/card-images"
 
 def needs_split_color_sync(card) -> bool:
     """Older cache writers mistook absent Scryfall face colors for colorless."""
-    if getattr(card, "layout", "") != "split":
+    if (card.get('layout') if isinstance(card, dict) else getattr(card, "layout", "")) != "split":
         return False
     try:
-        faces = json.loads(getattr(card, "card_faces_json", "[]") or "[]")
+        faces = card.get('card_faces') if isinstance(card, dict) else json.loads(getattr(card, "card_faces_json", "[]") or "[]")
     except (TypeError, ValueError):
         return False
     return isinstance(faces, list) and any(
@@ -39,7 +39,8 @@ class ScryfallSyncService:
         self.repository = repository
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    def _normalize_payload(self, raw: dict[str, Any], image_uri: str | None, rulings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    @classmethod
+    def _normalize_payload(cls, raw: dict[str, Any], image_uri: str | None, rulings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
@@ -56,13 +57,15 @@ class ScryfallSyncService:
             "colors": ",".join(raw.get("colors") or (face.get("colors", []) if face else [])),
             "power": raw.get("power") or (face.get("power") if face else None),
             "toughness": raw.get("toughness") or (face.get("toughness") if face else None),
+            'loyalty': raw.get('loyalty') if raw.get('loyalty') is not None else (face.get('loyalty') if face else None),
             "image_uri": image_uri,
             "legalities_json": json.dumps(raw.get("legalities", {})),
-            "card_faces_json": json.dumps(self._normalize_faces(raw.get("card_faces") or [])),
+            "card_faces_json": json.dumps(cls._normalize_faces(raw.get("card_faces") or [])),
             "rulings_json": json.dumps(rulings or []),
         }
 
-    def _normalize_faces(self, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    @classmethod
+    def _normalize_faces(cls, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for face in faces:
             out.append(
@@ -75,12 +78,13 @@ class ScryfallSyncService:
                     "toughness": face.get("toughness"),
                     "loyalty": face.get("loyalty"),
                     "colors": face.get("colors"),
-                    "image_uri": self._extract_face_image_uri(face),
+                    "image_uri": cls._extract_face_image_uri(face),
                 }
             )
         return out
 
-    def _extract_face_image_uri(self, face: dict[str, Any]) -> str | None:
+    @staticmethod
+    def _extract_face_image_uri(face: dict[str, Any]) -> str | None:
         preferred_sizes = ("normal", "large", "png", "small", "art_crop", "border_crop")
         face_uris = face.get("image_uris") or {}
         for key in preferred_sizes:
@@ -115,16 +119,28 @@ class ScryfallSyncService:
         raw = profile.get("card_data") if isinstance(profile, dict) else None
         if not isinstance(raw, dict) or raw.get("object") != "card":
             return None
+        faces = raw.get('card_faces')
+        if faces is not None and (not isinstance(faces, list) or any(not isinstance(face, dict) for face in faces)):
+            return None
         if not raw.get("id") or raw["id"] != row.scryfall_id or (not raw.get("type_line") and not raw.get("card_faces")):
             return None
-        if str(raw.get("name", "")).casefold() != name.strip().casefold():
+        canonical_name = str(raw.get('name', '')).casefold()
+        if canonical_name != row.name.casefold():
+            return None
+        aliases = {canonical_name}
+        if raw.get('layout') != 'art_series' and raw.get('type_line') != 'Card':
+            aliases.update(str(face.get('name') or '').casefold() for face in (faces or []))
+        if name.strip().casefold() not in aliases:
             return None
         return profile
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)
         if cached and not force and self._cached_image_available(cached.image_uri):
-            return self._serialize_card(cached)
+            from card_data.hydration import ready_for_match
+            metadata = self._serialize_card(cached)
+            if ready_for_match(metadata):
+                return metadata
 
         try:
             with httpx.Client(timeout=20) as client:
@@ -207,6 +223,7 @@ class ScryfallSyncService:
             "colors": self._parse_colors(self._card_attr(card, "colors")),
             "power": self._card_attr(card, "power") or (fallback or {}).get("power"),
             "toughness": self._card_attr(card, "toughness") or (fallback or {}).get("toughness"),
+            'loyalty': self._card_attr(card, 'loyalty') if self._card_attr(card, 'loyalty') is not None else (fallback or {}).get('loyalty'),
             "image_uri": self._card_attr(card, "image_uri"),
             "legalities": json.loads(self._card_attr(card, "legalities_json", "{}") or "{}"),
             "card_faces": json.loads(self._card_attr(card, "card_faces_json", "[]") or "[]"),
