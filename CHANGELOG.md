@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Static/replacement source suppression and layer-query cost
+
+- Connected supported ability loss to continuous bonuses/keyword sources, counter/token/life replacements, counter prohibitions, draw limits, land/library permissions, recognized cost modifiers and timing/mana readers. Suppressed printed recurring rewards no longer inflate AI board value; physical shield counters remain functional.
+- Preserved the supported combined loss/base-stat effect across layers without reviving independent abilities on its source. Corrected equivalent counter-replacement recipient wording generically. Canonical fixtures and both-seat golden states validate outcomes, restoration and unchanged printed metadata; a stale proliferation assertion now explicitly tests prohibition suppression and restoration.
+- Removed redundant timestamp sorting from boolean loss queries and prepares loss sources once per pure layer query, without a persistent mutable-state cache or reduced search depth. A retained 50-creature fixture microbenchmark is about 4.4–4.6x faster than the published helper; this is not whole-game/worst-case AI latency certification.
+- Verified 2,739 isolated backend tests (295 deprecation warnings), 281 focused checks, frontend lint/unit/build and the final-engine full Chromium harness. Twelve logical seat-balanced smoke games repeat twice without reported determinism failures, timeouts or anomaly labels. Failed and deliberately cancelled superseded validations are labeled separately and retained with final evidence on RCHFiles under `diagnostics/static-ability-suppression/20261002T042530Z/`.
+- Updated README, finish plan and AST graph. Arbitrary/conditional/temporary losses, gained non-keyword abilities, full type/color/dependency layers, pre-entry/simultaneous replacement fidelity, broader AI quality and operational release gates remain unfinished. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Printed activation and trigger suppression
 
 - Connected supported battlefield all-ability loss to shared mana capacity/payment, activated/loyalty/equip/crew move generation and checked activation writes. New keyword grants do not restore printed Oracle abilities; unaffected basic lands retain intrinsic mana abilities.

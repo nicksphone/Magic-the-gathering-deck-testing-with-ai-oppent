@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from rules_engine.continuous import effect_timestamp
+from rules_engine.continuous import effect_timestamp, printed_abilities_suppressed
 from rules_engine.card_types import is_token_card
 
 
@@ -12,6 +12,8 @@ def _battlefield_oracle_texts(state, controller: int | None = None):
     for pid in state.players:
         for cid in state.players[pid].battlefield:
             card = state.cards[cid]
+            if printed_abilities_suppressed(state, cid):
+                continue
             if controller is not None and card.controller != controller:
                 continue
             order_key = (

@@ -69,14 +69,14 @@ def _apply_aura_discounts(context: CostContext) -> CostContext:
     if context.state is None or not context.is_spell:
         return context
     from rules_engine.attachments import is_aura
-    from rules_engine.continuous import _static_oracle_text
+    from rules_engine.continuous import _static_oracle_text, printed_abilities_suppressed
     # A selected face can differ from the parent object's printed type line.
     if not context.spell_types or "Enchantment" not in context.spell_types or not re.search(r"^enchant\s", context.oracle_text.lower(), re.M):
         return context
     target = context.state.cards.get(context.target_card_id)
     for cid in context.state.players[context.player_id].battlefield:
         source = context.state.cards[cid]
-        if source.controller != context.player_id:
+        if source.controller != context.player_id or printed_abilities_suppressed(context.state, cid):
             continue
         for clause in re.split(r"[.\n]", _static_oracle_text(source)):
             modifier = aura_cost_modifier(clause.strip())
@@ -95,7 +95,7 @@ def _apply_equip_discounts(context: CostContext) -> CostContext:
     if context.state is None or context.is_spell or context.ability_kind != "equip":
         return context
     from game_state.state import Zone
-    from rules_engine.continuous import _static_oracle_text, effective_power
+    from rules_engine.continuous import _static_oracle_text, effective_power, printed_abilities_suppressed
     from rules_engine.attachments import is_aura, is_equipment
     target = context.state.cards.get(context.target_card_id)
     equipment = context.state.cards.get(context.source_card_id)
@@ -104,7 +104,7 @@ def _apply_equip_discounts(context: CostContext) -> CostContext:
         return context
     for cid in context.state.players[context.player_id].battlefield:
         source = context.state.cards[cid]
-        if source.controller != context.player_id:
+        if source.controller != context.player_id or printed_abilities_suppressed(context.state, cid):
             continue
         for clause in re.split(r"[.\n]", _static_oracle_text(source)):
             clause = clause.strip()
@@ -144,6 +144,7 @@ _SPELL_TAX_RE = re.compile(
 
 
 def _apply_static_spell_taxes(context: CostContext) -> CostContext:
+    from rules_engine.continuous import printed_abilities_suppressed
     """Apply generic spell taxes from supported battlefield Oracle text."""
     if context.state is None or not context.is_spell or not context.spell_types:
         return context
@@ -155,6 +156,8 @@ def _apply_static_spell_taxes(context: CostContext) -> CostContext:
         for cid in context.state.players[pid].battlefield:
             source = context.state.cards.get(cid)
             if source is None:
+                continue
+            if printed_abilities_suppressed(context.state, cid):
                 continue
             text = (getattr(source, "oracle_text", "") or "").lower()
             for match in _SPELL_TAX_RE.finditer(text):

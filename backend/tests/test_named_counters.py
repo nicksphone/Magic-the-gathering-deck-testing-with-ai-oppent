@@ -150,9 +150,14 @@ def test_proliferation_ai_does_not_value_redundant_keyword_but_can_restore_lost_
     card = add(state)
     put_counters(state, 'flying', 1, target_card_id=card.id)
     assert preferred_recipients(state, 1, recipients(state)) == []
-    add(state, 'Humility', 2)
+    humility = add(state, 'Humility', 2)
     assert preferred_recipients(state, 1, recipients(state)) == [f'card:{card.id}']
-    add(state, 'Archetype of Imagination', 2)
+    archetype = add(state, 'Archetype of Imagination', 2)
+    from rules_engine.continuous import printed_abilities_suppressed
+    assert printed_abilities_suppressed(state, archetype.id)
+    assert preferred_recipients(state, 1, recipients(state)) == [f'card:{card.id}']
+    resolve_effect(state, 1, 'destroy_permanent', {'target_card_id': humility.id})
+    assert not printed_abilities_suppressed(state, archetype.id)
     assert preferred_recipients(state, 1, recipients(state)) == []
 
 

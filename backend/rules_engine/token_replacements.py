@@ -6,6 +6,7 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 def token_creation_amount(state, controller, amount):
+    from rules_engine.continuous import printed_abilities_suppressed
     amount = max(0, int(amount))
     if not amount:
         return 0
@@ -13,6 +14,8 @@ def token_creation_amount(state, controller, amount):
         for cid in player.battlefield:
             source = state.cards.get(cid)
             if source is None or source.zone != Zone.BATTLEFIELD:
+                continue
+            if printed_abilities_suppressed(state, cid):
                 continue
             for line in without_reminder_text(source.oracle_text).splitlines():
                 line = line.strip().lower().removesuffix('.')

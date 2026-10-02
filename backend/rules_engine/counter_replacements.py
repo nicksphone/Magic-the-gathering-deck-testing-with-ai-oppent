@@ -20,7 +20,7 @@ def counter_modifier(line):
         (r'if one or more counters would be put on an artifact or creature you control, that many plus one of each of those kinds of counters are put on that permanent instead', 'controlled_artifact_creature', 'add'),
         (r'if you would get one or more counters, you get that many plus one of each of those kinds of counters instead', 'recipient_self', 'add'),
         (r'if you would put one or more counters on a creature or planeswalker you control or on yourself, put that many plus one of each of those kinds of counters on that permanent or player instead', 'placer_controlled', 'add'),
-        (r'if one or more \+1/\+1 counters would be put on a creature you control, that many plus one \+1/\+1 counters are put on it instead', 'controlled_plus_creature', 'add'),
+        (r'if one or more \+1/\+1 counters would be put on a creature you control, that many plus one \+1/\+1 counters are put on (?:it|that creature) instead', 'controlled_plus_creature', 'add'),
         (r'if one or more \+1/\+1 counters would be put on a creature you control, twice that many \+1/\+1 counters are put on (?:it|that creature) instead', 'controlled_plus_creature', 'double'),
         (r'if one or more \+1/\+1 counters would be put on a creature, twice that many \+1/\+1 counters are put on (?:it|that creature) instead', 'plus_creature', 'double'),
         (r'if one or more \+1/\+1 counters would be put on a permanent you control, that many plus one \+1/\+1 counters are put on that permanent instead', 'controlled_plus_permanent', 'add'),
@@ -29,6 +29,7 @@ def counter_modifier(line):
 
 
 def counter_options(state, controller, payload, used=()):
+    from rules_engine.continuous import printed_abilities_suppressed
     player = payload.get('target_player')
     card = state.cards.get(payload.get('target_card_id'))
     kind = payload['counter']
@@ -38,6 +39,8 @@ def counter_options(state, controller, payload, used=()):
         for cid in state.players[pid].battlefield:
             source = state.cards.get(cid)
             if source is None or source.zone != Zone.BATTLEFIELD:
+                continue
+            if printed_abilities_suppressed(state, cid):
                 continue
             for index, line in enumerate(without_reminder_text(source.oracle_text).splitlines()):
                 instruction = counter_modifier(line)

@@ -81,9 +81,12 @@ def land_can_produce_mana(state: MatchState, card_id: str) -> bool:
 
 def land_mana_amount(state: MatchState, player_id: int, card_id: str) -> int:
     """Return how much mana one untapped land produces for this controller."""
+    from rules_engine.continuous import printed_abilities_suppressed
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
         if "Planeswalker" not in card.types or card.controller != player_id:
+            continue
+        if printed_abilities_suppressed(state, cid):
             continue
         oracle = (getattr(card, "oracle_text", "") or "").lower()
         if "lands you control have" in oracle and "add two mana" in oracle:

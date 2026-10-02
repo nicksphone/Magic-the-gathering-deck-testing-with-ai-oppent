@@ -53,8 +53,9 @@ official rules and closed test copies are retained on RCHFiles under
 
 ## Known Limitations and Next Upgrades
 
-- Full static/replacement/prevention/permission suppression is not complete;
-  other direct Oracle readers still require integration and golden fixtures.
+- The subsequent [static-source increment](static-ability-suppression.md) integrates
+  additional readers; full static/replacement/prevention/permission suppression
+  remains incomplete and requires further integration and golden fixtures.
 - Arbitrary gained non-keyword abilities, conditional suppression, dependency
   ordering and effects spanning multiple layers remain unfinished.
 - Legacy last-known snapshots do not contain suppression history; missing facts

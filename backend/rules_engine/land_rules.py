@@ -11,11 +11,14 @@ _NUMBER_WORDS = {
 
 
 def compute_max_land_plays_this_turn(state, player_id: int) -> int:
+    from rules_engine.continuous import printed_abilities_suppressed
     player = state.players[player_id]
     extra = 0
     for cid in player.battlefield:
         card = state.cards.get(cid)
         if not card:
+            continue
+        if printed_abilities_suppressed(state, cid):
             continue
         text = f"{getattr(card, 'name', '')}\n{getattr(card, 'oracle_text', '')}".lower()
         # Common wording patterns:

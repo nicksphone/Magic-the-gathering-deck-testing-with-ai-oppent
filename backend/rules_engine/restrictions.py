@@ -122,10 +122,13 @@ def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
             return (False, "Cast only during your postcombat main phase.")
 
     # Static battlefield timing locks.
+    from rules_engine.continuous import printed_abilities_suppressed
     for pid in state.players:
         for cid in state.players[pid].battlefield:
             perm = state.cards[cid]
             if perm.zone != Zone.BATTLEFIELD:
+                continue
+            if printed_abilities_suppressed(state, cid):
                 continue
             ptext = (perm.oracle_text or "").lower()
             if perm.controller != player_id:

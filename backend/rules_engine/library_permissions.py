@@ -15,6 +15,7 @@ def creature_types(card) -> set[str]:
 
 
 def top_library_creature_for_type(state: MatchState, player_id: int):
+    from rules_engine.continuous import printed_abilities_suppressed
     player = state.players[player_id]
     if not player.library:
         return None
@@ -25,6 +26,8 @@ def top_library_creature_for_type(state: MatchState, player_id: int):
     for source_id in player.battlefield:
         source = state.cards.get(source_id)
         if source is None or "Creature" not in (getattr(source, "types", []) or []):
+            continue
+        if printed_abilities_suppressed(state, source_id):
             continue
         oracle = (getattr(source, "oracle_text", "") or "").lower()
         if "cast creature spells of the chosen type from the top of your library" not in oracle:

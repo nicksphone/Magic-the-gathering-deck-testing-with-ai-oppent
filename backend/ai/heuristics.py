@@ -10,6 +10,9 @@ from rules_engine.continuous import effective_keywords, effective_power, effecti
 
 def recurring_engine_value(state, card_id: str, *, surface_card=None) -> float:
     """Value printed recurring rewards, not spent ETBs or trigger conditions."""
+    from rules_engine.continuous import printed_abilities_suppressed
+    if printed_abilities_suppressed(state, card_id):
+        return 0.0
     card = surface_card if surface_card is not None else state.cards[card_id]
     text = without_reminder_text(_active_card_surface(card)["oracle_text"])
     effects = []

@@ -413,6 +413,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
         return dict(sorted(out.items()))
+    ability_losses = _printed_ability_loss_sources(state)
     modifiers = _resolved_keyword_modifiers(card)
     modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
                      for stamp, keyword in counter_grants)
@@ -425,14 +426,18 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         while modifier_index < len(modifiers) and modifiers[modifier_index]['timestamp'] <= effect_timestamp(src):
             _apply_keyword_modifier(out,modifiers[modifier_index])
             modifier_index += 1
-        out.update(_attached_effects(state, src, card)[2])
-        for scope, other_only, subject, granted in _iter_keyword_grants(src):
+        source_active = not printed_abilities_suppressed(state, src_id, losses=ability_losses)
+        if source_active:
+            out.update(_attached_effects(state, src, card)[2])
+        for scope, other_only, subject, granted in (_iter_keyword_grants(src) if source_active else ()):
             if _scope_controller(src.controller, scope, card.controller):
                 if other_only and src_id == card_id:
                     continue
                 if _subject_matches(state, card_id, subject):
                     out.update(granted)
         for scope, other_only, subject, removed in _iter_keyword_removals(src):
+            if not source_active and 'all abilities' not in removed:
+                continue
             if _scope_controller(src.controller, scope, card.controller):
                 if other_only and src_id == card_id:
                     continue
@@ -449,6 +454,8 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
+            continue
+        if printed_abilities_suppressed(state, src_id, losses=ability_losses):
             continue
         for scope, other_only, subject, removed in _iter_keyword_cant_removals(src):
             if _scope_controller(src.controller, scope, card.controller):
@@ -491,20 +498,31 @@ def _apply_keyword_modifier(keywords, effect):
         keywords[effect['keyword']] += effect['count']
 
 
-def printed_abilities_suppressed(state, card_id: str) -> bool:
+def _printed_ability_loss_sources(state):
+    losses = []
+    # This union of recognized losses does not depend on source timestamp order.
+    for player in state.players.values():
+        for source_id in player.battlefield:
+            source = state.cards.get(source_id)
+            if source is None or 'all abilities' not in _static_oracle_text(source):
+                continue
+            for scope, other_only, subject, removed in _iter_keyword_removals(source):
+                if 'all abilities' in removed:
+                    losses.append((source, scope, other_only, subject))
+    return losses
+
+
+def printed_abilities_suppressed(state, card_id: str, *, losses=None) -> bool:
     """Supported all-ability losses; new keyword grants do not restore Oracle abilities."""
     card = state.cards.get(card_id)
     if card is None or not _is_battlefield(card):
         return False
-    for source_id in _all_battlefield_ids(state):
-        source = state.cards[source_id]
-        for scope, other_only, subject, removed in _iter_keyword_removals(source):
-            if ('all abilities' in removed
-                    and (not other_only or source_id != card_id)
-                    and _scope_controller(source.controller, scope, card.controller)
-                    and _subject_matches(state, card_id, subject)):
-                return True
-    return False
+    if losses is None:
+        losses = _printed_ability_loss_sources(state)
+    return any((not other_only or source.id != card_id)
+               and _scope_controller(source.controller, scope, card.controller)
+               and _subject_matches(state, card_id, subject)
+               for source, scope, other_only, subject in losses)
 
 
 def has_keyword(state, card_id: str, keyword: str) -> bool:
@@ -515,9 +533,11 @@ def has_keyword(state, card_id: str, keyword: str) -> bool:
 
 def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     card = state.cards[card_id]
+    ability_losses = _printed_ability_loss_sources(state)
     base_p = card.power
     base_t = card.toughness
-    dynamic_p, dynamic_t = _self_defined_card_type_pt(state, card)
+    dynamic_p, dynamic_t = ((None, None) if printed_abilities_suppressed(state, card_id, losses=ability_losses)
+                           else _self_defined_card_type_pt(state, card))
     if dynamic_p is not None:
         base_p = dynamic_p
     if dynamic_t is not None:
@@ -527,11 +547,26 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         src = state.cards.get(src_id)
         if not src:
             continue
-        for scope, other_only, subject, p_set, t_set in _iter_pt_setters(src):
+        setter_source = _ability_layer_continuation_source(src) if printed_abilities_suppressed(state, src_id, losses=ability_losses) else src
+        if setter_source is None:
+            continue
+        for scope, other_only, subject, p_set, t_set in _iter_pt_setters(setter_source):
             if not _pt_setter_applies(state, src, card_id, scope, other_only, subject):
                 continue
             base_p, base_t = p_set, t_set
     return base_p, base_t
+
+
+def _ability_layer_continuation_source(source):
+    """The supported combined loss/base-PT instruction starts in layer six."""
+    from copy import copy
+    clauses = [clause.strip() for clause in re.split(r'[.\n]', _static_oracle_text(source))
+               if re.fullmatch(r'(?:all )?creatures lose all abilities and have base power and toughness \d+/\d+', clause.strip())]
+    if not clauses:
+        return None
+    continued = copy(source)
+    continued.oracle_text = '.\n'.join(clauses)
+    return continued
 
 
 def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
@@ -566,9 +601,12 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         return (0, 0)
     p_bonus = 0
     t_bonus = 0
+    ability_losses = _printed_ability_loss_sources(state)
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
+            continue
+        if printed_abilities_suppressed(state, src_id, losses=ability_losses):
             continue
         attached_p, attached_t, _, _ = _attached_effects(state, src, card)
         p_bonus += attached_p
@@ -933,6 +971,7 @@ def _is_battlefield(card) -> bool:
 def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     """Return a deterministic trace of continuous effect application for diagnostics."""
     card = state.cards[card_id]
+    ability_losses = _printed_ability_loss_sources(state)
     trace: list[dict[str, Any]] = []
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
@@ -961,7 +1000,14 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
         src = state.cards.get(src_id)
         if not src or not _is_battlefield(src):
             continue
-        layer_entries = _source_continuous_layer_entries(state, src, card_id)
+        if printed_abilities_suppressed(state, src_id, losses=ability_losses):
+            continued = _ability_layer_continuation_source(src)
+            layer_entries = _source_continuous_layer_entries(state, continued, card_id) if continued else []
+            if not continued:
+                layer_entries = [entry for entry in _source_continuous_layer_entries(state, src, card_id)
+                                 if entry['layer'] == 'keyword-remove:all-abilities']
+        else:
+            layer_entries = _source_continuous_layer_entries(state, src, card_id)
         layers = [entry["layer"] for entry in layer_entries]
         if not layers:
             continue

@@ -40,6 +40,7 @@ def unsupported_counter_prohibitions(oracle_text):
 
 
 def counter_placement_forbidden(state, kind, *, target_player=None, target_card_id=None):
+    from rules_engine.continuous import printed_abilities_suppressed
     target = state.cards.get(target_card_id)
     if target is not None and not any(target.id in player.battlefield for player in state.players.values()):
         for clause in re.split(r'[.\n]', _static_oracle_text(target)):
@@ -50,6 +51,8 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
         for cid in player.battlefield:
             source = state.cards.get(cid)
             if source is None or source.zone != Zone.BATTLEFIELD:
+                continue
+            if printed_abilities_suppressed(state, cid):
                 continue
             # Only standalone static sentences, not reminder, quoted, activated,
             # conditional or triggered instructions that have not resolved.
