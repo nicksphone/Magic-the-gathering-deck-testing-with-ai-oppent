@@ -67,21 +67,22 @@ def _copy_card_field(value, memo):
 
 def keyword_target_value(state, card, player_id, targets):
     """Rank known keyword instructions only, without executing later draws."""
-    if not re.search(r'\b(?:gains|loses)\b.+until end of turn', card.oracle_text or '', re.I):
+    text = (card.oracle_text or '').lower()
+    if 'until end of turn' not in text or not re.search(r'\b(?:gains|loses|lose)\b', text):
         return None
     key, payload = infer_effect_from_oracle(state,card,player_id,targets,report_unsupported=False)
     effects = payload.get('effects',[]) if key == 'effect_sequence' else [{'effect_key':key,'payload':payload}]
-    if not effects or any(effect['effect_key'] not in {'grant_keyword','draw_cards'} for effect in effects):
+    if not effects or any(effect['effect_key'] not in {'grant_keyword','temporary_ability_loss','draw_cards'} for effect in effects):
         return None
-    changes = [effect for effect in effects if effect['effect_key'] == 'grant_keyword'
+    changes = [effect for effect in effects if effect['effect_key'] in {'grant_keyword','temporary_ability_loss'}
                and effect['payload'].get('target_card_id') == targets.get('target_card_id')]
     if not changes:
         return None
-    from effects.handlers import grant_keyword
+    from effects.registry import resolve_effect
     from ai.heuristics import evaluate_board
     projected = planning_copy(state)
     for effect in changes:
-        grant_keyword(projected,player_id,effect['payload'])
+        resolve_effect(projected,player_id,effect['effect_key'],effect['payload'])
     return evaluate_board(projected,player_id) - evaluate_board(state,player_id)
 
 

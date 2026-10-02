@@ -493,7 +493,10 @@ def _resolved_keyword_modifiers(card):
 
 def _apply_keyword_modifier(keywords, effect):
     if effect['operation'] == 'remove':
-        _remove_keyword_family(keywords,effect['keyword'])
+        if effect['keyword'] == 'all abilities':
+            keywords.clear()
+        else:
+            _remove_keyword_family(keywords,effect['keyword'])
     else:
         keywords[effect['keyword']] += effect['count']
 
@@ -517,6 +520,10 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None) -> bool:
     card = state.cards.get(card_id)
     if card is None or not _is_battlefield(card):
         return False
+    from rules_engine.keyword_effects import active_keyword_effects
+    if any(effect['operation'] == 'remove' and effect['keyword'] == 'all abilities'
+           for effect in active_keyword_effects(card)):
+        return True
     if losses is None:
         losses = _printed_ability_loss_sources(state)
     return any((not other_only or source.id != card_id)
@@ -543,6 +550,7 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     if dynamic_t is not None:
         base_t = dynamic_t
     # Minimal layer support: base PT setters from static text.
+    setters = []
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
@@ -553,8 +561,18 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         for scope, other_only, subject, p_set, t_set in _iter_pt_setters(setter_source):
             if not _pt_setter_applies(state, src, card_id, scope, other_only, subject):
                 continue
-            base_p, base_t = p_set, t_set
+            setters.append((effect_timestamp(src), p_set, t_set))
+    setters.extend((effect['timestamp'], effect['power'], effect['toughness'])
+                   for effect in _resolved_base_stat_effects(card))
+    if setters:
+        _, base_p, base_t = sorted(setters, key=lambda item: item[0])[-1]
     return base_p, base_t
+
+
+def _resolved_base_stat_effects(card):
+    from game_state.state import object_incarnation
+    return [effect for effect in getattr(card, 'base_stat_effects', []) if _is_battlefield(card)
+            and effect['incarnation'] == object_incarnation(card)]
 
 
 def _ability_layer_continuation_source(source):
@@ -976,8 +994,17 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
     if _is_battlefield(card):
+        for effect in _resolved_base_stat_effects(card):
+            key = _continuous_layer_sort_key(state, card_id, 'pt-set')
+            applied_layers.append(((key[0], key[1], effect['timestamp'], *key[3:]), {
+                'source_id': effect.get('source_card_id'), 'source_name': effect.get('source_name'),
+                'target_id': card_id, 'layer': 'pt-set', 'effect_timestamp': effect['timestamp'],
+                'timestamp_origin': effect['timestamp_origin'], 'until_end_of_turn': effect['until_end_of_turn'],
+                'base_power': effect['power'], 'base_toughness': effect['toughness'],
+            }))
         for effect in _resolved_keyword_modifiers(card):
-            layer = f"keyword-{'remove' if effect['operation'] == 'remove' else 'grant'}:{effect['keyword']}"
+            label = 'all-abilities' if effect['keyword'] == 'all abilities' else effect['keyword']
+            layer = f"keyword-{'remove' if effect['operation'] == 'remove' else 'grant'}:{label}"
             key = _continuous_layer_sort_key(state,card_id,layer)
             applied_layers.append(((key[0],key[1],effect['timestamp'],*key[3:]), {
                 'source_id': effect.get('source_card_id'), 'source_name': effect.get('source_name'),

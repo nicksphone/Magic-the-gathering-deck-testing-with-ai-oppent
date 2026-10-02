@@ -76,6 +76,7 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
+        and without_reminder_text(line).strip().lower() != 'split second'
     )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
@@ -1150,6 +1151,23 @@ def _infer_clause_effect(
         else:
             amount = x_value if raw == "x" else int(raw)
         return "incubate", {"counters": amount, "times": 2 if re.search(r"\bincubate\s+(?:\d+|x)\s+twice\b", oracle) else 1}
+
+    loss_text = oracle.strip(' .')
+    temporary_loss = loss_text.startswith('until end of turn, ') or loss_text.endswith(' until end of turn')
+    loss_text = loss_text.removeprefix('until end of turn, ').removesuffix(' until end of turn')
+    loss = re.fullmatch(
+        r'(target (?:creature|permanent|artifact)(?: you control| an opponent controls)?|it|this creature|creatures target player controls) '
+        r'loses? all abilities(?: and (?:has|have) base power and toughness (\d+)/(\d+))?', loss_text,
+    )
+    if temporary_loss and loss:
+        if loss[1] == 'creatures target player controls':
+            payload = {'target_player': action_targets.get('target_player')}
+        else:
+            payload = {'target_card_id': card.id if loss[1] == 'this creature' else target_card_id}
+        if any(value is not None for value in payload.values()):
+            if loss[2] is not None:
+                payload.update(base_power=int(loss[2]), base_toughness=int(loss[3]))
+            return 'temporary_ability_loss', payload
 
     keyword_change = re.fullmatch(
         rf'(target (?:creature|permanent)(?: you control| an opponent controls)?|it|this (?:creature|permanent|artifact)|{re.escape(card.name.lower())}) '

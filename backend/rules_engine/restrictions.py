@@ -66,7 +66,28 @@ def card_cant_attack_alone(state, card_id: str) -> bool:
     return "can't attack alone" in text or "cannot attack alone" in text
 
 
+def split_second_active(state) -> bool:
+    from rules_engine.targeting import stack_object_kind, stack_source_card
+    from rules_engine.oracle_text import without_reminder_text
+
+    for item in state.stack:
+        if getattr(item, 'source_card_id', None) is None:
+            continue
+        if stack_object_kind(state, item) != 'spell':
+            continue
+        card = stack_source_card(state, item)
+        if card is not None and (
+            'split second' in {str(keyword).lower() for keyword in card.keywords}
+            or any(line.strip().lower() == 'split second'
+                   for line in without_reminder_text(card.oracle_text or '').splitlines())
+        ):
+            return True
+    return False
+
+
 def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> bool:
+    if split_second_active(state):
+        return False
     text = (ability_text or "").lower()
     if "activate only as a sorcery" in text or "activate only any time you could cast a sorcery" in text:
         return (state.active_player == player_id
@@ -76,6 +97,8 @@ def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> 
 
 
 def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
+    if split_second_active(state):
+        return False, 'Split second prevents casting spells.'
     from rules_engine.alternative_casts import has_aftermath
     text = (card.oracle_text or "").lower()
     if has_aftermath(card) and card.zone != Zone.GRAVEYARD:

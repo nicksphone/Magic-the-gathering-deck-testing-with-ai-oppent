@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Temporary ability loss, base stats and split second
+
+- Added bounded temporary all-ability loss and base-stat setters with shared resolution timestamps, original-object binding, cleanup/zone expiry and detached durable snapshots. Static and resolution base setters share timestamp order; canonical stats and physical counters are not rewritten.
+- Preserved recognized ETB tap-then-loss instructions through both-seat human target choices and restart. Split second now gates casts and supported nonmana activations across actual spells/copies without blocking mana, priority or triggers. The AI's bounded public-board target projection includes recognized temporary loss/base-stat effects.
+- Verified 2,761 isolated backend tests (297 deprecation warnings), 100 focused checks, frontend lint/unit/build and the final-engine full Chromium harness. Twelve logical seat-balanced smoke games each repeat twice with no reported drift, timeouts or anomaly labels. Tests caught standalone split-second parsing, dropped trigger continuation and an opaque stack-fixture adapter regression; failed/superseded checks are preserved alongside final evidence on RCHFiles under `diagnostics/temporary-ability-loss/20261002T050905Z/`.
+- Updated README, finish plan, scope docs and AST graph; clarified already implemented basic proliferation/entry routes versus remaining variants. Arbitrary effects, complete dependencies/provenance, broader AI quality and operational release gates remain unfinished. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Static/replacement source suppression and layer-query cost
 
 - Connected supported ability loss to continuous bonuses/keyword sources, counter/token/life replacements, counter prohibitions, draw limits, land/library permissions, recognized cost modifiers and timing/mana readers. Suppressed printed recurring rewards no longer inflate AI board value; physical shield counters remain functional.

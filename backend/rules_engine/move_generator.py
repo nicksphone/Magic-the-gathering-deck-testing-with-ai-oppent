@@ -14,7 +14,7 @@ from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
-from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing
+from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing, split_second_active
 from rules_engine.zone_actions import is_departed_token
 
 
@@ -112,7 +112,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.priority_player != player_id:
         return moves
     from rules_engine.keyword_actions import ninjutsu_moves
-    moves.extend(ninjutsu_moves(state, player_id))
+    if not split_second_active(state):
+        moves.extend(ninjutsu_moves(state, player_id))
 
     if state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not getattr(state, "attackers_declared", False):
         restricted_attackers: list[dict] = []
@@ -171,7 +172,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if is_departed_token(card):
             continue
         cycle_cost = cycling_cost(card.oracle_text, allow_variable=True)
-        if cycle_cost and cid in player.hand:
+        if cycle_cost and cid in player.hand and not split_second_active(state):
             x_values = range(0, 21) if cycling_is_variable(cycle_cost) else range(1)
             for x_value in x_values:
                 if not can_pay_with_pool_and_lands(
@@ -414,7 +415,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     from rules_engine.oracle_effects import crew_value
     for vehicle_id in player.battlefield:
         vehicle = state.cards[vehicle_id]
-        if printed_abilities_suppressed(state, vehicle_id):
+        if printed_abilities_suppressed(state, vehicle_id) or split_second_active(state):
             continue
         crew = crew_value(vehicle)
         if crew is None or "Artifact" not in vehicle.types:

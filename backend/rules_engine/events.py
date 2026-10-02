@@ -320,6 +320,8 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.payload.get('__trigger_resolution_text'):
+        return item.payload['__trigger_full_clause']
     event = item.payload.get("__trigger_event")
     if event == 'saga_lore_added':
         clause = item.payload.get('__chapter_clause', '')
@@ -1233,6 +1235,15 @@ def _trigger_from_oracle(
     }
     if source:
         for line in oracle.splitlines():
+            tap_loss = re.fullmatch(
+                r'((?:when|whenever) [^,]+, (tap target creature(?: an opponent controls| you control)?\.'
+                r' it loses all abilities until end of turn\.))', line.strip(),
+            )
+            if (tap_loss and event == 'enters_battlefield'
+                    and _matches_enters_battlefield_trigger(state, source, line, payload)):
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'noop',
+                        'payload': {'__trigger_resolution_text': tap_loss[2], '__trigger_full_clause': tap_loss[1]}}
             instruction = re.fullmatch(r'.+,\s*proliferate( twice)?\.', line.strip())
             if not instruction:
                 continue

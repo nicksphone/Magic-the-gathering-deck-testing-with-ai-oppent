@@ -2188,6 +2188,28 @@ def continuous_buff(state: MatchState, controller: int, payload: dict) -> None:
     pass
 
 
+def temporary_ability_loss(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.keyword_effects import add_keyword_effect
+    player_id = payload.get('target_player')
+    card_ids = list(state.players[player_id].battlefield) if player_id in state.players else [payload.get('target_card_id')]
+    stamp = allocate_effect_timestamp(state)
+    source_id = payload.get('__source_card_id')
+    source = state.cards.get(source_id)
+    for card_id in card_ids:
+        card = state.cards.get(card_id)
+        if card is None or card.zone != Zone.BATTLEFIELD or (player_id in state.players and 'Creature' not in card.types):
+            continue
+        add_keyword_effect(state, card_id, ['all abilities'], operation='remove', until_end_of_turn=True,
+                           timestamp=stamp, source_card_id=source_id)
+        if 'base_power' in payload and 'base_toughness' in payload:
+            card.base_stat_effects.append({
+                'power': payload['base_power'], 'toughness': payload['base_toughness'], 'timestamp': stamp,
+                'incarnation': object_incarnation(card), 'until_end_of_turn': True,
+                'timestamp_origin': 'resolution', 'source_card_id': source_id,
+                'source_name': source.name if source else None,
+            })
+
+
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.keyword_effects import add_keyword_effect
     keywords = payload.get('keywords') or ([payload['keyword']] if payload.get('keyword') else [])

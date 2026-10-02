@@ -312,6 +312,7 @@ class RulesEngine:
     def _clear_marked_damage(self, state: MatchState) -> None:
         for card in state.cards.values():
             card.keyword_effects = [effect for effect in getattr(card,'keyword_effects',[]) if not effect['until_end_of_turn']]
+            card.base_stat_effects = [effect for effect in getattr(card,'base_stat_effects',[]) if not effect['until_end_of_turn']]
             if "__damage_marked" in card.counters:
                 card.counters.pop("__damage_marked", None)
             if "__deathtouch_damaged" in card.counters:
@@ -377,6 +378,11 @@ class RulesEngine:
         if state.winner is not None:
             return
         kind = action.get("type")
+        if kind in {'cast_spell', 'activate_ability', 'activate_loyalty', 'equip', 'crew', 'cycle_card', 'ninjutsu'}:
+            from rules_engine.restrictions import split_second_active
+            if split_second_active(state):
+                reject("Split second prevents spells and nonmana activated abilities")
+                return
         if kind in {'activate_ability', 'activate_loyalty', 'equip', 'crew'}:
             from rules_engine.continuous import printed_abilities_suppressed
             if printed_abilities_suppressed(state, action.get('card_id')):

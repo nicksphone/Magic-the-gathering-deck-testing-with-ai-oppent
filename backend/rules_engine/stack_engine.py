@@ -275,7 +275,17 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         payload['__resolution_stage_owned'] = True
     if payload.get("__once_on_accept"):
         state.trigger_once_seen_this_turn.add(str(payload["__once_on_accept"]))
-    resolve_effect(state, item.controller, item.effect_key, payload)
+    effect_key = item.effect_key
+    if payload.get('__trigger_resolution_text'):
+        from copy import copy
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        surface = copy(card)
+        surface.oracle_text = payload['__trigger_resolution_text']
+        surface.card_faces = []
+        surface.types = []
+        effect_key, instructions = infer_effect_from_oracle(state, surface, item.controller, payload)
+        payload.update(instructions)
+    resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:
         from dataclasses import asdict

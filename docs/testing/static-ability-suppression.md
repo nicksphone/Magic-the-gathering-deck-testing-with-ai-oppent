@@ -72,9 +72,10 @@ reported as determinism/timeout outcomes.
 
 ## Known Limitations and Next Upgrades
 
-- Suppression remains bounded by the recognized all-ability-loss grammar;
-  conditional, targeted temporary and arbitrary gained non-keyword abilities
-  require further integration.
+- Suppression remains bounded by the recognized all-ability-loss grammar.
+  [Targeted temporary loss/base stats](temporary-ability-loss.md) now have a
+  separate implemented increment; conditional effects and arbitrary gained
+  non-keyword abilities still require further integration.
 - Full type/color/text/dependency layers and earlier-layer effect continuation,
   conflicting same-layer effects and simultaneous timestamp choices remain open.
 - Pre-entry characteristics, competing simultaneous replacements, durable
