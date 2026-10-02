@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Static combat coverage and live diagnostics
+
+- Unified supported static predicate parsing/evaluation across attachments, combat and coverage. Added clause/face provenance for known unsupported combat conditions, subjects, bodies and payments to cached-card readiness and simulator preflight/results.
+- Added a per-match-lock-protected, read-only `/matches/{id}/rules-diagnostics` API for public battlefield sources and active/unresolved clauses, without enumerating private zones or changing authoritative state.
+- Added canonical attack-tax/declaration-limit coverage fixtures, both-seat HTTP/SQLite/privacy checks and a real App/preflight browser admission check. Unsupported taxes/limits remain unsupported and exploratory; no full rules or expert-AI completion is claimed.
+- Validation: 2,860 full backend tests and 127 focused checks passed; frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced games repeated twice had zero determinism failures, drift labels or reported anomalies. Verified evidence is in RCHFiles `diagnostics/combat-coverage/20261002T065310Z`.
+
 ## 2026-10-02 - Condition-aware static combat constraints
 
 - Shared supported self, attached and global combat clauses across live legality and AI helpers. Added bounded controller/defender/global land gates and named counter thresholds without treating unresolved conditions as unconditional restrictions.

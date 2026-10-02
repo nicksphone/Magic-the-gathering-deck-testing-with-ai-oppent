@@ -28,7 +28,9 @@ tests (including Sea Serpent's sacrifice condition).
 
 The same queries feed checked combat actions and existing AI combat legality
 helpers. Engine layer traces expose active source/clause provenance and unresolved
-combat clauses. They are not yet dedicated HTTP/UI preflight warnings.
+combat clauses. The [coverage increment](combat-coverage-diagnostics.md) now
+exposes known static gaps through preflight/completeness and a read-only live
+HTTP inspector; a dedicated in-match visual inspector remains deferred.
 
 ## Validation
 

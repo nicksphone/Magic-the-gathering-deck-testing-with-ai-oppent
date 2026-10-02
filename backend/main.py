@@ -697,6 +697,30 @@ def get_match(match_id: str) -> dict:
     return _serialize_match_controller(match)
 
 
+@app.get("/matches/{match_id}/rules-diagnostics")
+@coordinated_match
+def get_match_rules_diagnostics(match_id: str) -> dict:
+    """Inspect public battlefield semantics without revealing private zones or writing."""
+    from rules_engine.combat_constraints import combat_rule_view, combat_clause_coverage
+    from rules_engine.continuous import printed_abilities_suppressed
+    from game_state.state import Zone
+    state = ACTIVE_MATCHES[match_id].state
+    cards = []
+    for player in state.players.values():
+        for cid in player.battlefield:
+            card = state.cards[cid]
+            if card.zone != Zone.BATTLEFIELD:
+                continue
+            view = combat_rule_view(state, cid)
+            cards.append({'card_id': cid, 'card_name': card.name, 'controller': card.controller,
+                          'printed_abilities_suppressed': printed_abilities_suppressed(state, cid),
+                          'active_combat_constraints': view['active'],
+                          'unresolved_combat_constraints': view['unsupported'],
+                          'printed_combat_coverage_gaps': combat_clause_coverage(card.oracle_text, card.name)})
+    return {'match_id': match_id, 'revision': ACTIVE_MATCHES[match_id].revision,
+            'status': 'exploratory', 'scope': 'public battlefield static combat clauses', 'cards': cards}
+
+
 @app.get("/matches/{match_id}/replay")
 @coordinated_match
 def get_match_replay(match_id: str) -> dict:

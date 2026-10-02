@@ -34,7 +34,16 @@ _UNSUPPORTED_PATTERNS = (
 )
 
 
-def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None) -> list[str]:
+def combat_coverage_details(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[dict]:
+    from rules_engine.combat_constraints import combat_clause_coverage
+    variants = [(None, card_name, oracle_text or ''),
+                *((index, str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+                  for index, face in enumerate(card_faces or []) if isinstance(face, dict))]
+    return [{**row, 'face_index': index, 'face_name': name}
+            for index, name, text in variants for row in combat_clause_coverage(text, name)]
+
+
+def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[str]:
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
@@ -78,6 +87,8 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
                 break
         if 'unsupported player-counter dependent clause' in out:
             break
+    for row in combat_coverage_details(oracle_text, card_faces, card_name=card_name):
+        out.extend(reason for reason in row['reasons'] if reason not in out)
     return out
 
 
@@ -86,9 +97,11 @@ def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:
     return {
         "status": "exploratory",
         "known_unsupported_cards": [
-            {"deck": label, "card_name": item.get("card_name", ""), "mechanics": mechanics}
+            {"deck": label, "card_name": item.get("card_name", ""), "mechanics": mechanics,
+             **({'combat_clause_gaps': details} if (details := combat_coverage_details(
+                 str(item.get('oracle_text') or ''), item.get('card_faces'), card_name=str(item.get('card_name') or ''))) else {})}
             for label, deck in (("A", deck_a), ("B", deck_b))
             for item in deck
-            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces")))
+            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces"), card_name=str(item.get('card_name') or '')))
         ],
     }

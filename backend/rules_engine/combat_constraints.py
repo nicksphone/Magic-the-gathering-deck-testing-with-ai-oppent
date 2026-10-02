@@ -5,7 +5,8 @@ from functools import lru_cache
 from game_state.state import Zone
 from rules_engine.oracle_text import without_reminder_text
 
-NUMBERS = {word: value for value, word in enumerate(('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'))}
+from rules_engine.static_conditions import NUMBERS, number, parse_static_condition, evaluate_static_condition
+
 BODY = re.compile(r"^(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks each combat|blocks each combat|must (?:attack|block))\b")
 
 
@@ -18,12 +19,6 @@ def supported_body(text):
         r"|(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten) additional creatures each combat"
         r"|only creatures with flying)"
         r"|(?:attacks|blocks) each combat if able|must (?:attack|block) each combat if able)", text))
-
-
-def number(token):
-    return int(token) if token.isdigit() else NUMBERS.get(token)
-
-
 @lru_cache(maxsize=4096)
 def static_clauses(oracle):
     lines = []
@@ -36,31 +31,71 @@ def static_clauses(oracle):
     return tuple(lines)
 
 
-def _land_count(state, player_ids, subtype=None):
-    return sum(
-        card.zone == Zone.BATTLEFIELD and 'Land' in card.types
-        and (subtype is None or subtype in re.split(r'\s+', (card.type_line or '').lower().split('—')[-1]))
-        for pid in player_ids for cid in state.players[pid].battlefield
-        for card in [state.cards[cid]]
-    )
-
-
 def _condition(state, source, target, text):
-    from rules_engine.continuous import _attached_condition
-    land = re.fullmatch(r'you control (\w+) or more lands', text)
-    if land and number(land[1]) is not None:
-        return _land_count(state, [source.controller]) >= number(land[1])
-    defender_land = re.fullmatch(r'defending player controls an? (island|forest|swamp|mountain|plains)', text)
-    if defender_land:
-        return _land_count(state, [3-target.controller], defender_land[1]) > 0
-    global_land = re.fullmatch(r'there are (\w+) or more (islands|forests|swamps|mountains|plains) on the battlefield', text)
-    if global_land and number(global_land[1]) is not None:
-        subtype = global_land[2] if global_land[2] == 'plains' else global_land[2].removesuffix('s')
-        return _land_count(state, list(state.players), subtype) >= number(global_land[1])
-    counters = re.fullmatch(r'(?:it|this creature) has (\w+) or more ([+\-]\d+/[+\-]\d+) counters on it', text)
-    if counters and number(counters[1]) is not None:
-        return target.counters.get(counters[2], 0) >= number(counters[1])
-    return _attached_condition(state, source, target, text)
+    return evaluate_static_condition(state, source, target, text)
+
+
+def conditional_clause(clause):
+    prefix = re.fullmatch(r'(?:as long as|if) (.+?), (.+)', clause)
+    suffix = re.fullmatch(r'(.+?) (as long as|unless) (.+)', clause)
+    if prefix:
+        return prefix[2], prefix[1], False
+    if suffix:
+        return suffix[1], suffix[3], suffix[2] == 'unless'
+    return clause, None, False
+
+
+def combat_clause_coverage(oracle, card_name=''):
+    """Known unsupported static combat clauses, without fabricating a game state."""
+    body_search = re.compile(BODY.pattern.removeprefix('^') + r'|\bcan (?:attack|be blocked)\b')
+    records = []
+    previous = None
+    for clause in static_clauses(oracle):
+        if clause.startswith('otherwise, '):
+            body, condition, _ = clause.removeprefix('otherwise, '), previous, False
+            missing_condition = previous is None
+        else:
+            body, condition, _ = conditional_clause(clause)
+            previous = condition
+            missing_condition = False
+        match = body_search.search(body)
+        if match is None:
+            continue
+        subject, recipient = body[:match.start()].strip(), body[match.start():]
+        reasons = []
+        if condition and parse_static_condition(condition) is None or missing_condition:
+            reasons.append('unsupported combat condition')
+        if condition and re.search(r'\bpay(?:s)?\b', condition):
+            reasons.append('unsupported combat payment')
+        if not supported_body(recipient):
+            reasons.append('unsupported combat clause')
+        if not _supported_combat_subject(subject, card_name):
+            reasons.append('unsupported combat subject')
+        if reasons:
+            records.append({'clause': clause, 'reasons': reasons})
+    return records
+
+
+def _supported_combat_subject(subject, card_name):
+    if subject in {'', 'it', 'cardname', 'this creature', 'this permanent', card_name.lower()}:
+        return True
+    if re.fullmatch(r'(?:enchanted|equipped|fortified) (?:creature|permanent)', subject):
+        return True
+    from rules_engine.card_types import CREATURE_SUBTYPES
+    from rules_engine.static_conditions import COLORS, TYPES
+    subject = re.sub(r'^(?:other |each )', '', subject)
+    subject = re.sub(r' (?:you control|your opponents control)$', '', subject)
+    if subject.endswith(' creature'):
+        subject += 's'
+    if subject in {'creature', 'creatures', 'permanent', 'permanents', 'tokens', 'creature tokens'}:
+        return True
+    if subject.endswith(' creatures'):
+        allowed = set(COLORS) | TYPES | {'token', 'legendary', 'snow', 'colorless'} | set(CREATURE_SUBTYPES)
+        return all(word.removeprefix('non').lstrip('-') in allowed
+                   for word in subject.removesuffix(' creatures').split())
+    # Use the same recognized plural-subtype vocabulary as global statics.
+    from rules_engine.card_types import creature_subtype_candidates
+    return any(candidate in CREATURE_SUBTYPES for candidate in creature_subtype_candidates(subject))
 
 
 def _recipient_body(state, source, target, text):
@@ -116,14 +151,11 @@ def combat_rule_view(state, card_id):
                 truth = None if previous is None else not previous
             else:
                 previous = None
-                prefix = re.fullmatch(r'(?:as long as|if) (.+?), (.+)', clause)
-                suffix = re.fullmatch(r'(.+?) (as long as|unless) (.+)', clause)
-                if prefix or suffix:
-                    condition = prefix[1] if prefix else suffix[3]
-                    body = prefix[2] if prefix else suffix[1]
+                body, condition, inverted = conditional_clause(clause)
+                if condition is not None:
                     previous = _condition(state, source, target, condition)
                     truth = previous
-                    if suffix and suffix[2] == 'unless':
+                    if inverted:
                         truth = None if truth is None else not truth
             recipient = _recipient_body(state, source, target, body)
             if recipient is None or not BODY.match(recipient):

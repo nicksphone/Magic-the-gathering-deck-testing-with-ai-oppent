@@ -10,7 +10,7 @@ from card_data.sync import ScryfallSyncService
 from persistence.models import CardCache
 from persistence.repository import Repository
 from rules_engine.card_types import is_land_card
-from rules_engine.coverage import known_unsupported_mechanics
+from rules_engine.coverage import known_unsupported_mechanics, combat_coverage_details
 
 
 class CardService:
@@ -65,7 +65,7 @@ class CardService:
                 oracle_source = "fallback"
             else:
                 oracle_source = "cache" if card and card.type_line else "missing"
-            unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces)
+            unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces, card_name=name)
             image_uri = metadata['image_uri']
             has_placeholder = "placeholder-" in image_uri or "generic-token" in image_uri
             cards.append(
@@ -79,6 +79,7 @@ class CardService:
                     "oracle": bool(oracle_text or (oracle_source in {"cache", "knowledge", "fallback"} and type_line)),
                     "oracle_source": oracle_source,
                     "unsupported_mechanics": unsupported_mechanics,
+                    'combat_clause_gaps': combat_coverage_details(oracle_text, faces, card_name=name),
                     "rules_coverage": "known_unsupported" if unsupported_mechanics else "not_certified",
                     "mana_cost": bool(metadata.get('mana_cost') or is_land_card({"name": name, "type_line": type_line})),
                     "type_line": bool(type_line),

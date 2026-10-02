@@ -110,41 +110,8 @@ def _attached_static_text(source):
 
 
 def _attached_condition(state, source, target, condition):
-    from rules_engine.colors import card_color_symbols
-    words = {word: i for i, word in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"))}
-
-    def number(text):
-        return int(text) if text.isdigit() else words.get(text)
-
-    characteristic = re.fullmatch(r"(?:it's|it is|(?:equipped|enchanted|fortified) (?:creature|permanent|land) is) (an? )?([a-z]+)", condition)
-    if characteristic:
-        article, kind = characteristic.groups()
-        if kind in _COLOR_SYMBOLS:
-            return _COLOR_SYMBOLS[kind] in card_color_symbols(target)
-        if kind.title() in {"Artifact", "Enchantment", "Creature", "Land", "Planeswalker", "Battle"}:
-            return kind.title() in target.types
-        return _has_subtype(target, kind) if article and kind in CREATURE_SUBTYPES else None
-    permanent = re.fullmatch(r"(you|an opponent|your opponents) controls? an? (.+?) permanent", condition)
-    if permanent:
-        scope, colors = permanent.groups()
-        mode = " and " if " and " in colors else " or "
-        colors = colors.split(mode)
-        if any(color not in _COLOR_SYMBOLS for color in colors):
-            return None
-        needed = {_COLOR_SYMBOLS[color] for color in colors}
-        players = [source.controller] if scope == "you" else [pid for pid in state.players if pid != source.controller]
-        return any((needed <= card_color_symbols(state.cards[cid]) if mode == " and " else bool(needed & card_color_symbols(state.cards[cid])))
-                   for pid in players for cid in state.players[pid].battlefield)
-    graveyard = re.fullmatch(r"there are (\w+) or more cards in your graveyard", condition)
-    counters = re.fullmatch(r"this (?:equipment|aura|permanent) has (\w+) or more counters on it", condition)
-    if graveyard or counters:
-        minimum = number((graveyard or counters).group(1))
-        if minimum is None:
-            return None
-        amount = len(state.players[source.controller].graveyard) if graveyard else sum(
-            max(0, value) for name, value in source.counters.items() if not name.startswith("__"))
-        return amount >= minimum
-    return None
+    from rules_engine.static_conditions import evaluate_static_condition
+    return evaluate_static_condition(state, source, target, condition)
 
 
 def _attached_keywords(text):

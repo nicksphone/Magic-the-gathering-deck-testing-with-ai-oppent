@@ -24,6 +24,30 @@ def fixture_start_decks():
         return {"a": a.id, "b": b.id}
 
 
+@app.post('/fixture/combat-coverage-decks')
+def fixture_combat_coverage_decks():
+    import json
+    from main import SIM_JOBS
+    rows = json.loads((Path(__file__).parent / 'fixtures/combat_coverage.json').read_text())
+    card = next(row for row in rows if row['name'] == 'Propaganda')
+    with Session(engine) as session:
+        repo = Repository(session)
+        repo.upsert_card({'scryfall_id': card['id'], 'name': card['name'],
+                         'oracle_text': card['oracle_text'], 'type_line': card['type_line'],
+                         'mana_cost': card['mana_cost']})
+        a = repo.save_deck('Canonical tax coverage fixture', 'fixture',
+                           [{'quantity': 4, 'card_name': card['name']}, {'quantity': 56, 'card_name': 'Island'}], [], 'Control')
+        b = repo.save_deck('Canonical land coverage fixture', 'fixture',
+                           [{'quantity': 60, 'card_name': 'Island'}], [], 'Control')
+        return {'a': a.id, 'b': b.id, 'jobs': len(SIM_JOBS)}
+
+
+@app.get('/fixture/simulation-job-count')
+def fixture_simulation_job_count():
+    from main import SIM_JOBS
+    return {'jobs': len(SIM_JOBS)}
+
+
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
     if face_kind == 'scry':

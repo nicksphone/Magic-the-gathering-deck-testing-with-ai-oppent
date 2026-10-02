@@ -9,7 +9,8 @@ Do not treat passing fixture tests as proof that the current UI is ergonomic.
 Finish backend rules, supported-corpus correctness and simulation/AI evidence
 before returning to the redesign. Broad release gates below remain open.
 
-- [x] Share bounded condition-aware static combat clauses across self, attachment and global sources, with source suppression, effective-power limits, cumulative extra blockers and unresolved-clause engine traces. See [scope and remaining gaps](docs/testing/conditional-combat.md). Broader predicates, paid taxes and HTTP/UI warning integration remain open.
+- [x] Share bounded condition-aware static combat clauses across self, attachment and global sources, with source suppression, effective-power limits, cumulative extra blockers and unresolved-clause engine traces. See [scope and remaining gaps](docs/testing/conditional-combat.md). Broader predicates, paid taxes and dedicated in-match visual diagnostics remain open.
+- [x] Reuse supported static predicates for known-gap coverage and live evaluation; expose card/face-specific combat gaps in completeness, simulator preflight/results and a locked public-battlefield diagnostics API. Verify canonical warning admission through the real browser flow. See [scope](docs/testing/combat-coverage-diagnostics.md). This does not implement taxes or certify arbitrary cards.
 
 - [x] Route supported opening-hand permanent entries through shared off-zone counter preparation, affected-player replacement ordering and guarded once-only commitment. Keep mandatory exile instructions resumable; do not consume cast-only entry records.
 - [x] Implement bounded proliferation instructions, all-kinds non-targeting selection, resumable atomic counter vectors, canonical triggers/spell continuation, both-seat controls and shared AI choices. See [scope and remaining gaps](docs/testing/proliferation.md).
