@@ -858,7 +858,7 @@ def inspect_target_hints(
         if key in hints:
             hints[key] = [
                 target for target in hints[key]
-                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]})[0]
+                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]}, source)[0]
                     and validate_protection_targets(state, source, {"target_card_id": target["id"]})[0])
             ]
     return hints

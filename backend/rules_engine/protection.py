@@ -31,6 +31,35 @@ _TYPE_PROTECTION_MAP = {
     "non-land": "!Land",
 }
 _COLOR_TOKENS = {"white", "blue", "black", "red", "green", "colorless", "multicolored", "monocolored", "everything"}
+_HEXPROOF_QUALITY = '(?:' + '|'.join(re.escape(value) for value in sorted(_COLOR_TOKENS | set(_TYPE_PROTECTION_MAP),key=len,reverse=True)) + ')'
+HEXPROOF_VARIANT_RE = re.compile(r'\bhexproof from ' + _HEXPROOF_QUALITY + r'(?: and from ' + _HEXPROOF_QUALITY + r')*\b',re.I)
+
+
+def source_matches_quality(source_card, quality: str) -> bool:
+    """Shared supported color/type qualities, not an arbitrary Oracle predicate."""
+    if source_card is None:
+        return False
+    colors = card_color_names(source_card)
+    if quality == 'everything' or quality in colors:
+        return True
+    if quality == 'colorless':
+        return not colors
+    if quality in {'multicolored', 'monocolored'}:
+        return len(colors) >= 2 if quality == 'multicolored' else len(colors) == 1
+    kind = _TYPE_PROTECTION_MAP.get(quality)
+    types = set(getattr(source_card, 'types', []) or [])
+    return (kind[1:] not in types if kind.startswith('!') else kind in types) if kind else False
+
+
+def hexproof_variants(text: str) -> list[str]:
+    """A complete supported variant phrase; never promote a conditional clause."""
+    text = text.strip().lower().rstrip('.')
+    if not text.startswith('hexproof from '):
+        return []
+    qualities = text.removeprefix('hexproof from ').split(' and from ')
+    if any(quality not in _COLOR_TOKENS and quality not in _TYPE_PROTECTION_MAP for quality in qualities):
+        return []
+    return [f'hexproof from {quality}' for quality in qualities]
 
 
 def protected_from_source(state, target_id: str, source_card) -> bool:

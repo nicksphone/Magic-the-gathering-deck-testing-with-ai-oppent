@@ -827,7 +827,7 @@ class RulesEngine:
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
-                ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
+                ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, face_card)
                 if not ok_hs:
                     reject(err_hs)
                     state.log.append(f"Invalid targets for {card.name}: {err_hs}")
@@ -1014,7 +1014,7 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
-            valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets)
+            valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets, state.cards[cid])
             if not valid:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
@@ -1109,7 +1109,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
-            proxy = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
+            proxy = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
             if ability.get("x_cost") and "x_value" not in action_targets:
                 action_targets = dict(action_targets)
                 action_targets["x_value"] = max(0, min(current_loyalty, int(action_targets.get("x_value", 0) or 0)))
@@ -1125,7 +1125,7 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid targets for {pw.name}: {error}")
                 return
-            ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets)
+            ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, pw)
             if not ok_hs:
                 reject(err_hs)
                 state.log.append(f"Invalid targets for {pw.name}: {err_hs}")

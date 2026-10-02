@@ -153,6 +153,10 @@ def _attached_keywords(text):
     for match in MANA_WARD.finditer(text):
         found.extend(["ward", f"ward {match[1]}"])
     remainder = MANA_WARD.sub("", remainder)
+    from rules_engine.protection import HEXPROOF_VARIANT_RE, hexproof_variants
+    for match in HEXPROOF_VARIANT_RE.finditer(remainder):
+        found.extend(hexproof_variants(match[0]))
+    remainder = HEXPROOF_VARIANT_RE.sub('',remainder)
     for keyword in sorted(KNOWN_KEYWORDS, key=len, reverse=True):
         pattern = r"\b" + re.escape(keyword) + r"\b"
         if re.search(pattern, remainder):
@@ -391,6 +395,16 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
                       for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed'})
     for keyword, amount in printed.items():
         out[keyword] = max(out[keyword], amount)
+    from rules_engine.protection import hexproof_variants
+    printed_parts = [part.strip().lower() for line in without_reminder_text(getattr(card,'oracle_text','') or '').splitlines()
+                     for part in line.split(',')]
+    variants = [keyword for part in printed_parts for keyword in hexproof_variants(part)]
+    if variants:
+        out.pop('hexproof from', None)  # Scryfall metadata omits the quality.
+        if not any(part.rstrip('.') == 'hexproof' for part in printed_parts):
+            out.pop('hexproof', None)  # Metadata includes the family, not a second unrestricted ability.
+        for keyword in variants:
+            out[keyword] = max(out[keyword], 1)
     from rules_engine.named_counters import keyword_counter
     stamps = getattr(card, 'counter_timestamps', {}) or {}
     counter_grants = sorted((int(stamps.get(kind, effect_timestamp(card))), keyword_counter(kind))
@@ -399,6 +413,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
         return dict(sorted(out.items()))
+    out.update(getattr(card,'granted_keywords',[]) or [])
     for key, amount in (card.counters or {}).items():
         if key.startswith('__eot_keyword_') and amount > 0:
             out[key.removeprefix('__eot_keyword_')] += amount
@@ -426,7 +441,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
                         out.clear()
                     else:
                         for keyword in removed:
-                            out.pop(keyword, None)
+                            _remove_keyword_family(out, keyword)
     out.update(keyword for _, keyword in counter_grants[counter_index:])
     # "Can't have" is an override in the keyword layer, not a timestamped
     # ordinary removal. Apply it after all grants and normal removals.
@@ -443,7 +458,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
                         out.clear()
                     else:
                         for keyword in removed:
-                            out.pop(keyword, None)
+                            _remove_keyword_family(out, keyword)
     return dict(sorted(out.items()))
 
 
@@ -451,9 +466,16 @@ def effective_keywords(state, card_id: str) -> list[str]:
     return list(effective_keyword_counts(state, card_id))
 
 
+def _remove_keyword_family(keywords, keyword):
+    for present in list(keywords):
+        if present == keyword or keyword == 'hexproof' and present.startswith('hexproof from '):
+            keywords.pop(present, None)
+
+
 def has_keyword(state, card_id: str, keyword: str) -> bool:
     k = (keyword or "").lower()
-    return k in set(effective_keywords(state, card_id))
+    keywords = effective_keywords(state, card_id)
+    return k in keywords or k == 'hexproof' and any(value.startswith('hexproof from ') for value in keywords)
 
 
 def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
@@ -669,7 +691,7 @@ def _iter_keyword_grants(text):
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         granted_text = match.group(4).strip()
-        granted = tuple(kw for kw in KNOWN_KEYWORDS if kw in granted_text)
+        granted = _static_keyword_grants(granted_text)
         if granted:
             yield (scope, other_only, subject, granted)
     for match in KW_STATIC_RE.finditer(text):
@@ -677,9 +699,17 @@ def _iter_keyword_grants(text):
         subject = match.group(2).strip()
         scope = match.group(3).strip()
         granted_text = match.group(4).strip()
-        granted = tuple(kw for kw in KNOWN_KEYWORDS if kw in granted_text)
+        granted = _static_keyword_grants(granted_text)
         if granted:
             yield (scope, other_only, subject, granted)
+
+
+def _static_keyword_grants(text):
+    from rules_engine.protection import HEXPROOF_VARIANT_RE, hexproof_variants
+    variants = tuple(keyword for match in HEXPROOF_VARIANT_RE.finditer(text) for keyword in hexproof_variants(match[0]))
+    remainder = HEXPROOF_VARIANT_RE.sub('',text)
+    return variants + tuple(kw for kw in KNOWN_KEYWORDS if kw in remainder
+                            and (kw != 'hexproof' or re.search(r'\bhexproof\b(?!\s+from\b)',remainder)))
 
 
 @_static_parser

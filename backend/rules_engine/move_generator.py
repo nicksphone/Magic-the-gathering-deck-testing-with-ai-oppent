@@ -323,7 +323,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 from rules_engine.counter_placement import counter_placement_forbidden
                 if next_loyalty > (card.loyalty or 0) and counter_placement_forbidden(state, 'loyalty', target_card_id=cid):
                     continue
-                hints_card = type("LoyaltyOracleProxy", (), {"oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+                hints_card = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
                 hints = build_cast_hints(state, hints_card, player_id)
                 if not has_available_targets_for_action(hints):
                     continue
@@ -389,7 +389,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not is_equipment(card):
                 continue
             targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
-                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target})[0]
+                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card)[0]
                        and can_pay_with_pool_and_lands(state, player_id, equip_cost,
                            payment_kind="activation", payment_types=set(card.types), ability_kind="equip",
                            source_card_id=cid, target_card_id=target)]

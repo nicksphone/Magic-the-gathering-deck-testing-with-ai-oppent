@@ -90,7 +90,7 @@ def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, anno
                 continue
         if (validate_cast_choice(hints, single)[0]
                 and validate_protection_targets(state, card, single)[0]
-                and validate_hexproof_shroud_targets(state, item.controller, single)[0]):
+                and validate_hexproof_shroud_targets(state, item.controller, single, card)[0]):
             legal[target_id] = amount
     return legal
 
@@ -133,7 +133,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         hints = inspect_target_hints(state, source, item.controller, announced)
         legal = (validate_cast_targets(hints, announced)[0]
                  and validate_protection_targets(state, source, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, source)[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
@@ -161,7 +161,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             hints = inspect_target_hints(state, card, item.controller, targets)
             legal = (validate_cast_targets(hints, targets)[0]
                      and validate_protection_targets(state, card, targets)[0]
-                     and validate_hexproof_shroud_targets(state, item.controller, targets)[0])
+                     and validate_hexproof_shroud_targets(state, item.controller, targets, card)[0])
             if legal:
                 any_legal_target = True
                 legal_effects.append(effect)
@@ -186,7 +186,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     continue
                 legal = (validate_cast_targets(hints, selected)[0]
                          and validate_protection_targets(state, card, selected)[0]
-                         and validate_hexproof_shroud_targets(state, item.controller, selected)[0])
+                         and validate_hexproof_shroud_targets(state, item.controller, selected, card)[0])
                 if legal:
                     any_legal_target = True
                     legal_effects.append(effect)
@@ -198,7 +198,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
         legal = (validate_cast_choice(build_cast_hints(state, card, item.controller, announced), announced)[0]
                  and validate_protection_targets(state, card, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, card)[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})

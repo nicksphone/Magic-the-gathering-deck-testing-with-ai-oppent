@@ -2194,8 +2194,10 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
         if payload.get("until_end_of_turn") and card.zone == Zone.BATTLEFIELD:
             key = f'__eot_keyword_{keyword.lower()}'
             card.counters[key] = card.counters.get(key, 0) + 1
-        elif keyword in {'exalted', 'decayed'} or keyword not in card.keywords:
-            card.keywords.append(keyword)
+        elif card.zone == Zone.BATTLEFIELD:
+            # Resolved grants are object-bound abilities, not printed metadata
+            # or physical counters. They end when the permanent leaves.
+            card.granted_keywords.append(keyword)
 
 
 def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:

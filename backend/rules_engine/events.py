@@ -361,6 +361,11 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     from rules_engine.oracle_effects import inspect_target_hints
     from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
     proxy = copy(source)
+    lki = item.payload.get('__source_lki')
+    if lki:
+        proxy.types = list(lki['types'])
+        proxy.colors = list(lki.get('colors', []))
+        proxy.card_faces = []
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
@@ -383,7 +388,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
                 if not {"Creature", "Planeswalker"}.intersection(target.types):
                     continue
                 choice = {"target_card_id": cid}
-                if validate_protection_targets(state, source, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice)[0]:
+                if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
                     options.append({**choice, "target_name": target.name})
         return options
     if "target artifact or enchantment" in low:
@@ -399,7 +404,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     options = []
     for target in hints.get(key, []):
         choice = {"target_card_id": target["id"]}
-        if validate_protection_targets(state, source, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice)[0]:
+        if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
             options.append({**choice, "target_name": target["name"]})
     return options
 

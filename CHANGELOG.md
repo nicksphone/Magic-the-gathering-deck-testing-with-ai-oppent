@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Source-specific hexproof and object-bound grants
+
+- Corrected Scryfall variant-family metadata so supported printed color/type hexproof does not become unrestricted immunity. Source-aware checks now feed cast/ability/loyalty hints, modal/divided targets, trigger choices and resolution rechecks; loyalty proxies retain source identity.
+- Separated resolved battlefield keyword grants from printed metadata and physical counters. Grants preserve instances across snapshots, default safely in legacy snapshots and clear on zone reset. Hexproof family removal/cannot-have overrides include variants; supported departed trigger sources retain last-known colors/types.
+- Verified 2,668 isolated backend tests (291 deprecation warnings), 239 focused checks, frontend lint/unit/build and the final-source full Chromium harness. Twelve logical seat-balanced games repeat twice without reported drift/timeouts. Full-suite testing caught an optional-Oracle adapter regression, fixed before this final run; superseded failures are retained with evidence.
+- Updated the finish plan, current feature scope and AST graph, and archived verified evidence on RCHFiles. Arbitrary quality/as-though/player variants, complete layer ordering, broad AI quality and operational release gates remain unfinished. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Combat keyword instances and delayed sacrifice
 
 - Implemented Exalted/Decayed intrinsic stack triggers, supported non-redundant instance counts and effective Decayed blocking restrictions. Delayed sacrifice survives snapshots/SQLite restart, fires once and retains the original object/controller; both stages can be countered.

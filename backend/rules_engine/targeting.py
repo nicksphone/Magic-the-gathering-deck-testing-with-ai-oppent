@@ -5,9 +5,9 @@ from copy import copy, deepcopy
 from typing import Any
 
 from game_state.state import Zone
-from rules_engine.continuous import has_keyword
+from rules_engine.continuous import effective_keywords
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.protection import protection_match_reason
+from rules_engine.protection import protection_match_reason, source_matches_quality
 
 
 _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
@@ -233,6 +233,7 @@ def validate_hexproof_shroud_targets(
     state,
     source_controller: int,
     action_targets: dict[str, Any],
+    source_card=None,
 ) -> tuple[bool, str]:
     player_ids = []
     if action_targets.get("target_player") is not None:
@@ -256,10 +257,18 @@ def validate_hexproof_shroud_targets(
         target = state.cards.get(cid)
         if not target:
             continue
-        if has_keyword(state, cid, "shroud"):
+        # Hexproof/shroud are permanent abilities, not graveyard-card shields.
+        if target.zone != Zone.BATTLEFIELD:
+            continue
+        keywords = effective_keywords(state,cid)
+        if 'shroud' in keywords:
             return False, f"Target {target.name} has shroud."
-        if target.controller != source_controller and has_keyword(state, cid, "hexproof"):
-            return False, f"Target {target.name} has hexproof."
+        if target.controller != source_controller:
+            if 'hexproof' in keywords:
+                return False, f"Target {target.name} has hexproof."
+            for keyword in keywords:
+                if keyword.startswith('hexproof from ') and source_matches_quality(source_card,keyword.removeprefix('hexproof from ')):
+                    return False, f'Target {target.name} has {keyword}.'
     return True, ""
 
 

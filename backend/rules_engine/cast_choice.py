@@ -179,7 +179,7 @@ def validate_mode_targets(state: MatchState, card: CardInstance, controller: int
         for check in (
             validate_cast_targets(hints, targets),
             validate_protection_targets(state, card, targets),
-            validate_hexproof_shroud_targets(state, controller, targets),
+            validate_hexproof_shroud_targets(state, controller, targets, card),
         ):
             if not check[0]:
                 return check
