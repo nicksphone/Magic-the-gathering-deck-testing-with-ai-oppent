@@ -1897,7 +1897,8 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
             card.power = 0
             card.toughness = 0
             if payload.get("animate_untap"):
-                card.tapped = False
+                from rules_engine.named_counters import untap_permanent
+                untap_permanent(state, card.id)
             for keyword in payload.get("animate_keywords", []):
                 if keyword not in {str(x).lower() for x in card.keywords}:
                     card.keywords.append(keyword)
@@ -2136,8 +2137,8 @@ def tap_all_opponent_creatures(state: MatchState, controller: int, payload: dict
 
 def untap_card(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
-    if target in state.cards:
-        state.cards[target].tapped = False
+    from rules_engine.named_counters import untap_permanent
+    untap_permanent(state, target)
 
 
 def equip_attachment(state: MatchState, controller: int, payload: dict) -> None:

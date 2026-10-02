@@ -26,6 +26,22 @@ def fixture_start_decks():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'scry':
+        from tests.test_named_counters import CARDS
+        from tests.test_ai_recurring_engines import add as add_card
+        from tests.test_restricted_mana import clean
+        from effects.registry import resolve_effect
+        from rules_engine.counter_placement import put_counters
+        state = clean(2)
+        bear = add_card(state, 'Grizzly Bears', 2, cards=CARDS)
+        put_counters(state, 'flying', 1, target_card_id=bear.id)
+        for name in ('Grizzly Bears', 'Impede Momentum', 'Twiddle'):
+            add_card(state, name, 2, Zone.LIBRARY, cards=CARDS)
+        resolve_effect(state, 2, 'effect_sequence', {'effects': [
+            {'effect_key': 'scry', 'payload': {'amount': 3}},
+            {'effect_key': 'draw_cards', 'payload': {'amount': 1}},
+        ]})
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'proliferate':
         from tests.test_counter_replacements import source
         from tests.test_restricted_mana import clean

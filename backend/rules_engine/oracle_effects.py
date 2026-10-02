@@ -23,6 +23,11 @@ PREVENT_RE = re.compile(r"prevent(?:s)? the next (\d+) damage")
 SAC_RE = re.compile(r"sacrifice\s+(a|\d+)\s+creature")
 COUNTER_RE = re.compile(r"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:up to one )?target\s+(?:noncreature )?(creature|land|permanent)")
 SELF_COUNTER_RE = re.compile(r"^\s*put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(this (?:creature|permanent|artifact|enchantment)|[^.]+)", re.IGNORECASE)
+NAMED_COUNTER_RE = re.compile(
+    r'put (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+    r'([a-z][a-z -]*?) counters? on (it|this (?:creature|permanent|artifact|enchantment)|'
+    r'(?:up to one )?target (?:creature|permanent|artifact|enchantment|land|planeswalker)(?: you control)?)', re.I,
+)
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
 TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
@@ -317,6 +322,17 @@ def infer_effect_from_oracle(
     effects: list[tuple[str, dict[str, Any], str]] = []
     for clause in clauses:
         effects.extend((key, payload, clause) for key, payload in _infer_turn_restriction_effects(clause, controller))
+        scry_clause = re.fullmatch(r'scry (\d+)', clause)
+        if scry_clause:
+            effects.append(('scry', {'amount': int(scry_clause[1])}, clause))
+            continue
+        named_counter = NAMED_COUNTER_RE.fullmatch(clause)
+        if named_counter:
+            target = card.id if named_counter[3].startswith('this ') else action_targets.get('target_card_id')
+            if target:
+                effects.append(('add_counters', {'target_card_id': target, 'counter': named_counter[2].lower(),
+                                                'amount': _parse_count_token(named_counter[1])}, clause))
+            continue
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
             if (
@@ -334,13 +350,10 @@ def infer_effect_from_oracle(
     if len(effects) == 1:
         return effects[0][0], effects[0][1]
 
-    if not oracle and not card.oracle_text and any(k in name for k in ["bolt", "spike", "shock", "skewer"]):
-        opp = action_targets.get("target_player", 1 if controller == 2 else 2)
-        return "deal_damage", {"target_player": opp, "amount": 3}
-    if not oracle and not card.oracle_text and any(k in name for k in ["consider", "deluge"]):
-        return "draw_cards", {"amount": 1}
-    if not oracle and not card.oracle_text and "counterspell" in name and state.stack:
-        return "counter_spell", {"target_stack_id": state.stack[-1].id}
+    if not oracle and not card.oracle_text and set(card.types).intersection({'Instant', 'Sorcery'}):
+        if report_unsupported:
+            state.log.append(f'Oracle effect not inferred for {card.name}: missing spell Oracle text; no effect fabricated.')
+        return 'noop', {}
 
     # Static-only/keyword text often has no explicit resolver-side action.
     # Treat those as no-op without warning to keep logs focused on real misses.
@@ -1030,7 +1043,18 @@ def _printed_mode_order(oracle: str, selected: list[str]) -> list[str]:
 def _split_clauses(oracle: str) -> list[str]:
     cleaned = oracle.replace("\n", " ")
     parts = re.split(r"\.\s+|\s*;\s+|\s+then\s+", cleaned)
-    return [p.strip(" .;") for p in parts if p.strip(" .;")]
+    out = []
+    for part in parts:
+        part = part.strip(' .;')
+        # Two unconditional instructions for the same announced recipient;
+        # never promote a later part of an "if"/optional/quoted instruction.
+        joined = re.fullmatch(r'(tap target (?:creature|artifact|land|permanent|enchantment|planeswalker)'
+                              r'(?: (?:you control|an opponent controls))?) and (put .+ on it)', part)
+        if joined and NAMED_COUNTER_RE.fullmatch(joined[2]):
+            out.extend(joined.groups())
+        elif part:
+            out.append(part)
+    return out
 
 
 def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:

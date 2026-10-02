@@ -98,6 +98,9 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
     if not placement_checked and counter_placement_forbidden(state, kind, target_player=target_player, target_card_id=target_card_id):
         state.log.append(f'{target.name} cannot get {kind} counters.')
         return 0
+    if target_player is None:
+        from game_state.state import allocate_effect_timestamp
+        target.counter_timestamps[kind] = allocate_effect_timestamp(state)
     if target_player is not None and kind == 'poison':
         target.poison += amount
     elif (target_player is None and kind == 'loyalty'

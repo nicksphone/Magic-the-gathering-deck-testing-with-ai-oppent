@@ -93,6 +93,10 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key == 'scry':
+        from rules_engine.scry import scry
+        scry(state, controller, payload)
+        return
     if effect_key == 'proliferate':
         from rules_engine.proliferation import proliferate
         proliferate(state, controller, payload)

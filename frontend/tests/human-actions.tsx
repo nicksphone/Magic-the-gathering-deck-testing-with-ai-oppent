@@ -55,6 +55,7 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "ward_discard").catch((failure) => setError(String(failure)))}>Ward Discard Fixture</button>
     <button onClick={() => reset(false, false, 3, "player_counters").catch((failure) => setError(String(failure)))}>Player Counters Fixture</button>
     <button onClick={() => reset(false, false, 3, "counter_order").catch((failure) => setError(String(failure)))}>Counter Order Fixture</button>
+    <button onClick={() => reset(false, false, 3, "scry").catch((failure) => setError(String(failure)))}>Scry Fixture</button>
     <button onClick={() => reset(false, false, 3, "proliferate").catch((failure) => setError(String(failure)))}>Proliferate Fixture</button>
     <button onClick={() => reset(false, false, 3, "damage_counter_order").catch((failure) => setError(String(failure)))}>Damage Counter Order Fixture</button>
     <button onClick={() => reset(false, false, 3, "saga_counter_order").catch((failure) => setError(String(failure)))}>Saga Counter Order Fixture</button>

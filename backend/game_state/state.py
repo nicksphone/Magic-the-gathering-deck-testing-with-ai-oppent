@@ -69,6 +69,7 @@ class CardInstance:
     summoning_sick: bool = True
     entered_turn: int = 0
     counters: dict[str, int] = field(default_factory=dict)
+    counter_timestamps: dict[str, int] = field(default_factory=dict)
     keywords: list[str] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
@@ -94,8 +95,10 @@ class CardInstance:
     def reset_zone_counters(self, zone: Zone) -> None:
         if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
             self.counters = {key: value for key, value in self.counters.items() if not key.startswith("__")}
+            self.counter_timestamps = {key: value for key, value in self.counter_timestamps.items() if self.counters.get(key, 0) > 0}
         else:
             self.counters.clear()
+            self.counter_timestamps.clear()
 
     def move_to_zone(self, zone: Zone) -> None:
         if zone != self.zone:
@@ -351,16 +354,20 @@ def object_incarnation(card) -> int:
     return int(value if value is not None else getattr(card, "effect_timestamp", 0) or getattr(card, "static_order", 0) or 0)
 
 
-def assign_effect_timestamp(state: MatchState, card_id: str) -> None:
-    card = state.cards[card_id]
+def allocate_effect_timestamp(state: MatchState) -> int:
     timestamp = max(
         int(getattr(state, "next_effect_timestamp", 1) or 1),
         int(getattr(state, "next_static_order", 1) or 1),
     )
-    card.effect_timestamp = timestamp
-    card.static_order = timestamp
     state.next_effect_timestamp = timestamp + 1
     state.next_static_order = timestamp + 1
+    return timestamp
+
+
+def assign_effect_timestamp(state: MatchState, card_id: str) -> None:
+    card = state.cards[card_id]
+    card.effect_timestamp = allocate_effect_timestamp(state)
+    card.static_order = card.effect_timestamp
 
 
 def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_text: str = "") -> list[str]:

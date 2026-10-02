@@ -126,8 +126,9 @@ class RulesEngine:
     def _apply_step_start_actions(self, state: MatchState) -> None:
         player = state.players[state.active_player]
         if state.step == Step.UNTAP:
+            from rules_engine.named_counters import untap_permanent
             for cid in player.battlefield:
-                state.cards[cid].tapped = False
+                untap_permanent(state, cid, turn_based=True)
             state.log.append(f"{player.name} untaps.")
         elif state.step == Step.UPKEEP:
             staged_here = not state.trigger_staging

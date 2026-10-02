@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Named counter timestamps, stun and fixed-number scry
+
+- Added durable per-kind counter timestamps and layer-six keyword contributions, including timestamp-aware proliferation valuation and existing cannot-have overrides. Counter placement does not change permanent incarnation; legacy snapshots remain readable.
+- Routed turn-step and supported spell untaps through one stun-counter operation. Added bounded unconditional named-counter parsing and fixed-number private scry with atomic bottom/top ordering, snapshot continuation and both-seat existing choice controls.
+- Removed name-only fabricated spell effects. Missing instant/sorcery Oracle text fails canonical admission rather than manufacturing damage, draws or counters.
+- Verified 2,578 isolated backend tests (283 deprecation warnings), 341 focused checks, frontend lint/unit/build, 104 Chromium scenario assertions and 12 logical seat-balanced smoke games (24 repeatability executions) without reported drift, timeouts or classified anomalies. Installed dependencies were reused; browser assertions do not certify pointer ergonomics or visual quality.
+- Shield replacements, Decayed/Exalted triggers, keyword variants, complete ability suppression and broader layers remain unfinished. UI redesign remains deferred. See `docs/testing/named-counters.md` for scope and evidence.
+
 ## 2026-10-02 - Local-only canonical match admission
 
 - Removed synchronous card/image/ruling sync and database cache materialization from match hydration. Live games and diagnostics read canonical local bulk records, cache metadata and the shipped seed; structured missing-data errors point to explicit sync and readiness endpoints.

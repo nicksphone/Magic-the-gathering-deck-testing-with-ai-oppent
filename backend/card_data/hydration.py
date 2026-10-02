@@ -23,8 +23,10 @@ def local_knowledge(repo, names):
     return {row.name.casefold(): row for row in repo.list_card_knowledge(names)} if hasattr(repo, 'list_card_knowledge') else {}
 
 
-def _printed_stats_available(metadata):
+def _required_characteristics_available(metadata):
     printed_types = str(metadata.get('type_line') or '').split(' — ', 1)[0].split(' // ', 1)[0].split()
+    if {'Instant', 'Sorcery'}.intersection(printed_types) and not str(metadata.get('oracle_text') or '').strip():
+        return False
     if 'Creature' in printed_types and any(metadata.get(key) is None for key in ('power', 'toughness')):
         return False
     if 'Planeswalker' in printed_types and metadata.get('loyalty') is None:
@@ -33,7 +35,7 @@ def _printed_stats_available(metadata):
 
 
 def ready_for_match(metadata):
-    if not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _printed_stats_available(metadata):
+    if not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _required_characteristics_available(metadata):
         return False
     if metadata.get('card_faces') and not metadata.get('layout'):
         return False
@@ -42,7 +44,7 @@ def ready_for_match(metadata):
     if metadata.get('layout') in {'modal_dfc', 'transform', 'adventure', 'split', 'reversible_card'}:
         faces = metadata.get('card_faces') or []
         return len(faces) >= 2 and all(isinstance(face, dict) and face.get('name') and face.get('type_line')
-                                     and _printed_stats_available(face) for face in faces)
+                                     and _required_characteristics_available(face) for face in faces)
     return True
 
 

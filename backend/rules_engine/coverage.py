@@ -4,6 +4,13 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ("scry replacement fidelity", re.compile(r'if .+scry.+instead', re.IGNORECASE)),
+    ("scry trigger fidelity", re.compile(r'whenever .+scry', re.IGNORECASE)),
+    ("dynamic scry", re.compile(r'\bscry x\b', re.IGNORECASE)),
+    ("keyword counter variant fidelity", re.compile(r'\bhexproof from\b|\btrample over planeswalkers\b', re.IGNORECASE)),
+    ("decayed triggered sacrifice", re.compile(r"\bdecayed\b", re.IGNORECASE)),
+    ("exalted triggered bonus", re.compile(r"\bexalted\b", re.IGNORECASE)),
+    ("shield counter replacement", re.compile(r"\bshield counters?\b", re.IGNORECASE)),
     ("proliferate event replacement", re.compile(r"if you would proliferate", re.IGNORECASE)),
     ("conditional proliferation", re.compile(r"if you do, proliferate", re.IGNORECASE)),
     ("read ahead entry route fidelity", re.compile(r"\bread ahead\b", re.IGNORECASE)),

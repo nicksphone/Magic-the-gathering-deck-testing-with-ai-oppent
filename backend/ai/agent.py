@@ -189,6 +189,23 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] in {'scry', 'scry_top_order'}:
+                selected = self._choose_library_search(state, options, len(options), player_id)
+                if choice['kind'] == 'scry':
+                    # Preserve curve/fixing resources; do not apply one land
+                    # threshold to ramp, aggro and control alike.
+                    lands = sum('Land' in state.cards[cid].types for cid in state.players[player_id].hand)
+                    lands += sum('Land' in state.cards[cid].types for cid in state.players[player_id].battlefield)
+                    known = state.players[player_id].hand + options
+                    goal = max([3, *(mana_value(state.cards[cid].mana_cost) for cid in known
+                                     if 'Land' not in state.cards[cid].types)])
+                    demand = self._color_demand(state, player_id)
+                    sources = self._current_color_sources(state, player_id)
+                    selected = [cid for cid in reversed(selected) if 'Land' in state.cards[cid].types
+                                and lands > goal + 1 and not any(demand.get(color, 0) and not sources.get(color, 0)
+                                                               for color in self._land_colors(state.cards[cid]))]
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
+                                  reasoning='Scry using known inspected cards, current resources and library-search ordering')
             if choice['kind'] == 'proliferate':
                 from ai.proliferation_policy import preferred_recipients
                 from rules_engine.proliferation import recipients

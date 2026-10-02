@@ -14,6 +14,18 @@ async function assignDamage(amounts) {
 }
 try {
   await waitFor("window.fixtureState && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
+  await click('Scry Fixture');
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'scry'");
+  assert.equal(await evaluate("window.fixtureState.players['2'].battlefield.find(c => c.name === 'Grizzly Bears').keywords.includes('flying')"), true);
+  await evaluate("(() => { const label = [...document.querySelectorAll('label')].find(e => e.textContent.includes('Impede Momentum') && e.querySelector('input[type=checkbox]')); if (!label) throw new Error('Missing scry bottom control'); label.querySelector('input').click(); })()");
+  await click('Confirm Selection');
+  await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'scry_top_order'");
+  await click('Twiddle');
+  await click('Grizzly Bears');
+  await click('Confirm Order');
+  await waitFor("!window.fixtureState.pending_mechanic_choice && window.fixtureState.players['2'].hand.some(c => c.name === 'Twiddle')");
+  assert.equal(await evaluate('window.fixtureActions.at(-1).player_id'), 2);
+  console.log('PASS seat-two private scry partition/top ordering resumes draw and keyword counters reach the public view');
   await click("Proliferate Fixture");
   await waitFor("window.fixtureState?.pending_mechanic_choice?.kind === 'proliferate'");
   assert.ok(await evaluate("document.body.textContent.includes('including none')"));

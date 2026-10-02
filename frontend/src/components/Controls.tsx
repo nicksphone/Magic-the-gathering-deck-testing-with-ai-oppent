@@ -258,8 +258,8 @@ export function Controls(props: Props) {
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
-          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" ? <>
-            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : "Pick the bottom cards in order, bottommost first."}</p>
+          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || mechanicMove.kind === "scry_top_order" ? <>
+            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : mechanicMove.kind === "scry_top_order" ? "Pick the remaining cards in order, topmost first." : "Pick the bottom cards in order, bottommost first."}</p>
             {(mechanicMove.options ?? []).map((cid) => (
               <button key={cid} disabled={mechanicSelections.includes(cid)} onClick={() => setMechanicSelections((selected) => [...selected, cid])}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
             ))}
@@ -267,14 +267,14 @@ export function Controls(props: Props) {
             <button onClick={() => setMechanicSelections([])}>Reset Order</button>
             <button disabled={mechanicSelections.length !== mechanicMove.count} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Order</button>
           </> : <>
-            <p>{mechanicMove.kind === "proliferate" ? "Choose any number of permanents or players, including none. Each gets another counter of every kind it already has." : mechanicMove.min_count === mechanicMove.count && mechanicMove.count ? `Select exactly ${mechanicMove.count} card(s).` : mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? `Select up to ${mechanicMove.count} card(s).` : `Select exactly ${mechanicMove.count} card(s).`}</p>
+            <p>{mechanicMove.kind === "scry" ? "Choose any cards to put on the bottom, bottommost first. Choose none to keep all." : mechanicMove.kind === "proliferate" ? "Choose any number of permanents or players, including none. Each gets another counter of every kind it already has." : mechanicMove.min_count === mechanicMove.count && mechanicMove.count ? `Select exactly ${mechanicMove.count} card(s).` : mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? `Select up to ${mechanicMove.count} card(s).` : `Select exactly ${mechanicMove.count} card(s).`}</p>
             {(mechanicMove.options ?? []).map((cid) => <label key={cid}>
               <input type="checkbox" checked={mechanicSelections.includes(cid)} onChange={(event) => setMechanicSelections((selected) => event.target.checked ? [...selected, cid] : selected.filter((id) => id !== cid))} />
               {mechanicMove.option_labels?.[cid] ?? cid}
               {mechanicMove.option_type_lines?.[cid] ? <small> ({mechanicMove.option_type_lines[cid]})</small> : null}
             </label>)}
-            {(mechanicMove.kind === "search_library" || mechanicMove.kind === "mulligan_bottom") && mechanicSelections.length > 0 ? <p>Selection order{mechanicMove.kind === "mulligan_bottom" ? " (bottom-most first)" : ""}: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
-            <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" || mechanicMove.kind === "proliferate" ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
+            {(mechanicMove.kind === "search_library" || mechanicMove.kind === "mulligan_bottom" || mechanicMove.kind === "scry") && mechanicSelections.length > 0 ? <p>Selection order{mechanicMove.kind === "mulligan_bottom" || mechanicMove.kind === "scry" ? " (bottom-most first)" : ""}: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
+            <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (["topdeck_put", "search_library", "proliferate", "scry"].includes(mechanicMove.kind ?? "") ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
           </>}
         </div>
       ) : null}

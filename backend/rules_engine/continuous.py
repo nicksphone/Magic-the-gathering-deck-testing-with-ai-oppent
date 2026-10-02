@@ -383,14 +383,24 @@ def _counter_pt_delta(card) -> int:
 def effective_keywords(state, card_id: str) -> list[str]:
     card = state.cards[card_id]
     out = {str(k).lower() for k in (getattr(card, "keywords", None) or [])}
+    from rules_engine.named_counters import keyword_counter
+    stamps = getattr(card, 'counter_timestamps', {}) or {}
+    counter_grants = sorted((int(stamps.get(kind, effect_timestamp(card))), keyword_counter(kind))
+                            for kind, amount in (getattr(card, 'counters', {}) or {}).items()
+                            if amount > 0 and keyword_counter(kind))
     if not _is_battlefield(card):
+        out.update(keyword for _, keyword in counter_grants)
         return sorted(out)
     out.update(key.removeprefix("__eot_keyword_") for key, amount in (card.counters or {}).items()
                if key.startswith("__eot_keyword_") and amount)
+    counter_index = 0
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
             continue
+        while counter_index < len(counter_grants) and counter_grants[counter_index][0] <= effect_timestamp(src):
+            out.add(counter_grants[counter_index][1])
+            counter_index += 1
         out.update(_attached_effects(state, src, card)[2])
         for scope, other_only, subject, granted in _iter_keyword_grants(src):
             if _scope_controller(src.controller, scope, card.controller):
@@ -407,6 +417,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
                         out.clear()
                     else:
                         out.difference_update(removed)
+    out.update(keyword for _, keyword in counter_grants[counter_index:])
     # "Can't have" is an override in the keyword layer, not a timestamped
     # ordinary removal. Apply it after all grants and normal removals.
     for src_id in _all_battlefield_ids(state):
@@ -658,6 +669,10 @@ def _iter_keyword_grants(text):
 
 @_static_parser
 def _iter_keyword_removals(text):
+    for clause in re.split(r'[.\n]', text):
+        match = re.fullmatch(r'(?:all )?creatures lose all abilities(?: and have base power and toughness \d+/\d+)?', clause.strip())
+        if match:
+            yield ('all', False, 'creatures', frozenset({'all abilities'}))
     for match in PT_AND_KW_REMOVE_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -695,6 +710,8 @@ def _iter_keyword_cant_removals(text):
 
 
 def _scope_controller(source_controller: int, scope: str, target_controller: int) -> bool:
+    if scope == 'all':
+        return True
     if scope == "you control":
         return source_controller == target_controller
     if scope == "your opponents control":
@@ -839,6 +856,17 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     trace: list[dict[str, Any]] = []
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
+    from rules_engine.named_counters import keyword_counter
+    for kind, amount in (getattr(card, 'counters', {}) or {}).items():
+        keyword = keyword_counter(kind)
+        if amount <= 0 or keyword is None:
+            continue
+        stamp = int((getattr(card, 'counter_timestamps', {}) or {}).get(kind, effect_timestamp(card)))
+        key = _continuous_layer_sort_key(state, card_id, f'keyword-grant:{keyword}')
+        applied_layers.append(((key[0], key[1], stamp, *key[3:]), {
+            'source_id': card_id, 'source_name': card.name,
+            'layer': f'keyword-grant:{keyword}', 'counter': kind, 'effect_timestamp': stamp,
+        }))
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src or not _is_battlefield(src):
