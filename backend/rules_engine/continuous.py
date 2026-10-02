@@ -75,6 +75,9 @@ def _attached_effects(state, source, target):
         kw = ATTACHED_KW_RE.fullmatch(clause)
         base = ATTACHED_BASE_RE.fullmatch(clause)
         if not pt and not kw and not base:
+            from rules_engine.combat_constraints import supported_body
+            if supported_body(clause[subject.end():].strip()):
+                continue
             from rules_engine.hooks import equip_cost_modifier, aura_cost_modifier
             from rules_engine.attachments import is_aura
             if is_aura(source) and (equip_cost_modifier(clause) or aura_cost_modifier(clause)):
@@ -999,6 +1002,8 @@ def _is_battlefield(card) -> bool:
 
 def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     """Return a deterministic trace of continuous effect application for diagnostics."""
+    from rules_engine.combat_constraints import combat_rule_view
+    combat_view = combat_rule_view(state, card_id)
     card = state.cards[card_id]
     ability_losses = _printed_ability_loss_sources(state)
     trace: list[dict[str, Any]] = []
@@ -1073,6 +1078,8 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     return {
         "card_id": card_id,
         "card_name": card.name,
+        "combat_constraints": combat_view['active'],
+        "unsupported_combat_clauses": combat_view['unsupported'],
         "effective_power": effective_power(state, card_id),
         "effective_toughness": effective_toughness(state, card_id),
         "applied_layers": [

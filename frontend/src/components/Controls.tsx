@@ -14,6 +14,7 @@ type Props = {
   bestOf: number;
   setBestOf: (bestOf: number) => void;
   onStart: () => void;
+  startDisabled: boolean;
   onPassPriority: () => void;
   onKeepHand: (bottomCardIds: string[]) => void;
   actingPlayerId?: number;
@@ -197,7 +198,7 @@ export function Controls(props: Props) {
           <option value={9}>Best-of-9</option>
         </select>
       </div>
-      <button onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
+      <button disabled={props.startDisabled} onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
       {props.match ? (
         <div className="match-status-grid">
           <div className="status-card">

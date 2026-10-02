@@ -18,6 +18,7 @@ async function selectDecks() {
       selects[index].dispatchEvent(new Event('change', { bubbles: true }));
     }
   })()`);
+  await waitFor("[...document.querySelectorAll('button')].some(button => button.textContent.startsWith('Start Best-of-') && !button.disabled)");
 }
 
 async function matchIds() {

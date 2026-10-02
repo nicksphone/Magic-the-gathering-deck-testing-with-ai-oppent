@@ -37,21 +37,14 @@ def _land_gate_prevents(state, card_id: str, action: str) -> bool | None:
 
 
 def card_cant_attack(state, card_id: str) -> bool:
-    card = state.cards[card_id]
-    land_gate = _land_gate_prevents(state, card_id, "attack")
-    if land_gate is not None:
-        return land_gate
-    text = active_printed_text(state, card_id)
-    if card_cant_attack_alone(state, card_id):
-        return False
-    if "can't attack" in text or "cannot attack" in text:
-        if "unless" not in text:
-            return True
-    return False
+    from rules_engine.combat_constraints import combat_rule_text
+    return any(re.fullmatch(r"(?:can't|cannot) attack(?: or block)?", clause)
+               for clause in combat_rule_text(state, card_id).splitlines())
 
 
 def card_must_attack_if_able(state, card_id: str) -> bool:
-    text = active_printed_text(state, card_id)
+    from rules_engine.combat_constraints import combat_rule_text
+    text = combat_rule_text(state, card_id)
     return "attacks each combat if able" in text or "must attack each combat if able" in text
 
 
@@ -59,24 +52,25 @@ def card_cant_block(state, card_id: str) -> bool:
     from rules_engine.continuous import has_keyword
     if has_keyword(state, card_id, 'decayed'):
         return True
-    land_gate = _land_gate_prevents(state, card_id, "block")
-    if land_gate is not None:
-        return land_gate
-    text = active_printed_text(state, card_id)
-    return "can't block" in text or "cannot block" in text
+    from rules_engine.combat_constraints import combat_rule_text
+    return any(re.fullmatch(r"(?:can't|cannot) (?:attack or )?block", clause)
+               for clause in combat_rule_text(state, card_id).splitlines())
 
 
 def card_must_block_if_able(state, card_id: str) -> bool:
-    text = active_printed_text(state, card_id)
+    from rules_engine.combat_constraints import combat_rule_text
+    text = combat_rule_text(state, card_id)
     return "blocks each combat if able" in text or "must block each combat if able" in text
 
 
 def card_cant_attack_alone(state, card_id: str) -> bool:
-    return bool(re.search(r"\b(?:can't|cannot) attack(?: or block)? alone\b", active_printed_text(state, card_id)))
+    from rules_engine.combat_constraints import combat_rule_text
+    return bool(re.search(r"\b(?:can't|cannot) attack(?: or block)? alone\b", combat_rule_text(state, card_id)))
 
 
 def card_cant_block_alone(state, card_id: str) -> bool:
-    return bool(re.search(r"\b(?:can't|cannot) (?:attack or )?block alone\b", active_printed_text(state, card_id)))
+    from rules_engine.combat_constraints import combat_rule_text
+    return bool(re.search(r"\b(?:can't|cannot) (?:attack or )?block alone\b", combat_rule_text(state, card_id)))
 
 
 def split_second_active(state) -> bool:

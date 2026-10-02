@@ -9,6 +9,8 @@ Do not treat passing fixture tests as proof that the current UI is ergonomic.
 Finish backend rules, supported-corpus correctness and simulation/AI evidence
 before returning to the redesign. Broad release gates below remain open.
 
+- [x] Share bounded condition-aware static combat clauses across self, attachment and global sources, with source suppression, effective-power limits, cumulative extra blockers and unresolved-clause engine traces. See [scope and remaining gaps](docs/testing/conditional-combat.md). Broader predicates, paid taxes and HTTP/UI warning integration remain open.
+
 - [x] Route supported opening-hand permanent entries through shared off-zone counter preparation, affected-player replacement ordering and guarded once-only commitment. Keep mandatory exile instructions resumable; do not consume cast-only entry records.
 - [x] Implement bounded proliferation instructions, all-kinds non-targeting selection, resumable atomic counter vectors, canonical triggers/spell continuation, both-seat controls and shared AI choices. See [scope and remaining gaps](docs/testing/proliferation.md).
 - [ ] Complete generalized pre-entry characteristics, remaining multi-kind entry/damage/cost events, proliferation-event replacements, conditional instructions, counter movement/spending and arbitrary replacement clauses.

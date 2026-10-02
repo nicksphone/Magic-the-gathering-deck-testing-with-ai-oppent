@@ -3235,8 +3235,8 @@ class AIAgent:
         if "menace" in keywords:
             return True
         if isinstance(state, MatchState) and attacker_id in state.cards:
-            from rules_engine.restrictions import active_printed_text
-            text = active_printed_text(state, attacker_id)
+            from rules_engine.combat_constraints import combat_rule_text
+            text = combat_rule_text(state, attacker_id)
         else:
             text = (getattr(attacker, "oracle_text", "") or "").lower()
         return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text

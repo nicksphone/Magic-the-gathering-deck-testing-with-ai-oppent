@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-02 - Condition-aware static combat constraints
+
+- Shared supported self, attached and global combat clauses across live legality and AI helpers. Added bounded controller/defender/global land gates and named counter thresholds without treating unresolved conditions as unconditional restrictions.
+- Applied source suppression independently of recipient suppression; cumulative additional-block capacity and effective-power blocking limits use current state. Artifact-specific blocking bans no longer prohibit all blocking.
+- Added active-source and unsupported-clause engine trace provenance, canonical nine-card fixtures, real Aura-cast/atomic attack-rejection checks and both-seat HTTP/SQLite threshold recovery. Retained generic `CARDNAME` diagnostic self-references after full-suite validation found a false lethal signal.
+- Deferred alpha UI redesign as requested. Arbitrary combat predicates, paid taxes, complete layer dependencies, dedicated HTTP/UI warning integration and expert AI remain unfinished.
+- Fixed an observed functional startup race: Start is disabled during restoration/mutation and without valid selected decks, while durable pending starts can still be recovered. Browser recovery waits for actual readiness rather than issuing an ignored click.
+- Validation: 2,828 backend tests passed; 83 focused combat/diagnostic checks passed; frontend lint/unit/build passed. Twelve logical seat-balanced games, each repeated twice, had zero determinism failures, drift labels or reported anomalies. Evidence is under the RCHFiles `diagnostics/conditional-combat/20261002T062330Z` archive; earlier failed/superseded runs are retained, not claimed as passes.
+
 ## 2026-10-02 - Combat ability provenance and counterable block triggers
 
 - Applied supported ability loss to recognized printed combat restrictions/capacity, player shroud/hexproof sources and battlefield counter protection. Fixed combined attack-or-block-alone wording, illegal lone-attack tapping, duplicate blocker counting and the inherited 99-block cap without card-name dispatch. A canonical 101-attacker stress probe checks unlimited blocking, restart snapshots and suppression.

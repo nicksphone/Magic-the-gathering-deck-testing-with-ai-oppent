@@ -14,7 +14,6 @@ from rules_engine.restrictions import (
     card_cant_attack_alone,
     card_cant_block,
     card_cant_block_alone,
-    active_printed_text,
     card_must_attack_if_able,
     card_must_block_if_able,
 )
@@ -560,9 +559,20 @@ def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_s
 
 
 def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
-    if re.search(r"\b(?:can't|cannot) be blocked[.]?(?:$|\n)", active_printed_text(state, attacker.id)):
+    from rules_engine.combat_constraints import combat_rule_text
+    attacker_text = combat_rule_text(state, attacker.id)
+    blocker_text = combat_rule_text(state, blocker.id)
+    if any(re.fullmatch(r"(?:can't|cannot) be blocked", line) for line in attacker_text.splitlines()):
         return False
-    only_keyword = BLOCK_ONLY_KEYWORD_RE.search(active_printed_text(state, blocker.id))
+    for line in attacker_text.splitlines():
+        power_limit = re.fullmatch(r"(?:can't|cannot) be blocked by creatures with power (\d+) or (less|greater)", line)
+        if power_limit:
+            power = effective_power(state, blocker.id)
+            if power_limit[2] == 'less' and power <= int(power_limit[1]) or power_limit[2] == 'greater' and power >= int(power_limit[1]):
+                return False
+    if re.search(r"(?:can't|cannot) block artifact creatures", blocker_text) and 'Artifact' in attacker.types:
+        return False
+    only_keyword = BLOCK_ONLY_KEYWORD_RE.search(blocker_text)
     if only_keyword:
         required = only_keyword.group(1).strip().lower()
         if required in KNOWN_KEYWORDS and not has_keyword(state, attacker.id, required):
@@ -609,28 +619,23 @@ def _minimum_blockers_required(state: MatchState, attacker_id: str) -> int:
     min_blockers = 2 if has_keyword(state, attacker_id, "menace") else 1
     if has_keyword(state, attacker_id, "menace"):
         min_blockers = max(min_blockers, 2)
-    text = active_printed_text(state, attacker_id)
-    if "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text:
-        min_blockers = max(min_blockers, 2)
-    for phrase, value in _NUMBER_WORDS.items():
-        token = f"can't be blocked except by {phrase} or more creatures"
-        token2 = f"cannot be blocked except by {phrase} or more creatures"
-        if token in text or token2 in text:
-            min_blockers = max(min_blockers, value)
+    from rules_engine.combat_constraints import combat_rule_text
+    text = combat_rule_text(state, attacker_id)
+    from rules_engine.combat_constraints import number
+    for token in re.findall(r"(?:can't|cannot) be blocked except by (\w+) or more creatures", text):
+        min_blockers = max(min_blockers, number(token) or 1)
     return min_blockers
 
 
 def _max_attackers_blockable_by_creature(state, blocker) -> int | float:
-    text = active_printed_text(state, blocker.id)
+    from rules_engine.combat_constraints import combat_rule_text
+    text = combat_rule_text(state, blocker.id)
     if "can block any number of creatures" in text:
         return float('inf')
-    if "can block an additional creature each combat" in text:
-        return 2
-    for phrase, value in _NUMBER_WORDS.items():
-        token = f"can block {phrase} additional creatures each combat"
-        if token in text:
-            return 1 + value
-    return 1
+    extra = text.splitlines().count("can block an additional creature each combat")
+    from rules_engine.combat_constraints import number
+    extra += sum(number(token) or 0 for token in re.findall(r"can block (\w+) additional creatures each combat", text))
+    return 1 + extra
 
 
 _NUMBER_WORDS = {

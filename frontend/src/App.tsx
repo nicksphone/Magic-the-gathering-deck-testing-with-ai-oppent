@@ -433,6 +433,7 @@ export function App() {
           bestOf={bestOf}
           setBestOf={setBestOf}
           onStart={reportAction(startMatch)}
+          startDisabled={restoring || mutationPending || (!readPendingStart() && (!decks.some((deck) => deck.id === selectedA) || !decks.some((deck) => deck.id === selectedB)))}
           onPassPriority={reportAction(passPriority)}
           onKeepHand={reportAction(keepHand)}
           onMulligan={reportAction(mulligan)}

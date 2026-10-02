@@ -130,7 +130,7 @@ function Harness() {
       decks={[]} selectedA={null} selectedB={null}
       setSelectedA={() => {}} setSelectedB={() => {}}
       startMode="human_vs_human" setStartMode={() => {}}
-      difficulty="master" setDifficulty={() => {}} bestOf={3} setBestOf={() => {}}
+      difficulty="master" setDifficulty={() => {}} bestOf={3} setBestOf={() => {}} startDisabled={false}
       onStart={() => {}} onPassPriority={() => { act(actor, { type: "pass_priority" }).catch((failure) => setError(String(failure))); }}
       onKeepHand={(ids) => { act(actor, { type: "keep_hand", bottom_card_ids: ids }).catch((failure) => setError(String(failure))); }}
       onMulligan={() => { act(actor, { type: "mulligan" }).catch((failure) => setError(String(failure))); }}
