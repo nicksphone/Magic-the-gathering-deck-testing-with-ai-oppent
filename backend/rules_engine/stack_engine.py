@@ -68,6 +68,9 @@ def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int |
     if key in {"destroy_permanent", "destroy"} and payload.get("target_card_id"):
         target_id = str(payload["target_card_id"])
         target = state.cards.get(target_id)
+        from rules_engine.continuous import has_keyword
+        if target and (target.counters.get('shield', 0) > 0 or has_keyword(state, target_id, 'indestructible')):
+            return None
         return ("die_zone", int(target.controller) if target else None, target_id)
     return None
 

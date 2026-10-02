@@ -46,6 +46,9 @@ _PLAYER_DAMAGE_PREVENTION_RE = re.compile(
 _PERMANENT_DAMAGE_PREVENTION_RE = re.compile(
     r"if a source would deal damage to (?:you or (?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) permanent you control|(?:a|an|target) creature you control), prevent 1 of that damage"
 )
+_PERMANENT_DAMAGE_REDUCTION_RE = re.compile(
+    r'if a source would deal damage to a creature you control, it deals that much damage minus 1 to that creature instead'
+)
 _DIE_EXILE_RE = re.compile(
     r"if a (?:non-token|nontoken|another )?(?:creature|permanent|artifact|enchantment|artifact or enchantment) you control would die, exile it instead"
     r"|if an? artifact or enchantment you control would die, exile it instead"
@@ -74,6 +77,28 @@ def replacement_source_used(used_source_ids, event: str, source_id: str) -> bool
     return source_id in used or f"{event}:{source_id}" in used
 
 
+def _permanent_damage_candidates(state, target_card_id, prevention_locked=False):
+    from copy import copy
+    from game_state.state import Zone
+    from rules_engine.named_counters import shield_applied_in_event
+    target = state.cards[target_card_id]
+    if target.zone != Zone.BATTLEFIELD:
+        return []
+    candidates = [
+        (card, text) for card, text in _battlefield_oracle_texts(state, controller=target.controller)
+        if (_PERMANENT_DAMAGE_REDUCTION_RE.search(text) and 'Creature' in target.types)
+        or (not prevention_locked and _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
+            and ('creature you control' not in text or 'Creature' in target.types))
+    ]
+    if target.counters.get('shield', 0) > 0 or shield_applied_in_event(state, target_card_id):
+        source = copy(target)
+        source.id = f'shield-counter:{target.id}'
+        source.name = f'{target.name} shield counter'
+        source.effect_timestamp = target.counter_timestamps.get('shield', effect_timestamp(target))
+        candidates.append((source, 'shield-counter'))
+    return sorted(candidates, key=lambda pair: -effect_timestamp(pair[0]))
+
+
 def replacement_options(
     state,
     event: str,
@@ -93,14 +118,16 @@ def replacement_options(
         from rules_engine.draw_restrictions import can_draw_card
         if not can_draw_card(state, target_player):
             return []
+    prevention_locked = False
     if event_key in {"damage_to_player", "player_damage", "damage_to_permanent", "permanent_damage"}:
-        if damage_cant_be_prevented(
+        prevention_locked = damage_cant_be_prevented(
             state,
             source_card_id=source_card_id,
             target_player=target_player,
             target_card_id=target_card_id,
             combat=combat,
-        ):
+        )
+        if prevention_locked and target_card_id is None:
             return []
     candidates: list[tuple[object, str]] = []
     if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
@@ -110,12 +137,7 @@ def replacement_options(
             if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
         ]
     elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
-        target = state.cards[target_card_id]
-        candidates = [
-            (card, text)
-            for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-            if _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
-        ]
+        candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
     elif event_key in {"life_gain", "gain_life"} and target_player in state.players:
         candidates = [
             (card, text)
@@ -180,26 +202,35 @@ def apply_permanent_damage_replacements(
     amount: int,
     replacement_source_id: str | None = None,
     max_replacements: int | None = None,
+    used_source_ids=None,
+    prevention_locked=False,
 ) -> int:
     out = int(amount)
     if target_card_id not in state.cards:
         return out
     target = state.cards[target_card_id]
-    candidates = [
-        (card, text)
-        for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-        if _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
-    ]
-    used: set[str] = set()
+    candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
+    used: set[str] = set(used_source_ids or [])
+    # A selected effect is about to be applied, not already applied.
+    used.discard(str(replacement_source_id))
     requested = replacement_source_id
     applied = 0
     while out > 0 and (max_replacements is None or applied < max_replacements):
         available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
+        if requested is None:
+            # Free static reductions first: they may avoid spending a counter.
+            available.sort(key=lambda pair: str(pair[0].id).startswith('shield-counter:'))
         chosen = _choose_replacement_candidate(state, available, requested, f"damage to {target.name}")
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
-        out = max(0, out - 1)
+        if str(chosen.id) == f'shield-counter:{target_card_id}':
+            from rules_engine.named_counters import apply_shield_damage
+            apply_shield_damage(state, target_card_id)
+            if not prevention_locked:
+                out = 0
+        else:
+            out = max(0, out - 1)
         applied += 1
         requested = None
     return out
@@ -285,6 +316,12 @@ def damage_cant_be_prevented(
         if _matches_phrase(text, ("damage can't be prevented", "damage cannot be prevented")):
             return True
         if combat and _matches_phrase(text, ("combat damage can't be prevented", "combat damage cannot be prevented")):
+            return True
+        if (combat and source and source.controller == card.controller and 'Creature' in source.types
+                and _matches_phrase(text, (
+                    "combat damage that would be dealt by creatures you control can't be prevented",
+                    "combat damage that would be dealt by creatures you control cannot be prevented",
+                ))):
             return True
         if target_player == card.controller and _matches_phrase(
             text,

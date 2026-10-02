@@ -97,6 +97,8 @@ def apply_creature_damage(state, card_id: str, amount: int, source_id: str | Non
     if amount <= 0:
         return
     card = state.cards[card_id]
+    if source_has_keyword(state, source_id, 'deathtouch', source_lki):
+        card.counters['__deathtouch_damaged'] = 1
     counter_damage = any(source_has_keyword(state, source_id, keyword, source_lki) for keyword in ("infect", "wither"))
     if counter_damage:
         queue_damage_counters(state, damage_controller(state, source_id, source_lki, controller),

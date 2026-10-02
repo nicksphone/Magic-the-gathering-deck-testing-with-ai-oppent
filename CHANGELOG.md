@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Shield effects and shared destruction protection
+
+- Implemented shield-counter damage prevention and effect-destruction replacement across supported targeted/bulk destruction and combat paths. Indestructible does not spend a shield; unpreventable damage still spends one without preventing damage. Simultaneous multi-block combat shares one shield event, while first-strike/regular steps remain separate.
+- Added bounded affected-controller scalar damage ordering with virtual counter-effect IDs, once-only replacement chaining and HTTP/SQLite restore. Canonical creature-only damage reduction remains distinct from prevention; automatic resolution/AI prefers free reduction before spending counters.
+- Fixed source-controller creature-scoped combat prevention prohibitions, amount-based planeswalker combat prevention and shared noncombat deathtouch results. Full combat/protection/conversion ordering, regeneration and removal watchers remain open and explicitly reported.
+- Verified 2,614 isolated backend tests (285 deprecation warnings), 274 focused checks, frontend lint/unit/build, 104 Chromium scenario assertions and 12 logical seat-balanced games repeated twice, with zero reported drift or timeouts. Reused installed dependencies; not a broad strength/balance or visual certification. Updated the plan, feature scope and Graphify, with evidence archived on RCHFiles. UI redesign remains deferred.
+
 ## 2026-10-02 - Named counter timestamps, stun and fixed-number scry
 
 - Added durable per-kind counter timestamps and layer-six keyword contributions, including timestamp-aware proliferation valuation and existing cannot-have overrides. Counter placement does not change permanent incarnation; legacy snapshots remain readable.

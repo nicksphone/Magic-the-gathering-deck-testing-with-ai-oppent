@@ -96,8 +96,10 @@ Final source checks on October 2, 2026:
 
 ## Known Limitations and Next Upgrades
 
-- Shield counter consequences and their interaction with prevention, destruction,
-  indestructible and competing affected-player replacements are next, not done.
+- [Shield counter consequences](shield-counters.md), shared destruction checks
+  and bounded scalar choice ordering are implemented in a follow-up. Full
+  simultaneous combat/prevention ordering and arbitrary competing destruction
+  replacements remain unfinished.
 - Decayed and Exalted keyword names are recognized, but their triggered effects
   and non-redundant ability-instance counts remain unsupported. Keyword variants,
   full non-keyword ability suppression and arbitrary layer dependencies remain

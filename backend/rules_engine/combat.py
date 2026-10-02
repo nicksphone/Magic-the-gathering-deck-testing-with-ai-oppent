@@ -8,7 +8,7 @@ from rules_engine.continuous import KNOWN_KEYWORDS, effective_power, effective_t
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, apply_permanent_damage_replacements
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -454,8 +454,9 @@ def finish_combat_damage(state: MatchState) -> None:
 def _combat_damage_step(state: MatchState, default_defender: int, first_ids: set[str], first_strike_only: bool) -> None:
     from rules_engine.damage_results import collect_damage_counters, flush_damage_counters
     from effects.registry import resolve_effect
+    from rules_engine.named_counters import shield_damage_event
 
-    with collect_damage_counters(state) as packets:
+    with collect_damage_counters(state) as packets, shield_damage_event(state):
         damage_events, gain_effects = _combat_damage_results(state, default_defender, first_ids, first_strike_only)
     flush_damage_counters(state, packets)
     pending = state.pending_replacement_choice or state.pending_mechanic_choice
@@ -632,6 +633,8 @@ def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
 
 
 def _damage_prevented_by_protection(state: MatchState, source_id: str, target_id: str) -> bool:
+    if damage_cant_be_prevented(state, source_card_id=source_id, target_card_id=target_id, combat=True):
+        return False
     source = state.cards[source_id]
     return protected_from_source(state, target_id, source)
 
@@ -728,9 +731,14 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         cid = defender_key.split(":", 1)[1]
         card = state.cards.get(cid)
         if card and "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
-            if source_id is not None and source_id in state.cards and _damage_prevented_by_protection(state, source_id, cid):
+            prevention_locked = damage_cant_be_prevented(state, source_card_id=source_id,
+                                                        target_card_id=cid, combat=True)
+            if not prevention_locked and source_id is not None and source_id in state.cards and _damage_prevented_by_protection(state, source_id, cid):
                 state.log.append(f"{card.name} prevents {amount} damage.")
                 return 0
+            amount = apply_permanent_damage_replacements(state, cid, amount, prevention_locked=prevention_locked)
+            if not prevention_locked:
+                amount, _ = consume_card_prevention_shield(card, amount)
             card.loyalty = (card.loyalty or 0) - amount
             state.log.append(f"{card.name} loses {amount} loyalty.")
             return amount
@@ -769,6 +777,7 @@ def _mark_creature_damage(
         target_card_id=card_id,
         combat=True,
     )
+    amount = apply_permanent_damage_replacements(state, card_id, amount, prevention_locked=prevention_locked)
     post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount)
     if prevented > 0:
         state.log.append(f"{card.name} prevents {prevented} damage.")

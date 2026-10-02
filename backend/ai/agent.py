@@ -115,6 +115,12 @@ class AIAgent:
             if move:
                 return AIDecision(action=move, reasoning='Order supported simultaneous effects by public creation/buff dependencies')
         pending = getattr(state, 'pending_replacement_choice', None)
+        if pending and pending.get('event') == 'damage_to_permanent' and pending.get('player_id') == player_id:
+            choices = [move for move in legal_moves if move.get('type') == 'choose_replacement']
+            if choices:
+                selected = next((move for move in choices
+                                 if not str(move.get('replacement_source_id', '')).startswith('shield-counter:')), choices[0])
+                return AIDecision(action=selected, reasoning='Apply free damage reduction before spending a shield counter')
         if pending and pending.get('resume_kind') == 'counter_event' and pending.get('player_id') == player_id:
             from ai.counter_policy import preferred_counter_option
             selected = preferred_counter_option(pending)

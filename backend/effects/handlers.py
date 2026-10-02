@@ -61,6 +61,7 @@ def _queue_human_damage_replacement_choice(
         event,
         target_player=affected_player if target_player is not None else None,
         target_card_id=str(target_card_id) if target_card_id else None,
+        source_card_id=payload.get('__source_card_id'),
     )
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
     if str(selected_source_id) not in used_source_ids:
@@ -170,22 +171,24 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         card = state.cards[target_card_id]
         kws = effective_keywords(state, target_card_id)
         for color in source_colors:
-            if f"protection from {color}" in kws:
+            if not prevention_locked and f"protection from {color}" in kws:
                 state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
                 return 0
-        if (card.toughness is not None or "Planeswalker" in card.types) and amount > 0:
+        if card.zone == Zone.BATTLEFIELD and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
                 if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
                 return 0
-            replaced_amount = amount if prevention_locked else apply_permanent_damage_replacements(
+            replaced_amount = apply_permanent_damage_replacements(
                 state,
                 target_card_id,
                 amount,
                 replacement_source_id=selected_source_id,
                 max_replacements=1 if human_chain else None,
+                used_source_ids=payload.get('__used_replacement_source_ids'),
+                prevention_locked=prevention_locked,
             )
-            if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+            if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
                 return 0
             post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
             if prevented > 0:
@@ -428,8 +431,8 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
-        if has_keyword(state, target, "indestructible"):
-            state.log.append(f"{card.name} cannot be destroyed because it has indestructible.")
+        from rules_engine.named_counters import destruction_prevented
+        if destruction_prevented(state, target):
             return
         destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
@@ -474,15 +477,17 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
     leaves: list[dict] = []
     permanent_deaths: list[dict] = []
     creature_deaths: list[dict] = []
+    from rules_engine.named_counters import destruction_prevented
     destinations = {
         cid: replace_die_zone(state, card.controller, cid)
         for cid, card in state.cards.items()
         if "Creature" in card.types and cid in state.players[card.controller].battlefield
+        and not destruction_prevented(state, cid)
     }
     for cid in destinations:
         capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
-        if "Creature" not in card.types:
+        if cid not in destinations:
             continue
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
@@ -515,15 +520,17 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
     leaves: list[dict] = []
     permanent_deaths: list[dict] = []
     creature_deaths: list[dict] = []
+    from rules_engine.named_counters import destruction_prevented
     destinations = {
         cid: replace_die_zone(state, card.controller, cid)
         for cid, card in state.cards.items()
         if allowed_types.intersection(set(card.types or [])) and cid in state.players[card.controller].battlefield
+        and not destruction_prevented(state, cid)
     }
     for cid in destinations:
         capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
-        if not allowed_types.intersection(set(card.types or [])):
+        if cid not in destinations:
             continue
         battlefield_owner = state.players[card.controller]
         zone_owner = state.players[getattr(card, "owner", card.controller)]
@@ -2076,9 +2083,7 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
         affected = state.cards[target_id].controller if target_id else recipient.get("target_player")
         event = "damage_to_permanent" if target_id else "damage_to_player"
         humans = set(getattr(state, "replacement_choice_players", set()) or set())
-        if (state.replacement_choice_required and (not humans or affected in humans)
-                and not damage_cant_be_prevented(state, source_card_id=source_id,
-                                                target_player=recipient.get("target_player"), target_card_id=target_id)):
+        if state.replacement_choice_required and (not humans or affected in humans):
             options = replacement_options(
                 state, event, target_player=affected if not target_id else None,
                 target_card_id=target_id, source_card_id=source_id,
