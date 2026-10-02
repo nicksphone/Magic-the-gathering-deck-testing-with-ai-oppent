@@ -1,0 +1,97 @@
+[
+  {
+    "id": "72c8336d-54cf-45af-a9ef-a1428facf91b",
+    "name": "Lure",
+    "mana_cost": "{1}{G}{G}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant creature\nAll creatures able to block enchanted creature do so.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Enchant"
+    ],
+    "colors": [
+      "G"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Lure",
+    "fetched_at": "2026-10-02T07:47:19Z"
+  },
+  {
+    "id": "d6fc3b76-bc51-49ce-8f3f-2314207be4a7",
+    "name": "Nemesis Mask",
+    "mana_cost": "{3}",
+    "type_line": "Artifact — Equipment",
+    "oracle_text": "All creatures able to block equipped creature do so.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Equip"
+    ],
+    "colors": [],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Nemesis Mask",
+    "fetched_at": "2026-10-02T07:47:20Z"
+  },
+  {
+    "id": "d25bbe18-709c-4ed3-a047-5578ecfaaba7",
+    "name": "Norn's Annex",
+    "mana_cost": "{3}{W/P}{W/P}",
+    "type_line": "Artifact",
+    "oracle_text": "({W/P} can be paid with either {W} or 2 life.)\nCreatures can't attack you or planeswalkers you control unless their controller pays {W/P} for each of those creatures.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "W"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Norn's Annex",
+    "fetched_at": "2026-10-02T07:47:22Z"
+  },
+  {
+    "id": "baac1604-379f-4f03-97ae-9ec10921167c",
+    "name": "Prized Unicorn",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Unicorn",
+    "oracle_text": "All creatures able to block this creature do so.",
+    "power": "2",
+    "toughness": "2",
+    "keywords": [],
+    "colors": [
+      "G"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Prized Unicorn",
+    "fetched_at": "2026-10-02T07:47:21Z"
+  },
+  {
+    "id": "6b24af94-9632-47da-9bf3-e81bb743cd43",
+    "name": "Taunting Elf",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf",
+    "oracle_text": "All creatures able to block this creature do so.",
+    "power": "0",
+    "toughness": "1",
+    "keywords": [],
+    "colors": [
+      "G"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Taunting Elf",
+    "fetched_at": "2026-10-02T07:47:21Z"
+  },
+  {
+    "id": "c059e4b4-1542-4b5c-810a-9f0abac5792b",
+    "name": "Goldhound",
+    "mana_cost": "{R}",
+    "type_line": "Artifact Creature — Treasure Dog",
+    "oracle_text": "First strike\nMenace (This creature can't be blocked except by two or more creatures.)\n{T}, Sacrifice this creature: Add one mana of any color.",
+    "power": "1",
+    "toughness": "1",
+    "keywords": [
+      "First strike",
+      "Menace"
+    ],
+    "colors": [
+      "R"
+    ],
+    "source_url": "https://api.scryfall.com/cards/named?exact=Goldhound",
+    "fetched_at": "2026-10-02T08:45:06Z"
+  }
+]

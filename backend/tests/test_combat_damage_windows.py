@@ -14,6 +14,7 @@ def _state():
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.DECLARE_BLOCKERS
+    state.blockers_declared = True  # These fixtures start after blocker declaration.
     return state
 
 

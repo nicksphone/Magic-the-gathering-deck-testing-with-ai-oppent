@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 - Batched combat payments, targeted requirements and declaration timing
+
+- Added shared fixed generic and enchantment-count attack payments, player/planeswalker scopes, locked costs, optional-payment-aware attack requirements, restricted-mana handling and source suppression. Costs commit once; rejected declarations preserve authoritative memory and SQLite.
+- Added self/Aura/Equipment Lure-style target requirements with independent weights, capacity-aware exact blocker scoring, Menace/alone/limit interactions, all-difficulty AI finalization and actual payment/required-block traces. Numeric taxes no longer produce false unsupported warnings; Phyrexian taxes still do.
+- Corrected defender-first blocker declaration and passing around unmet requirements. Preserved existing first/double-strike and lifelink assertions by fixing post-declaration fixtures. A reproduced canonical Goldhound sacrifice-payment ghost attacker is fixed; AI avoids paying for a proposed attack whose creatures disappear.
+- Added six canonical card fixtures, both-seat HTTP/SQLite restoration and rejection tests, 101-blocker competing-target cases, actual App/API payment-plus-required-block flow, and controlled actual AI decision evidence for both sides. Strong/Master/Master+ used both mechanics in that fixture; Casual passed. This is not full-match AI-strength evidence.
+- Validation: 2,922 full backend tests passed (314 deprecation warnings), 189 focused tests passed, frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced games repeated twice completed without determinism failures, drift labels or reported anomalies. Evidence: RCHFiles `diagnostics/combat-payments-requirements/20261002T081732Z`. Broader payment forms, targeted requirements, zero-cost edge acceptance, universal rules and expert AI remain unfinished; alpha UI redesign is deferred.
+
 ## 2026-10-02 - Combat declaration limits and requirement fulfillment
 
 - Added shared unconditional numeric attack/block limits, player-specific attack caps, distinct-blocker accounting and source suppression. Checked human declarations reject violations without changing memory or SQLite state, including restored matches.

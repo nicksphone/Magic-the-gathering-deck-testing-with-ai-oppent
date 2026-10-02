@@ -729,7 +729,6 @@ try {
   assert.deepEqual(await evaluate("window.fixtureState.attack_bands"), [["hero", "angel"]]);
   await click("Resolve Stack");
   await waitFor("window.fixtureState.step === 'declare_blockers' && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
-  await click("Pass Priority");
   await waitFor("window.fixtureState.priority_player === 2 && [...document.querySelectorAll('.block-panel .row')].some(row => row.textContent.includes('Benalish Hero')) && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   await evaluate("(() => { const row = [...document.querySelectorAll('.block-panel .row')].find(row => row.textContent.includes('Benalish Hero')); const select = row.querySelector('select'); select.options[0].selected = true; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Submit Blocks");

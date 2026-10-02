@@ -53,9 +53,11 @@ copies, never the live database; archived SQLite is not used as running storage.
 
 ## Known Limitations and Next Upgrades
 
-- Attack/block taxes and conditional numeric limits remain unsupported.
-- Target-specific requirements such as Lure, mandatory attacks at a particular
-  defender and attacker-controlled block assignment remain unfinished. Invasion
+- Subsequent [payment/target work](combat-payments-requirements.md) implements
+  numeric attack taxes and Lure-style target requirements. Other attack/block
+  costs and conditional numeric limits remain unsupported.
+- Mandatory attacks at a particular defender and attacker-controlled block
+  assignment remain unfinished. Invasion
   Plans explicitly receives an unsupported assignment-controller coverage tag.
 - Other clauses on tested cards are not certified by this milestone; Juggernaut's
   Walls restriction, for example, is outside this acceptance scope.

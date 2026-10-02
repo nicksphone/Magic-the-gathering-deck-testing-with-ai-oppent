@@ -410,7 +410,8 @@ def auto_pay_cost(
         elif not _consume_nonland_mana_source(state, player_id, cid):
             return False
         add_mana_to_pool(state, player_id, color, amount, source_id=cid)
-        state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay spell cost.")
+        cost_kind = 'combat' if payment_kind == 'combat' else 'spell'
+        state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay {cost_kind} cost.")
     snow_by_color = dict(snow_spent)
     from types import SimpleNamespace
     totals, snow_totals = available_pool(player, payment_context)

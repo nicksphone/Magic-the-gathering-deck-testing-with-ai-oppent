@@ -120,7 +120,7 @@ class RulesEngine:
             self.next_step(state)
             return
         if not state.pending_mechanic_choice and not state.pending_replacement_choice and not state.pending_trigger_order:
-            state.priority_player = state.active_player
+            state.priority_player = 3 - state.active_player if state.step == Step.DECLARE_BLOCKERS and not state.blockers_declared else state.active_player
             state.passed_priority = set()
 
     def _apply_step_start_actions(self, state: MatchState) -> None:
@@ -619,6 +619,16 @@ class RulesEngine:
         if state.step == Step.CLEANUP and not state.cleanup_repeat_required and kind != "pass_priority":
             return
         if kind == "pass_priority":
+            if not state.stack and state.step == Step.DECLARE_ATTACKERS and not state.attackers_declared and player_id == state.active_player:
+                combat.declare_attackers(state, [])
+                state.attackers_declared = True
+            if not state.stack and state.step == Step.DECLARE_BLOCKERS and not state.blockers_declared and player_id != state.active_player:
+                combat.declare_blockers(state, {})
+                state.blockers_declared = True
+                state.priority_player = state.active_player
+                state.passed_priority = set()
+                apply_state_based_actions(state)
+                return
             actor = state.players.get(player_id)
             if actor:
                 state.log.append(

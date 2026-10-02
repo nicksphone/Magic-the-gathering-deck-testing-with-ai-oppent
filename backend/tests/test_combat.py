@@ -47,9 +47,14 @@ def test_priority_passes_apply_unblocked_combat_damage_once() -> None:
     engine = RulesEngine()
 
     engine.take_action(state, 1, {"type": "attack", "attackers": [card.id]})
-    for _ in range(2):
-        engine.take_action(state, 1, {"type": "pass_priority"})
-        engine.take_action(state, 2, {"type": "pass_priority"})
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
+    assert state.step == Step.DECLARE_BLOCKERS
+    assert state.priority_player == 2
+    engine.take_action(state, 2, {"type": "block", "blocks": {}})
+    assert state.priority_player == 1
+    engine.take_action(state, 1, {"type": "pass_priority"})
+    engine.take_action(state, 2, {"type": "pass_priority"})
     assert state.step == Step.COMBAT_DAMAGE
     assert state.players[2].life == 19
     assert state.combat_damage_resolved is True

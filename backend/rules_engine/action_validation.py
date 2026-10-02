@@ -2,7 +2,7 @@
 from copy import deepcopy
 import re
 
-from game_state.state import Step
+from game_state.state import Step, Zone
 
 
 class ActionRejected(ValueError):
@@ -73,13 +73,32 @@ def checked_action(state, rules, player_id: int, action: dict):
     # authoritative state, RNG, logs, cost payments or pending continuations.
     candidate = deepcopy(state)
     validate_action(candidate, rules, player_id, action)
+    if action['type'] == 'pass_priority' and not candidate.stack and not candidate.pregame_pending:
+        from game_state.state import Step
+        from rules_engine.combat_requirements import best_required_attack, attack_requirement_score, best_required_blocks, block_requirement_score
+        if candidate.step == Step.DECLARE_ATTACKERS and not candidate.attackers_declared:
+            optimum = best_required_attack(candidate)
+            require(not optimum or attack_requirement_score(candidate, optimum[0]) == 0,
+                    'Declare required attackers before passing')
+        if candidate.step == Step.DECLARE_BLOCKERS and not candidate.blockers_declared:
+            optimum = best_required_blocks(candidate)
+            require(not optimum or block_requirement_score(candidate, optimum) == 0,
+                    'Declare required blockers before passing')
     if action['type'] == 'attack':
+        from rules_engine.restrictions import card_cant_attack_alone
+        require(all(candidate.cards[cid].zone == Zone.BATTLEFIELD and candidate.cards[cid].controller == player_id
+                    for cid in action['attackers']), 'An attacker must be controlled on the battlefield')
+        require(len(action['attackers']) != 1 or not card_cant_attack_alone(candidate, action['attackers'][0]),
+                'An attacker cannot attack alone')
         from rules_engine.declaration_limits import attackers_within_limits
         from rules_engine.combat_requirements import best_required_attack, attack_requirement_score
         require(attackers_within_limits(candidate, action['attackers'], action.get('attack_targets')), 'Attacker declaration exceeds a static combat limit')
         optimum = best_required_attack(candidate)
         require(optimum is None or attack_requirement_score(candidate, action['attackers']) >= attack_requirement_score(candidate, optimum[0]),
                 'Declare attackers that satisfy the maximum possible requirements')
+        from rules_engine.combat_payments import attack_payment_state
+        require(attack_payment_state(candidate, action['attackers'], action.get('attack_targets')) is not None,
+                'Cannot pay the declared attack costs')
     elif action['type'] == 'block':
         from rules_engine.declaration_limits import blockers_within_limits
         from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
@@ -90,7 +109,9 @@ def checked_action(state, rules, player_id: int, action: dict):
                 'Declare blockers that satisfy the maximum possible requirements')
     rules.take_action(candidate, player_id, action, reject_invalid=True)
     if action["type"] == "attack":
-        require(set(action["attackers"]).issubset(candidate.attackers), "An attacker cannot attack in this declaration")
+        remaining = {cid for cid in action['attackers'] if candidate.cards[cid].zone == Zone.BATTLEFIELD
+                     and candidate.cards[cid].controller == player_id and 'Creature' in candidate.cards[cid].types}
+        require(remaining.issubset(candidate.attackers), "An attacker cannot attack in this declaration")
     if action["type"] == "block":
         for attacker, blockers in action["blocks"].items():
             require(set(blockers).issubset(candidate.blocks.get(attacker, [])), "Illegal block assignment")

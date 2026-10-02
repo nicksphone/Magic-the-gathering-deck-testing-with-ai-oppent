@@ -28,8 +28,8 @@ def fixture_start_decks():
 def fixture_combat_coverage_decks():
     import json
     from main import SIM_JOBS
-    rows = json.loads((Path(__file__).parent / 'fixtures/combat_coverage.json').read_text())
-    card = next(row for row in rows if row['name'] == 'Propaganda')
+    rows = json.loads((Path(__file__).parent / 'fixtures/combat_payments_requirements.json').read_text())
+    card = next(row for row in rows if row['name'] == "Norn's Annex")
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': card['id'], 'name': card['name'],
@@ -50,6 +50,17 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind == 'combat_payments_requirements':
+        from tests.test_combat_payments_requirements import fixture as clean_state, add, zero_mana, attack_step
+        state = clean_state()
+        zero_mana(state)
+        add(state, 'Ghostly Prison', 2)
+        add(state, 'Llanowar Elves', 2)
+        add(state, 'Prized Unicorn')
+        add(state, 'Llanowar Elves')
+        state.players[1].mana_pool['U'] = 2
+        attack_step(state, 1)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind == 'declaration_limits':
         from tests.test_ai_recurring_engines import fixture as clean_state
         from tests.test_declaration_limits import add, attack_step

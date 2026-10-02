@@ -2,12 +2,13 @@
 from rules_engine import combat
 from rules_engine.continuous import effective_power
 from rules_engine.declaration_limits import declaration_limit_view, attackers_within_limits
-from rules_engine.combat_requirements import attack_candidates, requirement_weights, best_required_attack, best_required_blocks, attack_requirement_score
+from rules_engine.combat_requirements import attack_candidates, requirement_weights, best_required_attack, best_required_blocks, attack_requirement_score, target_block_requirements
+from rules_engine.combat_payments import attack_tax_sources, attack_payment_view, attack_payment_state
 from rules_engine.restrictions import card_cant_attack_alone
 
 
 def finalize_declaration(state, action):
-    from game_state.state import MatchState, Step
+    from game_state.state import MatchState, Step, Zone
     if not isinstance(state, MatchState):
         return action
     if state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order:
@@ -29,7 +30,8 @@ def finalize_declaration(state, action):
     candidates = attack_candidates(state) if kind == 'attack' else list(state.players[3-state.active_player].battlefield)
     weights = requirement_weights(state, candidates, kind)
     view = declaration_limit_view(state, kind)
-    if not view['sources'] and not any(weights.values()):
+    if not view['sources'] and not any(weights.values()) and not (
+            attack_tax_sources(state) if kind == 'attack' else target_block_requirements(state)):
         return action
     if kind == 'attack':
         from rules_engine.combat import _valid_defenders
@@ -44,7 +46,14 @@ def finalize_declaration(state, action):
                 continue
             desired = (action.get('attack_targets') or {}).get(cid, default)
             for target in list(dict.fromkeys([desired, *defenders])):
-                if target in defenders and attackers_within_limits(state, selected + [cid], {**targets, cid: target}):
+                proposal = {**targets, cid: target}
+                if cid not in requested and attack_payment_view(state, [cid], {cid: target})['total_generic']:
+                    continue
+                paid = attack_payment_state(state, selected + [cid], proposal) if target in defenders else None
+                if (paid is not None and attackers_within_limits(state, selected + [cid], proposal)
+                        and all(paid.cards[chosen].zone == Zone.BATTLEFIELD and paid.cards[chosen].controller == state.active_player
+                                and 'Creature' in paid.cards[chosen].types
+                                for chosen in selected + [cid])):
                     selected.append(cid)
                     targets[cid] = target
                     break

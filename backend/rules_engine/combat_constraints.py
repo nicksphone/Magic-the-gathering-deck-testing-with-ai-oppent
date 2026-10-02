@@ -62,6 +62,13 @@ def combat_clause_coverage(oracle, card_name=''):
         limit = parse_declaration_limit(body)
         if limit and condition is None and not missing_condition:
             continue
+        from rules_engine.combat_payments import parse_attack_tax
+        from rules_engine.combat_requirements import parse_target_block_requirement
+        if parse_attack_tax(clause) or parse_target_block_requirement(clause, card_name):
+            continue
+        if re.search(r'all creatures able to block|must be blocked', clause):
+            records.append({'clause': clause, 'reasons': ['unsupported targeted block requirement']})
+            continue
         match = body_search.search(body)
         if match is None:
             continue
@@ -149,6 +156,9 @@ def combat_rule_view(state, card_id):
             continue
         previous = None
         for clause in clauses:
+            from rules_engine.combat_payments import parse_attack_tax
+            if parse_attack_tax(clause):
+                continue  # Dedicated declaration-payment reader; not a blanket attack ban.
             body, truth = clause, True
             if clause.startswith('otherwise, '):
                 body = clause.removeprefix('otherwise, ')

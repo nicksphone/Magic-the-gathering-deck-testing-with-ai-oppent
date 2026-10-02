@@ -14,9 +14,10 @@ from tests.test_conditional_combat import CARDS as SUPPORTED, add, lose
 from tests.test_api_input_contracts import game, persist, snapshot
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/combat_coverage.json').read_text())}
+ROWS.update({row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/combat_payments_requirements.json').read_text())})
 
 
-@pytest.mark.parametrize('name', ['Propaganda', 'Ghostly Prison', 'Sphere of Safety', 'Archon of Absolution'])
+@pytest.mark.parametrize('name', ["Norn's Annex"])
 def test_canonical_attack_taxes_are_not_silently_certified(name):
     rows = combat_clause_coverage(ROWS[name]['oracle_text'], name)
     assert any('unsupported combat payment' in row['reasons'] for row in rows)
@@ -45,7 +46,7 @@ def test_supported_clauses_and_keyword_reminder_text_do_not_add_false_warnings(n
 
 
 def test_faces_names_duplicates_trigger_and_granted_text_are_distinguished():
-    faces = [ROWS['Propaganda'], ROWS['Propaganda']]
+    faces = [ROWS["Norn's Annex"], ROWS["Norn's Annex"]]
     gaps = known_unsupported_mechanics('', faces)
     assert gaps.count('unsupported combat payment') == 1
     details = combat_coverage_details('', faces)
@@ -85,7 +86,7 @@ def test_live_diagnostics_exclude_private_zones_and_preserve_sqlite_state(game, 
     client, match = game
     creature = add(match.state, 'Slumbering Dragon', player)
     creature.counters['+1/+1'] = 4
-    source = raw_add(match.state, 'Propaganda', 3-player, cards=ROWS)
+    source = raw_add(match.state, "Norn's Annex", 3-player, cards=ROWS)
     secret = raw_add(match.state, 'Ghostly Prison', player, Zone.HAND, cards=ROWS)
     persist(match)
     before = snapshot(match)
@@ -118,7 +119,7 @@ def test_http_preflight_reports_canonical_tax_from_name_only_deck(game, monkeypa
     monkeypatch.setattr(main, '_hydrate_deck_cards', lambda repo, deck: [
         {**(ROWS.get(item['card_name']) or fallback_card_payload(item['card_name'])), **item}
         for item in deck])
-    deck = [{'quantity': 4, 'card_name': 'Propaganda'}, {'quantity': 56, 'card_name': 'Island'}]
+    deck = [{'quantity': 4, 'card_name': "Norn's Annex"}, {'quantity': 56, 'card_name': 'Island'}]
     before = snapshot(match)
     response = client.post('/simulate/batch/preflight', json={'deck_a': deck, 'deck_b': deck})
     assert response.status_code == 200, response.text
@@ -136,15 +137,15 @@ def test_cached_completeness_exposes_clause_provenance_without_sync(game, monkey
     from card_data.service import CardService
     from card_data.sync import ScryfallSyncService
     client, match = game
-    row = ROWS['Propaganda']
+    row = ROWS["Norn's Annex"]
     monkeypatch.setattr(ScryfallSyncService, 'sync_card_by_name', lambda *a, **k: pytest.fail('Read report attempted sync'))
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': row['id'], 'name': row['name'], 'oracle_text': row['oracle_text'],
                          'mana_cost': row['mana_cost'], 'type_line': row['type_line']})
         before = snapshot(match)
-        card = CardService(repo).completeness_report(['Propaganda'])['cards'][0]
+        card = CardService(repo).completeness_report(["Norn's Annex"])['cards'][0]
         assert card['rules_coverage'] == 'known_unsupported'
         assert 'unsupported combat payment' in card['unsupported_mechanics']
-        assert card['combat_clause_gaps'][0]['face_name'] == 'Propaganda'
+        assert card['combat_clause_gaps'][0]['face_name'] == "Norn's Annex"
         assert snapshot(match) == before

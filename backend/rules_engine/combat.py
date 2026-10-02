@@ -14,8 +14,6 @@ from rules_engine.restrictions import (
     card_cant_attack_alone,
     card_cant_block,
     card_cant_block_alone,
-    card_must_attack_if_able,
-    card_must_block_if_able,
 )
 
 DMG_MARK_KEY = "__damage_marked"
@@ -86,6 +84,16 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         if completion is None or attack_requirement_score(state, completion[0]) < attack_requirement_score(state, optimum[0]):
             raise ValueError('Attacker declaration must satisfy the maximum possible requirements')
         legal, legal_targets = completion
+    from rules_engine.combat_payments import attack_payment_state
+    paid = attack_payment_state(state, legal, legal_targets)
+    if paid is None:
+        raise ValueError('Cannot pay the declared attack costs')
+    if paid is not state:
+        state.__dict__.update(paid.__dict__)
+    # Chosen creatures sacrificed during mana activation never become attackers.
+    legal = [cid for cid in legal if state.cards[cid].zone == Zone.BATTLEFIELD
+             and state.cards[cid].controller == state.active_player and 'Creature' in state.cards[cid].types]
+    legal_targets = {cid: target for cid, target in legal_targets.items() if cid in legal}
     for cid in legal:
         if not has_keyword(state, cid, "vigilance"):
             state.cards[cid].tapped = True
@@ -176,6 +184,10 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
     if len(blocking_ids) == 1 and card_cant_block_alone(state, next(iter(blocking_ids))):
         legal = {}
     state.blocks = legal
+    from rules_engine.combat_requirements import target_block_requirements
+    targeted = sum(len(legal.get(row['attacker_id'], [])) for row in target_block_requirements(state))
+    if targeted:
+        state.log.append(f'Targeted block requirements satisfied: {targeted}.')
     events = []
     seen_blockers = set()
     for attacker_id, blocker_ids in legal.items():

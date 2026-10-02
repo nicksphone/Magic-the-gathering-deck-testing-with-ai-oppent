@@ -299,6 +299,7 @@ def test_lifelink_gain_replaced_by_draw_resumes_remaining_source():
 def test_double_strike_lifelink_replaces_each_damage_window_once():
     state = game()
     state.step = Step.DECLARE_BLOCKERS
+    state.blockers_declared = True  # Fixture begins in the post-declaration priority window.
     archive = CardInstance(
         id="archive", name="Alhammarret's Archive", owner=1, controller=1,
         zone=Zone.BATTLEFIELD, types=["Legendary", "Artifact"],

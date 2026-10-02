@@ -59,9 +59,11 @@ not an alpha UI redesign or visual usability certification.
 
 ## Known Limitations and Next Upgrades
 
-- Arbitrary compound conditions, paid attack/block taxes, and general granted
+- Arbitrary compound conditions, broader paid attack/block costs, and general granted
   nonkeyword abilities remain unsupported. Unknown predicates are not applied
   as unconditional restrictions; diagnostics must be consulted.
+  Subsequent [payment/target work](combat-payments-requirements.md) handles numeric
+  attack taxes and Lure-style requirements, not all paid costs or requirements.
 - Continuous type/color changes, dependency ordering, multiplayer defending
   players, and complete restrictions-versus-requirements optimization need
   separate acceptance fixtures.
