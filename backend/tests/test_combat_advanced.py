@@ -4,6 +4,7 @@ from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_power, effective_toughness
+from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _setup_creature(state, player_id: int, name: str, power: int, toughness: int, keywords: list[str] | None = None) -> str:
@@ -721,6 +722,9 @@ def test_bushido_boosts_attacker_when_blocked() -> None:
 
     combat.declare_blockers(state, {attacker: [blocker]})
 
+    assert effective_power(state, attacker) == 2
+    assert len(state.stack) == 1
+    assert resolve_top_of_stack(state)
     assert effective_power(state, attacker) == 3
     assert effective_toughness(state, attacker) == 3
     combat.combat_damage(state)
@@ -743,6 +747,9 @@ def test_rampage_scales_with_each_blocker_beyond_the_first() -> None:
 
     combat.declare_blockers(state, {attacker: [blocker_a, blocker_b]})
 
+    assert effective_power(state, attacker) == 3
+    assert len(state.stack) == 1
+    assert resolve_top_of_stack(state)
     assert effective_power(state, attacker) == 5
     assert effective_toughness(state, attacker) == 5
 
@@ -760,6 +767,9 @@ def test_flanking_reduces_nonflanking_blocker_before_damage() -> None:
 
     combat.declare_blockers(state, {attacker: [blocker]})
 
+    assert effective_toughness(state, blocker) == 2
+    assert len(state.stack) == 1
+    assert resolve_top_of_stack(state)
     assert effective_toughness(state, blocker) == 1
     combat.combat_damage(state)
     assert state.cards[blocker].zone == Zone.GRAVEYARD

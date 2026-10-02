@@ -13,6 +13,8 @@ from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
     card_cant_block,
+    card_cant_block_alone,
+    active_printed_text,
     card_must_attack_if_able,
     card_must_block_if_able,
 )
@@ -86,13 +88,14 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         legal.append(cid)
         desired = attack_targets.get(cid, f"player:{defender}")
         legal_targets[cid] = desired if desired in valid_defenders else f"player:{defender}"
-        if not has_keyword(state, cid, "vigilance"):
-            card.tapped = True
     if len(legal) == 1 and card_cant_attack_alone(state, legal[0]):
         lone = legal[0]
         state.log.append(f"{state.cards[lone].name} can't attack alone.")
         legal = []
         legal_targets = {}
+    for cid in legal:
+        if not has_keyword(state, cid, "vigilance"):
+            state.cards[cid].tapped = True
     state.attackers = legal
     state.declared_attackers_this_turn[state.active_player] += len(legal)
     state.attack_bands = [list(band) for band in bands if all(cid in legal for cid in band)]
@@ -126,14 +129,14 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
     for attacker, blockers in blocks.items():
         if attacker not in state.attackers:
             continue
-        blocker_list = blockers if isinstance(blockers, list) else [blockers]
+        blocker_list = list(dict.fromkeys(blockers)) if isinstance(blockers, list) else [blockers]
         picked: list[str] = []
         for blocker in blocker_list:
             if blocker not in state.cards:
                 continue
             block_card = state.cards[blocker]
             assigned = int(blocker_assignments.get(blocker, 0))
-            block_cap = _max_attackers_blockable_by_creature(block_card)
+            block_cap = _max_attackers_blockable_by_creature(state, block_card)
             if assigned >= block_cap:
                 continue
             if block_card.controller != defender:
@@ -188,63 +191,23 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]]) -> N
         for cid in members:
             if shared:
                 legal[cid] = list(shared)
+    blocking_ids = {bid for bids in legal.values() for bid in bids}
+    if len(blocking_ids) == 1 and card_cant_block_alone(state, next(iter(blocking_ids))):
+        legal = {}
     state.blocks = legal
-    _apply_block_combat_abilities(state)
+    events = []
+    seen_blockers = set()
     for attacker_id, blocker_ids in legal.items():
-        for blocker_id in blocker_ids:
-            emit_event(
-                state,
-                "block_declared",
-                {
+        for index, blocker_id in enumerate(blocker_ids):
+            events.append({
                     "attacker_id": attacker_id,
                     "blocker_id": blocker_id,
                     "controller": state.cards[blocker_id].controller,
-                },
-            )
-
-
-def _apply_block_combat_abilities(state: MatchState) -> None:
-    """Apply Bushido, Rampage, and Flanking as blockers become declared."""
-    for attacker_id, blocker_ids in state.blocks.items():
-        attacker = state.cards.get(attacker_id)
-        if attacker is None:
-            continue
-        bushido = _combat_keyword_value(attacker, "bushido")
-        if bushido:
-            _add_combat_modifier(attacker, bushido, bushido)
-        rampage = _combat_keyword_value(attacker, "rampage")
-        if rampage and len(blocker_ids) > 1:
-            amount = rampage * (len(blocker_ids) - 1)
-            _add_combat_modifier(attacker, amount, amount)
-        if _has_combat_keyword(attacker, "flanking"):
-            for blocker_id in blocker_ids:
-                blocker = state.cards.get(blocker_id)
-                if blocker is not None and not _has_combat_keyword(blocker, "flanking"):
-                    _add_combat_modifier(blocker, -1, -1)
-        for blocker_id in blocker_ids:
-            blocker = state.cards.get(blocker_id)
-            if blocker is None:
-                continue
-            blocker_bushido = _combat_keyword_value(blocker, "bushido")
-            if blocker_bushido:
-                _add_combat_modifier(blocker, blocker_bushido, blocker_bushido)
-
-
-def _combat_keyword_value(card, keyword: str) -> int:
-    text = (getattr(card, "oracle_text", "") or "").lower()
-    match = re.search(rf"\b{re.escape(keyword)}\s+(\d+)\b", text)
-    return int(match.group(1)) if match else 0
-
-
-def _has_combat_keyword(card, keyword: str) -> bool:
-    text = (getattr(card, "oracle_text", "") or "").lower()
-    return keyword in text or keyword in {str(item).lower() for item in (getattr(card, "keywords", []) or [])}
-
-
-def _add_combat_modifier(card, power: int, toughness: int) -> None:
-    counters = getattr(card, "counters", {})
-    counters["__eot_power"] = int(counters.get("__eot_power", 0) or 0) + int(power)
-    counters["__eot_toughness"] = int(counters.get("__eot_toughness", 0) or 0) + int(toughness)
+                    'attacker_first_block': index == 0,
+                    'blocker_first_block': blocker_id not in seen_blockers,
+                })
+            seen_blockers.add(blocker_id)
+    emit_event_batch(state, 'block_declared', events)
 
 
 def combat_damage(state: MatchState) -> None:
@@ -597,7 +560,9 @@ def resume_combat_die_replacement(state: MatchState, card_id: str, replacement_s
 
 
 def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
-    only_keyword = BLOCK_ONLY_KEYWORD_RE.search(getattr(blocker, "oracle_text", "") or "")
+    if re.search(r"\b(?:can't|cannot) be blocked[.]?(?:$|\n)", active_printed_text(state, attacker.id)):
+        return False
+    only_keyword = BLOCK_ONLY_KEYWORD_RE.search(active_printed_text(state, blocker.id))
     if only_keyword:
         required = only_keyword.group(1).strip().lower()
         if required in KNOWN_KEYWORDS and not has_keyword(state, attacker.id, required):
@@ -644,7 +609,7 @@ def _minimum_blockers_required(state: MatchState, attacker_id: str) -> int:
     min_blockers = 2 if has_keyword(state, attacker_id, "menace") else 1
     if has_keyword(state, attacker_id, "menace"):
         min_blockers = max(min_blockers, 2)
-    text = (getattr(attacker, "oracle_text", "") or "").lower()
+    text = active_printed_text(state, attacker_id)
     if "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text:
         min_blockers = max(min_blockers, 2)
     for phrase, value in _NUMBER_WORDS.items():
@@ -655,10 +620,10 @@ def _minimum_blockers_required(state: MatchState, attacker_id: str) -> int:
     return min_blockers
 
 
-def _max_attackers_blockable_by_creature(blocker) -> int:
-    text = (getattr(blocker, "oracle_text", "") or "").lower()
+def _max_attackers_blockable_by_creature(state, blocker) -> int | float:
+    text = active_printed_text(state, blocker.id)
     if "can block any number of creatures" in text:
-        return 99
+        return float('inf')
     if "can block an additional creature each combat" in text:
         return 2
     for phrase, value in _NUMBER_WORDS.items():

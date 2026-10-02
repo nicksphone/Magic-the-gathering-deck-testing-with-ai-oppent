@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Combat ability provenance and counterable block triggers
+
+- Applied supported ability loss to recognized printed combat restrictions/capacity, player shroud/hexproof sources and battlefield counter protection. Fixed combined attack-or-block-alone wording, illegal lone-attack tapping, duplicate blocker counting and the inherited 99-block cap without card-name dispatch. A canonical 101-attacker stress probe checks unlimited blocking, restart snapshots and suppression.
+- Replaced immediate Bushido/Rampage/Flanking stat changes with APNAP stack triggers. Numeric values and independent instances, declaration event multiplicity, resolution-time Rampage counting, source independence and original recipient references survive snapshots. Combat damage cannot bypass a live stack. Bounded Master combat search resolves triggers and retains prospective Bushido trades instead of rejecting them on base stats.
+- Verified 2,809 isolated backend tests (303 deprecation warnings), 151 final-source focused checks, frontend lint/unit/build and the full final-engine Chromium harness. Twelve logical seat-balanced smoke games each repeat twice without reported drift, timeouts or anomaly labels. Initial focused fixture failures and successful checks are retained with canonical rows and closed copies on RCHFiles under `diagnostics/combat-ability-provenance/20261002T054017Z/`.
+- Updated README, finish plan, mechanic scopes and AST graph. Conditional/arbitrary restrictions, general combat-reference provenance, full dependencies, broader AI decision quality and operational backend release gates remain unfinished. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Temporary ability loss, base stats and split second
 
 - Added bounded temporary all-ability loss and base-stat setters with shared resolution timestamps, original-object binding, cleanup/zone expiry and detached durable snapshots. Static and resolution base setters share timestamp order; canonical stats and physical counters are not rewritten.

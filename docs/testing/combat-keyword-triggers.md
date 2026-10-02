@@ -1,5 +1,10 @@
 # Combat keyword triggers and delayed sacrifice
 
+The subsequent [combat-provenance increment](combat-ability-provenance.md) adds
+counterable Bushido/Rampage/Flanking instances, declaration event multiplicity and
+response-time resolution. The Exalted/Decayed scope below remains valid; neither
+increment closes general combat effects or expert AI.
+
 ## Scope
 
 Exalted and Decayed are application-code abilities, not SQL rules or invented

@@ -65,6 +65,9 @@ def spell_cant_be_countered(state: Any, item: Any) -> bool:
             permanent = state.cards.get(cid)
             if permanent is None or permanent.zone != Zone.BATTLEFIELD or permanent.controller != item.controller:
                 continue
+            from rules_engine.continuous import printed_abilities_suppressed
+            if printed_abilities_suppressed(state, cid):
+                continue
             for clause in re.split(r"[.\n]", without_reminder_text(permanent.oracle_text)):
                 match = _SPELL_COUNTER_PROTECTION_RE.fullmatch(clause.strip())
                 if match and (not match.group("scope") or subjects.intersection(match.group("scope").lower().split(" and "))):
@@ -279,6 +282,9 @@ def player_target_immunity(state, player_id: int, source_controller: int) -> str
     for cid in state.players[player_id].battlefield:
         card = state.cards.get(cid)
         if card is None:
+            continue
+        from rules_engine.continuous import printed_abilities_suppressed
+        if printed_abilities_suppressed(state, cid):
             continue
         clauses = without_reminder_text(card.oracle_text or "").splitlines()
         for clause in clauses:

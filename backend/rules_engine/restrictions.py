@@ -8,9 +8,20 @@ _NUMBER_WORDS = {word: value for value, word in enumerate(("zero", "one", "two",
 _LAND_GATED_COMBAT_RE = re.compile(r"\b(?:can't|cannot) (attack(?: or block)?|block) unless you control (\w+) or more lands\b", re.IGNORECASE)
 
 
+def active_printed_text(state, card_id: str) -> str:
+    from rules_engine.continuous import printed_abilities_suppressed
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(getattr(state.cards[card_id], 'oracle_text', '') or '').lower()
+    if not text:
+        return ''
+    if printed_abilities_suppressed(state, card_id):
+        return ''
+    return text
+
+
 def _land_gate_prevents(state, card_id: str, action: str) -> bool | None:
     card = state.cards[card_id]
-    for match in _LAND_GATED_COMBAT_RE.finditer(card.oracle_text or ""):
+    for match in _LAND_GATED_COMBAT_RE.finditer(active_printed_text(state, card_id)):
         if action not in match.group(1).lower().split(" or "):
             continue
         token = match.group(2).lower()
@@ -30,8 +41,8 @@ def card_cant_attack(state, card_id: str) -> bool:
     land_gate = _land_gate_prevents(state, card_id, "attack")
     if land_gate is not None:
         return land_gate
-    text = (card.oracle_text or "").lower()
-    if "can't attack alone" in text or "cannot attack alone" in text:
+    text = active_printed_text(state, card_id)
+    if card_cant_attack_alone(state, card_id):
         return False
     if "can't attack" in text or "cannot attack" in text:
         if "unless" not in text:
@@ -40,7 +51,7 @@ def card_cant_attack(state, card_id: str) -> bool:
 
 
 def card_must_attack_if_able(state, card_id: str) -> bool:
-    text = (state.cards[card_id].oracle_text or "").lower()
+    text = active_printed_text(state, card_id)
     return "attacks each combat if able" in text or "must attack each combat if able" in text
 
 
@@ -51,19 +62,21 @@ def card_cant_block(state, card_id: str) -> bool:
     land_gate = _land_gate_prevents(state, card_id, "block")
     if land_gate is not None:
         return land_gate
-    from rules_engine.oracle_text import without_reminder_text
-    text = without_reminder_text(state.cards[card_id].oracle_text or '').lower()
+    text = active_printed_text(state, card_id)
     return "can't block" in text or "cannot block" in text
 
 
 def card_must_block_if_able(state, card_id: str) -> bool:
-    text = (state.cards[card_id].oracle_text or "").lower()
+    text = active_printed_text(state, card_id)
     return "blocks each combat if able" in text or "must block each combat if able" in text
 
 
 def card_cant_attack_alone(state, card_id: str) -> bool:
-    text = (state.cards[card_id].oracle_text or "").lower()
-    return "can't attack alone" in text or "cannot attack alone" in text
+    return bool(re.search(r"\b(?:can't|cannot) attack(?: or block)? alone\b", active_printed_text(state, card_id)))
+
+
+def card_cant_block_alone(state, card_id: str) -> bool:
+    return bool(re.search(r"\b(?:can't|cannot) (?:attack or )?block alone\b", active_printed_text(state, card_id)))
 
 
 def split_second_active(state) -> bool:

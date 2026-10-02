@@ -3163,8 +3163,9 @@ class AIAgent:
             max(0, _effective_combat_stats(state, aid)[0])
             for aid in attacker_ids
         )
+        keyword_combat = self._combat_keyword_board(state, defender) or self._combat_keyword_board(state, opponent)
         for assignment in assignments:
-            if initial_life > incoming_power and assignment:
+            if initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
                 for aid in set(assignment.values()):
                     attacker = state.cards[aid]
@@ -3185,6 +3186,9 @@ class AIAgent:
             try:
                 sim = planning_copy(state)
                 self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
+                from ai.pending_effects import _settle_announced_stack
+                if not _settle_announced_stack(sim):
+                    continue
                 self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
                 if not self._finish_combat_projection(sim, state):
                     continue
@@ -3230,7 +3234,11 @@ class AIAgent:
         )
         if "menace" in keywords:
             return True
-        text = (getattr(attacker, "oracle_text", "") or "").lower()
+        if isinstance(state, MatchState) and attacker_id in state.cards:
+            from rules_engine.restrictions import active_printed_text
+            text = active_printed_text(state, attacker_id)
+        else:
+            text = (getattr(attacker, "oracle_text", "") or "").lower()
         return "can't be blocked except by two or more creatures" in text or "cannot be blocked except by two or more creatures" in text
 
     def _minimum_blockers_for_ai(self, state, attacker) -> int:
@@ -3408,8 +3416,12 @@ class AIAgent:
         return [cid for cid in candidates if cid not in reserved] if best - after > damage_value else list(candidates)
 
     def _combat_keyword_board(self, state, player_id):
-        return any({'exalted', 'decayed'}.intersection(effective_keywords(state, cid))
-                   for cid in state.players[player_id].battlefield)
+        for cid in state.players[player_id].battlefield:
+            keywords = effective_keywords(state, cid)
+            if ({'exalted', 'decayed', 'flanking'}.intersection(keywords)
+                    or any(keyword.startswith(('bushido ', 'rampage ')) for keyword in keywords)):
+                return True
+        return False
 
     def _finish_combat_projection(self, simulated, original):
         from ai.pending_effects import _settle_announced_stack

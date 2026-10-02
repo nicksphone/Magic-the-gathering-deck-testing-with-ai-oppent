@@ -157,6 +157,9 @@ def _attached_keywords(text):
     for match in HEXPROOF_VARIANT_RE.finditer(remainder):
         found.extend(hexproof_variants(match[0]))
     remainder = HEXPROOF_VARIANT_RE.sub('',remainder)
+    for match in re.finditer(r'\b(?:bushido|rampage) \d+\b', remainder):
+        found.append(match[0])
+    remainder = re.sub(r'\b(?:bushido|rampage) \d+\b', '', remainder)
     for keyword in sorted(KNOWN_KEYWORDS, key=len, reverse=True):
         pattern = r"\b" + re.escape(keyword) + r"\b"
         if re.search(pattern, remainder):
@@ -276,6 +279,9 @@ PT_AND_KW_REMOVE_RE = re.compile(
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
+    "flanking",
+    "bushido",
+    "rampage",
     "exalted",
     "decayed",
     "banding",
@@ -392,9 +398,13 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     out = Counter(str(k).lower() for k in (getattr(card, "keywords", None) or []))
     # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
     printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
-                      for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed'})
+                      for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking'}
+                      or re.fullmatch(r'(?:bushido|rampage) \d+', part.strip().lower()))
     for keyword, amount in printed.items():
         out[keyword] = max(out[keyword], amount)
+    for family in ('bushido', 'rampage'):
+        if any(keyword.startswith(family + ' ') for keyword in out):
+            out.pop(family, None)  # Scryfall's family label is not an extra instance.
     from rules_engine.protection import hexproof_variants
     printed_parts = [part.strip().lower() for line in without_reminder_text(getattr(card,'oracle_text','') or '').splitlines()
                      for part in line.split(',')]
@@ -476,7 +486,8 @@ def effective_keywords(state, card_id: str) -> list[str]:
 
 def _remove_keyword_family(keywords, keyword):
     for present in list(keywords):
-        if present == keyword or keyword == 'hexproof' and present.startswith('hexproof from '):
+        if (present == keyword or keyword == 'hexproof' and present.startswith('hexproof from ')
+                or keyword in {'bushido', 'rampage'} and present.startswith(keyword + ' ')):
             keywords.pop(present, None)
 
 

@@ -1188,6 +1188,8 @@ def _matches_attack_trigger(state: MatchState, card, oracle: str, payload: dict[
 
 
 def _matches_block_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if not payload.get('blocker_first_block', True) and 'blocks a creature' not in oracle:
+        return False
     blocker_id = payload.get("blocker_id")
     if not blocker_id or blocker_id not in state.cards:
         return False

@@ -1265,6 +1265,9 @@ class RulesEngine:
             state.passed_priority = set()
 
         elif kind == "combat_damage":
+            if state.stack:
+                reject("Resolve the stack before combat damage")
+                return
             combat.combat_damage(state)
 
         apply_state_based_actions(state)
