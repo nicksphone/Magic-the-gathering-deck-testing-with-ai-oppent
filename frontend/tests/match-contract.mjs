@@ -11,6 +11,12 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1],
+  hand: [{ ...mountain, keyword_counts: { exalted: 2 } }] } } }).id, state.id);
+for (const keyword_counts of [{ exalted: 0 }, { decayed: -1 }, { exalted: "2" }, { exalted: 0.5 }, []]) {
+  assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1],
+    hand: [{ ...mountain, keyword_counts }] } } }), /card view/);
+}
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], counters: { experience: 4, poison: 2 } } } }).id, state.id);
 for (const counters of [{ experience: -1 }, { energy: 0.5 }, { experience: "4" }, { "bad label": 2 }, []]) {
   assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 2: { ...state.players[2], counters } } }), /counters/);

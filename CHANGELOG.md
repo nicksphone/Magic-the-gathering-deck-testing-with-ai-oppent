@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 - Combat keyword instances and delayed sacrifice
+
+- Implemented Exalted/Decayed intrinsic stack triggers, supported non-redundant instance counts and effective Decayed blocking restrictions. Delayed sacrifice survives snapshots/SQLite restart, fires once and retains the original object/controller; both stages can be countered.
+- Exposed validated keyword instance counts alongside existing unique keyword labels. Master small-board search includes attack/block triggers and end-of-combat consequences, rejecting unknown choices or hidden-zone changes instead of ranking them.
+- Verified 2,641 isolated backend tests (289 deprecation warnings), 131 focused pre-HTTP checks and 27 final keyword checks, frontend lint/unit/build and the full Chromium harness. Twelve logical seat-balanced smoke games repeat twice without reported drift or timeout; this does not establish broad balance, expert AI, clean install or visual quality.
+- Reconciled current feature scopes/finish plan, refreshed the AST graph and retained evidence on RCHFiles. Arbitrary grant composition, keyword variants, full ability suppression, simultaneous replacements and operational gates remain open. Alpha UI redesign remains deferred.
+
 ## 2026-10-02 - Shield effects and shared destruction protection
 
 - Implemented shield-counter damage prevention and effect-destruction replacement across supported targeted/bulk destruction and combat paths. Indestructible does not spend a shield; unpreventable damage still spends one without preventing damage. Simultaneous multi-block combat shares one shield event, while first-strike/regular steps remain separate.

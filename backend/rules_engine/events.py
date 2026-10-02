@@ -445,7 +445,8 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
+    from rules_engine.keyword_triggers import collect_keyword_triggers
+    out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
     if event == 'saga_lore_added':
         from rules_engine.ability_model import build_ability_spec
         from rules_engine.oracle_effects import extract_saga_chapters

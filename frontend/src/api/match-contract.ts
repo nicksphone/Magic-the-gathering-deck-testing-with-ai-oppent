@@ -12,6 +12,9 @@ function card(value: unknown): boolean {
     && typeof value.tapped === "boolean"
     && Array.isArray(value.types)
     && value.types.every((type) => typeof type === "string")
+    && (value.keyword_counts === undefined || (record(value.keyword_counts)
+      && Object.entries(value.keyword_counts).every(([keyword, count]) => keyword.length > 0
+        && Number.isInteger(count) && (count as number) > 0)))
     && (value.power === null || typeof value.power === "number")
     && (value.toughness === null || typeof value.toughness === "number")
     && (value.attached_to === undefined || value.attached_to === null || typeof value.attached_to === "string")

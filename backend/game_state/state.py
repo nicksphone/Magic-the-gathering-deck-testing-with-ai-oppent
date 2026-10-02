@@ -173,6 +173,7 @@ class MatchState:
     cleanup_pending: bool = False
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)
+    delayed_triggers: list[dict] = field(default_factory=list)
     winner: int | None = None
     failed_draw_players: set[int] = field(default_factory=set)
     best_of: int = 3

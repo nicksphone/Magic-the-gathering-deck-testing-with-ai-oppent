@@ -155,6 +155,8 @@ class RulesEngine:
             self._advance_sagas(state)
         elif state.step == Step.END_STEP:
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
+        elif state.step == Step.END_COMBAT:
+            emit_event(state, "begin_step", {"step": "end_combat", "active_player": state.active_player})
         elif state.step == Step.CLEANUP:
             state.cleanup_pending = True
             self._enforce_cleanup_hand_size(state, state.active_player)

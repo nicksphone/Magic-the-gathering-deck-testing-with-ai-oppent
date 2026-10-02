@@ -100,6 +100,7 @@ Final-source checks on October 2, 2026:
   need a unified resumable event model. This milestone does not certify them.
 - Counter-removal watcher triggers and arbitrary resource-counter spending or
   movement remain open. Removing a shield here does not prove those mechanics.
-- Decayed/Exalted multiplicity, keyword variants, full ability suppression,
+- [Decayed/Exalted triggers and supported multiplicity](combat-keyword-triggers.md)
+  landed in a follow-up. Arbitrary grant composition, keyword variants, full ability suppression,
   broader layer dependencies, strategic AI evidence and operational gates remain
   on the finish plan. UI redesign remains deferred.

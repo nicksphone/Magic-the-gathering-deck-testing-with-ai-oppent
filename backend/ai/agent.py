@@ -3178,6 +3178,8 @@ class AIAgent:
                 sim = planning_copy(state)
                 self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
                 self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
+                if not self._finish_combat_projection(sim, state):
+                    continue
             except Exception:
                 continue
             score = evaluate_board(sim, defender)
@@ -3236,6 +3238,10 @@ class AIAgent:
             if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
         ]
         if not opp_blockers:
+            if self._combat_keyword_board(state, player_id):
+                searched = self._search_attack_assignments(state, candidates, player_id)
+                if searched is not None:
+                    return self._reserve_postcombat_mana(state, searched, player_id)
             return self._reserve_postcombat_mana(state, candidates, player_id)
 
         searched = self._search_attack_assignments(state, candidates, player_id)
@@ -3393,11 +3399,29 @@ class AIAgent:
         damage_value = sum(max(0, _effective_combat_stats(state, cid)[0]) for cid in reserved) * 1.6
         return [cid for cid in candidates if cid not in reserved] if best - after > damage_value else list(candidates)
 
+    def _combat_keyword_board(self, state, player_id):
+        return any({'exalted', 'decayed'}.intersection(effective_keywords(state, cid))
+                   for cid in state.players[player_id].battlefield)
+
+    def _finish_combat_projection(self, simulated, original):
+        from ai.pending_effects import _settle_announced_stack
+        for _ in range(4):
+            if not _settle_announced_stack(simulated):
+                return False
+            # Do not rank a line using newly drawn hidden cards/library order.
+            if any(simulated.players[pid].hand != player.hand or simulated.players[pid].library != player.library
+                   for pid, player in original.players.items()):
+                return False
+            if simulated.winner is not None or simulated.step == Step.END_COMBAT:
+                return True
+            self.engine.next_step(simulated)
+        return False
+
     def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int) -> list[str] | None:
         """Search small-board attack subsets through the defender's best legal blocks."""
         if self.difficulty not in {"master", "master_plus"}:
             return None
-        if int(getattr(state, "turn", 1) or 1) < 5:
+        if int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
             return None
         candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in state.cards[cid].types]
         if not candidate_ids or len(candidate_ids) > 3:
@@ -3426,6 +3450,9 @@ class AIAgent:
                 self.engine.take_action(sim, player_id, {"type": "attack", "attackers": list(subset)})
                 actual_attackers = list(getattr(sim, "attackers", []) or [])
                 if actual_attackers:
+                    from ai.pending_effects import _settle_announced_stack
+                    if not _settle_announced_stack(sim):
+                        continue
                     self.engine.next_step(sim)
                     blocker_ids = [
                         cid
@@ -3440,8 +3467,12 @@ class AIAgent:
                         blocks = self._search_block_assignments(sim, attacker_options, blocker_options)
                         if blocks:
                             self.engine.take_action(sim, opponent, {"type": "block", "blocks": blocks})
+                    if not _settle_announced_stack(sim):
+                        continue
                     self.engine.next_step(sim)
                     self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
+                    if not self._finish_combat_projection(sim, state):
+                        continue
             except Exception:
                 continue
 

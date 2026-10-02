@@ -15,7 +15,7 @@ def _tupleize(value):
 
 
 def serialize_card_view(state: MatchState, cid: str) -> dict:
-    from rules_engine.continuous import effective_combat_stats, effective_keywords, attachment_effect_warnings
+    from rules_engine.continuous import effective_combat_stats, effective_keyword_counts, attachment_effect_warnings
     from rules_engine.colors import card_color_symbols
     from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
     card = state.cards[cid]
@@ -27,6 +27,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
             return None
     base_power, base_toughness = numeric(card.power), numeric(card.toughness)
     power, toughness = effective_combat_stats(state, cid) if creature else (base_power, base_toughness)
+    keyword_counts = effective_keyword_counts(state, cid)
     counters = dict(card.counters)
     if 'Saga' in card.type_line and '__lore' in counters:
         counters['lore'] = counters.pop('__lore')
@@ -37,7 +38,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "summoning_sick": card.summoning_sick,
         "power": power, "toughness": toughness,
         "base_power": base_power, "base_toughness": base_toughness,
-        "keywords": effective_keywords(state, cid), "base_keywords": list(card.keywords),
+        "keywords": list(keyword_counts), "keyword_counts": keyword_counts, "base_keywords": list(card.keywords),
         "counters": counters, "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
@@ -73,6 +74,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "first_strike_damage_ids": sorted(state.first_strike_damage_ids),
         "combat_damage_assignments": {source: dict(amounts) for source, amounts in state.combat_damage_assignments.items()},
         "combat_assignment_queue": list(state.combat_assignment_queue),
+        "delayed_triggers": deepcopy(state.delayed_triggers),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
         "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
@@ -276,6 +278,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         for source, amounts in payload.get("combat_damage_assignments", {}).items()
     }
     state.combat_assignment_queue = [str(cid) for cid in payload.get("combat_assignment_queue", [])]
+    state.delayed_triggers = deepcopy(payload.get('delayed_triggers', []))
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))
     state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
     state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))

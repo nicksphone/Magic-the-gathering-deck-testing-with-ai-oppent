@@ -2008,7 +2008,8 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
             if keyword:
-                card.counters[f"__eot_keyword_{keyword.lower()}"] = 1
+                key = f'__eot_keyword_{keyword.lower()}'
+                card.counters[key] = card.counters.get(key, 0) + 1
     scope = (f"{payload['creature_subtype_label']} you control" if payload.get("creature_subtype_label")
              else "Creatures you control" if payload.get("controller_only") else "All creatures")
     state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")
@@ -2191,8 +2192,9 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     if target in state.cards and keyword:
         card = state.cards[target]
         if payload.get("until_end_of_turn") and card.zone == Zone.BATTLEFIELD:
-            card.counters[f"__eot_keyword_{keyword.lower()}"] = 1
-        elif keyword not in card.keywords:
+            key = f'__eot_keyword_{keyword.lower()}'
+            card.counters[key] = card.counters.get(key, 0) + 1
+        elif keyword in {'exalted', 'decayed'} or keyword not in card.keywords:
             card.keywords.append(keyword)
 
 

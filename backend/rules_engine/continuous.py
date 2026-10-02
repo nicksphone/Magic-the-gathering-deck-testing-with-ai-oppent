@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from functools import lru_cache, wraps
 from typing import Any
 
@@ -271,6 +272,8 @@ PT_AND_KW_REMOVE_RE = re.compile(
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
+    "exalted",
+    "decayed",
     "banding",
     "training",
     "trample",
@@ -380,9 +383,14 @@ def _counter_pt_delta(card) -> int:
     return bonus
 
 
-def effective_keywords(state, card_id: str) -> list[str]:
+def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     card = state.cards[card_id]
-    out = {str(k).lower() for k in (getattr(card, "keywords", None) or [])}
+    out = Counter(str(k).lower() for k in (getattr(card, "keywords", None) or []))
+    # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
+    printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
+                      for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed'})
+    for keyword, amount in printed.items():
+        out[keyword] = max(out[keyword], amount)
     from rules_engine.named_counters import keyword_counter
     stamps = getattr(card, 'counter_timestamps', {}) or {}
     counter_grants = sorted((int(stamps.get(kind, effect_timestamp(card))), keyword_counter(kind))
@@ -390,16 +398,17 @@ def effective_keywords(state, card_id: str) -> list[str]:
                             if amount > 0 and keyword_counter(kind))
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
-        return sorted(out)
-    out.update(key.removeprefix("__eot_keyword_") for key, amount in (card.counters or {}).items()
-               if key.startswith("__eot_keyword_") and amount)
+        return dict(sorted(out.items()))
+    for key, amount in (card.counters or {}).items():
+        if key.startswith('__eot_keyword_') and amount > 0:
+            out[key.removeprefix('__eot_keyword_')] += amount
     counter_index = 0
     for src_id in _all_battlefield_ids(state):
         src = state.cards.get(src_id)
         if not src:
             continue
         while counter_index < len(counter_grants) and counter_grants[counter_index][0] <= effect_timestamp(src):
-            out.add(counter_grants[counter_index][1])
+            out[counter_grants[counter_index][1]] += 1
             counter_index += 1
         out.update(_attached_effects(state, src, card)[2])
         for scope, other_only, subject, granted in _iter_keyword_grants(src):
@@ -416,7 +425,8 @@ def effective_keywords(state, card_id: str) -> list[str]:
                     if "all abilities" in removed:
                         out.clear()
                     else:
-                        out.difference_update(removed)
+                        for keyword in removed:
+                            out.pop(keyword, None)
     out.update(keyword for _, keyword in counter_grants[counter_index:])
     # "Can't have" is an override in the keyword layer, not a timestamped
     # ordinary removal. Apply it after all grants and normal removals.
@@ -432,8 +442,13 @@ def effective_keywords(state, card_id: str) -> list[str]:
                     if "all abilities" in removed:
                         out.clear()
                     else:
-                        out.difference_update(removed)
-    return sorted(out)
+                        for keyword in removed:
+                            out.pop(keyword, None)
+    return dict(sorted(out.items()))
+
+
+def effective_keywords(state, card_id: str) -> list[str]:
+    return list(effective_keyword_counts(state, card_id))
 
 
 def has_keyword(state, card_id: str, keyword: str) -> bool:

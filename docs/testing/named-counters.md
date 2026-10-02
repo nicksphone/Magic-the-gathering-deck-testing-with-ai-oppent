@@ -100,8 +100,8 @@ Final source checks on October 2, 2026:
   and bounded scalar choice ordering are implemented in a follow-up. Full
   simultaneous combat/prevention ordering and arbitrary competing destruction
   replacements remain unfinished.
-- Decayed and Exalted keyword names are recognized, but their triggered effects
-  and non-redundant ability-instance counts remain unsupported. Keyword variants,
+- [Decayed and Exalted triggers and supported instance counts](combat-keyword-triggers.md)
+  landed in a follow-up. Arbitrary grant composition, keyword variants,
   full non-keyword ability suppression and arbitrary layer dependencies remain
   unfinished; preflight reports these known families.
 - Other untap restrictions, optional untap choices and competing untap replacements

@@ -45,10 +45,14 @@ def card_must_attack_if_able(state, card_id: str) -> bool:
 
 
 def card_cant_block(state, card_id: str) -> bool:
+    from rules_engine.continuous import has_keyword
+    if has_keyword(state, card_id, 'decayed'):
+        return True
     land_gate = _land_gate_prevents(state, card_id, "block")
     if land_gate is not None:
         return land_gate
-    text = (state.cards[card_id].oracle_text or "").lower()
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(state.cards[card_id].oracle_text or '').lower()
     return "can't block" in text or "cannot block" in text
 
 
