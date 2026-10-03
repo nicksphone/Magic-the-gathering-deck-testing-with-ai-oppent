@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-03 - Simultaneous wheels and hand-defined characteristics
+
+- Share whole-hand each-player discard followed by fixed, actual-count,
+  largest-count or minus-one draws. Preserve actual discard events/history,
+  replacements, opposing copies, APNAP draws and owned nested draw continuations.
+- Recognize supported hand-size P/T definitions in shared layers and lethal-state
+  checks. Preserve canonical negative printed stats and explicit unknown metadata
+  instead of falling through to numeric name guesses; retain unknown public views.
+- All AI difficulties price known hand retention and public opposing counts with
+  supported draw forecasts. Production decision checks retain tested good hands
+  and legally cast tested refills; graveyard payoffs and expert timing remain open.
+- Validation: 114 new checks, final 386-check selection, 4,770-test isolated full
+  suite (18 late tests separately), frontend gates, complete Chromium with twelve
+  new cases and two twelve-sample repeated seat-balanced matrices without reported
+  anomaly/timeout/drift. Nine canonical records match saved Scryfall responses.
+  See [bounded scope and risks](docs/testing/wheel-draw.md).
+
 ## 2026-10-03 - Bounded rummaging and per-turn discard history
 
 - Support complete printed-limit discard/draw instructions through ordinary modal

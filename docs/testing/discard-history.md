@@ -67,7 +67,9 @@ it now waits for authoritative choice/stack completion before checking results.
 
 ## Known Limitations and Next Upgrades
 
-Broader opponent/random/simultaneous variable instructions, conditional linked
+Bounded each-player whole-hand discard/draw is covered by
+[simultaneous wheel acceptance](wheel-draw.md). Broader opponent/random/simultaneous
+variable instructions, conditional linked
 clauses, paid replacement choices, discard characteristics history and graveyard
 payoff planning remain incomplete. Existing unsupported instruction warnings are
 retained rather than guessing at those effects. The four-archetype replay is smoke

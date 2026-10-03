@@ -2393,11 +2393,11 @@ def each_player_discard(state: MatchState, controller: int, payload: dict) -> No
         if key in selected:
             continue
         options = [cid for cid in state.players[pid].hand if not is_departed_token(state.cards[cid])]
-        count = min(amount, len(options))
-        if count and pid in state.mechanic_choice_players and not payload.get("random"):
+        count = len(options) if payload.get('all_hand') else min(amount, len(options))
+        if count and pid in state.mechanic_choice_players and not payload.get("random") and not payload.get('all_hand'):
             state.pending_mechanic_choice = {
                 "kind": "each_player_discard", "player_id": pid, "options": options,
-                "count": count, "effect_payload": {"amount": amount, "selected_cards": selected},
+                "count": count, "effect_payload": {**payload, "amount": amount, "selected_cards": selected},
                 "effect_controller": controller, "label": "Choose cards to discard",
             }
             state.priority_player = pid
@@ -2408,6 +2408,15 @@ def each_player_discard(state: MatchState, controller: int, payload: dict) -> No
         raise ValueError("Simultaneous discard selections are no longer valid")
     for pid in (1, 2):
         state.log.append(f"{state.players[pid].name} discards {len(selected[str(pid)])}.")
+    if payload.get('draw_followup'):
+        from effects.registry import resolve_effect
+        from rules_engine.linked_discard import wheel_draw_counts
+        counts = wheel_draw_counts(payload['draw_followup'], {int(pid): len(ids) for pid, ids in selected.items()})
+        resolve_effect(state, controller, 'effect_sequence', {
+            **{key: payload[key] for key in ['__source_card_id', '__source_lki', 'snow_mana_spent'] if key in payload},
+            'effects': [{'effect_key': 'draw_cards', 'payload': {'target_player': pid, 'amount': counts[pid]}}
+                        for pid in (state.active_player, 3-state.active_player)],
+        })
 
 
 def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict) -> None:

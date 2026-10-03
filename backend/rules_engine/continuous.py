@@ -326,30 +326,23 @@ def _continuous_layer_sort_key(state, source_id: str, layer: str) -> tuple[int, 
 
 
 def effective_power(state, card_id: str) -> int:
-    card = state.cards[card_id]
-    base_p, _ = _base_pt_with_layers(state, card_id)
-    base = int(base_p or 0)
-    p_bonus, _ = _continuous_pt_delta(state, card_id)
-    counter_bonus = _counter_pt_delta(card)
-    temp_bonus = int((getattr(card, "counters", {}) or {}).get("__eot_power", 0))
-    return base + p_bonus + counter_bonus + temp_bonus
+    return int(effective_combat_stats(state, card_id, unknown_as_zero=True)[0])
 
 
 def effective_toughness(state, card_id: str) -> int:
-    card = state.cards[card_id]
-    _, base_t = _base_pt_with_layers(state, card_id)
-    base = int(base_t or 0)
-    _, t_bonus = _continuous_pt_delta(state, card_id)
-    counter_bonus = _counter_pt_delta(card)
-    temp_bonus = int((getattr(card, "counters", {}) or {}).get("__eot_toughness", 0))
-    return base + t_bonus + counter_bonus + temp_bonus
+    return int(effective_combat_stats(state, card_id, unknown_as_zero=True)[1])
 
 
-def effective_combat_stats(state, card_id: str) -> tuple[int | None, int | None]:
+def effective_combat_stats(state, card_id: str, *, unknown_as_zero=False) -> tuple[int | None, int | None]:
     """Public stats preserve unknown characteristics rather than inventing zero."""
     base_power, base_toughness = _base_pt_with_layers(state, card_id)
-    return (effective_power(state, card_id) if base_power is not None else None,
-            effective_toughness(state, card_id) if base_toughness is not None else None)
+    if unknown_as_zero:
+        base_power, base_toughness = int(base_power or 0), int(base_toughness or 0)
+    power_bonus, toughness_bonus = _continuous_pt_delta(state, card_id)
+    counter_bonus = _counter_pt_delta(state.cards[card_id])
+    counters = getattr(state.cards[card_id], 'counters', {}) or {}
+    return (base_power + power_bonus + counter_bonus + int(counters.get('__eot_power', 0)) if base_power is not None else None,
+            base_toughness + toughness_bonus + counter_bonus + int(counters.get('__eot_toughness', 0)) if base_toughness is not None else None)
 
 
 def _counter_pt_delta(card) -> int:
@@ -524,8 +517,10 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     ability_losses = _printed_ability_loss_sources(state)
     base_p = card.power
     base_t = card.toughness
-    dynamic_p, dynamic_t = ((None, None) if printed_abilities_suppressed(state, card_id, losses=ability_losses)
-                           else _self_defined_card_type_pt(state, card))
+    dynamic_p, dynamic_t = _self_defined_card_type_pt(state, card)
+    if printed_abilities_suppressed(state, card_id, losses=ability_losses):
+        dynamic_p = 0 if base_p is None and dynamic_p is not None else None
+        dynamic_t = 0 if base_t is None and dynamic_t is not None else None
     if dynamic_p is not None:
         base_p = dynamic_p
     if dynamic_t is not None:
@@ -572,6 +567,10 @@ def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
     """Resolve supported characteristic-defining power/toughness clauses."""
     text = (getattr(card, "oracle_text", "") or "").lower()
     for line in _static_oracle_text(card).splitlines():
+        subject = r"(?:this creature|this permanent|" + re.escape(str(getattr(card, 'name', '') or '').lower()) + r")"
+        if re.fullmatch(subject + r"'s power and toughness are each equal to the number of cards in your hand\.?", line.strip()):
+            count = len(state.players[card.controller].hand)
+            return count, count
         match = re.fullmatch(r"this creature's power and toughness are each equal to the " + PLAYER_COUNT_RE + r"\.?", line.strip())
         if match:
             count = counter_count(state.players[card.controller], match[1])

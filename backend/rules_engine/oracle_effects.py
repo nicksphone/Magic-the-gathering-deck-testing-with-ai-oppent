@@ -236,7 +236,10 @@ def infer_effect_from_oracle(
             for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
                 effects.append({**effect, "mode_text": selected_mode})
         return "effect_sequence", {"effects": effects}
-    from rules_engine.linked_discard import linked_discard_effect
+    from rules_engine.linked_discard import linked_discard_effect, simultaneous_discard_draw_effect
+    simultaneous = simultaneous_discard_draw_effect(oracle)
+    if simultaneous:
+        return 'each_player_discard', simultaneous
     linked_discard = linked_discard_effect(oracle)
     if linked_discard:
         return 'discard_cards', {'self_discard': True, **linked_discard}

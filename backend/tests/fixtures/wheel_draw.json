@@ -1,0 +1,150 @@
+[
+  {
+    "id": "43da8995-77da-4ec4-94a5-5e7932a3c969",
+    "oracle_id": "3fae28e6-2ffc-460e-9dd3-e321e8a53ba9",
+    "name": "Chandra Ablaze",
+    "mana_cost": "{4}{R}{R}",
+    "type_line": "Legendary Planeswalker \u2014 Chandra",
+    "oracle_text": "+1: Discard a card. If a red card is discarded this way, Chandra deals 4 damage to any target.\n\u22122: Each player discards their hand, then draws three cards.\n\u22127: Cast any number of red instant and/or sorcery cards from your graveyard without paying their mana costs.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/zen/120/chandra-ablaze?utm_source=api",
+    "loyalty": "5"
+  },
+  {
+    "id": "13f696f9-afa2-40c4-950a-e1e01c452017",
+    "oracle_id": "758aeca5-6ef3-4463-a65a-66b39289cc86",
+    "name": "Char-Rumbler",
+    "mana_cost": "{2}{R}{R}",
+    "type_line": "Creature \u2014 Elemental",
+    "oracle_text": "Double strike\n{R}: This creature gets +1/+0 until end of turn.",
+    "power": "-1",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Double strike"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/tsr/158/char-rumbler?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "d6f0fcd5-232f-4e99-8cfc-ea0fe9c915a6",
+    "oracle_id": "c527eb80-ccac-40b8-8377-c31121613128",
+    "name": "Dark Deal",
+    "mana_cost": "{2}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Each player discards all the cards in their hand, then draws that many cards minus one.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tle/161/dark-deal?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "925d6ae9-deb8-41a4-99de-fd6fc6924d3b",
+    "oracle_id": "d45a4924-daa0-4ac3-afd7-b66f636ce870",
+    "name": "Incendiary Command",
+    "mana_cost": "{3}{R}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Choose two \u2014\n\u2022 Incendiary Command deals 4 damage to target player or planeswalker.\n\u2022 Incendiary Command deals 2 damage to each creature.\n\u2022 Destroy target nonbasic land.\n\u2022 Each player discards all the cards in their hand, then draws that many cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/c13/113/incendiary-command?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "9159e250-4eec-4ec4-80e1-42259331b3b9",
+    "oracle_id": "ef32258a-d567-4fbc-ab85-8c00080f5b36",
+    "name": "Maro",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Creature \u2014 Elemental",
+    "oracle_text": "Maro's power and toughness are each equal to the number of cards in your hand.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/9ed/254/maro?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "3b04fca4-b4de-4343-ba58-d8aea39edc19",
+    "oracle_id": "633ad9e2-9f55-4a1c-9248-661ad4b0e1dc",
+    "name": "Megrim",
+    "mana_cost": "{2}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "Whenever an opponent discards a card, this enchantment deals 2 damage to that player.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/m10/104/megrim?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "c409d1d0-fc45-40bf-adac-83b680209a38",
+    "oracle_id": "b3045ee5-232b-4e63-8ea8-b5e46b49e71a",
+    "name": "Sturmgeist",
+    "mana_cost": "{3}{U}{U}",
+    "type_line": "Creature \u2014 Spirit",
+    "oracle_text": "Flying\nSturmgeist's power and toughness are each equal to the number of cards in your hand.\nWhenever this creature deals combat damage to a player, draw a card.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/isd/82/sturmgeist?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "2597050f-6b1b-474e-aa16-33fd154628ca",
+    "oracle_id": "a8abd966-de7b-46a3-8ac7-8747ab35653a",
+    "name": "Wheel of Fortune",
+    "mana_cost": "{2}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Each player discards their hand, then draws seven cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vma/192/wheel-of-fortune?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "9ce7113b-08f7-4584-b65f-a7b5caa90c2f",
+    "oracle_id": "08becc07-28bc-4a2f-a6b0-28a2998d2f50",
+    "name": "Windfall",
+    "mana_cost": "{2}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Each player discards their hand, then draws cards equal to the greatest number of cards a player discarded this way.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/otc/123/windfall?utm_source=api",
+    "loyalty": null
+  }
+]

@@ -4,7 +4,7 @@ from game_state.state import MatchState, Zone
 from rules_engine.card_types import is_token_card
 from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
 from rules_engine.events import emit_event, emit_event_batch, was_creature_on_battlefield
-from rules_engine.continuous import effective_toughness, has_keyword
+from rules_engine.continuous import effective_toughness, effective_combat_stats, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
 from rules_engine.zone_actions import put_into_graveyard
 
@@ -14,9 +14,11 @@ DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 def creature_has_lethal_state(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
-    if "Creature" not in card.types or card.zone != Zone.BATTLEFIELD or card.toughness is None:
+    if "Creature" not in card.types or card.zone != Zone.BATTLEFIELD:
         return False
-    toughness = effective_toughness(state, card_id)
+    toughness = effective_combat_stats(state, card_id)[1]
+    if toughness is None:
+        return False
     return toughness <= 0 or (not has_keyword(state, card_id, "indestructible") and (
         int(card.counters.get(DMG_MARK_KEY, 0)) >= toughness
         or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0))
@@ -191,7 +193,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
 
     lethal_ids: list[str] = []
     for cid, card in list(state.cards.items()):
-        if "Creature" in card.types and card.zone == Zone.BATTLEFIELD and card.toughness is not None:
+        if "Creature" in card.types and card.zone == Zone.BATTLEFIELD:
             if creature_has_lethal_state(state, cid):
                 options = replacement_options(state, "die_zone", target_card_id=cid)
                 if _human_die_choice_required(state, cid) and len(options) > 1:

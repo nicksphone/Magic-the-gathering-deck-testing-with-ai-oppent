@@ -470,8 +470,8 @@ def _infer_power(
     power: str | int | None = None,
     types: list[str] | None = None,
 ) -> int | None:
-    if power is not None and str(power).isdigit():
-        return int(power)
+    if power is not None:
+        return int(power) if re.fullmatch(r'[+-]?\d+', str(power)) else None
     if types is not None and "Creature" not in types:
         return None
     n = name.lower()
@@ -495,8 +495,8 @@ def _infer_toughness(
     toughness: str | int | None = None,
     types: list[str] | None = None,
 ) -> int | None:
-    if toughness is not None and str(toughness).isdigit():
-        return int(toughness)
+    if toughness is not None:
+        return int(toughness) if re.fullmatch(r'[+-]?\d+', str(toughness)) else None
     if types is not None and "Creature" not in types:
         return None
     n = name.lower()

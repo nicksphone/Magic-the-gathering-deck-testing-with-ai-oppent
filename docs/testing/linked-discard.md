@@ -88,8 +88,10 @@ are retained and are not substituted for successful final acceptance.
 
 ## Known Limitations and Next Upgrades
 
-Arbitrary linked counts and random/opponent/simultaneous
-variable discards, chained modes and other conditional clauses remain incomplete.
+Bounded each-player whole-hand wheels are now covered by
+[simultaneous wheel acceptance](wheel-draw.md). Arbitrary linked counts,
+random/opponent instructions, broader simultaneous variable discards, chained
+modes and other conditional clauses remain incomplete.
 Unrecognized complete sequences are rejected rather than approximated. General
 replacement ordering, madness/optional graveyard choices and long-term discard
 payoff planning need further acceptance. AI draw forecasts omit downstream trigger

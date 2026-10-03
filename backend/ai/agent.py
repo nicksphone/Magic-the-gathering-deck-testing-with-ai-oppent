@@ -565,7 +565,10 @@ class AIAgent:
         card = state.cards.get(move.get("card_id"))
         if card is None:
             return False
-        from rules_engine.linked_discard import linked_discard_effect
+        from rules_engine.linked_discard import linked_discard_effect, simultaneous_discard_draw_effect
+        wheel = simultaneous_discard_draw_effect(_oracle_text(card))
+        if wheel:
+            return self._wheel_exchange_value(state, player_id, wheel['draw_followup'], card.id) <= 0
         linked = linked_discard_effect(_oracle_text(card))
         hints = move.get('target_hints') or {}
         modes = hints.get('available_modes', hints.get('modes', []))
@@ -601,6 +604,24 @@ class AIAgent:
         if len(me.library) < amount:
             return True
         return len(me.hand) >= 5 and len(opponent.hand) <= 2
+
+    def _wheel_exchange_value(self, state, player_id, rule, source_id=None):
+        from rules_engine.linked_discard import wheel_draw_counts
+        from rules_engine.draw_restrictions import forecast_draw_count
+        opponent = 3-player_id
+        own = [cid for cid in state.players[player_id].hand if cid != source_id]
+        # Opposing hand size is public; opposing card identities are not.
+        discarded = {player_id: len(own), opponent: len(state.players[opponent].hand)}
+        amounts = wheel_draw_counts(rule, discarded)
+        draws = {pid: forecast_draw_count(state, pid, amount) for pid, amount in amounts.items()}
+        if draws[player_id] > len(state.players[player_id].library):
+            return -100000.0
+        if draws[opponent] > len(state.players[opponent].library):
+            return 100000.0
+        lost = sum(self._hand_retention_value(state, cid, player_id) for cid in own)
+        if source_id in state.players[player_id].hand:
+            lost += self._hand_retention_value(state, source_id, player_id)
+        return draws[player_id] * 5 - lost - (draws[opponent] - discarded[opponent]) * 5
 
     def _choose_combat_damage_allocation(self, state: MatchState, choice: dict) -> dict[str, int]:
         source = state.cards[choice["source_id"]]
@@ -2397,7 +2418,10 @@ class AIAgent:
 
     def _score_mode_text(self, state: MatchState, card, mode_text: str, player_id: int) -> float:
         text = (mode_text or "").lower()
-        from rules_engine.linked_discard import linked_discard_effect
+        from rules_engine.linked_discard import linked_discard_effect, simultaneous_discard_draw_effect
+        wheel = simultaneous_discard_draw_effect(text)
+        if wheel:
+            return self._wheel_exchange_value(state, player_id, wheel['draw_followup'], card.id) / 5
         linked = linked_discard_effect(text)
         if linked and linked.get('up_to') and linked['followup_effect']['effect_key'] == 'draw_cards':
             options = [cid for cid in state.players[player_id].hand if cid != card.id]
