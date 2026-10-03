@@ -54,3 +54,51 @@ for (const seat of [1, 2]) for (const free of [false, true]) for (const payment 
     await close();
   }
 }
+
+for (const seat of [1, 2]) for (const kind of ['counted_cost', 'free_counted_cost', 'land_cost']) {
+  const fixture = await (await fetch(`${api}/fixture?face_kind=${kind}_${seat}`, { method: 'POST' })).json();
+  const name = kind === 'land_cost' ? 'Raze' : 'Cathartic Reunion';
+  const payment = kind === 'land_cost' ? 'Sacrifice' : 'Discard';
+  const cards = fixture.players[String(seat)][kind === 'land_cost' ? 'battlefield' : 'hand']
+    .filter(card => ['Island', 'Swamp'].includes(card.name));
+  const { evaluate, command, waitFor, click, close } = await openBrowser('http://127.0.0.1:15173/');
+  const enabled = `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith('Cast ${name}') && !button.matches(':disabled'))`;
+  try {
+    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
+    await command('Page.reload');
+    await waitFor(`Boolean(document.querySelector('select[aria-label="${payment} for cost ${name}"]'))`);
+    assert.equal(await evaluate(enabled), false);
+    async function select(ids) {
+      await evaluate(`(() => {
+        const select = document.querySelector('select[aria-label="${payment} for cost ${name}"]');
+        [...select.options].forEach(option => option.selected = ${JSON.stringify(ids)}.includes(option.value));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`);
+    }
+    await select([cards[0].id]);
+    if (payment === 'Discard') {
+      assert.equal(await evaluate(enabled), false);
+      await select(cards.map(card => card.id));
+    } else {
+      const target = fixture.players[String(3-seat)].battlefield[0];
+      await evaluate(`(() => {
+        const box = document.querySelector('select[aria-label="${payment} for cost ${name}"]').closest('.cast-card-box');
+        const select = [...box.querySelectorAll('select')].find(select => [...select.options].some(option => option.value === ${JSON.stringify(target.id)}));
+        select.value = ${JSON.stringify(target.id)}; select.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`);
+    }
+    await waitFor(enabled);
+    await click(`Cast ${name}`);
+    await waitFor(`(async () => (await (await fetch('${api}/matches/${fixture.id}')).json()).stack.length === 1)()`);
+    await command('Page.reload');
+    await waitFor(`document.body.innerText.includes('${name}')`);
+    const final = await (await fetch(`${api}/matches/${fixture.id}`)).json();
+    for (const card of cards) assert.ok(final.players[String(seat)].graveyard.some(paid => paid.id === card.id));
+    assert.equal(final.players[String(seat)].mana_pool.R, kind.startsWith('free_') ? 1 : 0);
+    console.log(`PASS seat ${seat}: ${kind} counts/candidates, button gating, selected payment and refresh`);
+  } finally {
+    await evaluate("localStorage.removeItem('mtg.activeMatch')");
+    await close();
+  }
+}

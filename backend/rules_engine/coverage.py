@@ -53,6 +53,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     variants = [(card_name, oracle_text or ''),
                 *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
                   for face in card_faces or [] if isinstance(face, dict))]
+    from rules_engine.spell_cost_clauses import spell_additional_costs
+    if any(spell_additional_costs(text, name) is None for name, text in variants):
+        out.append('unsupported spell additional cost')
     if any(activation_modifier_gaps(text, name) for name, text in variants):
         out.append('activation cost modifiers')
     if 'domain' in out:

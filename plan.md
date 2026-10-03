@@ -13,15 +13,15 @@ before returning to the redesign. Broad release gates below remain open.
 - [x] Add durable effect-authorized graveyard cast/decline choices for both human seats, reusing ordinary target/cost controls and checked announcements. Announce supported graveyard trigger targets before resolution, preserve both choice stages in snapshots, and prefer usable AI spell targets over uncastable counters or zero-mana-spent draw. See [bounded scope](docs/testing/effect-cast-choices.md); this is not broader optimal tactical planning.
 - [ ] Extend surveil modifiers/replacements and conditional payoffs; optimal nonland/graveyard curation, broader optional/additional costs and payment continuations. Validate graveyard-permission target selection's tactical value beyond avoiding illegal or ineffective announcements.
 - [x] Add explicit normal/free spell discard and sacrifice cost-card selections, checked against owned eligible zones before payment. Reuse shared discard/sacrifice operations so supported leave/dies triggers and replacements also apply to costs. All AI difficulties choose known lower-loss payment cards and compare singular either-cost branches. See [bounded contract](docs/testing/cast-payment-selections.md).
-- [ ] Audit additional-cost grammar against canonical counted/qualified costs and unknown clauses; preserve alternative-casting method identity across cost variants. Implement kicker payment and conditional resolution together, including waived mana costs, without presenting mere cost options as completed mechanics. Extend payment order, activated-cost selections and interrupted continuations.
+- [x] Replace whole-text spell cost inference with a bounded shared additional-cost clause reader: exact discard/sacrifice counts, typed unions, mixed components, fixed-life alternatives, explicit unsupported-clause rejection and stable alternative-method identity. Both-seat canonical and HTTP checks cover counted payments and land costs; AI compares grouped payment losses. See [scope and remaining gaps](docs/testing/spell-cost-clauses.md).
+- [ ] Extend qualified/subtype, exile/reveal/return/tap and variable-count costs with exact eligibility; model different-type mandatory components and general payment order. Implement kicker payment and conditional resolution together, including waived mana costs, without presenting mere price options as completed mechanics. Finish activated-cost selections and interrupted continuations.
 
-Next cost-parser evidence: a fresh canonical Scryfall probe on 2026-10-03
-reproduces Cathartic Reunion priced as one discard rather than two and Raze priced
-as a creature rather than land sacrifice. Fix shared clause-scoped count/type
-parsing and explicit unsupported-clause admission, not named-card exceptions.
-The observed defects are still open; selecting the advertised payment cards does
-not establish that every advertised cost matches printed Oracle text. Source
-payloads, Oracle IDs and the isolated probe are archived under
+Historical cost-parser evidence: a fresh canonical Scryfall probe on 2026-10-03
+reproduced Cathartic Reunion priced as one discard rather than two and Raze priced
+as a creature rather than land sacrifice. The shared clause reader above fixes
+those counts/types and rejects exercised unsupported clauses, without named-card
+exceptions. This does not establish that every card cost/effect is supported.
+Original source payloads, Oracle IDs and the isolated failing probe remain under
 `diagnostics/cast-payment-selections/20261003T091348Z/canonical-cost-probes/`.
 - [ ] Investigate the optional Python 3.12.3 timed traceback diagnostic crash with a minimal reproducer. Preserve its failed run separately from normal BO3/full-suite outcomes; do not attribute it to an upstream issue without proving the cause. See [evidence boundary](docs/testing/surveil-mill.md).
 - [x] Batch the five canonical legendary Channel lands using shared legendary-creature discounts, target unions, owned optional basic-type land searches, post-mill creature/planeswalker choices and temporary token haste. HTTP/SQLite/App continuations and Master public-board winning hand-ability retention are covered. See [bounded scope](docs/testing/legendary-channels.md); whole-card certification, arbitrary mill/replacement clauses and long-term strategic retention remain open.

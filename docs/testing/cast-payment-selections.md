@@ -56,19 +56,21 @@ invalid-payment/target lines; missing quality evidence remains null. This is not
 fresh dependency-install, optimal-play or balance certification. The verified
 RCHFiles archive is `diagnostics/cast-payment-selections/20261003T091348Z/`.
 
-Fresh canonical probes in that archive reproduce two still-open parser defects:
+Fresh canonical probes in that historical archive reproduced two parser defects:
 Cathartic Reunion advertises one discard rather than two, and Raze advertises a
 creature sacrifice rather than land. This batch improves selection of modeled
-costs, not correctness of every modeled cost. The next fix must parse shared
-clauses/counts/types and reject unsupported grammar, without named-card dispatch.
+costs, not correctness of every modeled cost. The subsequent
+[shared cost-clause reader](spell-cost-clauses.md) addresses those counts/types
+and rejects unrecognized clauses without named-card dispatch.
 
 ## Known Limitations and Next Upgrades
 
-- This does not extend the existing Oracle cost parser to arbitrary counted,
-  qualified, land, exile, reveal or return costs. Those require canonical fixtures
-  and explicit unsupported-clause handling before being advertised as supported.
-- Kicker conditional resolution, waived-cost kicker, alternative-method identity
-  across composed variants and other optional additional costs remain open.
+- This milestone alone did not extend printed cost grammar; the subsequent reader
+  adds bounded counted/typed costs. Qualified, exile, reveal and return costs
+  remain open and must not be silently approximated.
+- Kicker conditional resolution, waived-cost kicker and other optional additional
+  costs remain open. The subsequent reader preserves alternative-method identity
+  across recognized branches.
 - Activated-cost card selection and interrupted payment continuations are not
   implemented by the spell-announcement fields.
 - Life, discard and sacrifice components retain the existing fixed execution

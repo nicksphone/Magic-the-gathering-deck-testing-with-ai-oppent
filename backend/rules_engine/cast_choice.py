@@ -38,11 +38,11 @@ def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
 
 def available_cast_options_and_hints(state: MatchState, card: CardInstance, controller: int):
     """Keep target-dependent payment and legal Aura choices in one contract."""
-    from rules_engine.costs import collect_cost_options, check_cost_option_available
+    from rules_engine.costs import collect_cost_options, check_cost_option_available, casting_method
     from rules_engine.attachments import is_aura
     options = collect_cost_options(state, controller, card)
     from rules_engine.bestow import is_bestowed
-    options = [option for option in options if (option.id == 'bestow') == is_bestowed(card)]
+    options = [option for option in options if (casting_method(option.id) == 'bestow') == is_bestowed(card)]
     if not is_aura(card):
         available = [o for o in options if check_cost_option_available(state, controller, card, o)]
         return available, build_cast_hints(state, card, controller) if available else {}

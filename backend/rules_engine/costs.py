@@ -36,6 +36,12 @@ class CostOption:
     sacrifice_creatures: int = 0
     sacrifice_kind: str = "creature"
     exile_graveyard: int = 0
+    additional_cost_group: str | None = None
+
+
+def casting_method(cost_id: str) -> str:
+    """Additional-cost branch suffixes do not change the casting method."""
+    return cost_id.partition('_')[0]
 
 
 @dataclass(frozen=True)
@@ -228,7 +234,10 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
     from rules_engine.alternative_casts import escape_cost, flashback_cost, has_aftermath, prototype_characteristics
-    oracle = (card.oracle_text or "").lower()
+    from rules_engine.spell_cost_clauses import spell_additional_costs
+    branches = spell_additional_costs(card.oracle_text, card.name)
+    if branches is None:
+        return []
     base = CostOption(id="base", label="Base Cost", mana_cost='' if without_mana else card.mana_cost or "")
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
@@ -261,44 +270,31 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if kicker and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="kicker", label=f"Kicker {kicker.group(1)}", mana_cost=_join_costs(base.mana_cost, kicker.group(1))))
 
-    life_match = PAY_LIFE_RE.search(card.oracle_text or "")
-    if life_match:
-        life = int(life_match.group(1))
-        for opt in options:
-            opt.pay_life += life
-    if PAY_X_LIFE_RE.search(card.oracle_text or ""):
-        for opt in options:
-            opt.pay_life_x = True
-
-    either_cost = re.search(r'as an additional cost to cast [^,.]+, (?:sacrifice a creature or discard a card|discard a card or sacrifice a creature)\.', oracle)
-    if either_cost:
-        return [variant for opt in options for variant in (
-            replace(opt, id=opt.id + '_discard', label=opt.label + ' - discard a card', discard_cards=opt.discard_cards + 1),
-            replace(opt, id=opt.id + '_sacrifice', label=opt.label + ' - sacrifice a creature', sacrifice_creatures=opt.sacrifice_creatures + 1),
-        )]
-    if "as an additional cost to cast" in oracle and "discard" in oracle and "card" in oracle:
-        for opt in options:
-            opt.discard_cards += 1
-    if "as an additional cost to cast" in oracle and "sacrifice" in oracle:
-        sacrifice_kind = "creature"
-        if "artifact or creature" in oracle:
-            sacrifice_kind = "artifact_or_creature"
-        elif "permanent" in oracle:
-            sacrifice_kind = "permanent"
-        elif "artifact" in oracle:
-            sacrifice_kind = "artifact"
-        elif "enchantment" in oracle:
-            sacrifice_kind = "enchantment"
-        for opt in options:
-            opt.sacrifice_creatures += 1
-            opt.sacrifice_kind = sacrifice_kind
-
-    return options
+    compiled = []
+    for option in options:
+        used_suffixes = set()
+        for index, branch in enumerate(branches):
+            suffix = ('discard' if set(branch) == {'discard_cards'} else
+                      'sacrifice' if set(branch) == {'sacrifice_creatures', 'sacrifice_kind'} else
+                      'life' if set(branch) == {'pay_life'} else f'additional_{index}')
+            if suffix in used_suffixes:
+                suffix += f'_{index}'
+            used_suffixes.add(suffix)
+            compiled.append(replace(option,
+                id=option.id + '_' + suffix if len(branches) > 1 else option.id,
+                label=option.label + ' - ' + suffix.replace('_', ' ') if len(branches) > 1 else option.label,
+                additional_cost_group=option.id if len(branches) > 1 else None,
+                pay_life=option.pay_life + branch.get('pay_life', 0),
+                pay_life_x=bool(branch.get('pay_life_x')),
+                discard_cards=option.discard_cards + branch.get('discard_cards', 0),
+                sacrifice_creatures=option.sacrifice_creatures + branch.get('sacrifice_creatures', 0),
+                sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind)))
+    return compiled
 
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
     from rules_engine.attachments import is_aura
-    if option.id == 'bestow':
+    if casting_method(option.id) == 'bestow':
         from rules_engine.bestow import bestow_cast_view
         card = bestow_cast_view(card)
     player = state.players[player_id]
@@ -400,7 +396,7 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
         types = set(state.cards[cid].types or [])
         if (
             kind == "permanent"
-            or (kind == "artifact_or_creature" and ("Artifact" in types or "Creature" in types))
+            or (any(part.title() in types for part in kind.split('_or_')))
             or (kind == "artifact" and "Artifact" in types)
             or (kind == "enchantment" and "Enchantment" in types)
             or (kind == "creature" and "Creature" in types)

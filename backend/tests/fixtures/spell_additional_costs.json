@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Cathartic Reunion",
+    "id": "e3bca51a-b9be-4be2-a256-b15853fde433",
+    "oracle_id": "0f3c3e5f-6af3-4af2-8703-4ccc8ed8f675",
+    "scryfall_uri": "https://scryfall.com/card/ecc/91/cathartic-reunion?utm_source=api",
+    "mana_cost": "{1}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard two cards.\nDraw three cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Deadly Dispute",
+    "id": "d86fa72c-25c1-43ef-9cb0-fe76f7568ed3",
+    "oracle_id": "457af74a-02b3-4659-846d-63e482667f34",
+    "scryfall_uri": "https://scryfall.com/card/msc/794/deadly-dispute?utm_source=api",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw two cards and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Treasure"
+    ]
+  },
+  {
+    "name": "Final Payment",
+    "id": "49a21a8f-9c7b-4ae8-8635-f2ee2151c8de",
+    "oracle_id": "e47d57dc-2e69-4939-8aec-077595f2ae05",
+    "scryfall_uri": "https://scryfall.com/card/rna/171/final-payment?utm_source=api",
+    "mana_cost": "{W}{B}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, pay 5 life or sacrifice a creature or enchantment.\nDestroy target creature.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B",
+      "W"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Goblin Grenade",
+    "id": "b0e0ef27-3db2-4976-b9db-13e3d7cd795d",
+    "oracle_id": "20aecb7b-7e37-4efe-ac27-f9f9042203f4",
+    "scryfall_uri": "https://scryfall.com/card/ddt/45/goblin-grenade?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a Goblin.\nGoblin Grenade deals 5 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Raze",
+    "id": "56d51b3c-24e9-41b6-b7cd-c70329e498ca",
+    "oracle_id": "02fde433-955d-49df-bd72-270b6feac9e7",
+    "scryfall_uri": "https://scryfall.com/card/usg/207/raze?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a land.\nDestroy target land.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Ruthless Disposal",
+    "id": "fe81c78f-e3e2-4513-9711-896e6a1e6aba",
+    "oracle_id": "dcd12cb6-6920-4bff-af73-104ad32f7d59",
+    "scryfall_uri": "https://scryfall.com/card/emn/103/ruthless-disposal?utm_source=api",
+    "mana_cost": "{4}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard a card and sacrifice a creature.\nTwo target creatures each get -13/-13 until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Tormenting Voice",
+    "id": "6da46103-a14c-4aa2-92fc-fd758335caf4",
+    "oracle_id": "f307b5b4-e949-4f69-8dc7-856e33a45a16",
+    "scryfall_uri": "https://scryfall.com/card/znr/172/tormenting-voice?utm_source=api",
+    "mana_cost": "{1}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard a card.\nDraw two cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": []
+  }
+]

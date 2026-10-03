@@ -24,6 +24,7 @@ def unique_ids(ids: list[str], allowed, count: int | None = None) -> None:
 def require_declared_targets(card, hints: dict, targets: dict, controller: int, *, spell: bool = False) -> None:
     """External actions must declare choices, not rely on legacy auto-targets."""
     if spell and not set(getattr(card, "types", [])).intersection({"Instant", "Sorcery"}):
+        from rules_engine.costs import casting_method
         from rules_engine.attachments import is_aura
         if is_aura(card):
             require(bool(targets.get("target_card_id")), "Announce an Aura attachment target")
@@ -146,6 +147,7 @@ def checked_action(state, rules, player_id: int, action: dict):
 
 
 def validate_action(state, rules, player_id: int, action: dict) -> None:
+    from rules_engine.costs import casting_method
     require(player_id in state.players, "Invalid player")
     require(state.winner is None, "Game is already over")
     kind = action["type"]
@@ -155,7 +157,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     moves = rules.legal_moves(state, player_id)
     available = [move for move in moves if move["type"] == kind]
     if kind == 'cast_spell':
-        bestowed = (action.get('cost_choice') or {}).get('id') == 'bestow'
+        bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
         available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana"}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
@@ -264,7 +266,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(0 <= face < len(state.cards[action["card_id"]].card_faces), "Selected card face is unavailable")
             require(not face or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
         face_card = _select_face_for_cast(state.cards[action["card_id"]], face)
-        if (action.get('cost_choice') or {}).get('id') == 'bestow':
+        if casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow':
             from rules_engine.bestow import bestow_cast_view
             face_card = bestow_cast_view(face_card)
         if state.cards[action["card_id"]].layout in {"modal_dfc", "adventure", "split"}:

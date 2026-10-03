@@ -166,6 +166,7 @@ export type LegalMove = {
   x_value?: number;
   cost_options?: {
     id: string;
+    additional_cost_group?: string | null;
     label: string;
     mana_cost: string;
     hybrid_symbols?: { symbol: string; choices: string[] }[];

@@ -6,7 +6,7 @@ from rules_engine import combat
 from rules_engine.counter_placement import counter_placement_forbidden
 from rules_engine.cast_choice import build_cast_hints, enrich_divide_total, validate_cast_choice
 from rules_engine.card_types import is_land_card as _is_land_card
-from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice
+from rules_engine.costs import activated_cost_available, apply_activated_costs, apply_additional_costs, check_cost_option_available, collect_cost_options, normalize_cost_choice, casting_method
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.mana import auto_pay_cost, mana_value
 from rules_engine.mana import land_can_produce_mana, land_mana_amount, land_mana_colors
@@ -803,7 +803,7 @@ class RulesEngine:
                     return
                 face_card = _select_face_for_cast(card, selected_face_index)
                 from rules_engine.bestow import bestow_cost, bestow_cast_view
-                bestowed = (action.get('cost_choice') or {}).get('id') == 'bestow'
+                bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
                 if bestowed:
                     if not bestow_cost(face_card):
                         reject('This card has no bestow cost')
@@ -821,13 +821,13 @@ class RulesEngine:
                     apply_state_based_actions(state)
                     return
                 options = collect_cost_options(state, player_id, face_card, without_mana=effect_cast)
-                options = [option for option in options if (option.id == 'bestow') == bestowed]
+                options = [option for option in options if (casting_method(option.id) == 'bestow') == bestowed]
                 if not options:
                     reject("No supported casting cost")
                     return
                 chosen = normalize_cost_choice(action, options)
                 from rules_engine.alternative_casts import validate_escape_exiles
-                escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if chosen.id == "escape" else []
+                escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if casting_method(chosen.id) == "escape" else []
                 if escape_ids is None:
                     reject("Invalid escape exile selection")
                     state.log.append("Invalid escape exile selection.")
@@ -951,7 +951,7 @@ class RulesEngine:
                     player.graveyard.remove(exile_id)
                     player.exile.append(exile_id)
                     state.cards[exile_id].move_to_zone(Zone.EXILE)
-                if chosen.id == "prototype":
+                if casting_method(chosen.id) == "prototype":
                     from rules_engine.alternative_casts import apply_prototype
                     apply_prototype(card)
                 from rules_engine.card_faces import apply_cast_face
@@ -962,9 +962,9 @@ class RulesEngine:
                     begin_bestow(card)
                 else:
                     apply_cast_face(card, face_card)
-                if chosen.id == "escape":
+                if casting_method(chosen.id) == "escape":
                     payload["__escaped"] = True
-                if chosen.id == "flashback":
+                if casting_method(chosen.id) == "flashback":
                     payload["__flashback"] = True
                 from rules_engine.alternative_casts import has_aftermath
                 if from_graveyard and has_aftermath(face_card):

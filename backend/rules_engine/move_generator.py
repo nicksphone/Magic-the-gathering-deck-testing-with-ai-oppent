@@ -36,6 +36,7 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         "sacrifice_creatures": option.sacrifice_creatures,
         "sacrifice_kind": option.sacrifice_kind,
         "exile_graveyard": option.exile_graveyard,
+        "additional_cost_group": option.additional_cost_group,
     }
     if state is not None and (option.discard_cards or option.sacrifice_creatures):
         from rules_engine.costs import additional_cost_candidates

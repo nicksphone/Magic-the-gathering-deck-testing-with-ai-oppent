@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-03 - Shared printed additional-cost grammar
+
+- Replace whole-Oracle spell cost inference with one clause reader. Recognize
+  bounded numeric/word-count discards, typed sacrifices and two-type unions,
+  fixed/X life payments, mixed components and fixed-life alternatives. Later
+  effects cannot change costs; unrecognized clauses produce a coverage gap and
+  no casting option, including free casts.
+- Preserve parent casting methods across additional-cost branches and emit stable
+  branch groups. Actual AI compares payment-resource loss within a group and
+  avoids a known lethal life branch when a nonlethal sacrifice is available.
+  This is a bounded heuristic, not expert resource/racing planning.
+- Add provenance-backed canonical card fixtures and both-seat counted-payment,
+  land-cost, mixed/life-cost, rejection/HTTP and AI regressions. Extend actual
+  browser payment checks to ordinary/free two-card discards and land sacrifice;
+  retain runtime contract validation rather than weakening it for bad fixtures.
+- Kicker conditional resolution, qualified/subtype costs, heterogeneous mandatory
+  sacrifice components, general payment sequencing and interrupted continuations
+  remain open. No fabricated cards, competitive deck changes or forced balance.
+
 ## 2026-10-03 - Spell cost selections and cost-event fidelity
 
 - Both seats can explicitly select the recognized discard/sacrifice spell-cost

@@ -51,6 +51,23 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'{kind}_{seat}' for kind in ['counted_cost', 'free_counted_cost', 'land_cost'] for seat in [1, 2]}:
+        from tests.test_spell_cost_clauses import board, card, add
+        seat = int(face_kind[-1])
+        state = board(seat)
+        land_cost = face_kind.startswith('land_')
+        spell = card(state, 'Raze' if land_cost else 'Cathartic Reunion', seat)
+        add(state, 'Island', seat, Zone.BATTLEFIELD if land_cost else Zone.HAND)
+        add(state, 'Swamp', 3-seat if land_cost else seat, Zone.BATTLEFIELD if land_cost else Zone.HAND)
+        state.players[seat].mana_pool.update(R=1, C=1)
+        state.mechanic_choice_players = {1, 2}
+        if face_kind.startswith('free_'):
+            from effects.registry import resolve_effect
+            state.players[seat].hand.remove(spell.id)
+            state.players[seat].graveyard.append(spell.id)
+            spell.move_to_zone(Zone.GRAVEYARD)
+            resolve_effect(state, seat, 'cast_from_graveyard', {'target_card_id': spell.id})
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'spell_cost_1', 'spell_cost_2', 'free_spell_cost_1', 'free_spell_cost_2'}:
         from tests.test_cast_payment_choices import setup
         seat = int(face_kind[-1])

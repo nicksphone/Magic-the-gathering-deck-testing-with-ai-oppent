@@ -2637,11 +2637,13 @@ class AIAgent:
         cost_options = move.get("cost_options") or []
         if cost_options and not (move.get("cost_choice") or {}).get("id"):
             selected_cost = cost_options[0]
-            if selected_cost['id'].endswith(('_discard', '_sacrifice')):
-                root = selected_cost['id'].rsplit('_', 1)[0]
-                alternatives = [option for option in cost_options if option['id'].rsplit('_', 1)[0] == root]
+            if selected_cost.get('additional_cost_group'):
+                group = selected_cost['additional_cost_group']
+                alternatives = [option for option in cost_options if option.get('additional_cost_group') == group]
                 def payment_loss(option):
-                    loss = 0.0
+                    life = option.get('pay_life', 0)
+                    remaining = state.players[player_id].life - life
+                    loss = float('inf') if life and remaining <= 0 else life * (2 if remaining <= 5 else 1)
                     for key, count, rank in [
                         ('discard_card_ids', option.get('discard_cards', 0), self._hand_retention_value),
                         ('sacrifice_card_ids', option.get('sacrifice_creatures', 0), self._sacrifice_loss),

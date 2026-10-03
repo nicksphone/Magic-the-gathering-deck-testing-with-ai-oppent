@@ -53,6 +53,10 @@ assert.throws(() => parseMatchState({ ...aiChoice, pending_mechanic_choice: { ..
 const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
 const castCosts = { id: 'base_discard', discard_cards: 1, sacrifice_creatures: 0, discard_card_ids: ['fodder'] };
 assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [castCosts] }] }).moves.length, 1);
+assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts,
+  additional_cost_group: 'base', discard_cards: 2, discard_card_ids: ['first', 'second'] }] }] }).moves.length, 1);
+assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts,
+  additional_cost_group: 5 }] }] }), /legal-moves response/);
 for (const bad of [{ discard_card_ids: [1] }, { sacrifice_card_ids: ['same', 'same'] }, { discard_cards: -1 }]) {
   assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, ...bad }] }] }), /legal-moves response/);
 }
