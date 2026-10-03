@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-10-03 - Legendary Channel cycle and tactical land retention
+
+- Batch all five canonical legendary Channel lands through shared grammar, not
+  named-card dispatch: selected-ability legendary-creature count discounts,
+  target-type unions, nonbasic-land scope and attacking/blocking target rechecks.
+- Add controller-owned optional basic-type land search after destruction,
+  replacement-aware fixed milling followed by a non-targeted graveyard choice,
+  and temporary haste on created tokens. Human continuations survive snapshots,
+  SQLite and nested land-entry choices without repeating earlier instructions.
+- Master public-board setup can create the first hasty attackers and retain a
+  land for a proved winning hand activation. Known public bounce additions do
+  not invalidate the opaque-hand guard; shared bounce targets prefer opposing
+  threats without overriding explicit friendly selections.
+- Add 60 canonical backend cases and both-seat Chromium activation/owned-choice
+  reload coverage. Independent twenty-decision probes against `3ec814c` improve
+  constructed winning continuations from 0 to 20; this is not tournament data
+  or a broad expert-AI claim.
+- Final isolated backend suite: **3,482 passed**, 352 warnings, 480.72 seconds.
+  Frontend lint, boundary/unit tests and production build pass. The complete
+  Chromium harness passes, including natural AI, human-AI and human-human BO3.
+- Final Master replay: twelve seat-balanced BO1 samples across four archetype
+  templates, each executed twice; 508.777 seconds, zero reported timeouts,
+  anomalies, determinism failures or drift labels. This is a small regression
+  matrix, not balance or arbitrary-card certification.
+- Verified source/test/browser/decision evidence is archived on RCHFiles at
+  `diagnostics/legendary-channels/20261003T063805Z/`. Successful disposable
+  local copies are removed only after archive comparison and checksums; live
+  servers and databases remain local. Graphify is refreshed with AST-only updates.
+- README, finish plan and [bounded implementation scope](docs/testing/legendary-channels.md)
+  distinguish implemented mechanics from arbitrary mill triggers, replacement
+  ordering, long-term land retention and wider/adversarial AI planning.
+
 ## 2026-10-03 - Hand activations and owned counter payments
 
 - Recognized source-bound `Discard this card` activation costs now bind the exact hand source, selected ability, shared payment and event-aware discard/replacement operation. Hand activations remain independent activated stack objects, without spell-cast/ETB events or stale battlefield LKI. Four canonical Channel cards cover damage, bounce, graveyard return, basic-land search and spell/ability counters; no named-card rules or AI dispatch was added.

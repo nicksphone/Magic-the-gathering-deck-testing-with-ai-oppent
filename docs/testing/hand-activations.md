@@ -53,7 +53,8 @@ abilities; this is not the deferred UI redesign.
 ## Known Limitations and Next Upgrades
 
 This does not implement arbitrary graveyard/exile activation permissions,
-unknown hand-ability cost clauses, Channel-specific conditional cost reducers,
+unknown hand-ability cost clauses, unrecognized conditional cost reducers beyond
+the [supported legendary-creature count discounts](legendary-channels.md),
 mandatory replacement ordering during complex cost payments, or all historical
 hand mechanics. Unsupported Oracle clauses must remain visible diagnostics.
 Ordinary noninteractive counter payment still uses a pay-if-legal policy;

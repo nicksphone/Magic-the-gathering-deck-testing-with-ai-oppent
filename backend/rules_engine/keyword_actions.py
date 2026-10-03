@@ -98,6 +98,27 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     if pending and pending["kind"] in {"ward_payment", "ward_cost_cards", "counter_payment"}:
         from rules_engine.ward import finish_ward_choice
         return finish_ward_choice(state, player_id, action)
+    if pending and pending['kind'] in {'optional_search', 'graveyard_return'}:
+        from effects.registry import resolve_effect
+        from rules_engine.stack_engine import resume_paused_resolution
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list) or len(ids) != 1
+                or ids[0] not in pending['options']):
+            return False
+        if pending['kind'] == 'graveyard_return' and (
+                ids[0] not in state.players[player_id].graveyard
+                or state.cards[ids[0]].zone != Zone.GRAVEYARD
+                or not set(pending['effect_payload']['allowed_types']).intersection(state.cards[ids[0]].types)):
+            return False
+        state.pending_mechanic_choice = None
+        if pending['kind'] == 'graveyard_return':
+            resolve_effect(state, player_id, 'choose_graveyard_return',
+                           {**pending['effect_payload'], 'selected_card_ids': ids})
+        elif ids == ['search']:
+            resolve_effect(state, player_id, 'search_library',
+                           {**pending['effect_payload'], '__search_accepted': True})
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] == "attacking_token_target":
         from effects.registry import resolve_effect
         from rules_engine.combat import _valid_defenders

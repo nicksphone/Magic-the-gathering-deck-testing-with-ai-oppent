@@ -228,6 +228,13 @@ class AIAgent:
                 selected = self._ward_selection(state, player_id, choice)
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected},
                                   reasoning="Compare stack payment with losing the targeted stack object")
+            if choice['kind'] == 'optional_search':
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': ['search']},
+                                  reasoning='Accept a supported optional land search')
+            if choice['kind'] == 'graveyard_return':
+                selected = max(options, key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
+                                  reasoning='Return the most useful eligible graveyard card after milling')
             if choice["kind"] == "opening_hand":
                 # ponytail: free-entry heuristic; symmetric-effect matchup planning remains open.
                 candidates = [cid for cid in options if cid in state.cards]
@@ -385,6 +392,13 @@ class AIAgent:
 
         forced_land = self._choose_forced_land_play(state, legal_moves, player_id)
         if forced_land is not None:
+            hand_abilities = [move for move in legal_moves if move.get('type') == 'activate_ability'
+                              and move.get('card_id') == forced_land.get('card_id')]
+            if hand_abilities:
+                winning_ability = self._tactical_combat_setup_action(state, hand_abilities, player_id)
+                if winning_ability and winning_ability.get('type') == 'activate_ability':
+                    return AIDecision(action=winning_ability,
+                                      reasoning='Keep the land card in hand to execute its proved winning ability')
             return AIDecision(action=forced_land, reasoning="Prioritize reliable land development on own main phase")
 
         forced_stabilize = self._forced_sweeper_stabilization_line(state, legal_moves, player_id)
@@ -2695,6 +2709,17 @@ class AIAgent:
 
         creature_targets = hints.get("creature_targets") or []
         target_text = str(targets.get("mode_text") or move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
+        if (re.search(r"return target[^.\n]+to its owner's hand", target_text)
+                and not targets.get('target_card_id') and not targets.get('target_card_ids')):
+            bounce_targets = {target['id']: target for key in ('creature_targets', 'planeswalker_targets',
+                'permanent_targets', 'artifact_targets', 'enchantment_targets', 'land_targets')
+                for target in hints.get(key, []) if target.get('id') in state.cards}
+            if bounce_targets:
+                selected = max(bounce_targets, key=lambda cid: (
+                    state.cards[cid].controller != player_id,
+                    self._creature_threat_score(state, cid, player_id) if 'Creature' in state.cards[cid].types
+                    else self._noncreature_permanent_threat_score(state, cid, player_id), cid))
+                targets['target_card_id'] = selected
         from rules_engine.oracle_effects import TARGET_PT_CHANGE_RE
         pt_change = TARGET_PT_CHANGE_RE.fullmatch(without_reminder_text(target_text).strip())
         if pt_change:
@@ -3495,7 +3520,8 @@ class AIAgent:
             return None
         own_creatures = [cid for cid in state.players[player_id].battlefield if 'Creature' in state.cards[cid].types]
         opposing_creatures = [cid for cid in state.players[3-player_id].battlefield if 'Creature' in state.cards[cid].types]
-        if not own_creatures or len(own_creatures) > 3 or len(opposing_creatures) > 2:
+        # A setup action can create the first attackers (for example hasty tokens).
+        if len(own_creatures) > 3 or len(opposing_creatures) > 2:
             return None
         if self._setup_combat_forecast(planning_copy(state), player_id) is True:
             return {'type': 'pass_priority'}
@@ -3516,6 +3542,8 @@ class AIAgent:
         from ai.pending_effects import _settle_announced_stack
         visible_hands = {pid: tuple(player.hand) for pid, player in sim.players.items()}
         libraries = {pid: tuple(player.library) for pid, player in sim.players.items()}
+        public_cards = {cid for player in sim.players.values()
+                        for cid in player.battlefield + player.graveyard + player.exile}
         for _ in range(4):
             if any(line.startswith('Oracle effect not inferred') for line in sim.log):
                 return None
@@ -3523,8 +3551,11 @@ class AIAgent:
                 return None
             if any(line.startswith('Oracle effect not inferred') for line in sim.log):
                 return None
-            if any(tuple(player.hand) != visible_hands[pid] or tuple(player.library) != libraries[pid]
-                   for pid, player in sim.players.items()):
+            # Public bounce/return adds known cards without learning the existing
+            # hidden hand. Draws, removals/reordering and library changes remain unknown.
+            if any(tuple(player.hand[:len(visible_hands[pid])]) != visible_hands[pid]
+                   or any(cid not in public_cards for cid in player.hand[len(visible_hands[pid]):])
+                   or tuple(player.library) != libraries[pid] for pid, player in sim.players.items()):
                 return None
             if sim.winner is not None:
                 return sim.winner == player_id

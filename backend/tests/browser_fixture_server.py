@@ -51,6 +51,23 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'legend_graveyard_1', 'legend_graveyard_2', 'legend_search_1', 'legend_search_2'}:
+        from tests.test_legendary_channels import board, add
+        seat = int(face_kind[-1])
+        state = board(seat)
+        state.mechanic_choice_players = {1, 2}
+        if face_kind.startswith('legend_graveyard_'):
+            add(state, 'Takenuma, Abandoned Mire', seat, Zone.HAND)
+            add(state, 'Grizzly Bears', seat, Zone.LIBRARY)
+            add(state, 'Ugin, the Spirit Dragon', seat, Zone.LIBRARY)
+            add(state, 'Swamp', seat, Zone.LIBRARY)
+            state.players[seat].mana_pool.update(C=3, B=1)
+        else:
+            add(state, 'Boseiju, Who Endures', seat, Zone.HAND)
+            add(state, 'Mind Stone', 3-seat)
+            add(state, 'Forest', 3-seat, Zone.LIBRARY)
+            state.players[seat].mana_pool.update(C=1, G=1)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'channel_1', 'channel_2', 'counter_payment_1', 'counter_payment_2'}:
         from tests.test_hand_activations import board, hand_card, add
         from tests.test_counterability_scope import add_card

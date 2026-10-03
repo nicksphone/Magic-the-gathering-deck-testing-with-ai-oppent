@@ -47,7 +47,8 @@ Starport Security, Esquire of the King and Hylda's Crown of Winter.
 - Only the selected ability receives its modifier. Missing/unrelated indexes do
   not provide the discount, and a second ability on the same source keeps its own
   cost. Mana, cycling, keyword abilities and arbitrary zones are not certified by
-  this implementation.
+  this implementation. Selected regular hand activations now include
+  [controlled legendary-creature count discounts](legendary-channels.md).
 - Counts and conditions are live when the cost is determined, but the resulting
   payment is locked before automatic mana-source consumption. Sacrificing a
   counted Treasure for the required colored mana does not change that activation's

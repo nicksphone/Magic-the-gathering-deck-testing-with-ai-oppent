@@ -1213,6 +1213,49 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
     state.log.append(f"{card.name} returns to its owner's hand.")
 
 
+def mill_cards(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.zone_actions import put_into_graveyard
+    player = state.players[int(payload.get('target_player', controller))]
+    events = []
+    for _ in range(min(len(player.library), max(0, int(payload.get('amount', 0))))):
+        cid = player.library.pop()
+        put_into_graveyard(state, cid)
+        events.append({'card_id': cid, 'controller': player.id})
+        state.log.append(f'{player.name} mills {state.cards[cid].name}.')
+    emit_event_batch(state, 'mill', events)
+
+
+def choose_graveyard_return(state: MatchState, controller: int, payload: dict) -> None:
+    eligible = [cid for cid in state.players[controller].graveyard
+                if not is_departed_token(state.cards[cid])
+                and set(payload['allowed_types']).intersection(state.cards[cid].types)]
+    if not eligible:
+        return
+    if controller in state.mechanic_choice_players and payload.get('selected_card_ids') is None:
+        state.pending_mechanic_choice = {
+            'kind': 'graveyard_return', 'player_id': controller, 'count': 1,
+            'options': eligible, 'effect_payload': payload,
+            'effect_key': 'choose_graveyard_return', 'label': 'Choose a graveyard card to return to hand',
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    selected = payload.get('selected_card_ids')
+    if selected is not None and (len(selected) != 1 or selected[0] not in eligible):
+        return
+    cid = selected[0] if selected is not None else eligible[-1]
+    return_from_graveyard(state, controller, {'target_card_id': cid})
+
+
+def destroy_with_controller_search(state: MatchState, controller: int, payload: dict) -> None:
+    source = state.cards.get(payload.get('target_card_id'))
+    if source is None or source.zone != Zone.BATTLEFIELD:
+        return
+    target_controller = source.controller
+    destroy_permanent(state, controller, payload)
+    search_library(state, target_controller, payload['search_payload'])
+
+
 def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
     requested = payload.get("target_card_id")
@@ -1359,6 +1402,16 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     mv_max = payload.get("mv_max")
     mv_max = int(mv_max) if mv_max is not None else None
     player = state.players[controller]
+    if payload.get('optional') and not payload.get('__search_accepted'):
+        if controller in state.mechanic_choice_players:
+            state.pending_mechanic_choice = {
+                'kind': 'optional_search', 'player_id': controller, 'count': 1,
+                'options': ['search', 'decline'], 'option_labels': {'search': 'Search library', 'decline': 'Decline search'},
+                'effect_payload': payload, 'label': 'You may search your library',
+            }
+            state.priority_player = controller
+            state.passed_priority = set()
+            return
     if not subtype:
         return
     if (payload.get("selected_card_ids") is None
@@ -1548,6 +1601,10 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         entry_events.append({"card_id": cid, "controller": token_controller})
         if sac_next_end:
             token.counters["__sac_next_end_step"] = 1
+        if payload.get('temporary_keywords'):
+            from rules_engine.keyword_effects import add_keyword_effect
+            add_keyword_effect(state, cid, payload['temporary_keywords'], until_end_of_turn=True,
+                               source_card_id=payload.get('__source_card_id'))
     emit_event_batch(state, "enters_battlefield", entry_events)
     token_label = f"{p}/{t}" if "Creature" in types else name
     state.log.append(f"{state.players[token_controller].name} creates {amount} {token_label} token(s).")

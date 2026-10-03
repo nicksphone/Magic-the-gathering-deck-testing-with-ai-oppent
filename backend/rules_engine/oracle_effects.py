@@ -68,6 +68,16 @@ SAGA_CHAPTER_RE = re.compile(r"^\s*([IVX]+(?:\s*,\s*[IVX]+)*)\s*[—-]\s*(.+?)\s
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*)\s*:\s*([^\n]+)"
 )
+TARGET_TYPE_UNION_RE = re.compile(
+    r'\btarget ((?:nonbasic )?(?:artifact|creature|enchantment|planeswalker|land)'
+    r'(?:, (?:nonbasic )?(?:artifact|creature|enchantment|planeswalker|land))*'
+    r',? or (?:nonbasic )?(?:artifact|creature|enchantment|planeswalker|land))\b')
+UNTARGETED_GRAVEYARD_RETURN_RE = re.compile(
+    r'return (?:a|an|one) (creature|planeswalker|artifact|enchantment)'
+    r'(?: or (creature|planeswalker|artifact|enchantment))? card from your graveyard to your hand')
+DESTROY_CONTROLLER_SEARCH_RE = re.compile(
+    r"destroy target ([^.]+)\. that player may search their library for a land card "
+    r"with a basic land type, put it onto the battlefield, then shuffle\.?$")
 
 
 def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
@@ -322,6 +332,11 @@ def infer_effect_from_oracle(
     top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
     if top_choice:
         return "look_top_choose", {"top_n": _parse_count_token(top_choice.group(1))}
+    controller_search = DESTROY_CONTROLLER_SEARCH_RE.fullmatch(oracle.strip())
+    if controller_search:
+        return 'destroy_with_controller_search', {'target_card_id': action_targets.get('target_card_id'),
+            'search_payload': {'contains': 'land_with_basic_type', 'destination': 'battlefield',
+                               'count': 1, 'shuffle': True, 'optional': True}}
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
         if re.search(r"you gain 1 life for each \{s\} spent to cast this spell", oracle):
@@ -502,6 +517,8 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     if not contains:
         if "snow permanent card" in oracle and "legendary card" in oracle and "saga card" in oracle:
             contains = "snow_or_legendary_or_saga"
+        elif "land card with a basic land type" in oracle:
+            contains = "land_with_basic_type"
         elif "basic land" in oracle:
             contains = "basic_land"
         elif "creature card" in oracle:
@@ -573,6 +590,8 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
         matched = (permanent and "snow" in supertypes) or "legendary" in supertypes or "saga" in subtypes
     elif needle == "basic_land":
         matched = "basic" in type_line_parts[0].split() and "land" in card_types
+    elif needle == "land_with_basic_type":
+        matched = 'land' in card_types and bool(subtypes.intersection({'plains', 'island', 'swamp', 'mountain', 'forest'}))
     elif needle in {"artifact", "enchantment", "creature", "instant", "sorcery", "planeswalker", "land"}:
         matched = needle in card_types
     elif needle == "permanent":
@@ -773,7 +792,7 @@ def inspect_target_hints(
             for pid in target_players for cid in state.players[pid].battlefield
             if ("Artifact" in state.cards[cid].types or "Enchantment" in state.cards[cid].types)
         ]
-    if "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
+    if "target" in oracle and "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
         if re.search(r"return target card from (?:your|a) graveyard", oracle):
             hints["graveyard_card_targets"] = [
                 {"id": cid, "name": state.cards[cid].name}
@@ -872,6 +891,11 @@ def inspect_target_hints(
             if "Planeswalker" in state.cards[cid].types
         ]
     restrictions = infer_target_restrictions(state, oracle, controller)
+    if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
+        hints['permanent_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for pid in target_players for cid in state.players[pid].battlefield
+        ]
     if restrictions:
         hints["target_restrictions"] = restrictions
         for key in (
@@ -953,7 +977,13 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     if "nonenchantment" in oracle:
         restrictions.setdefault("exclude_types", []).append("Enchantment")
 
-    if "target instant or sorcery spell" in oracle:
+    type_union = TARGET_TYPE_UNION_RE.search(oracle)
+    if type_union:
+        restrictions['allowed_types'] = [value.title() for value in re.findall(
+            r'\b(artifact|creature|enchantment|planeswalker|land)\b', type_union[1])]
+        if 'nonbasic land' in type_union[1]:
+            restrictions['nonbasic_land_only'] = True
+    elif "target instant or sorcery spell" in oracle:
         restrictions["allowed_types"] = ["Instant", "Sorcery"]
     elif "target permanent spell" in oracle:
         restrictions["allowed_types"] = ["Artifact", "Battle", "Creature", "Enchantment", "Planeswalker"]
@@ -975,6 +1005,10 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Sorcery"]
     elif "target land" in oracle or "target noncreature land" in oracle:
         restrictions["allowed_types"] = ["Land"]
+    combat = re.search(r'\btarget (attacking or blocking|attacking|blocking) creature\b', oracle)
+    if combat:
+        restrictions['allowed_types'] = ['Creature']
+        restrictions['combat_status'] = combat[1]
 
     max_match = TARGET_MV_MAX_RE.search(oracle)
     min_match = TARGET_MV_MIN_RE.search(oracle)
@@ -1019,6 +1053,15 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
     allowed = set(restrictions.get("allowed_types") or [])
     if allowed and not types.intersection(allowed):
         return False
+    if (restrictions.get('nonbasic_land_only') and 'Land' in types
+            and not types.intersection(allowed - {'Land'}) and 'Basic' in (card.type_line or '').split()):
+        return False
+    if restrictions.get('combat_status'):
+        attacking = card.id in state.attackers
+        blocking = any(card.id in ids for ids in state.blocks.values())
+        status = restrictions['combat_status']
+        if not (attacking if status == 'attacking' else blocking if status == 'blocking' else attacking or blocking):
+            return False
     max_value = restrictions.get("mana_value_max")
     source = restrictions.get("mana_value_max_source")
     if source == "controller_graveyard":
@@ -1176,6 +1219,12 @@ def _infer_clause_effect(
     action_targets: dict[str, Any],
     x_value: int,
 ) -> tuple[str, dict[str, Any]] | None:
+    mill = re.fullmatch(r'mill (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?,?', oracle.strip())
+    if mill:
+        return 'mill_cards', {'amount': _parse_count_token(mill[1])}
+    graveyard_return = UNTARGETED_GRAVEYARD_RETURN_RE.fullmatch(oracle.strip(' .'))
+    if graveyard_return:
+        return 'choose_graveyard_return', {'allowed_types': [value.title() for value in graveyard_return.groups() if value]}
     opponent = 1 if controller == 2 else 2
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
@@ -1458,6 +1507,13 @@ def _infer_clause_effect(
         )
         if target:
             return "return_permanent_to_hand", {"target_card_id": target}
+    if "return target" in oracle and "to its owner's hand" in oracle and TARGET_TYPE_UNION_RE.search(oracle):
+        restrictions = infer_target_restrictions(state, oracle, controller)
+        target = target_card_id or next((cid for pid in [opponent, controller]
+            for cid in state.players[pid].battlefield
+            if _target_id_matches_restrictions(state, cid, restrictions, controller)), None)
+        if target:
+            return 'return_permanent_to_hand', {'target_card_id': target}
     if "return target" in oracle and "to its owner's hand" in oracle and "creature" in oracle:
         target = action_targets.get("target_card_id") or _first_creature(state, opponent)
         if target:
@@ -1587,6 +1643,11 @@ def _infer_clause_effect(
             out["tapped_and_attacking"] = True
         if re.search(r"\bfor each basic land type among lands you control\b", oracle):
             out["per_basic_land_type"] = True
+        followup = re.search(r'(?:^|\.\s+)' + re.escape(oracle.rstrip(' .'))
+                             + r'\.\s+they gain ([a-z ]+) until end of turn(?:\.|$)',
+                             (card.oracle_text or '').lower().strip())
+        if followup:
+            out['temporary_keywords'] = _extract_keywords_from_text(followup[1])
         quoted_ability = TOKEN_CREATURE_ABILITY_RE.search(getattr(card, "source_oracle_text", card.oracle_text or ""))
         if quoted_ability:
             out["oracle_text"] = quoted_ability.group(1).strip()

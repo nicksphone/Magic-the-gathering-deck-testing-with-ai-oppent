@@ -17,6 +17,7 @@ def ability_cost_modifier(text):
         'for each creature card in your graveyard': 'graveyard_creatures',
         'for each +1/+1 counter on creatures you control': 'creature_counters',
         'if you control a legendary creature': 'legendary_creature',
+        'for each legendary creature you control': 'legendary_creatures',
         'if you control a creature with a +1/+1 counter on it': 'counter_creature',
         'during your turn': 'controller_turn',
     }
@@ -41,6 +42,8 @@ def ability_cost_reduction(state, source, spec):
         units = sum(max(0, card.counters.get('+1/+1', 0)) for card in creatures)
     elif basis == 'legendary_creature':
         units = any('Legendary' in (card.type_line or '').split() for card in creatures)
+    elif basis == 'legendary_creatures':
+        units = sum('Legendary' in (card.type_line or '').split() for card in creatures)
     elif basis == 'counter_creature':
         units = any(card.counters.get('+1/+1', 0) > 0 for card in creatures)
     elif basis == 'controller_turn':
