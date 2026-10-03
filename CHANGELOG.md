@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-03 - Conditional resource effects and request-session cleanup
+
+- Share supported live resource predicates across self/team stat and keyword
+  grants, attachments, combat clauses and existing AI entry projections.
+- Preserve conditions across coordinated instructions; fix intrinsic keyword
+  inference, each/all-color protection and negative-stat separator parsing.
+- Route Ward costs through the effective keyword layer, preserving multiplicity,
+  family removal, timestamps, captured triggers and printed cost labels.
+- Fix an unclosed FastAPI database-session dependency that exhausted the pool
+  during repeated reads/actions. Test read/commit/rejection/error cleanup with
+  retained references and a single-connection pool; do not rely on garbage collection.
+- Harden browser test clicks for inherited fieldset disabling, reload completion
+  and actual priority acknowledgments. Preserve failed diagnostic runs.
+- Validation: 178 new checks; 5,215-test final isolated backend suite, frontend
+  gates, complete Chromium, five fresh six-case browser repetitions and two
+  explicit rules matrices (18 samples, repeated twice) pass. No reported replay
+  anomaly/timeout/drift; broader rules, expert AI and UI redesign remain open.
+  See [bounded scope and evidence](docs/testing/conditional-static.md).
+
 ## 2026-10-03 - Resource-defined stats and shared AI entry valuation
 
 - Share supported resource characteristics across zones and combat; preserve

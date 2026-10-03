@@ -534,7 +534,8 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 
 
 def _infer_keywords(oracle_text: str) -> list[str]:
-    text = (oracle_text or "").lower()
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(oracle_text or "").lower()
     out: list[str] = []
     if re.search(r"(?:^|[\n,])\s*training\b", text):
         out.append("training")
@@ -574,32 +575,9 @@ def _infer_keywords(oracle_text: str) -> list[str]:
         "wasteswalk",
         "legendary landwalk",
     ]:
-        if kw in text:
+        if re.search(r'(?:^|[,\n])\s*' + re.escape(kw) + r'(?=\s*(?:[,\n.]|$))', text):
             out.append(kw)
-    for clause in re.findall(r"protection from ([^.;,\n]+)", text):
-        for raw in re.split(r"\s*(?:,|and|or)\s*", clause):
-            token = raw.strip().removeprefix("from ").strip()
-            if token in {
-                "white",
-                "blue",
-                "black",
-                "red",
-                "green",
-                "artifact",
-                "artifacts",
-                "creature",
-                "creatures",
-                "enchantment",
-                "enchantments",
-                "instant",
-                "instants",
-                "sorcery",
-                "sorceries",
-                "planeswalker",
-                "planeswalkers",
-                "monocolored",
-                "multicolored",
-                "everything",
-            }:
-                out.append(f"protection from {token}")
+    from rules_engine.protection import extract_protection_keywords
+    for clause in re.findall(r"(?:^|[,\n])\s*protection from ([^.;,\n]+)", text):
+        out.extend(extract_protection_keywords('protection from ' + clause))
     return out

@@ -85,6 +85,7 @@ def test_payment_labels_keep_oracle_capitalization():
     state = clean()
     card = target(state, 'Sauron, the Dark Lord', 2)
     assert printed_ward_costs(card) == ['Sacrifice a legendary artifact or legendary creature']
+    assert ward_instances(state, card) == printed_ward_costs(card)
 
 
 @pytest.mark.parametrize('name', ['Dancing Sword', 'Leyline Immersion'])

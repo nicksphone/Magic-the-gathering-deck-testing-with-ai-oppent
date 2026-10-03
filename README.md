@@ -12,6 +12,11 @@ printed-expression persistence and static AI entry valuation. See the
 [tested scope and remaining gaps](docs/testing/characteristic-stats.md); this is
 not arbitrary-card or expert-AI certification.
 
+Supported conditional resource buffs and keyword grants share live predicates
+across characteristics, combat and AI entry valuation. Ward costs follow the
+effective keyword layer, and request-scoped database sessions release connections
+on reads, successful writes and failures. See [scope and evidence](docs/testing/conditional-static.md).
+
 It is designed for serious deck work:
 - Human vs AI playtesting
 - AI vs AI simulation
@@ -158,16 +163,17 @@ It is designed for serious deck work:
 - AI counterspell choices require an opposing stack target unless the printed clause explicitly targets a spell or ability the AI controls. This applies to ordinary and supported modal counter clauses; a two-seed Tempo/Blue Control trace no longer counters Tempo's own Lightning Bolt with Spell Pierce.
 - Combat-damage events include actual trample damage to a defender and damage dealt by blockers; source-specific player-hit triggers do not fire for another creature's damage. The damage step stages those events with resulting death triggers before a shared APNAP trigger-order choice, and staged triggers survive snapshots. Human death-replacement continuation and broader state-based-action waves still need certification.
 - If a blocker has banding, its defending controller chooses the attacker's supported damage split; if a blocker is blocking an attacker with banding, the active player chooses that blocker's supported split. The UI and AI follow the choice owner. Ordinary banding is inferred from Oracle text in live deck construction, distinct from "bands with other." Human players can select an ordinary attacking band; its legal direct blocks propagate to all live members and persist through snapshots. "Bands with other" remains unsupported, and AI does not yet form bands strategically.
-- Current bounded verification (2026-10-03): 5,037 isolated backend tests pass,
-  including 249 new characteristic/AI/HTTP checks. The stat/split/modal/inference
-  selection passes 287 checks. Frontend lint, production build, runtime contracts
+- Current bounded verification (2026-10-03): 5,215 isolated backend tests pass,
+  including 178 new conditional-mechanic, attachment-status and session-lifecycle
+  checks. Frontend lint, production build, runtime contracts
   and complete Chromium pass, including both seats, recovery, sideboarding and
-  controller-mode BO3 flows. Three seat-balanced matrices repeat 30 samples twice
-  without reported anomaly/timeout/drift: explicit Dimir Control/Tempo/Tokens/Ramp,
-  default archetype templates and explicit Mono Red Aggro/Burn/Midrange.
+  controller-mode BO3 flows and six new conditional-card cases. Two explicit
+  seat-balanced rules matrices repeat 18 samples twice without reported
+  anomaly/timeout/drift: Dimir Control/Tempo/Tokens/Ramp and
+  Mono Red Aggro/Burn/Midrange. Five fresh six-case Chromium repetitions also pass.
   These checks do not certify arbitrary-card rules, expert AI, matchup balance,
   fresh installs, competitive human release or long-session network reliability.
-  See [current scope and evidence](docs/testing/characteristic-stats.md).
+  See [current scope and evidence](docs/testing/conditional-static.md).
 - Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
 - Lands with the supported "pay 2 life or enter tapped" wording offer explicit choices on land plays and resumable choices when effects put them onto the battlefield from hand, library or graveyard. Forced-tapped effects and payment legality share the same pre-entry helper. Multiple effect-driven entries now defer payment and ETB triggers until all choices and entries finish, preserving human trigger ordering across a snapshot. This is bounded wording support, not general replacement-effect certification.
 - Life-total locks with the supported "can't change" wording suppress gain/loss and noninfect damage life changes, prevent nonzero life payments, and still allow damage to count for an unlocked opponent's lifelink. Activated and additional costs may pay exactly the remaining life when no lock applies. Positive payments now emit separate amount-bearing events; supported Font of Agonies-style counter triggers are staged above the paid-for spell or ability, including land-entry payment. Other pay-life wording and broader simultaneous replacement ordering remain unverified.

@@ -7,7 +7,7 @@ from typing import Any
 
 from game_state.state import Zone
 from rules_engine.card_types import creature_subtype_candidates, CREATURE_SUBTYPES
-from rules_engine.card_types import is_token_card, CARD_TYPES
+from rules_engine.card_types import is_token_card, CARD_TYPES, graveyard_card_types
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.player_counters import counter_count, PLAYER_COUNT_RE
 
@@ -98,6 +98,7 @@ def _attached_effects(state, source, target):
 
 
 def _attached_static_text(source):
+    from rules_engine.static_conditions import static_clause_components
     lines = []
     for line in without_reminder_text(source.oracle_text or "").lower().splitlines():
         line = re.sub(r"^(?:domain|threshold|metalcraft|delirium)\s*[—–-]\s*", "", line.strip())
@@ -105,7 +106,7 @@ def _attached_static_text(source):
             continue
         line = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', line)
         if ":" not in line and "until end of turn" not in line:
-            lines.append(line)
+            lines.extend(static_clause_components(line))
     return "\n".join(lines)
 
 
@@ -119,10 +120,18 @@ def _attached_keywords(text):
         return []
     found = []
     remainder = text
-    from rules_engine.ward import MANA_WARD
-    for match in MANA_WARD.finditer(text):
+    from rules_engine.ward import MANA_WARD, parse_ward_cost
+    ward = re.search(r'\bward(?:\s*[—-]\s*|\s+)(.+)$', remainder)
+    if ward and parse_ward_cost(ward[1]) is not None:
+        found.extend(['ward', f'ward {ward[1]}'])
+        remainder = remainder[:ward.start()]
+    for match in MANA_WARD.finditer(remainder):
         found.extend(["ward", f"ward {match[1]}"])
     remainder = MANA_WARD.sub("", remainder)
+    from rules_engine.protection import PROTECTION_CLAUSE_RE, extract_protection_keywords
+    for match in PROTECTION_CLAUSE_RE.finditer(remainder):
+        found.extend(extract_protection_keywords(match[0]))
+    remainder = PROTECTION_CLAUSE_RE.sub('', remainder)
     from rules_engine.protection import HEXPROOF_VARIANT_RE, hexproof_variants
     for match in HEXPROOF_VARIANT_RE.finditer(remainder):
         found.extend(hexproof_variants(match[0]))
@@ -193,13 +202,79 @@ def _static_text_from_oracle(oracle_text: str) -> str:
     text = without_reminder_text(oracle_text).lower()
     for line in text.splitlines():
         line = line.strip()
-        if re.match(r"^(?:when|whenever|at the beginning|if|as long as|during)\b", line):
+        if re.match(r"^(?:when|whenever|at the beginning|if|as long as|otherwise|during)\b", line) or 'as long as' in line:
             continue
         # Quoted granted abilities are not instructions being applied now.
         line = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', line)
         if ":" not in line and "until end of turn" not in line:
             lines.append(line)
     return "\n".join(lines)
+
+
+@lru_cache(maxsize=4096)
+def _conditional_static_instructions(oracle_text, name):
+    """Compile complete clauses; cache instructions, never predicate results."""
+    subject = _self_stat_subject(name)
+    from rules_engine.static_conditions import static_clause_components
+    result = []
+    clauses = [component for line in re.split(r'[.\n]', without_reminder_text(oracle_text).lower())
+               for component in static_clause_components(line)]
+    for raw in clauses:
+        raw = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', raw.strip())
+        line = re.sub(r'^[a-z][a-z ]*\s+[—–-]\s+', '', raw)
+        if 'as long as' not in line or ':' in line or 'until end of turn' in line or re.match(r'^(?:when|whenever|at the beginning|if|during)\b', line):
+            continue
+        prefix = re.fullmatch(r'as long as (.+?), (.+)', line)
+        suffix = re.fullmatch(r'(.+?) as long as (.+)', line)
+        if not prefix and not suffix:
+            continue
+        body, condition = (prefix[2], prefix[1]) if prefix else suffix.groups()
+        if re.search(ATTACHED_SUBJECT, body):
+            continue  # Attachments already use the same predicate evaluator.
+        own = re.fullmatch(subject + r' (?:gets ([+-]\d+)/([+-]\d+)(?: and has (.+))?|has (.+))', body)
+        pt = re.fullmatch(PT_STATIC_RE.pattern + r'(?: and (?:have|has) (.+))?', body)
+        kw = KW_STATIC_RE.fullmatch(body)
+        if own:
+            keywords = _attached_keywords(own[3] or own[4])
+            entry = ('self', False, '', int(own[1] or 0), int(own[2] or 0), keywords)
+        elif pt:
+            keywords = _attached_keywords(pt[6])
+            entry = (pt[3], bool(pt[1]), pt[2], int(pt[4]), int(pt[5]), keywords)
+        elif kw:
+            keywords = _attached_keywords(kw[4])
+            entry = (kw[3], bool(kw[1]), kw[2], 0, 0, keywords)
+        else:
+            from rules_engine.combat_constraints import supported_body
+            combat = re.fullmatch(subject + r' (.+)', body)
+            if combat and supported_body(combat[1]):
+                continue  # The condition-aware combat layer owns this instruction.
+            entry = (None, False, '', 0, 0, None)
+        scope, other, recipient, p, t, keywords = entry
+        result.append((condition, scope, other, recipient, p, t,
+                       tuple(keywords) if keywords is not None else None, raw))
+    return tuple(result)
+
+
+def _conditional_static_effects(state, source, target):
+    from rules_engine.static_conditions import evaluate_static_condition
+    p = t = 0
+    keywords = []
+    unsupported = []
+    if not _is_battlefield(source) or not _is_battlefield(target):
+        return p, t, keywords, unsupported
+    for condition, scope, other, subject, dp, dt, granted, raw in _conditional_static_instructions(getattr(source, 'oracle_text', '') or '', getattr(source, 'name', '')):
+        active = evaluate_static_condition(state, source, target, condition)
+        if scope is None or granted is None or active is None:
+            unsupported.append(raw)
+            continue
+        applies = (source.id == target.id if scope == 'self' else
+                   _scope_controller(source.controller, scope, target.controller)
+                   and not (other and source.id == target.id) and _subject_matches(state, target.id, subject))
+        if active and applies:
+            p += dp
+            t += dt
+            keywords.extend(granted)
+    return p, t, keywords, unsupported
 
 
 PT_STATIC_RE = re.compile(
@@ -352,6 +427,18 @@ def _counter_pt_delta(card) -> int:
 def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     card = state.cards[card_id]
     out = Counter(str(k).lower() for k in (getattr(card, "keywords", None) or []))
+    conditional = {keyword for _, scope, _, _, _, _, keywords, _ in
+                   _conditional_static_instructions(getattr(card, 'oracle_text', '') or '', getattr(card, 'name', ''))
+                   if scope == 'self' for keyword in keywords or ()}
+    if conditional & out.keys():
+        from game_state.state import _infer_keywords
+        for keyword in conditional - set(_infer_keywords(card.oracle_text or '')):
+            out.pop(keyword, None)
+    from rules_engine.ward import printed_ward_costs
+    ward_costs = printed_ward_costs(card, include_conditionals=False)
+    if ward_costs:
+        out.update('ward ' + cost.lower() for cost in ward_costs)
+        out['ward'] = max(out.get('ward', 0), len(ward_costs))
     # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
     printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
                       for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking'}
@@ -395,6 +482,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         source_active = not printed_abilities_suppressed(state, src_id, losses=ability_losses)
         if source_active:
             out.update(_attached_effects(state, src, card)[2])
+            out.update(_conditional_static_effects(state, src, card)[2])
         for scope, other_only, subject, granted in (_iter_keyword_grants(src) if source_active else ()):
             if _scope_controller(src.controller, scope, card.controller):
                 if other_only and src_id == card_id:
@@ -443,7 +531,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
 def _remove_keyword_family(keywords, keyword):
     for present in list(keywords):
         if (present == keyword or keyword == 'hexproof' and present.startswith('hexproof from ')
-                or keyword in {'bushido', 'rampage'} and present.startswith(keyword + ' ')):
+                or keyword in {'bushido', 'rampage', 'ward'} and present.startswith(keyword + ' ')):
             keywords.pop(present, None)
 
 
@@ -580,7 +668,7 @@ def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
 
 
 def _self_stat_subject(card):
-    name = str(getattr(card, 'name', '') or '').lower().replace('\u2019', "'")
+    name = str(card if isinstance(card, str) else getattr(card, 'name', '') or '').lower().replace('\u2019', "'")
     names = {name, name.split(',')[0], 'this creature', 'this permanent', 'this card'} - {''}
     return '(?:' + '|'.join(re.escape(value) for value in sorted(names)) + ')'
 
@@ -612,7 +700,7 @@ def _stat_resource_count(state, card, expression):
         cards = [state.cards[cid] for owner in players for cid in state.players[owner].graveyard
                  if cid in state.cards and not is_token_card(state.cards[cid])]
         if match[1] == 'card types among cards':
-            return len({kind for value in cards for kind in value.types if kind in CARD_TYPES})
+            return len(graveyard_card_types(state, players))
         return sum(_graveyard_card_matches_selector(value, match[2] or '') for value in cards)
     if (match := re.fullmatch(r'(.+?) you control', expression)):
         selector = match[1].removeprefix('other ')
@@ -640,6 +728,9 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         attached_p, attached_t, _, _ = _attached_effects(state, src, card)
         p_bonus += attached_p
         t_bonus += attached_t
+        conditional_p, conditional_t, _, _ = _conditional_static_effects(state, src, card)
+        p_bonus += conditional_p
+        t_bonus += conditional_t
         counter_p, counter_t = _player_counter_pt_bonus(state, src, card)
         p_bonus += counter_p
         t_bonus += counter_t
@@ -793,6 +884,9 @@ def _iter_keyword_grants(text):
 
 
 def _static_keyword_grants(text):
+    parsed = _attached_keywords(text)
+    if parsed is not None:
+        return tuple(parsed)
     from rules_engine.protection import HEXPROOF_VARIANT_RE, hexproof_variants
     variants = tuple(keyword for match in HEXPROOF_VARIANT_RE.finditer(text) for keyword in hexproof_variants(match[0]))
     remainder = HEXPROOF_VARIANT_RE.sub('',text)
@@ -1070,6 +1164,11 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
             for cid in _all_battlefield_ids(state)
             for clause in _attached_effects(state, state.cards[cid], card)[3]
         ],
+        "unsupported_conditional_static_clauses": [
+            {"source_id": cid, "source_name": state.cards[cid].name, "clause": clause}
+            for cid in _all_battlefield_ids(state)
+            for clause in _conditional_static_effects(state, state.cards[cid], card)[3]
+        ],
     }
 
 
@@ -1078,6 +1177,11 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
+    conditional_p, conditional_t, conditional_keywords, _ = _conditional_static_effects(state, source_card, target)
+    if conditional_p or conditional_t:
+        entries.append({'layer': f'pt-mod:{conditional_p}/{conditional_t}', 'conditional': True})
+    if conditional_keywords:
+        entries.append({'layer': f"keyword-grant:{','.join(conditional_keywords)}", 'conditional': True})
     counter_p, counter_t = _player_counter_pt_bonus(state, source_card, target)
     if counter_p or counter_t:
         entries.append({"layer": f"pt-mod:{counter_p}/{counter_t}"})

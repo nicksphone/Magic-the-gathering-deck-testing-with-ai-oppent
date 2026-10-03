@@ -119,6 +119,8 @@ echo 'Browser CI: simultaneous wheels, effective hand stats and draw continuatio
 (cd frontend && timeout 240s node tests/browser-wheel-draw.mjs)
 echo 'Browser CI: canonical resource-defined creature stats'
 (cd frontend && timeout 180s node tests/browser-characteristic-stats.mjs)
+echo 'Browser CI: canonical conditional static buffs and keyword grants'
+(cd frontend && timeout 180s node tests/browser-conditional-static.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

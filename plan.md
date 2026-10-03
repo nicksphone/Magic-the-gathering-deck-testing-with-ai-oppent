@@ -2,8 +2,10 @@
 
 ## Current Priority: Backend First
 
+- [x] Finish supported conditional static resource-effects acceptance: shared Threshold/Metalcraft/Delirium/Hellbent, life/color/basic-land predicates; keyword provenance, Ward layer costs and coordinated combat clauses. Fix the request-session leak exposed by browser acceptance. Validation: 5,215 isolated backend tests, frontend gates, complete Chromium, five fresh six-case browser repetitions and two explicit repeated seat-balanced matrices pass. See [scope and remaining gaps](docs/testing/conditional-static.md).
+
 - [x] Batch supported hand/graveyard/type/resource creature definitions, battlefield-only self modifiers, printed-expression persistence, copy/face propagation, effective damage and shared AI entry valuation. See [scope and acceptance evidence](docs/testing/characteristic-stats.md).
-- [ ] Expand unusual/conditional characteristic definitions and full layer/zone-change fidelity; add cost/entry-aware and adversarial AI projections before claiming arbitrary-deck expert play.
+- [ ] Extend unsupported/composed conditional clauses and their preflight admission diagnostics; expand unusual characteristic/type-changing definitions, devotion and full layer/zone-change fidelity. Add cost/entry-aware and adversarial AI projections before claiming arbitrary-deck expert play.
 
 The user deferred alpha-UI fixes and the redesign on 2026-10-01. The unpublished
 layout patch and browser evidence are preserved on RCHFiles under

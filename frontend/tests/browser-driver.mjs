@@ -1,3 +1,17 @@
+export async function waitForApiState(url, predicate, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  let state;
+  while (Date.now() < deadline) {
+    const response = await fetch(url, { signal: AbortSignal.timeout(Math.min(5000, deadline - Date.now())) })
+      .catch(error => { throw new Error(`State read failed; last state: ${JSON.stringify({ revision: state?.revision, priority: state?.priority_player, stack: state?.stack?.length })}`, { cause: error }); });
+    if (!response.ok) throw new Error(`State request failed: ${response.status}`);
+    state = await response.json();
+    if (predicate(state)) return state;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  throw new Error(`API state condition timed out: ${JSON.stringify({ priority: state?.priority_player, stack: state?.stack, step: state?.step })}`);
+}
+
 export async function openBrowser(url) {
   const origin = 'http://127.0.0.1:19222';
   const page = await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
@@ -27,7 +41,8 @@ export async function openBrowser(url) {
     });
   }
   async function evaluate(expression) {
-    const response = await command('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
+    const response = await command('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })
+      .catch(error => { throw new Error(`Browser evaluation failed: ${expression}`, { cause: error }); });
     if (response.exceptionDetails) throw new Error(JSON.stringify(response.exceptionDetails));
     return response.result.value;
   }
@@ -40,8 +55,14 @@ export async function openBrowser(url) {
     throw new Error(`Browser condition timed out: ${expression}\n${await evaluate('document.body?.innerText')}`);
   }
   async function click(prefix) {
-    await evaluate(`(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)})); if (!button || button.disabled) throw new Error('Missing/enabled button: ' + ${JSON.stringify(prefix)}); button.click(); })()`);
+    await waitFor(`[...document.querySelectorAll('button')].some(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)}) && !b.matches(':disabled'))`);
+    await evaluate(`(() => { const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(prefix)}) && !b.matches(':disabled')); if (!button) throw new Error('Missing/enabled button: ' + ${JSON.stringify(prefix)}); button.click(); })()`);
+  }
+  async function reload() {
+    const previousOrigin = await evaluate('performance.timeOrigin');
+    await command('Page.reload');
+    await waitFor(`performance.timeOrigin !== ${previousOrigin} && document.readyState !== 'loading'`, 30000);
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
-  return {command, evaluate, waitFor, click, onIntercept: handler => { intercept = handler; }, async close() { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
+  return {command, evaluate, waitFor, click, reload, onIntercept: handler => { intercept = handler; }, async close() { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
 }

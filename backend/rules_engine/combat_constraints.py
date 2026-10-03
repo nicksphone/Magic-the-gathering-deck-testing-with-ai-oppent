@@ -5,7 +5,7 @@ from functools import lru_cache
 from game_state.state import Zone
 from rules_engine.oracle_text import without_reminder_text
 
-from rules_engine.static_conditions import NUMBERS, number, parse_static_condition, evaluate_static_condition
+from rules_engine.static_conditions import NUMBERS, number, parse_static_condition, evaluate_static_condition, static_clause_components
 
 BODY = re.compile(r"^(?:(?:can't|cannot) (?:attack|block|be blocked)|can block|attacks? each combat|blocks? each combat|must (?:attack|block))\b")
 
@@ -27,7 +27,8 @@ def static_clauses(oracle):
         if re.match(r'^(?:when|whenever|at the beginning|during)\b', line) or ':' in line or 'until end of turn' in line:
             continue
         line = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', line)
-        lines.extend(part.strip(' .') for part in re.split(r'\.\s+', line) if part.strip(' .'))
+        lines.extend(component for part in re.split(r'\.\s+', line) if part.strip(' .')
+                     for component in static_clause_components(part.strip(' .')))
     return tuple(lines)
 
 

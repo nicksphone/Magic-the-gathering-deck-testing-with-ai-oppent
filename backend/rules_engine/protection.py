@@ -31,6 +31,11 @@ _TYPE_PROTECTION_MAP = {
     "non-land": "!Land",
 }
 _COLOR_TOKENS = {"white", "blue", "black", "red", "green", "colorless", "multicolored", "monocolored", "everything"}
+PROTECTION_CLAUSE_RE = re.compile(
+    r'\bprotection from (?:' + '|'.join(re.escape(value) for value in sorted(
+        _COLOR_TOKENS | set(_TYPE_PROTECTION_MAP) | {'each color', 'all colors'}, key=len, reverse=True))
+    + r')(?: and (?:from )?(?:' + '|'.join(re.escape(value) for value in sorted(
+        _COLOR_TOKENS | set(_TYPE_PROTECTION_MAP), key=len, reverse=True)) + r'))*\b')
 _HEXPROOF_QUALITY = '(?:' + '|'.join(re.escape(value) for value in sorted(_COLOR_TOKENS | set(_TYPE_PROTECTION_MAP),key=len,reverse=True)) + ')'
 HEXPROOF_VARIANT_RE = re.compile(r'\bhexproof from ' + _HEXPROOF_QUALITY + r'(?: and from ' + _HEXPROOF_QUALITY + r')*\b',re.I)
 
@@ -101,9 +106,11 @@ def extract_protection_keywords(oracle_text: str) -> list[str]:
     text = (oracle_text or "").lower()
     out: set[str] = set()
     for clause in re.findall(r"protection from ([^.;,\n]+)", text):
-        for raw in re.split(r"\s*(?:,|and|or)\s*", clause):
+        for raw in re.split(r"\s*(?:,|\band\b|\bor\b)\s*", clause):
             token = raw.strip()
             token = token.removeprefix("from ").strip()
+            if token in {'each color', 'all colors'}:
+                out.update(f'protection from {color}' for color in ['white', 'blue', 'black', 'red', 'green'])
             if token in _COLOR_TOKENS or token in _TYPE_PROTECTION_MAP:
                 out.add(f"protection from {token}")
     return sorted(out)

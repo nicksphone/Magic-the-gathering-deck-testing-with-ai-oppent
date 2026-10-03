@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from collections.abc import Iterator
 
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -33,5 +34,6 @@ def _ensure_card_cache_columns() -> None:
             conn.exec_driver_sql("ALTER TABLE cardcache ADD COLUMN rulings_json TEXT NOT NULL DEFAULT '[]'")
 
 
-def get_session() -> Session:
-    return Session(engine)
+def get_session() -> Iterator[Session]:
+    with Session(engine) as session:
+        yield session

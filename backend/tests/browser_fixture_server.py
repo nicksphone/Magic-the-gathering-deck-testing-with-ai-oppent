@@ -51,6 +51,16 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'conditional_static_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
+        from tests.test_conditional_static import setup
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        name = ['Nimble Mongoose', 'Auriok Sunchaser', "Dragon's Rage Channeler"][index]
+        state, card, _ = setup(name, seat, True)
+        state.players[seat].battlefield.remove(card.id)
+        card.move_to_zone(Zone.HAND)
+        state.players[seat].hand.append(card.id)
+        state.players[seat].mana_pool.update({'W': 1, 'G': 1, 'R': 1, 'C': 2})
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'characteristic_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
         from tests.test_characteristic_stats import setup
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

@@ -131,13 +131,27 @@ def test_opponent_color_condition_changes_shared_ai_value_without_mutating_state
     assert serialize_match_snapshot(state) == before
 
 
-@pytest.mark.parametrize('condition', ["it's tapped", "it's attacking", "it's a commander", "it's a madeuptype", "you have more life than an opponent", "this equipment has many counters on it"])
+@pytest.mark.parametrize('condition', ["it's phased out", "it is goaded", "it's a commander", "it's a madeuptype", "you have more life than an opponent", "this equipment has many counters on it"])
 def test_unknown_predicates_are_not_false_and_do_not_select_otherwise(condition):
     from rules_engine.continuous import _attached_condition
     state = fixture()
     target = add(state, 'Llanowar Elves')
     source = attached(state, 'Bonesplitter', target)
     assert _attached_condition(state, source, target, condition) is None
+
+
+@pytest.mark.parametrize('status', ['tapped', 'attacking'])
+def test_recipient_status_condition_tracks_live_target(status):
+    from rules_engine.continuous import _attached_condition
+    state = fixture()
+    target = add(state, 'Llanowar Elves')
+    source = attached(state, 'Bonesplitter', target)
+    assert _attached_condition(state, source, target, "it's " + status) is False
+    if status == 'tapped':
+        target.tapped = True
+    else:
+        state.attackers = [target.id]
+    assert _attached_condition(state, source, target, "it's " + status) is True
 
 
 def test_unknown_condition_cannot_apply_the_otherwise_branch(monkeypatch):

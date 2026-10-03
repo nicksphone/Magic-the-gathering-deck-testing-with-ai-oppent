@@ -1,0 +1,493 @@
+[
+  {
+    "id": "cec0ef55-57fd-404f-b9f6-b5d41e77b58c",
+    "oracle_id": "b292d183-1ba9-40b4-9cba-bd70bf1380ef",
+    "name": "Abzan Kin-Guard",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Human Warrior",
+    "oracle_text": "This creature has lifelink as long as you control a white or black permanent.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/frf/120/abzan-kin-guard?utm_source=api"
+  },
+  {
+    "id": "4210c54e-89fd-4971-ab6a-ca8f4e7fe97a",
+    "oracle_id": "14693689-d087-43b6-9c3f-63ab0648fc20",
+    "name": "All Is Dust",
+    "mana_cost": "{7}",
+    "type_line": "Kindred Sorcery — Eldrazi",
+    "oracle_text": "Each player sacrifices all permanents they control that are one or more colors.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/800/all-is-dust?utm_source=api"
+  },
+  {
+    "id": "3a7f9bd7-7232-4956-873d-52ff82eabfb3",
+    "oracle_id": "9275108c-7eaf-4edd-aa6d-e5263d5ac7fd",
+    "name": "Ardent Recruit",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "Metalcraft — This creature gets +2/+2 as long as you control three or more artifacts.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Metalcraft"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/td2/4/ardent-recruit?utm_source=api"
+  },
+  {
+    "id": "e274a8b3-2d92-43d9-a436-d3f6f619ca95",
+    "oracle_id": "5e07d314-119f-4918-9105-77543ccae7e6",
+    "name": "Auriok Sunchaser",
+    "mana_cost": "{1}{W}",
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "Metalcraft — As long as you control three or more artifacts, this creature gets +2/+2 and has flying.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Metalcraft"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/som/4/auriok-sunchaser?utm_source=api"
+  },
+  {
+    "id": "e9948e4c-d583-4fde-a305-df926cf00199",
+    "oracle_id": "9e623e0a-3c2d-4536-b12f-9437ef820499",
+    "name": "Carapace Forger",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Elf Artificer",
+    "oracle_text": "Metalcraft — This creature gets +2/+2 as long as you control three or more artifacts.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Metalcraft"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/som/114/carapace-forger?utm_source=api"
+  },
+  {
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "name": "Counterspell",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/114/counterspell?utm_source=api"
+  },
+  {
+    "id": "2ba7597d-6d76-45b8-b172-342999e401bd",
+    "oracle_id": "8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc",
+    "name": "Darksteel Citadel",
+    "mana_cost": "",
+    "type_line": "Artifact Land",
+    "oracle_text": "Indestructible\n{T}: Add {C}.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c21/285/darksteel-citadel?utm_source=api"
+  },
+  {
+    "id": "4ced112a-e775-4f97-97b3-74877e9dce12",
+    "oracle_id": "0c016ccc-a341-4b76-87ba-69c639d2746d",
+    "name": "Dragon's Rage Channeler",
+    "mana_cost": "{R}",
+    "type_line": "Creature — Human Shaman",
+    "oracle_text": "Whenever you cast a noncreature spell, surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)\nDelirium — As long as there are four or more card types among cards in your graveyard, this creature gets +2/+2, has flying, and attacks each combat if able.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Delirium",
+      "Surveil"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mh2/121/dragons-rage-channeler?utm_source=api"
+  },
+  {
+    "id": "30fe653b-956a-4e0e-981b-37e1a6b08c2c",
+    "oracle_id": "7cd7102d-6413-4f46-9434-9130aefa2f88",
+    "name": "Etched Champion",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature — Soldier",
+    "oracle_text": "Metalcraft — This creature has protection from each color as long as you control three or more artifacts.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [],
+    "keywords": [
+      "Metalcraft"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mm2/209/etched-champion?utm_source=api"
+  },
+  {
+    "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "name": "Forest",
+    "mana_cost": "",
+    "type_line": "Basic Land — Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api"
+  },
+  {
+    "id": "58c232e5-54e2-44b7-85b1-ed039a8e5a73",
+    "oracle_id": "31ea0a21-9c47-4917-9df9-3469b6e5243d",
+    "name": "Gathan Raiders",
+    "mana_cost": "{3}{R}{R}",
+    "type_line": "Creature — Human Warrior",
+    "oracle_text": "Hellbent — This creature gets +2/+2 as long as you have no cards in hand.\nMorph—Discard a card. (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Morph",
+      "Hellbent"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/tsr/165/gathan-raiders?utm_source=api"
+  },
+  {
+    "id": "8eae5e38-49ee-49ef-87ca-7b570d9ca2b8",
+    "oracle_id": "e823639f-1308-47f6-9b51-8fd9a682489a",
+    "name": "Gnarlwood Dryad",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Dryad Horror",
+    "oracle_text": "Deathtouch\nDelirium — This creature gets +2/+2 as long as there are four or more card types among cards in your graveyard.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Deathtouch",
+      "Delirium"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dsc/180/gnarlwood-dryad?utm_source=api"
+  },
+  {
+    "id": "b29e5af4-feb6-485a-a631-bfc42fa1b13a",
+    "oracle_id": "21254bdb-7b1f-4ac6-8fdd-f0ac2c35f47d",
+    "name": "Grim Flayer",
+    "mana_cost": "{B}{G}",
+    "type_line": "Creature — Human Warrior",
+    "oracle_text": "Trample\nWhenever this creature deals combat damage to a player, surveil 3. (Look at the top three cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\nDelirium — This creature gets +2/+2 as long as there are four or more card types among cards in your graveyard.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [
+      "Delirium",
+      "Surveil",
+      "Trample"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dsc/218/grim-flayer?utm_source=api"
+  },
+  {
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "name": "Grizzly Bears",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Bear",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/10e/268/grizzly-bears?utm_source=api"
+  },
+  {
+    "id": "c3e6025d-d273-4ae4-9929-5e588612f1b3",
+    "oracle_id": "d5efba91-8400-41a3-91c6-cb5e81f07976",
+    "name": "Iymrith, Desert Doom",
+    "mana_cost": "{3}{U}{U}",
+    "type_line": "Legendary Creature — Dragon",
+    "oracle_text": "Flying\nIymrith has ward {4} as long as it's untapped.\nWhenever Iymrith deals combat damage to a player, draw a card. Then if you have fewer than three cards in hand, draw cards equal to the difference.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/afr/62/iymrith-desert-doom?utm_source=api"
+  },
+  {
+    "id": "576d86b5-2541-4ebc-8992-73248af7c805",
+    "oracle_id": "7c4dbaa8-e24f-4126-81fe-3f218f520d8c",
+    "name": "Jor Kadeen, the Prevailer",
+    "mana_cost": "{3}{R}{W}",
+    "type_line": "Legendary Creature — Human Warrior",
+    "oracle_text": "First strike\nMetalcraft — Creatures you control get +3/+0 as long as you control three or more artifacts.",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "R",
+      "W"
+    ],
+    "keywords": [
+      "Metalcraft",
+      "First strike"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c21/220/jor-kadeen-the-prevailer?utm_source=api"
+  },
+  {
+    "id": "b2e46695-7bd3-448c-a5ea-6d544943ec5f",
+    "oracle_id": "413bc18b-1579-41b5-a778-3a29def52bb0",
+    "name": "K-9, Mark I",
+    "mana_cost": "{U}",
+    "type_line": "Legendary Artifact Creature — Robot Dog",
+    "oracle_text": "Negative — As long as K-9 is untapped, other legendary creatures you control have ward {1}.\nAffirmative — {1}{U}, {T}: Target legendary creature can't be blocked this turn.\nDoctor's companion (You can have two commanders if the other is the Doctor.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Negative",
+      "Affirmative",
+      "Doctor's companion"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/who/47/k-9-mark-i?utm_source=api"
+  },
+  {
+    "id": "af822507-fd4c-454b-ab07-106c81c535bf",
+    "oracle_id": "042a665d-2f63-4f7e-ac89-0d560da68085",
+    "name": "Krosan Beast",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Squirrel Beast",
+    "oracle_text": "Threshold — This creature gets +7/+7 as long as there are seven or more cards in your graveyard.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Threshold"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ody/248/krosan-beast?utm_source=api"
+  },
+  {
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "name": "Lightning Bolt",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/msc/806/lightning-bolt?utm_source=api"
+  },
+  {
+    "id": "76755763-7c02-451f-b799-2106a3a4973b",
+    "oracle_id": "558fe476-edbd-4f18-86ee-6d7f61331789",
+    "name": "Moldgraf Scavenger",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Fungus",
+    "oracle_text": "Delirium — This creature gets +3/+0 as long as there are four or more card types among cards in your graveyard.",
+    "power": "0",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Delirium"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/soi/218/moldgraf-scavenger?utm_source=api"
+  },
+  {
+    "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+    "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+    "name": "Mountain",
+    "mana_cost": "",
+    "type_line": "Basic Land — Mountain",
+    "oracle_text": "({T}: Add {R}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/323/mountain?utm_source=api"
+  },
+  {
+    "id": "187ebb67-1bdd-4a9c-aeeb-554e7580ce24",
+    "oracle_id": "cf3b79cc-ce97-48e9-a578-625e323d1b62",
+    "name": "Mystic Enforcer",
+    "mana_cost": "{2}{G}{W}",
+    "type_line": "Creature — Human Nomad Mystic",
+    "oracle_text": "Protection from black\nThreshold — As long as there are seven or more cards in your graveyard, this creature gets +3/+3 and has flying.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G",
+      "W"
+    ],
+    "keywords": [
+      "Protection",
+      "Threshold"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmr/192/mystic-enforcer?utm_source=api"
+  },
+  {
+    "id": "9bc955bd-b998-44b9-918f-84b96cf5e915",
+    "oracle_id": "5a47b99d-19dd-4830-89ee-35f4a74aa656",
+    "name": "Mystic Zealot",
+    "mana_cost": "{3}{W}",
+    "type_line": "Creature — Human Nomad Mystic",
+    "oracle_text": "Threshold — As long as there are seven or more cards in your graveyard, this creature gets +1/+1 and has flying.",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Threshold"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmr/16/mystic-zealot?utm_source=api"
+  },
+  {
+    "id": "8a6374ad-71be-422e-bd76-4f08fbf43048",
+    "oracle_id": "1059f089-2693-4c89-92c5-39fe49beebb3",
+    "name": "Nimble Mongoose",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Mongoose",
+    "oracle_text": "Shroud (This creature can't be the target of spells or abilities.)\nThreshold — This creature gets +2/+2 as long as there are seven or more cards in your graveyard.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Shroud",
+      "Threshold"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mh1/174/nimble-mongoose?utm_source=api"
+  },
+  {
+    "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+    "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+    "name": "Plains",
+    "mana_cost": "",
+    "type_line": "Basic Land — Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/317/plains?utm_source=api"
+  },
+  {
+    "id": "6afb2e91-a864-4f77-9da5-2bae3f66a8a6",
+    "oracle_id": "63dd611e-1c36-4e5d-ba45-87c7f629cd54",
+    "name": "Rakdos Pit Dragon",
+    "mana_cost": "{2}{R}{R}",
+    "type_line": "Creature — Dragon",
+    "oracle_text": "{R}{R}: This creature gains flying until end of turn.\n{R}: This creature gets +1/+0 until end of turn.\nHellbent — This creature has double strike as long as you have no cards in hand.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Hellbent"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/rvr/120/rakdos-pit-dragon?utm_source=api"
+  },
+  {
+    "id": "9c9ac1bc-cdf3-4fa6-8319-a7ea164e9e47",
+    "oracle_id": "60ba93eb-39e6-4af2-9c66-cd38f72daff2",
+    "name": "Savannah Lions",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Cat",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/fdn/146/savannah-lions?utm_source=api"
+  },
+  {
+    "id": "0a22ee47-fc56-436d-8570-88fbff421027",
+    "oracle_id": "27ad3e00-6ffb-48f7-8469-8868d066d1e2",
+    "name": "Serra Ascendant",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Human Monk",
+    "oracle_text": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nAs long as you have 30 or more life, this creature gets +5/+5 and has flying.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Lifelink"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ima/31/serra-ascendant?utm_source=api"
+  },
+  {
+    "id": "973310bb-ab32-46dc-8f59-8a5d3e1c58cc",
+    "oracle_id": "96cf3320-c730-4618-8768-28a179f4d9c0",
+    "name": "Werebear",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Human Bear Druid",
+    "oracle_text": "{T}: Add {G}.\nThreshold — This creature gets +3/+3 as long as there are seven or more cards in your graveyard.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Threshold"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmr/182/werebear?utm_source=api"
+  },
+  {
+    "id": "5a3bb291-11d1-45e0-a60a-e75c7dc94b94",
+    "oracle_id": "35d3d96a-d303-4bf5-b972-f311331ec07a",
+    "name": "Wild Nacatl",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Cat Warrior",
+    "oracle_text": "This creature gets +1/+1 as long as you control a Mountain.\nThis creature gets +1/+1 as long as you control a Plains.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ddh/4/wild-nacatl?utm_source=api"
+  }
+]

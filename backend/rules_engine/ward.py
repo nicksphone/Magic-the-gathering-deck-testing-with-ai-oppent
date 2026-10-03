@@ -12,12 +12,13 @@ NUMBERS = {'a': 1, 'an': 1, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5
 DYNAMIC_WARD_RE = re.compile(r'\bward\s+((?:\{[^}]+\})+, where X is the ' + PLAYER_COUNT_RE + r')(?=\s*(?:[.\n]|$))', re.I)
 
 
-def printed_ward_costs(target):
+def printed_ward_costs(target, *, include_conditionals=True):
     """Printed keyword lists and bounded self-grants, not later effect bodies."""
-    keywords = {str(k).lower() for k in target.keywords or []}
-    names = {target.name.lower(), target.name.split(',')[0].lower(), 'this creature', 'this permanent'}
+    keywords = {str(k).lower() for k in getattr(target, 'keywords', []) or []}
+    name = getattr(target, 'name', '')
+    names = {name.lower(), name.split(',')[0].lower(), 'this creature', 'this permanent'}
     out = []
-    for line in without_reminder_text(target.oracle_text or '').splitlines():
+    for line in without_reminder_text(getattr(target, 'oracle_text', '') or '').splitlines():
         line = line.strip().rstrip('.')
         if (match := WARD_LINE.fullmatch(line)) and parse_ward_cost(match[1]) is not None:
             out.append(match[1])
@@ -30,8 +31,10 @@ def printed_ward_costs(target):
         if not match or match[1].lower() not in names:
             continue
         condition = match[3].lower() if match[3] else None
+        if condition is not None and not include_conditionals:
+            continue
         conditions = {"it's untapped": False, 'it is untapped': False, "it's tapped": True, 'it is tapped': True}
-        if condition is None or (condition in conditions and target.tapped == conditions[condition]):
+        if condition is None or (condition in conditions and getattr(target, 'tapped', False) == conditions[condition]):
             out.append(match[2])
     return out
 
@@ -78,25 +81,17 @@ def parse_ward_cost(text):
 
 
 def ward_instances(state, target):
-    from rules_engine.continuous import _static_oracle_text, _attached_effects, KW_STATIC_RE, PT_AND_KW_STATIC_RE, _scope_controller, _subject_matches
-    out = printed_ward_costs(target)
-    for player in state.players.values():
-        for cid in player.battlefield:
-            source = state.cards[cid]
-            text = _static_oracle_text(source)
-            if source.attached_to == target.id and 'Creature' not in source.types:
-                for keyword in _attached_effects(state, source, target)[2]:
-                    out.extend(m[1] for m in MANA_WARD.finditer(keyword))
-            for pattern in (KW_STATIC_RE, PT_AND_KW_STATIC_RE):
-                for line in re.split(r'[.\n]', text):
-                    match = pattern.fullmatch(line.strip())
-                    if not match or re.search(r'\b(?:as long as|if|unless|until)\b', match[4]):
-                        continue
-                    if (not (match[1] and source.id == target.id)
-                            and _scope_controller(source.controller, match[3].strip(), target.controller)
-                            and _subject_matches(state, target.id, match[2].strip())):
-                        out.extend(m[1] for m in MANA_WARD.finditer(match[4]))
-    return [cost for cost in out if parse_ward_cost(cost) is not None]
+    from rules_engine.continuous import effective_keyword_counts
+    printed = {cost.lower(): cost for cost in printed_ward_costs(target)}
+    out = []
+    for keyword, count in effective_keyword_counts(state, target.id).items():
+        match = WARD_LINE.fullmatch(keyword)
+        if match and parse_ward_cost(match[1]) is not None:
+            cost = printed.get(match[1], match[1])
+            cost = re.sub(r'\{[^}]+\}', lambda symbol: symbol[0].upper(), cost)
+            cost = re.sub(r'\bwhere x\b', 'where X', cost)
+            out.extend([cost] * count)
+    return out
 
 
 def target_ids(payload):
