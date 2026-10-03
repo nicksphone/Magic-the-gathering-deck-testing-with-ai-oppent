@@ -38,6 +38,8 @@ class AbilitySpec:
 
 def build_spell_spec(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any] | None = None) -> AbilitySpec:
     """Compile a spell, never a permanent's later activated/triggered text."""
+    from rules_engine.kicker import spell_kicker_view
+    card = spell_kicker_view(card)
     types = set(getattr(card, "types", []) or [])
     if types.intersection({"Instant", "Sorcery"}) or not types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}):
         return build_ability_spec(state, card, controller, action_targets)

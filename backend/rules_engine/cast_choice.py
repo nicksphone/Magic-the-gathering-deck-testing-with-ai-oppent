@@ -36,16 +36,19 @@ def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
     return not hints.get("action_has_target_text") or _has_target_options(hints)
 
 
-def available_cast_options_and_hints(state: MatchState, card: CardInstance, controller: int):
+def available_cast_options_and_hints(state: MatchState, card: CardInstance, controller: int, *, without_mana=False):
     """Keep target-dependent payment and legal Aura choices in one contract."""
     from rules_engine.costs import collect_cost_options, check_cost_option_available, casting_method
     from rules_engine.attachments import is_aura
-    options = collect_cost_options(state, controller, card)
+    options = collect_cost_options(state, controller, card, without_mana=without_mana)
     from rules_engine.bestow import is_bestowed
     options = [option for option in options if (casting_method(option.id) == 'bestow') == is_bestowed(card)]
     if not is_aura(card):
-        available = [o for o in options if check_cost_option_available(state, controller, card, o)]
-        return available, build_cast_hints(state, card, controller) if available else {}
+        from rules_engine.kicker import spell_kicker_view
+        variants = [(option, build_cast_hints(state, spell_kicker_view(card, option.kicked), controller))
+                    for option in options if check_cost_option_available(state, controller, card, option)]
+        variants = [(option, hints) for option, hints in variants if has_available_targets_for_action(hints)]
+        return [option for option, _ in variants], variants[0][1] if variants else {}
     hints = build_cast_hints(state, card, controller)
     targets = hints.get("aura_targets", [])
     compatible = {t["id"]: [o.id for o in options if check_cost_option_available(
@@ -63,6 +66,8 @@ def build_cast_hints(
     controller: int,
     action_targets: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    from rules_engine.kicker import spell_kicker_view
+    card = spell_kicker_view(card)
     types = set(getattr(card, "types", []) or [])
     if types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}) and not types.intersection({"Instant", "Sorcery"}):
         from rules_engine.attachments import is_aura

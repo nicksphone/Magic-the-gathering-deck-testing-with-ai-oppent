@@ -178,6 +178,8 @@ def infer_effect_from_oracle(
     *,
     report_unsupported: bool = True,
 ) -> tuple[str, dict[str, Any]]:
+    from rules_engine.kicker import spell_kicker_view
+    card = spell_kicker_view(card)
     action_targets = action_targets or {}
     # A real planeswalker card's loyalty lines are activated later, not cast as
     # one combined spell effect. Loyalty proxies intentionally do not carry
@@ -643,6 +645,8 @@ def inspect_target_hints(
     controller: int,
     action_targets: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    from rules_engine.kicker import spell_kicker_view
+    card = spell_kicker_view(card)
     raw_oracle = spell_resolution_text(card, card.oracle_text or "")
     action_targets = action_targets or {}
     selected_modes = _printed_mode_order(raw_oracle, action_targets.get("mode_texts") or [])
@@ -1136,6 +1140,8 @@ def _split_clauses(oracle: str) -> list[str]:
     out = []
     for part in parts:
         part = part.strip(' .;')
+        if len(re.findall(r'\btarget creature\b', oracle, re.I)) == 1:
+            part = re.sub(r'^(?:it|that creature) gets\b', 'target creature gets', part, flags=re.I)
         # Two unconditional instructions for the same announced recipient;
         # never promote a later part of an "if"/optional/quoted instruction.
         joined = re.fullmatch(r'(tap target (?:creature|artifact|land|permanent|enchantment|planeswalker)'

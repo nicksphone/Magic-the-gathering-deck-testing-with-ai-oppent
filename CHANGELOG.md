@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-03 - Conditional spell kicker and copy fidelity
+
+- Compile supported single-mana instant/sorcery kicker into unpaid and paid effect
+  surfaces without changing printed Oracle text. Additional kicker costs remain
+  payable on free casts; alternative casting methods retain their provenance.
+- Use the selected cost's target contract for announcements, resolution, copies
+  and retarget choices. Persist the kicked choice through HTTP/SQLite restoration.
+  Preserve sequential untap/pump instructions and copied printed characteristics.
+- All AI difficulties use bounded legal-target lethal/removal/card-gain
+  breakpoints rather than always paying kicker. Do not value hexproof or
+  indestructible damage targets as useful removal opportunities.
+- Both human seats have branch-specific targeting and damage allocation controls,
+  with runtime boundary tests and 24 real App/API kicker browser scenarios.
+  Canonical fixtures, isolated regressions and evidence boundaries are documented
+  in `docs/testing/kicker.md`. No competitive decks or card identities changed.
+- Permanent kicker, multikicker, unusual costs and arbitrary conditional effects
+  remain open; these changes do not certify expert AI or complete Magic rules.
+
 ## 2026-10-03 - Shared printed additional-cost grammar
 
 - Replace whole-Oracle spell cost inference with one clause reader. Recognize

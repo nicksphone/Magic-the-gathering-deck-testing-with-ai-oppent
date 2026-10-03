@@ -57,6 +57,11 @@ assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_opti
   additional_cost_group: 'base', discard_cards: 2, discard_card_ids: ['first', 'second'] }] }] }).moves.length, 1);
 assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts,
   additional_cost_group: 5 }] }] }), /legal-moves response/);
+assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts,
+  kicked: true, kicker_base_id: 'base', target_hints: { supports_divide: true } }] }] }).moves.length, 1);
+for (const bad of [{ kicked: 1 }, { kicker_base_id: 1 }, { target_hints: [] }]) {
+  assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, ...bad }] }] }), /legal-moves response/);
+}
 for (const bad of [{ discard_card_ids: [1] }, { sacrifice_card_ids: ['same', 'same'] }, { discard_cards: -1 }]) {
   assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, ...bad }] }] }), /legal-moves response/);
 }

@@ -573,7 +573,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 </div>
               );
             }
-            const hints = move.target_hints;
+            const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
+            const hints = selectedCost?.target_hints ?? move.target_hints;
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
             const chosenModes = targets[card.id]?.mode_texts;
             const selectedModeTexts = Array.isArray(chosenModes) ? chosenModes as string[] : [];
@@ -589,8 +591,6 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []),
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
-            const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
-            const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const payments = [
               { key: 'discard_card_ids', count: selectedCost?.discard_cards ?? 0, candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
               { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost' },
@@ -855,12 +855,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {hints?.supports_divide ? (
                   <div className="divide-box">
                     <p style={{ margin: "0.2rem 0" }}>Damage Distribution{hints.divide_max_targets ? ` (up to ${hints.divide_max_targets} targets)` : ""}</p>
-                    {[...(hints.player_targets ?? []).map((p) => ({ id: String(p.id), name: p.name })), ...(hints.creature_targets ?? [])].map(
+                    {[...(hints.player_targets ?? []).map((p) => ({ id: String(p.id), name: p.name })), ...(hints.creature_targets ?? []), ...(hints.planeswalker_targets ?? [])].map(
                       (targetOption) => (
                         <div key={`${card.id}-dist-${targetOption.id}`} className="row">
                           <span>{targetOption.name}</span>
                           <input
                             type="number"
+                            aria-label={`Damage to ${targetOption.name} for ${card.name}`}
                             min={0}
                             value={divideInputs[card.id]?.[targetOption.id] ?? 0}
                             onChange={(e) => {

@@ -1,0 +1,87 @@
+[
+  {
+    "name": "Burst Lightning",
+    "id": "aec5d380-d354-4750-931a-6c91853e2edc",
+    "oracle_id": "ac2086fe-98ee-4280-9c7c-c5c2d6548a8b",
+    "scryfall_uri": "https://scryfall.com/card/fdn/192/burst-lightning?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nBurst Lightning deals 2 damage to any target. If this spell was kicked, it deals 4 damage instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Fight with Fire",
+    "id": "72c94d7a-cad7-438f-bc96-e6a7158ab0e6",
+    "oracle_id": "202b275e-e0c4-482d-abe9-c5e6360208f3",
+    "scryfall_uri": "https://scryfall.com/card/dom/119/fight-with-fire?utm_source=api",
+    "mana_cost": "{2}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Kicker {5}{R} (You may pay an additional {5}{R} as you cast this spell.)\nFight with Fire deals 5 damage to target creature. If this spell was kicked, it deals 10 damage divided as you choose among any number of targets instead. (Those targets can include players and planeswalkers.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Gift of Growth",
+    "id": "7a3f8878-5928-47ec-bb31-f4ee24ad982b",
+    "oracle_id": "edbe4fdf-9e55-44fa-b3ec-5b1ac615f3a7",
+    "scryfall_uri": "https://scryfall.com/card/dom/163/gift-of-growth?utm_source=api",
+    "mana_cost": "{1}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker {2} (You may pay an additional {2} as you cast this spell.)\nUntap target creature. It gets +2/+2 until end of turn. If this spell was kicked, that creature gets +4/+4 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Into the Roil",
+    "id": "25edefa9-9fff-4b71-83ae-696c196a795c",
+    "oracle_id": "c2898bbd-82a4-4d26-b6ee-169b0ebe71b4",
+    "scryfall_uri": "https://scryfall.com/card/fdn/509/into-the-roil?utm_source=api",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker {1}{U} (You may pay an additional {1}{U} as you cast this spell.)\nReturn target nonland permanent to its owner's hand. If this spell was kicked, draw a card.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Shivan Fire",
+    "id": "21b9d339-99ed-4923-8f56-be37f29a0bfa",
+    "oracle_id": "854fd120-9a51-4d37-9922-7e4b0464e0f5",
+    "scryfall_uri": "https://scryfall.com/card/dom/142/shivan-fire?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nShivan Fire deals 2 damage to target creature. If this spell was kicked, it deals 4 damage instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  }
+]

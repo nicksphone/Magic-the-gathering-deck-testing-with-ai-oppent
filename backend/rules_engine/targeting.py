@@ -18,26 +18,31 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
 
 
 def stack_object_kind(state: Any, item: Any) -> str:
-    copied_kind = (item.payload or {}).get("__stack_copy_kind")
+    payload = getattr(item, 'payload', None) or {}
+    copied_kind = payload.get("__stack_copy_kind")
     if copied_kind:
         return str(copied_kind)
-    if (item.payload or {}).get("__trigger_event"):
+    if payload.get("__trigger_event"):
         return "triggered"
     source = state.cards.get(item.source_card_id)
-    return "spell" if source is not None and source.zone == Zone.STACK else "activated"
+    return "spell" if source is not None and getattr(source, 'zone', None) == Zone.STACK else "activated"
 
 
 def stack_source_card(state: Any, item: Any):
-    """Read a spell copy's saved characteristics independently of its card."""
+    """Read saved copy characteristics and casting choices without mutation."""
     source = state.cards.get(getattr(item, "source_card_id", None))
     payload = getattr(item, "payload", None) or {}
-    if source is None or payload.get("__stack_copy_kind") != "spell":
+    if source is None:
         return source
-    source = copy(source)
-    for key, value in (payload.get("__copied_card") or {}).items():
-        setattr(source, key, deepcopy(value))
-    source.controller = item.controller
-    source.zone = Zone.STACK
+    if payload.get('__stack_copy_kind') == 'spell':
+        source = copy(source)
+        for key, value in (payload.get("__copied_card") or {}).items():
+            setattr(source, key, deepcopy(value))
+        source.controller = item.controller
+        source.zone = Zone.STACK
+    if stack_object_kind(state, item) == 'spell':
+        from rules_engine.kicker import spell_kicker_view
+        source = spell_kicker_view(source, bool(payload.get('__kicked')))
     return source
 
 

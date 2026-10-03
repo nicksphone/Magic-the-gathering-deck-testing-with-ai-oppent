@@ -130,6 +130,9 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
       && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
         record(option) && typeof option.id === 'string'
         && (option.additional_cost_group == null || typeof option.additional_cost_group === 'string')
+        && (option.kicked === undefined || typeof option.kicked === 'boolean')
+        && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
+        && (option.target_hints === undefined || record(option.target_hints))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
         && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
           (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')

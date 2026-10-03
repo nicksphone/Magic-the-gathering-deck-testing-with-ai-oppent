@@ -915,12 +915,11 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):
         return
-    source = state.cards.get(copied_item.source_card_id)
-    if source is None:
+    from rules_engine.targeting import stack_source_card
+    copied_card = stack_source_card(state, copied_item)
+    if copied_card is None:
         return
-    copied_card = copy.copy(source)
-    for key, value in (copied_payload.get("__copied_card") or {}).items():
-        setattr(copied_card, key, copy.deepcopy(value))
+    copied_card = copy.copy(copied_card)
     if not is_spell:
         copied_card.oracle_text = trigger_clause or ability_text
     hints = build_cast_hints(state, copied_card, controller, announced) if is_spell else None
@@ -978,12 +977,11 @@ def _offer_clause_copy_target_choice(
     from rules_engine.oracle_effects import clause_target_assignments, inspect_target_hints
     from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 
-    source = state.cards.get(copied_item.source_card_id)
-    if source is None:
+    from rules_engine.targeting import stack_source_card
+    copied_card = stack_source_card(state, copied_item)
+    if copied_card is None:
         return
-    copied_card = copy.copy(source)
-    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
-        setattr(copied_card, key, copy.deepcopy(value))
+    copied_card = copy.copy(copied_card)
     announced = copied_item.payload.get("__announced_targets") or {}
     effects = copied_item.payload.get("effects") or []
     assignments = clause_target_assignments(state, copied_card, controller, announced, effects)
@@ -1049,12 +1047,11 @@ def _offer_divided_copy_target_choice(
     distribution = copied_item.payload["target_distribution"]
     remaining = list(remaining_targets) if remaining_targets is not None else list(distribution)
     total = slot_total or len(remaining)
-    source = state.cards.get(copied_item.source_card_id)
-    if source is None:
+    from rules_engine.targeting import stack_source_card
+    copied_card = stack_source_card(state, copied_item)
+    if copied_card is None:
         return
-    copied_card = copy.copy(source)
-    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
-        setattr(copied_card, key, copy.deepcopy(value))
+    copied_card = copy.copy(copied_card)
     hints = build_cast_hints(state, copied_card, controller, announced)
     candidates = [
         ("target_player" if surface == "player_targets" else "target_card_id",
@@ -1103,12 +1100,11 @@ def _offer_modal_copy_target_choice(
 
     announced = copied_item.payload["__announced_targets"]
     modes = list(remaining_modes) if remaining_modes is not None else list(announced.get("mode_texts") or [])
-    source = state.cards.get(copied_item.source_card_id)
-    if source is None:
+    from rules_engine.targeting import stack_source_card
+    copied_card = stack_source_card(state, copied_item)
+    if copied_card is None:
         return
-    copied_card = copy.copy(source)
-    for key, value in (copied_item.payload.get("__copied_card") or {}).items():
-        setattr(copied_card, key, copy.deepcopy(value))
+    copied_card = copy.copy(copied_card)
     surfaces = {
         "player_targets": "target_player", "creature_targets": "target_card_id",
         "planeswalker_targets": "target_card_id", "permanent_targets": "target_card_id",

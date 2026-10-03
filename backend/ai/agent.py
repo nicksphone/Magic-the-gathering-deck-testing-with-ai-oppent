@@ -2586,6 +2586,33 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
+    def _kicker_gain(self, state, card, player_id, hints):
+        """Known damage breakpoints/card gain, not hidden draws or full search."""
+        from rules_engine.kicker import kicker_surfaces
+        surfaces = kicker_surfaces(card.oracle_text)
+        if not surfaces:
+            return float('-inf')
+        price, base, kicked = surfaces
+        opponent = 3-player_id
+        score = -0.4 * mana_value(price)
+        amounts = [re.search(r'\bdeals? (\d+) damage', text, re.I) for text in [base, kicked]]
+        if all(amounts):
+            low, high = [int(amount[1]) for amount in amounts]
+            if low < state.players[opponent].life <= high and any(target['id'] == opponent for target in hints.get('player_targets', [])):
+                score += 100
+            legal_creatures = {target['id'] for target in hints.get('creature_targets', [])}
+            for cid in state.players[opponent].battlefield:
+                remaining = effective_toughness(state, cid) - int(state.cards[cid].counters.get('__damage_marked', 0))
+                if cid in legal_creatures and not has_keyword(state, cid, 'indestructible') and low < remaining <= high:
+                    score += 5 + self._creature_threat_score(state, cid, player_id)
+                    break
+        def draws(text):
+            return sum(_parse_count_token(amount) for amount in re.findall(r'\bdraw (a|one|two|three|\d+) cards?\b', text, re.I))
+        score += 3 * (draws(kicked) - draws(base))
+        if re.search(r'gets [+-]\d+/[+-]\d+', kicked) and state.step in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS}:
+            score += 3
+        return score
+
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
         mtype = move.get("type")
         from rules_engine.attachments import is_aura
@@ -2654,7 +2681,19 @@ class AIAgent:
                         loss += sum(values[:count])
                     return loss
                 selected_cost = min(alternatives, key=lambda option: (payment_loss(option), option['id']))
+            if source is not None and not selected_cost.get('kicked'):
+                from rules_engine.costs import casting_method
+                alternatives = [option for option in cost_options if option.get('kicked')
+                                and option.get('kicker_base_id') == casting_method(selected_cost['id'])
+                                and all(option.get(key) == selected_cost.get(key) for key in
+                                        ['pay_life', 'discard_cards', 'sacrifice_creatures', 'sacrifice_kind'])]
+                if alternatives and self._kicker_gain(state, source, player_id, alternatives[0].get('target_hints') or {}) > 0:
+                    selected_cost = alternatives[0]
             out["cost_choice"] = {"id": selected_cost["id"]}
+        selected_cost = next((option for option in cost_options
+                              if option['id'] == (out.get('cost_choice') or {}).get('id')), None)
+        if selected_cost and selected_cost.get('target_hints') is not None:
+            hints = selected_cost['target_hints']
         tags: set[str] = set()
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -2689,6 +2728,10 @@ class AIAgent:
 
             hints = build_cast_hints(state, card, player_id, targets)
 
+        if mtype == 'cast_spell' and card is not None:
+            from rules_engine.kicker import spell_kicker_view
+            card = spell_kicker_view(card, bool(selected_cost and selected_cost.get('kicked')))
+            tags = self._spell_tags(card)
         if isinstance(state, MatchState) and card is not None:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None

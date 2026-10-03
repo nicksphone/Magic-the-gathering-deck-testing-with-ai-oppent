@@ -51,6 +51,13 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'kicker_{index}_{seat}_{free}' for index in range(4) for seat in [1, 2] for free in [0, 1]}:
+        from tests.test_kicker import setup
+        _, index, seat, free = face_kind.split('_')
+        name = ['Burst Lightning', 'Into the Roil', 'Gift of Growth', 'Fight with Fire'][int(index)]
+        state, *_ = setup(name, int(seat), bool(int(free)))
+        state.mechanic_choice_players = {1, 2}
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {f'{kind}_{seat}' for kind in ['counted_cost', 'free_counted_cost', 'land_cost'] for seat in [1, 2]}:
         from tests.test_spell_cost_clauses import board, card, add
         seat = int(face_kind[-1])

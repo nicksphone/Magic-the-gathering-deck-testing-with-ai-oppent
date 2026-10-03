@@ -37,6 +37,8 @@ class CostOption:
     sacrifice_kind: str = "creature"
     exile_graveyard: int = 0
     additional_cost_group: str | None = None
+    kicked: bool = False
+    kicker_base_id: str | None = None
 
 
 def casting_method(cost_id: str) -> str:
@@ -266,9 +268,14 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if alt and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
-    kicker = KICKER_RE.search(card.oracle_text or "")
-    if kicker and card.zone != Zone.GRAVEYARD and not without_mana:
-        options.append(CostOption(id="kicker", label=f"Kicker {kicker.group(1)}", mana_cost=_join_costs(base.mana_cost, kicker.group(1))))
+    from rules_engine.kicker import kicker_surfaces
+    kicker = kicker_surfaces(card.oracle_text) if set(card.types).intersection({'Instant', 'Sorcery'}) else None
+    if kicker:
+        options = [variant for option in options for variant in (
+            option, replace(option, id='kicker' if option.id == 'base' else option.id + '_kicker',
+                            label=option.label + f' + kicker {kicker[0]}',
+                            mana_cost=_join_costs(option.mana_cost, kicker[0]), kicked=True,
+                            kicker_base_id=option.id))]
 
     compiled = []
     for option in options:

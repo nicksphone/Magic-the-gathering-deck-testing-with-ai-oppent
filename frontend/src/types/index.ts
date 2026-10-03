@@ -167,6 +167,9 @@ export type LegalMove = {
   cost_options?: {
     id: string;
     additional_cost_group?: string | null;
+    kicked?: boolean;
+    kicker_base_id?: string | null;
+    target_hints?: LegalMove['target_hints'];
     label: string;
     mana_cost: string;
     hybrid_symbols?: { symbol: string; choices: string[] }[];

@@ -860,6 +860,9 @@ class RulesEngine:
                 face_card = _select_face_for_cast(card, selected_face_index)
                 if bestowed:
                     face_card = bestow_cast_view(face_card)
+                from rules_engine.kicker import spell_kicker_view
+                printed_face_card = face_card
+                face_card = spell_kicker_view(face_card, chosen.kicked)
                 action_targets = enrich_divide_total(face_card, at_targets)
                 if face_card is not card:
                     action_targets = dict(action_targets)
@@ -937,6 +940,7 @@ class RulesEngine:
                 ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                payload['__kicked'] = chosen.kicked
                 payload["__ward_trigger_specs"] = ward_specs
                 payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
                 payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
@@ -961,7 +965,7 @@ class RulesEngine:
                     from rules_engine.bestow import begin_bestow
                     begin_bestow(card)
                 else:
-                    apply_cast_face(card, face_card)
+                    apply_cast_face(card, printed_face_card)
                 if casting_method(chosen.id) == "escape":
                     payload["__escaped"] = True
                 if casting_method(chosen.id) == "flashback":

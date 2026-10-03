@@ -37,10 +37,17 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         "sacrifice_kind": option.sacrifice_kind,
         "exile_graveyard": option.exile_graveyard,
         "additional_cost_group": option.additional_cost_group,
+        "kicked": option.kicked,
+        "kicker_base_id": option.kicker_base_id,
     }
     if state is not None and (option.discard_cards or option.sacrifice_creatures):
         from rules_engine.costs import additional_cost_candidates
         view.update(additional_cost_candidates(state, player_id, card_id, option))
+    if state is not None:
+        from rules_engine.kicker import kicker_surfaces, spell_kicker_view
+        card = state.cards[card_id]
+        if kicker_surfaces(card.oracle_text):
+            view['target_hints'] = build_cast_hints(state, spell_kicker_view(card, option.kicked), player_id)
     return view
 
 
