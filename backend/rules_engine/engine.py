@@ -391,6 +391,11 @@ class RulesEngine:
                 reject("This permanent has lost its printed abilities")
                 return
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice['kind'] == 'effect_cast':
+                from rules_engine.effect_casts import finish_cast_choice
+                if not finish_cast_choice(state, player_id, action):
+                    reject('Invalid effect-authorized casting choice')
+                return
             if state.pending_mechanic_choice["kind"] in {"opening_hand", "opening_hand_exile"}:
                 from rules_engine.opening_hand import finish_opening_hand_choice
                 if kind != "choose_mechanic" or not finish_opening_hand_choice(state, player_id, action):

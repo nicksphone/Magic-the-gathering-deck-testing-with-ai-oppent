@@ -253,7 +253,10 @@ def _append_trigger_groups(
                     options.sort(key=lambda option: state.cards[option["target_card_id"]].controller == item.controller)
                 if item.payload.get("__targeted_life_loss"):
                     options.sort(key=lambda option: option["target_player"] == item.controller)
-                if item.effect_key == "deal_damage":
+                if item.effect_key == 'cast_from_graveyard':
+                    from ai.effect_cast_policy import preferred_graveyard_spell
+                    choice = preferred_graveyard_spell(state, item.controller, options)
+                elif item.effect_key == "deal_damage":
                     from ai.heuristics import choose_damage_trigger_target
                     choice = choose_damage_trigger_target(state, item.controller, int(item.payload.get("amount", 0)), options)
                 else:
@@ -347,6 +350,8 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         clause = sentence.strip()
         if not re.match(patterns[event], clause, re.I):
             continue
+        if item.effect_key == 'cast_from_graveyard' and re.search(r'cast target (?:instant|sorcery) card from your graveyard', clause, re.I):
+            return clause
         if item.effect_key == "deal_damage" and "any target" in clause.lower():
             return clause
         if item.payload.get("__targeted_life_loss") and re.search(r"\btarget (?:player|opponent) loses \d+ life\b", clause, re.I):
@@ -372,6 +377,9 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
+    if item.effect_key == 'cast_from_graveyard':
+        return [{'target_card_id': target['id'], 'target_name': target['name']}
+                for target in hints.get('graveyard_spell_targets', [])]
     if item.payload.get("__targeted_life_loss"):
         return [
             {"target_player": pid, "target_name": player.name}

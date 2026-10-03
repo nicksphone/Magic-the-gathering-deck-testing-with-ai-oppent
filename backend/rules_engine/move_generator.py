@@ -44,6 +44,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         return []
     if state.pending_mechanic_choice:
         pending = state.pending_mechanic_choice
+        if pending['kind'] == 'effect_cast':
+            from rules_engine.effect_casts import cast_moves
+            return cast_moves(state, player_id)
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
         type_lines = {cid: state.cards[cid].type_line or " ".join(state.cards[cid].types)
                       for cid in pending.get("options", []) if cid in state.cards}

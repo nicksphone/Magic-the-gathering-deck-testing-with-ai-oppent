@@ -200,6 +200,12 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'effect_cast':
+                from ai.effect_cast_policy import usable_cast
+                target = state.pending_mechanic_choice['effect_payload']['target_card_id']
+                action = usable_cast(state, player_id, target)
+                return AIDecision(action=action or {'type': 'choose_mechanic', 'card_ids': ['decline']},
+                                  reasoning='Cast a supported usable graveyard spell or decline the permission')
             if choice['kind'] in {'surveil', 'surveil_top_order'}:
                 selected = (self._surveil_graveyard_choices(state, options, player_id)
                             if choice['kind'] == 'surveil'

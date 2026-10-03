@@ -269,7 +269,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             face_card = bestow_cast_view(face_card)
         if state.cards[action["card_id"]].layout in {"modal_dfc", "adventure", "split"}:
             require(any(item.get("selected_face_index", 0) == (face or 0) for item in available), "Selected face is not currently castable")
-        options = collect_cost_options(state, player_id, face_card)
+        options = collect_cost_options(state, player_id, face_card,
+            without_mana=bool(state.pending_mechanic_choice and state.pending_mechanic_choice['kind'] == 'effect_cast'))
         choice = (action.get("cost_choice") or {}).get("id")
         require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
         hybrid_choices = action.get("hybrid_choices")

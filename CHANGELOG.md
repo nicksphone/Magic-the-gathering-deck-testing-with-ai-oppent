@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-10-03 - Deliberate graveyard casting and usable permission targets
+
+- Both human seats can announce supported graveyard trigger targets, then choose
+  to cast with ordinary card/target/cost controls or decline during resolution.
+  Both stages survive snapshots and browser refresh. Recognized exile permission
+  attaches to the spell rather than a later cast trigger.
+- Shared effect-casting admission preserves taxes, mandatory costs, printed X=0,
+  normal target checks and copy-on-write rejection. Invalid or duplicate human
+  requests do not consume the authoritative permission or mutate saved state.
+- The graveyard trigger-target policy filters unusable/unpayable casts before
+  applying the existing casting heuristic; a free zero-mana-spent Deluge is not
+  preferred without a recognized cast-surveil payoff. This is bounded ranking,
+  not an optimal or difficulty-specific tactical search.
+- Traced games exposed the explicit-choice AI path treating the decline option
+  as a card ID. All difficulties now use a dedicated supported cast-or-decline
+  branch. The failed trace and superseded validation runs are retained as
+  evidence, not counted as successful acceptance.
+- Scope and unfinished optional costs, permission families and AI planning are
+  documented in `docs/testing/effect-cast-choices.md`, README and plan.
+- Final empty-database/cache isolated backend suite: **3,665 passed**, 358
+  warnings, 610.32 seconds; 44 new cases. Existing installed dependencies are
+  reused, so this is not fresh-install certification. Focused casting/trigger/
+  surveil regressions: 190 passed. Frontend lint, boundary/unit tests, build and
+  the complete final-source Chromium harness pass, including both-seat cast/
+  decline and refresh, recovery/restart, sideboarding and natural BO3.
+- Final Master replay: twelve seat-balanced BO1 samples across four templates,
+  each repeated twice, 511.392 seconds; zero reported timeouts, anomalies,
+  determinism failures or drift. Eight traced Tempo/Dimir and Tokens/Ramp games
+  use seeds 73100/73101 in both orders and a 6,000-action cap, finishing in
+  12-45 turns without invalid-announcement lines. Available quality counters
+  report zero anomalies; some Tokens/Ramp blocking-quality evidence is absent
+  and remains null/unverified, not a clean result. These samples prove neither
+  balance nor optimal play.
+- AST-only Graphify refresh and verified RCHFiles evidence archive:
+  `diagnostics/effect-cast-choices/20261003T083528Z/`. Preserve failed/superseded
+  runs separately and compare/checksum copies before deleting owned scratch.
+  Live databases, user changes and active services remain untouched.
+
 ## 2026-10-03 - Surveil, fixed mill and effect-authorized casting
 
 - Batch fixed private surveil partition/top ordering, supported surveil and

@@ -62,9 +62,11 @@ library changes do not alter the constructed decision fixtures.
 
 This is conservative curation, not optimal search: nonlands are otherwise kept.
 General graveyard synergies, flashback valuation, opponent-aware ordering and
-long-horizon planning remain unfinished. Effect-authorized cast selection still
-uses the existing automatic target/mode heuristic; deliberate human optional
-cast/mode/target choices and broader AI permission selection remain open.
+long-horizon planning remain unfinished. [Effect-casting choices](effect-cast-choices.md)
+now let either human seat choose supported graveyard trigger targets and use
+ordinary cast controls or decline during resolution. AI target selection filters
+unusable announcements before applying its existing casting heuristic; broader
+permission planning and optimal optional-cost decisions remain open.
 
 ## Validation
 

@@ -51,6 +51,18 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'effect_cast_1', 'effect_cast_2'}:
+        from tests.test_surveil_mill import board, add
+        seat = int(face_kind[-1])
+        state = board(seat)
+        state.mechanic_choice_players = {1, 2}
+        state.trigger_order_choice_required = True
+        state.trigger_order_choice_players = {1, 2}
+        add(state, 'Torrential Gearhulk', seat, Zone.HAND)
+        add(state, 'Lightning Bolt', seat, Zone.GRAVEYARD)
+        add(state, 'Counterspell', seat, Zone.GRAVEYARD)
+        state.players[seat].mana_pool.update(C=4, U=2)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'surveil_1', 'surveil_2'}:
         from tests.test_surveil_mill import board, add
         seat = int(face_kind[-1])

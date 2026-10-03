@@ -1315,39 +1315,21 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
     card = state.cards[target]
     if not ({"Instant", "Sorcery"} & set(card.types)):
         return
-    from ai.agent import AIAgent
-    from ai.pending_effects import planning_copy
-    from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
-    from rules_engine.engine import RulesEngine
-    hints = build_cast_hints(state, card, controller)
-    if not has_available_targets_for_action(hints):
-        state.log.append(f'{player.name} chooses not to cast {card.name}: no legal targets.')
+    if controller in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            'kind': 'effect_cast', 'player_id': controller, 'options': ['decline'], 'count': 1,
+            'label': f'Cast {card.name} using its card controls, or decline',
+            'effect_payload': dict(payload),
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
         return
-    targets = dict(payload.get('cast_targets') or {})
-    if '{x}' in (card.mana_cost or '').lower():
-        targets['x_value'] = 0
-    action = AIAgent(difficulty='strong')._materialize_action(state, {
-        'type': 'cast_spell', 'card_id': target, 'from_graveyard': True,
-        'target_hints': hints, 'targets': targets,
-    }, controller, allow_zero_x=True)
-    if '{x}' in (card.mana_cost or '').lower():
-        action.setdefault('targets', {})['x_value'] = 0
-    rules = RulesEngine()
-    projected = planning_copy(state)
+    from rules_engine.effect_casts import materialize_cast, admit_cast
     try:
-        if action.get('_invalid_ai_choice'):
-            raise ValueError('No supported casting choice')
-        rules.take_action(projected, controller, action, reject_invalid=True, effect_cast=True)
-        if projected.cards[target].zone != Zone.STACK:
-            raise ValueError('Casting requires an unsupported continuation')
+        action = materialize_cast(state, controller, target, payload.get('cast_targets'))
+        admit_cast(state, controller, action, payload)
     except (ValueError, KeyError):
         state.log.append(f'{player.name} chooses not to cast {card.name}: no payable supported announcement.')
-        return
-    rules.take_action(state, controller, action, reject_invalid=True, effect_cast=True)
-    item = next(item for item in reversed(state.stack) if item.source_card_id == target and item.controller == controller)
-    if payload.get('exile_after_cast'):
-        item.payload['__exile_instead_of_graveyard'] = True
-    state.log.append(f"{player.name} casts {card.name} from the graveyard without paying its mana cost.")
 
 
 def return_creature_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:
