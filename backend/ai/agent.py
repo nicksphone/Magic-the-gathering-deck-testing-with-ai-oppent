@@ -2594,6 +2594,8 @@ class AIAgent:
             ('discard_card_ids', option.get('discard_cards', 0), self._hand_retention_value),
             ('sacrifice_card_ids', option.get('sacrifice_creatures', 0), self._sacrifice_loss),
         ]:
+            if option.get('discard_all' if key == 'discard_card_ids' else 'sacrifice_all'):
+                count = len(option.get(key, []))
             values = sorted(rank(state, cid, player_id) for cid in option.get(key, []))
             if len(values) < count:
                 return float('inf')
@@ -3056,7 +3058,15 @@ class AIAgent:
             tax_plan = combat_tax_plan(state, move, player_id) if mtype == 'activate_ability' else None
             targets["x_value"] = tax_plan['x_value'] if tax_plan is not None else self._choose_x_value(state, player_id, mana_cost, card=card, restricted_x_color=x_color)
         elif hints.get("requires_x_value") and "x_value" not in targets:
-            if mtype == "activate_loyalty" and cid:
+            if selected_cost and selected_cost.get('discard_x'):
+                limit = int(hints.get('x_value_max', 0))
+                values = sorted(self._hand_retention_value(state, item, player_id)
+                                for item in selected_cost.get('discard_card_ids', []))
+                scored = [(self._score_x_value(state, player_id, card, mana_cost, value, limit, 1)
+                           - sum(values[:value + selected_cost.get('discard_cards', 0)]), value)
+                          for value in range(1, limit + 1)]
+                targets['x_value'] = max(scored, default=(0, 0))[1] if any(score > 0 for score, _ in scored) else 0
+            elif mtype == "activate_loyalty" and cid:
                 loyalty_now = int(getattr(state.cards.get(cid), "loyalty", 0) or 0)
                 targets["x_value"] = max(0, min(3, loyalty_now))
             elif card is not None and PAY_X_LIFE_RE.search(getattr(card, "oracle_text", "") or ""):
@@ -3187,9 +3197,19 @@ class AIAgent:
                     ('discard_card_ids', selected.get('discard_cards', 0), self._hand_retention_value),
                     ('sacrifice_card_ids', selected.get('sacrifice_creatures', 0), self._sacrifice_loss),
                 ]:
+                    if selected.get('discard_all' if key == 'discard_card_ids' else 'sacrifice_all'):
+                        continue
+                    if key == 'discard_card_ids' and selected.get('discard_x'):
+                        count += int(targets.get('x_value', 0))
                     if count and key not in choice and key in selected:
                         choice[key] = sorted(selected[key], key=lambda cid: (rank(state, cid, player_id), cid))[:count]
                 out['cost_choice'] = choice
+                if (selected.get('sacrifice_all') and selected.get('sacrifice_card_ids')
+                        and isinstance(state, MatchState) and not out.get('_invalid_ai_choice')):
+                    from ai.pending_effects import unanswered_action_wins
+                    if unanswered_action_wins(state, player_id, out,
+                        own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action) is False:
+                        out['_invalid_ai_choice'] = True
         return out
 
     def _choose_blocks(self, state: MatchState, attackers: list[dict], blockers: list[dict]) -> dict[str, str | list[str]]:

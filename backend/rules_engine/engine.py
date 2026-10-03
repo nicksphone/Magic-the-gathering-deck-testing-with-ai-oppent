@@ -902,7 +902,7 @@ class RulesEngine:
                         return
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
                 from rules_engine.costs import additional_cost_selection
-                if additional_cost_selection(state, player_id, chosen, cid, action.get('cost_choice')) is None:
+                if additional_cost_selection(state, player_id, chosen, cid, action.get('cost_choice'), x_value=x_value) is None:
                     reject('Invalid additional-cost card selection')
                     return
                 adjusted_cost = chosen.mana_cost

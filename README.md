@@ -17,6 +17,13 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Exhaustive and announced-X payments](docs/testing/variable-spell-costs.md):
+  mandatory whole-hand discard and all-permanent sacrifice share event-aware
+  costs; discard-based X uses an announced exact hand selection, not available
+  mana. Both seats have controls and checked normal/free casts. AI tests retain
+  minimal public-state finishes and avoid exercised self-loss/resource wipes.
+  Random costs, X recipient lists and general payment order remain unfinished.
+
 - [Qualified spell costs](docs/testing/qualified-spell-costs.md): fixed creature-subtype
   and color-qualified sacrifices share checked eligibility and resource selection.
   Canonical green-creature searches keep their restriction; referenced-controller

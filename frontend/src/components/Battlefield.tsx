@@ -592,7 +592,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const payments = [
-              { key: 'discard_card_ids', count: selectedCost?.discard_cards ?? 0, candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
+              { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
               { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost' },
             ];
             const incompleteCostCards = payments.some(payment => payment.count > 0 &&
@@ -657,6 +657,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ))}
                   </select>
                 ) : null}
+                {selectedCost?.discard_all ? <p>Additional cost: discard your entire hand (excluding this spell).</p> : null}
+                {selectedCost?.sacrifice_all ? <p>Additional cost: sacrifice all permanents you control.</p> : null}
                 {payments.filter(payment => payment.count > 0).map(payment => {
                   const key = `${card.id}:${selectedCostId}:${payment.key}`;
                   return <label key={key}>

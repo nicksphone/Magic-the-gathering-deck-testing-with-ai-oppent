@@ -70,6 +70,10 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.spell_cost_clauses import spell_additional_costs
     if any(spell_additional_costs(text, name) is None for name, text in variants):
         out.append('unsupported spell additional cost')
+    from rules_engine.spell_cost_clauses import resource_x_effect_gaps
+    for name, text in variants:
+        if any(branch.get('discard_x') for branch in spell_additional_costs(text, name) or []):
+            out.extend(resource_x_effect_gaps(text))
     from rules_engine.kicker import kicker_components, kicker_surfaces, permanent_kicker
     for name, text in variants:
         surfaces = kicker_surfaces(text)

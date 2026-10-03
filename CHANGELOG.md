@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-03 - Exhaustive payments and discard-based X
+
+- Share whole-hand discard, all-permanent sacrifice and exact announced-X hand
+  payments across ordinary/free casting, legality, snapshots and owned controls.
+  Recompute exhaustive resources after mana abilities; preserve simultaneous
+  death triggers, irreversible paid costs and copies without second payment.
+- Repair action validation rejecting recognized discard-based X. All difficulties
+  price actual hand loss and reject exercised self-loss/nonwinning resource wipes.
+  Keep unmodeled random payments and X target/search cardinalities blocked.
+- Validation: 58 focused checks, full backend 4,502 passed, frontend lint/contracts/
+  build, complete Chromium with four new both-seat cases, twelve repeated
+  seat-balanced replay samples without reported anomaly/timeout/drift and twelve
+  autonomous public-state finish traces against scripted passing. Preserve the
+  failed selector test; refresh Graphify and archive verified evidence on RCHFiles.
+  See [scope, acceptance and remaining risks](docs/testing/variable-spell-costs.md).
+
 ## 2026-10-03 - Qualified costs and recipient-preserving effects
 
 - Share fixed creature-subtype and color-qualified sacrifice costs across

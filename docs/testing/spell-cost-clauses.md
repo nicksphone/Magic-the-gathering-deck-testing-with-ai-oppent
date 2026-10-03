@@ -31,9 +31,10 @@ This is not general racing analysis, optimal payment sequencing, or expert AI.
 
 `backend/tests/fixtures/spell_additional_costs.json` retains Scryfall/Oracle IDs
 and source URLs for Cathartic Reunion, Tormenting Voice, Raze, Deadly Dispute,
-Ruthless Disposal, Final Payment and Goblin Grenade. The last is deliberately
-unsupported because a Goblin subtype requirement must not become a generic
-creature sacrifice. These fixtures are not additions to competitive decks.
+Ruthless Disposal, Final Payment and Goblin Grenade. Goblin Grenade's subtype
+cost subsequently gained [canonical acceptance](qualified-spell-costs.md);
+it must never widen to a generic creature sacrifice. These fixtures are not
+additions to competitive decks.
 
 `backend/tests/test_spell_cost_clauses.py` checks both seats, normal/free counted
 payments, target-bearing land/life casts, mixed resource costs, grammar rejection,
@@ -74,7 +75,7 @@ test-harness errors, not hidden application failures.
 
 - Fixed subtype and color-qualified sacrifices now have
   [canonical acceptance](qualified-spell-costs.md). General qualified intersections,
-  type/color-changing layers, exile/reveal/return/tap costs, variable discard or
+  type/color-changing layers, exile/reveal/return/tap costs, broader variable
   sacrifice counts, and different-type mandatory sacrifice components need a
   richer resource model; the clauses exercised here are rejected explicitly.
 - Alternate X-life branches, arbitrary optional additional costs and interrupted
@@ -86,3 +87,8 @@ test-harness errors, not hidden application failures.
   arbitrary additional-cost wording are separate work.
 - Small seeded tests cannot establish unrestricted Magic correctness, tournament
   strength or matchup balance. Null quality measurements are not passed gates.
+
+Recognized whole-hand/all-permanent and announced-X discard prices now have
+[separate bounded acceptance](variable-spell-costs.md). Random payments,
+X recipient lists, resolution-time variable discards and linked searches remain
+unfinished; cost recognition alone must not enable an incorrect effect.

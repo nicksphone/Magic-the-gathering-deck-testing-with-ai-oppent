@@ -1,0 +1,120 @@
+[
+  {
+    "id": "b5275d76-2947-4219-be21-614c7421614a",
+    "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+    "name": "Blood Artist",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Vampire",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/soc/209/blood-artist?utm_source=api"
+  },
+  {
+    "id": "d385b9e5-e13d-4098-ba74-ea55bde164d9",
+    "oracle_id": "7d69be1e-701a-4bcb-a83e-38b4174f7828",
+    "name": "Kaervek's Spite",
+    "mana_cost": "{B}{B}{B}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice all permanents you control and discard your hand.\nTarget player loses 5 life.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vis/63/kaerveks-spite?utm_source=api"
+  },
+  {
+    "id": "f85ab5f9-508e-45de-8fa1-ce1f16552ffc",
+    "oracle_id": "32e5339e-9e4f-46f8-b305-f9d6d3ba8bb5",
+    "name": "Lotus Petal",
+    "mana_cost": "{0}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}, Sacrifice this artifact: Add one mana of any color.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tpr/225/lotus-petal?utm_source=api"
+  },
+  {
+    "id": "9396ac77-9f53-46bd-b126-02441a0f5594",
+    "oracle_id": "728d2e30-2f36-4054-81db-29b01e376a82",
+    "name": "Sickening Dreams",
+    "mana_cost": "{1}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard X cards.\nSickening Dreams deals X damage to each creature and each player.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tor/83/sickening-dreams?utm_source=api"
+  },
+  {
+    "id": "e674aa8a-668a-4345-95ee-73a0b87bbcb1",
+    "oracle_id": "157813c8-af83-41b5-9ffb-4abd167c1bfc",
+    "name": "Firestorm",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, discard X cards.\nFirestorm deals X damage to each of X targets.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/wth/101/firestorm?utm_source=api"
+  },
+  {
+    "id": "299065ad-ee2e-4973-9b41-fd04c36d19a4",
+    "oracle_id": "fabbc474-682c-4565-861c-d41de05abb8f",
+    "name": "Nostalgic Dreams",
+    "mana_cost": "{G}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard X cards.\nReturn X target cards from your graveyard to your hand. Exile Nostalgic Dreams.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vma/222/nostalgic-dreams?utm_source=api"
+  },
+  {
+    "id": "1bddb0ef-fdda-491b-a0cf-48cbdd761918",
+    "oracle_id": "a7f682ce-3d1f-425c-b65a-11a15791aa9e",
+    "name": "Rites of Spring",
+    "mana_cost": "{1}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "Discard any number of cards. Search your library for up to that many basic land cards, reveal them, put them into your hand, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ody/265/rites-of-spring?utm_source=api"
+  },
+  {
+    "id": "9fffeed0-a5ea-47ac-a7a4-0cc3bb1d408a",
+    "oracle_id": "18994c4c-9b5d-4b58-a5c3-646fbc92f9c7",
+    "name": "Devastating Dreams",
+    "mana_cost": "{R}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, discard X cards at random.\nEach player sacrifices X lands of their choice. Devastating Dreams deals X damage to each creature.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tor/95/devastating-dreams?utm_source=api"
+  }
+]

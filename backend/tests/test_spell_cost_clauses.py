@@ -143,7 +143,7 @@ def test_qualified_cost_requires_an_eligible_permanent(seat):
 
 
 @pytest.mark.parametrize('clause', [
-    'discard X cards', 'sacrifice a nonland permanent', 'reveal a card',
+    'discard X cards at random', 'sacrifice a nonland permanent', 'reveal a card',
     'sacrifice a creature and sacrifice a land', 'exile a card from your graveyard',
 ])
 def test_unmodeled_grammar_fails_closed(clause):

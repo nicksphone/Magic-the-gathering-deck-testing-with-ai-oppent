@@ -131,6 +131,7 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         record(option) && typeof option.id === 'string'
         && (option.additional_cost_group == null || typeof option.additional_cost_group === 'string')
         && (option.kicked === undefined || typeof option.kicked === 'boolean')
+        && ['discard_x', 'discard_all', 'sacrifice_all'].every(key => option[key] === undefined || typeof option[key] === 'boolean')
         && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
         && (option.target_hints === undefined || record(option.target_hints))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)

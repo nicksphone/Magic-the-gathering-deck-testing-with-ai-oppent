@@ -33,6 +33,9 @@ class CostOption:
     pay_life: int = 0
     pay_life_x: bool = False
     discard_cards: int = 0
+    discard_x: bool = False
+    discard_all: bool = False
+    sacrifice_all: bool = False
     sacrifice_creatures: int = 0
     sacrifice_kind: str = "creature"
     exile_graveyard: int = 0
@@ -236,9 +239,11 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
     from rules_engine.alternative_casts import escape_cost, flashback_cost, has_aftermath, prototype_characteristics
-    from rules_engine.spell_cost_clauses import spell_additional_costs
+    from rules_engine.spell_cost_clauses import spell_additional_costs, resource_x_effect_gaps
     branches = spell_additional_costs(card.oracle_text, card.name)
     if branches is None:
+        return []
+    if any(branch.get('discard_x') for branch in branches) and resource_x_effect_gaps(card.oracle_text or ''):
         return []
     base = CostOption(id="base", label="Base Cost", mana_cost='' if without_mana else card.mana_cost or "")
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
@@ -303,6 +308,9 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 pay_life=option.pay_life + branch.get('pay_life', 0),
                 pay_life_x=bool(branch.get('pay_life_x')),
                 discard_cards=option.discard_cards + branch.get('discard_cards', 0),
+                discard_x=bool(branch.get('discard_x')),
+                discard_all=bool(branch.get('discard_all')),
+                sacrifice_all=bool(branch.get('sacrifice_all')),
                 sacrifice_creatures=option.sacrifice_creatures + branch.get('sacrifice_creatures', 0),
                 sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind)))
     return compiled
@@ -320,7 +328,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if not can_pay_life(state, player_id, option.pay_life + (x_value if option.pay_life_x else 0)):
         return False
-    if sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in player.hand) < option.discard_cards:
+    if sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in player.hand) < option.discard_cards + (x_value if option.discard_x else 0):
         return False
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
@@ -352,12 +360,22 @@ def additional_cost_candidates(state, player_id, spell_card_id, option):
     }
 
 
-def additional_cost_selection(state, player_id, option, spell_card_id, choice=None):
+def additional_cost_selection(state, player_id, option, spell_card_id, choice=None, *, x_value=0):
     candidates = additional_cost_candidates(state, player_id, spell_card_id, option)
     selected = {}
-    for key, count in [('discard_card_ids', option.discard_cards),
+    if x_value < 0:
+        return None
+    for key, count in [('discard_card_ids', option.discard_cards + (x_value if option.discard_x else 0)),
                        ('sacrifice_card_ids', option.sacrifice_creatures)]:
         ids = (choice or {}).get(key)
+        all_resources = option.discard_all if key == 'discard_card_ids' else option.sacrifice_all
+        if all_resources:
+            # Exhaustive payments are not a selectable subset; recompute after
+            # mana abilities have consumed or produced resources.
+            if ids:
+                return None
+            selected[key] = list(candidates[key])
+            continue
         if ids is None:
             ids = candidates[key][:count]
         if (not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids)
@@ -371,7 +389,7 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
 def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str,
                            x_value: int = 0, choice=None) -> bool:
     player = state.players[player_id]
-    selected = additional_cost_selection(state, player_id, option, spell_card_id, choice)
+    selected = additional_cost_selection(state, player_id, option, spell_card_id, choice, x_value=x_value)
     if selected is None:
         return False
     life_amount = option.pay_life + (x_value if option.pay_life_x else 0)

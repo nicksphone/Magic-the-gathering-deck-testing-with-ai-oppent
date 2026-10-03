@@ -52,6 +52,12 @@ assert.equal(parseMatchState(aiChoice), aiChoice);
 assert.throws(() => parseMatchState({ ...aiChoice, pending_mechanic_choice: { ...aiChoice.pending_mechanic_choice, options: ["hidden-card"] } }), /pending mechanic choice/);
 const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
 const castCosts = { id: 'base_discard', discard_cards: 1, sacrifice_creatures: 0, discard_card_ids: ['fodder'] };
+for (const flag of ['discard_x', 'discard_all', 'sacrifice_all']) {
+  assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, [flag]: true }] }] }).moves.length, 1);
+  for (const value of [1, 'true', null]) {
+    assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, [flag]: value }] }] }), /legal-moves response/);
+  }
+}
 assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [castCosts] }] }).moves.length, 1);
 assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts,
   additional_cost_group: 'base', discard_cards: 2, discard_card_ids: ['first', 'second'] }] }] }).moves.length, 1);

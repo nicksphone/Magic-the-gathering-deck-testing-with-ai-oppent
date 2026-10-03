@@ -692,6 +692,13 @@ def inspect_target_hints(
     # Do not require x_value for cards whose oracle text references X contextually
     # (e.g. "where X is..." or cycling text) without an announced-cost X.
     from rules_engine.costs import PAY_X_LIFE_RE
+    from rules_engine.spell_cost_clauses import spell_additional_costs
+    resource_x = [branch for branch in spell_additional_costs(raw_oracle, card.name) or [] if branch.get('discard_x')]
+    if resource_x:
+        hints['requires_x_value'] = True
+        from rules_engine.zone_actions import is_departed_token
+        available = sum(cid != card.id and not is_departed_token(state.cards[cid]) for cid in state.players[controller].hand)
+        hints['x_value_max'] = max(0, available - min(branch.get('discard_cards', 0) for branch in resource_x))
     if "{x}" in (card.mana_cost or "").lower() or PAY_X_LIFE_RE.search(raw_oracle):
         hints["requires_x_value"] = True
     if PAY_X_LIFE_RE.search(raw_oracle):

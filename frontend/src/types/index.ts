@@ -176,6 +176,9 @@ export type LegalMove = {
     pay_life: number;
     pay_life_x?: boolean;
     discard_cards: number;
+    discard_x?: boolean;
+    discard_all?: boolean;
+    sacrifice_all?: boolean;
     sacrifice_creatures: number;
     sacrifice_kind?: string;
     discard_card_ids?: string[];

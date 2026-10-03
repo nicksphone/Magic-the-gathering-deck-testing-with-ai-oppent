@@ -11,13 +11,19 @@ TYPES = r'(?:artifacts?|creatures?|enchantments?|lands?|planeswalkers?|battles?|
 
 
 def _merge(left, right):
+    for flag, count in [('discard_all', 'discard_cards'), ('sacrifice_all', 'sacrifice_creatures')]:
+        if ((left.get(flag) and (right.get(count) or right.get(flag)))
+                or (right.get(flag) and left.get(count))):
+            return None
+    if (left.get('discard_all') and right.get('discard_x')) or (right.get('discard_all') and left.get('discard_x')):
+        return None
     merged = dict(left)
     for key, value in right.items():
         if key == 'sacrifice_kind':
             if merged.get(key, value) != value:
                 return None
             merged[key] = value
-        elif key == 'pay_life_x':
+        elif key in {'pay_life_x', 'discard_x', 'discard_all', 'sacrifice_all'}:
             if merged.get(key):
                 return None
             merged[key] = True
@@ -27,6 +33,12 @@ def _merge(left, right):
 
 
 def _component(text):
+    if text == 'discard your hand':
+        return {'discard_all': True}
+    if text == 'sacrifice all permanents you control':
+        return {'sacrifice_all': True, 'sacrifice_kind': 'permanent'}
+    if text == 'discard x cards':
+        return {'discard_x': True}
     match = re.fullmatch(r'pay ' + COUNT + r' life', text)
     if match:
         value = match[1]
@@ -61,7 +73,18 @@ def _component(text):
 def fixed_cost_component(text):
     """Shared fixed life/discard/typed-sacrifice component, not an X payment."""
     parsed = _component(text.strip().rstrip('.').lower())
-    return parsed if parsed and not parsed.get('pay_life_x') else None
+    return parsed if parsed and not any(parsed.get(key) for key in
+        ['pay_life_x', 'discard_x', 'discard_all', 'sacrifice_all']) else None
+
+
+def resource_x_effect_gaps(text):
+    """Price recognition must not enable an unmodeled X recipient/card count."""
+    gaps = []
+    if re.search(r'\bx targets?\b', text, re.I):
+        gaps.append('resource-X target cardinality')
+    if re.search(r'search your library for[^.\n]*\bx\b', text, re.I):
+        gaps.append('resource-X search cardinality')
+    return gaps
 
 
 def spell_additional_costs(text, card_name=''):
@@ -89,7 +112,7 @@ def spell_additional_costs(text, card_name=''):
                 parsed = _merge(parsed, item)
                 if parsed is None:
                     return None
-            if len(re.split(r'\s+or\s+(?=(?:pay|discard|sacrifice)\b)', body)) > 1 and parsed.get('pay_life_x'):
+            if len(re.split(r'\s+or\s+(?=(?:pay|discard|sacrifice)\b)', body)) > 1 and any(parsed.get(key) for key in ['pay_life_x','discard_x']):
                 return None
             choices.append(parsed)
         combined = [_merge(previous, choice) for previous in branches for choice in choices]

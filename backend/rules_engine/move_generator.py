@@ -33,6 +33,9 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         "pay_life": option.pay_life,
         "pay_life_x": option.pay_life_x,
         "discard_cards": option.discard_cards,
+        "discard_x": option.discard_x,
+        "discard_all": option.discard_all,
+        "sacrifice_all": option.sacrifice_all,
         "sacrifice_creatures": option.sacrifice_creatures,
         "sacrifice_kind": option.sacrifice_kind,
         "exile_graveyard": option.exile_graveyard,
@@ -40,7 +43,7 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         "kicked": option.kicked,
         "kicker_base_id": option.kicker_base_id,
     }
-    if state is not None and (option.discard_cards or option.sacrifice_creatures):
+    if state is not None and (option.discard_cards or option.sacrifice_creatures or option.discard_x or option.discard_all or option.sacrifice_all):
         from rules_engine.costs import additional_cost_candidates
         view.update(additional_cost_candidates(state, player_id, card_id, option))
     if state is not None:

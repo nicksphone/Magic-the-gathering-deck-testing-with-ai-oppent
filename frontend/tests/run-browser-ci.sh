@@ -109,6 +109,8 @@ echo 'Browser CI: canonical sacrifice-union kicker and conditional discard golde
 (cd frontend && timeout 240s node tests/browser-kicker-goldens.mjs)
 echo 'Browser CI: qualified subtype/color payments and actual search/controller/counter effects'
 (cd frontend && timeout 180s node tests/browser-qualified-costs.mjs)
+echo 'Browser CI: exhaustive resources and announced-X discard payments'
+(cd frontend && timeout 180s node tests/browser-variable-costs.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'
