@@ -131,12 +131,14 @@ def test_ai_avoids_lethal_life_payment_branch(seat, difficulty):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_unsupported_qualified_cost_not_free_cast(seat):
+def test_qualified_cost_requires_an_eligible_permanent(seat):
     state = board(seat)
     spell = card(state, 'Goblin Grenade', seat)
     state.players[seat].mana_pool['R'] = 1
-    assert 'unsupported spell additional cost' in known_unsupported_mechanics(spell.oracle_text, card_name=spell.name)
-    assert collect_cost_options(state, seat, spell) == []
+    assert 'unsupported spell additional cost' not in known_unsupported_mechanics(spell.oracle_text, card_name=spell.name)
+    from rules_engine.costs import check_cost_option_available
+    option, = collect_cost_options(state, seat, spell)
+    assert not check_cost_option_available(state, seat, spell, option)
     assert not any(move.get('card_id') == spell.id for move in RulesEngine().legal_moves(state, seat))
 
 

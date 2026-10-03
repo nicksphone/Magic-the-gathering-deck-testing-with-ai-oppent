@@ -525,7 +525,11 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     count = action_targets.get("search_count")
     mv_max = action_targets.get("search_mv_max")
     if not contains:
-        if "snow permanent card" in oracle and "legendary card" in oracle and "saga card" in oracle:
+        colored = re.search(r'search your library for (?:a|an|one) (white|blue|black|red|green) '
+                            r'(artifact|creature|enchantment|land|planeswalker|battle|permanent) card', oracle)
+        if colored:
+            contains = colored[1] + '_' + colored[2]
+        elif "snow permanent card" in oracle and "legendary card" in oracle and "saga card" in oracle:
             contains = "snow_or_legendary_or_saga"
         elif "land card with a basic land type" in oracle:
             contains = "land_with_basic_type"
@@ -594,6 +598,12 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
     subtypes = set(type_line_parts[1].split()) if len(type_line_parts) > 1 else set()
     if needle == "card":
         matched = True
+    elif re.fullmatch(r'(white|blue|black|red|green)_(artifact|creature|enchantment|land|planeswalker|battle|permanent)', needle):
+        from rules_engine.colors import card_color_names
+        color, kind = needle.split('_', 1)
+        matched = color in card_color_names(card) and (
+            bool(card_types.intersection({'artifact', 'enchantment', 'creature', 'land', 'planeswalker', 'battle'}))
+            if kind == 'permanent' else kind in card_types)
     elif needle == "snow_or_legendary_or_saga":
         permanent = bool(card_types.intersection({"artifact", "enchantment", "creature", "land", "planeswalker", "battle"}))
         supertypes = set(type_line_parts[0].split()) | card_types
@@ -1372,6 +1382,8 @@ def _infer_clause_effect(
     damage_match = DAMAGE_RE.search(oracle)
     if damage_match:
         amount = int(damage_match.group(1))
+        if re.search(r"damage to (?:that|target) (?:creature|permanent)'s controller", oracle):
+            return 'deal_damage_to_controller', {'target_card_id': target_card_id, 'amount': amount}
         if DIVIDE_RE.search(oracle):
             distribution = action_targets.get("target_distribution", {})
             return "deal_damage_multi", {"target_distribution": distribution}

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-03 - Qualified costs and recipient-preserving effects
+
+- Share fixed creature-subtype and color-qualified sacrifice costs across
+  affordability, exact candidates, checked normal/free payment and AI selection.
+  Exclude stale/opponent-controlled/nonpermanent resources; canonical changeling,
+  Kindred permanents, multicolor, tokens and borrowed ownership are exercised.
+- Fix color-qualified searches widening to every creature, and referenced-controller
+  damage going to the creature. Natural Order's owned search choice survives reload;
+  Fodder Launch uses the current controller and ordinary damage/prevention.
+  Goblin Grenade and Abjure have canonical actual-effect checks, not name exceptions.
+- Validation: 84 focused checks, 374 initial regressions, full backend 4,430 passed
+  (fourteen late edge cases pass separately), frontend gates, complete Chromium with
+  eight new both-seat cases and twelve seat-balanced samples repeated twice without
+  reported timeout/anomaly/drift. Refresh Graphify; archive verified evidence on
+  RCHFiles. See [acceptance and limits](docs/testing/qualified-spell-costs.md).
+
 ## 2026-10-03 - Canonical kicker goldens and coherent removal targets
 
 - Add fresh canonical paid/unpaid goldens for Eject the Warp Core, Final Flourish,

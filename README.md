@@ -17,6 +17,12 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Qualified spell costs](docs/testing/qualified-spell-costs.md): fixed creature-subtype
+  and color-qualified sacrifices share checked eligibility and resource selection.
+  Canonical green-creature searches keep their restriction; referenced-controller
+  damage uses the current controller and ordinary prevention. General type/color
+  layers, compound costs and deeper sacrifice planning remain unfinished.
+
 - [Canonical kicker goldens and removal targeting](docs/testing/kicker-goldens.md):
   real sacrifice-union and mana-kicker discard fixtures cover both seats, checked
   payments and restore. AI negative-stat targets share the engine's effective lethal

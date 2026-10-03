@@ -72,7 +72,9 @@ without relaxing validation. A new AI test initially reversed helper arguments,
 and one test command referenced a nonexistent test filename. Those are recorded
 test-harness errors, not hidden application failures.
 
-- Subtype/qualified sacrifices, exile/reveal/return/tap costs, variable discard or
+- Fixed subtype and color-qualified sacrifices now have
+  [canonical acceptance](qualified-spell-costs.md). General qualified intersections,
+  type/color-changing layers, exile/reveal/return/tap costs, variable discard or
   sacrifice counts, and different-type mandatory sacrifice components need a
   richer resource model; the clauses exercised here are rejected explicitly.
 - Alternate X-life branches, arbitrary optional additional costs and interrupted

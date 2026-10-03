@@ -51,6 +51,12 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'qualified_cost_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
+        from tests.test_qualified_spell_costs import setup, SPELLS
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, *_ = setup(list(SPELLS)[index], seat)
+        state.mechanic_choice_players = {1, 2}
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {f'kicker_golden_{index}_{seat}' for index in range(5) for seat in [1, 2]}:
         from tests.test_kicker_goldens import setup, SPELLS
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

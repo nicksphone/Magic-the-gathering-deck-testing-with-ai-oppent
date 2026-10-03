@@ -162,6 +162,17 @@ def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
             emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
+def deal_damage_to_controller(state: MatchState, controller: int, payload: dict) -> None:
+    """Resolve the referenced object's current controller, not a cast-time seat."""
+    target = state.cards.get(payload.get('target_card_id'))
+    if target is None:
+        return
+    damage = dict(payload)
+    damage.pop('target_card_id', None)
+    damage['target_player'] = target.controller
+    deal_damage(state, controller, damage)
+
+
 def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     payload = apply_replacement_effects("damage", dict(payload))
     target_player = payload.get("target_player")

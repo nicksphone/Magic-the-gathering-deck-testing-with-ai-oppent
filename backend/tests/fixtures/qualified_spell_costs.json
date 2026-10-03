@@ -1,0 +1,250 @@
+[
+  {
+    "id": "fbad9449-d09c-4fd0-b2ad-2aa3a29e03bf",
+    "oracle_id": "dd97e457-07eb-4918-b780-ae7ff42a37e7",
+    "name": "Abjure",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a blue permanent.\nCounter target spell.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/wth/31/abjure?utm_source=api"
+  },
+  {
+    "id": "f380ae58-08cc-42df-ac74-3c6890a62463",
+    "oracle_id": "b2977807-5f46-424a-a6e9-14262f8a723a",
+    "name": "Benthic Infiltrator",
+    "mana_cost": "{2}{U}",
+    "type_line": "Creature — Eldrazi Drone",
+    "oracle_text": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\nThis creature can't be blocked.",
+    "power": "1",
+    "toughness": "4",
+    "colors": [],
+    "keywords": [
+      "Devoid",
+      "Ingest"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/bfz/55/benthic-infiltrator?utm_source=api"
+  },
+  {
+    "id": "b52534b3-5dfe-4019-a518-4e15899988f4",
+    "oracle_id": "997d2f38-5a50-451e-bd48-e36dcb24d967",
+    "name": "Boggart Shenanigans",
+    "mana_cost": "{2}{R}",
+    "type_line": "Kindred Enchantment — Goblin",
+    "oracle_text": "Whenever another Goblin you control is put into a graveyard from the battlefield, you may have this enchantment deal 1 damage to target player or planeswalker.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/evg/54/boggart-shenanigans?utm_source=api"
+  },
+  {
+    "id": "8f2fb3c6-af75-47a3-9f97-521872c32890",
+    "oracle_id": "2987c385-011a-4032-a516-a46d1e9dc9e8",
+    "name": "Crib Swap",
+    "mana_cost": "{2}{W}",
+    "type_line": "Kindred Instant — Shapeshifter",
+    "oracle_text": "Changeling (This card is every creature type.)\nExile target creature. Its controller creates a 1/1 colorless Shapeshifter creature token with changeling.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Changeling"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ecl/11/crib-swap?utm_source=api"
+  },
+  {
+    "id": "f577831b-2aa2-44a1-bd6b-ef111bc2e211",
+    "oracle_id": "a7a47969-b29a-4f99-9500-29c59af43c48",
+    "name": "Ego Erasure",
+    "mana_cost": "{2}{U}",
+    "type_line": "Kindred Instant — Shapeshifter",
+    "oracle_text": "Changeling (This card is every creature type.)\nCreatures target player controls get -2/-0 and lose all creature types until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Changeling"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lrw/59/ego-erasure?utm_source=api"
+  },
+  {
+    "id": "d000670f-1151-4abf-a7ec-b35a6e587183",
+    "oracle_id": "bec0127a-ab3c-4923-93c2-c43ba8998091",
+    "name": "Fodder Launch",
+    "mana_cost": "{3}{B}",
+    "type_line": "Kindred Sorcery — Goblin",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a Goblin.\nTarget creature gets -5/-5 until end of turn. Fodder Launch deals 5 damage to that creature's controller.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/lrw/114/fodder-launch?utm_source=api"
+  },
+  {
+    "id": "b0e0ef27-3db2-4976-b9db-13e3d7cd795d",
+    "oracle_id": "20aecb7b-7e37-4efe-ac27-f9f9042203f4",
+    "name": "Goblin Grenade",
+    "mana_cost": "{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a Goblin.\nGoblin Grenade deals 5 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ddt/45/goblin-grenade?utm_source=api"
+  },
+  {
+    "id": "b36a1bc7-a080-4fb6-b975-c59bb33a090a",
+    "oracle_id": "8b022754-6d16-470e-b754-4df6e4f4709e",
+    "name": "Goblin Instigator",
+    "mana_cost": "{1}{R}",
+    "type_line": "Creature — Goblin Rogue",
+    "oracle_text": "When this creature enters, create a 1/1 red Goblin creature token.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/moc/282/goblin-instigator?utm_source=api"
+  },
+  {
+    "id": "2d8ce8ad-2bb9-4c53-8e36-9690e8a118f1",
+    "oracle_id": "c1161505-1623-4475-a88e-2e48072cc2f1",
+    "name": "Goblin Warrens",
+    "mana_cost": "{2}{R}",
+    "type_line": "Enchantment",
+    "oracle_text": "{2}{R}, Sacrifice two Goblins: Create three 1/1 red Goblin creature tokens.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/me4/123/goblin-warrens?utm_source=api"
+  },
+  {
+    "id": "22ed0ee7-6749-4f38-8e53-c11b46b17e5d",
+    "oracle_id": "240a349a-79f8-4e11-9a05-a78148e70a62",
+    "name": "Hapless Researcher",
+    "mana_cost": "{U}",
+    "type_line": "Creature — Human Wizard",
+    "oracle_text": "Sacrifice this creature: Draw a card, then discard a card.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/jud/42/hapless-researcher?utm_source=api"
+  },
+  {
+    "id": "5d0588a8-6039-42d6-98ee-8fea16f63e88",
+    "oracle_id": "1499af11-274f-4f8d-b0b6-20e1693ebab7",
+    "name": "Mistvein Borderpost",
+    "mana_cost": "{1}{U}{B}",
+    "type_line": "Artifact",
+    "oracle_text": "You may pay {1} and return a basic land you control to its owner's hand rather than pay this spell's mana cost.\nThis artifact enters tapped.\n{T}: Add {U} or {B}.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B",
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/arc/90/mistvein-borderpost?utm_source=api"
+  },
+  {
+    "id": "18acffb1-c1e8-4729-a350-64823b2f9d29",
+    "oracle_id": "52237e6b-19f6-405c-a668-545c4ccb1b6d",
+    "name": "Mothdust Changeling",
+    "mana_cost": "{U}",
+    "type_line": "Creature — Shapeshifter",
+    "oracle_text": "Changeling (This card is every creature type.)\nTap an untapped creature you control: This creature gains flying until end of turn.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Changeling"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mma/53/mothdust-changeling?utm_source=api"
+  },
+  {
+    "id": "290c6036-02a3-43fa-b0d4-af3818794c3c",
+    "oracle_id": "43dac6fa-4cdf-49ec-9e11-2e5e8f9f928b",
+    "name": "Myr Superion",
+    "mana_cost": "{2}",
+    "type_line": "Artifact Creature — Myr",
+    "oracle_text": "Spend only mana produced by creatures to cast this spell.",
+    "power": "5",
+    "toughness": "6",
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/nph/146/myr-superion?utm_source=api"
+  },
+  {
+    "id": "bfe3329c-7faa-4925-b9d2-075a1ab27e80",
+    "oracle_id": "8c1fe337-375a-4add-93b6-0ac39ed72b4f",
+    "name": "Natural Order",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a green creature.\nSearch your library for a green creature card, put it onto the battlefield, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ema/177/natural-order?utm_source=api"
+  },
+  {
+    "id": "5841e5dd-2a4a-42b9-a04f-d7c5c4840d74",
+    "oracle_id": "f07b821c-bbc1-4def-b009-6c03689478d0",
+    "name": "Tarfire",
+    "mana_cost": "{R}",
+    "type_line": "Kindred Instant — Goblin",
+    "oracle_text": "Tarfire deals 2 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ddt/55/tarfire?utm_source=api"
+  },
+  {
+    "id": "aa41edf8-88a1-46dd-8315-b0afe7e14b7e",
+    "oracle_id": "338f0ab6-f744-4e5a-a358-05e71b93758d",
+    "name": "Woodland Changeling",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Shapeshifter",
+    "oracle_text": "Changeling (This card is every creature type.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Changeling"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lrw/242/woodland-changeling?utm_source=api"
+  }
+]

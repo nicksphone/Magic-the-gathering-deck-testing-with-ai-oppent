@@ -408,9 +408,28 @@ def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]
 
 
 def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature") -> list[str]:
+    from rules_engine.colors import card_color_names
+    from rules_engine.library_permissions import creature_types
     eligible: list[str] = []
     for cid in state.players[player_id].battlefield:
-        types = set(state.cards[cid].types or [])
+        card = state.cards.get(cid)
+        if card is None or card.zone != Zone.BATTLEFIELD or card.controller != player_id:
+            continue
+        types = set(card.types or [])
+        if not types.intersection({'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'}):
+            continue
+        if kind.startswith('subtype_'):
+            subtype = kind.removeprefix('subtype_')
+            if types.intersection({'Creature', 'Kindred'}) and (
+                    subtype in creature_types(card)
+                    or 'changeling' in {str(k).lower() for k in card.keywords or []}):
+                eligible.append(cid)
+            continue
+        color, separator, typed_kind = kind.partition('_')
+        if separator and color in {'white', 'blue', 'black', 'red', 'green'}:
+            if color in card_color_names(card) and (typed_kind == 'permanent' or typed_kind.title() in types):
+                eligible.append(cid)
+            continue
         if (
             kind == "permanent"
             or (any(part.title() in types for part in kind.split('_or_')))
