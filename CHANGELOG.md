@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 - Public-board combat setup planning
+
+- Master/Master Plus forecast one precombat setup action using real casting/payment, beginning-of-combat triggers, legal attack/block declarations, both damage windows and state-based outcomes. Casts, equipment and supported activations share the existing bounded combat search; already-winning boards preserve cards instead of spending another setup spell.
+- Selected faces and bestow modes now reach Tempo's threat-first scoring instead of the physical card's creature types. Known unsupported combat clauses, explicit inference failures, hidden-zone changes and unresolved choices prevent a claimed winning forecast. Small-board/one-action bounds and unannounced instant-response limitations remain explicit.
+- Canonical bestow/Aura/Equipment/pump/removal probes span both seats. Sixty actual checked decisions improve from 50 to 60 winning fixed continuations; a 140-decision probe across fourteen archetype labels improves from 116 to 140. Full hands, boards, legal moves, reasons, actual payment and resulting combat are archived. This is fixture decision evidence, not tournament strength or matchup balance.
+- Validation: 3,267 isolated backend tests passed (338 deprecation warnings, 439.79s), including 309 focused combat/AI/HTTP/recovery tests. Frontend lint/unit/build and complete Chromium recovery/sideboard/natural BO3 flows passed. Thirty logical seat-balanced samples across six decks, repeated twice, resolved with zero timeouts, determinism failures, drift labels or reported anomalies.
+- README, plan, scope and Graphify updated. Verified source/evidence and closed test archives are on RCHFiles `diagnostics/combat-setup/20261003T033139Z`; live databases and the user's untracked coder-plan remain untouched. Earlier failed/superseded runs are retained distinctly, not counted as passes.
+
 ## 2026-10-03 - Bestow casting, lifecycle and mode-aware controls
 
 - Added separate creature/Aura casting actions for ordinary mana-symbol bestow costs. Shared timing, target legality, Aura provenance, target discounts and actual payment use the selected mode without changing canonical printed Oracle or mana cost. Hand and supported temporary exile permissions expose the legal modes.

@@ -44,8 +44,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1790996635.6756897,
-    "hash": "e2a086ae86a43838265287d92a65ffb1"
+    "mtime": 1790998391.639111,
+    "hash": "01de42e0ec60d8e5255a5ee62db9fd26"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -550,6 +550,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/browser_fixture_server.py": {
     "mtime": 1790995917.2441251,
     "hash": "552e36f51e68861782a87af655107f0e"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_combat_setup.py": {
+    "mtime": 1790998391.639111,
+    "hash": "5a181292cc0717719f7d2a41a95ad010"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_entry_replacement_order.py": {
     "mtime": 1790861073.6931896,
@@ -1716,12 +1720,12 @@
     "hash": "4be2577361d83cc883eec3ca88dde8c3"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790997106.283128,
-    "hash": "0f53ce1bfd37d468a89caa0f7394e563"
+    "mtime": 1790998578.489145,
+    "hash": "2a9317cca2e48c1c622e460a0de9c5d4"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790994412.2047386,
-    "hash": "433f1d4908dd348c6c326abd1e4a2bbf"
+    "mtime": 1790997408.2645433,
+    "hash": "ab54a04fc45df13689256d81b1a8b385"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1875,6 +1879,10 @@
     "mtime": 1790993969.8630953,
     "hash": "4b4c07549e3e04123b795ca3c0d0e9b1"
   },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/combat-setup.md": {
+    "mtime": 1790998578.4881449,
+    "hash": "d3a67c4c813ef166da3b592c2272d46b"
+  },
   "/home/nick/mtg-deck-testing-lab/docs/testing/player-counters.md": {
     "mtime": 1790816758.9967396,
     "hash": "fae2dfc8e7b4060c04436ee384122725"
@@ -1920,8 +1928,8 @@
     "hash": "21abe41ee61051dbee5a885a49d8e379"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/bestow.md": {
-    "mtime": 1790996866.6859813,
-    "hash": "87ed830a15b349159bb1e33042b12525"
+    "mtime": 1790997328.464767,
+    "hash": "d785aafd9a8c91727ddc11bcfe4f73f3"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/transformed-entry.md": {
     "mtime": 1790887564.9057481,

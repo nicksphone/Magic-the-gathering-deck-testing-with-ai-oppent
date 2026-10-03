@@ -395,6 +395,10 @@ class AIAgent:
         if tactical_loyalty is not None:
             return AIDecision(action=tactical_loyalty, reasoning="Choose immediate lethal or a profitable X-loyalty sweep")
 
+        combat_setup = self._tactical_combat_setup_action(state, legal_moves, player_id)
+        if combat_setup is not None:
+            return AIDecision(action=combat_setup, reasoning="Public-board combat setup forecasts a winning attack")
+
         stack_interaction = self._forced_stack_interaction(state, legal_moves, player_id)
         if stack_interaction is not None:
             return AIDecision(action=stack_interaction, reasoning="Answer threatening stack item with available interaction")
@@ -3441,11 +3445,104 @@ class AIAgent:
             self.engine.next_step(simulated)
         return False
 
-    def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int) -> list[str] | None:
+    def _project_attack_line(self, state, player_id, attackers):
+        if not isinstance(state, MatchState):
+            return None
+        from rules_engine.combat_constraints import combat_rule_view
+        if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
+               for cid in player.battlefield if 'Creature' in state.cards[cid].types):
+            return None
+        from ai.pending_effects import _settle_announced_stack
+        sim = planning_copy(state)
+        opponent = 3 - player_id
+        try:
+            self.engine.take_action(sim, player_id, {'type': 'attack', 'attackers': list(attackers)}, reject_invalid=True)
+            declared = list(sim.attackers or [])
+            if not sim.attackers:
+                return sim, declared
+            if not _settle_announced_stack(sim):
+                return None
+            self.engine.next_step(sim)
+            blockers = [cid for cid in sim.players[opponent].battlefield
+                        if 'Creature' in sim.cards[cid].types and not sim.cards[cid].tapped]
+            blocks = {}
+            if blockers:
+                blocks = self._search_block_assignments(sim,
+                    [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
+                    [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers])
+                if blocks is None:
+                    return None
+            self.engine.take_action(sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)
+            if not _settle_announced_stack(sim):
+                return None
+            self.engine.next_step(sim)
+            if not self._finish_combat_projection(sim, state):
+                return None
+            if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                return None
+            return sim, declared
+        except (ValueError, KeyError):
+            return None
+
+    def _tactical_combat_setup_action(self, state, legal_moves, player_id):
+        """One setup action plus bounded known combat; unknown is not a win."""
+        if (not isinstance(state, MatchState) or self.difficulty not in {'master', 'master_plus'} or state.active_player != player_id
+                or state.step != Step.PRECOMBAT_MAIN or state.stack or state.pregame_pending):
+            return None
+        candidates = [move for move in legal_moves
+                      if move.get('type') in {'cast_spell', 'equip', 'activate_ability', 'activate_loyalty'}]
+        if not candidates or len(candidates) > 16:
+            return None
+        own_creatures = [cid for cid in state.players[player_id].battlefield if 'Creature' in state.cards[cid].types]
+        opposing_creatures = [cid for cid in state.players[3-player_id].battlefield if 'Creature' in state.cards[cid].types]
+        if not own_creatures or len(own_creatures) > 3 or len(opposing_creatures) > 2:
+            return None
+        if self._setup_combat_forecast(planning_copy(state), player_id) is True:
+            return {'type': 'pass_priority'}
+        for move in candidates:
+            action = self._materialize_action(state, move, player_id)
+            if action.get('_invalid_ai_choice'):
+                continue
+            sim = planning_copy(state)
+            try:
+                self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                if self._setup_combat_forecast(sim, player_id) is True:
+                    return action
+            except (ValueError, KeyError):
+                continue
+        return None
+
+    def _setup_combat_forecast(self, sim, player_id):
+        from ai.pending_effects import _settle_announced_stack
+        visible_hands = {pid: tuple(player.hand) for pid, player in sim.players.items()}
+        libraries = {pid: tuple(player.library) for pid, player in sim.players.items()}
+        for _ in range(4):
+            if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                return None
+            if not _settle_announced_stack(sim):
+                return None
+            if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                return None
+            if any(tuple(player.hand) != visible_hands[pid] or tuple(player.library) != libraries[pid]
+                   for pid, player in sim.players.items()):
+                return None
+            if sim.winner is not None:
+                return sim.winner == player_id
+            if sim.step == Step.DECLARE_ATTACKERS:
+                attack = next((move for move in self.engine.legal_moves(sim, player_id) if move['type'] == 'attack'), None)
+                selected = self._search_attack_assignments(sim, (attack or {}).get('options', []), player_id, force=True)
+                if not selected:
+                    return False if selected is not None else None
+                outcome = self._project_attack_line(sim, player_id, selected)
+                return outcome[0].winner == player_id if outcome is not None else None
+            self.engine.next_step(sim)
+        return None
+
+    def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int, *, force=False) -> list[str] | None:
         """Search small-board attack subsets through the defender's best legal blocks."""
         if self.difficulty not in {"master", "master_plus"}:
             return None
-        if int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
+        if not force and int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
             return None
         candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in state.cards[cid].types]
         if not candidate_ids or len(candidate_ids) > 3:
@@ -3468,38 +3565,10 @@ class AIAgent:
 
         best: tuple[float, tuple[str, ...], list[str]] | None = None
         for subset in subsets:
-            sim = planning_copy(state)
-            actual_attackers: list[str] = []
-            try:
-                self.engine.take_action(sim, player_id, {"type": "attack", "attackers": list(subset)})
-                actual_attackers = list(getattr(sim, "attackers", []) or [])
-                if actual_attackers:
-                    from ai.pending_effects import _settle_announced_stack
-                    if not _settle_announced_stack(sim):
-                        continue
-                    self.engine.next_step(sim)
-                    blocker_ids = [
-                        cid
-                        for cid in sim.players[opponent].battlefield
-                        if cid in sim.cards
-                        and "Creature" in sim.cards[cid].types
-                        and not sim.cards[cid].tapped
-                    ]
-                    blocks = {}
-                    if blocker_ids:
-                        attacker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in actual_attackers]
-                        blocker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in blocker_ids]
-                        blocks = self._search_block_assignments(sim, attacker_options, blocker_options)
-                        if blocks is None:
-                            continue  # Unknown response is not an empty declaration.
-                    self.engine.take_action(sim, opponent, {"type": "block", "blocks": blocks}, reject_invalid=True)
-                    if not _settle_announced_stack(sim):
-                        continue
-                    self.engine.next_step(sim)
-                    if not self._finish_combat_projection(sim, state):
-                        continue
-            except Exception:
+            outcome = self._project_attack_line(state, player_id, subset)
+            if outcome is None:
                 continue
+            sim, actual_attackers = outcome
 
             score = evaluate_board(sim, player_id)
             score += (sim.players[opponent].life - state.players[opponent].life) * -2.0
@@ -4340,7 +4409,7 @@ class AIAgent:
             if mv.get("type") != "cast_spell":
                 continue
             cid = mv.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, mv)
             if not card:
                 continue
             types = set(getattr(card, "types", []) or [])
