@@ -116,8 +116,8 @@
     "hash": "d612c1ed0540743228cd8d9c4cc32528"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1790764149.086238,
-    "hash": "bfa2263ce2edf58abcbface9e3c49ac4"
+    "mtime": 1790999368.2555451,
+    "hash": "0cbefe83b9b399c8ce2a1b5f465bc427"
   },
   "/home/nick/mtg-deck-testing-lab/backend/scripts/build_ai_log_priors.py": {
     "mtime": 1784164092.074253,
@@ -482,6 +482,10 @@
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_control_changes.py": {
     "mtime": 1790912725.1465342,
     "hash": "c570960f3d16b9a5f45ad5a309f1d742"
+  },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_replay_progress.py": {
+    "mtime": 1790999463.919663,
+    "hash": "884c8b861753eee0656ba7344f044e19"
   },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_knowledge_models.py": {
     "mtime": 1789580841.7929404,
@@ -1716,16 +1720,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790996866.6869812,
-    "hash": "4be2577361d83cc883eec3ca88dde8c3"
+    "mtime": 1790999573.7725632,
+    "hash": "34ace1814a55b28ea932dd1a56aed9e6"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790998578.489145,
-    "hash": "2a9317cca2e48c1c622e460a0de9c5d4"
+    "mtime": 1790999573.7715633,
+    "hash": "5840b7417cf65c14030f4bc7ffc9497a"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790997408.2645433,
-    "hash": "ab54a04fc45df13689256d81b1a8b385"
+    "mtime": 1790999573.774563,
+    "hash": "3c10429386c5546c8c5c3d9fa83ddcb7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1880,8 +1884,8 @@
     "hash": "4b4c07549e3e04123b795ca3c0d0e9b1"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/combat-setup.md": {
-    "mtime": 1790998578.4881449,
-    "hash": "d3a67c4c813ef166da3b592c2272d46b"
+    "mtime": 1790999573.7725632,
+    "hash": "e2f2e0003dbb3c8b1749e4ec2156dbcf"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/player-counters.md": {
     "mtime": 1790816758.9967396,

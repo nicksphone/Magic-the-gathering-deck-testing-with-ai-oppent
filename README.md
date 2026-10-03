@@ -396,9 +396,18 @@ cd backend
 python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Blue Control" --matches 1
 python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Dimir Control" --matches 1 --seed 849124 --out-dir diagnostics
 python3 scripts/card_play_analytics.py --games-jsonl diagnostics/RUN_DIR/games.jsonl --out diagnostics/card-play.json
-python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2
+python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2 --progress
 python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
 ```
+
+`--progress` emits flushed JSON records and atomically updates
+`<output>.progress.json` after each completed logical sample. Counts distinguish
+seat-balanced samples from their two repeatability executions; the ETA is an
+observed-average estimate, not a deadline. The file records failures but is not a
+resumable game snapshot or proof that a process remains live after interruption.
+Default CLI output stays unchanged without the flag. Run validation from a
+disposable local checkout because SQLite paths are source-relative; archive results
+on RCHFiles, but never run the SQLite database on NFS.
 The head-to-head runner records full hand/board decisions, effective keywords, marked damage and stack objects, including announced targets, saved copy characteristics and engine-detected counterability. Its trace uses the shared six-metric decision-quality evidence path, including `redundant_removal_casts`. Legacy, malformed or unresolved-choice evidence does not become a measured zero for that metric. `--seed` records per-game seeds for reruns; generated stack IDs can still differ in raw logs, so compare normalized actions rather than raw bytes. Replace `RUN_DIR` with the run directory printed by the preceding head-to-head command. Metrics may remain unavailable when a complex combat line cannot be validated.
 
 The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.

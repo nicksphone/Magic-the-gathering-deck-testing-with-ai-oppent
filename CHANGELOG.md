@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03 - Replay progress and atomic diagnostic records
+
+- Optional `--progress` emits flushed JSON counts, observed-average ETA, last-sample outcome/determinism details and terminal failures. It atomically replaces `<output>.progress.json`; failed replacements preserve the previous record and clean temporary files. Logical seat-balanced samples are distinct from their two repeatability executions, and default CLI output is unchanged.
+- Progress records explicitly do not support resume. A remaining `running` file after interruption is not proof of a live process; completed runner status is not whole-game correctness or AI-strength certification. Within-sample heartbeats and resumable checkpoints remain open.
+- Validation: 33 focused runner/protocol/sampling tests passed; a real two-sample, seat-balanced run executed each sample twice with no timeout/determinism/drift/anomaly and correct start/sample/terminal progress records. The final isolated backend suite passed 3,274 tests (338 deprecation warnings, 440.51s). Frontend/runtime code did not change; the preceding complete lint/unit/build/Chromium validation remains separately attributed.
+- README, plan and Graphify updated. Verified evidence/source archives and closed test cleanup are on RCHFiles `diagnostics/replay-progress/20261003T035423Z`; live databases, services and the user's untracked coder-plan remain intact.
+
 ## 2026-10-03 - Public-board combat setup planning
 
 - Master/Master Plus forecast one precombat setup action using real casting/payment, beginning-of-combat triggers, legal attack/block declarations, both damage windows and state-based outcomes. Casts, equipment and supported activations share the existing bounded combat search; already-winning boards preserve cards instead of spending another setup spell.

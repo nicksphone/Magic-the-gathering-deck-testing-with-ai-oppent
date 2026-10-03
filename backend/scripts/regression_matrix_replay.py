@@ -7,6 +7,8 @@ except ImportError:  # pragma: no cover - direct script execution
 import argparse
 import hashlib
 import json
+import tempfile
+import time
 from collections import Counter
 from itertools import combinations
 from pathlib import Path
@@ -23,6 +25,37 @@ from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
+
+
+def _report_progress(output, summary, total, started, *, status='running', last_sample=None, error=None):
+    elapsed = max(0.0, time.monotonic() - started)
+    completed = summary['matches']
+    record = {
+        'event': 'matrix_progress', 'status': status,
+        'completed_samples': completed, 'total_samples': total,
+        'repeatability_runs_per_sample': 2,
+        'elapsed_seconds': round(elapsed, 3),
+        'estimated_remaining_seconds': (round(elapsed * max(0, total-completed) / completed, 1)
+                                        if completed else 0.0 if total == 0 else None),
+        'determinism_failures': summary['determinism_failures'],
+        'anomaly_counts': summary.get('anomaly_counts', {}),
+        'last_sample': last_sample, 'error': error,
+        'resume_supported': False,
+    }
+    path = Path(str(output) + '.progress.json')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent,
+                                         prefix=path.name + '.', suffix='.tmp', delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(record, handle, indent=2)
+        temporary.replace(path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    print(json.dumps(record), flush=True)
+    return record
 
 
 def _stable_seed(left_name: str, right_name: str, index: int) -> int:
@@ -200,6 +233,7 @@ def main() -> None:
     p.add_argument("--output", default="training_runs/regression_matrix_replay.json")
     p.add_argument("--max-decks", type=_positive_int, default=12)
     p.add_argument("--best-of", type=int, choices=(1, 3, 5, 7, 9), default=1)
+    p.add_argument('--progress', action='store_true', help='Emit JSON progress and atomically update <output>.progress.json; not a resumable snapshot')
     args = p.parse_args()
 
     init_db()
@@ -235,13 +269,26 @@ def main() -> None:
     }
     drift_labels = Counter()
     anomaly_counts = Counter()
+    started = time.monotonic()
+    total = len(decks) * (len(decks)-1) // 2 * args.matches_per_pair * (1 if args.single_seat else 2)
+    if args.progress:
+        _report_progress(args.output, summary, total, started)
 
     for left, right in combinations(decks, 2):
         summary["pairs"] += 1
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
         for seed, seat_one, seat_two, deck_a_seat in _pair_schedule(left, right, args.matches_per_pair, not args.single_seat):
-            a = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
-            b = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            try:
+                a = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+                b = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+            except Exception as exc:
+                if args.progress:
+                    summary['anomaly_counts'] = dict(anomaly_counts)
+                    _report_progress(args.output, summary, total, started, status='failed',
+                                     last_sample={'seed': seed, 'deck_a_seat': deck_a_seat,
+                                                  'seat_one_deck': seat_one['name'], 'seat_two_deck': seat_two['name']},
+                                     error=str(exc))
+                raise
             deterministic_ok = a == b
             if not deterministic_ok:
                 summary["determinism_failures"] += 1
@@ -280,6 +327,12 @@ def main() -> None:
             })
             summary["matches"] += 1
             summary["games"] += a["games_played"]
+            if args.progress:
+                summary['anomaly_counts'] = dict(anomaly_counts)
+                row = pair['games'][-1]
+                _report_progress(args.output, summary, total, started,
+                                 last_sample={key: row[key] for key in ('seed', 'deck_a_seat', 'seat_one_deck',
+                                     'seat_two_deck', 'winner', 'termination_status', 'deterministic', 'drift_excerpt')})
         pair["outcomes"] = _pair_outcomes(pair["games"])
         summary["pair_results"].append(pair)
 
@@ -289,6 +342,8 @@ def main() -> None:
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    if args.progress:
+        _report_progress(args.output, summary, total, started, status='completed')
     print(json.dumps({
         "output": str(out),
         "matches": summary["matches"],
