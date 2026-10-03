@@ -51,7 +51,10 @@ def _card_for_move(state, move):
     card = state.cards.get(move.get("card_id"))
     if card and move.get("type") == "cast_spell" and getattr(card, "card_faces", None):
         from rules_engine.card_faces import select_cast_face
-        return select_cast_face(card, move.get("selected_face_index", 0))
+        card = select_cast_face(card, move.get("selected_face_index", 0))
+    if card and move.get('cast_variant') == 'bestow':
+        from rules_engine.bestow import bestow_cast_view
+        card = bestow_cast_view(card)
     return card
 
 
@@ -1739,6 +1742,9 @@ class AIAgent:
             _, face_score = self._select_modal_face_index(state, card, player_id)
         else:
             face_score = 0.0
+        if move.get('cast_variant') == 'bestow':
+            from rules_engine.bestow import bestow_cast_view
+            card = bestow_cast_view(card)
         if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types and not self._is_major_threat_card(card):
             return -1.4
         is_creature = "Creature" in card.types
@@ -2557,6 +2563,9 @@ class AIAgent:
         if source is not None and move.get("selected_face_index") is not None:
             from rules_engine.card_faces import select_cast_face
             source = select_cast_face(source, int(move["selected_face_index"]))
+        if source is not None and move.get('cast_variant') == 'bestow':
+            from rules_engine.bestow import bestow_cast_view
+            source = bestow_cast_view(source)
         if mtype == "equip" or (mtype == "cast_spell" and source is not None and is_aura(source)):
             action, _ = self._attachment_projection(state, move, player_id)
             return action or {"type": mtype, "card_id": move.get("card_id"), "_invalid_ai_choice": True}

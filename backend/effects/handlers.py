@@ -828,7 +828,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
                 key: copy.deepcopy(getattr(source, key))
                 for key in ("name", "types", "type_line", "mana_cost", "oracle_text", "power",
                             "toughness", "loyalty", "keywords", "colors", "image_uri",
-                            "layout", "card_faces", "selected_face_index")
+                            "layout", "card_faces", "selected_face_index", "bestow_characteristics")
             }
     copied_payload["__stack_copy_kind"] = kind
     copied_payload["__source_card_id"] = item.source_card_id

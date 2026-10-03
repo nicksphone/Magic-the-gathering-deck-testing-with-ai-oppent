@@ -89,6 +89,7 @@ class CardInstance:
     selected_face_index: int | None = None
     chosen_creature_type: str | None = None
     printed_characteristics: dict = field(default_factory=dict)
+    bestow_characteristics: dict = field(default_factory=dict)
     colors: list[str] | None = None
     is_token: bool = False
     last_known_battlefield: dict = field(default_factory=dict)
@@ -105,6 +106,9 @@ class CardInstance:
             self.counter_timestamps.clear()
 
     def move_to_zone(self, zone: Zone) -> None:
+        if zone not in {Zone.STACK, Zone.BATTLEFIELD} and self.bestow_characteristics:
+            from rules_engine.bestow import end_bestow
+            end_bestow(self)
         if zone != self.zone:
             self.zone_change_sequence += 1
         # Battlefield deaths defer this reset until their die triggers have

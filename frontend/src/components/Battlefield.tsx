@@ -186,7 +186,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   function castAction(cardId: string, selectedFaceIndex?: number) {
     const t = targets[cardId] ?? {};
     const move = castMoves.find((candidate) => candidate.card_id === cardId &&
-      (candidate.selected_face_index ?? 0) === (selectedFaceIndex ?? 0));
+      (candidate.selected_face_index ?? 0) === (selectedFaceIndex ?? 0) &&
+      (!costChoice[cardId] || candidate.cost_options?.some((option) => option.id === costChoice[cardId])));
     const selectedModes = Array.isArray(t.mode_texts) ? t.mode_texts as string[] : [];
     const modeTargets = (t.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
     const announced = move?.target_hints?.choose_two_modes && selectedModes.length === 2
@@ -523,9 +524,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
             const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
-            const move = ["modal_dfc", "adventure", "split"].includes(card.layout ?? "")
-              ? cardCastMoves.find((m) => (m.selected_face_index ?? 0) === selectedFaceIndex)
-              : cardCastMoves[0];
+            const faceCastMoves = cardCastMoves.filter((m) => (m.selected_face_index ?? 0) === selectedFaceIndex);
+            const castCostOptions = [...new Map(faceCastMoves.flatMap((m) => m.cost_options ?? []).map((option) => [option.id, option])).values()];
+            const move = faceCastMoves.find((m) => !costChoice[card.id] || m.cost_options?.some((option) => option.id === costChoice[card.id])) ?? faceCastMoves[0];
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
@@ -575,13 +576,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const targetingText = Array.isArray(chosenModes) && chosenModes.length
               ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
             const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
-            const alternativeTargets = !/\btargets?\b/i.test(targetingText) ? [] : [...new Map([
+            const alternativeTargets = !hints?.aura_targets?.length && !/\btargets?\b/i.test(targetingText) ? [] : [...new Map([
               ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const selectedManaCost = move.cost_options?.find((option) => option.id === selectedCostId)?.mana_cost ?? move.mana_cost;
             const selectedAuraTarget = String(targets[card.id]?.target_card_id ?? "");
             const incompatibleAuraCost = Boolean(hints?.aura_cost_options && (!selectedAuraTarget || !hints.aura_cost_options[selectedAuraTarget]?.includes(selectedCostId ?? "")));
             const hybridSymbols = move.cost_options?.find((option) => option.id === selectedCostId)?.hybrid_symbols ?? [];
@@ -599,7 +601,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   disabled={incompleteHybridChoice || incompatibleAuraCost}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
-                  Cast {move.card_name ?? card.name} {move.mana_cost ? `(${move.mana_cost})` : ""}
+                  Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
                 </button>
                 {cycleMove ? (
                   <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
@@ -626,12 +628,16 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ))}
                   </select>
                 ) : null}
-                {move.cost_options?.length ? (
-                  <select value={costChoice[card.id] ?? ""} onChange={(e) => setCostChoice((prev) => ({ ...prev, [card.id]: e.target.value }))}>
+                {castCostOptions.length ? (
+                  <select value={costChoice[card.id] ?? ""} onChange={(e) => {
+                    const value = e.target.value;
+                    setCostChoice((prev) => ({ ...prev, [card.id]: value }));
+                    setTargets((prev) => ({ ...prev, [card.id]: {} }));
+                  }}>
                     <option value="">Cost Option</option>
-                    {move.cost_options.map((c) => (
-                      <option key={`${card.id}-cost-${c.id}`} value={c.id} disabled={Boolean(hints?.aura_cost_options && selectedAuraTarget && !hints.aura_cost_options[selectedAuraTarget]?.includes(c.id))}>
-                        {c.label}
+                    {castCostOptions.map((c) => (
+                      <option key={`${card.id}-cost-${c.id}`} value={c.id} disabled={Boolean(move.cost_options?.some((option) => option.id === c.id) && hints?.aura_cost_options && selectedAuraTarget && !hints.aura_cost_options[selectedAuraTarget]?.includes(c.id))}>
+                        {c.label} {c.mana_cost ? `(${c.mana_cost})` : ""}
                       </option>
                     ))}
                   </select>

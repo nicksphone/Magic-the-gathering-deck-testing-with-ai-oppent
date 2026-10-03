@@ -12,6 +12,12 @@ from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
+    from rules_engine.bestow import is_bestowed
+    from game_state.state import object_incarnation
+    source = state.cards.get(source_card_id)
+    target = state.cards.get((payload or {}).get('target_card_id'))
+    if is_spell and source is not None and is_bestowed(source) and target is not None:
+        payload = {**payload, '__bestow_target_incarnation': [object_incarnation(target), target.zone_change_sequence]}
     item = StackItem(
         id=state.allocate_object_id(),
         source_card_id=source_card_id,
@@ -101,7 +107,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
-    from rules_engine.targeting import stack_source_card
+    from rules_engine.targeting import stack_source_card, stack_object_kind
     card = stack_source_card(state, item)
     if (item.payload or {}).get("__trigger_target_choice"):
         from rules_engine.events import trigger_target_options
@@ -117,6 +123,27 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
     target_count += sum(sum(choice.get(key) is not None for key in ("target_card_id", "target_player", "target_stack_id"))
                         for choice in (announced.get("mode_targets") or {}).values())
+    from rules_engine.bestow import is_bestowed, end_bestow
+    if card is not None and is_bestowed(card) and stack_object_kind(state, item) == 'spell':
+        from game_state.state import object_incarnation
+        from rules_engine.attachments import attachment_target_is_legal
+        from rules_engine.targeting import validate_hexproof_shroud_targets
+        target_id = item.payload.get('target_card_id')
+        target = state.cards.get(target_id)
+        incarnation = item.payload.get('__bestow_target_incarnation')
+        legal = (attachment_target_is_legal(state, card, target_id)
+                 and (incarnation is None or target is not None
+                      and [object_incarnation(target), target.zone_change_sequence] == incarnation)
+                 and validate_hexproof_shroud_targets(state, item.controller, {'target_card_id': target_id}, card)[0])
+        if not legal:
+            end_bestow(card)
+            item.payload.pop('target_card_id', None)
+            item.payload.pop('__announced_targets', None)
+            if item.payload.get('__copied_card'):
+                item.payload['__copied_card'] = {**item.payload['__copied_card'],
+                    'types': list(card.types), 'type_line': card.type_line, 'bestow_characteristics': {}}
+            announced, target_count = {}, 0
+            state.log.append(f'{item.label} ceases to be bestowed and resolves as a creature.')
     if card and item.payload.get("__ability_target_text") and target_count == 1:
         from copy import copy
         from rules_engine.oracle_effects import inspect_target_hints
@@ -378,6 +405,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
 def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: dict) -> bool:
     from game_state.state import CardInstance
     from dataclasses import asdict
+    from copy import deepcopy
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
 
     copied = payload["__copied_card"]
@@ -394,6 +422,7 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
         card_faces=list(copied.get("card_faces") or []),
         selected_face_index=copied.get("selected_face_index"),
+        bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
         summoning_sick=True, entered_turn=state.turn,
     ))
     completion = ({'entry_item': asdict(item), 'entry_payload': payload}

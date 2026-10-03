@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-03 - Bestow casting, lifecycle and mode-aware controls
+
+- Added separate creature/Aura casting actions for ordinary mana-symbol bestow costs. Shared timing, target legality, Aura provenance, target discounts and actual payment use the selected mode without changing canonical printed Oracle or mana cost. Hand and supported temporary exile permissions expose the legal modes.
+- Persist bestow characteristics and target incarnation through snapshots. Illegal targets resolve as creatures; invalid/unattached Auras revert in place and receive same-wave state-based checks. Spell copies and retargeting keep independent bestow identity; later abilities do not incorrectly revert their source.
+- Both human seats can choose cost mode and target; alternative-cost buttons show the selected cost rather than the printed cost. AI uses bestowed characteristics and existing attachment projections. Canonical Dryad/Quarry fixtures and actual AI selections exercise legality/payment, not optimal strategy.
+- Final backend validation: 3,197 isolated tests passed (336 deprecation warnings, 431.23s), with 89 focused bestow/Aura-cost tests. Frontend lint, contract tests and production build pass; both-seat bestow casting/payment/resolution/reload passes through actual App controls. Twelve logical seat-balanced template samples repeated twice completed with zero timeouts, determinism failures, drift labels or reported anomalies.
+- The final complete Chromium harness also passes recovery, sideboarding, natural AI, human-vs-AI and human-vs-human best-of-three flows. Earlier failed mode-picker runs remain archived, not counted as passes.
+- Sixteen full checked decision traces across four archetypes retain hands, boards, legal moves and reasoning. They expose a remaining Aggro/Tempo creature-first preference over a winning Aura line; this is explicitly added to the plan, not hidden by successful casting tests. Phasing, arbitrary type-layer dependencies and broader zone permissions remain conservatively warned.
+- README, finish plan, bestow scope and Graphify updated. Evidence and verified closed test archives are on RCHFiles `diagnostics/bestow/20261003T024102Z`; live databases and the user's untracked coder-plan are preserved.
+
 ## 2026-10-03 - Shared activation costs and reserved resources
 
 - Added source-bound numeric activation taxes/reductions, recognized one-mana floors and mana exceptions across shared legality/payment/hints. Creature-permanent reductions do not discount hand abilities; generic discounts preserve colored/colorless/snow requirements and independent equip discounts can reach zero.

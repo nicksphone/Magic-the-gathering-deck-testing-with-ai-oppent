@@ -42,6 +42,7 @@ export type CardView = {
   types: string[];
   is_token?: boolean;
   attached_to?: string | null;
+  bestowed?: boolean;
   effect_warnings?: string[];
 };
 
@@ -130,6 +131,7 @@ export type MatchState = {
 };
 
 export type LegalMove = {
+  cast_variant?: 'bestow';
   selected_face_index?: number;
   kind?: "scry" | "scry_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "saga_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
   entry_choice?: "tapped" | "pay_two_life";

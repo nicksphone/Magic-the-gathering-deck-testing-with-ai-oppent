@@ -154,6 +154,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.priority_player == player_id, "This player does not have priority")
     moves = rules.legal_moves(state, player_id)
     available = [move for move in moves if move["type"] == kind]
+    if kind == 'cast_spell':
+        bestowed = (action.get('cost_choice') or {}).get('id') == 'bestow'
+        available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana"}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
@@ -252,6 +255,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         from rules_engine.oracle_effects import extract_loyalty_abilities
         require(extract_loyalty_abilities(state.cards[action["card_id"]])[action["ability_index"]].get("x_cost"), "This ability does not have a chosen X")
     elif kind == "cast_spell":
+        from rules_engine.attachments import is_aura
         from rules_engine.costs import collect_cost_options
         from rules_engine.engine import _select_face_for_cast
         face = action.get("selected_face_index", action.get("targets", {}).get("selected_face_index"))
@@ -259,6 +263,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(0 <= face < len(state.cards[action["card_id"]].card_faces), "Selected card face is unavailable")
             require(not face or state.cards[action["card_id"]].layout not in {"transform", "meld", "flip", "double_faced_token"}, "This back face cannot be cast directly")
         face_card = _select_face_for_cast(state.cards[action["card_id"]], face)
+        if (action.get('cost_choice') or {}).get('id') == 'bestow':
+            from rules_engine.bestow import bestow_cast_view
+            face_card = bestow_cast_view(face_card)
         if state.cards[action["card_id"]].layout in {"modal_dfc", "adventure", "split"}:
             require(any(item.get("selected_face_index", 0) == (face or 0) for item in available), "Selected face is not currently castable")
         options = collect_cost_options(state, player_id, face_card)
@@ -277,6 +284,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 state, player_id, option.mana_cost, card_name=face_card.name,
                 x_value=int(targets.get("x_value") or 0), spell_types=set(face_card.types),
                 oracle_text=face_card.oracle_text or "",
+                spell_is_aura=is_aura(face_card),
+                source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),
                 hybrid_choices=hybrid_choices,
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")

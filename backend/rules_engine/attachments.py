@@ -16,6 +16,9 @@ def enchant_restriction(oracle_text: str):
 
 
 def is_aura(card) -> bool:
+    from rules_engine.bestow import is_bestowed
+    if is_bestowed(card):
+        return True
     type_line = (getattr(card, "type_line", "") or "").lower()
     types = {str(value).lower() for value in (getattr(card, "types", []) or [])}
     return "enchantment" in types and "aura" in type_line
@@ -41,6 +44,9 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
         return False
     if not is_aura(attachment):
         return True
+    from rules_engine.bestow import is_bestowed
+    if is_bestowed(attachment):
+        return 'Creature' in target.types
     restriction = enchant_restriction(attachment.oracle_text)
     if restriction is None:
         return False

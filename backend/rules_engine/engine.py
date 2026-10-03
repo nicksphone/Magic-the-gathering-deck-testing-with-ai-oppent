@@ -23,7 +23,7 @@ from rules_engine.events import emit_event, emit_event_batch, flush_staged_trigg
 from rules_engine.restrictions import can_activate_in_current_timing, can_cast_in_current_timing
 from rules_engine.ward import capture_ward_triggers
 from rules_engine.zone_actions import put_into_graveyard
-from rules_engine.attachments import attachment_target_is_legal
+from rules_engine.attachments import attachment_target_is_legal, is_aura
 from effects.registry import resolve_effect
 
 
@@ -796,6 +796,13 @@ class RulesEngine:
                     state.log.append(f"{card.name}'s back face cannot be cast directly.")
                     return
                 face_card = _select_face_for_cast(card, selected_face_index)
+                from rules_engine.bestow import bestow_cost, bestow_cast_view
+                bestowed = (action.get('cost_choice') or {}).get('id') == 'bestow'
+                if bestowed:
+                    if not bestow_cost(face_card):
+                        reject('This card has no bestow cost')
+                        return
+                    face_card = bestow_cast_view(face_card)
                 timing_ok, timing_reason = can_cast_in_current_timing(state, face_card, player_id)
                 if not timing_ok:
                     reject(timing_reason)
@@ -808,6 +815,7 @@ class RulesEngine:
                     apply_state_based_actions(state)
                     return
                 options = collect_cost_options(state, player_id, face_card)
+                options = [option for option in options if (option.id == 'bestow') == bestowed]
                 if not options:
                     reject("No supported casting cost")
                     return
@@ -841,6 +849,8 @@ class RulesEngine:
                 if selected_face_index is None and isinstance(at_targets, dict):
                     selected_face_index = at_targets.get("selected_face_index")
                 face_card = _select_face_for_cast(card, selected_face_index)
+                if bestowed:
+                    face_card = bestow_cast_view(face_card)
                 action_targets = enrich_divide_total(face_card, at_targets)
                 if face_card is not card:
                     action_targets = dict(action_targets)
@@ -888,6 +898,7 @@ class RulesEngine:
                     state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
                     oracle_text=face_card.oracle_text or "",
+                    spell_is_aura=bestowed or is_aura(face_card),
                     hybrid_choices=action.get("hybrid_choices"),
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                     payment_details=payment_details,
@@ -930,7 +941,13 @@ class RulesEngine:
                     from rules_engine.alternative_casts import apply_prototype
                     apply_prototype(card)
                 from rules_engine.card_faces import apply_cast_face
-                apply_cast_face(card, face_card)
+                if bestowed:
+                    # Apply the selected printed face before bestow's type effect.
+                    apply_cast_face(card, _select_face_for_cast(card, selected_face_index))
+                    from rules_engine.bestow import begin_bestow
+                    begin_bestow(card)
+                else:
+                    apply_cast_face(card, face_card)
                 if chosen.id == "escape":
                     payload["__escaped"] = True
                 if chosen.id == "flashback":

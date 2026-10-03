@@ -85,6 +85,8 @@ echo 'Browser CI: multiple-block capacity and one payment per blocker'
 (cd frontend && timeout 120s node tests/browser-combat-capacity.mjs)
 echo 'Browser CI: specific combat recipients'
 (cd frontend && timeout 120s node tests/browser-recipient-combat.mjs)
+echo 'Browser CI: bestow casting choices'
+(cd frontend && timeout 120s node tests/browser-bestow.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

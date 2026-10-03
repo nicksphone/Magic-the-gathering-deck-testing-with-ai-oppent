@@ -41,6 +41,8 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
     from rules_engine.costs import collect_cost_options, check_cost_option_available
     from rules_engine.attachments import is_aura
     options = collect_cost_options(state, controller, card)
+    from rules_engine.bestow import is_bestowed
+    options = [option for option in options if (option.id == 'bestow') == is_bestowed(card)]
     if not is_aura(card):
         available = [o for o in options if check_cost_option_available(state, controller, card, o)]
         return available, build_cast_hints(state, card, controller) if available else {}
@@ -68,7 +70,8 @@ def build_cast_hints(
         card = copy(card)
         if aura:
             enchant = re.search(r"^enchant [^.\n]+", without_reminder_text(card.oracle_text or ""), re.I | re.M)
-            card.oracle_text = enchant.group(0) if enchant else ""
+            from rules_engine.bestow import is_bestowed
+            card.oracle_text = 'Enchant creature' if is_bestowed(card) else enchant.group(0) if enchant else ""
         else:
             # This is a permanent spell, not one of its later abilities.
             # Preserve mana/face choices without borrowing ability targets.

@@ -495,6 +495,28 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                           "from_exile": original.zone == Zone.EXILE,
                           "from_graveyard": original.zone == Zone.GRAVEYARD,
                           "cost_options": [vars(option) for option in options], "target_hints": hints})
+    from rules_engine.bestow import bestow_cost, bestow_cast_view
+    for cid in list(player.hand) + exile_candidates(state, player_id):
+        original = state.cards[cid]
+        if is_departed_token(original):
+            continue
+        indices = range(len(original.card_faces)) if original.layout in {'modal_dfc', 'adventure', 'split'} else [0]
+        for index in indices:
+            if original.zone == Zone.EXILE and not exile_permission(state, player_id, cid, index):
+                continue
+            face = select_cast_face(original, index)
+            if not bestow_cost(face):
+                continue
+            view = bestow_cast_view(face)
+            if not can_cast_in_current_timing(state, view, player_id)[0]:
+                continue
+            options, hints = available_cast_options_and_hints(state, view, player_id)
+            if options and has_available_targets_for_action(hints):
+                moves.append({'type': 'cast_spell', 'card_id': cid, 'card_name': view.name,
+                    'cast_variant': 'bestow', 'mana_cost': view.mana_cost,
+                    'from_exile': original.zone == Zone.EXILE,
+                    **({'selected_face_index': index} if original.card_faces else {}),
+                    'cost_options': [_cost_option_view(option) for option in options], 'target_hints': hints})
     return moves
 
 

@@ -51,6 +51,10 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'bestow_1', 'bestow_2'}:
+        from tests.test_bestow import cast_board
+        state, _, _ = cast_board(int(face_kind[-1]))
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'recipient_attack_1', 'recipient_attack_2', 'recipient_block_1', 'recipient_block_2'}:
         from tests.test_recipient_combat import recipient_board
         seat = int(face_kind[-1])

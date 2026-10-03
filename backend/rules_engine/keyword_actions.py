@@ -226,6 +226,10 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 copied.payload.pop(old_key, None)
             announced[key] = value
             copied.payload[key] = value
+            if key == 'target_card_id' and (copied.payload.get('__copied_card') or {}).get('bestow_characteristics'):
+                from game_state.state import object_incarnation
+                target = state.cards[value]
+                copied.payload['__bestow_target_incarnation'] = [object_incarnation(target), target.zone_change_sequence]
             copied.targets = [str(value)]
             state.log.append(f"{state.players[player_id].name} changes {copied.label}'s target.")
         state.pending_mechanic_choice = None

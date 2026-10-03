@@ -18,6 +18,8 @@ It is designed for serious deck work:
 ## Current Features
 
 ### Gameplay
+
+- [Bounded bestow casting](docs/testing/bestow.md): separate creature/Aura cost choices, effective targeting and payment, illegal-target creature resolution, copied/retargeted spells, unattachment and snapshot restore. Both human seats have tested mode/target controls; AI uses the Aura view and shared attachment projection. Phasing and arbitrary type-layer interactions remain unsupported and conservatively warned.
 - [Conditional attack and static block costs](docs/testing/conditional-combat-costs.md): source tapped/untapped/attacking/blocking status and supported source/controller conditions feed shared locked mana payments, source suppression, both-seat hints and all-difficulty AI declaration checks. Block taxes can be global or controller/opponent scoped. Qualified subsets, recipient-dependent conditions, nonmana costs and arbitrary cost continuations remain unfinished.
 - [Capacity-aware combat planning](docs/testing/combat-intents.md): bounded direct-block enumeration shares legality, requirements and payments; multi-block fallback, band-safe declarations, explicit damage-choice projections and planeswalker defense are covered. Wide-board optimality and adversarial multi-turn search remain unfinished.
 - [Activation cost modifiers](docs/testing/activation-modifiers.md): supported numeric taxes, discounts, one-mana floors, mana exceptions and recipient scope share legality/payment paths across abilities, crew, loyalty, cycling, ninjutsu and equipment. Reserved sources cannot fund a second tap; AI uses payable crew groups and source-aware X checks. Arbitrary clauses, paid-mana conversion search and explicit reduction-order choices remain unfinished.

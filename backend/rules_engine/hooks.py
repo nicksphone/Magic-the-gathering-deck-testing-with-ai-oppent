@@ -15,6 +15,7 @@ class CostContext:
     generic_increase: int = 0
     state: Any = None
     spell_types: set[str] | None = None
+    spell_is_aura: bool = False
     oracle_text: str = ""
     ability_kind: str | None = None
     source_card_id: str | None = None
@@ -74,7 +75,7 @@ def _apply_aura_discounts(context: CostContext) -> CostContext:
     from rules_engine.attachments import is_aura
     from rules_engine.continuous import _static_oracle_text, printed_abilities_suppressed
     # A selected face can differ from the parent object's printed type line.
-    if not context.spell_types or "Enchantment" not in context.spell_types or not re.search(r"^enchant\s", context.oracle_text.lower(), re.M):
+    if not context.spell_types or "Enchantment" not in context.spell_types or not (context.spell_is_aura or re.search(r"^enchant\s", context.oracle_text.lower(), re.M)):
         return context
     target = context.state.cards.get(context.target_card_id)
     for cid in context.state.players[context.player_id].battlefield:

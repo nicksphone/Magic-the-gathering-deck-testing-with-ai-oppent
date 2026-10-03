@@ -140,12 +140,12 @@ def apply_state_based_actions(state: MatchState) -> None:
     # A source leaving the battlefield can make another permanent illegal or
     # lethal. No trigger gets a stack position until those waves stabilize.
     for _ in range(len(state.cards) + 1):
-        before = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
+        before = tuple((cid, card.zone, card.attached_to, tuple(card.types), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
         if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
-        after = tuple((cid, card.zone, card.attached_to) for cid, card in state.cards.items())
+        after = tuple((cid, card.zone, card.attached_to, tuple(card.types), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         if after == before:
             break
     from rules_engine.events import flush_staged_triggers
@@ -158,6 +158,8 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
                                    if cid in state.cards and state.cards[cid].zone == Zone.EXILE}
     for card in state.cards.values():
         if card.zone not in {Zone.BATTLEFIELD, Zone.STACK}:
+            from rules_engine.bestow import end_bestow
+            end_bestow(card)
             restore_printed_characteristics(card)
     _cease_nonbattlefield_tokens(state)
     if state.winner is None:
@@ -338,6 +340,11 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
         if not (is_aura(card) or is_equipment(card)):
             continue
         target_id = attached_to(card)
+        from rules_engine.bestow import is_bestowed, end_bestow
+        if is_bestowed(card) and not attachment_target_is_legal(state, card, target_id):
+            end_bestow(card)
+            state.log.append(f'State-based action: {card.name} ceases to be bestowed.')
+            continue
         if not target_id:
             if is_aura(card):
                 owner = state.players[card.controller]

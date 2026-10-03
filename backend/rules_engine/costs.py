@@ -232,6 +232,9 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
             return []
     else:
         options = [base]
+        from rules_engine.bestow import bestow_cost
+        if bestow_cost(card):
+            options.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))
     prototype = prototype_characteristics(card)
     if prototype and card.zone != Zone.GRAVEYARD:
         options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
@@ -274,6 +277,10 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
 
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
+    from rules_engine.attachments import is_aura
+    if option.id == 'bestow':
+        from rules_engine.bestow import bestow_cast_view
+        card = bestow_cast_view(card)
     player = state.players[player_id]
     if x_value < 0:
         return False
@@ -288,6 +295,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     return can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in card.types),
         card_name=card.name, x_value=x_value, spell_types=set(card.types),
+        spell_is_aura=is_aura(card),
         oracle_text=card.oracle_text or "",
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,

@@ -44,6 +44,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
         "types": list(card.types), "is_token": is_token_card(card), "type_line": card.type_line,
         "attached_to": card.attached_to,
+        "bestowed": bool(card.bestow_characteristics),
         "effect_warnings": attachment_effect_warnings(state, cid),
         "colors": sorted(card_color_symbols(card)),
         "mana_source_colors": sorted(outputs),
@@ -186,6 +187,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
+                "bestow_characteristics": deepcopy(card.bestow_characteristics),
                 "colors": card.colors,
                 "last_known_battlefield": dict(card.last_known_battlefield),
             }
@@ -249,6 +251,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             layout=str(raw.get("layout") or ""),
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
+            bestow_characteristics=deepcopy(raw.get('bestow_characteristics', {})),
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
             exile_face_down=bool(raw.get("exile_face_down", False)),
