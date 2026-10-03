@@ -307,7 +307,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         from rules_engine.stack_engine import resume_paused_resolution
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
-                or len(ids) != pending["count"] or len(set(ids)) != len(ids)
+                or not pending.get('min_count', pending['count']) <= len(ids) <= pending['count'] or len(set(ids)) != len(ids)
                 or any(cid not in pending["options"] or cid not in state.players[player_id].hand for cid in ids)):
             return False
         state.pending_mechanic_choice = None
@@ -315,6 +315,8 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             state.pending_mechanic_choice = pending
             return False
         state.log.append(f"{state.players[player_id].name} discards {len(ids)}.")
+        from effects.handlers import resolve_discard_followup
+        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids))
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "draw":

@@ -51,6 +51,21 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'linked_copy_{seat}' for seat in [1, 2]}:
+        from tests.test_linked_discard import setup
+        from tests.test_surveil_mill import add
+        from effects.registry import resolve_effect
+        seat = int(face_kind.split('_')[-1])
+        state, *_ = setup('Tolarian Winds', seat, pause=False)
+        for name in ['Island', 'Swamp']:
+            add(state, name, 3-seat, Zone.HAND)
+        resolve_effect(state, 3-seat, 'copy_spell', {'target_stack_id': state.stack[-1].id})
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
+    if face_kind in {f'linked_discard_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
+        from tests.test_linked_discard import setup, SPELLS
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, *_ = setup(SPELLS[index], seat, cast=False)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {f'variable_cost_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
         from tests.test_variable_spell_costs import setup, NAMES
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

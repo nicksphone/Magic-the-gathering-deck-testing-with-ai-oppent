@@ -385,6 +385,27 @@ class AIAgent:
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Sacrifice least valuable permanents")
             if choice["kind"] in {"cleanup_discard", "discard", "each_player_discard"}:
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
+                if choice['kind'] == 'discard' and choice.get('min_count') == 0:
+                    from rules_engine.oracle_effects import search_card_matches
+                    followup = choice.get('followup_effect') or {}
+                    count = 0
+                    if followup.get('effect_key') == 'search_library':
+                        payload = followup.get('payload') or {}
+                        candidates = [cid for cid in state.players[player_id].library
+                                      if search_card_matches(state.cards[cid], payload.get('contains'), None)]
+                        basics = self._choose_library_search(state, candidates, len(options), player_id)
+                        target = 6 if self.archetype == 'Ramp' else 4
+                        lands = sum('Land' in state.cards[cid].types for cid in state.players[player_id].battlefield + state.players[player_id].hand)
+                        scored = [(0.0, 0)]
+                        for size in range(1, min(len(basics), len(options), choice['count']) + 1):
+                            removed_lands = sum('Land' in state.cards[cid].types for cid in options[:size])
+                            if size <= max(0, target - lands + removed_lands):
+                                gain = sum(self._hand_retention_value(state, cid, player_id) for cid in basics[:size])
+                                loss = sum(self._hand_retention_value(state, cid, player_id) for cid in options[:size])
+                                # Equal-value trades retain more cards despite float noise.
+                                scored.append((round(gain - loss, 6), -size))
+                        count = -max(scored)[1]
+                    return AIDecision(action={'type': 'choose_mechanic', 'card_ids': options[:count]}, reasoning='Preserve hand unless linked search improves known mana development')
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
@@ -530,6 +551,16 @@ class AIAgent:
         card = state.cards.get(move.get("card_id"))
         if card is None:
             return False
+        from rules_engine.linked_discard import linked_discard_effect
+        linked = linked_discard_effect(_oracle_text(card))
+        if linked and linked['followup_effect']['effect_key'] == 'draw_cards':
+            hand = [cid for cid in state.players[player_id].hand if cid != card.id]
+            followup = linked['followup_effect']
+            amount = len(hand) if followup.get('count_field') else followup['payload']['amount']
+            from rules_engine.draw_restrictions import forecast_draw_count
+            draws = forecast_draw_count(state, player_id, amount)
+            return (not draws or draws > len(state.players[player_id].library)
+                    or draws * 5 <= sum(self._hand_retention_value(state, cid, player_id) for cid in hand))
         match = EACH_PLAYER_DRAW_RE.fullmatch(str(getattr(card, "oracle_text", "") or "").strip())
         if match is None:
             return False

@@ -238,6 +238,9 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
+    from rules_engine.linked_discard import linked_discard_gaps
+    if linked_discard_gaps(card.oracle_text or ''):
+        return []
     from rules_engine.alternative_casts import escape_cost, flashback_cost, has_aftermath, prototype_characteristics
     from rules_engine.spell_cost_clauses import spell_additional_costs, resource_x_effect_gaps
     branches = spell_additional_costs(card.oracle_text, card.name)

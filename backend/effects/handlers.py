@@ -2338,24 +2338,47 @@ def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
-    target_player = int(payload.get("target_player", 1 if controller == 2 else 2))
+    target_player = controller if payload.get('self_discard') else int(payload.get("target_player", 1 if controller == 2 else 2))
     amount = int(payload.get("amount", 1))
     player = state.players[target_player]
     from rules_engine.zone_actions import discard_selected, is_departed_token
     available = [cid for cid in player.hand if not is_departed_token(state.cards[cid])]
+    if payload.get('all_hand') or payload.get('up_to'):
+        amount = len(available)
     count = min(max(0, amount), len(available))
     if count and not payload.get("random") and target_player in state.mechanic_choice_players:
         state.pending_mechanic_choice = {
             "kind": "discard", "player_id": target_player, "options": available,
             "count": count, "label": "Choose cards to discard",
         }
+        if payload.get('up_to'):
+            state.pending_mechanic_choice['min_count'] = 0
+            state.pending_mechanic_choice['label'] = 'Choose any number of cards to discard'
+        if payload.get('followup_effect'):
+            state.pending_mechanic_choice['followup_effect'] = payload['followup_effect']
+            state.pending_mechanic_choice['effect_controller'] = controller
         state.priority_player = target_player
         state.passed_priority = set()
         return
-    selected = state.rng.sample(available, count) if payload.get("random") else available[:count]
+    selected = state.rng.sample(available, count) if payload.get("random") else [] if payload.get('up_to') else available[:count]
     discard_selected(state, target_player, selected)
     discarded = len(selected)
     state.log.append(f"{player.name} discards {discarded}.")
+    resolve_discard_followup(state, controller, payload.get('followup_effect'), discarded)
+
+
+def resolve_discard_followup(state, controller, followup, discarded):
+    if not followup:
+        return
+    from effects.registry import resolve_effect
+    data = dict(followup.get('payload') or {})
+    if followup.get('count_field'):
+        data[followup['count_field']] = discarded
+    if followup['effect_key'] == 'search_library' and discarded == 0:
+        # Search's legacy zero limit means unbounded; a zero-card linked search
+        # must still shuffle, but must not offer or find any cards.
+        data['selected_card_ids'] = []
+    resolve_effect(state, controller, followup['effect_key'], data)
 
 
 def each_player_discard(state: MatchState, controller: int, payload: dict) -> None:

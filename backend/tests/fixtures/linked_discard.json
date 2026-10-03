@@ -1,0 +1,111 @@
+[
+  {
+    "id": "1bddb0ef-fdda-491b-a0cf-48cbdd761918",
+    "oracle_id": "a7f682ce-3d1f-425c-b65a-11a15791aa9e",
+    "name": "Rites of Spring",
+    "mana_cost": "{1}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "Discard any number of cards. Search your library for up to that many basic land cards, reveal them, put them into your hand, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ody/265/rites-of-spring?utm_source=api"
+  },
+  {
+    "id": "3fdd9981-bb5e-450d-90c3-4405a7097939",
+    "oracle_id": "686cce6e-18ec-45b0-8d2e-74fa353a905e",
+    "name": "Tolarian Winds",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Discard all the cards in your hand, then draw that many cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/7ed/105/tolarian-winds?utm_source=api"
+  },
+  {
+    "id": "636c4042-703f-4548-9a0f-cb550c468bf9",
+    "oracle_id": "7e0d60d7-cb27-4e45-80d4-c29aef5d56b6",
+    "name": "Dangerous Wager",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Discard your hand, then draw two cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/avr/131/dangerous-wager?utm_source=api"
+  },
+  {
+    "id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+    "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+    "name": "Stinkweed Imp",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature — Imp",
+    "oracle_text": "Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flying",
+      "Dredge",
+      "Mill"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dvd/36/stinkweed-imp?utm_source=api"
+  },
+  {
+    "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+    "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+    "name": "Leyline of the Void",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nIf a card would be put into an opponent's graveyard from anywhere, exile it instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsk/106/leyline-of-the-void?utm_source=api"
+  },
+  {
+    "id": "63ca5ce5-94e7-43a1-8f2b-f0a4532f617a",
+    "oracle_id": "925feb7e-7876-430b-b95a-92b236a2e409",
+    "name": "Change of Fortune",
+    "mana_cost": "{3}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Discard your hand, then draw a card for each card you've discarded this turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vow/150/change-of-fortune?utm_source=api"
+  },
+  {
+    "id": "6d740928-bf61-4420-a403-63097538b97d",
+    "oracle_id": "67362406-b1ca-49e2-800d-9050bfe8742a",
+    "name": "Merfolk Looter",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature — Merfolk Rogue",
+    "oracle_text": "{T}: Draw a card, then discard a card.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/afc/86/merfolk-looter?utm_source=api"
+  }
+]

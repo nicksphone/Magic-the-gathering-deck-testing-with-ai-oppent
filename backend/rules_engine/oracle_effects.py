@@ -236,6 +236,10 @@ def infer_effect_from_oracle(
             for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
                 effects.append({**effect, "mode_text": selected_mode})
         return "effect_sequence", {"effects": effects}
+    from rules_engine.linked_discard import linked_discard_effect
+    linked_discard = linked_discard_effect(oracle)
+    if linked_discard:
+        return 'discard_cards', {'self_discard': True, **linked_discard}
     split_match = SPLIT_NAME_RE.match(name)
     if split_match and not mode_text and not mode_texts:
         # Split cards are represented as a single cached record with aliases in
@@ -1429,7 +1433,7 @@ def _infer_clause_effect(
         return "effect_sequence", {
             "effects": [
                 {"effect_key": "draw_cards", "payload": {"amount": draw_n}},
-                {"effect_key": "discard_cards", "payload": {"target_player": controller, "amount": disc_n}},
+                {"effect_key": "discard_cards", "payload": {"self_discard": True, "amount": disc_n}},
             ]
         }
     if draw_match:
@@ -1792,7 +1796,7 @@ def _infer_clause_effect(
         if "three cards" in oracle:
             amount = 3
         if "you discard" in oracle or oracle.startswith("discard "):
-            return "discard_cards", {"target_player": controller, "amount": amount, "random": "at random" in oracle}
+            return "discard_cards", {"self_discard": True, "amount": amount, "random": "at random" in oracle}
         return "discard_cards", {"target_player": target_player or opponent, "amount": amount, "random": "at random" in oracle}
 
     return None

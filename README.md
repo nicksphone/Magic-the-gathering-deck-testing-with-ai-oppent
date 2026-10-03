@@ -17,6 +17,13 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Resolution-time linked discards](docs/testing/linked-discard.md): chosen variable
+  or whole-hand discards feed actual counts into supported basic-land searches
+  and fixed/count-linked draws. Shared events, replacements, copies and nested
+  draw choices survive recovery. Both seats have bounded choices; AI preserves
+  useful hands and exercised mana plans. General linked counts and graveyard
+  strategy remain unfinished.
+
 - [Exhaustive and announced-X payments](docs/testing/variable-spell-costs.md):
   mandatory whole-hand discard and all-permanent sacrifice share event-aware
   costs; discard-based X uses an announced exact hand selection, not available

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-03 - Resolution-time linked discards and copy recipients
+
+- Share supported optional/whole-hand discard instructions with bounded basic-land
+  search and fixed/count-linked draw follow-ups. Preserve actual discard counts,
+  replacement events, nested draw choices and resolving objects across recovery.
+- Resolve self-discard from the current effect controller so opposing spell and
+  ability copies use their own hands. Keep explicitly targeted recipients intact.
+- Both human seats can confirm optional zero-to-hand-size selections. AI retains
+  useful hands, evaluates known mana-search trades and rejects exercised draw
+  exhaustion. Unmodeled per-turn history stays explicitly unsupported.
+- Validation: 80 new focused checks, frontend lint/contracts/build, complete
+  Chromium with eight new both-seat cases and twelve repeated seat-balanced
+  replay samples without reported anomaly/timeout/drift; full isolated backend
+  4,582 passed. Preserve failures and verified RCHFiles evidence; refresh Graphify.
+  See [scope and remaining risks](docs/testing/linked-discard.md).
+
 ## 2026-10-03 - Exhaustive payments and discard-based X
 
 - Share whole-hand discard, all-permanent sacrifice and exact announced-X hand

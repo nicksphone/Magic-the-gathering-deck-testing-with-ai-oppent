@@ -74,6 +74,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     for name, text in variants:
         if any(branch.get('discard_x') for branch in spell_additional_costs(text, name) or []):
             out.extend(resource_x_effect_gaps(text))
+    from rules_engine.linked_discard import linked_discard_gaps
+    for _, text in variants:
+        out.extend(linked_discard_gaps(text))
     from rules_engine.kicker import kicker_components, kicker_surfaces, permanent_kicker
     for name, text in variants:
         surfaces = kicker_surfaces(text)

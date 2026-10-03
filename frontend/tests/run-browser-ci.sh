@@ -111,6 +111,8 @@ echo 'Browser CI: qualified subtype/color payments and actual search/controller/
 (cd frontend && timeout 180s node tests/browser-qualified-costs.mjs)
 echo 'Browser CI: exhaustive resources and announced-X discard payments'
 (cd frontend && timeout 180s node tests/browser-variable-costs.mjs)
+echo 'Browser CI: linked discard, bounded search and actual follow-up draws'
+(cd frontend && timeout 180s node tests/browser-linked-discard.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'
