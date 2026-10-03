@@ -1,0 +1,63 @@
+[
+  {
+    "id": "4e6e5c63-b6e5-4756-bf23-6c6f8669442d",
+    "oracle_id": "ab26fbe2-e808-48b9-8d0d-3fbb6c3d554f",
+    "name": "Narset, Parter of Veils",
+    "mana_cost": "{1}{U}{U}",
+    "type_line": "Legendary Planeswalker — Narset",
+    "oracle_text": "Each opponent can't draw more than one card each turn.\n−2: Look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "loyalty": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/853/narset-parter-of-veils?utm_source=api",
+    "power": null,
+    "toughness": null
+  },
+  {
+    "id": "f44e5128-e146-4e46-b313-a40d82719d1d",
+    "oracle_id": "1463795b-ec0c-44d6-ae1a-55f78d9843ec",
+    "name": "Spirit of the Labyrinth",
+    "mana_cost": "{1}{W}",
+    "type_line": "Enchantment Creature — Spirit",
+    "oracle_text": "Each player can't draw more than one card each turn.",
+    "power": "3",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/bng/27/spirit-of-the-labyrinth?utm_source=api"
+  },
+  {
+    "id": "b1a32b7c-9f26-4504-9f8d-379164d69346",
+    "oracle_id": "1c9e1f75-73f0-4846-b53f-458a0984b1bb",
+    "name": "Teferi's Ageless Insight",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Legendary Enchantment",
+    "oracle_text": "If you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mkc/119/teferis-ageless-insight?utm_source=api",
+    "power": null,
+    "toughness": null
+  },
+  {
+    "id": "e169e197-5ef4-454d-a31f-fcadedb74cfc",
+    "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+    "name": "Thought Reflection",
+    "mana_cost": "{4}{U}{U}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "If you would draw a card, draw two cards instead.",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/72/thought-reflection?utm_source=api",
+    "power": null,
+    "toughness": null
+  }
+]

@@ -2588,19 +2588,12 @@ class AIAgent:
 
     def _kicker_draw_gain(self, state, player_id, base_count, kicked_count):
         """Use public library counts and restrictions, never future card identities."""
-        from copy import copy
-        from rules_engine.draw_restrictions import can_draw_card
-        projection = copy(state)
-        projection.draws_this_turn = dict(state.draws_this_turn)
-        capacity = 0
-        for _ in range(kicked_count):
-            if not can_draw_card(projection, player_id):
-                break
-            capacity += 1
-            projection.draws_this_turn[player_id] = projection.draws_this_turn.get(player_id, 0) + 1
+        from rules_engine.draw_restrictions import forecast_draw_count
+        capacity = forecast_draw_count(state, player_id, kicked_count)
         if capacity > len(state.players[player_id].library):
             return -1000
-        return 3 * max(0, capacity - min(base_count, capacity))
+        base_capacity = forecast_draw_count(state, player_id, base_count)
+        return 3 * max(0, capacity - base_capacity)
 
     def _kicked_cast_gain(self, state, player_id):
         from rules_engine.kicker import kicked_cast_clauses

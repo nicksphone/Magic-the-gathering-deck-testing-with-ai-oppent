@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-03 - Replacement-aware optional draw planning
+
+- Reuse default engine draw/life replacements and draw restrictions in a
+  public-count forecast. Preserve original state, log, draw history and RNG;
+  handle repeated doublers and own-draw-step exceptions without future-card reads.
+- Compare normal/kicked projected draw counts and discourage optional draws
+  that would exhaust the library. Canonical actual AI decisions across both seats
+  and all difficulties reduce six unsafe choices to zero, retaining six safe ones.
+- Add 68 regression cases with canonical Scryfall fixtures. Full isolated suite:
+  4,081 passed; frontend lint/contracts/build and complete browser pass. Twelve
+  seat-balanced repeated replay samples report no anomaly or determinism failure.
+- Dredge, alternative replacement ordering, draw-trigger chains and general
+  strategic draw planning remain open. See `docs/testing/ai-draw-forecast.md`.
+
 ## 2026-10-03 - Kicked-cast payoffs and first-kicked discounts
 
 - Recognized kicked-cast token, self-counter and temporary base-stat effects use

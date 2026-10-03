@@ -78,8 +78,9 @@ Dual/nonmana/X kicker, multikicker and per-cost linked payoffs remain priorities
 
 Arbitrary kicked-cast clauses, multikicker counts and per-cost linked payoffs,
 conditional cost variants, face-specific acceptance and general linked-ability
-changes remain unfinished. Draw forecasts here do not cover arbitrary replacement,
-dredge or draw-trigger chains; payoff scoring is not a full adversarial search.
+changes remain unfinished. [Optional draw forecasting](ai-draw-forecast.md) now
+reuses recognized default replacements and draw limits, but does not cover arbitrary
+replacement, dredge or draw-trigger chains; payoff scoring is not a full adversarial search.
 Token/counter values and resource retention remain estimates, not expert-play
 certification. Small deterministic matrices test repeatability rather than balance.
 Fresh dependency installation, network deployment and the deferred alpha UI
