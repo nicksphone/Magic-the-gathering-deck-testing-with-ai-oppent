@@ -51,6 +51,16 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'combat_capacity_1', 'combat_capacity_2'}:
+        from tests.test_ai_combat_intents import board, add, activate
+        seat = int(face_kind[-1])
+        state, _, _ = board(seat)
+        add(state, 'Llanowar Elves', 3-seat)
+        state.step = Step.DECLARE_ATTACKERS
+        state, _ = activate(state, 'War Cadence', seat, 1)
+        state.step = Step.DECLARE_BLOCKERS
+        state.priority_player = 3-seat
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'conditional_cost_attack_1', 'conditional_cost_attack_2', 'conditional_cost_block_1', 'conditional_cost_block_2'}:
         from tests.test_conditional_combat_costs import board, add
         seat = int(face_kind[-1])

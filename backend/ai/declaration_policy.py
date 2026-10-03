@@ -33,7 +33,7 @@ def finalize_declaration(state, action):
     candidates = attack_candidates(state) if kind == 'attack' else list(state.players[3-state.active_player].battlefield)
     weights = requirement_weights(state, candidates, kind)
     view = declaration_limit_view(state, kind)
-    if not view['sources'] and not any(weights.values()) and not (
+    if kind == 'attack' and not view['sources'] and not any(weights.values()) and not (
             attack_tax_sources(state) if kind == 'attack' else target_block_requirements(state) or block_tax_sources(state)):
         return action
     if kind == 'attack':
@@ -80,9 +80,7 @@ def finalize_declaration(state, action):
         for bid in sorted(selected, key=lambda bid: (-sum(effective_power(state, aid) for aid, bids in blocks.items() if bid in bids), bid)):
             proposed = sorted(affordable | {bid})
             paid = block_payment_state(state, proposed)
-            if paid is not None and paid.players[3-state.active_player].life > 0 and all(
-                    paid.cards[cid].zone == Zone.BATTLEFIELD and paid.cards[cid].controller == 3-state.active_player
-                    and 'Creature' in paid.cards[cid].types for cid in proposed):
+            if paid is not None and paid.players[3-state.active_player].life > 0:
                 affordable.add(bid)
         selected = affordable
         blocks = {aid: [bid for bid in bids if bid in selected] for aid, bids in blocks.items()}
@@ -93,8 +91,9 @@ def finalize_declaration(state, action):
     from ai.pending_effects import planning_copy
     sim = planning_copy(state)
     try:
-        combat.declare_blockers(sim, blocks)
-        blocks = sim.blocks
+        declaration = {}
+        combat.declare_blockers(sim, blocks, declaration_details=declaration)
+        blocks = declaration['direct_blocks']
     except ValueError:
         blocks = best_required_blocks(state, volunteered=selected) or {}
         if block_payment_state(state, sorted({bid for bids in blocks.values() for bid in bids})) is None:

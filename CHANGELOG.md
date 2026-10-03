@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 - Capacity-aware combat intents and projection fidelity
+
+- Added bounded capacity-aware block enumeration using shared restrictions, requirements, limits and payments; exhausted searches no longer report partial optima. The wider-board fallback reuses available blocker capacity.
+- Legalize all final AI blocks and preserve direct declarations separately from band-expanded resolution. Check alone restrictions before locked payments, not after mana-source departures.
+- Advance projections through real combat phases, resolve explicit damage choices with the live public-board policy, avoid treating unknown blocking forecasts as passing and preserve planeswalker/battle defense when life is safe.
+- Added canonical Scryfall Benalish Hero fixture, both-seat independent enumeration/actual AI/HTTP recovery regressions and browser multi-block payment controls. Final-source validation: 3,104 isolated backend tests passed (328 deprecation warnings), including all 44 intent tests and sacrifice ordering through the AI finalizer; frontend lint/unit/build and complete Chromium flows passed. Eighteen actual before/after decisions changed twelve lethal defensive losses to survival and six planeswalker results from one to three loyalty. Twelve logical seat-balanced template games repeated twice completed without timeouts, determinism failures, drift labels or reported anomalies; no full expert-AI or balance claim.
+- README, plan, scope documentation and AST-only Graphify refreshed. Verified evidence and closed scratch archives are on RCHFiles `diagnostics/combat-intents/20261003T010700Z`; live databases and the user's untracked plan remain local and unchanged.
+
 ## 2026-10-03 - Conditional combat costs and real blocker-search projection
 
 - Added shared source-status/self-reference predicates and supported source/controller-conditional attack costs plus static global/controller/opponent block mana costs. Source suppression, locked payment, optional requirements, explicit branches, snapshots and both-seat action controls reuse the existing rules paths. Parsed tax conditions preserve following supported Otherwise clauses.

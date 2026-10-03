@@ -2995,6 +2995,8 @@ class AIAgent:
         lethal_pressure = incoming_total >= life
         prevented = 0
         covered_attackers: set[str] = set()
+        remaining_capacity = {bid: combat._max_attackers_blockable_by_creature(state, state.cards[bid])
+                              if isinstance(state, MatchState) else 1 for bid in available}
         band_members = {
             cid: [member for member in band if member in state.attackers]
             for band in getattr(state, "attack_bands", [])
@@ -3010,6 +3012,8 @@ class AIAgent:
         )
         for a in sorted_attackers:
             aid = a["id"]
+            if aid in covered_attackers:
+                continue
             atk = state.cards.get(aid)
             if not atk:
                 continue
@@ -3087,7 +3091,8 @@ class AIAgent:
                 prevented += protected_power
                 covered_attackers.update(band_members.get(aid, [aid]))
                 for bid in group:
-                    if bid in available:
+                    remaining_capacity[bid] -= 1
+                    if remaining_capacity[bid] <= 0 and bid in available:
                         available.remove(bid)
                 if not available:
                     break
@@ -3100,7 +3105,9 @@ class AIAgent:
                 assignments[aid] = best_bid
                 prevented += protected_power
                 covered_attackers.update(band_members.get(aid, [aid]))
-                available.remove(best_bid)
+                remaining_capacity[best_bid] -= 1
+                if remaining_capacity[best_bid] <= 0:
+                    available.remove(best_bid)
                 if not available:
                     break
                 # If we have prevented enough to avoid lethal and remaining trades are poor, stop.
@@ -3121,50 +3128,12 @@ class AIAgent:
         blocker_ids = [item["id"] for item in blockers if item.get("id") in state.cards]
         if not attacker_ids or not blocker_ids or len(attacker_ids) > 4 or len(blocker_ids) > 5:
             return None
-        defender = next(
-            (
-                getattr(state.cards.get(bid), "controller", None)
-                for bid in blocker_ids
-                if getattr(state.cards.get(bid), "controller", None) in getattr(state, "players", {})
-            ),
-            getattr(state, "priority_player", None),
-        )
-        if defender not in getattr(state, "players", {}):
-            defender = state.cards[blocker_ids[0]].controller
-        choices: dict[str, list[str | None]] = {}
-        for bid in blocker_ids:
-            blocker = state.cards[bid]
-            legal_targets = [
-                aid
-                for aid in attacker_ids
-                if combat._can_block_attacker(state, state.cards[aid], blocker)
-            ]
-            choices[bid] = [None, *legal_targets]
-
-        assignments: list[dict[str, str]] = []
-
-        def visit(index: int, current: dict[str, str]) -> None:
-            if index >= len(blocker_ids):
-                counts: dict[str, int] = {}
-                for aid in current.values():
-                    counts[aid] = counts.get(aid, 0) + 1
-                if any(0 < counts.get(aid, 0) < self._minimum_blockers_for_ai(state, state.cards[aid]) for aid in attacker_ids):
-                    return
-                assignments.append(dict(current))
-                return
-            bid = blocker_ids[index]
-            for aid in choices[bid]:
-                if aid is None:
-                    visit(index + 1, current)
-                else:
-                    current[bid] = aid
-                    visit(index + 1, current)
-                    current.pop(bid, None)
-
-        visit(0, {})
-        if not assignments or len(assignments) > 4096:
+        defender = 3-state.active_player
+        from ai.block_search import block_intents
+        assignments = block_intents(state, attacker_ids, blocker_ids)
+        if not assignments:
             return None
-        best: tuple[float, tuple[tuple[str, str], ...], dict[str, str | list[str]]] | None = None
+        best: tuple[float, tuple[tuple[str, tuple[str, ...]], ...], dict[str, str | list[str]]] | None = None
         initial_life = state.players[defender].life
         opponent = 1 if defender == 2 else 2
         incoming_power = sum(
@@ -3172,15 +3141,15 @@ class AIAgent:
             for aid in attacker_ids
         )
         keyword_combat = self._combat_keyword_board(state, defender) or self._combat_keyword_board(state, opponent)
+        face_only = all(state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}' for aid in attacker_ids)
         for assignment in assignments:
-            if initial_life > incoming_power and assignment and not keyword_combat:
+            if face_only and initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
-                for aid in set(assignment.values()):
+                for aid, bids in assignment.items():
                     attacker = state.cards[aid]
                     assigned_blockers = [
                         state.cards[bid]
-                        for bid, target in assignment.items()
-                        if target == aid and bid in state.cards
+                        for bid in bids if bid in state.cards
                     ]
                     blocking_power = sum(
                         max(0, _effective_combat_stats(state, blocker.id)[0])
@@ -3193,15 +3162,11 @@ class AIAgent:
                     continue
             try:
                 sim = planning_copy(state)
-                # Search stores blocker -> attacker; the engine contract is
-                # attacker -> blockers. Project the same declaration we return.
-                normalized = {aid: sorted(bid for bid, target in assignment.items() if target == aid)
-                              for aid in attacker_ids if aid in assignment.values()}
+                normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
                 self.engine.take_action(sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
                 from ai.pending_effects import _settle_announced_stack
                 if not _settle_announced_stack(sim):
                     continue
-                self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
                 if not self._finish_combat_projection(sim, state):
                     continue
             except Exception:
@@ -3218,7 +3183,7 @@ class AIAgent:
             # the proposed assignment only chumps. This is a general combat
             # value rule, not an archetype/card exception; lethal prevention
             # and profitable trades remain preferred.
-            if initial_life > incoming_power and blockers_lost > attackers_lost:
+            if face_only and initial_life > incoming_power and sim.winner != defender and blockers_lost > attackers_lost:
                 if attackers_lost == 0:
                     continue
                 score -= (blockers_lost - attackers_lost) * (12.0 + incoming_power)
@@ -3227,7 +3192,7 @@ class AIAgent:
             elif sim.winner is not None:
                 score -= 1000.0
             normalized = {aid: bids if len(bids) > 1 else bids[0] for aid, bids in normalized.items()}
-            key = tuple(sorted(assignment.items()))
+            key = tuple(sorted((aid, tuple(sorted(bids))) for aid, bids in assignment.items()))
             candidate = (score, key, normalized)
             if best is None or candidate[:2] > best[:2]:
                 best = candidate
@@ -3434,6 +3399,18 @@ class AIAgent:
     def _finish_combat_projection(self, simulated, original):
         from ai.pending_effects import _settle_announced_stack
         for _ in range(4):
+            # Use the live public-board allocation policy for both controllers;
+            # unknown noncombat choices still prevent a claimed forecast.
+            for _ in range(64):
+                choice = simulated.pending_mechanic_choice
+                if not choice or choice.get('kind') != 'combat_damage':
+                    break
+                self.engine.take_action(simulated, choice['player_id'], {
+                    'type': 'choose_mechanic',
+                    'damage_assignment': self._choose_combat_damage_allocation(simulated, choice),
+                }, reject_invalid=True)
+            else:
+                return False
             if not _settle_announced_stack(simulated):
                 return False
             # Do not rank a line using newly drawn hidden cards/library order.
@@ -3489,16 +3466,17 @@ class AIAgent:
                         and "Creature" in sim.cards[cid].types
                         and not sim.cards[cid].tapped
                     ]
+                    blocks = {}
                     if blocker_ids:
                         attacker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in actual_attackers]
                         blocker_options = [{"id": cid, "name": sim.cards[cid].name} for cid in blocker_ids]
                         blocks = self._search_block_assignments(sim, attacker_options, blocker_options)
-                        if blocks:
-                            self.engine.take_action(sim, opponent, {"type": "block", "blocks": blocks})
+                        if blocks is None:
+                            continue  # Unknown response is not an empty declaration.
+                    self.engine.take_action(sim, opponent, {"type": "block", "blocks": blocks}, reject_invalid=True)
                     if not _settle_announced_stack(sim):
                         continue
                     self.engine.next_step(sim)
-                    self.engine.take_action(sim, sim.active_player, {"type": "combat_damage"})
                     if not self._finish_combat_projection(sim, state):
                         continue
             except Exception:

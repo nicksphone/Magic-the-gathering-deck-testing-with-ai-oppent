@@ -123,7 +123,8 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             )
 
 
-def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybrid_choices: list[str] | None = None) -> None:
+def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybrid_choices: list[str] | None = None,
+                     *, declaration_details: dict | None = None) -> None:
     defender = 1 if state.active_player == 2 else 2
     legal: dict[str, list[str]] = {}
     blocker_assignments: dict[str, int] = {}
@@ -173,11 +174,18 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
         if completion is None or block_requirement_score(state, completion) < block_requirement_score(state, optimum):
             raise ValueError('Blocker declaration must satisfy the maximum possible requirements')
         legal = completion
+    blocking_ids = {bid for bids in legal.values() for bid in bids}
+    if len(blocking_ids) == 1 and card_cant_block_alone(state, next(iter(blocking_ids))):
+        legal = {}
     from rules_engine.combat_payments import block_payment_state
     chosen = sorted({bid for bids in legal.values() for bid in bids})
     paid = block_payment_state(state, chosen, hybrid_choices)
     if paid is None:
         raise ValueError('Cannot pay the declared block costs')
+    if declaration_details is not None:
+        # Direct intent is distinct from post-payment departures and band
+        # propagation. AI must resubmit the former, not resolved block pairs.
+        declaration_details['direct_blocks'] = {aid: list(ids) for aid, ids in legal.items()}
     if paid is not state:
         state.__dict__.update(paid.__dict__)
     # Eligibility/restrictions were checked before locked costs. Tapping a
@@ -194,9 +202,6 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
         for cid in members:
             if shared:
                 legal[cid] = list(shared)
-    blocking_ids = {bid for bids in legal.values() for bid in bids}
-    if len(blocking_ids) == 1 and card_cant_block_alone(state, next(iter(blocking_ids))):
-        legal = {}
     state.blocks = legal
     from rules_engine.combat_requirements import target_block_requirements, targeted_block_score
     targeted = targeted_block_score(target_block_requirements(state), legal)

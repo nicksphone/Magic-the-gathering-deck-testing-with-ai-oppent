@@ -81,6 +81,8 @@ echo 'Browser CI: domain and resolved temporary attack/block costs'
 (cd frontend && timeout 180s node tests/browser-combat-domain-temporary.mjs)
 echo 'Browser CI: conditional attack/block costs'
 (cd frontend && timeout 180s node tests/browser-conditional-combat-costs.mjs)
+echo 'Browser CI: multiple-block capacity and one payment per blocker'
+(cd frontend && timeout 120s node tests/browser-combat-capacity.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'
