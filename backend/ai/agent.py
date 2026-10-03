@@ -2688,13 +2688,12 @@ class AIAgent:
         score += self._kicker_draw_gain(state, player_id, draws(base), draws(kicked))
         pumps = [re.search(r'gets ([+-]\d+)/([+-]\d+)', text, re.I) for text in [base, kicked]]
         if all(pumps) and int(pumps[1][2]) < int(pumps[0][2]) <= 0:
-            low, high = [int(pump[2]) for pump in pumps]
+            from ai.pending_effects import negative_pt_would_be_lethal
+            low, high = [tuple(map(int, pump.groups())) for pump in pumps]
             legal_creatures = {target['id'] for target in hints.get('creature_targets', [])}
             for cid in state.players[opponent].battlefield:
-                remaining = effective_toughness(state, cid)
-                if not has_keyword(state, cid, 'indestructible'):
-                    remaining -= int(state.cards[cid].counters.get('__damage_marked', 0))
-                if cid in legal_creatures and -low < remaining <= -high:
+                if (cid in legal_creatures and not negative_pt_would_be_lethal(state,cid,*low)
+                        and negative_pt_would_be_lethal(state,cid,*high)):
                     score += 5 + self._creature_threat_score(state, cid, player_id)
                     break
         def discards(text):
@@ -2906,6 +2905,13 @@ class AIAgent:
                         and not has_keyword(state, target["id"], "indestructible")
                     ]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+            if isinstance(state, MatchState) and pt_change and int(pt_change[2]) < 0:
+                from ai.pending_effects import negative_pt_would_be_lethal
+                power, toughness = map(int, pt_change.groups())
+                lethal = [target for target in creature_targets
+                          if negative_pt_would_be_lethal(state,target['id'],power,toughness)]
+                if lethal:
+                    creature_targets = lethal
             keyword_scores = {}
             if mtype == 'cast_spell' and isinstance(state,MatchState) and card is not None:
                 from ai.pending_effects import keyword_target_value

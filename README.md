@@ -17,6 +17,12 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Canonical kicker goldens and removal targeting](docs/testing/kicker-goldens.md):
+  real sacrifice-union and mana-kicker discard fixtures cover both seats, checked
+  payments and restore. AI negative-stat targets share the engine's effective lethal
+  predicate, including tested counters, anthems, marked damage and indestructible.
+  This is bounded decision correctness, not expert-play or full-card certification.
+
 ### Gameplay
 
 - [Kicked-cast payoffs](docs/testing/kicked-cast-payoffs.md): recognized token, self-counter and temporary base-stat triggers share actual cast events, source suppression and original-object history. First-kicked-spell discounts share affordability/payment and persisted per-turn counts; copies do not consume them. Fixed token ETBs and AI guards for prohibited counters and draw exhaustion are tested. Broader kicker forms, general payoff forecasting and expert decisions remain unfinished.

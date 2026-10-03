@@ -83,7 +83,8 @@ kicker/kicked/multikicker. Recognized surfaces increase from 19 to 27 at the sam
 corpus revision. The eight newly classified names include the three primary
 fixtures plus Stomped by the Foot, Hypnotic Cloud, Final Flourish, Vayne's Treachery
 and Eject the Warp Core. These are classification counts, not full-card certification;
-the five additional cards still need their own canonical interacting goldens.
+the five additional cards now have [canonical interacting goldens](kicker-goldens.md).
+Their accepted paths remain bounded; classification does not certify whole cards.
 
 ## Known Limitations and Next Upgrades
 

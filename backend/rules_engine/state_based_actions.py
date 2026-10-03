@@ -12,6 +12,16 @@ DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 
+def creature_has_lethal_state(state: MatchState, card_id: str) -> bool:
+    card = state.cards[card_id]
+    if "Creature" not in card.types or card.zone != Zone.BATTLEFIELD or card.toughness is None:
+        return False
+    toughness = effective_toughness(state, card_id)
+    return toughness <= 0 or (not has_keyword(state, card_id, "indestructible") and (
+        int(card.counters.get(DMG_MARK_KEY, 0)) >= toughness
+        or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0))
+
+
 def _human_die_choice_required(state: MatchState, card_id: str) -> bool:
     card = state.cards.get(card_id)
     if not card or not getattr(state, "replacement_choice_required", False):
@@ -182,11 +192,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
     lethal_ids: list[str] = []
     for cid, card in list(state.cards.items()):
         if "Creature" in card.types and card.zone == Zone.BATTLEFIELD and card.toughness is not None:
-            lethal_from_zero_toughness = effective_toughness(state, cid) <= 0
-            indestructible = has_keyword(state, cid, "indestructible")
-            lethal_from_damage = int(card.counters.get(DMG_MARK_KEY, 0)) >= int(effective_toughness(state, cid))
-            lethal_from_deathtouch = int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0
-            if lethal_from_zero_toughness or (not indestructible and (lethal_from_damage or lethal_from_deathtouch)):
+            if creature_has_lethal_state(state, cid):
                 options = replacement_options(state, "die_zone", target_card_id=cid)
                 if _human_die_choice_required(state, cid) and len(options) > 1:
                     state.pending_replacement_choice = {

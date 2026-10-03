@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-03 - Canonical kicker goldens and coherent removal targets
+
+- Add fresh canonical paid/unpaid goldens for Eject the Warp Core, Final Flourish,
+  Stomped by the Foot, Vayne's Treachery and Hypnotic Cloud. Validate actual
+  sacrifice-union or mana prices, conditional negative stats/discard, copies,
+  atomic payment rejection, snapshots and both-seat HTTP/SQLite restoration.
+- Share the engine's lethal-creature predicate with read-only AI negative-stat
+  projections. Optional upgrade estimation and target choice now agree on tested
+  counters, anthems, marked damage and indestructible without named-card fixes.
+  Supplied legal-move probes improve from zero to 24 productive checked kills;
+  this does not establish optimal autonomous timing or match balance.
+- Validation: 204 focused tests; full backend suite 4,340 passed (twenty HTTP cases
+  added during that run pass separately); frontend lint/contracts/build; complete
+  Chromium suite with twenty new scenarios; twelve seat-balanced smoke samples
+  repeated twice, no reported timeout/anomaly/drift. Refresh Graphify AST output;
+  preserve verified evidence on RCHFiles. See [bounded scope](docs/testing/kicker-goldens.md).
+
 ## 2026-10-03 - Nonmana kicker and scoped death payoffs
 
 - Reuse fixed life/discard/typed-sacrifice parsing for recognized kicker costs,

@@ -65,6 +65,20 @@ def _copy_card_field(value, memo):
     return deepcopy(value, memo)
 
 
+def negative_pt_would_be_lethal(state, card_id, power, toughness):
+    """Project one public target through actual stat layers, without departures."""
+    from effects.registry import resolve_effect
+    from rules_engine.state_based_actions import creature_has_lethal_state
+    projected = copy(state)
+    target = copy(state.cards[card_id])
+    target.counters = dict(target.counters)
+    projected.cards = {**state.cards, card_id: target}
+    projected.log = []
+    resolve_effect(projected, target.controller, 'temporary_pt_buff', {
+        'target_card_id':card_id,'power':power,'toughness':toughness})
+    return creature_has_lethal_state(projected, card_id)
+
+
 def keyword_target_value(state, card, player_id, targets):
     """Rank known keyword instructions only, without executing later draws."""
     text = (card.oracle_text or '').lower()

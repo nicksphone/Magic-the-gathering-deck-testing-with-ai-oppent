@@ -1,0 +1,132 @@
+[
+  {
+    "id": "0f5712cf-c6a9-4a2e-90db-8ca17c621724",
+    "oracle_id": "f90fe86c-5cca-483b-93c2-6e856fa01c88",
+    "name": "Darksteel Myr",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature — Myr",
+    "oracle_text": "Indestructible (Damage and effects that say \"destroy\" don't destroy this creature. If its toughness is 0 or less, it still dies.)",
+    "power": "0",
+    "toughness": "1",
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/som/151/darksteel-myr?utm_source=api"
+  },
+  {
+    "id": "0fd8c918-62d9-41be-a3e1-32ddac71b7e7",
+    "oracle_id": "2bda1fb1-528c-4e66-89f1-bb1a85e9181e",
+    "name": "Darksteel Relic",
+    "mana_cost": "{0}",
+    "type_line": "Artifact",
+    "oracle_text": "Indestructible (Effects that say \"destroy\" don't destroy this artifact.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/nph/134/darksteel-relic?utm_source=api"
+  },
+  {
+    "id": "04a479be-8093-4775-a5d9-8b0e1683bf12",
+    "oracle_id": "c06c17c2-203c-4b4a-8564-f29bc41c9eb5",
+    "name": "Eject the Warp Core",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -6/-6 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/trk/105/eject-the-warp-core?utm_source=api"
+  },
+  {
+    "id": "09a4dcdb-6939-4d9f-8921-549e0ddc9f63",
+    "oracle_id": "63a85361-56bc-4209-aea8-b49319bc7b92",
+    "name": "Final Flourish",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -6/-6 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mom/104/final-flourish?utm_source=api"
+  },
+  {
+    "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+    "oracle_id": "e3886fe8-9b76-4613-8891-4ec74657c087",
+    "name": "Glorious Anthem",
+    "mana_cost": "{1}{W}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "Creatures you control get +1/+1.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/m21/21/glorious-anthem?utm_source=api"
+  },
+  {
+    "id": "62e55607-4c1f-46ab-aae7-391b65a125c4",
+    "oracle_id": "277757c6-4c4c-4a4c-84f6-4a64fe3b3bfe",
+    "name": "Hypnotic Cloud",
+    "mana_cost": "{1}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nTarget player discards a card. If this spell was kicked, that player discards three cards instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ddm/67/hypnotic-cloud?utm_source=api"
+  },
+  {
+    "id": "3fdec16f-77f5-4792-9698-b9099a204028",
+    "oracle_id": "10185447-a13f-40d8-a8b6-39ce801f2fc0",
+    "name": "Stomped by the Foot",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -5/-5 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/tmt/82/stomped-by-the-foot?utm_source=api"
+  },
+  {
+    "id": "6de6d23b-7d42-41c1-be1c-010fe43ee586",
+    "oracle_id": "93af8f9d-6877-4cb8-a744-c89186db22e1",
+    "name": "Vayne's Treachery",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -6/-6 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/fin/124/vaynes-treachery?utm_source=api"
+  }
+]
