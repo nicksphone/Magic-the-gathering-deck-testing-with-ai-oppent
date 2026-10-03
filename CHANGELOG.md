@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-10-03 - Spell cost selections and cost-event fidelity
+
+- Both seats can explicitly select the recognized discard/sacrifice spell-cost
+  cards through typed announcements and ordinary cast controls, including free
+  graveyard casts. Exact counts, distinct IDs, eligible zones and the casting-card
+  exclusion are checked before payment; rejected checked writes remain atomic.
+- Replace first-card spell payment mutations with shared discard/sacrifice
+  operations. Sacrifice costs now publish supported leave/dies triggers, preserve
+  owner destinations and last-known information, and honor graveyard-to-exile
+  replacement. Preserve the sacrifice cost log while avoiding duplicate events.
+- Actual AI cast materialization at all difficulties ranks known candidate cards
+  using hand retention and sacrifice loss, and compares singular either-cost
+  branches. Free-cast materialization receives its actual waived cost options.
+  Explicit caller choices are preserved; omitted legacy selections still fall
+  back automatically. This is not exhaustive resource planning or expert play.
+- Canonical new fixtures exercise both seats and normal/free costs, both payment
+  kinds, trigger/departure behavior, HTTP rejection and eight archetype labels.
+  Runtime frontend boundaries validate candidate-list shapes; deliberate payment
+  controls have eight real App/API browser cases, including refresh.
+- Bounded scope and remaining counted/qualified cost grammar, alternative method
+  composition, kicker, activated selections and payment sequencing are recorded
+  in `docs/testing/cast-payment-selections.md`, README and plan. No invented card
+  text or competitive deck modifications are part of this batch.
+- Final empty-database/cache isolated backend suite: **3,759 passed**, 360
+  warnings, 617.07 seconds; 94 new cases. Installed dependencies are reused, not
+  freshly installed. Frontend lint/unit/build and complete final-source Chromium
+  pass, including eight payment cases, reload, recovery/restart and natural BO3.
+- Final Master matrix: twelve seat-balanced BO1 samples across four templates,
+  each executed twice, 517.734 seconds; zero reported timeouts, anomalies,
+  determinism failures or drift. Eight final traced Drain/Midrange and Tokens/
+  Ramp games use seeds 73100/73101 in both orders with a 6,000-action cap; all
+  finish in 13-35 turns without invalid-cost/target lines. Available quality
+  metrics are zero; some removal/blocking metrics lack complete evidence and
+  remain null. These samples do not establish matchup balance or expert play.
+- Preserve initial browser/probe/CLI setup failures and pre-log-restoration runs
+  separately from final acceptance. Fresh Scryfall probes reproduce two open
+  shared parser errors: Cathartic Reunion's discard count and Raze's sacrifice
+  type. They are next-batch evidence, not advertised fixes.
+- AST-only Graphify and verified RCHFiles archive:
+  `diagnostics/cast-payment-selections/20261003T091348Z/`. Compare/checksum source
+  and evidence copies before deleting owned local scratch; preserve live data,
+  active services and the user's untracked coder plan.
+
 ## 2026-10-03 - Deliberate graveyard casting and usable permission targets
 
 - Both human seats can announce supported graveyard trigger targets, then choose

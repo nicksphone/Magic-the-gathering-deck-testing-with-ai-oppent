@@ -127,6 +127,12 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
       && (move.card_view === undefined || card(move.card_view))
+      && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
+        record(option) && typeof option.id === 'string'
+        && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
+        && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
+          (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')
+            && new Set(option[key]).size === option[key].length)))))
       && (move.min_count === undefined || (Number.isInteger(move.min_count) && (move.min_count as number) >= 0
         && Number.isInteger(move.count) && (move.min_count as number) <= (move.count as number)))
       && (move.options === undefined || (Array.isArray(move.options) && move.options.every((id) => typeof id === "string"))))) {

@@ -331,8 +331,36 @@ def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> 
     return options[0]
 
 
-def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str, x_value: int = 0) -> bool:
+def additional_cost_candidates(state, player_id, spell_card_id, option):
+    return {
+        'discard_card_ids': [cid for cid in state.players[player_id].hand
+                             if cid != spell_card_id and not is_departed_token(state.cards[cid])],
+        'sacrifice_card_ids': _eligible_sacrifice_ids(state, player_id, option.sacrifice_kind),
+    }
+
+
+def additional_cost_selection(state, player_id, option, spell_card_id, choice=None):
+    candidates = additional_cost_candidates(state, player_id, spell_card_id, option)
+    selected = {}
+    for key, count in [('discard_card_ids', option.discard_cards),
+                       ('sacrifice_card_ids', option.sacrifice_creatures)]:
+        ids = (choice or {}).get(key)
+        if ids is None:
+            ids = candidates[key][:count]
+        if (not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids)
+                or len(ids) != count or len(set(ids)) != count
+                or any(cid not in candidates[key] for cid in ids)):
+            return None
+        selected[key] = list(ids)
+    return selected
+
+
+def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str,
+                           x_value: int = 0, choice=None) -> bool:
     player = state.players[player_id]
+    selected = additional_cost_selection(state, player_id, option, spell_card_id, choice)
+    if selected is None:
+        return False
     life_amount = option.pay_life + (x_value if option.pay_life_x else 0)
     if x_value < 0 or not can_pay_life(state, player_id, life_amount):
         return False
@@ -342,37 +370,16 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
             return False
         state.log.append(f"{player.name} pays {life_amount} life as an additional cost.")
 
-    for _ in range(option.discard_cards):
-        discard_id = _first_discardable_card(state, player_id, exclude={spell_card_id})
-        if not discard_id:
-            return False
-        player.hand.remove(discard_id)
-        put_into_graveyard(state, discard_id)
-        state.log.append(f"{player.name} discards {state.cards[discard_id].name} for additional cost.")
-        from rules_engine.events import emit_event
-
-        emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
-
-    for _ in range(option.sacrifice_creatures):
-        sac_id = _first_sacrificable_creature(state, player_id, option.sacrifice_kind)
-        if not sac_id:
-            return False
-        destination = replace_die_zone(state, player_id, sac_id)
-        player.battlefield.remove(sac_id)
-        card = state.cards[sac_id]
-        zone_owner = state.players[getattr(card, "owner", player_id)]
-        if destination == "exile":
-            zone_owner.exile.append(sac_id)
-            card.zone = Zone.EXILE
-            state.log.append(f"{player.name} sacrifices {card.name} for additional cost, but it is exiled instead of dying.")
-        else:
-            put_into_graveyard(state, sac_id)
-            state.log.append(f"{player.name} sacrifices {card.name} for additional cost.")
-        from rules_engine.events import emit_event
-
-        emit_event(state, "sacrifice", {"card_id": sac_id, "controller": player_id})
-        card.reset_zone_counters(card.zone)
-
+    from rules_engine.zone_actions import discard_selected, sacrifice_selected
+    if selected['discard_card_ids'] and not discard_selected(state, player_id, selected['discard_card_ids']):
+        return False
+    sacrifices = selected['sacrifice_card_ids']
+    names = {cid: state.cards[cid].name for cid in sacrifices}
+    if sacrifices and not sacrifice_selected(state, player_id, sacrifices):
+        return False
+    for cid in sacrifices:
+        suffix = ', but it is exiled instead of dying' if state.cards[cid].zone == Zone.EXILE else ''
+        state.log.append(f'{player.name} sacrifices {names[cid]} for additional cost{suffix}.')
     return True
 
 
@@ -400,8 +407,3 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
         ):
             eligible.append(cid)
     return eligible
-
-
-def _first_sacrificable_creature(state: MatchState, player_id: int, kind: str = "creature") -> str | None:
-    eligible = _eligible_sacrifice_ids(state, player_id, kind)
-    return eligible[0] if eligible else None

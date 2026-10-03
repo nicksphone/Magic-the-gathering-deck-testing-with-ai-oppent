@@ -24,8 +24,8 @@ def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dic
     return [{**move, "entry_choice": choice} for choice in options] if options else [move]
 
 
-def _cost_option_view(option) -> dict:
-    return {
+def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
+    view = {
         "id": option.id,
         "label": option.label,
         "mana_cost": option.mana_cost,
@@ -37,6 +37,10 @@ def _cost_option_view(option) -> dict:
         "sacrifice_kind": option.sacrifice_kind,
         "exile_graveyard": option.exile_graveyard,
     }
+    if state is not None and (option.discard_cards or option.sacrifice_creatures):
+        from rules_engine.costs import additional_cost_candidates
+        view.update(additional_cost_candidates(state, player_id, card_id, option))
+    return view
 
 
 def legal_moves(state: MatchState, player_id: int) -> list[dict]:
@@ -258,7 +262,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": card.name,
                     "from_graveyard": card.zone == Zone.GRAVEYARD,
                     "mana_cost": card.mana_cost,
-                    "cost_options": [_cost_option_view(o) for o in available_options],
+                    "cost_options": [_cost_option_view(o, state, player_id, cid) for o in available_options],
                     "target_hints": hints,
                 }
             )
@@ -299,7 +303,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": card.name,
                     "mana_cost": card.mana_cost,
                     "from_exile": True,
-                    "cost_options": [_cost_option_view(o) for o in available_options],
+                    "cost_options": [_cost_option_view(o, state, player_id, cid) for o in available_options],
                     "target_hints": hints,
                 }
             )
@@ -319,7 +323,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_name": top_card.name,
                     "mana_cost": top_card.mana_cost,
                     "from_library": True,
-                    "cost_options": [_cost_option_view(o) for o in available_options],
+                    "cost_options": [_cost_option_view(o, state, player_id, top_card.id) for o in available_options],
                     "target_hints": hints,
                 }
             )
@@ -522,7 +526,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     'cast_variant': 'bestow', 'mana_cost': view.mana_cost,
                     'from_exile': original.zone == Zone.EXILE,
                     **({'selected_face_index': index} if original.card_faces else {}),
-                    'cost_options': [_cost_option_view(option) for option in options], 'target_hints': hints})
+                    'cost_options': [_cost_option_view(option, state, player_id, cid) for option in options], 'target_hints': hints})
     return moves
 
 

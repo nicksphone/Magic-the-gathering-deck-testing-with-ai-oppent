@@ -174,6 +174,8 @@ export type LegalMove = {
     discard_cards: number;
     sacrifice_creatures: number;
     sacrifice_kind?: string;
+    discard_card_ids?: string[];
+    sacrifice_card_ids?: string[];
   }[];
   options?: string[];
   attackers?: { id: string; name: string }[];

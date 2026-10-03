@@ -2636,7 +2636,23 @@ class AIAgent:
         targets = dict((move.get("targets") or {}))
         cost_options = move.get("cost_options") or []
         if cost_options and not (move.get("cost_choice") or {}).get("id"):
-            out["cost_choice"] = {"id": cost_options[0]["id"]}
+            selected_cost = cost_options[0]
+            if selected_cost['id'].endswith(('_discard', '_sacrifice')):
+                root = selected_cost['id'].rsplit('_', 1)[0]
+                alternatives = [option for option in cost_options if option['id'].rsplit('_', 1)[0] == root]
+                def payment_loss(option):
+                    loss = 0.0
+                    for key, count, rank in [
+                        ('discard_card_ids', option.get('discard_cards', 0), self._hand_retention_value),
+                        ('sacrifice_card_ids', option.get('sacrifice_creatures', 0), self._sacrifice_loss),
+                    ]:
+                        values = sorted(rank(state, cid, player_id) for cid in option.get(key, []))
+                        if len(values) < count:
+                            return float('inf')
+                        loss += sum(values[:count])
+                    return loss
+                selected_cost = min(alternatives, key=lambda option: (payment_loss(option), option['id']))
+            out["cost_choice"] = {"id": selected_cost["id"]}
         tags: set[str] = set()
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -3024,6 +3040,18 @@ class AIAgent:
             if item and stack_object_kind(state, item) == "spell" and spell_cant_be_countered(state, item):
                 out["_invalid_ai_choice"] = True
         out["targets"] = targets
+        if mtype == 'cast_spell' and cost_options:
+            selected = next((option for option in cost_options
+                             if option['id'] == (out.get('cost_choice') or {}).get('id')), None)
+            if selected:
+                choice = dict(out.get('cost_choice') or {})
+                for key, count, rank in [
+                    ('discard_card_ids', selected.get('discard_cards', 0), self._hand_retention_value),
+                    ('sacrifice_card_ids', selected.get('sacrifice_creatures', 0), self._sacrifice_loss),
+                ]:
+                    if count and key not in choice and key in selected:
+                        choice[key] = sorted(selected[key], key=lambda cid: (rank(state, cid, player_id), cid))[:count]
+                out['cost_choice'] = choice
         return out
 
     def _choose_blocks(self, state: MatchState, attackers: list[dict], blockers: list[dict]) -> dict[str, str | list[str]]:

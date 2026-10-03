@@ -897,6 +897,10 @@ class RulesEngine:
                         apply_state_based_actions(state)
                         return
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
+                from rules_engine.costs import additional_cost_selection
+                if additional_cost_selection(state, player_id, chosen, cid, action.get('cost_choice')) is None:
+                    reject('Invalid additional-cost card selection')
+                    return
                 adjusted_cost = chosen.mana_cost
                 cost_staging = not state.trigger_staging
                 if cost_staging:
@@ -921,7 +925,8 @@ class RulesEngine:
                     state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value):
+                if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
+                                              choice=action.get('cost_choice')):
                     if cost_staging:
                         state.staged_triggers.clear()
                         state.trigger_staging = False

@@ -95,6 +95,8 @@ echo 'Browser CI: private surveil, ordering and payoff triggers'
 (cd frontend && timeout 120s node tests/browser-surveil.mjs)
 echo 'Browser CI: deliberate effect-authorized casts and declines'
 (cd frontend && timeout 180s node tests/browser-effect-casts.mjs)
+echo 'Browser CI: deliberate spell discard and sacrifice payments'
+(cd frontend && timeout 180s node tests/browser-cast-payments.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

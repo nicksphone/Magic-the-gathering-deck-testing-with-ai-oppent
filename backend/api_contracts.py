@@ -91,6 +91,8 @@ class LandAction(CardAction):
 
 class CostChoice(InputModel):
     id: Annotated[str, Field(min_length=1, max_length=100)]
+    discard_card_ids: CardIDs | None = None
+    sacrifice_card_ids: CardIDs | None = None
 
 
 HybridChoices = Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)]

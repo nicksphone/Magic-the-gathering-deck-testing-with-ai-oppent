@@ -124,6 +124,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
+  const [costCards, setCostCards] = useState<Record<string, string[]>>({});
   const [hybridChoice, setHybridChoice] = useState<Record<string, string>>({});
   const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
   const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
@@ -133,6 +134,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   useEffect(() => {
     setTargets({});
     setCostChoice({});
+    setCostCards({});
     setHybridChoice({});
     setFaceChoices({});
     setCycleChoices({});
@@ -201,7 +203,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       type: "cast_spell",
       card_id: cardId,
       targets: announced,
-      cost_choice: optionId ? { id: optionId } : undefined,
+      cost_choice: optionId ? {
+        id: optionId,
+        discard_card_ids: costCards[`${cardId}:${optionId}:discard_card_ids`],
+        sacrifice_card_ids: costCards[`${cardId}:${optionId}:sacrifice_card_ids`],
+      } : undefined,
       hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined,
       selected_face_index: selectedFaceIndex,
       from_exile: move?.from_exile,
@@ -584,6 +590,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
+            const payments = [
+              { key: 'discard_card_ids', count: selectedCost?.discard_cards ?? 0, candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
+              { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost' },
+            ];
+            const incompleteCostCards = payments.some(payment => payment.count > 0 &&
+              ((costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) !== payment.count ||
+                costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.some(id => !payment.candidates.includes(id))));
             const selectedManaCost = move.cost_options?.find((option) => option.id === selectedCostId)?.mana_cost ?? move.mana_cost;
             const selectedAuraTarget = String(targets[card.id]?.target_card_id ?? "");
             const incompatibleAuraCost = Boolean(hints?.aura_cost_options && (!selectedAuraTarget || !hints.aura_cost_options[selectedAuraTarget]?.includes(selectedCostId ?? "")));
@@ -599,7 +613,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               >
                 {landControls}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost}
+                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
@@ -643,6 +657,21 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ))}
                   </select>
                 ) : null}
+                {payments.filter(payment => payment.count > 0).map(payment => {
+                  const key = `${card.id}:${selectedCostId}:${payment.key}`;
+                  return <label key={key}>
+                    {payment.label}: choose {payment.count}
+                    <select multiple aria-label={`${payment.label} ${card.name}`}
+                      value={costCards[key] ?? []}
+                      onChange={event => setCostCards(previous => ({ ...previous,
+                        [key]: Array.from(event.target.selectedOptions).map(option => option.value),
+                      }))}>
+                      {payment.candidates.map(id => <option key={id} value={id}>
+                        {[...p1.hand, ...p1.battlefield].find(candidate => candidate.id === id)?.name ?? id}
+                      </option>)}
+                    </select>
+                  </label>;
+                })}
                 {hybridSymbols.map((symbol, index) => (
                   <label key={`${card.id}-hybrid-${selectedCostId}-${index}`}>
                     {`Pay {${symbol.symbol}}`}

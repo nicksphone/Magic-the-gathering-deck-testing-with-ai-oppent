@@ -54,8 +54,10 @@ archive `diagnostics/effect-cast-choices/20261003T083528Z/`.
 
 - General effects that authorize a card from other zones or multiple cards need
   their own permission contract and acceptance tests.
-- Optional kicker under a mana-cost waiver, deliberate additional-cost card
-  selection and interrupted payment continuations remain open.
+- [Recognized discard/sacrifice selections](cast-payment-selections.md) now use
+  explicit ordinary cost-card controls in either seat. Optional kicker under a
+  mana-cost waiver, broader grammar and interrupted payment continuations remain
+  open.
 - Modes and targets reuse existing supported cast controls; this does not prove
   arbitrary modal, multi-face or unusual cost composition works.
 - AI uses the existing Strong materialization heuristic for this shared effect

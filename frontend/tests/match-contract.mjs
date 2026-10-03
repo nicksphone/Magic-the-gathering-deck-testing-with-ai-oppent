@@ -51,6 +51,11 @@ const aiChoice = { ...state, controllers: { 1: "human", 2: "ai" }, pending_mecha
 assert.equal(parseMatchState(aiChoice), aiChoice);
 assert.throws(() => parseMatchState({ ...aiChoice, pending_mechanic_choice: { ...aiChoice.pending_mechanic_choice, options: ["hidden-card"] } }), /pending mechanic choice/);
 const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
+const castCosts = { id: 'base_discard', discard_cards: 1, sacrifice_creatures: 0, discard_card_ids: ['fodder'] };
+assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [castCosts] }] }).moves.length, 1);
+for (const bad of [{ discard_card_ids: [1] }, { sacrifice_card_ids: ['same', 'same'] }, { discard_cards: -1 }]) {
+  assert.throws(() => parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, ...bad }] }] }), /legal-moves response/);
+}
 assert.equal(parseLegalMoves(legal), legal);
 assert.throws(() => parseLegalMoves({ ...legal, player_id: 99 }), /legal-moves response/);
 assert.throws(() => parseLegalMoves({ ...legal, revision: "0" }), /legal-moves response/);

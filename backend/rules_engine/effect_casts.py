@@ -9,9 +9,14 @@ def materialize_cast(state, controller, card_id, targets=None):
     targets = dict(targets or {})
     if '{x}' in (card.mana_cost or '').lower():
         targets['x_value'] = 0
+    from rules_engine.costs import collect_cost_options, check_cost_option_available
+    from rules_engine.move_generator import _cost_option_view
+    costs = [option for option in collect_cost_options(state, controller, card, without_mana=True)
+             if check_cost_option_available(state, controller, card, option, x_value=0)]
     return AIAgent(difficulty='strong')._materialize_action(state, {
         'type': 'cast_spell', 'card_id': card_id, 'from_graveyard': True,
         'target_hints': build_cast_hints(state, card, controller), 'targets': targets,
+        'cost_options': [_cost_option_view(option, state, controller, card_id) for option in costs],
     }, controller, allow_zero_x=True)
 
 
@@ -63,7 +68,7 @@ def cast_moves(state, player_id):
     if costs and has_available_targets_for_action(hints) and can_cast_in_current_timing(state, card, player_id, during_resolution=True)[0]:
         moves.append({'type': 'cast_spell', 'card_id': target, 'card_name': card.name,
                       'from_graveyard': True, 'card_view': serialize_card_view(state, target),
-                      'mana_cost': '', 'cost_options': [_cost_option_view(option) for option in costs],
+                      'mana_cost': '', 'cost_options': [_cost_option_view(option, state, player_id, target) for option in costs],
                       'target_hints': hints})
     return moves
 
