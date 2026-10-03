@@ -1,0 +1,303 @@
+[
+  {
+    "id": "4210c54e-89fd-4971-ab6a-ca8f4e7fe97a",
+    "oracle_id": "14693689-d087-43b6-9c3f-63ab0648fc20",
+    "name": "All Is Dust",
+    "mana_cost": "{7}",
+    "type_line": "Kindred Sorcery — Eldrazi",
+    "oracle_text": "Each player sacrifices all permanents they control that are one or more colors.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/800/all-is-dust?utm_source=api"
+  },
+  {
+    "id": "605038e9-2840-4c2d-bd7a-1004ae210e2a",
+    "oracle_id": "6e5f908a-f4f1-4718-ac39-34176e401756",
+    "name": "Boneyard Wurm",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Wurm",
+    "oracle_text": "Boneyard Wurm's power and toughness are each equal to the number of creature cards in your graveyard.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/uma/159/boneyard-wurm?utm_source=api"
+  },
+  {
+    "id": "497fba45-201d-4688-b420-d093beb4e8f4",
+    "oracle_id": "9b55fb72-237d-4935-b645-8ebc6eb4140e",
+    "name": "Consuming Aberration",
+    "mana_cost": "{3}{U}{B}",
+    "type_line": "Creature — Horror",
+    "oracle_text": "Consuming Aberration's power and toughness are each equal to the number of cards in your opponents' graveyards.\nWhenever you cast a spell, each opponent reveals cards from the top of their library until they reveal a land card, then puts those cards into their graveyard.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "B",
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tdc/283/consuming-aberration?utm_source=api"
+  },
+  {
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "name": "Counterspell",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/114/counterspell?utm_source=api"
+  },
+  {
+    "id": "2ba7597d-6d76-45b8-b172-342999e401bd",
+    "oracle_id": "8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc",
+    "name": "Darksteel Citadel",
+    "mana_cost": "",
+    "type_line": "Artifact Land",
+    "oracle_text": "Indestructible\n{T}: Add {C}.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c21/285/darksteel-citadel?utm_source=api"
+  },
+  {
+    "id": "5526ff6e-c079-4ad4-ac8d-5e26ecacf50d",
+    "oracle_id": "e08722b3-0f79-4c82-b298-603e04a37857",
+    "name": "Death's Shadow",
+    "mana_cost": "{B}",
+    "type_line": "Creature — Avatar",
+    "oracle_text": "This creature gets -X/-X, where X is your life total.",
+    "power": "13",
+    "toughness": "13",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/82/deaths-shadow?utm_source=api"
+  },
+  {
+    "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+    "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+    "name": "Dryad Arbor",
+    "mana_cost": "",
+    "type_line": "Land Creature — Forest Dryad",
+    "oracle_text": "(This land isn't a spell, it's affected by summoning sickness, and it has \"{T}: Add {G}.\")",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/273/dryad-arbor?utm_source=api"
+  },
+  {
+    "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "name": "Forest",
+    "mana_cost": "",
+    "type_line": "Basic Land — Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api"
+  },
+  {
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "name": "Grizzly Bears",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Bear",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/10e/268/grizzly-bears?utm_source=api"
+  },
+  {
+    "id": "ea5d550a-bd8b-4f9e-ac7d-c35ebbe313e6",
+    "oracle_id": "0fe76004-b2f4-4b11-abce-75fd76f68b4d",
+    "name": "Lhurgoyf",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Creature — Lhurgoyf",
+    "oracle_text": "Lhurgoyf's power is equal to the number of creature cards in all graveyards and its toughness is equal to that number plus 1.",
+    "power": "*",
+    "toughness": "1+*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cm2/141/lhurgoyf?utm_source=api"
+  },
+  {
+    "id": "4aaf4d64-b5ef-44ae-b25a-7a5ea8f72170",
+    "oracle_id": "ea5e3401-bd6c-47bb-a52a-8eec5f09455d",
+    "name": "Lord of Extinction",
+    "mana_cost": "{3}{B}{G}",
+    "type_line": "Creature — Elemental",
+    "oracle_text": "Lord of Extinction's power and toughness are each equal to the number of cards in all graveyards.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tdc/295/lord-of-extinction?utm_source=api"
+  },
+  {
+    "id": "beeaaef1-5cd9-402a-982e-2cb4e69cfaca",
+    "oracle_id": "2f554218-2072-4d9b-b4d4-34f161f1f2a9",
+    "name": "Mortivore",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Creature — Lhurgoyf",
+    "oracle_text": "Mortivore's power and toughness are each equal to the number of creature cards in all graveyards.\n{B}: Regenerate this creature. (The next time this creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Heal",
+      "Regenerate"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/cm2/69/mortivore?utm_source=api"
+  },
+  {
+    "id": "0d6cc98b-b376-40af-8308-198bab00b2b1",
+    "oracle_id": "bce5b327-7da1-4136-b76f-069e2fef5d2a",
+    "name": "Multani, Maro-Sorcerer",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Legendary Creature — Elemental Sorcerer",
+    "oracle_text": "Shroud (This creature can't be the target of spells or abilities.)\nMultani's power and toughness are each equal to the total number of cards in all players' hands.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Shroud"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ulg/107/multani-maro-sorcerer?utm_source=api"
+  },
+  {
+    "id": "c37a0136-1c40-4cd1-8787-a25c377c1741",
+    "oracle_id": "4b8bf64b-4800-45ff-81c6-2857f34999b5",
+    "name": "Multani, Yavimaya's Avatar",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Legendary Creature — Elemental Avatar",
+    "oracle_text": "Reach, trample\nMultani gets +1/+1 for each land you control and each land card in your graveyard.\n{1}{G}, Return two lands you control to their owner's hand: Return this card from your graveyard to your hand.",
+    "power": "0",
+    "toughness": "0",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Reach",
+      "Trample"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/eoc/100/multani-yavimayas-avatar?utm_source=api"
+  },
+  {
+    "id": "47433ce9-1ac6-4359-a5e4-4ec68490cb0c",
+    "oracle_id": "379ed4ec-8f2e-448b-9ed2-a3181e2f877e",
+    "name": "Nighthawk Scavenger",
+    "mana_cost": "{1}{B}{B}",
+    "type_line": "Creature — Vampire Rogue",
+    "oracle_text": "Flying, deathtouch, lifelink\nNighthawk Scavenger's power is equal to 1 plus the number of card types among cards in your opponents' graveyards.",
+    "power": "1+*",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Deathtouch",
+      "Flying",
+      "Lifelink"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/otc/144/nighthawk-scavenger?utm_source=api"
+  },
+  {
+    "id": "11bbc404-a456-4a4b-af88-23921d80d671",
+    "oracle_id": "5391f601-b778-413f-a31f-9f8b23b40f5c",
+    "name": "Overbeing of Myth",
+    "mana_cost": "{G/U}{G/U}{G/U}{G/U}{G/U}",
+    "type_line": "Creature — Spirit Avatar",
+    "oracle_text": "Overbeing of Myth's power and toughness are each equal to the number of cards in your hand.\nAt the beginning of your draw step, draw an additional card.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/eve/157/overbeing-of-myth?utm_source=api"
+  },
+  {
+    "id": "e3bfd66f-8269-4765-87f3-38fcc25435be",
+    "oracle_id": "063960e0-3f9c-4697-ba5e-81c56ac1b5d2",
+    "name": "Rubblehulk",
+    "mana_cost": "{4}{R}{G}",
+    "type_line": "Creature — Elemental",
+    "oracle_text": "Rubblehulk's power and toughness are each equal to the number of lands you control.\nBloodrush — {1}{R}{G}, Discard this card: Target attacking creature gets +X/+X until end of turn, where X is the number of lands you control.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Bloodrush"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c18/189/rubblehulk?utm_source=api"
+  },
+  {
+    "id": "8be5ee47-8f8a-4e3c-b1a1-9ca0e1fdec7f",
+    "oracle_id": "45900b2f-f6a9-4c42-9642-008f3c1cf6dd",
+    "name": "Tarmogoyf",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Lhurgoyf",
+    "oracle_text": "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.",
+    "power": "*",
+    "toughness": "1+*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/fra/116/tarmogoyf?utm_source=api"
+  },
+  {
+    "id": "b70fbe1c-d3f4-4e28-a830-2072dee1b7b5",
+    "oracle_id": "f44fb61a-9aa5-4178-b958-5115d62a7f50",
+    "name": "Terravore",
+    "mana_cost": "{1}{G}{G}",
+    "type_line": "Creature — Lhurgoyf",
+    "oracle_text": "Trample\nTerravore's power and toughness are each equal to the number of land cards in all graveyards.",
+    "power": "*",
+    "toughness": "*",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Trample"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmr/181/terravore?utm_source=api"
+  }
+]

@@ -2,6 +2,9 @@
 
 ## Current Priority: Backend First
 
+- [x] Batch supported hand/graveyard/type/resource creature definitions, battlefield-only self modifiers, printed-expression persistence, copy/face propagation, effective damage and shared AI entry valuation. See [scope and acceptance evidence](docs/testing/characteristic-stats.md).
+- [ ] Expand unusual/conditional characteristic definitions and full layer/zone-change fidelity; add cost/entry-aware and adversarial AI projections before claiming arbitrary-deck expert play.
+
 The user deferred alpha-UI fixes and the redesign on 2026-10-01. The unpublished
 layout patch and browser evidence are preserved on RCHFiles under
 `diagnostics/deferred-ui-20261001/`; the tracked UI remains the published version.

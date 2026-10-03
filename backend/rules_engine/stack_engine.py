@@ -418,6 +418,7 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         mana_cost=copied.get("mana_cost") or "", type_line=copied.get("type_line") or "",
         oracle_text=copied.get("oracle_text") or "", power=copied.get("power"),
         toughness=copied.get("toughness"), loyalty=copied.get("loyalty"),
+        printed_power=copied.get('printed_power'), printed_toughness=copied.get('printed_toughness'),
         keywords=list(copied.get("keywords") or []), colors=copied.get("colors"),
         image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
         card_faces=list(copied.get("card_faces") or []),

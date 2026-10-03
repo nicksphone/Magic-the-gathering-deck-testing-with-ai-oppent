@@ -17,6 +17,7 @@ function card(value: unknown): boolean {
         && Number.isInteger(count) && (count as number) > 0)))
     && (value.power === null || typeof value.power === "number")
     && (value.toughness === null || typeof value.toughness === "number")
+    && [value.printed_power, value.printed_toughness].every(value => value === undefined || value === null || typeof value === "string")
     && (value.attached_to === undefined || value.attached_to === null || typeof value.attached_to === "string")
     && (value.effect_warnings === undefined || (Array.isArray(value.effect_warnings) && value.effect_warnings.every((warning) => typeof warning === "string")))
     && (value.colors === undefined || (Array.isArray(value.colors) && value.colors.every((color) => typeof color === "string" && /^[WUBRG]$/.test(color))))

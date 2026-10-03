@@ -17,7 +17,9 @@ _COLOR_WORDS = {"white", "blue", "black", "red", "green", "colorless"}
 _INDEX_FILE = CACHE_DIR / "token-index.json"
 
 
-def resolve_token_image_uri(name: str, power: int, toughness: int) -> str:
+def resolve_token_image_uri(name: str, power: int | None, toughness: int | None) -> str:
+    if power is None or toughness is None:
+        return ensure_generic_token_image()
     key = ((name or "token").strip().lower(), int(power), int(toughness))
     cached = _TOKEN_IMAGE_CACHE.get(key)
     if cached:

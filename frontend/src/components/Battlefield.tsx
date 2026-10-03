@@ -31,6 +31,8 @@ type HoverPreview = {
   loyalty?: number | null;
   basePower?: number | null;
   baseToughness?: number | null;
+  printedPower?: string | null;
+  printedToughness?: string | null;
   damage?: number;
   keywords?: string[];
   colors?: string[];
@@ -159,6 +161,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       loyalty: "loyalty" in card ? card.loyalty : null,
       basePower: card.base_power,
       baseToughness: card.base_toughness,
+      printedPower: card.printed_power,
+      printedToughness: card.printed_toughness,
       damage: card.damage_marked,
       keywords: card.keywords,
       colors: card.colors,
@@ -918,6 +922,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               </p>
             ) : null}
             {hoverPreview.loyalty !== null && hoverPreview.loyalty !== undefined ? <p>LOY: {hoverPreview.loyalty}</p> : null}
+            {hoverPreview.printedPower !== null && hoverPreview.printedPower !== undefined ? <p>Printed: {hoverPreview.printedPower}/{hoverPreview.printedToughness ?? "-"}</p> : null}
             {hoverPreview.basePower !== null && hoverPreview.basePower !== undefined && (hoverPreview.power !== hoverPreview.basePower || hoverPreview.toughness !== hoverPreview.baseToughness) ? <p>Base: {hoverPreview.basePower}/{hoverPreview.baseToughness}</p> : null}
             {hoverPreview.damage ? <p>Damage marked: {hoverPreview.damage}</p> : null}
             {hoverPreview.keywords?.length ? <p>{hoverPreview.keywords.join(", ")}</p> : null}

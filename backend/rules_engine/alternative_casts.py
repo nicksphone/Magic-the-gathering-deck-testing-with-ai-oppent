@@ -34,6 +34,7 @@ def apply_prototype(card) -> None:
     characteristics = prototype_characteristics(card)
     if characteristics is None:
         return
+    characteristics.update({f'printed_{field}': str(characteristics[field]) for field in ['power', 'toughness']})
     card.printed_characteristics = {key: getattr(card, key) for key in characteristics}
     for key, value in characteristics.items():
         setattr(card, key, value)

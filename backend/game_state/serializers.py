@@ -19,7 +19,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
     from rules_engine.colors import card_color_symbols
     from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
     card = state.cards[cid]
-    creature = "Creature" in card.types and card.zone == Zone.BATTLEFIELD
+    creature = "Creature" in card.types
     def numeric(value):
         try:
             return int(value) if value is not None else None
@@ -27,6 +27,8 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
             return None
     base_power, base_toughness = numeric(card.power), numeric(card.toughness)
     power, toughness = effective_combat_stats(state, cid) if creature else (base_power, base_toughness)
+    if not creature and card.zone == Zone.BATTLEFIELD:
+        power, toughness = None, None
     keyword_counts = effective_keyword_counts(state, cid)
     counters = dict(card.counters)
     if 'Saga' in card.type_line and '__lore' in counters:
@@ -38,6 +40,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "summoning_sick": card.summoning_sick,
         "power": power, "toughness": toughness,
         "base_power": base_power, "base_toughness": base_toughness,
+        "printed_power": card.printed_power, "printed_toughness": card.printed_toughness,
         "keywords": list(keyword_counts), "keyword_counts": keyword_counts, "base_keywords": list(card.keywords),
         "counters": counters, "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
@@ -166,6 +169,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "mana_cost": card.mana_cost,
                 "power": card.power,
                 "toughness": card.toughness,
+                "printed_power": card.printed_power,
+                "printed_toughness": card.printed_toughness,
                 "loyalty": card.loyalty,
                 "tapped": card.tapped,
                 "summoning_sick": card.summoning_sick,
@@ -240,6 +245,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             types=list(raw.get("types", [])), is_token=bool(raw.get("is_token", is_token_card(raw))),
             mana_cost=str(raw.get("mana_cost", "")),
             power=raw.get("power"), toughness=raw.get("toughness"), loyalty=raw.get("loyalty"),
+            printed_power=raw.get('printed_power'), printed_toughness=raw.get('printed_toughness'),
             tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
             entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
             counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},

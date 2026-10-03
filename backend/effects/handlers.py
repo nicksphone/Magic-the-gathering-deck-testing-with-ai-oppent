@@ -5,7 +5,7 @@ import re
 
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, draw_card, object_incarnation, allocate_effect_timestamp
 from card_data.token_images import resolve_token_image_uri
-from rules_engine.continuous import effective_keywords, effective_toughness, has_keyword
+from rules_engine.continuous import effective_keywords, effective_toughness, effective_combat_stats, has_keyword
 from rules_engine.counter_placement import put_counters
 from rules_engine.counter_replacements import counter_effect_amount
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
@@ -130,12 +130,13 @@ def set_turn_restriction(state: MatchState, controller: int, payload: dict) -> N
 
 def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
-    if card.toughness is None:
+    toughness = effective_combat_stats(state, card_id)[1]
+    if toughness is None:
         return False
     if has_keyword(state, card_id, "indestructible"):
         return False
     marked = int(card.counters.get(DMG_MARK_KEY, 0))
-    if marked >= int(effective_toughness(state, card_id)):
+    if marked >= toughness:
         return True
     if int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0:
         return True
@@ -222,7 +223,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             if post <= 0:
                 return 0
             from rules_engine.damage_results import apply_creature_damage
-            if card.toughness is not None:
+            if "Creature" in card.types:
                 apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
                                       controller=controller, counter_is_effect=True)
                 state.log.append(f"{card.name} takes {post} damage.")
@@ -681,7 +682,7 @@ def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -
     source = state.cards[source_id]
     previous_name = source.name
     selected = select_cast_face(state.cards[chosen], 0)
-    for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "loyalty", "oracle_text", "keywords", "colors"):
+    for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "loyalty", "oracle_text", "keywords", "colors"):
         source.printed_characteristics.setdefault(field, copy(getattr(source, field)))
         setattr(source, field, copy(getattr(selected, field)))
     state.log.append(f"{previous_name} becomes a copy of {selected.name}.")
@@ -852,7 +853,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
             copied_payload["__copied_card"] = {
                 key: copy.deepcopy(getattr(source, key))
                 for key in ("name", "types", "type_line", "mana_cost", "oracle_text", "power",
-                            "toughness", "loyalty", "keywords", "colors", "image_uri",
+                            "toughness", "printed_power", "printed_toughness", "loyalty", "keywords", "colors", "image_uri",
                             "layout", "card_faces", "selected_face_index", "bestow_characteristics")
             }
     copied_payload["__stack_copy_kind"] = kind
@@ -1524,8 +1525,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
     from copy import deepcopy
 
     name = payload.get("name", "Token")
-    p = int(payload.get("power", 1))
-    t = int(payload.get("toughness", 1))
+    p = int(payload['power']) if payload.get('power') is not None else None if 'power' in payload else 1
+    t = int(payload['toughness']) if payload.get('toughness') is not None else None if 'toughness' in payload else 1
     token_controller = int(payload.get("controller", controller))
     amount = (basic_land_type_count(state, token_controller) if payload.get("per_basic_land_type")
               else max(0, int(payload.get("amount", 1))))
@@ -1579,6 +1580,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             mana_cost=payload.get("mana_cost", ""),
             power=p if "Creature" in types else None,
             toughness=t if "Creature" in types else None,
+            printed_power=payload.get('printed_power', str(p) if p is not None else None),
+            printed_toughness=payload.get('printed_toughness', str(t) if t is not None else None),
             loyalty=payload.get('loyalty'),
             type_line=payload.get("type_line") or (f"Token Artifact - {name}" if "Artifact" in types and "Creature" not in types else ""),
             oracle_text=payload.get("oracle_text", ""),
@@ -1652,8 +1655,8 @@ def create_token_copy(state: MatchState, controller: int, payload: dict) -> None
     create_token(state, controller, {
         "name": target.name, "types": list(dict.fromkeys([*target.types, "Token"])),
         "mana_cost": target.mana_cost, "type_line": target.type_line,
-        "power": target.power if target.power is not None else 0,
-        "toughness": target.toughness if target.toughness is not None else 0,
+        "power": target.power, "toughness": target.toughness,
+        "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
         "oracle_text": target.oracle_text, "keywords": keywords,
         "colors": target.colors or [], "image_uri": target.image_uri,
         "sacrifice_next_end_step": bool(payload.get("sacrifice_next_end_step")),

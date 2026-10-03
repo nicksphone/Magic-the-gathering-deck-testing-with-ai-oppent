@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-03 - Resource-defined stats and shared AI entry valuation
+
+- Share supported resource characteristics across zones and combat; preserve
+  printed expressions through snapshots, faces, prototypes and copies.
+- Keep battlefield-only modifiers/setters in their correct zone; preserve
+  Kindred/Battle identity and supported affine-star constants under ability loss.
+- Apply damage to nonnumeric-stat creatures, use effective lethal thresholds,
+  and give unknown-stat copies offline fallback art without numeric coercion.
+- Use static entry forecasts in shared AI valuation and effective toughness for
+  triggered damage target selection. Broader entry/cost/response strategy is open.
+- Add canonical, HTTP/SQLite, production-AI and both-seat browser regressions;
+  repair an existing browser mutation-acknowledgment race and preserve split-card
+  combined identity while retaining front-only double-faced identity.
+- Validation: 249 new checks, 5,037 passing isolated backend tests, frontend
+  gates, complete Chromium and three repeated seat-balanced matrices (30 samples,
+  zero reported anomaly/timeout/drift). Failed and repaired runs are retained.
+  See [bounded scope](docs/testing/characteristic-stats.md).
+
 ## 2026-10-03 - Simultaneous wheels and hand-defined characteristics
 
 - Share whole-hand each-player discard followed by fixed, actual-count,

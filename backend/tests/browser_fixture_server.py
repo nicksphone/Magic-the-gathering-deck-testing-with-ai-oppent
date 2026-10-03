@@ -51,6 +51,13 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'characteristic_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
+        from tests.test_characteristic_stats import setup
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        name = ['Tarmogoyf', 'Boneyard Wurm', "Death's Shadow"][index]
+        state, _ = setup(name, seat, Zone.HAND)
+        state.players[seat].mana_pool.update({'G': 2, 'B': 1})
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'wheel_{index}_{seat}' for index in range(6) for seat in [1, 2]}:
         from tests.test_wheel_draw import setup, SPELLS, canonical
         from tests.test_ai_recurring_engines import add

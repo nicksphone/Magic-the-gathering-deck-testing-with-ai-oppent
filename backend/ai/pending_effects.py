@@ -10,7 +10,7 @@ from game_state.state import CardInstance, MatchState, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
-from rules_engine.continuous import has_keyword
+from rules_engine.continuous import effective_combat_stats, has_keyword
 
 
 SECONDARY_EFFECT_RE = re.compile(
@@ -63,6 +63,34 @@ def _copy_card_field(value, memo):
         memo[id(value)] = result
         return result
     return deepcopy(value, memo)
+
+
+def prospective_creature_stats(state, card, player_id):
+    """Evaluate static entry stats, not costs, entry choices or responses."""
+    if not isinstance(card, CardInstance) or not isinstance(state, MatchState):
+        return getattr(card, "power", None), getattr(card, "toughness", None)
+    if card.zone == Zone.BATTLEFIELD and card is state.cards.get(card.id):
+        return effective_combat_stats(state, card.id)
+    context = _decision_projection.get()
+    key = ("entry_stats", id(card), player_id)
+    cache = context[2] if context and context[0] is state else None
+    if cache is not None and key in cache:
+        return cache[key][1]
+    projected = planning_copy(state)
+    entrant = deepcopy(card)
+    entrant.move_to_zone(Zone.BATTLEFIELD)
+    entrant.controller = player_id
+    projected.cards[entrant.id] = entrant
+    for player in projected.players.values():
+        for zone in (Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE, Zone.BATTLEFIELD):
+            cards = getattr(player, zone.value)
+            cards[:] = [cid for cid in cards if cid != entrant.id]
+    projected.players[player_id].battlefield.append(entrant.id)
+    result = effective_combat_stats(projected, entrant.id)
+    if cache is not None:
+        # Retain the proxy so its identity cannot be reused within this decision.
+        cache[key] = (card, result)
+    return result
 
 
 def negative_pt_would_be_lethal(state, card_id, power, toughness):

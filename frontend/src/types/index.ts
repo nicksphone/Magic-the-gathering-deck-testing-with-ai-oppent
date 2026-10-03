@@ -30,6 +30,8 @@ export type CardView = {
   toughness: number | null;
   base_power?: number | null;
   base_toughness?: number | null;
+  printed_power?: string | null;
+  printed_toughness?: string | null;
   keywords?: string[];
   keyword_counts?: Record<string, number>;
   colors?: string[];

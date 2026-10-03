@@ -95,6 +95,8 @@ class CardInstance:
     last_known_battlefield: dict = field(default_factory=dict)
     exile_face_down: bool = False
     was_kicked: bool = False
+    printed_power: str | None = None
+    printed_toughness: str | None = None
 
     def reset_zone_counters(self, zone: Zone) -> None:
         self.keyword_effects.clear()
@@ -304,6 +306,8 @@ class MatchFactory:
                     mana_cost=raw_item.get("mana_cost", ""),
                     power=_infer_power(card_name, raw_item.get("power"), types),
                     toughness=_infer_toughness(card_name, raw_item.get("toughness"), types),
+                    printed_power=str(raw_item['power']) if raw_item.get('power') is not None else None,
+                    printed_toughness=str(raw_item['toughness']) if raw_item.get('toughness') is not None else None,
                     loyalty=_infer_loyalty(card_name, raw_item.get("loyalty"), types),
                     summoning_sick="Creature" in types,
                     keywords=_infer_keywords(raw_item.get("oracle_text", "") or ""),
@@ -388,13 +392,10 @@ def assign_effect_timestamp(state: MatchState, card_id: str) -> None:
 
 def _infer_types(name: str, type_line: str = "", mana_cost: str = "", oracle_text: str = "") -> list[str]:
     if type_line:
-        line = type_line.lower()
-        out = []
-        for t in ["land", "creature", "instant", "sorcery", "enchantment", "artifact", "planeswalker"]:
-            if re.search(rf"\b{t}\b", line):
-                out.append(t.capitalize())
-        if out:
-            return out
+        from rules_engine.card_types import printed_card_types
+        # The factory supplies both halves only for split-card identity.
+        return list(dict.fromkeys(kind for face in type_line.split('//')
+                                  for kind in printed_card_types(face)))
     n = name.lower()
     if not (mana_cost or "").strip() and n in {
         "plains", "island", "swamp", "mountain", "forest", "wastes",

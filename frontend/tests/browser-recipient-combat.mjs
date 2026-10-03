@@ -29,6 +29,11 @@ for (const kind of ['attack', 'block']) for (const seat of [1, 2]) {
       await click('Submit Blocks');
       await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
     }
+    // Submission can hide the controls before the HTTP mutation completes.
+    await waitFor(`(async () => {
+      const state = await (await fetch('${backend}/matches/${fixture.id}')).json();
+      return ${kind === 'attack' ? 'state.attackers.length === 2' : 'Object.values(state.blocks).length === 2'};
+    })()`);
     const paid = await (await fetch(`${backend}/matches/${fixture.id}`)).json();
     assert.equal(paid.players[String(kind === 'attack' ? seat : 3-seat)].mana_pool.G, 0);
     if (kind === 'attack') assert.equal(paid.attackers.length, 2);

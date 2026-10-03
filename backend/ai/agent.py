@@ -12,9 +12,9 @@ from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
 from game_state.state import CardInstance, MatchState, Step, Zone, object_incarnation
 from rules_engine.engine import RulesEngine
-from ai.pending_effects import planning_copy
+from ai.pending_effects import planning_copy, prospective_creature_stats
 from rules_engine import combat
-from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, has_keyword
+from rules_engine.continuous import effective_combat_stats, effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
 from rules_engine.colors import card_color_names
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -297,7 +297,11 @@ class AIAgent:
                                 if card.controller == player_id:
                                     return -100.0
                                 amount = int(effect.get("payload", {}).get("amount", 0) or 0)
-                                return 5.0 + self._creature_threat_score(state, value, player_id) if "Creature" in card.types and int(card.toughness or 0) <= amount else 0.0
+                                toughness = effective_combat_stats(state, value)[1]
+                                lethal = ("Creature" in card.types and toughness is not None
+                                          and amount > 0 and toughness <= amount + int(card.counters.get("__damage_marked", 0))
+                                          and not has_keyword(state, value, "indestructible"))
+                                return 5.0 + self._creature_threat_score(state, value, player_id) if lethal else 0.0
                             if effect["effect_key"] == "add_counters":
                                 counter = effect.get("payload", {}).get("counter")
                                 if counter in {"+1/+1", "-1/-1"}:
@@ -1050,7 +1054,7 @@ class AIAgent:
             materialized = self._materialize_action(state, m, player_id)
             if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                 continue
-            score = self._closure_spell_score(card, text)
+            score = self._closure_spell_score(card, text, state=state, player_id=player_id)
             candidates.append((score, materialized))
         if not candidates:
             return None
@@ -1060,14 +1064,15 @@ class AIAgent:
             return None
         return candidates[0][1]
 
-    def _closure_spell_score(self, card, text: str) -> float:
+    def _closure_spell_score(self, card, text: str, *, state=None, player_id=None) -> float:
         score = 0.0
         types = set(getattr(card, "types", []) or [])
         if "Planeswalker" in types:
             score += 5.0
         if "Creature" in types:
-            p = int(getattr(card, "power", 0) or 0)
-            t = int(getattr(card, "toughness", 0) or 0)
+            stats = (prospective_creature_stats(state, card, player_id)
+                     if state is not None and player_id is not None else (card.power, card.toughness))
+            p, t = (int(value or 0) for value in stats)
             score += min(6.0, p * 0.9 + t * 0.25)
         if "draw" in self._spell_tags(card) or "scry" in text or "surveil" in text:
             score += 1.8
@@ -1886,7 +1891,8 @@ class AIAgent:
             x_value = self._choose_variable_life_x(state, player_id, card)
             if x_value <= 0:
                 return -8.0
-        power = getattr(card, "power", 0) or 0
+        power = (prospective_creature_stats(state, card, player_id)[0] or 0
+                 if is_creature else getattr(card, "power", 0) or 0)
         is_big_threat = power >= 4 or cmc >= 4
         if face_score:
             bonus_face = face_score * 0.45
@@ -3683,7 +3689,7 @@ class AIAgent:
                 action = self._materialize_action(sim, move, player_id)
                 if action.get("_invalid_ai_choice"):
                     continue
-                value = (self._closure_spell_score(card, _oracle_text(card))
+                value = (self._closure_spell_score(card, _oracle_text(card), state=sim, player_id=player_id)
                          + recurring_engine_value(sim, card.id, surface_card=card)
                          + repeatable_mana_value(sim, card.id, surface_card=card))
                 targets = action.get("targets") or {}
@@ -4280,11 +4286,11 @@ class AIAgent:
                 if destination == "graveyard":
                     text = str(getattr(card, "oracle_text", "") or "").lower()
                     if graveyard_destination(state, card) != "graveyard":
-                        return (-self._closure_spell_score(card, text), card.name)
+                        return (-self._closure_spell_score(card, text, state=state, player_id=player_id), card.name)
                     if "Creature" in card.types:
                         return (self._graveyard_creature_reanimation_score(state, cid, player_id), card.name)
                     if any(keyword in text for keyword in ("flashback", "escape", "jump-start", "retrace")):
-                        return (3.0 + self._closure_spell_score(card, text), card.name)
+                        return (3.0 + self._closure_spell_score(card, text, state=state, player_id=player_id), card.name)
                     return (-1.0 if "Land" in card.types else 0.0, card.name)
                 if "Land" in card.types:
                     colors = self._land_colors(card)
@@ -4293,7 +4299,7 @@ class AIAgent:
                     return (2.0 + fixing + 0.1 * len(colors), card.name)
                 cost = mana_value(card.mana_cost)
                 text = str(getattr(card, "oracle_text", "") or "").lower()
-                value = self._closure_spell_score(card, text)
+                value = self._closure_spell_score(card, text, state=state, player_id=player_id)
                 if free_battlefield:
                     value += 1.5 + 0.35 * cost
                 else:

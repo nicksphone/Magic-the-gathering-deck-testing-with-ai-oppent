@@ -22,8 +22,8 @@ def creature_subtype_candidates(plural: str) -> set[str]:
 
 def printed_card_types(type_line: str) -> list[str]:
     """Read the front face's types, excluding supertypes and subtypes."""
-    front = (type_line or "").split("//", 1)[0].split("—", 1)[0].strip()
-    return [part for part in front.split() if part in CARD_TYPES]
+    front = re.split(r'\s[\u2014-]\s', (type_line or "").split("//", 1)[0], maxsplit=1)[0].strip()
+    return [part.capitalize() for part in front.split() if part.capitalize() in CARD_TYPES]
 
 
 def cards_have_distinct_card_types(state, card_ids: list[str]) -> bool:

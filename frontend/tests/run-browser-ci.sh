@@ -117,6 +117,8 @@ echo 'Browser CI: bounded discard, modal/loyalty actions and per-turn history'
 (cd frontend && timeout 180s node tests/browser-discard-history.mjs)
 echo 'Browser CI: simultaneous wheels, effective hand stats and draw continuation'
 (cd frontend && timeout 240s node tests/browser-wheel-draw.mjs)
+echo 'Browser CI: canonical resource-defined creature stats'
+(cd frontend && timeout 180s node tests/browser-characteristic-stats.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

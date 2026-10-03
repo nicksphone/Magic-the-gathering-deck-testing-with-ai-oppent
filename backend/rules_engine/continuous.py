@@ -7,7 +7,7 @@ from typing import Any
 
 from game_state.state import Zone
 from rules_engine.card_types import creature_subtype_candidates, CREATURE_SUBTYPES
-from rules_engine.card_types import is_token_card
+from rules_engine.card_types import is_token_card, CARD_TYPES
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.player_counters import counter_count, PLAYER_COUNT_RE
 
@@ -215,13 +215,6 @@ PT_SET_SCOPE_RE = re.compile(
     r"(?:base power and toughness\s+(\d+)\/(\d+)|(?:are|become|becomes|is)\s+(\d+)\/(\d+)|"
     r"set(?:s)?(?:\s+their)?\s+base power and toughness\s+(\d+)\/(\d+))\b"
 )
-SELF_SCALE_GRAVE_RE = re.compile(
-    r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+([a-z\s]+?)\s+card[s]?\s+in\s+(your|all)\s+graveyard[s]?\b"
-)
-SELF_SCALE_BF_RE = re.compile(
-    r"\bgets\s+([+-]\d+)\/([+-]\d+)\s+for each\s+(other\s+)?([a-z\s]+?)\s+you control\b"
-)
-CARD_TYPE_COUNT_RE = re.compile(r"number of card types among cards in all graveyards", re.IGNORECASE)
 KW_STATIC_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+(?:have|has)\s+([^.]*)"
@@ -519,8 +512,8 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     base_t = card.toughness
     dynamic_p, dynamic_t = _self_defined_card_type_pt(state, card)
     if printed_abilities_suppressed(state, card_id, losses=ability_losses):
-        dynamic_p = 0 if base_p is None and dynamic_p is not None else None
-        dynamic_t = 0 if base_t is None and dynamic_t is not None else None
+        dynamic_p = _undefined_printed_stat(getattr(card, 'printed_power', None)) if base_p is None and dynamic_p is not None else None
+        dynamic_t = _undefined_printed_stat(getattr(card, 'printed_toughness', None)) if base_t is None and dynamic_t is not None else None
     if dynamic_p is not None:
         base_p = dynamic_p
     if dynamic_t is not None:
@@ -565,30 +558,68 @@ def _ability_layer_continuation_source(source):
 
 def _self_defined_card_type_pt(state, card) -> tuple[int | None, int | None]:
     """Resolve supported characteristic-defining power/toughness clauses."""
-    text = (getattr(card, "oracle_text", "") or "").lower()
+    power = toughness = None
+    subject = _self_stat_subject(card) + r"'s "
     for line in _static_oracle_text(card).splitlines():
-        subject = r"(?:this creature|this permanent|" + re.escape(str(getattr(card, 'name', '') or '').lower()) + r")"
-        if re.fullmatch(subject + r"'s power and toughness are each equal to the number of cards in your hand\.?", line.strip()):
-            count = len(state.players[card.controller].hand)
-            return count, count
-        match = re.fullmatch(r"this creature's power and toughness are each equal to the " + PLAYER_COUNT_RE + r"\.?", line.strip())
-        if match:
-            count = counter_count(state.players[card.controller], match[1])
-            return count, count
-    if "power is equal to the number of creatures you control" in text:
-        return (sum("Creature" in state.cards[cid].types for cid in state.players[card.controller].battlefield), None)
-    if not CARD_TYPE_COUNT_RE.search(text):
-        return (None, None)
-    types: set[str] = set()
-    for player in state.players.values():
-        for cid in player.graveyard:
-            grave_card = state.cards.get(cid)
-            if grave_card is not None:
-                types.update(str(value).lower() for value in (getattr(grave_card, "types", []) or []))
-    count = len(types)
-    power = count if "power is equal" in text or "power and toughness" in text else None
-    toughness = count + 1 if "toughness is equal to that number plus 1" in text else None
+        line = line.strip().rstrip('.').replace('\u2019', "'")
+        both = re.fullmatch(subject + r'power and toughness are each equal to (.+)', line)
+        pair = re.fullmatch(subject + r'power is equal to (.+) and its toughness is equal to that number plus (\d+)', line)
+        single = re.fullmatch(subject + r'(power|toughness) is equal to (.+)', line)
+        if both:
+            power = toughness = _stat_resource_count(state, card, both[1])
+        elif pair:
+            power = _stat_resource_count(state, card, pair[1])
+            toughness = power + int(pair[2]) if power is not None else None
+        elif single:
+            count = _stat_resource_count(state, card, single[2])
+            if single[1] == 'power':
+                power = count
+            else:
+                toughness = count
     return power, toughness
+
+
+def _self_stat_subject(card):
+    name = str(getattr(card, 'name', '') or '').lower().replace('\u2019', "'")
+    names = {name, name.split(',')[0], 'this creature', 'this permanent', 'this card'} - {''}
+    return '(?:' + '|'.join(re.escape(value) for value in sorted(names)) + ')'
+
+
+def _undefined_printed_stat(expression):
+    """Use zero for an undefined star inside a recognized printed calculation."""
+    if expression is None or expression == '*':
+        return 0
+    match = re.fullmatch(r'(\d+)\+\*|\*\+(\d+)', expression)
+    return int(match[1] or match[2]) if match else 0
+
+
+def _stat_resource_count(state, card, expression):
+    expression = expression.strip().removeprefix('the ')
+    pid = card.controller if getattr(card, 'zone', Zone.BATTLEFIELD) in {Zone.BATTLEFIELD, Zone.STACK} else getattr(card, 'owner', card.controller)
+    if (match := re.fullmatch(r'(\d+) plus (.+)', expression)):
+        count = _stat_resource_count(state, card, match[2])
+        return count + int(match[1]) if count is not None else None
+    if (match := re.fullmatch(PLAYER_COUNT_RE, expression)):
+        return counter_count(state.players[pid], match[1])
+    expression = expression.removeprefix('total ').removeprefix('number of ')
+    if expression == 'cards in your hand':
+        return len(state.players[pid].hand)
+    if expression == "cards in all players' hands":
+        return sum(len(player.hand) for player in state.players.values())
+    match = re.fullmatch(r'(card types among cards|(?:(.+?) )?cards) in (your|all|your opponents\') graveyards?', expression)
+    if match:
+        players = [pid] if match[3] == 'your' else [3-pid] if match[3] == "your opponents'" else list(state.players)
+        cards = [state.cards[cid] for owner in players for cid in state.players[owner].graveyard
+                 if cid in state.cards and not is_token_card(state.cards[cid])]
+        if match[1] == 'card types among cards':
+            return len({kind for value in cards for kind in value.types if kind in CARD_TYPES})
+        return sum(_graveyard_card_matches_selector(value, match[2] or '') for value in cards)
+    if (match := re.fullmatch(r'(.+?) you control', expression)):
+        selector = match[1].removeprefix('other ')
+        return sum(_battlefield_card_matches_selector(state.cards.get(cid), selector)
+                   for cid in state.players[pid].battlefield
+                   if not match[1].startswith('other ') or cid != card.id)
+    return None
 
 
 def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
@@ -629,41 +660,25 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
 
 
 def _self_scaling_pt_delta(state, source_card) -> tuple[int, int]:
-    text = (getattr(source_card, "oracle_text", "") or "").lower()
     total_p = 0
     total_t = 0
-
-    for m in SELF_SCALE_GRAVE_RE.finditer(text):
-        p_step = int(m.group(1))
-        t_step = int(m.group(2))
-        selector = (m.group(3) or "").strip()
-        scope = (m.group(4) or "your").strip()
-        if scope == "all":
-            grave_ids: list[str] = []
-            for pid in state.players:
-                grave_ids.extend(list(state.players[pid].graveyard))
-        else:
-            grave_ids = list(state.players[source_card.controller].graveyard)
-        count = sum(1 for cid in grave_ids if _graveyard_card_matches_selector(state.cards.get(cid), selector))
-        total_p += p_step * count
-        total_t += t_step * count
-
-    for m in SELF_SCALE_BF_RE.finditer(text):
-        p_step = int(m.group(1))
-        t_step = int(m.group(2))
-        other_only = bool((m.group(3) or "").strip())
-        selector = (m.group(4) or "").strip()
-        bf_ids = list(state.players[source_card.controller].battlefield)
-        count = 0
-        for cid in bf_ids:
-            if other_only and cid == source_card.id:
-                continue
-            c = state.cards.get(cid)
-            if _battlefield_card_matches_selector(c, selector):
-                count += 1
-        total_p += p_step * count
-        total_t += t_step * count
-
+    subject = _self_stat_subject(source_card)
+    for line in _static_oracle_text(source_card).splitlines():
+        line = line.strip().rstrip('.').replace('\u2019', "'")
+        scaled = re.fullmatch(subject + r' gets ([+-]\d+)/([+-]\d+) for each (.+)', line)
+        variable = re.fullmatch(subject + r' gets ([+-])x/([+-])x, where x is (.+)', line)
+        if scaled:
+            counts = [_stat_resource_count(state, source_card, expression.replace(' card in ', ' cards in '))
+                      for expression in scaled[3].split(' and each ')]
+            if all(count is not None for count in counts):
+                total_p += int(scaled[1]) * sum(counts)
+                total_t += int(scaled[2]) * sum(counts)
+        elif variable:
+            count = (max(0, state.players[source_card.controller].life) if variable[3] == 'your life total'
+                     else _stat_resource_count(state, source_card, variable[3]))
+            if count is not None:
+                total_p += count * (1 if variable[1] == '+' else -1)
+                total_t += count * (1 if variable[2] == '+' else -1)
     return total_p, total_t
 
 
@@ -747,6 +762,8 @@ def _iter_pt_setters(text):
 
 def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
     target = state.cards[target_id]
+    if not _is_battlefield(target):
+        return False
     if scope == "attached":
         return (source.attached_to == target_id and "Creature" not in source.types
                 and (subject == "permanent" or subject.title() in target.types))
@@ -900,15 +917,7 @@ def _graveyard_card_matches_selector(card, selector: str) -> bool:
     s = selector.strip().lower()
     if s in {"", "card"}:
         return True
-    type_map = {
-        "creature": "Creature",
-        "instant": "Instant",
-        "sorcery": "Sorcery",
-        "artifact": "Artifact",
-        "enchantment": "Enchantment",
-        "land": "Land",
-        "planeswalker": "Planeswalker",
-    }
+    type_map = {kind.lower(): kind for kind in CARD_TYPES}
     if s in type_map:
         return type_map[s] in (getattr(card, "types", []) or [])
     if s.endswith("s") and s[:-1] in type_map:
@@ -924,6 +933,9 @@ def _battlefield_card_matches_selector(card, selector: str) -> bool:
     if not card:
         return False
     s = selector.strip().lower()
+    type_map = {word: kind for kind in CARD_TYPES for word in [kind.lower(), kind.lower() + 's']}
+    if s in type_map:
+        return type_map[s] in (getattr(card, 'types', []) or [])
     if s in {"creature", "creatures"}:
         return "Creature" in (getattr(card, "types", []) or [])
     if s in {"artifact creature", "artifact creatures"}:
