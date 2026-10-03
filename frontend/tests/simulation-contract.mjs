@@ -10,6 +10,20 @@ assert.equal(parseBatchJobStatus(canceled), canceled);
 const exploratory = { ...completed, result: { ...completed.result, rules_coverage: { status: "exploratory", known_unsupported_cards: [{ deck: "A", card_name: "Old Fogey", mechanics: ["bands with other"] }] } } };
 assert.equal(parseBatchJobStatus(exploratory), exploratory);
 assert.deepEqual(parseSimulationCoverage(exploratory.result.rules_coverage), exploratory.result.rules_coverage);
+const staticGap = { clause: "As long as an unsupported predicate, this creature gets +1/+1.",
+  condition: "an unsupported predicate", reasons: ["unsupported conditional static predicate"],
+  face_index: 1, face_name: "Grammar fixture" };
+const staticCoverage = { status: "exploratory", known_unsupported_cards: [
+  { deck: "B", card_name: "Grammar fixture", mechanics: staticGap.reasons, static_clause_gaps: [staticGap] },
+] };
+assert.equal(parseSimulationCoverage(staticCoverage), staticCoverage);
+for (const malformed of [{ ...staticGap, face_index: -1 }, { ...staticGap, face_index: "1" },
+  { ...staticGap, clause: undefined }, { ...staticGap, reasons: [] }, { ...staticGap, reasons: [2] },
+  { ...staticGap, condition: null }, { ...staticGap, face_name: undefined }]) {
+  assert.throws(() => parseSimulationCoverage({ ...staticCoverage, known_unsupported_cards: [
+    { ...staticCoverage.known_unsupported_cards[0], static_clause_gaps: [malformed] },
+  ] }), /rules coverage/);
+}
 assert.throws(() => parseSimulationCoverage({ status: "certified", known_unsupported_cards: [] }), /rules coverage/);
 assert.throws(() => parseBatchJobStatus({ ...exploratory, result: { ...exploratory.result, rules_coverage: { status: "certified", known_unsupported_cards: [] } } }), /rules coverage/);
 assert.throws(() => parseBatchJobStatus({ ...base, completed_matches: 11 }), /status or progress/);

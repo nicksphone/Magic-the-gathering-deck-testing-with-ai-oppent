@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-03 - Conditional static admission and opponent resources
+
+- Share supported opponent-graveyard and low-life predicates with continuous
+  effects, combat keyword consumers and existing AI entry projections.
+- Derive conditional self/team gap warnings from the runtime instruction compiler;
+  report unsupported predicates and instructions separately with card-face details.
+- Expose those warnings through simulation preflight/results, local completeness
+  and public diagnostics; validate and disclose details before exploratory runs.
+- Add 19 canonical, both-seat, control-change, snapshot, AI and HTTP checks plus
+  frontend regressions. The 5,234-test backend suite, frontend gates, complete
+  Chromium and two repeated seat-balanced matrices (24 samples/48 executions)
+  pass with no reported replay anomaly/timeout/drift. Final gates are documented in
+  [scope and evidence](docs/testing/static-admission.md).
+
 ## 2026-10-03 - Conditional resource effects and request-session cleanup
 
 - Share supported live resource predicates across self/team stat and keyword

@@ -20,6 +20,10 @@ try {
   await click("Run 20 Matches");
   await waitFor("window.fixturePreflights === 1 && document.querySelector('[role=alert]')?.textContent.includes('Willbender')");
   assert.equal(await evaluate("window.fixtureStarts"), 0);
+  await evaluate("document.querySelector('.analytics details summary').click()");
+  await waitFor("document.querySelector('.analytics details').open");
+  assert.ok((await evaluate("document.querySelector('.analytics details').innerText")).includes("your devotion to red and green"));
+  assert.ok((await evaluate("document.querySelector('.analytics details').innerText")).includes("unsupported conditional static instruction"));
   await click("Run Anyway");
   await waitFor("window.fixtureStarts === 1");
   await waitFor("/^[0-9a-f]{32}$/.test(localStorage.getItem('mtg.activeSimulationJobId') ?? '')");

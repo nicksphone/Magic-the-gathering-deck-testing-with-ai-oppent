@@ -9,7 +9,14 @@ export function parseSimulationCoverage(value: unknown): SimulationCoverage {
     || !Array.isArray(value.known_unsupported_cards)
     || !value.known_unsupported_cards.every((item) => record(item)
       && ["A", "B"].includes(String(item.deck)) && typeof item.card_name === "string"
-      && Array.isArray(item.mechanics) && item.mechanics.every((name) => typeof name === "string"))) {
+      && Array.isArray(item.mechanics) && item.mechanics.every((name) => typeof name === "string")
+      && (item.static_clause_gaps === undefined || (Array.isArray(item.static_clause_gaps)
+        && item.static_clause_gaps.every((gap) => record(gap)
+          && typeof gap.clause === "string" && typeof gap.condition === "string"
+          && typeof gap.face_name === "string"
+          && (gap.face_index === null || (Number.isInteger(gap.face_index) && (gap.face_index as number) >= 0))
+          && Array.isArray(gap.reasons) && gap.reasons.length > 0
+          && gap.reasons.every((reason) => typeof reason === "string")))))) {
     throw new Error("Invalid simulation rules coverage response");
   }
   return value as SimulationCoverage;

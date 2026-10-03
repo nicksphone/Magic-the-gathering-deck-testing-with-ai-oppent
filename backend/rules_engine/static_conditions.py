@@ -69,6 +69,11 @@ def parse_static_condition(text, card_name=''):
     permanent_count = re.fullmatch(r'you control (\w+) or more (artifacts|enchantments|creatures|planeswalkers|battles)', text)
     if permanent_count and number(permanent_count[1]) is not None:
         return ('permanents', number(permanent_count[1]), permanent_count[2][:-1].title())
+    opponent_resource = re.fullmatch(
+        r'an opponent has (\w+) or (more cards in their graveyard|less life|fewer life)', text)
+    if opponent_resource and number(opponent_resource[1]) is not None:
+        return ('opponent_graveyard' if opponent_resource[2].startswith('more') else 'opponent_life',
+                number(opponent_resource[1]))
     if text == 'you have no cards in hand':
         return ('empty_hand',)
     own_land = re.fullmatch(r'you control an? (island|forest|swamp|mountain|plains)', text)
@@ -127,6 +132,11 @@ def evaluate_static_condition(state, source, target, text):
         return sum(not is_token_card(state.cards[cid]) for cid in state.players[source.controller].graveyard) >= args[0]
     if kind == 'graveyard_types':
         return len(graveyard_card_types(state, [source.controller])) >= args[0]
+    if kind == 'opponent_graveyard':
+        return any(sum(not is_token_card(state.cards[cid]) for cid in player.graveyard) >= args[0]
+                   for pid, player in state.players.items() if pid != source.controller)
+    if kind == 'opponent_life':
+        return any(player.life <= args[0] for pid, player in state.players.items() if pid != source.controller)
     if kind == 'life':
         return state.players[source.controller].life >= args[0]
     if kind == 'permanents':

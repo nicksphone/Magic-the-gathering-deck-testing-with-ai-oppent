@@ -703,6 +703,7 @@ def get_match_rules_diagnostics(match_id: str) -> dict:
     """Inspect public battlefield semantics without revealing private zones or writing."""
     from rules_engine.combat_constraints import combat_rule_view, combat_clause_coverage
     from rules_engine.continuous import printed_abilities_suppressed
+    from rules_engine.coverage import static_coverage_details
     from game_state.state import Zone
     state = ACTIVE_MATCHES[match_id].state
     cards = []
@@ -716,6 +717,7 @@ def get_match_rules_diagnostics(match_id: str) -> dict:
                           'printed_abilities_suppressed': printed_abilities_suppressed(state, cid),
                           'active_combat_constraints': view['active'],
                           'unresolved_combat_constraints': view['unsupported'],
+                          'printed_static_coverage_gaps': static_coverage_details(card.oracle_text, card_name=card.name),
                           'printed_combat_coverage_gaps': combat_clause_coverage(card.oracle_text, card.name)})
     from rules_engine.declaration_limits import declaration_limit_view
     from rules_engine.combat_payments import attack_tax_sources, block_tax_sources

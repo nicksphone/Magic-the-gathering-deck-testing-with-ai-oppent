@@ -345,6 +345,15 @@ export function AnalyticsPanel({ decks }: Props) {
           ? `Known unsupported mechanics: ${preflight.known_unsupported_cards.map((card) => `Deck ${card.deck} ${card.card_name} (${card.mechanics.join(", ")})`).join("; ")}. Results are exploratory.`
           : "No known unsupported mechanics detected; rules-exact results are still not certified."}
       </p> : null}
+      {preflight?.known_unsupported_cards.some((card) => card.static_clause_gaps?.length) ? <details>
+        <summary>Conditional static clause details</summary>
+        <ul>{preflight.known_unsupported_cards.flatMap((card, cardIndex) =>
+          (card.static_clause_gaps ?? []).map((gap, gapIndex) => <li key={`${cardIndex}-${gapIndex}`}>
+            Deck {card.deck}: {gap.face_name || card.card_name}
+            {gap.face_index === null ? "" : ` (face ${gap.face_index + 1})`}: {gap.clause}
+            {` — ${gap.reasons.join(", ")}`}
+          </li>))}</ul>
+      </details> : null}
       <div className="sim-status-panel">
         <div className="sim-status-row">
           <span className={`sim-status-pill sim-status-${jobStatus}`}>{jobStatus}</span>

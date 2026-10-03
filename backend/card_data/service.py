@@ -10,7 +10,7 @@ from card_data.sync import ScryfallSyncService
 from persistence.models import CardCache
 from persistence.repository import Repository
 from rules_engine.card_types import is_land_card
-from rules_engine.coverage import known_unsupported_mechanics, combat_coverage_details
+from rules_engine.coverage import known_unsupported_mechanics, combat_coverage_details, static_coverage_details
 
 
 class CardService:
@@ -80,6 +80,7 @@ class CardService:
                     "oracle_source": oracle_source,
                     "unsupported_mechanics": unsupported_mechanics,
                     'combat_clause_gaps': combat_coverage_details(oracle_text, faces, card_name=name),
+                    'static_clause_gaps': static_coverage_details(oracle_text, faces, card_name=name),
                     "rules_coverage": "known_unsupported" if unsupported_mechanics else "not_certified",
                     "mana_cost": bool(metadata.get('mana_cost') or is_land_card({"name": name, "type_line": type_line})),
                     "type_line": bool(type_line),

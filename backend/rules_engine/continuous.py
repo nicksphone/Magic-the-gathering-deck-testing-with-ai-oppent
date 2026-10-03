@@ -277,6 +277,21 @@ def _conditional_static_effects(state, source, target):
     return p, t, keywords, unsupported
 
 
+def conditional_static_clause_coverage(oracle_text, name=''):
+    """Use runtime instruction recognition, never a simulated predicate value."""
+    from rules_engine.static_conditions import parse_static_condition
+    rows = []
+    for condition, scope, _, _, _, _, granted, raw in _conditional_static_instructions(oracle_text, name):
+        reasons = []
+        if parse_static_condition(condition, name) is None:
+            reasons.append('unsupported conditional static predicate')
+        if scope is None or granted is None:
+            reasons.append('unsupported conditional static instruction')
+        if reasons:
+            rows.append({'clause': raw, 'condition': condition, 'reasons': reasons})
+    return rows
+
+
 PT_STATIC_RE = re.compile(
     r"\b(other\s+)?" + STATIC_SUBJECT + r"\s+"
     r"(you control|your opponents control)\s+get\s+([+-]\d+)\/([+-]\d+)"

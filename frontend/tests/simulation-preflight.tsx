@@ -32,7 +32,12 @@ api.preflightSimulateBatch = async (deckA) => {
   return {
     status: "exploratory",
     known_unsupported_cards: deckA[0].card_name === "Willbender"
-      ? [{ deck: "A", card_name: "Willbender", mechanics: ["morph"] }]
+      ? [{ deck: "A", card_name: "Willbender", mechanics: ["morph"] },
+        { deck: "A", card_name: "Xenagos, God of Revels", mechanics: ["unsupported conditional static predicate", "unsupported conditional static instruction"],
+          static_clause_gaps: [{ clause: "as long as your devotion to red and green is less than seven, xenagos isn't a creature",
+            condition: "your devotion to red and green is less than seven",
+            reasons: ["unsupported conditional static predicate", "unsupported conditional static instruction"],
+            face_index: null, face_name: "Xenagos, God of Revels" }] }]
       : [],
   };
 };

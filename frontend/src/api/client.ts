@@ -117,7 +117,18 @@ export type BatchSimulationJobStart = {
 
 export type SimulationCoverage = {
   status: "exploratory";
-  known_unsupported_cards: { deck: "A" | "B"; card_name: string; mechanics: string[] }[];
+  known_unsupported_cards: {
+    deck: "A" | "B";
+    card_name: string;
+    mechanics: string[];
+    static_clause_gaps?: {
+      clause: string;
+      condition: string;
+      reasons: string[];
+      face_index: number | null;
+      face_name: string;
+    }[];
+  }[];
 };
 
 export type BatchSimulationJobStatus = {

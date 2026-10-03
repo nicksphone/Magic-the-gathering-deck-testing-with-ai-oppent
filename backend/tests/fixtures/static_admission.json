@@ -1,0 +1,90 @@
+[
+  {
+    "id": "f3c92575-1c97-48bf-801b-22f34040cf9a",
+    "oracle_id": "00d3fcdf-6959-4437-9bad-93a8625510a1",
+    "name": "Guul Draz Vampire",
+    "mana_cost": "{B}",
+    "type_line": "Creature — Vampire Rogue",
+    "oracle_text": "As long as an opponent has 10 or less life, this creature gets +2/+1 and has intimidate. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/zen/93/guul-draz-vampire?utm_source=api"
+  },
+  {
+    "id": "df99f770-2c39-4025-a8a2-a5890f61eb53",
+    "oracle_id": "84c0db59-255d-41af-a3d4-3f3548f1195f",
+    "name": "Thieves' Guild Enforcer",
+    "mana_cost": "{B}",
+    "type_line": "Creature — Human Rogue",
+    "oracle_text": "Flash\nWhenever this creature or another Rogue you control enters, each opponent mills two cards.\nAs long as an opponent has eight or more cards in their graveyard, this creature gets +2/+1 and has deathtouch.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flash",
+      "Mill"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/m21/125/thieves-guild-enforcer?utm_source=api"
+  },
+  {
+    "id": "80c1b1ea-2459-4986-8846-4db916d6b771",
+    "oracle_id": "f55334d9-1ec2-4667-bf28-5a0384d6f053",
+    "name": "Thunderfoot Baloth",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Creature — Beast",
+    "oracle_text": "Trample\nLieutenant — As long as you control your commander, this creature gets +2/+2 and other creatures you control get +2/+2 and have trample.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Trample",
+      "Lieutenant"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dsc/201/thunderfoot-baloth?utm_source=api"
+  },
+  {
+    "id": "08076c82-edb6-4c3c-abda-3d3ad7bdd78f",
+    "oracle_id": "63394e24-a456-4cc6-9885-8c62447b050a",
+    "name": "Tyrant's Familiar",
+    "mana_cost": "{5}{R}{R}",
+    "type_line": "Creature — Dragon",
+    "oracle_text": "Flying, haste\nLieutenant — As long as you control your commander, this creature gets +2/+2 and has \"Whenever this creature attacks, it deals 7 damage to target creature defending player controls.\"",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Flying",
+      "Haste",
+      "Lieutenant"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/cm2/125/tyrants-familiar?utm_source=api"
+  },
+  {
+    "id": "6f1bc3bb-46da-492a-850c-f1f588ad8d18",
+    "oracle_id": "cb15a8dd-57fe-466f-847e-66476b690a1f",
+    "name": "Xenagos, God of Revels",
+    "mana_cost": "{3}{R}{G}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to red and green is less than seven, Xenagos isn't a creature.\nAt the beginning of combat on your turn, another target creature you control gains haste and gets +X/+X until end of turn, where X is that creature's power.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lcc/295/xenagos-god-of-revels?utm_source=api"
+  }
+]
