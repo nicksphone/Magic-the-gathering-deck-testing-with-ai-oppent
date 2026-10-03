@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-03 - Resolution-created type-effect lifecycles
+
+- Share object-bound, timestamped type additions across crew and supported
+  indefinite land animation, with a separate copiable baseline and snapshot data.
+- Preserve independent additions through cleanup, rebase face/copy changes and
+  restore printed characteristics on departure without losing creature-death
+  last-known information. Exclude temporary animation from supported token copies.
+- Keep animation stats/keywords in existing effect ledgers rather than intrinsic
+  fields; retain printed Vehicle stats in noncreature copies for later crew.
+- Adopt explicit legacy crew flags without making their temporary types copiable;
+  label unknown timing as inferred. Unrecorded old land animations require a new
+  match rather than guessed migration.
+- Add 48 canonical, both-seat lifecycle/HTTP/SQLite/death-trigger checks. Fix the
+  browser Bestow test to wait for authoritative stack/revision acknowledgments
+  without weakening its payment assertions. Scope and final acceptance evidence
+  are recorded in [the lifecycle checklist](docs/testing/type-effect-lifecycle.md).
+
 ## 2026-10-03 - Conditional static admission and opponent resources
 
 - Share supported opponent-graveyard and low-life predicates with continuous

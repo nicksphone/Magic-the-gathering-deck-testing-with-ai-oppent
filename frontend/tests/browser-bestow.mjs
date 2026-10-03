@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 for (const seat of [1, 2]) {
@@ -8,11 +8,11 @@ for (const seat of [1, 2]) {
   const fixture = await response.json();
   const host = fixture.players[String(seat)].battlefield.find(card => card.name === 'Grizzly Bears');
   const browser = await openBrowser('http://127.0.0.1:15173/');
-  const { evaluate, command, waitFor, click, close } = browser;
+  const { evaluate, reload, waitFor, click, close } = browser;
   try {
     await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
-    await command('Page.reload');
+    await reload();
     await waitFor("Boolean(document.querySelector('.hand-row option[value=bestow]'))");
     await evaluate(`(() => {
       const select = document.querySelector('.hand-row option[value=bestow]').parentElement;
@@ -26,21 +26,22 @@ for (const seat of [1, 2]) {
     })()`);
     await click('Cast Leafcrown Dryad');
     await waitFor("document.body.textContent.includes('Leafcrown Dryad') && !document.querySelector('.hand-row option[value=bestow]')");
-    let state = await (await fetch(`${backend}/matches/${fixture.id}`)).json();
+    let state = await waitForApiState(`${backend}/matches/${fixture.id}`,
+      state => state.stack.some(item => item.label.includes('Leafcrown Dryad')));
     assert.equal(state.players[String(seat)].mana_pool.G, 0);
     assert.ok(state.stack.length);
     for (let step = 0; step < 8 && state.stack.length; step += 1) {
+      const priorRevision = state.revision;
       await click('Pass Priority');
-      await waitFor('!document.querySelector("button[disabled]")?.textContent.includes("Sending")');
-      await new Promise(resolve => setTimeout(resolve, 150));
-      state = await (await fetch(`${backend}/matches/${fixture.id}`)).json();
+      state = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > priorRevision);
+      await waitFor(`document.body.innerText.includes('Priority: P${state.priority_player}')`);
     }
     assert.equal(state.stack.length, 0);
     const aura = state.players[String(seat)].battlefield.find(card => card.name === 'Leafcrown Dryad');
     assert.ok(aura.bestowed);
     assert.equal(aura.attached_to, host.id);
     assert.equal(state.players[String(seat)].battlefield.find(card => card.id === host.id).power, 4);
-    await command('Page.reload');
+    await reload();
     await waitFor("document.body.textContent.includes('Leafcrown Dryad')");
     console.log(`PASS seat ${seat}: choose Bestow, announce target, pay four, resolve Aura and reload through App/API`);
   } finally {

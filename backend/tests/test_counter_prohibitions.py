@@ -175,7 +175,9 @@ def test_failed_counter_placement_does_not_cancel_land_animation():
     source(state, 'Solemnity')
     land = add(state, 'Forest')
     add_counters(state, 1, {'target_card_id': land.id, 'amount': 3, 'animate_land': True})
-    assert 'Creature' in land.types and land.power == 0 and '+1/+1' not in land.counters
+    from rules_engine.continuous import effective_combat_stats
+    assert 'Creature' in land.types and effective_combat_stats(state, land.id) == (0, 0)
+    assert land.power is None and '+1/+1' not in land.counters
 
 
 def test_existing_counters_survive_ban_and_placement_recovers_after_source_leaves():

@@ -48,6 +48,8 @@ def apply_transform_face(card, index):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(front, field)))
         setattr(card, field, copy(getattr(face, field)))
+    from rules_engine.type_effects import rebase_type_effects
+    rebase_type_effects(card)
 
 
 def exile_permission(state, player_id, card_id, face_index=0):

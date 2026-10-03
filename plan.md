@@ -2,6 +2,8 @@
 
 ## Current Priority: Backend First
 
+- [x] Finish bounded shared crew/indefinite land-animation effect lifecycles and copiable-type boundaries. Validation: 48 new both-seat lifecycle/HTTP/trigger checks, 5,282 isolated backend tests, frontend gates, complete Chromium and twelve repeated seat-balanced replay samples pass. Conditional/global type changes, dependency ordering and full copy layers remain open. See [scope and acceptance](docs/testing/type-effect-lifecycle.md).
+
 - [x] Finish bounded conditional self/team static preflight admission and shared opponent-graveyard/low-life predicates. Validation: 5,234 isolated backend tests, frontend gates, complete Chromium and two repeated seat-balanced matrices (24 samples/48 executions) pass. Arbitrary composed clauses, attachment coverage, devotion and type-changing/layer fidelity remain open. See [scope and acceptance checklist](docs/testing/static-admission.md).
 
 - [x] Finish supported conditional static resource-effects acceptance: shared Threshold/Metalcraft/Delirium/Hellbent, life/color/basic-land predicates; keyword provenance, Ward layer costs and coordinated combat clauses. Fix the request-session leak exposed by browser acceptance. Validation: 5,215 isolated backend tests, frontend gates, complete Chromium, five fresh six-case browser repetitions and two explicit repeated seat-balanced matrices pass. See [scope and remaining gaps](docs/testing/conditional-static.md).

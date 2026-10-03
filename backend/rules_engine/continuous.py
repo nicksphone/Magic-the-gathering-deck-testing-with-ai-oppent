@@ -384,7 +384,10 @@ def _continuous_layer_sort_key(state, source_id: str, layer: str) -> tuple[int, 
     Keyword changes are layer 6; base P/T setters and modifiers are 7b/7c.
     The remaining fields keep same-layer, same-timestamp fixtures deterministic.
     """
-    if layer.startswith("keyword-"):
+    if layer.startswith('type-add:'):
+        layer_rank = 4
+        sublayer = 0
+    elif layer.startswith("keyword-"):
         layer_rank = 6
         sublayer = 0
     elif layer == "pt-set":
@@ -1097,6 +1100,15 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
     if _is_battlefield(card):
+        from rules_engine.type_effects import active_type_effects
+        for effect in active_type_effects(card):
+            layer = 'type-add:' + ','.join(effect['types'])
+            key = _continuous_layer_sort_key(state, card_id, layer)
+            applied_layers.append(((key[0], key[1], effect['timestamp'], *key[3:]), {
+                'source_id': effect.get('source_card_id'), 'source_name': effect.get('source_name'),
+                'target_id': card_id, 'layer': layer, 'effect_timestamp': effect['timestamp'],
+                'timestamp_origin': effect['timestamp_origin'], 'until_end_of_turn': effect['until_end_of_turn'],
+            }))
         for effect in _resolved_base_stat_effects(card):
             key = _continuous_layer_sort_key(state, card_id, 'pt-set')
             applied_layers.append(((key[0], key[1], effect['timestamp'], *key[3:]), {

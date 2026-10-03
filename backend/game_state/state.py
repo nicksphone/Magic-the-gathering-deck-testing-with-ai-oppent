@@ -73,6 +73,8 @@ class CardInstance:
     keywords: list[str] = field(default_factory=list)
     keyword_effects: list[dict] = field(default_factory=list)
     base_stat_effects: list[dict] = field(default_factory=list)
+    type_effects: list[dict] = field(default_factory=list)
+    type_effect_base: list[str] | None = None
     oracle_text: str = ""
     type_line: str = ""
     image_uri: str | None = None
@@ -99,6 +101,8 @@ class CardInstance:
     printed_toughness: str | None = None
 
     def reset_zone_counters(self, zone: Zone) -> None:
+        from rules_engine.type_effects import clear_type_effects
+        clear_type_effects(self)
         self.keyword_effects.clear()
         self.base_stat_effects.clear()
         if zone not in {Zone.HAND, Zone.LIBRARY} and COUNTER_PERSISTENCE_RE.search(self.oracle_text or ""):
@@ -109,6 +113,9 @@ class CardInstance:
             self.counter_timestamps.clear()
 
     def move_to_zone(self, zone: Zone) -> None:
+        if zone != self.zone and self.zone == Zone.BATTLEFIELD:
+            from rules_engine.type_effects import clear_type_effects
+            clear_type_effects(self)
         if zone != self.zone and not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
             self.was_kicked = False
         if zone not in {Zone.STACK, Zone.BATTLEFIELD} and self.bestow_characteristics:

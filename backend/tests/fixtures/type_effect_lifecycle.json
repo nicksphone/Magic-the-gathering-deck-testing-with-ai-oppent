@@ -1,0 +1,218 @@
+[
+  {
+    "id": "2ba7597d-6d76-45b8-b172-342999e401bd",
+    "oracle_id": "8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc",
+    "name": "Darksteel Citadel",
+    "mana_cost": "",
+    "type_line": "Artifact Land",
+    "oracle_text": "Indestructible\n{T}: Add {C}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c21/285/darksteel-citadel?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "name": "Forest",
+    "mana_cost": "",
+    "type_line": "Basic Land — Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "name": "Grizzly Bears",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Bear",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/10e/268/grizzly-bears?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "004524bf-b249-4dac-9c10-44d57143feb9",
+    "oracle_id": "ea9c459a-6047-43aa-968f-a582be4000e8",
+    "name": "Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun",
+    "mana_cost": null,
+    "type_line": "Legendary Enchantment // Legendary Land",
+    "oracle_text": null,
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": null,
+    "keywords": [
+      "Transform"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lci/188/growing-rites-of-itlimoc-itlimoc-cradle-of-the-sun?utm_source=api",
+    "layout": "transform",
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Growing Rites of Itlimoc",
+        "mana_cost": "{2}{G}",
+        "type_line": "Legendary Enchantment",
+        "oracle_text": "When Growing Rites of Itlimoc enters, look at the top four cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.\nAt the beginning of your end step, if you control four or more creatures, transform Growing Rites of Itlimoc.",
+        "colors": [
+          "G"
+        ],
+        "artist": "Josu Hernaiz",
+        "artist_id": "74246024-92b4-43d0-a5af-a3f9f2a35d5f",
+        "illustration_id": "d097bf4c-243d-4a10-bcc3-457f1ceff7c7",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "normal": "https://cards.scryfall.io/normal/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "large": "https://cards.scryfall.io/large/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "png": "https://cards.scryfall.io/png/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.png?1783913751",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "thumb": "https://cards.scryfall.io/thumb/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "grid": "https://cards.scryfall.io/grid/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "display": "https://cards.scryfall.io/display/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "art": "https://cards.scryfall.io/art/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "crop": "https://cards.scryfall.io/crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "Itlimoc, Cradle of the Sun",
+        "mana_cost": "",
+        "type_line": "Legendary Land",
+        "oracle_text": "(Transforms from Growing Rites of Itlimoc.)\n{T}: Add {G}.\n{T}: Add {G} for each creature you control.",
+        "colors": [],
+        "flavor_text": "Though the Sun Empire and the River Heralds once came together to plant the sacred forest, its roots have been tended by the mycoids ever since.",
+        "artist": "Josu Hernaiz",
+        "artist_id": "74246024-92b4-43d0-a5af-a3f9f2a35d5f",
+        "illustration_id": "a4cc664f-4ae2-4051-a6ef-4ac731dd64b6",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "normal": "https://cards.scryfall.io/normal/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "large": "https://cards.scryfall.io/large/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "png": "https://cards.scryfall.io/png/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.png?1783913751",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "thumb": "https://cards.scryfall.io/thumb/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "grid": "https://cards.scryfall.io/grid/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "display": "https://cards.scryfall.io/display/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "art": "https://cards.scryfall.io/art/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "crop": "https://cards.scryfall.io/crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751"
+        }
+      }
+    ]
+  },
+  {
+    "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+    "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+    "name": "Humility",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "All creatures lose all abilities and have base power and toughness 1/1.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tpr/16/humility?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3",
+    "oracle_id": "5aa3abf1-d56b-4f42-8c84-7e5a2c15ee0f",
+    "name": "Nissa, Who Shakes the World",
+    "mana_cost": "{3}{G}{G}",
+    "type_line": "Legendary Planeswalker — Nissa",
+    "oracle_text": "Whenever you tap a Forest for mana, add an additional {G}.\n+1: Put three +1/+1 counters on up to one target noncreature land you control. Untap it. It becomes a 0/0 Elemental creature with vigilance and haste that's still a land.\n−8: You get an emblem with \"Lands you control have indestructible.\" Search your library for any number of Forest cards, put them onto the battlefield tapped, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "loyalty": "5",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/war/169/nissa-who-shakes-the-world?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "94b38464-39cd-4ee6-b9bf-a0bc1e128d9a",
+    "oracle_id": "5f3fe679-aff1-41b3-8d75-c78c2c0636f0",
+    "name": "Saheeli Rai",
+    "mana_cost": "{1}{U}{R}",
+    "type_line": "Legendary Planeswalker — Saheeli",
+    "oracle_text": "+1: Scry 1. Saheeli Rai deals 1 damage to each opponent.\n−2: Create a token that's a copy of target artifact or creature you control, except it's an artifact in addition to its other types. That token gains haste. Exile it at the beginning of the next end step.\n−7: Search your library for up to three artifact cards with different names, put them onto the battlefield, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "loyalty": "3",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "keywords": [
+      "Scry"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/kld/186/saheeli-rai?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "2680ed41-da35-475a-9d80-ae2f4686feed",
+    "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
+    "name": "Smuggler's Copter",
+    "mana_cost": "{2}",
+    "type_line": "Artifact — Vehicle",
+    "oracle_text": "Flying\nWhenever this Vehicle attacks or blocks, you may draw a card. If you do, discard a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "power": "3",
+    "toughness": "3",
+    "loyalty": null,
+    "colors": [],
+    "keywords": [
+      "Flying",
+      "Crew"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/nec/160/smugglers-copter?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "c43609fb-3cee-44e0-98d0-3ecaba1d5767",
+    "oracle_id": "76b003e0-15af-4f22-bdf2-1ade5430964a",
+    "name": "Zulaport Cutthroat",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Human Rogue Ally",
+    "oracle_text": "Whenever this creature or another creature you control dies, each opponent loses 1 life and you gain 1 life.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/soc/233/zulaport-cutthroat?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

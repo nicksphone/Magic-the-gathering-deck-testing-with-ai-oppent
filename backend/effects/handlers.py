@@ -682,9 +682,11 @@ def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -
     source = state.cards[source_id]
     previous_name = source.name
     selected = select_cast_face(state.cards[chosen], 0)
+    from rules_engine.type_effects import copiable_types, rebase_type_effects
     for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "loyalty", "oracle_text", "keywords", "colors"):
-        source.printed_characteristics.setdefault(field, copy(getattr(source, field)))
+        source.printed_characteristics.setdefault(field, copiable_types(source) if field == 'types' else copy(getattr(source, field)))
         setattr(source, field, copy(getattr(selected, field)))
+    rebase_type_effects(source)
     state.log.append(f"{previous_name} becomes a copy of {selected.name}.")
 
 
@@ -1578,8 +1580,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
             types=types,
             is_token=True,
             mana_cost=payload.get("mana_cost", ""),
-            power=p if "Creature" in types else None,
-            toughness=t if "Creature" in types else None,
+            power=p if "Creature" in types or payload.get('printed_power') is not None else None,
+            toughness=t if "Creature" in types or payload.get('printed_toughness') is not None else None,
             printed_power=payload.get('printed_power', str(p) if p is not None else None),
             printed_toughness=payload.get('printed_toughness', str(t) if t is not None else None),
             loyalty=payload.get('loyalty'),
@@ -1652,8 +1654,9 @@ def create_token_copy(state: MatchState, controller: int, payload: dict) -> None
     keywords = list(target.keywords or [])
     if payload.get("grant_haste") and "haste" not in {value.lower() for value in keywords}:
         keywords.append("haste")
+    from rules_engine.type_effects import copiable_types
     create_token(state, controller, {
-        "name": target.name, "types": list(dict.fromkeys([*target.types, "Token"])),
+        "name": target.name, "types": list(dict.fromkeys([*copiable_types(target), "Token"])),
         "mana_cost": target.mana_cost, "type_line": target.type_line,
         "power": target.power, "toughness": target.toughness,
         "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
@@ -1997,15 +2000,19 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
             return
         put_counters(state, counter, amount, target_card_id=target)
         if payload.get("animate_land") and "Land" in card.types:
-            card.types = list(dict.fromkeys([*card.types, "Creature", "Elemental"]))
-            card.power = 0
-            card.toughness = 0
+            from rules_engine.type_effects import add_type_effect
+            from rules_engine.keyword_effects import add_keyword_effect
+            stamp = payload.get('resolution_timestamp') or allocate_effect_timestamp(state)
+            source_id = payload.get('__source_card_id')
+            add_type_effect(state, card.id, ['Creature', 'Elemental'], timestamp=stamp, source_card_id=source_id)
+            set_base_stats(state, controller, {'target_card_id': card.id, 'base_power': 0, 'base_toughness': 0,
+                                             'until_end_of_turn': False, 'resolution_timestamp': stamp,
+                                             '__source_card_id': source_id})
             if payload.get("animate_untap"):
                 from rules_engine.named_counters import untap_permanent
                 untap_permanent(state, card.id)
-            for keyword in payload.get("animate_keywords", []):
-                if keyword not in {str(x).lower() for x in card.keywords}:
-                    card.keywords.append(keyword)
+            add_keyword_effect(state, card.id, payload.get('animate_keywords', []),
+                               timestamp=stamp, source_card_id=source_id)
             state.log.append(f"{card.name} becomes a 0/0 Elemental creature.")
         # PT delta from counters is computed dynamically by effective_power/toughness
 
@@ -2267,12 +2274,9 @@ def crew_vehicle(state: MatchState, controller: int, payload: dict) -> None:
     if (vehicle is None or vehicle.zone != Zone.BATTLEFIELD
             or object_incarnation(vehicle) != payload.get("effect_timestamp", object_incarnation(vehicle))):
         return
-    if "Artifact" not in vehicle.types:
-        vehicle.counters["__crew_added_artifact"] = 1
-    if "Creature" not in vehicle.types:
-        vehicle.counters["__crew_added_creature"] = 1
-    vehicle.types = list(dict.fromkeys([*vehicle.types, "Artifact", "Creature"]))
-    vehicle.counters["__crew_until_turn"] = int(state.turn)
+    from rules_engine.type_effects import add_type_effect
+    add_type_effect(state, vehicle.id, ['Artifact', 'Creature'], until_end_of_turn=True,
+                    source_card_id=vehicle.id)
     state.log.append(f"{state.players[controller].name} crews {vehicle.name} with {len(payload.get('crew_card_ids') or [])} creature(s).")
 
 
@@ -2295,7 +2299,7 @@ def set_base_stats(state: MatchState, controller: int, payload: dict) -> None:
     card.base_stat_effects.append({
         'power': payload['base_power'], 'toughness': payload['base_toughness'],
         'timestamp': payload.get('resolution_timestamp') or allocate_effect_timestamp(state),
-        'incarnation': object_incarnation(card), 'until_end_of_turn': True,
+        'incarnation': object_incarnation(card), 'until_end_of_turn': bool(payload.get('until_end_of_turn', True)),
         'timestamp_origin': 'resolution', 'source_card_id': source_id,
         'source_name': source.name if source else None,
     })

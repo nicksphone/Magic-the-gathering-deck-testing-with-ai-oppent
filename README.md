@@ -33,6 +33,13 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Resolution-created type effects](docs/testing/type-effect-lifecycle.md): crew
+  and supported indefinite land animations share object-bound type additions,
+  timestamped stats/keywords and separate copiable types. Cleanup, face changes,
+  departure, re-entry, copies and death-trigger last-known information have
+  both-seat regression coverage. General conditional/global type changes and
+  full layer dependencies remain unfinished.
+
 - [Simultaneous wheels and hand-defined stats](docs/testing/wheel-draw.md): shared
   whole-hand discard followed by fixed, actual-count or largest-count draws;
   owned draw continuations and effective hand-size creature characteristics.

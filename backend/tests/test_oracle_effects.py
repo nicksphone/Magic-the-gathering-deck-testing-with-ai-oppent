@@ -1088,7 +1088,9 @@ def test_nissa_loyalty_lines_animate_land_and_put_green_creature() -> None:
     assert payload["animate_land"] is True
     resolve_effect(state, 1, key, payload)
     assert "Creature" in land.types
-    assert "haste" in land.keywords
+    from rules_engine.continuous import effective_keywords
+    assert "haste" in effective_keywords(state, land_id)
+    assert 'haste' not in land.keywords  # A resolved grant is not a printed ability.
     assert not land.tapped
 
     key, payload = infer_effect_from_oracle(
@@ -1138,7 +1140,9 @@ def test_real_noncreature_land_loyalty_clause_uses_legal_target_and_keywords() -
     assert land.counters["+1/+1"] == 3
     assert effective_power(state, land_id) == effective_toughness(state, land_id) == 3
     assert {"Land", "Creature"}.issubset(set(land.types))
-    assert {"vigilance", "haste"}.issubset(set(land.keywords))
+    from rules_engine.continuous import effective_keywords
+    assert {"vigilance", "haste"}.issubset(set(effective_keywords(state, land_id)))
+    assert land.keywords == []
     assert not land.tapped
     assert not any("Oracle effect not inferred" in line for line in state.log)
 

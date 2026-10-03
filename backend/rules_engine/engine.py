@@ -201,7 +201,15 @@ class RulesEngine:
         state.passed_priority = set()
 
     def _revert_crew_vehicles(self, state: MatchState) -> None:
+        from rules_engine.type_effects import refresh_type_effects
         for card in state.cards.values():
+            expired = [effect for effect in card.type_effects if effect['until_end_of_turn']]
+            if expired:
+                was_creature = 'Creature' in card.types
+                card.type_effects = [effect for effect in card.type_effects if not effect['until_end_of_turn']]
+                refresh_type_effects(card)
+                state.log.append(f"{card.name} is no longer a creature after cleanup." if was_creature and 'Creature' not in card.types
+                                 else f"Temporary type effects end for {card.name} after cleanup.")
             if int(card.counters.get("__crew_until_turn", -1)) != int(state.turn):
                 continue
             card.counters.pop("__crew_until_turn", None)

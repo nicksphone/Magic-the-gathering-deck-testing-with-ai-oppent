@@ -129,6 +129,8 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
     card = state.cards.get(card_id) if card_id else None
     if card is None:
         return
+    from rules_engine.type_effects import clear_type_effects
+    clear_type_effects(card)
     if card.zone.value == "exile":
         card.reset_zone_counters(card.zone)
     state.temporary_control_changes.pop(card_id, None)
