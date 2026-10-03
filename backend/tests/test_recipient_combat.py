@@ -178,4 +178,4 @@ def test_recipient_parsers_admit_only_supported_combat_clauses_not_other_card_ab
     assert combat_clause_coverage("Enchanted creature can't attack unless its controller sacrifices a land.")
     assert combat_clause_coverage('All creatures with magnet counters able to block this creature do so.')
     assert 'bestow' in known_unsupported_mechanics(ROWS['Noble Quarry']['oracle_text'])
-    assert 'activation cost modifiers' in known_unsupported_mechanics(ROWS['Oppressive Rays']['oracle_text'])
+    assert 'activation cost modifiers' not in known_unsupported_mechanics(ROWS['Oppressive Rays']['oracle_text'])

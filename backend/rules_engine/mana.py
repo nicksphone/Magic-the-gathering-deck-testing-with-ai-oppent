@@ -69,13 +69,14 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
     return out
 
 
-def land_can_produce_mana(state: MatchState, card_id: str) -> bool:
+def land_can_produce_mana(state: MatchState, card_id: str, *, free_only=True) -> bool:
     from rules_engine.continuous import printed_abilities_suppressed
     card = state.cards[card_id]
     return (
         "Land" in card.types and not card.tapped
         and not printed_abilities_suppressed(state, card_id)
         and ("Creature" not in card.types or not card.summoning_sick or has_keyword(state, card_id, "haste"))
+        and (not free_only or mana_activation_is_free(state, card_id, ''))
     )
 
 
@@ -134,6 +135,7 @@ def can_pay_with_pool_and_lands(
     ability_kind: str | None = None,
     source_card_id: str | None = None,
     target_card_id: str | None = None,
+    excluded_sources: set[str] | None = None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -147,8 +149,9 @@ def can_pay_with_pool_and_lands(
     from rules_engine.replacement import can_pay_life
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set())) is not None
-        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color)
+        and (not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
+             or _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()), excluded_sources=excluded_sources) is not None)
+        for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color, floored_reductions=context.floored_reductions)
     )
 
 
@@ -168,6 +171,7 @@ def _payment_requirements(
     hybrid_choices: list[str] | None = None,
     restricted_x_color: str | None = None,
     branch_output: list[list[str]] | None = None,
+    floored_reductions=(),
 ) -> list[dict[str, int]]:
     if is_land:
         return [parse_mana_cost("", is_land=True)]
@@ -213,7 +217,13 @@ def _payment_requirements(
         choices = next_choices
         paths = next_paths
     for option in choices:
-        option["generic"] = max(0, option["generic"] + generic_increase - generic_reduction)
+        generic = option['generic'] + generic_increase
+        colored = sum(option[key] for key in ('W', 'U', 'B', 'R', 'G', 'C', 'S'))
+        # Apply floor-bound reductions first, then unfloored reductions: this
+        # is the cheapest legal automatic order, not a global minimum cost.
+        for floor, amount in sorted(floored_reductions, reverse=True):
+            generic -= min(generic, amount, max(0, generic + colored - floor))
+        option["generic"] = max(0, generic - generic_reduction)
     if branch_output is not None:
         branch_output.extend(paths)
     return choices
@@ -309,16 +319,18 @@ def _plan_mana_sources(
     return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
-def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None) -> tuple[list[tuple[str, str, int, bool]], dict[str, int]] | None:
+def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None) -> tuple[list[tuple[str, str, int, bool]], dict[str, int]] | None:
     snow_needed = req.get("S", 0)
     if not snow_needed:
-        plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context)
+        plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources)
         return (plan, {}) if plan is not None else None
 
     player = state.players[player_id]
     pool, snow = available_pool(player, payment_context)
     sources = []
     for cid in player.battlefield:
+        if cid in (excluded_sources or set()):
+            continue
         card = state.cards[cid]
         if not is_snow_source(card) or not eligible(spending_rule(card), payment_context):
             continue
@@ -331,7 +343,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
               selected: list[tuple[str, str, int, bool]], spent: dict[str, int]):
         if remaining == 0:
             ordinary = _plan_mana_sources(state, player_id, req, pool_override=totals,
-                                          excluded_sources={entry[0] for entry in selected}, payment_context=payment_context)
+                                          excluded_sources={entry[0] for entry in selected} | (excluded_sources or set()), payment_context=payment_context)
             return (selected + ordinary, spent) if ordinary is not None else None
         for color in MANA_COLORS:
             if snow_left[color] <= 0:
@@ -383,6 +395,7 @@ def auto_pay_cost(
     ability_kind: str | None = None,
     source_card_id: str | None = None,
     target_card_id: str | None = None,
+    excluded_sources: set[str] | None = None,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     context = apply_cost_modifiers(CostContext(
@@ -396,11 +409,12 @@ def auto_pay_cost(
     branches = []
     requirements = _payment_requirements(
         context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase,
-        hybrid_choices, restricted_x_color, branches,
+        hybrid_choices, restricted_x_color, branches, context.floored_reductions,
     )
     payment = next(
         ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
-        and (plan := _plan_payment(state, player_id, req, payment_context=payment_context)) is not None),
+        and (plan := ([], {}) if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
+             else _plan_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources)) is not None),
         None,
     )
     if payment is None:
@@ -414,6 +428,8 @@ def auto_pay_cost(
         if not pay_life(state, player_id, req["life"]):
             return False
         state.log.append(f"{player.name} pays {req['life']} life for Phyrexian mana.")
+    if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
+        return True
     for color in MANA_COLORS:
         player.mana_pool.setdefault(color, 0)
     for cid, color, amount, land in plan:
@@ -422,7 +438,7 @@ def auto_pay_cost(
         elif not _consume_nonland_mana_source(state, player_id, cid):
             return False
         add_mana_to_pool(state, player_id, color, amount, source_id=cid)
-        cost_kind = 'combat' if payment_kind == 'combat' else 'spell'
+        cost_kind = payment_kind
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay {cost_kind} cost.")
     snow_by_color = dict(snow_spent)
     from types import SimpleNamespace
@@ -566,10 +582,23 @@ def choose_mana_color_for_player(state: MatchState, player_id: int, preferred: l
 
 
 def _nonland_mana_source_colors(state: MatchState, card_id: str, card) -> Set[str]:
-    return set(nonland_mana_outputs(state, card_id, card))
+    return set(nonland_mana_outputs(state, card_id, card, free_only=False))
 
 
-def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int]:
+def mana_activation_is_free(state, card_id, cost):
+    card = state.cards[card_id]
+    controller = getattr(card, 'controller', None)
+    if controller is None:
+        controller = next((pid for pid, player in state.players.items() if card_id in player.battlefield), None)
+    context = apply_cost_modifiers(CostContext(
+        state=state, player_id=controller, card_name=card.name,
+        mana_cost=cost, is_spell=False, ability_kind='mana', source_card_id=card_id))
+    return any(not any(req.values()) for req in _payment_requirements(
+        context.mana_cost, False, 0, context.generic_reduction, context.generic_increase,
+        floored_reductions=context.floored_reductions))
+
+
+def nonland_mana_outputs(state: MatchState, card_id: str, card, *, free_only=True) -> dict[str, int]:
     from rules_engine.continuous import printed_abilities_suppressed
     if printed_abilities_suppressed(state, card_id):
         return {}
@@ -585,7 +614,7 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card) -> dict[str, int
         return {}
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     cost = parse_activated_cost(ability.group(1))
-    if not cost.supported or cost.mana_cost or not activated_cost_available(state, card.controller, card_id, ability.group(1)):
+    if not cost.supported or (free_only and not mana_activation_is_free(state, card_id, cost.mana_cost)) or not activated_cost_available(state, card.controller, card_id, ability.group(1), ability_kind='mana'):
         return {}
     # Summoning sickness prevents creatures from using tap abilities unless they have haste.
     if "Creature" in card_types:
@@ -611,6 +640,8 @@ def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -
         return {}
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     if parse_activated_cost(ability.group(1)) != ActivatedCost(tap_source=True):
+        return {}
+    if state is not None and not mana_activation_is_free(state, card.id, ''):
         return {}
     return _nonland_mana_effect_outputs(ability.group(2), state=state, card=card)
 
@@ -669,4 +700,4 @@ def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[
 def _consume_nonland_mana_source(state: MatchState, player_id: int, card_id: str) -> bool:
     from rules_engine.costs import apply_activated_costs
     ability = NONLAND_MANA_ABILITY_RE.search(state.cards[card_id].oracle_text or "")
-    return bool(ability and apply_activated_costs(state, player_id, card_id, ability.group(1)))
+    return bool(ability and apply_activated_costs(state, player_id, card_id, ability.group(1), ability_kind='mana'))

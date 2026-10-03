@@ -32,7 +32,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
     if 'Saga' in card.type_line and '__lore' in counters:
         counters['lore'] = counters.pop('__lore')
     outputs = ({color: land_mana_amount(state, card.controller, cid) for color in land_mana_colors(card)}
-               if "Land" in card.types else nonland_mana_outputs(state, cid, card)) if card.zone == Zone.BATTLEFIELD else {}
+               if "Land" in card.types else nonland_mana_outputs(state, cid, card, free_only=False)) if card.zone == Zone.BATTLEFIELD else {}
     return {
         "id": cid, "name": card.name, "tapped": card.tapped,
         "summoning_sick": card.summoning_sick,

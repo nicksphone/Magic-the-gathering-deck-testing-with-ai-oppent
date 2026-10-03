@@ -53,9 +53,10 @@ reads and explains the earlier invalid attached-fixture failures.
 ## Whole-Card Boundaries
 
 This is combat-clause support, not certification that these entire cards work.
-Oppressive Rays's activation-cost modifier is not implemented. Noble Quarry's
+Oppressive Rays's numeric activation-cost modifier is now implemented in the
+[shared activation payment increment](activation-modifiers.md). Noble Quarry's
 bestow alternative casting, Aura transition, illegal-target fallback and
-unattachment transition are not implemented. Both families now have explicit
+unattachment transition are not implemented. Unsupported forms have explicit
 coverage/preflight warnings; previously these missing mechanics could go unseen.
 No fabricated enchant instruction, card definition or competitive deck was used
 to make the integration tests pass. Scryfall omits power/toughness for
@@ -67,7 +68,7 @@ CR 508.1/509.1 for declared costs and CR 702.103 for outstanding bestow semantic
 
 ## Known Limitations and Next Upgrades
 
-- Implement bestow and activation-cost modifiers end to end, including actual
+- Finish bestow and remaining activation-cost forms end to end, including actual
   human/AI announcements, effective spell characteristics, target legality,
   cost modification, resolution, source/target departures and restart.
 - Finish qualified blocker subsets, temporary/granted targeted requirements,

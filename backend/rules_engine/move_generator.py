@@ -4,6 +4,7 @@ from itertools import permutations
 
 from game_state.state import MatchState, Step, Zone, pregame_actor
 from rules_engine.ability_model import build_ability_spec
+from rules_engine.activation_modifiers import activation_cost_view, payable_crew_group
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action, available_cast_options_and_hints
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword, printed_abilities_suppressed
@@ -191,6 +192,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if not can_pay_with_pool_and_lands(
                     state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
                     payment_kind="activation", payment_types=set(card.types),
+                    source_card_id=cid, ability_kind='cycling',
                 ):
                     continue
                 cycle_move = {
@@ -198,6 +200,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "card_id": cid,
                     "card_name": card.name,
                     "mana_cost": cycle_cost,
+                    'activation_costs': activation_cost_view(state, player_id, cid, cycle_cost, ability_kind='cycling', x_value=x_value),
                 }
                 variant = cycling_variant(card.oracle_text)
                 if variant:
@@ -328,6 +331,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             if cid in state.loyalty_activated_this_turn:
                 continue
+            if not activated_cost_available(state, player_id, cid, '', ability_kind='loyalty'):
+                continue
             abilities = extract_loyalty_abilities(card)
             for idx, ability in enumerate(abilities):
                 if ability.get("x_cost"):
@@ -353,6 +358,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                         "ability_index": idx,
                         "ability_label": ability["label"],
                         "ability_delta": ability["delta"],
+                        'activation_costs': activation_cost_view(state, player_id, cid, '', ability_kind='loyalty'),
                         "ability_x_cost": bool(ability.get("x_cost")),
                         "ability_x_sign": int(ability.get("x_sign", 0) or 0),
                         "target_hints": hints,
@@ -388,6 +394,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "ability_index": ability["index"],
                     "ability_label": ability["label"],
                     "mana_cost": cost,
+                    'activation_costs': activation_cost_view(state, player_id, cid, parsed_cost.mana_cost),
                     "hybrid_symbols": hybrid_payment_symbols(parsed_cost.mana_cost),
                     "target_hints": hints,
                 }
@@ -441,12 +448,17 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             and not state.cards[cid].tapped
         ]
         if sum(max(0, effective_power(state, cid)) for cid in candidates) >= crew:
+            suggested = payable_crew_group(state, player_id, vehicle_id, crew, candidates)
+            if suggested is None:
+                continue
             moves.append(
                 {
                     "type": "crew",
                     "card_id": vehicle_id,
                     "card_name": vehicle.name,
                     "crew_value": crew,
+                    'suggested_crew_card_ids': suggested,
+                    'activation_costs': activation_cost_view(state, player_id, vehicle_id, '', ability_kind='crew'),
                     "crew_candidates": [
                         {"id": cid, "name": state.cards[cid].name, "power": effective_power(state, cid)}
                         for cid in candidates

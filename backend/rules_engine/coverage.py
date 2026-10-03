@@ -5,7 +5,6 @@ import re
 
 _UNSUPPORTED_PATTERNS = (
     ('bestow', re.compile(r'\bbestow\b', re.IGNORECASE)),
-    ('activation cost modifiers', re.compile(r'activated abilities[^.\n]*cost[^.\n]*(?:more|less) to activate', re.IGNORECASE)),
     ('blocking assignment controller fidelity', re.compile(r'(?:attacking|defending) player chooses how .*blocks', re.IGNORECASE)),
     ('tap/untap choice fidelity', re.compile(r'\btap or untap\b',re.IGNORECASE)),
     ("scry replacement fidelity", re.compile(r'if .+scry.+instead', re.IGNORECASE)),
@@ -50,6 +49,12 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    from rules_engine.activation_modifiers import activation_modifier_gaps
+    variants = [(card_name, oracle_text or ''),
+                *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+                  for face in card_faces or [] if isinstance(face, dict))]
+    if any(activation_modifier_gaps(text, name) for name, text in variants):
+        out.append('activation cost modifiers')
     if 'domain' in out:
         from rules_engine.combat_payments import parse_attack_tax
         from rules_engine.oracle_text import without_reminder_text

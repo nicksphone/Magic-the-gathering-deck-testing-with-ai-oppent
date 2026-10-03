@@ -2575,6 +2575,9 @@ class AIAgent:
             return out
         if mtype == "crew":
             out = dict(move)
+            if "suggested_crew_card_ids" in move:
+                out["crew_card_ids"] = list(move["suggested_crew_card_ids"])
+                return out
             options = list(move.get("crew_candidates") or [])
             required = int(move.get("crew_value", 0) or 0)
             selected: list[str] = []
@@ -2859,6 +2862,13 @@ class AIAgent:
 
         # The whole Oracle text may contain X in an unrelated activated ability.
         requires_x = bool(hints.get("requires_x_value")) or "{X}" in mana_cost.upper()
+
+        if mtype == 'activate_ability' and requires_x:
+            from rules_engine.costs import activated_cost_available
+            proposed = max(0, int(targets.get('x_value', 0) or 0))
+            targets['x_value'] = next((value for value in range(proposed, -1, -1)
+                if activated_cost_available(state, player_id, cid, mana_cost, x_value=value,
+                                            restricted_x_color=x_color)), 0)
 
         if requires_x:
             try:

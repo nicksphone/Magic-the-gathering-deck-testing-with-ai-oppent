@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable
 import re
 
@@ -19,6 +19,7 @@ class CostContext:
     ability_kind: str | None = None
     source_card_id: str | None = None
     target_card_id: str | None = None
+    floored_reductions: list[tuple[int, int]] = field(default_factory=list)
 
 
 @dataclass
@@ -47,6 +48,8 @@ def apply_cost_modifiers(context: CostContext) -> CostContext:
     out = _apply_domain_self_discount(out)
     out = _apply_equip_discounts(out)
     out = _apply_aura_discounts(out)
+    from rules_engine.activation_modifiers import apply_activation_modifiers
+    out = apply_activation_modifiers(out)
     for modifier in _COST_MODIFIERS:
         out = modifier(out)
     return out

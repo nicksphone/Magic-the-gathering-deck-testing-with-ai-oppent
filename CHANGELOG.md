@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-03 - Shared activation costs and reserved resources
+
+- Added source-bound numeric activation taxes/reductions, recognized one-mana floors and mana exceptions across shared legality/payment/hints. Creature-permanent reductions do not discount hand abilities; generic discounts preserve colored/colorless/snow requirements and independent equip discounts can reach zero.
+- Reserved tap/sacrifice sources and selected crew creatures against double use by automatic payment. AI uses payable crew suggestions and source-aware X affordability. Zero printed mana costs no longer bypass taxes; manual taxed mana activations pay their actual fee, while free-source autopayment remains conservative. Bulk taps reject incomplete production rather than silently underapplying the request.
+- Canonical fixtures cover both seats, live source/attachment/suppression changes, actual draw/cycling/crew/loyalty/equip resolution and atomic HTTP/SQLite recovery. Fixed lightweight AI fixture compatibility and preserved unchanged mana-pool shape when no mana is paid. Unsupported modifier clauses/floors remain flagged; bestow is still unsupported.
+- Eighteen actual decisions per before/after revision show eight underfunded/double-use activations removed and four funded activations paying the complete tax; Casual remains conservative. Full snapshots, hands, boards, legal moves, reasons and checked outcomes are archived. Twelve final logical seat-balanced template games repeated twice completed without determinism failures, drift labels or reported anomalies. These checks are not expert-AI or matchup-balance certification.
+- Final validation: 3,150 isolated backend tests passed (271 deprecation warnings, 399.95s), including 141 focused activation/AI/variable-mana tests; frontend lint/unit/build and complete Chromium recovery/sideboarding/natural AI, human-vs-AI and human-vs-human BO3 flows passed. An earlier failed run and an interrupted superseded run remain archived separately, not counted as passes.
+- README, finish plan, scope documents and Graphify updated. Evidence and verified closed scratch archives are stored on RCHFiles `diagnostics/activation-modifiers/20261003T021533Z`; user data and the existing untracked coder-plan are preserved.
+
 ## 2026-10-03 - Recipient-specific combat payments and requirements
 
 - Fixed combat costs now share self/attachment/global recipient matching, including combined attack/block clauses. Unrelated creatures remain free; a selected multi-blocker pays once. Existing source predicates, locked payments, AI finalization and public hints are reused.

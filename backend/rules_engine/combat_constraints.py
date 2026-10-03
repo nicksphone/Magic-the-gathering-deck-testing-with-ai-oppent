@@ -97,7 +97,7 @@ def combat_clause_coverage(oracle, card_name=''):
 def _supported_combat_subject(subject, card_name):
     if subject in {'', 'it', 'cardname', 'this creature', 'this permanent', card_name.lower()}:
         return True
-    if re.fullmatch(r'(?:enchanted|equipped|fortified) (?:creature|permanent)', subject):
+    if re.fullmatch(r'(?:enchanted|equipped|fortified) (?:creature|permanent|artifact|enchantment|land|planeswalker|battle)', subject):
         return True
     from rules_engine.card_types import CREATURE_SUBTYPES
     from rules_engine.static_conditions import COLORS, TYPES
@@ -125,7 +125,7 @@ def _recipient_body(state, source, target, text):
         if BODY.match(text):
             return text
     if getattr(source, 'attached_to', None) == target.id and 'Creature' not in source.types:
-        match = re.match(r'(?:enchanted|equipped|fortified) (?:creature|permanent) |it ', text)
+        match = re.match(r'(?:enchanted|equipped|fortified) (?:creature|permanent|artifact|enchantment|land|planeswalker|battle) |it ', text)
         if match:
             return text[match.end():]
     if re.match(r'(?:this|it|enchanted|equipped|fortified)\b', text):

@@ -707,12 +707,14 @@ class RulesEngine:
         elif kind == "tap_land_for_mana":
             from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
-            if cid in player.battlefield and land_can_produce_mana(state, cid):
+            if cid in player.battlefield and land_can_produce_mana(state, cid, free_only=False):
                 colors = land_mana_colors(state.cards[cid])
                 if action.get("color") and action["color"] not in colors:
                     reject("Land cannot produce the selected color now")
                     return
-                state.cards[cid].tapped = True
+                if not apply_activated_costs(state, player_id, cid, '{T}', ability_kind='mana'):
+                    reject('Cannot pay mana ability costs')
+                    return
                 color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                 amount = land_mana_amount(state, player_id, cid)
                 add_mana_to_pool(state, player_id, color, amount, source_id=cid)
@@ -723,7 +725,7 @@ class RulesEngine:
 
             cid = action["card_id"]
             color = action["color"]
-            outputs = nonland_mana_outputs(state, cid, state.cards[cid]) if cid in player.battlefield else {}
+            outputs = nonland_mana_outputs(state, cid, state.cards[cid], free_only=False) if cid in player.battlefield else {}
             if color in outputs:
                 name = state.cards[cid].name
                 if _consume_nonland_mana_source(state, player_id, cid):
@@ -748,20 +750,25 @@ class RulesEngine:
                     card = state.cards[cid]
                     if tapped >= count:
                         break
-                    if not land_can_produce_mana(state, cid):
+                    if not land_can_produce_mana(state, cid, free_only=False):
                         continue
                     if card.name.strip().lower() != land_name:
                         continue
                     colors = land_mana_colors(card)
                     if action.get("color") and action["color"] not in colors:
                         continue
-                    card.tapped = True
+                    if not apply_activated_costs(state, player_id, cid, '{T}', ability_kind='mana'):
+                        reject('Cannot pay mana ability costs')
+                        return
                     color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                     amount = land_mana_amount(state, player_id, cid)
                     add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                     produced = color
                     produced_total += amount
                     tapped += 1
+                if tapped != count:
+                    reject('Cannot pay all requested mana ability costs')
+                    return
                 if tapped > 0 and produced:
                     state.log.append(
                         f"{player.name} taps {tapped}x {action.get('land_name')} for "
@@ -959,7 +966,7 @@ class RulesEngine:
                 state.trigger_staging = True
                 state.trigger_staging_event = "discard"
             if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
-                                                 payment_kind="activation", payment_types=set(card.types)):
+                                                 payment_kind="activation", payment_types=set(card.types), source_card_id=cid, ability_kind='cycling'):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False
@@ -1162,6 +1169,9 @@ class RulesEngine:
                 return
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
             loyalty_added = next_loyalty - current_loyalty
+            if not apply_activated_costs(state, player_id, cid, '', ability_kind='loyalty'):
+                reject('Cannot pay loyalty activation mana costs')
+                return
             if loyalty_added <= 0:
                 pw.loyalty = next_loyalty
             state.loyalty_activated_this_turn.add(cid)
@@ -1214,6 +1224,10 @@ class RulesEngine:
                 and sum(max(0, effective_power(state, cid)) for cid in selected) >= required
             )
             if valid:
+                if not auto_pay_cost(state, player_id, '', payment_kind='activation', payment_types=set(vehicle.types),
+                        source_card_id=vehicle_id, ability_kind='crew', excluded_sources=set(selected)):
+                    reject('Cannot pay crew activation mana costs')
+                    return
                 for cid in selected:
                     state.cards[cid].tapped = True
                 add_to_stack(

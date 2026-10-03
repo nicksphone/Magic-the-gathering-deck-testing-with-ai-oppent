@@ -293,12 +293,10 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(bool(symbols), "Activated ability has no supported hybrid symbols")
         require(len(choices) == len(symbols), "Choose one branch for each hybrid symbol")
         require(all(branch in symbol["choices"] for branch, symbol in zip(choices, symbols)), "Invalid hybrid payment branch")
-        require(can_pay_with_pool_and_lands(
-            state, player_id, cost.mana_cost, card_name=state.cards[action["card_id"]].name,
-            hybrid_choices=choices, reserved_life=cost.pay_life, x_value=int(targets.get("x_value") or 0),
-            restricted_x_color=restricted_x_color(move.get("ability_label", "")),
-            payment_kind="activation", payment_types=set(state.cards[action["card_id"]].types),
-        ), "Cannot pay the selected hybrid branches")
+        from rules_engine.costs import activated_cost_available
+        require(activated_cost_available(state, player_id, action['card_id'], move['mana_cost'], choices,
+                int(targets.get('x_value') or 0), restricted_x_color(move.get('ability_label', ''))),
+                "Cannot pay the selected hybrid branches")
 
 
 def validate_tap(state, player_id: int, action: dict) -> None:
@@ -314,12 +312,14 @@ def validate_tap(state, player_id: int, action: dict) -> None:
         ids = [action["card_id"]]
     else:
         ids = [cid for cid in player.battlefield if state.cards[cid].name.strip().lower() == action["land_name"].strip().lower()
-               and land_can_produce_mana(state, cid)
+               and land_can_produce_mana(state, cid, free_only=False)
                and (not action.get("color") or action["color"] in land_mana_colors(state.cards[cid]))]
         require(len(ids) >= action["count"], "Not enough untapped matching lands")
         ids = ids[:action["count"]]
     for cid in ids:
         card = state.cards.get(cid)
-        require(cid in player.battlefield and card is not None and land_can_produce_mana(state, cid), "Mana source must be a ready land you control")
+        require(cid in player.battlefield and card is not None and land_can_produce_mana(state, cid, free_only=False), "Mana source must be a ready land you control")
+        from rules_engine.costs import activated_cost_available
+        require(activated_cost_available(state, player_id, cid, '{T}', ability_kind='mana'), 'Cannot pay mana ability costs')
         colors = land_mana_colors(card)
         require(not action.get("color") or action["color"] in colors, "Land cannot produce the selected color")
