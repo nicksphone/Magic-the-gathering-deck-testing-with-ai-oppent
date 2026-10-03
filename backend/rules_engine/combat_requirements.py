@@ -78,8 +78,9 @@ def parse_target_block_requirement(clause, card_name=''):
     specs = []
     for part in clause.split(', and '):
         match = re.fullmatch(r'all creatures able to block (.+) do so', part)
-        if match and subject_supported(match[1]):
-            specs.append({'subject': match[1], 'kind': 'all', 'minimum': None})
+        if match and all(subject_supported(subject) for subject in match[1].split(' or ')):
+            specs.extend({'subject': subject, 'kind': 'all', 'minimum': None}
+                         for subject in dict.fromkeys(match[1].split(' or ')))
             continue
         match = re.fullmatch(r'(.+) must be blocked(?: by (\d+|one|two|three|four|five|six|seven|eight|nine|ten) or more creatures)? if able', part)
         if not match or not subject_supported(match[1]):

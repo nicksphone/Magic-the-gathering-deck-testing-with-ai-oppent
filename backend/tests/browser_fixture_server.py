@@ -51,6 +51,13 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'recipient_attack_1', 'recipient_attack_2', 'recipient_block_1', 'recipient_block_2'}:
+        from tests.test_recipient_combat import recipient_board
+        seat = int(face_kind[-1])
+        kind = face_kind.split('_')[-2]
+        state, _, _ = recipient_board(seat, kind)
+        state.players[seat if kind == 'attack' else 3-seat].mana_pool['G'] = 3
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'combat_capacity_1', 'combat_capacity_2'}:
         from tests.test_ai_combat_intents import board, add, activate
         seat = int(face_kind[-1])

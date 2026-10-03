@@ -48,7 +48,7 @@ def active_combat_cost_effects(state, kind):
 def parse_static_combat_tax(clause, card_name=''):
     """Recognized mana costs with source/controller-relative conditions only."""
     condition = None
-    prefix = re.fullmatch(r'(?:as long as|if) (.+?), (creatures .+)', clause)
+    prefix = re.fullmatch(r'(?:as long as|if) (.+?), (.+)', clause)
     if prefix:
         condition, clause = prefix.groups()
         from rules_engine.static_conditions import parse_static_condition
@@ -61,7 +61,19 @@ def parse_static_combat_tax(clause, card_name=''):
     block = re.fullmatch(r"creatures( you control| your opponents control)? can't block unless their controller pays "
                          r"((?:\{[^{}]+\})+) for each (?:blocking creature they control|of those creatures)", clause)
     if not block:
-        return None
+        recipient = re.fullmatch(r"(.+?) can't (attack(?: or block)?|block) unless (?:its|their) controller pays "
+                                 r"((?:\{[^{}]+\})+)", clause)
+        if not recipient:
+            return None
+        from rules_engine.combat_constraints import _supported_combat_subject
+        if not _supported_combat_subject(recipient[1], card_name):
+            return None
+        fixed = parse_attack_tax(f"creatures can't attack you unless their controller pays {recipient[3]} for each of those creatures")
+        if not fixed or fixed['scaling']:
+            return None
+        kinds = tuple(recipient[2].split(' or '))
+        return {**fixed, 'kind': kinds[0], 'kinds': kinds, 'condition': condition,
+                'scope': 'all', 'recipient_subject': recipient[1]}
     # The same fixed mana grammar supports both declaration kinds.
     fixed = parse_attack_tax(f"creatures can't attack you unless their controller pays {block[2]} for each of those creatures")
     if not fixed or fixed['scaling']:
@@ -84,7 +96,7 @@ def static_combat_tax_sources(state, kind):
             if printed_abilities_suppressed(state, cid, losses=losses):
                 continue
             for clause, spec in specs:
-                if spec and spec['kind'] == kind:
+                if spec and kind in spec.get('kinds', (spec['kind'],)):
                     if spec['condition']:
                         from rules_engine.static_conditions import evaluate_static_condition
                         if evaluate_static_condition(state, source, source, spec['condition']) is not True:
@@ -96,13 +108,21 @@ def static_combat_tax_sources(state, kind):
                     elif amount is None:
                         amount = sum('Enchantment' in state.cards[other].types and state.cards[other].zone == Zone.BATTLEFIELD
                                      for other in state.players[source.controller].battlefield)
-                    rows.append({**spec, 'amount': amount, 'mana_cost': f'{{{amount}}}' if spec['scaling'] else spec['mana_cost'], 'controller': source.controller,
+                    rows.append({**spec, 'kind': kind, 'amount': amount, 'mana_cost': f'{{{amount}}}' if spec['scaling'] else spec['mana_cost'], 'controller': source.controller,
                                  'source_id': cid, 'source_name': source.name, 'clause': clause})
     return rows
 
 
 def attack_tax_sources(state):
     return static_combat_tax_sources(state, 'attack') + active_combat_cost_effects(state, 'attack')
+
+
+def _tax_recipient(state, source, cid):
+    if not source.get('recipient_subject'):
+        return True
+    from rules_engine.combat_constraints import _recipient_body
+    return _recipient_body(state, state.cards[source['source_id']], state.cards[cid],
+                           f"{source['recipient_subject']} can't {source['kind']}") is not None
 
 
 def attack_payment_view(state, ids, targets=None):
@@ -112,6 +132,8 @@ def attack_payment_view(state, ids, targets=None):
     for cid in ids:
         target = targets.get(cid, f'player:{3-state.active_player}')
         for source in sources:
+            if not _tax_recipient(state, source, cid):
+                continue
             taxed = source.get('scope') == 'all' or target == f"player:{source['controller']}"
             if source.get('planeswalkers') and target.startswith('planeswalker:') and source.get('scope') != 'all':
                 walker = state.cards.get(target.removeprefix('planeswalker:'))
@@ -154,7 +176,8 @@ def block_tax_sources(state):
 
 
 def block_payment_view(state, ids):
-    payments = [{**source, 'blocker_id': cid} for cid in dict.fromkeys(ids) for source in block_tax_sources(state)]
+    payments = [{**source, 'blocker_id': cid} for cid in dict.fromkeys(ids) for source in block_tax_sources(state)
+                if _tax_recipient(state, source, cid)]
     cost = ''.join(row['mana_cost'] for row in payments)
     from rules_engine.mana import hybrid_payment_symbols
     return {'mana_cost': cost, 'payments': payments, 'hybrid_symbols': hybrid_payment_symbols(cost)}

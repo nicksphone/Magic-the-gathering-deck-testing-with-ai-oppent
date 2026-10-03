@@ -73,7 +73,7 @@ def combat_clause_coverage(oracle, card_name=''):
         from rules_engine.combat_requirements import parse_target_block_requirement
         if parse_static_combat_tax(clause, card_name) or parse_target_block_requirement(clause, card_name):
             continue
-        if re.search(r'all (?:[a-z]+ )*creatures able to block|must be blocked', clause):
+        if re.search(r'all .+? able to block|must be blocked', clause):
             records.append({'clause': clause, 'reasons': ['unsupported targeted block requirement']})
             continue
         match = body_search.search(body)

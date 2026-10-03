@@ -4,6 +4,8 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ('bestow', re.compile(r'\bbestow\b', re.IGNORECASE)),
+    ('activation cost modifiers', re.compile(r'activated abilities[^.\n]*cost[^.\n]*(?:more|less) to activate', re.IGNORECASE)),
     ('blocking assignment controller fidelity', re.compile(r'(?:attacking|defending) player chooses how .*blocks', re.IGNORECASE)),
     ('tap/untap choice fidelity', re.compile(r'\btap or untap\b',re.IGNORECASE)),
     ("scry replacement fidelity", re.compile(r'if .+scry.+instead', re.IGNORECASE)),

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 - Recipient-specific combat payments and requirements
+
+- Fixed combat costs now share self/attachment/global recipient matching, including combined attack/block clauses. Unrelated creatures remain free; a selected multi-blocker pays once. Existing source predicates, locked payments, AI finalization and public hints are reused.
+- Added alternative self/attachment all-block recipient parsing with canonical Noble Quarry data. Real creature-form AI decisions obey optional payment and requirement semantics; bestowed characteristics are a static-read fixture only, not bestow execution acceptance.
+- Added explicit bestow and activation-cost-modifier warnings plus broader unsupported qualified all-block diagnostics. Missing whole-card semantics are not hidden by successful combat-clause parsing. Canonical Oppressive Rays/Brainwash costs have both-seat HTTP/SQLite and actual App regressions.
+- Validation: 3,125 isolated backend tests passed (332 deprecation warnings), frontend lint/unit/build and complete Chromium passed. Thirty-two actual before/after decisions reduced unaffordable taxed selections from eight to zero and correctly paid all eight current paid selections. Twelve logical seat-balanced template games repeated twice completed without timeouts, determinism failures, drift labels or reported anomalies; broad release, whole-card fidelity and expert AI remain incomplete.
+- README, plan, scope docs and Graphify updated; verified source/evidence and closed scratch copies are archived on RCHFiles `diagnostics/recipient-combat/20261003T014022Z`. User data and the existing untracked coder-plan are preserved.
+
 ## 2026-10-03 - Capacity-aware combat intents and projection fidelity
 
 - Added bounded capacity-aware block enumeration using shared restrictions, requirements, limits and payments; exhausted searches no longer report partial optima. The wider-board fallback reuses available blocker capacity.
