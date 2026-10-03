@@ -26,7 +26,7 @@ The endpoint is not an authorization system or a network-release certificate.
 Canonical fixtures cover Propaganda, Ghostly Prison, Sphere of Safety and Archon
 of Absolution's supported numeric payments; Norn's Annex's now-supported
 Phyrexian payment; Collective Restraint's now-supported domain tax;
-Archangel of Tithes's still-unsupported conditional taxes;
+Archangel of Tithes's [now-supported source-status conditional taxes](conditional-combat-costs.md);
 Stormtide Leviathan's unimplemented
 qualified subject; Silent Arbiter's declaration limits; and Goblin War Drums'
 already-supported keyword grant/reminder. Fetch provenance is retained in
@@ -47,7 +47,7 @@ cached completeness without external sync. Tests run in isolated source copies,
 not against the live database.
 
 `frontend/tests/browser-combat-coverage.mjs` uses the actual App and production
-preflight route with a canonical cached Archangel of Tithes fixture. It checks that the
+preflight route with a canonical cached Stormtide Leviathan fixture. It checks that the
 warning and exploratory-review button appear without creating a simulator job.
 The fixture routes exist only in the guarded, copied browser fixture server.
 

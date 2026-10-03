@@ -44,7 +44,33 @@ def active_combat_cost_effects(state, kind):
             if row['kind'] == kind and row['expires_turn'] >= state.turn]
 
 
-def attack_tax_sources(state):
+@lru_cache(maxsize=2048)
+def parse_static_combat_tax(clause, card_name=''):
+    """Recognized mana costs with source/controller-relative conditions only."""
+    condition = None
+    prefix = re.fullmatch(r'(?:as long as|if) (.+?), (creatures .+)', clause)
+    if prefix:
+        condition, clause = prefix.groups()
+        from rules_engine.static_conditions import parse_static_condition
+        parsed = parse_static_condition(condition, card_name)
+        if parsed is None or parsed[0] not in {'source_status', 'graveyard', 'source_counters', 'lands', 'color_permanent', 'global_land'}:
+            return None
+    attack = parse_attack_tax(clause)
+    if attack:
+        return {**attack, 'kind': 'attack', 'condition': condition}
+    block = re.fullmatch(r"creatures( you control| your opponents control)? can't block unless their controller pays "
+                         r"((?:\{[^{}]+\})+) for each (?:blocking creature they control|of those creatures)", clause)
+    if not block:
+        return None
+    # The same fixed mana grammar supports both declaration kinds.
+    fixed = parse_attack_tax(f"creatures can't attack you unless their controller pays {block[2]} for each of those creatures")
+    if not fixed or fixed['scaling']:
+        return None
+    return {**fixed, 'kind': 'block', 'condition': condition,
+            'scope': {' you control': 'controller', ' your opponents control': 'opponents'}.get(block[1], 'all')}
+
+
+def static_combat_tax_sources(state, kind):
     from rules_engine.combat_constraints import static_clauses
     from rules_engine.continuous import printed_abilities_suppressed, _printed_ability_loss_sources
     losses = _printed_ability_loss_sources(state)
@@ -52,13 +78,17 @@ def attack_tax_sources(state):
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]
-            specs = [(clause, parse_attack_tax(clause)) for clause in static_clauses(source.oracle_text)]
+            specs = [(clause, parse_static_combat_tax(clause, source.name)) for clause in static_clauses(source.oracle_text)]
             if source.zone != Zone.BATTLEFIELD or not any(spec for _, spec in specs):
                 continue
             if printed_abilities_suppressed(state, cid, losses=losses):
                 continue
             for clause, spec in specs:
-                if spec:
+                if spec and spec['kind'] == kind:
+                    if spec['condition']:
+                        from rules_engine.static_conditions import evaluate_static_condition
+                        if evaluate_static_condition(state, source, source, spec['condition']) is not True:
+                            continue
                     amount = spec['amount']
                     if spec['scaling'] == 'domain':
                         from rules_engine.domain import basic_land_type_count
@@ -68,7 +98,11 @@ def attack_tax_sources(state):
                                      for other in state.players[source.controller].battlefield)
                     rows.append({**spec, 'amount': amount, 'mana_cost': f'{{{amount}}}' if spec['scaling'] else spec['mana_cost'], 'controller': source.controller,
                                  'source_id': cid, 'source_name': source.name, 'clause': clause})
-    return rows + active_combat_cost_effects(state, 'attack')
+    return rows
+
+
+def attack_tax_sources(state):
+    return static_combat_tax_sources(state, 'attack') + active_combat_cost_effects(state, 'attack')
 
 
 def attack_payment_view(state, ids, targets=None):
@@ -114,7 +148,9 @@ def attack_payment_state(state, ids, targets=None, hybrid_choices=None, payment_
 
 
 def block_tax_sources(state):
-    return active_combat_cost_effects(state, 'block')
+    defender = 3-state.active_player
+    return [row for row in static_combat_tax_sources(state, 'block') + active_combat_cost_effects(state, 'block')
+            if row['scope'] == 'all' or (row['controller'] == defender) == (row['scope'] == 'controller')]
 
 
 def block_payment_view(state, ids):

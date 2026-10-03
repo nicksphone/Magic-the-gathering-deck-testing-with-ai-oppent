@@ -3193,7 +3193,11 @@ class AIAgent:
                     continue
             try:
                 sim = planning_copy(state)
-                self.engine.take_action(sim, defender, {"type": "block", "blocks": assignment})
+                # Search stores blocker -> attacker; the engine contract is
+                # attacker -> blockers. Project the same declaration we return.
+                normalized = {aid: sorted(bid for bid, target in assignment.items() if target == aid)
+                              for aid in attacker_ids if aid in assignment.values()}
+                self.engine.take_action(sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
                 from ai.pending_effects import _settle_announced_stack
                 if not _settle_announced_stack(sim):
                     continue
@@ -3222,11 +3226,7 @@ class AIAgent:
                 score += 1000.0
             elif sim.winner is not None:
                 score -= 1000.0
-            normalized: dict[str, str | list[str]] = {}
-            for aid in attacker_ids:
-                assigned = sorted(bid for bid, target in assignment.items() if target == aid)
-                if assigned:
-                    normalized[aid] = assigned if len(assigned) > 1 else assigned[0]
+            normalized = {aid: bids if len(bids) > 1 else bids[0] for aid, bids in normalized.items()}
             key = tuple(sorted(assignment.items()))
             candidate = (score, key, normalized)
             if best is None or candidate[:2] > best[:2]:

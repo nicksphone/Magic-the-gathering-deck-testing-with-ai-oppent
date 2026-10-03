@@ -27,6 +27,9 @@ def finalize_declaration(state, action):
                 kind = 'block'
     if kind not in {'attack', 'block'}:
         return action
+    if kind == 'block':
+        action = {**action, 'blocks': {aid: bids if isinstance(bids, list) else [bids]
+                                     for aid, bids in (action.get('blocks') or {}).items()}}
     candidates = attack_candidates(state) if kind == 'attack' else list(state.players[3-state.active_player].battlefield)
     weights = requirement_weights(state, candidates, kind)
     view = declaration_limit_view(state, kind)

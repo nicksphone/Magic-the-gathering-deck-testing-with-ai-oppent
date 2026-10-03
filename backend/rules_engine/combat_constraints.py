@@ -69,9 +69,9 @@ def combat_clause_coverage(oracle, card_name=''):
         limit = parse_declaration_limit(body)
         if limit and condition is None and not missing_condition:
             continue
-        from rules_engine.combat_payments import parse_attack_tax
+        from rules_engine.combat_payments import parse_static_combat_tax
         from rules_engine.combat_requirements import parse_target_block_requirement
-        if parse_attack_tax(clause) or parse_target_block_requirement(clause, card_name):
+        if parse_static_combat_tax(clause, card_name) or parse_target_block_requirement(clause, card_name):
             continue
         if re.search(r'all (?:[a-z]+ )*creatures able to block|must be blocked', clause):
             records.append({'clause': clause, 'reasons': ['unsupported targeted block requirement']})
@@ -81,7 +81,7 @@ def combat_clause_coverage(oracle, card_name=''):
             continue
         subject, recipient = body[:match.start()].strip(), body[match.start():]
         reasons = []
-        if condition and (parse_static_condition(condition) is None or limit) or missing_condition:
+        if condition and (parse_static_condition(condition, card_name) is None or limit) or missing_condition:
             reasons.append('unsupported combat condition')
         if re.search(r'\bunless\b.+\bpay(?:s)?\b', clause):
             reasons.append('unsupported combat payment')
@@ -163,8 +163,10 @@ def combat_rule_view(state, card_id):
             continue
         previous = None
         for clause in clauses:
-            from rules_engine.combat_payments import parse_attack_tax
-            if parse_attack_tax(clause):
+            from rules_engine.combat_payments import parse_static_combat_tax
+            tax = parse_static_combat_tax(clause, source.name)
+            if tax:
+                previous = _condition(state, source, target, tax['condition']) if tax['condition'] else None
                 continue  # Dedicated declaration-payment reader; not a blanket attack ban.
             body, truth = clause, True
             if clause.startswith('otherwise, '):

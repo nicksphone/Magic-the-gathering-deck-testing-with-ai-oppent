@@ -76,7 +76,9 @@ Large competing-target boards verify capacity-aware upper bounds.
 `browser-combat-payments-requirements.mjs` uses the actual App/API to reject an
 unpayable two-attacker declaration, pay for one attacker, reject a missing required
 block and submit a legal block. The separate preflight check now uses canonical
-Archangel of Tithes to ensure unsupported payments warn without admitting a job.
+Stormtide Leviathan to ensure unsupported qualified subjects warn without admitting
+a job. The subsequent [conditional-cost batch](conditional-combat-costs.md)
+implements Archangel of Tithes's source-status tax clauses.
 These are functional flows, not the deferred UI redesign or a visual usability audit.
 
 Verified 2026-10-02: 2,922 full backend tests passed (314 deprecation warnings),

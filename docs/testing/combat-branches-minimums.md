@@ -50,8 +50,9 @@ general optimal-combat or worst-case-latency guarantee.
 
 Unknown qualified blocker subsets or compound clauses remain explicit coverage
 gaps. The subsequent [domain/temporary cost batch](combat-domain-temporary-costs.md)
-implements Collective Restraint and uses Archangel of Tithes for still-unsupported
-conditional tax preflight acceptance. Supporting more taxes must not remove warnings
+implements Collective Restraint. The subsequent [conditional-cost batch](conditional-combat-costs.md)
+implements Archangel of Tithes's tax clauses and uses Stormtide Leviathan's
+unsupported qualified subject for preflight acceptance. Supporting more taxes must not remove warnings
 for genuinely unsupported forms.
 
 ## Acceptance
@@ -90,10 +91,11 @@ the live checkout; successful disposable artifacts were removed after verificati
 
 ## Known Limitations and Next Upgrades
 
-- Nonmana costs, optional additional costs, conditional/static block taxes,
+- Nonmana costs, optional additional costs, arbitrary conditional/qualified block taxes,
   individually chosen mana sources and interrupted cost continuations remain open.
   The subsequent domain/temporary-cost batch implements domain attack taxes and
-  resolution-created global block mana costs; these are not all block payments.
+  resolution-created global block mana costs. The conditional-cost batch adds
+  supported source/controller predicates and static block costs, not all payments.
 - Temporary/granted nonkeyword and qualified-blocker requirements, specific defenders,
   attacker-controlled assignment and general band interactions remain unfinished.
 - Exact requirement search can still be exponential. Narrow wide-board cases are

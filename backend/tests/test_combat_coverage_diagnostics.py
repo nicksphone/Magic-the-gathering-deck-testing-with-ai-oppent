@@ -18,11 +18,11 @@ ROWS.update({row['name']: row for row in json.loads((Path(__file__).parent / 'fi
 ROWS.update({row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/combat_payments_requirements.json').read_text())})
 
 
-@pytest.mark.parametrize('name', ["Archangel of Tithes"])
-def test_canonical_attack_taxes_are_not_silently_certified(name):
+@pytest.mark.parametrize('name', ["Stormtide Leviathan"])
+def test_canonical_unimplemented_subject_is_not_silently_certified(name):
     rows = combat_clause_coverage(ROWS[name]['oracle_text'], name)
-    assert any('unsupported combat payment' in row['reasons'] for row in rows)
-    assert 'unsupported combat payment' in known_unsupported_mechanics(ROWS[name]['oracle_text'], card_name=name)
+    assert any('unsupported combat subject' in row['reasons'] for row in rows)
+    assert 'unsupported combat subject' in known_unsupported_mechanics(ROWS[name]['oracle_text'], card_name=name)
     report = deck_pair_coverage([{'card_name': name, 'oracle_text': ROWS[name]['oracle_text']}], [])
     assert report['known_unsupported_cards'][0]['card_name'] == name
     assert report['known_unsupported_cards'][0]['combat_clause_gaps'][0]['face_name'] == name
@@ -47,9 +47,9 @@ def test_supported_clauses_and_keyword_reminder_text_do_not_add_false_warnings(n
 
 
 def test_faces_names_duplicates_trigger_and_granted_text_are_distinguished():
-    faces = [ROWS["Archangel of Tithes"], ROWS["Archangel of Tithes"]]
+    faces = [ROWS["Stormtide Leviathan"], ROWS["Stormtide Leviathan"]]
     gaps = known_unsupported_mechanics('', faces)
-    assert gaps.count('unsupported combat payment') == 1
+    assert gaps.count('unsupported combat subject') == 1
     details = combat_coverage_details('', faces)
     assert {row['face_index'] for row in details} == {0, 1}
     # Explicit grammar fixtures, not cards or deck additions.
@@ -87,7 +87,7 @@ def test_live_diagnostics_exclude_private_zones_and_preserve_sqlite_state(game, 
     client, match = game
     creature = add(match.state, 'Slumbering Dragon', player)
     creature.counters['+1/+1'] = 4
-    source = raw_add(match.state, "Archangel of Tithes", 3-player, cards=ROWS)
+    source = raw_add(match.state, "Stormtide Leviathan", 3-player, cards=ROWS)
     secret = raw_add(match.state, 'Ghostly Prison', player, Zone.HAND, cards=ROWS)
     persist(match)
     before = snapshot(match)
@@ -120,13 +120,13 @@ def test_http_preflight_reports_canonical_tax_from_name_only_deck(game, monkeypa
     monkeypatch.setattr(main, '_hydrate_deck_cards', lambda repo, deck: [
         {**(ROWS.get(item['card_name']) or fallback_card_payload(item['card_name'])), **item}
         for item in deck])
-    deck = [{'quantity': 4, 'card_name': "Archangel of Tithes"}, {'quantity': 56, 'card_name': 'Island'}]
+    deck = [{'quantity': 4, 'card_name': "Stormtide Leviathan"}, {'quantity': 56, 'card_name': 'Island'}]
     before = snapshot(match)
     response = client.post('/simulate/batch/preflight', json={'deck_a': deck, 'deck_b': deck})
     assert response.status_code == 200, response.text
     cards = response.json()['known_unsupported_cards']
     assert {row['deck'] for row in cards} == {'A', 'B'}
-    assert all('unsupported combat payment' in row['mechanics'] for row in cards)
+    assert all('unsupported combat subject' in row['mechanics'] for row in cards)
     assert all(row['combat_clause_gaps'] for row in cards)
     assert snapshot(match) == before
 
@@ -138,15 +138,15 @@ def test_cached_completeness_exposes_clause_provenance_without_sync(game, monkey
     from card_data.service import CardService
     from card_data.sync import ScryfallSyncService
     client, match = game
-    row = ROWS["Archangel of Tithes"]
+    row = ROWS["Stormtide Leviathan"]
     monkeypatch.setattr(ScryfallSyncService, 'sync_card_by_name', lambda *a, **k: pytest.fail('Read report attempted sync'))
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': row['id'], 'name': row['name'], 'oracle_text': row['oracle_text'],
                          'mana_cost': row['mana_cost'], 'type_line': row['type_line']})
         before = snapshot(match)
-        card = CardService(repo).completeness_report(["Archangel of Tithes"])['cards'][0]
+        card = CardService(repo).completeness_report(["Stormtide Leviathan"])['cards'][0]
         assert card['rules_coverage'] == 'known_unsupported'
-        assert 'unsupported combat payment' in card['unsupported_mechanics']
-        assert card['combat_clause_gaps'][0]['face_name'] == "Archangel of Tithes"
+        assert 'unsupported combat subject' in card['unsupported_mechanics']
+        assert card['combat_clause_gaps'][0]['face_name'] == "Stormtide Leviathan"
         assert snapshot(match) == before

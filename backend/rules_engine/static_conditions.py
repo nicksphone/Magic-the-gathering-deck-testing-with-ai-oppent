@@ -16,7 +16,14 @@ def number(token):
 
 
 @lru_cache(maxsize=4096)
-def parse_static_condition(text):
+def parse_static_condition(text, card_name=''):
+    if card_name:
+        aliases = {card_name.lower(), card_name.lower().split(',', 1)[0]}
+        for alias in sorted(aliases, key=len, reverse=True):
+            text = re.sub(r'^' + re.escape(alias) + r'(?= is\b)', 'this permanent', text)
+    status = re.fullmatch(r'this (?:creature|permanent|equipment|aura|land) is (tapped|untapped|attacking|blocking)', text)
+    if status:
+        return ('source_status', status[1])
     characteristic = re.fullmatch(r"(?:it's|it is|(?:equipped|enchanted|fortified) (?:creature|permanent|land) is) (an? )?([a-z]+)", text)
     if characteristic:
         article, kind = characteristic.groups()
@@ -58,10 +65,16 @@ def _land_count(state, player_ids, subtype=None):
 
 
 def evaluate_static_condition(state, source, target, text):
-    spec = parse_static_condition(text)
+    spec = parse_static_condition(text, source.name)
     if spec is None:
         return None
     kind, *args = spec
+    if kind == 'source_status':
+        if source.zone != Zone.BATTLEFIELD:
+            return False
+        return {'tapped': source.tapped, 'untapped': not source.tapped,
+                'attacking': source.id in state.attackers,
+                'blocking': any(source.id in ids for ids in state.blocks.values())}[args[0]]
     if kind == 'characteristic':
         from rules_engine.colors import card_color_symbols
         from rules_engine.continuous import _has_subtype

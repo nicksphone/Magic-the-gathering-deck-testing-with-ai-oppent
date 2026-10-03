@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 - Conditional combat costs and real blocker-search projection
+
+- Added shared source-status/self-reference predicates and supported source/controller-conditional attack costs plus static global/controller/opponent block mana costs. Source suppression, locked payment, optional requirements, explicit branches, snapshots and both-seat action controls reuse the existing rules paths. Parsed tax conditions preserve following supported Otherwise clauses.
+- Expanded actual AI probes exposed a general Master/Master+ search mapping bug: internal blocker-to-attacker assignments were simulated as engine attacker-to-blocker declarations. Corrected the projection and normalized final AI block lists; canonical regressions resolve combat to verify survival against a lethal flyer instead of a profitable but fatal ground trade, with and without taxes in both seats.
+- Added both-seat HTTP/SQLite rejection/recovery and actual App flows. Canonical preflight uses Stormtide Leviathan's still-unsupported qualified subject now that Archangel of Tithes's tax clauses work. Unknown conditions and broader cost forms remain explicit gaps; no competitive deck or card definition was invented or changed.
+- Validation: 3,060 isolated backend tests passed (326 deprecation warnings); 370 focused combat/AI checks, 68 final continuation checks, frontend lint/unit/build and full Chromium passed. Twelve logical seat-balanced template games repeated twice resolved without determinism failures, drift labels or reported anomalies. Thirty-two controlled AI scenarios produced six paid attacks, six paid blocks and twenty passes. Four Master/Master+ before/after decisions now block the lethal flyer; unit regressions resolve actual combat. This is bounded quality evidence, not broad balance or expert-strength certification.
+- README, plan, scope docs and Graphify updated. Verified source/evidence and failed/superseded runs archived on RCHFiles `diagnostics/conditional-combat-costs/20261003T000956Z`. Broader rules, tactical/resource planning, operational gates and the deferred alpha UI redesign remain unfinished.
+
 ## 2026-10-02 - Domain and temporary combat-cost batch
 
 - Added controller-relative basic-land-type attack taxes and resolution-created global attack/block mana taxes through shared rules, not card-name dispatch. Resolved effects retain announced X, survive source departure, affect later creatures, expire at cleanup and restore from snapshots.

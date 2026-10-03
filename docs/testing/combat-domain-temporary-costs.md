@@ -86,8 +86,10 @@ requirements, explicit branches, actual HTTP X activation and SQLite restoration
 
 The actual App/browser flow checks both seats for domain payment rejection/retry
 and actual X activation followed by block payment. A chosen Elf taps for its cost
-and still blocks. Preflight now uses Archangel of Tithes's still-unsupported
-conditional taxes. Creature metadata readiness remains enforced; the fixture
+and still blocks. Preflight originally used Archangel of Tithes's conditional
+taxes; the [subsequent conditional-cost batch](conditional-combat-costs.md) implements
+those clauses and uses Stormtide Leviathan's unsupported qualified subject instead.
+Creature metadata readiness remains enforced; the fixture
 must supply real power/toughness rather than bypass admission validation.
 
 Frozen-source validation: 3,011 isolated backend tests passed (322 deprecation
@@ -108,8 +110,10 @@ was used by these tests, and no fresh dependency installation was tested.
 
 ## Known Limitations and Next Upgrades
 
-- Conditional/static/qualified block taxes, nonmana costs, optional additional costs,
+- Arbitrary conditional/qualified block taxes, nonmana costs, optional additional costs,
   player-selected mana sources and interrupted payment continuations remain open.
+  Supported source/controller conditions and static block taxes are covered by
+  the subsequent conditional-cost batch; this does not close general payments.
 - General type/color/dependency layers are not complete: domain reads the engine's
   current stored land characteristics, not a certified arbitrary type-change layer.
 - Broader pre-declaration timing, simultaneous cost triggers/replacements, gained

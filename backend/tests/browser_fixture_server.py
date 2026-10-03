@@ -28,8 +28,8 @@ def fixture_start_decks():
 def fixture_combat_coverage_decks():
     import json
     from main import SIM_JOBS
-    rows = json.loads((Path(__file__).parent / 'fixtures/combat_temporary_costs.json').read_text())
-    card = next(row for row in rows if row['name'] == "Archangel of Tithes")
+    rows = json.loads((Path(__file__).parent / 'fixtures/combat_coverage.json').read_text())
+    card = next(row for row in rows if row['name'] == "Stormtide Leviathan")
     with Session(engine) as session:
         repo = Repository(session)
         repo.upsert_card({'scryfall_id': card['id'], 'name': card['name'],
@@ -51,6 +51,16 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'conditional_cost_attack_1', 'conditional_cost_attack_2', 'conditional_cost_block_1', 'conditional_cost_block_2'}:
+        from tests.test_conditional_combat_costs import board, add
+        seat = int(face_kind[-1])
+        kind = face_kind.split('_')[-2]
+        state, _, _, _ = board(seat, kind)
+        if kind == 'attack':
+            state.players[seat].mana_pool['U'] = 1
+        else:
+            add(state, 'Grizzly Bears', 3-seat)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'combat_domain_1', 'combat_domain_2', 'combat_temporary_1', 'combat_temporary_2'}:
         from tests.test_combat_domain_temporary_costs import fixture as clean_state, add, zero_mana, attack_step
         seat = int(face_kind[-1])
