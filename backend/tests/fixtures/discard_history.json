@@ -1,0 +1,50 @@
+[
+  {
+    "id": "0d762a71-ee49-49fd-a54a-0c066277c88c",
+    "oracle_id": "f7e55117-69fb-412e-b16e-d92e0f95f629",
+    "name": "Cathartic Pyre",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Choose one \u2014\n\u2022 Cathartic Pyre deals 3 damage to target creature or planeswalker.\n\u2022 Discard up to two cards, then draw that many cards.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ecc/90/cathartic-pyre?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "63ca5ce5-94e7-43a1-8f2b-f0a4532f617a",
+    "oracle_id": "925feb7e-7876-430b-b95a-92b236a2e409",
+    "name": "Change of Fortune",
+    "mana_cost": "{3}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Discard your hand, then draw a card for each card you've discarded this turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vow/150/change-of-fortune?utm_source=api",
+    "loyalty": null
+  },
+  {
+    "id": "7cb9d4a0-66bd-454d-b676-80192a96c723",
+    "oracle_id": "ea9f4de3-fc35-435a-8dff-a5657d14a9bd",
+    "name": "Daretti, Scrap Savant",
+    "mana_cost": "{3}{R}",
+    "type_line": "Legendary Planeswalker \u2014 Daretti",
+    "oracle_text": "+2: Discard up to two cards, then draw that many cards.\n\u22122: Sacrifice an artifact. If you do, return target artifact card from your graveyard to the battlefield.\n\u221210: You get an emblem with \"Whenever an artifact is put into your graveyard from the battlefield, return that card to the battlefield at the beginning of the next end step.\"\nDaretti, Scrap Savant can be your commander.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/213/daretti-scrap-savant?utm_source=api",
+    "loyalty": "3"
+  }
+]

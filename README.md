@@ -17,6 +17,12 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Bounded rummaging and discard history](docs/testing/discard-history.md): shared
+  optional discard/draw instructions work through modal and loyalty actions;
+  whole-hand draws can count all of the controller's discards this turn. Costs,
+  cleanup, replacement exile and copies share persisted counters. AI evaluates
+  hand retention and supported draw limits; broader graveyard strategy is open.
+
 - [Resolution-time linked discards](docs/testing/linked-discard.md): chosen variable
   or whole-hand discards feed actual counts into supported basic-land searches
   and fixed/count-linked draws. Shared events, replacements, copies and nested

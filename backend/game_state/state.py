@@ -216,6 +216,7 @@ class MatchState:
     draws_in_current_draw_step: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     draws_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     surveils_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    discards_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)

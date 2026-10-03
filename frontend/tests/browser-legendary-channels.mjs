@@ -51,6 +51,7 @@ for (const seat of [1, 2]) {
       await waitFor(ready('Confirm Selection'));
       await click('Confirm Selection');
       await waitFor("!document.body.innerText.includes('Confirm Selection')");
+      await waitFor(`(async () => { const state = await (await fetch('${api}/matches/${fixture.id}')).json(); return !state.pending_mechanic_choice && state.stack.length === 0; })()`);
       const final = await get();
       assert.equal(final.pending_mechanic_choice, null);
       assert.equal(final.stack.length, 0);

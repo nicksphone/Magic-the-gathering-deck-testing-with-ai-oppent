@@ -236,13 +236,14 @@ def test_nested_draw_replacement_choices_resume_original_spell_once(seat,name):
 
 
 @pytest.mark.parametrize('seat',[1,2])
-def test_unmodeled_discard_turn_history_is_not_a_fake_fixed_draw(seat):
+def test_discard_turn_history_is_admitted_as_a_counted_effect(seat):
     from rules_engine.costs import collect_cost_options
     from rules_engine.coverage import known_unsupported_mechanics
     state=board(seat)
     spell=raw_add(state,'Change of Fortune',seat,Zone.HAND,cards=ROWS)
-    assert 'linked discard sequence fidelity' in known_unsupported_mechanics(spell.oracle_text,card_name=spell.name)
-    assert collect_cost_options(state,seat,spell)==[]
+    state.players[seat].mana_pool.update(R=2, C=8)
+    assert 'linked discard sequence fidelity' not in known_unsupported_mechanics(spell.oracle_text,card_name=spell.name)
+    assert collect_cost_options(state,seat,spell)
 
 
 @pytest.mark.parametrize('seat',[1,2])

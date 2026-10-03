@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-03 - Bounded rummaging and per-turn discard history
+
+- Support complete printed-limit discard/draw instructions through ordinary modal
+  and loyalty paths, plus whole-hand draw based on actual per-turn discard counts.
+  Shared costs, cleanup, simultaneous batches and replacement exile update counts;
+  mill/direct hand exile do not. Preserve counts through snapshots and SQLite.
+- All AI difficulties evaluate retained hand value, draw caps and exhaustion;
+  history affects refresh decisions, and useless sole-modal rummage is withheld.
+  Expose validated public counts. Old snapshots without history restore zero.
+- Fix an older Boseiju browser test checking completion before its write finished.
+  Validation: 92 new checks, 381 combined regressions, frontend gates, complete
+  Chromium with six new both-seat cases, twelve repeated seat-balanced samples
+  with no reported anomaly/timeout/drift; full isolated backend 4,674 passed.
+  See [scope and remaining risks](docs/testing/discard-history.md).
+
 ## 2026-10-03 - Resolution-time linked discards and copy recipients
 
 - Share supported optional/whole-hand discard instructions with bounded basic-land

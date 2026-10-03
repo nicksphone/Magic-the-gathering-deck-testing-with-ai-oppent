@@ -28,7 +28,8 @@ Both human seats use the existing choice controls, including valid zero-card
 optional selections. Frontend choice-kind unions now include ordinary and
 simultaneous discard instead of silently relying on cast response types.
 Unrecognized linked-discard instructions produce coverage warnings and no cast
-options; Change of Fortune's per-turn discard history is not faked as a fixed draw.
+options. The later [discard-history increment](discard-history.md) adds actual
+per-turn counting for Change of Fortune rather than faking a fixed draw.
 
 ## AI boundary
 
@@ -87,7 +88,7 @@ are retained and are not substituted for successful final acceptance.
 
 ## Known Limitations and Next Upgrades
 
-Arbitrary linked counts, discard history this turn, random/opponent/simultaneous
+Arbitrary linked counts and random/opponent/simultaneous
 variable discards, chained modes and other conditional clauses remain incomplete.
 Unrecognized complete sequences are rejected rather than approximated. General
 replacement ordering, madness/optional graveyard choices and long-term discard

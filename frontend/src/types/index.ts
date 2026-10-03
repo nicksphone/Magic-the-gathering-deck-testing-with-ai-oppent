@@ -72,6 +72,7 @@ export type PlayerView = {
 export type MatchState = {
   id: string;
   revision?: number;
+  discards_this_turn?: Record<string, number>;
   mode?: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
   controllers?: Record<string, "human" | "ai">;
   turn: number;

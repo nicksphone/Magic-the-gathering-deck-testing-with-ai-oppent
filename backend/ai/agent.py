@@ -405,7 +405,9 @@ class AIAgent:
                                 # Equal-value trades retain more cards despite float noise.
                                 scored.append((round(gain - loss, 6), -size))
                         count = -max(scored)[1]
-                    return AIDecision(action={'type': 'choose_mechanic', 'card_ids': options[:count]}, reasoning='Preserve hand unless linked search improves known mana development')
+                    elif followup.get('effect_key') == 'draw_cards':
+                        count, _ = self._linked_draw_trade(state, player_id, options, choice['count'])
+                    return AIDecision(action={'type': 'choose_mechanic', 'card_ids': options[:count]}, reasoning='Preserve hand unless linked follow-up improves known resources')
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
@@ -545,6 +547,18 @@ class AIAgent:
             scores[option] = -100000 if game.winner == 3 - player_id else evaluate_board(game, player_id)
         return ["pay" if scores.get("pay", -100000) > scores.get("decline", -100000) + 0.25 else "decline"]
 
+    def _linked_draw_trade(self, state, player_id, options, limit):
+        from rules_engine.draw_restrictions import forecast_draw_count
+        ranked = sorted(options, key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
+        scored = [(0.0, 0)]
+        for count in range(1, min(len(ranked), limit) + 1):
+            draws = forecast_draw_count(state, player_id, count)
+            if draws <= len(state.players[player_id].library):
+                loss = sum(self._hand_retention_value(state, cid, player_id) for cid in ranked[:count])
+                scored.append((round(draws * 5 - loss, 6), -count))
+        value, negative_count = max(scored)
+        return -negative_count, value
+
     def _bad_shared_draw_cast(self, state: MatchState, move: dict, player_id: int) -> bool:
         if move.get("type") != "cast_spell":
             return False
@@ -553,10 +567,21 @@ class AIAgent:
             return False
         from rules_engine.linked_discard import linked_discard_effect
         linked = linked_discard_effect(_oracle_text(card))
+        hints = move.get('target_hints') or {}
+        modes = hints.get('available_modes', hints.get('modes', []))
+        if linked is None and modes:
+            draws = [linked_discard_effect(mode) for mode in modes]
+            if all(item and item.get('up_to') and item['followup_effect']['effect_key'] == 'draw_cards' for item in draws):
+                hand = [cid for cid in state.players[player_id].hand if cid != card.id]
+                return all(self._linked_draw_trade(state, player_id, hand, item.get('amount', len(hand)))[1] <= 0 for item in draws)
         if linked and linked['followup_effect']['effect_key'] == 'draw_cards':
             hand = [cid for cid in state.players[player_id].hand if cid != card.id]
             followup = linked['followup_effect']
-            amount = len(hand) if followup.get('count_field') else followup['payload']['amount']
+            if linked.get('up_to'):
+                return self._linked_draw_trade(state, player_id, hand, linked.get('amount', len(hand)))[1] <= 0
+            amount = len(hand) if followup.get('count_field') else followup['payload'].get('amount', 0)
+            if followup.get('count_history') == 'discards_this_turn':
+                amount += state.discards_this_turn.get(player_id, 0) + len(hand)
             from rules_engine.draw_restrictions import forecast_draw_count
             draws = forecast_draw_count(state, player_id, amount)
             return (not draws or draws > len(state.players[player_id].library)
@@ -2372,6 +2397,12 @@ class AIAgent:
 
     def _score_mode_text(self, state: MatchState, card, mode_text: str, player_id: int) -> float:
         text = (mode_text or "").lower()
+        from rules_engine.linked_discard import linked_discard_effect
+        linked = linked_discard_effect(text)
+        if linked and linked.get('up_to') and linked['followup_effect']['effect_key'] == 'draw_cards':
+            options = [cid for cid in state.players[player_id].hand if cid != card.id]
+            _, value = self._linked_draw_trade(state, player_id, options, linked.get('amount', len(options)))
+            return value / 5 if value > 0 else -8.0
         if isinstance(state, MatchState) and _only_counter_spell_text(text):
             from rules_engine.oracle_effects import inspect_target_hints
             options = inspect_target_hints(state, card, player_id, {"mode_text": mode_text}).get("stack_targets") or []

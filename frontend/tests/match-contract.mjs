@@ -97,3 +97,8 @@ assert.throws(() => parseMatchState(withLots([restricted, restricted])), /restri
 assert.throws(() => parseMatchState(withLots([{ ...restricted, snow: true }])), /restricted mana pool/);
 assert.throws(() => parseMatchState(withLots([restricted], { C: 2 }, { C: 2 })), /restricted mana pool/);
 console.log("PASS restricted-mana quantity, purpose and snow-provenance contracts");
+assert.equal(parseMatchState({ ...state, discards_this_turn: { 1: 3, 2: 0 } }).discards_this_turn[1], 3);
+for (const history of [{ 1: -1, 2: 0 }, { 1: 1.5, 2: 0 }, { 1: 0 }, { 1: 0, 2: 0, 99: 1 }]) {
+  assert.throws(() => parseMatchState({ ...state, discards_this_turn: history }), /discard history/);
+}
+console.log("PASS optional public discard-history contract");

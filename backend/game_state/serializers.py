@@ -109,6 +109,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "draws_in_current_draw_step": {str(key): value for key, value in state.draws_in_current_draw_step.items()},
         "draws_this_turn": {str(key): value for key, value in state.draws_this_turn.items()},
         "surveils_this_turn": {str(key): value for key, value in state.surveils_this_turn.items()},
+        "discards_this_turn": {str(key): value for key, value in state.discards_this_turn.items()},
         "players_with_permanent_departure": sorted(state.players_with_permanent_departure),
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
@@ -330,6 +331,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.surveils_this_turn = {
         int(key): int(value) for key, value in payload.get("surveils_this_turn", {"1": 0, "2": 0}).items()
     }
+    state.discards_this_turn = {
+        int(key): int(value) for key, value in payload.get("discards_this_turn", {"1": 0, "2": 0}).items()
+    }
     state.temporary_control_changes = {
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()
@@ -381,6 +385,7 @@ def serialize_match(state: MatchState) -> dict:
         "kept_hands": sorted(list(state.kept_hands)),
         "day_night": state.day_night,
         "spells_cast_this_turn": state.spells_cast_this_turn,
+        "discards_this_turn": dict(state.discards_this_turn),
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "combat_damage_stage": state.combat_damage_stage,

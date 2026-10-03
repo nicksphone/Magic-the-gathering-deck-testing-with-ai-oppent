@@ -108,6 +108,7 @@ def discard_simultaneous(state, selections: dict[int, list[str]]) -> bool:
             put_into_graveyard(state, cid)
             state.log.append(f"{player.name} discards {card.name}.")
             events.append({"card_id": cid, "controller": player_id})
+        state.discards_this_turn[player_id] = state.discards_this_turn.get(player_id, 0) + len(card_ids)
     if events:
         emit_event_batch(state, "discard", events)
     return True

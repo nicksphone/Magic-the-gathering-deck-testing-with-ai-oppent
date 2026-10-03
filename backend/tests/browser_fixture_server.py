@@ -51,6 +51,14 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'discard_history_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
+        from tests.test_discard_history import setup
+        from rules_engine.zone_actions import discard_selected
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, _, hand, _ = setup(['Daretti, Scrap Savant', 'Cathartic Pyre', 'Change of Fortune'][index], seat, cast=False)
+        if index == 2:
+            discard_selected(state, seat, [hand[0].id])
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {f'linked_copy_{seat}' for seat in [1, 2]}:
         from tests.test_linked_discard import setup
         from tests.test_surveil_mill import add

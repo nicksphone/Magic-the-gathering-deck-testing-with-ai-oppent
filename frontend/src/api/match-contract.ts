@@ -32,6 +32,12 @@ export function parseMatchState(value: unknown): MatchState {
     || !record(value.score) || !Array.isArray(value.stack) || !Array.isArray(value.log)) {
     throw new Error("Invalid match response: missing core state fields");
   }
+  if (value.discards_this_turn !== undefined && (!record(value.discards_this_turn)
+    || Object.keys(value.discards_this_turn).length !== 2
+    || !["1", "2"].every(seat => Number.isInteger((value.discards_this_turn as Record<string, unknown>)[seat])
+      && ((value.discards_this_turn as Record<string, number>)[seat] >= 0)))) {
+    throw new Error("Invalid match response: discard history");
+  }
   for (const seat of ["1", "2"]) {
     const player = value.players[seat];
     if (!record(player) || typeof player.life !== "number" || !Array.isArray(player.hand)

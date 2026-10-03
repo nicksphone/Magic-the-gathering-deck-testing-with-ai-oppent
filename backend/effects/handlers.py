@@ -2343,7 +2343,7 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[target_player]
     from rules_engine.zone_actions import discard_selected, is_departed_token
     available = [cid for cid in player.hand if not is_departed_token(state.cards[cid])]
-    if payload.get('all_hand') or payload.get('up_to'):
+    if payload.get('all_hand') or (payload.get('up_to') and 'amount' not in payload):
         amount = len(available)
     count = min(max(0, amount), len(available))
     if count and not payload.get("random") and target_player in state.mechanic_choice_players:
@@ -2374,6 +2374,8 @@ def resolve_discard_followup(state, controller, followup, discarded):
     data = dict(followup.get('payload') or {})
     if followup.get('count_field'):
         data[followup['count_field']] = discarded
+    if followup.get('count_history') == 'discards_this_turn':
+        data['amount'] = state.discards_this_turn.get(controller, 0)
     if followup['effect_key'] == 'search_library' and discarded == 0:
         # Search's legacy zero limit means unbounded; a zero-card linked search
         # must still shuffle, but must not offer or find any cards.
