@@ -8,6 +8,39 @@ PRICE = re.compile(r'^kicker ((?:\{(?:\d+|[WUBRGCS]|[2WUBRGC]/[WUBRGC]|[WUBRG]/P
 CONDITION = re.compile(r'\bif this spell was kicked, ([^.]+)\.', re.I)
 
 
+def permanent_kicker(text):
+    """Recognize self-entry counters or a fixed conditional self-ETB payoff."""
+    from rules_engine.spell_cost_clauses import COUNT, NUMBERS
+    text = without_reminder_text(text or '').strip()
+    prices = list(PRICE.finditer(text))
+    if len(prices) != 1 or re.search(r'\bmultikicker\b', text, re.I):
+        return None
+    remaining = PRICE.sub('', text).strip()
+    counter = re.fullmatch(r'If this creature was kicked, it enters with ' + COUNT +
+                           r' (\+1/\+1|-1/-1) counters? on it\.', remaining, re.I)
+    if counter:
+        amount = int(counter[1]) if counter[1].isdigit() else NUMBERS[counter[1].lower()]
+        return {'price': prices[0][1], 'counters': {counter[2]: amount}}
+    trigger = re.fullmatch(r'(When this (?:creature|artifact|enchantment|permanent) enters(?: the battlefield)?,) '
+                           r'if it was kicked, (.+\.)', remaining, re.I)
+    if not trigger:
+        return None
+    instruction = trigger[2]
+    if not re.fullmatch(r'(?:draw ' + COUNT + r' cards?|it deals \d+ damage to target creature|'
+                        r'destroy target noncreature permanent)\.', instruction, re.I):
+        return None
+    return {'price': prices[0][1], 'instruction': instruction,
+            'clause': trigger[1] + ' ' + instruction}
+
+
+def kicker_price(card):
+    if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
+        parsed = kicker_surfaces(card.oracle_text)
+        return parsed[0] if parsed else None
+    parsed = permanent_kicker(card.oracle_text)
+    return parsed['price'] if parsed else None
+
+
 def kicker_surfaces(text):
     """Return price/base/kicked text, or None when semantics remain unmodeled."""
     text = without_reminder_text(text or '').strip()

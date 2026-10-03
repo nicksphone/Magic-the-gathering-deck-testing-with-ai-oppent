@@ -2588,10 +2588,36 @@ class AIAgent:
 
     def _kicker_gain(self, state, card, player_id, hints):
         """Known damage breakpoints/card gain, not hidden draws or full search."""
-        from rules_engine.kicker import kicker_surfaces
+        from rules_engine.kicker import kicker_surfaces, permanent_kicker
         surfaces = kicker_surfaces(card.oracle_text)
         if not surfaces:
-            return float('-inf')
+            permanent = permanent_kicker(card.oracle_text)
+            if not permanent:
+                return float('-inf')
+            score = -0.4 * mana_value(permanent['price'])
+            counters = permanent.get('counters', {}).get('+1/+1', 0)
+            if counters:
+                return score + 0.8 * counters
+            text = permanent.get('instruction', '')
+            draw = re.fullmatch(r'draw (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.', text, re.I)
+            if draw:
+                return score + 3 * _parse_count_token(draw[1].lower())
+            from copy import copy
+            from rules_engine.oracle_effects import inspect_target_hints
+            proxy = copy(card)
+            proxy.oracle_text, proxy.card_faces, proxy.types = text, [], []
+            target_hints = inspect_target_hints(state, proxy, player_id)
+            candidates = {target['id'] for key, targets in target_hints.items()
+                          if key.endswith('_targets') and isinstance(targets, list)
+                          for target in targets if isinstance(target, dict) and 'id' in target}
+            damage = re.search(r'deals (\d+) damage', text)
+            for cid in state.players[3-player_id].battlefield:
+                if cid not in candidates or has_keyword(state, cid, 'indestructible'):
+                    continue
+                if damage and effective_toughness(state, cid) - int(state.cards[cid].counters.get('__damage_marked', 0)) > int(damage[1]):
+                    continue
+                return score + 5
+            return score
         price, base, kicked = surfaces
         opponent = 3-player_id
         score = -0.4 * mana_value(price)

@@ -979,6 +979,7 @@ class RulesEngine:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                card.was_kicked = chosen.kicked
                 card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)

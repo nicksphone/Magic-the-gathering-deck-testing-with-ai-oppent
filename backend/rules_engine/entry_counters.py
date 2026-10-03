@@ -111,6 +111,10 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
         return False
     if 'entry_counts' not in data:
         counts = {}
+        from rules_engine.kicker import permanent_kicker
+        kicker = permanent_kicker(card.oracle_text)
+        if kicker and entry.get('__kicked'):
+            counts.update(kicker.get('counters', {}))
         if 'Planeswalker' in card.types and card.loyalty is not None:
             loyalty = int(card.loyalty)
             counts['loyalty'] = loyalty

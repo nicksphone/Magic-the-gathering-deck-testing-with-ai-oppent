@@ -50,6 +50,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "selected_face_index": card.selected_face_index,
         "battlefield_incarnation": object_incarnation(card),
         "effect_timestamp": card.effect_timestamp,
+        "was_kicked": card.was_kicked,
         "printed_abilities_suppressed": printed_abilities_suppressed(state, card_id),
     }
     for item in state.stack:
@@ -404,7 +405,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         return options
     if "target artifact or enchantment" in low:
         key = "noncreature_permanent_targets"
-    elif "target nonland permanent" in low or "target permanent" in low:
+    elif "target nonland permanent" in low or "target permanent" in low or "target noncreature permanent" in low:
         key = "permanent_targets"
     elif "target creature" in low:
         key = "creature_targets"
@@ -953,6 +954,8 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 
 
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if re.search(r'\bif it was kicked\b', oracle, re.I) and not getattr(card, 'was_kicked', False):
+        return False
     # Modern Oracle abbreviates battlefield entry to "enters".
     oracle = re.sub(r"\benters\b(?! the battlefield)", "enters the battlefield", oracle)
     entering_id = payload.get("card_id")
@@ -1262,6 +1265,21 @@ def _trigger_from_oracle(
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    if event == 'enters_battlefield' and source is not None:
+        from rules_engine.kicker import permanent_kicker
+        kicker = permanent_kicker(source.oracle_text)
+        if kicker and kicker.get('instruction'):
+            from rules_engine.oracle_effects import infer_effect_from_oracle
+            proxy = copy(source)
+            proxy.oracle_text = kicker['instruction']
+            proxy.card_faces = []
+            proxy.types = []
+            key, data = infer_effect_from_oracle(state, proxy, controller)
+            if re.search(r'\btarget\b', kicker['instruction'], re.I):
+                data.update(__trigger_resolution_text=kicker['instruction'],
+                            __trigger_full_clause=kicker['clause'])
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     if event == 'spell_cast':
         from rules_engine.scry import cast_surveillance_clause
         for line in oracle.splitlines():

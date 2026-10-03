@@ -59,7 +59,7 @@ is not a fresh dependency-install or network-deployment certification.
 
 ## Known Limitations and Next Upgrades
 
-- Permanent kicker/ETB effects, cast-trigger kicker consumers, multiple costs,
+- Broader permanent kicker/ETB effects beyond the [bounded entry batch](permanent-kicker.md), cast-trigger kicker consumers, multiple costs,
   multikicker, variable/nonmana costs and arbitrary conditional instructions.
 - Broader per-face kicker acceptance and complete any-target families, including
   battle lifecycle/defense integration. Unrecognized forms retain coverage gaps;

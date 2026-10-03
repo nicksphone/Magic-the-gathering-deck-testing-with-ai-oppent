@@ -185,6 +185,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "card_faces": list(card.card_faces),
                 "layout": card.layout,
                 "exile_face_down": card.exile_face_down,
+                "was_kicked": card.was_kicked,
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
@@ -256,6 +257,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
             exile_face_down=bool(raw.get("exile_face_down", False)),
+            was_kicked=bool(raw.get('was_kicked', False)),
         )
 
     state = MatchState(

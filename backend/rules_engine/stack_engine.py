@@ -424,11 +424,13 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         selected_face_index=copied.get("selected_face_index"),
         bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
         summoning_sick=True, entered_turn=state.turn,
+        was_kicked=bool(payload.get('__kicked')),
     ))
     completion = ({'entry_item': asdict(item), 'entry_payload': payload}
                   if '__entry_counters_by_id' not in payload else payload)
     if prepare_counter_entries(state, item.controller, [token], 'permanent_spell_copy_entry',
-                               completion, entry_payload={'x_value': payload.get('x_value', 0)}):
+                               completion, entry_payload={'x_value': payload.get('x_value', 0),
+                                                          '__kicked': bool(payload.get('__kicked'))}):
         return False
     state.cards[token.id] = token
     state.players[item.controller].battlefield.append(token.id)

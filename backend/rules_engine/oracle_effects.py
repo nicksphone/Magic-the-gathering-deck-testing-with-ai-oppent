@@ -780,7 +780,7 @@ def inspect_target_hints(
                         if attachment_target_is_legal(state, card, cid)]
         hints["aura_targets"] = aura_targets
         hints["creature_targets"] = aura_targets
-    if not graveyard_only_target and ("target permanent" in oracle or "nonland permanent" in oracle or "return target" in oracle):
+    if not graveyard_only_target and ("target permanent" in oracle or "nonland permanent" in oracle or "target noncreature permanent" in oracle or "return target" in oracle):
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
@@ -1498,8 +1498,9 @@ def _infer_clause_effect(
         target = _choose_noncreature_permanent_target(state, controller, action_targets, allowed_types={"Artifact", "Enchantment"})
         if target:
             return "destroy_permanent", {"target_card_id": target}
-    if "destroy target" in oracle and "nonland permanent" in oracle:
-        target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
+    if "destroy target" in oracle and ("nonland permanent" in oracle or "target noncreature permanent" in oracle):
+        target = _choose_any_permanent_target(state, controller, action_targets,
+                                            exclude_types={"Land"} if "nonland permanent" in oracle else {"Creature"})
         if target:
             return "destroy_permanent", {"target_card_id": target}
     if "destroy target artifact" in oracle:

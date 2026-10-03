@@ -99,6 +99,8 @@ echo 'Browser CI: deliberate spell discard and sacrifice payments'
 (cd frontend && timeout 180s node tests/browser-cast-payments.mjs)
 echo 'Browser CI: kicker payment and conditional branch targets/effects'
 (cd frontend && timeout 240s node tests/browser-kicker.mjs)
+echo 'Browser CI: permanent kicker entry and owned ETB targets'
+(cd frontend && timeout 180s node tests/browser-permanent-kicker.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

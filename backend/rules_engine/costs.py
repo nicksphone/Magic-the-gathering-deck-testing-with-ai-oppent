@@ -268,13 +268,13 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if alt and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
-    from rules_engine.kicker import kicker_surfaces
-    kicker = kicker_surfaces(card.oracle_text) if set(card.types).intersection({'Instant', 'Sorcery'}) else None
+    from rules_engine.kicker import kicker_price
+    kicker = kicker_price(card)
     if kicker:
         options = [variant for option in options for variant in (
             option, replace(option, id='kicker' if option.id == 'base' else option.id + '_kicker',
-                            label=option.label + f' + kicker {kicker[0]}',
-                            mana_cost=_join_costs(option.mana_cost, kicker[0]), kicked=True,
+                            label=option.label + f' + kicker {kicker}',
+                            mana_cost=_join_costs(option.mana_cost, kicker), kicked=True,
                             kicker_base_id=option.id))]
 
     compiled = []

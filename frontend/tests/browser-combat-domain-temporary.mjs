@@ -22,6 +22,10 @@ for (const kind of ['domain', 'temporary']) for (const seat of [1, 2]) {
       assert.equal((await getState()).revision, before.revision);
       await evaluate("document.querySelector('[aria-label=\"Attack with Llanowar Elves\"]').click()");
       await click('Submit Attackers');
+      await waitFor(`(async () => {
+        const state = await (await fetch('${backend}/matches/${fixture.id}')).json();
+        return state.revision > ${before.revision} && state.attackers.length === 1;
+      })()`);
       await waitFor("!document.querySelector('[aria-label=\"Attack with Grizzly Bears\"]')");
       const paid = await getState();
       assert.equal(paid.players[String(seat)].mana_pool.U, 0);

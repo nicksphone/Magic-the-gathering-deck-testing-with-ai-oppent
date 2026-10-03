@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-03 - Permanent kicker entry and conditional ETBs
+
+- Add shared fixed-mana permanent kicker for recognized entry-counter and
+  conditional draw/damage/noncreature-removal clauses. Counter replacements and
+  prohibitions apply before entry; triggered targets are chosen after entry.
+- Persist original-object paid history and reset it on later zone changes.
+  Copied permanent spells retain the announced choice without a second payment.
+  Repair shared noncreature-permanent hints, trigger choices and destruction.
+- All AI difficulties estimate supported known-board payoffs. This is not
+  optimal resource retention, arbitrary linked abilities or complete kicker.
+- Canonical fixtures and both-seat tests cover payments, snapshots, copies,
+  counter doubling/prohibition, source departure and human target choices.
+  The isolated full suite passes 3,958 tests; frontend lint/contracts/build and
+  complete Chromium pass, including sixteen new permanent-kicker cases.
+- Strengthen an older combat browser wait to require the authoritative submitted
+  attack before checking exact payment; preserve the original gameplay assertion.
+  A two-sample seat-balanced repeated replay smoke passes without drift/anomaly.
+  See `docs/testing/permanent-kicker.md` for bounded evidence and remaining gaps.
+
 ## 2026-10-03 - Conditional spell kicker and copy fidelity
 
 - Compile supported single-mana instant/sorcery kicker into unpaid and paid effect

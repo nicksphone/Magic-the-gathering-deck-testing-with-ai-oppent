@@ -94,6 +94,7 @@ class CardInstance:
     is_token: bool = False
     last_known_battlefield: dict = field(default_factory=dict)
     exile_face_down: bool = False
+    was_kicked: bool = False
 
     def reset_zone_counters(self, zone: Zone) -> None:
         self.keyword_effects.clear()
@@ -106,6 +107,8 @@ class CardInstance:
             self.counter_timestamps.clear()
 
     def move_to_zone(self, zone: Zone) -> None:
+        if zone != self.zone and not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
+            self.was_kicked = False
         if zone not in {Zone.STACK, Zone.BATTLEFIELD} and self.bestow_characteristics:
             from rules_engine.bestow import end_bestow
             end_bestow(self)

@@ -50,9 +50,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
     if 'kicker' in out:
-        from rules_engine.kicker import kicker_surfaces
+        from rules_engine.kicker import kicker_surfaces, permanent_kicker
         kicker_texts = [text for text in texts if re.search(r'\bkicker\b', text, re.I)]
-        if all(kicker_surfaces(text) is not None for text in kicker_texts):
+        if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None for text in kicker_texts):
             out.remove('kicker')
     from rules_engine.activation_modifiers import activation_modifier_gaps
     variants = [(card_name, oracle_text or ''),

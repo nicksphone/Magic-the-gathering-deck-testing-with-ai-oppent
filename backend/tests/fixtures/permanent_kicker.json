@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Baloth Gorger",
+    "id": "504090bb-d183-4833-aea5-d4193b5c57a1",
+    "oracle_id": "7f9bc0c9-0333-4c02-bc14-e6affe848b5d",
+    "scryfall_uri": "https://scryfall.com/card/dom/156/baloth-gorger?utm_source=api",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Creature — Beast",
+    "oracle_text": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nIf this creature was kicked, it enters with three +1/+1 counters on it.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Citanul Woodreaders",
+    "id": "b0cd9af6-3729-4c9c-9669-a2800a693b39",
+    "oracle_id": "a4555bd2-be42-442a-8ead-3398318e91c5",
+    "scryfall_uri": "https://scryfall.com/card/tsr/199/citanul-woodreaders?utm_source=api",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature — Human Druid",
+    "oracle_text": "Kicker {2}{G} (You may pay an additional {2}{G} as you cast this spell.)\nWhen this creature enters, if it was kicked, draw two cards.",
+    "power": "1",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Torch Slinger",
+    "id": "229dec8c-ec73-4bab-8c37-517cb4a01988",
+    "oracle_id": "64231f03-ea89-4589-8ef8-a87dc9448e7b",
+    "scryfall_uri": "https://scryfall.com/card/ddp/63/torch-slinger?utm_source=api",
+    "mana_cost": "{2}{R}",
+    "type_line": "Creature — Goblin Shaman",
+    "oracle_text": "Kicker {1}{R} (You may pay an additional {1}{R} as you cast this spell.)\nWhen this creature enters, if it was kicked, it deals 2 damage to target creature.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Mold Shambler",
+    "id": "9b14ea9c-5bad-499d-8c3d-da72b748769b",
+    "oracle_id": "7aba1039-f108-423e-8aa4-d9d8b4da2414",
+    "scryfall_uri": "https://scryfall.com/card/ddm/60/mold-shambler?utm_source=api",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Fungus Beast",
+    "oracle_text": "Kicker {1}{G} (You may pay an additional {1}{G} as you cast this spell.)\nWhen this creature enters, if it was kicked, destroy target noncreature permanent.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  }
+]
