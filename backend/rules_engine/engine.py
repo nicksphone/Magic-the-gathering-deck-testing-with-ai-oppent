@@ -67,6 +67,7 @@ class RulesEngine:
             state.turn += 1
             state.active_player = 1 if state.active_player == 2 else 2
             state.spells_cast_this_turn[state.active_player] = 0
+            state.kicked_spells_cast_this_turn = {1: 0, 2: 0}
             state.declared_attackers_this_turn = {1: 0, 2: 0}
             state.draws_this_turn = {1: 0, 2: 0}
             state.surveils_this_turn = {1: 0, 2: 0}
@@ -915,6 +916,7 @@ class RulesEngine:
                     card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
                     oracle_text=face_card.oracle_text or "",
                     spell_is_aura=bestowed or is_aura(face_card),
+                    spell_kicked=chosen.kicked,
                     hybrid_choices=action.get("hybrid_choices"),
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                     payment_details=payment_details,
@@ -982,6 +984,8 @@ class RulesEngine:
                 card.was_kicked = chosen.kicked
                 card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
+                if chosen.kicked:
+                    state.kicked_spells_cast_this_turn[player_id] = state.kicked_spells_cast_this_turn.get(player_id, 0) + 1
                 add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
 
         elif kind == "cycle_card":

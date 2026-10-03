@@ -51,6 +51,23 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'kicked_cast_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
+        from tests.test_kicked_cast_triggers import source
+        from tests.test_kicker import setup
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, spell, _ = setup('Burst Lightning', seat)
+        state.players[seat].mana_pool['U'] = 10
+        if index == 3:
+            state.players[seat].hand.remove(spell.id)
+            spell.move_to_zone(Zone.LIBRARY)
+            state.players[seat].library.append(spell.id)
+            source(state, 'Roost of Drakes', seat, Zone.HAND)
+        else:
+            source(state, ['Risen Riptide', 'Roost of Drakes', 'Vine Gecko'][index], seat)
+        state.mechanic_choice_players = {1, 2}
+        state.trigger_order_choice_required = True
+        state.trigger_order_choice_players = {1, 2}
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {f'permanent_kicker_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
         from tests.test_permanent_kicker import setup, ROWS
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

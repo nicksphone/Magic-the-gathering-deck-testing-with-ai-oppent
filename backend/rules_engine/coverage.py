@@ -49,6 +49,15 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    from rules_engine.kicker import kicked_cast_clauses
+    from rules_engine.oracle_text import without_reminder_text
+    for text in texts:
+        clauses = {item['clause'].lower() for item in kicked_cast_clauses(text)}
+        if any(re.search(r'^whenever\b.*\bkicked\b', line.strip(), re.I)
+               and line.strip().lower() not in clauses
+               for line in without_reminder_text(text).splitlines()):
+            out.append('kicked-cast trigger fidelity')
+            break
     if 'kicker' in out:
         from rules_engine.kicker import kicker_surfaces, permanent_kicker
         kicker_texts = [text for text in texts if re.search(r'\bkicker\b', text, re.I)]

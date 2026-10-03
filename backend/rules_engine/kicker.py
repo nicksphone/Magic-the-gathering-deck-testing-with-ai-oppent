@@ -7,6 +7,22 @@ from rules_engine.oracle_text import without_reminder_text
 PRICE = re.compile(r'^kicker ((?:\{(?:\d+|[WUBRGCS]|[2WUBRGC]/[WUBRGC]|[WUBRG]/P)\})+)\s*$', re.I | re.M)
 CONDITION = re.compile(r'\bif this spell was kicked, ([^.]+)\.', re.I)
 
+TOKEN_INSTRUCTION = r'create (?:a|an|one|two|three|four|five|\d+) \d+/\d+ (?:white|blue|black|red|green|colorless) [a-z-]+ creature tokens?(?: with flying)?\.'
+
+
+def kicked_cast_clauses(text):
+    """Only fixed self-counter, temporary base-stat and creature-token payoffs."""
+    from rules_engine.spell_cost_clauses import COUNT
+    clauses = []
+    for line in without_reminder_text(text or '').splitlines():
+        match = re.fullmatch(r'whenever you cast a kicked spell, (.+\.)', line.strip(), re.I)
+        if match and re.fullmatch(
+            r'(?:this creature has base power and toughness \d+/\d+ until end of turn\.|'
+            r'put ' + COUNT + r' \+1/\+1 counters? on this creature\.|' +
+            TOKEN_INSTRUCTION + r')', match[1], re.I):
+            clauses.append({'clause': line.strip(), 'instruction': match[1]})
+    return clauses
+
 
 def permanent_kicker(text):
     """Recognize self-entry counters or a fixed conditional self-ETB payoff."""
@@ -16,6 +32,8 @@ def permanent_kicker(text):
     if len(prices) != 1 or re.search(r'\bmultikicker\b', text, re.I):
         return None
     remaining = PRICE.sub('', text).strip()
+    cast_clauses = {entry['clause'] for entry in kicked_cast_clauses(remaining)}
+    remaining = '\n'.join(line for line in remaining.splitlines() if line.strip() not in cast_clauses)
     counter = re.fullmatch(r'If this creature was kicked, it enters with ' + COUNT +
                            r' (\+1/\+1|-1/-1) counters? on it\.', remaining, re.I)
     if counter:
@@ -27,7 +45,7 @@ def permanent_kicker(text):
         return None
     instruction = trigger[2]
     if not re.fullmatch(r'(?:draw ' + COUNT + r' cards?|it deals \d+ damage to target creature|'
-                        r'destroy target noncreature permanent)\.', instruction, re.I):
+                        r'destroy target noncreature permanent)\.|' + TOKEN_INSTRUCTION, instruction, re.I):
         return None
     return {'price': prices[0][1], 'instruction': instruction,
             'clause': trigger[1] + ' ' + instruction}

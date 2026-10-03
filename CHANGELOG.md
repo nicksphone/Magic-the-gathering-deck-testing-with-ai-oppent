@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-03 - Kicked-cast payoffs and first-kicked discounts
+
+- Recognized kicked-cast token, self-counter and temporary base-stat effects use
+  ordinary triggers, controller/suppression checks and original-object references.
+  Fixed token kicker ETBs remain distinct from later cast payoffs.
+- Apply first-kicked-spell reductions through shared affordability/payment;
+  persist per-turn history, including countered casts but excluding spell copies.
+- Add bounded AI guards for prohibited counters, ordinary draw exhaustion and
+  already-active stat payoffs. Replacement-aware forecasting remains open.
+- Canonical Risen Riptide, Roost of Drakes and Vine Gecko fixtures, 55 new backend
+  tests and sixteen both-seat browser cases. Full suite: 4,013 passed; frontend
+  lint/contracts/build and complete browser pass. Twelve seat-balanced replay
+  samples repeated twice report no anomaly or determinism failure.
+- Read-only corpus classification records remaining kicker families without
+  claiming full-card fidelity or production AI knowledge consumption.
+  See `docs/testing/kicked-cast-payoffs.md` for evidence and limitations.
+
 ## 2026-10-03 - Permanent kicker entry and conditional ETBs
 
 - Add shared fixed-mana permanent kicker for recognized entry-counter and

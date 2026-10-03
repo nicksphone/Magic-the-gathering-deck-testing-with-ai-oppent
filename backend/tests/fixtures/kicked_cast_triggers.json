@@ -1,0 +1,49 @@
+[
+  {
+    "name": "Risen Riptide",
+    "id": "f6455009-030c-4a33-a60b-80863d8f8aaf",
+    "oracle_id": "e682ad51-001c-4465-951e-43df96b7d3b9",
+    "scryfall_uri": "https://scryfall.com/card/znr/73/risen-riptide?utm_source=api",
+    "mana_cost": "{2}{U}",
+    "type_line": "Creature — Elemental",
+    "oracle_text": "Whenever you cast a kicked spell, this creature has base power and toughness 5/5 until end of turn.",
+    "power": "0",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": []
+  },
+  {
+    "name": "Roost of Drakes",
+    "id": "ba1240d4-dbd0-483b-934a-5f7c505fad42",
+    "oracle_id": "05e73886-8311-4a0d-9c8d-4a03c7f20ea2",
+    "scryfall_uri": "https://scryfall.com/card/znr/74/roost-of-drakes?utm_source=api",
+    "mana_cost": "{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "Kicker {2}{U} (You may pay an additional {2}{U} as you cast this spell.)\nWhen this enchantment enters, if it was kicked, create a 2/2 blue Drake creature token with flying.\nWhenever you cast a kicked spell, create a 2/2 blue Drake creature token with flying.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Kicker"
+    ]
+  },
+  {
+    "name": "Vine Gecko",
+    "id": "7a6f9984-dec7-4a1f-91d6-1e85b5df5e4c",
+    "oracle_id": "a9596b05-e0bb-4e70-82fe-5db60f87bf3d",
+    "scryfall_uri": "https://scryfall.com/card/znr/219/vine-gecko?utm_source=api",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Elemental Lizard",
+    "oracle_text": "The first kicked spell you cast each turn costs {1} less to cast.\nWhenever you cast a kicked spell, put a +1/+1 counter on this creature.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": []
+  }
+]

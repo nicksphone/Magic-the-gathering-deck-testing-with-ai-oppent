@@ -103,6 +103,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "next_object_id": state.next_object_id,
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
+        "kicked_spells_cast_this_turn": {str(key): value for key, value in state.kicked_spells_cast_this_turn.items()},
         "declared_attackers_this_turn": {str(key): value for key, value in state.declared_attackers_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
         "draws_in_current_draw_step": {str(key): value for key, value in state.draws_in_current_draw_step.items()},
@@ -312,6 +313,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.day_night = str(payload.get("day_night", "none") or "none")
     state.spells_cast_this_turn = {
         int(key): int(value) for key, value in payload.get("spells_cast_this_turn", {"1": 0, "2": 0}).items()
+    }
+    state.kicked_spells_cast_this_turn = {
+        int(key): int(value) for key, value in payload.get('kicked_spells_cast_this_turn', {'1': 0, '2': 0}).items()
     }
     state.declared_attackers_this_turn = {
         int(key): int(value) for key, value in payload.get("declared_attackers_this_turn", {"1": 0, "2": 0}).items()

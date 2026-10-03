@@ -319,6 +319,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         state, player_id, option.mana_cost, is_land=("Land" in card.types),
         card_name=card.name, x_value=x_value, spell_types=set(card.types),
         spell_is_aura=is_aura(card),
+        spell_kicked=option.kicked,
         oracle_text=card.oracle_text or "",
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,

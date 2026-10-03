@@ -2586,6 +2586,45 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
+    def _kicker_draw_gain(self, state, player_id, base_count, kicked_count):
+        """Use public library counts and restrictions, never future card identities."""
+        from copy import copy
+        from rules_engine.draw_restrictions import can_draw_card
+        projection = copy(state)
+        projection.draws_this_turn = dict(state.draws_this_turn)
+        capacity = 0
+        for _ in range(kicked_count):
+            if not can_draw_card(projection, player_id):
+                break
+            capacity += 1
+            projection.draws_this_turn[player_id] = projection.draws_this_turn.get(player_id, 0) + 1
+        if capacity > len(state.players[player_id].library):
+            return -1000
+        return 3 * max(0, capacity - min(base_count, capacity))
+
+    def _kicked_cast_gain(self, state, player_id):
+        from rules_engine.kicker import kicked_cast_clauses
+        from rules_engine.counter_placement import counter_placement_forbidden
+        from rules_engine.continuous import printed_abilities_suppressed
+        value = 0
+        for cid in state.players[player_id].battlefield:
+            source = state.cards[cid]
+            if printed_abilities_suppressed(state, cid):
+                continue
+            for clause in kicked_cast_clauses(source.oracle_text):
+                text = clause['instruction'].lower()
+                if text.startswith('create '):
+                    value += 3
+                elif text.startswith('put '):
+                    counter = re.search(r'([+-]\d+/[+-]\d+)', text)[1]
+                    if not counter_placement_forbidden(state, counter, target_card_id=cid):
+                        value += 1
+                elif (not source.tapped and not source.summoning_sick
+                      and state.step in {Step.PRECOMBAT_MAIN, Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS}):
+                    power = int(re.search(r'toughness (\d+)/(\d+)', text)[1])
+                    value += max(0, power - effective_power(state, cid))
+        return value
+
     def _kicker_gain(self, state, card, player_id, hints):
         """Known damage breakpoints/card gain, not hidden draws or full search."""
         from rules_engine.kicker import kicker_surfaces, permanent_kicker
@@ -2594,14 +2633,19 @@ class AIAgent:
             permanent = permanent_kicker(card.oracle_text)
             if not permanent:
                 return float('-inf')
-            score = -0.4 * mana_value(permanent['price'])
+            score = self._kicked_cast_gain(state, player_id) - 0.4 * mana_value(permanent['price'])
             counters = permanent.get('counters', {}).get('+1/+1', 0)
             if counters:
+                from rules_engine.counter_placement import counter_placement_forbidden
+                if counter_placement_forbidden(state, '+1/+1', target_card_id=card.id):
+                    return score
                 return score + 0.8 * counters
             text = permanent.get('instruction', '')
             draw = re.fullmatch(r'draw (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.', text, re.I)
             if draw:
-                return score + 3 * _parse_count_token(draw[1].lower())
+                return score + self._kicker_draw_gain(state, player_id, 0, _parse_count_token(draw[1].lower()))
+            if text.lower().startswith('create '):
+                return score + 3
             from copy import copy
             from rules_engine.oracle_effects import inspect_target_hints
             proxy = copy(card)
@@ -2620,7 +2664,7 @@ class AIAgent:
             return score
         price, base, kicked = surfaces
         opponent = 3-player_id
-        score = -0.4 * mana_value(price)
+        score = self._kicked_cast_gain(state, player_id) - 0.4 * mana_value(price)
         amounts = [re.search(r'\bdeals? (\d+) damage', text, re.I) for text in [base, kicked]]
         if all(amounts):
             low, high = [int(amount[1]) for amount in amounts]
@@ -2634,7 +2678,7 @@ class AIAgent:
                     break
         def draws(text):
             return sum(_parse_count_token(amount) for amount in re.findall(r'\bdraw (a|one|two|three|\d+) cards?\b', text, re.I))
-        score += 3 * (draws(kicked) - draws(base))
+        score += self._kicker_draw_gain(state, player_id, draws(base), draws(kicked))
         if re.search(r'gets [+-]\d+/[+-]\d+', kicked) and state.step in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS}:
             score += 3
         return score

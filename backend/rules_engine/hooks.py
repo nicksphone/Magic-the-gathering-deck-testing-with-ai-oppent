@@ -16,6 +16,7 @@ class CostContext:
     state: Any = None
     spell_types: set[str] | None = None
     spell_is_aura: bool = False
+    spell_kicked: bool = False
     oracle_text: str = ""
     ability_kind: str | None = None
     ability_index: int | None = None
@@ -48,6 +49,7 @@ def register_replacement_effect(effect: ReplacementEffect) -> None:
 def apply_cost_modifiers(context: CostContext) -> CostContext:
     out = _apply_static_spell_taxes(context)
     out = _apply_domain_self_discount(out)
+    out = _apply_first_kicked_discount(out)
     out = _apply_equip_discounts(out)
     out = _apply_aura_discounts(out)
     from rules_engine.activation_modifiers import apply_activation_modifiers
@@ -55,6 +57,21 @@ def apply_cost_modifiers(context: CostContext) -> CostContext:
     for modifier in _COST_MODIFIERS:
         out = modifier(out)
     return out
+
+
+def _apply_first_kicked_discount(context: CostContext) -> CostContext:
+    if (context.state is None or not context.is_spell or not context.spell_kicked
+            or context.state.kicked_spells_cast_this_turn.get(context.player_id, 0)):
+        return context
+    from rules_engine.continuous import _static_oracle_text, printed_abilities_suppressed
+    for cid in context.state.players[context.player_id].battlefield:
+        card = context.state.cards[cid]
+        if printed_abilities_suppressed(context.state, cid):
+            continue
+        for amount in re.findall(r'the first kicked spell you cast each turn costs \{(\d+)\} less to cast',
+                                 _static_oracle_text(card), re.I):
+            context.generic_reduction += int(amount)
+    return context
 
 
 def equip_cost_modifier(clause: str) -> tuple[str, int] | None:

@@ -12,6 +12,7 @@ EffectHandler = Callable[[MatchState, int, dict], None]
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
     'set_combat_cost': handlers.set_combat_cost,
     'temporary_ability_loss': handlers.temporary_ability_loss,
+    'set_base_stats': handlers.set_base_stats,
     'emit_combat_damage_events': handlers.emit_combat_damage_events,
     "add_player_counters": handlers.add_player_counters,
     "ward_payment": resolve_ward,

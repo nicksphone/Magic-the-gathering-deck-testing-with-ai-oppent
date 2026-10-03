@@ -554,6 +554,30 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
                 continue
             oracle = without_reminder_text((card.oracle_text or "").lower())
+            from rules_engine.kicker import kicked_cast_clauses
+            kicker_clauses = kicked_cast_clauses(oracle)
+            if (event == 'spell_cast' and payload.get('controller') == card.controller
+                    and (payload.get('stack_payload') or {}).get('__kicked')):
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+                for clause in kicker_clauses:
+                    proxy = copy(card)
+                    proxy.oracle_text, proxy.card_faces, proxy.types = clause['instruction'], [], []
+                    stats = re.fullmatch(r'this creature has base power and toughness (\d+)/(\d+) until end of turn\.', clause['instruction'])
+                    if stats:
+                        key, data = 'set_base_stats', {'target_card_id': cid, 'base_power': int(stats[1]), 'base_toughness': int(stats[2])}
+                    elif clause['instruction'].startswith('put '):
+                        from rules_engine.spell_cost_clauses import NUMBERS
+                        count = clause['instruction'].split()[1]
+                        key, data = 'add_counters', {'target_card_id': cid, 'counter': '+1/+1',
+                                                    'amount': int(count) if count.isdigit() else NUMBERS[count]}
+                    else:
+                        key, data = infer_effect_from_oracle(state, proxy, card.controller)
+                    if key in {'add_counters', 'set_base_stats'}:
+                        data['effect_timestamp'] = object_incarnation(card)
+                    out.append({'source_card_id': cid, 'controller': card.controller,
+                                'label': f'{card.name} kicked-cast trigger', 'effect_key': key, 'payload': data})
+            oracle = '\n'.join(line for line in oracle.splitlines()
+                               if line.strip() not in {entry['clause'] for entry in kicker_clauses})
             transform_draw = bool(TRANSFORM_DRAW_RE.search(oracle))
             once_each_turn = ("only once each turn" in oracle or "this ability triggers only once each turn" in oracle)
             if transform_draw and event in {"transformed", "enters_battlefield"}:
