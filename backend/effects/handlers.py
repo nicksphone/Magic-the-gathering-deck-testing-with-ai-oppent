@@ -1199,6 +1199,8 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
     if not target or target not in state.cards:
         return
     card = state.cards[target]
+    if 'effect_timestamp' in payload and object_incarnation(card) != payload['effect_timestamp']:
+        return
     battlefield_controller = state.players.get(card.controller)
     owner = state.players.get(getattr(card, "owner", card.controller))
     if battlefield_controller is None or owner is None or target not in battlefield_controller.battlefield:
@@ -1301,11 +1303,10 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
 
 
 def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
-    """Put a qualifying spell from the controller's graveyard onto the stack.
+    """Cast with a mana-cost waiver, preserving taxes, targets and cast events.
 
-    The effect represents an alternative permission that waives mana payment;
-    the spell still resolves through the ordinary stack and returns to its
-    owner's graveyard afterward.
+    The enclosing resolution publishes staged triggers. Recognized permissions
+    can replace the spell's eventual graveyard departure with exile.
     """
     target = payload.get("target_card_id")
     player = state.players[controller]
@@ -1314,20 +1315,38 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
     card = state.cards[target]
     if not ({"Instant", "Sorcery"} & set(card.types)):
         return
-    player.graveyard.remove(target)
-    card.zone = Zone.STACK
-    from rules_engine.ability_model import build_spell_spec
-    from rules_engine.stack_engine import add_to_stack
-
-    ability = build_spell_spec(state, card, controller)
-    add_to_stack(
-        state,
-        source_card_id=target,
-        controller=controller,
-        label=f"{card.name} (from graveyard)",
-        effect_key=ability.effect.key,
-        payload=ability.effect.payload,
-    )
+    from ai.agent import AIAgent
+    from ai.pending_effects import planning_copy
+    from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
+    from rules_engine.engine import RulesEngine
+    hints = build_cast_hints(state, card, controller)
+    if not has_available_targets_for_action(hints):
+        state.log.append(f'{player.name} chooses not to cast {card.name}: no legal targets.')
+        return
+    targets = dict(payload.get('cast_targets') or {})
+    if '{x}' in (card.mana_cost or '').lower():
+        targets['x_value'] = 0
+    action = AIAgent(difficulty='strong')._materialize_action(state, {
+        'type': 'cast_spell', 'card_id': target, 'from_graveyard': True,
+        'target_hints': hints, 'targets': targets,
+    }, controller, allow_zero_x=True)
+    if '{x}' in (card.mana_cost or '').lower():
+        action.setdefault('targets', {})['x_value'] = 0
+    rules = RulesEngine()
+    projected = planning_copy(state)
+    try:
+        if action.get('_invalid_ai_choice'):
+            raise ValueError('No supported casting choice')
+        rules.take_action(projected, controller, action, reject_invalid=True, effect_cast=True)
+        if projected.cards[target].zone != Zone.STACK:
+            raise ValueError('Casting requires an unsupported continuation')
+    except (ValueError, KeyError):
+        state.log.append(f'{player.name} chooses not to cast {card.name}: no payable supported announcement.')
+        return
+    rules.take_action(state, controller, action, reject_invalid=True, effect_cast=True)
+    item = next(item for item in reversed(state.stack) if item.source_card_id == target and item.controller == controller)
+    if payload.get('exile_after_cast'):
+        item.payload['__exile_instead_of_graveyard'] = True
     state.log.append(f"{player.name} casts {card.name} from the graveyard without paying its mana cost.")
 
 

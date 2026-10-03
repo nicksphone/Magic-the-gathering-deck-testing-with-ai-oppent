@@ -91,6 +91,8 @@ echo 'Browser CI: hand activations and owned counter payments'
 (cd frontend && timeout 120s node tests/browser-hand-activations.mjs)
 echo 'Browser CI: legendary channels and owned resolution choices'
 (cd frontend && timeout 120s node tests/browser-legendary-channels.mjs)
+echo 'Browser CI: private surveil, ordering and payoff triggers'
+(cd frontend && timeout 120s node tests/browser-surveil.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

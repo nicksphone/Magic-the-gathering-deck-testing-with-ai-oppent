@@ -30,7 +30,7 @@ NAMED_COUNTER_RE = re.compile(
 )
 MANA_SYMBOL_RE = re.compile(r"\{([WUBRGC])\}")
 TOKEN_PT_RE = re.compile(r"create[^.]*?(\d+)\/(\d+)")
-TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)", re.IGNORECASE)
+TOKEN_COUNT_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|x|\d+)\b", re.IGNORECASE)
 NAMED_ARTIFACT_TOKEN_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+([a-z]+)\s+tokens?\b", re.IGNORECASE)
 TOKEN_REMINDER_ABILITY_RE = re.compile(r"\b(?:it's|they're|it is|they are)\s+(?:an?\s+)?artifacts?\s+with\s+[\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
 SAC_TOUGHNESS_TOKEN_RE = re.compile(r"if the sacrificed creature's toughness was (\d+) or greater, create (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) ([a-z]+) tokens? instead", re.IGNORECASE)
@@ -253,10 +253,18 @@ def infer_effect_from_oracle(
         }
     if COUNTER_TARGET_SPELL_RE.search(oracle):
         target_stack_id = action_targets.get("target_stack_id") or (state.stack[-1].id if state.stack else None)
-        return "counter_spell", {
+        counter_payload = {
             "target_stack_id": target_stack_id,
             "target_kind": "noncreature" if "counter target noncreature spell" in oracle else "any",
         }
+        followup = re.fullmatch(r'counter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\.'
+                               r'\s*(scry|surveil) (\d+)\.?', oracle.strip())
+        if followup:
+            return 'effect_sequence', {'effects': [
+                {'effect_key': 'counter_spell', 'payload': counter_payload},
+                {'effect_key': followup[1], 'payload': {'amount': int(followup[2])}},
+            ]}
+        return 'counter_spell', counter_payload
     revealed_choice = REVEAL_CHOOSE_HAND_RE.fullmatch(oracle.strip())
     if revealed_choice:
         restriction = (revealed_choice.group("restriction") or "").lower()
@@ -357,9 +365,9 @@ def infer_effect_from_oracle(
                             'source_name': card.name, 'clause': clause}, clause))
             continue
         effects.extend((key, payload, clause) for key, payload in _infer_turn_restriction_effects(clause, controller))
-        scry_clause = re.fullmatch(r'scry (\d+)', clause)
+        scry_clause = re.fullmatch(r'(scry|surveil) (\d+),?', clause)
         if scry_clause:
-            effects.append(('scry', {'amount': int(scry_clause[1])}, clause))
+            effects.append((scry_clause[1], {'amount': int(scry_clause[2])}, clause))
             continue
         named_counter = NAMED_COUNTER_RE.fullmatch(clause)
         if named_counter:
@@ -1222,6 +1230,10 @@ def _infer_clause_effect(
     mill = re.fullmatch(r'mill (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?,?', oracle.strip())
     if mill:
         return 'mill_cards', {'amount': _parse_count_token(mill[1])}
+    recipient_mill = re.fullmatch(r'(target player|each opponent|you) mills? (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?', oracle.strip())
+    if recipient_mill:
+        recipient = 3-controller if recipient_mill[1] == 'each opponent' else action_targets.get('target_player', 3-controller) if recipient_mill[1] == 'target player' else controller
+        return 'mill_cards', {'target_player': recipient, 'amount': _parse_count_token(recipient_mill[2])}
     graveyard_return = UNTARGETED_GRAVEYARD_RETURN_RE.fullmatch(oracle.strip(' .'))
     if graveyard_return:
         return 'choose_graveyard_return', {'allowed_types': [value.title() for value in graveyard_return.groups() if value]}
@@ -1229,6 +1241,9 @@ def _infer_clause_effect(
     target_player = action_targets.get("target_player")
     target_card_id = action_targets.get("target_card_id")
 
+    self_damage = re.fullmatch(rf'(?:this spell|{re.escape(card.name.lower())}) deals (\d+) damage to you', oracle.strip(' .'))
+    if self_damage:
+        return 'deal_damage', {'target_player': controller, 'amount': int(self_damage[1])}
     if oracle.strip(' .') == 'proliferate':
         return 'proliferate', {}
     if oracle.strip(' .') == 'proliferate twice':
@@ -1449,7 +1464,9 @@ def _infer_clause_effect(
         # Keep the effect structured even when no qualifying graveyard card
         # exists yet. Move generation and target validation decide whether the
         # action is currently legal; parsing should not depend on board state.
-        return "cast_from_graveyard", {"target_card_id": target}
+        permission_text = action_targets.get('mode_text') or getattr(card, 'source_oracle_text', card.oracle_text or '')
+        return "cast_from_graveyard", {"target_card_id": target,
+            'exile_after_cast': bool(re.search(r'without paying its mana cost\.\s*if that spell would be put into your graveyard, exile it instead', permission_text.lower()))}
 
     if "destroy all artifacts and enchantments" in oracle or "destroy all artifact and enchantment" in oracle:
         return "destroy_all_artifacts_and_enchantments", {}
@@ -1618,7 +1635,8 @@ def _infer_clause_effect(
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
         count_match = TOKEN_COUNT_RE.search(oracle)
-        token_count = _parse_count_token(count_match.group(1)) if count_match else 1
+        token_count = (max(0, x_value) if count_match.group(1).lower() == 'x'
+                       else _parse_count_token(count_match.group(1))) if count_match else 1
         token_name_match = TOKEN_NAME_RE.search(oracle)
         token_name = "Token"
         token_colors: list[str] = []

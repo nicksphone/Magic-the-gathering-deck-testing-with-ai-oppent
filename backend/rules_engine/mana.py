@@ -426,6 +426,7 @@ def auto_pay_cost(
     req, (plan, snow_spent) = payment
     player = state.players[player_id]
     if payment_details is not None:
+        payment_details['mana_spent'] = sum(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
         payment_details["phyrexian_life_symbols"] = req.get("life", 0) // 2
         payment_details['hybrid_choices'] = branches[requirements.index(req)] if branches else []
     if req.get("life", 0):

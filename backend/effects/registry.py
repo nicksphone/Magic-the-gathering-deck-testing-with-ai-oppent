@@ -102,9 +102,9 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         from rules_engine.keyword_triggers import resolve_keyword_trigger
         resolve_keyword_trigger(state, controller, effect_key, payload)
         return
-    if effect_key == 'scry':
-        from rules_engine.scry import scry
-        scry(state, controller, payload)
+    if effect_key in {'scry', 'surveil'}:
+        from rules_engine.scry import scry, surveil
+        (surveil if effect_key == 'surveil' else scry)(state, controller, payload)
         return
     if effect_key == 'proliferate':
         from rules_engine.proliferation import proliferate

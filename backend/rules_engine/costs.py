@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from game_state.state import MatchState, Zone
@@ -226,13 +226,15 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
     return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index)
 
 
-def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:
+def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
     from rules_engine.alternative_casts import escape_cost, flashback_cost, has_aftermath, prototype_characteristics
     oracle = (card.oracle_text or "").lower()
-    base = CostOption(id="base", label="Base Cost", mana_cost=card.mana_cost or "")
+    base = CostOption(id="base", label="Base Cost", mana_cost='' if without_mana else card.mana_cost or "")
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
-    if card.zone == Zone.GRAVEYARD:
+    if without_mana:
+        options = [base]
+    elif card.zone == Zone.GRAVEYARD:
         options = []
         if has_aftermath(card):
             options.append(CostOption(id="aftermath", label="Aftermath", mana_cost=card.mana_cost or ""))
@@ -248,15 +250,15 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
         if bestow_cost(card):
             options.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))
     prototype = prototype_characteristics(card)
-    if prototype and card.zone != Zone.GRAVEYARD:
+    if prototype and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
 
     alt = ALT_COST_RE.search(card.oracle_text or "")
-    if alt and card.zone != Zone.GRAVEYARD:
+    if alt and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
     kicker = KICKER_RE.search(card.oracle_text or "")
-    if kicker and card.zone != Zone.GRAVEYARD:
+    if kicker and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="kicker", label=f"Kicker {kicker.group(1)}", mana_cost=_join_costs(base.mana_cost, kicker.group(1))))
 
     life_match = PAY_LIFE_RE.search(card.oracle_text or "")
@@ -268,6 +270,12 @@ def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOp
         for opt in options:
             opt.pay_life_x = True
 
+    either_cost = re.search(r'as an additional cost to cast [^,.]+, (?:sacrifice a creature or discard a card|discard a card or sacrifice a creature)\.', oracle)
+    if either_cost:
+        return [variant for opt in options for variant in (
+            replace(opt, id=opt.id + '_discard', label=opt.label + ' - discard a card', discard_cards=opt.discard_cards + 1),
+            replace(opt, id=opt.id + '_sacrifice', label=opt.label + ' - sacrifice a creature', sacrifice_creatures=opt.sacrifice_creatures + 1),
+        )]
     if "as an additional cost to cast" in oracle and "discard" in oracle and "card" in oracle:
         for opt in options:
             opt.discard_cards += 1

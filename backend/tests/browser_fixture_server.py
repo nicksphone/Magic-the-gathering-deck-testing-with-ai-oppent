@@ -51,6 +51,16 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'surveil_1', 'surveil_2'}:
+        from tests.test_surveil_mill import board, add
+        seat = int(face_kind[-1])
+        state = board(seat)
+        add(state, 'Otherworldly Gaze', seat, Zone.HAND)
+        add(state, 'Dimir Spybug', seat)
+        for name in ['Mind Stone', 'Grizzly Bears', 'Island']:
+            add(state, name, seat, Zone.LIBRARY)
+        state.players[seat].mana_pool.update(U=1)
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'legend_graveyard_1', 'legend_graveyard_2', 'legend_search_1', 'legend_search_2'}:
         from tests.test_legendary_channels import board, add
         seat = int(face_kind[-1])

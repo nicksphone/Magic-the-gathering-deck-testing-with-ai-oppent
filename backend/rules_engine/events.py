@@ -456,6 +456,11 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
+    if event == 'surveilled':
+        player_id = payload.get('player_id')
+        if player_id not in state.players or payload.get('amount', 0) <= 0:
+            return out
+        state.surveils_this_turn[player_id] = state.surveils_this_turn.get(player_id, 0) + 1
     if event == 'saga_lore_added':
         from rules_engine.ability_model import build_ability_spec
         from rules_engine.oracle_effects import extract_saga_chapters
@@ -574,7 +579,28 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 if event == "enters_battlefield":
                     oracle = TRANSFORM_DRAW_RE.sub("", oracle)
 
-            if event == 'proliferated' and payload.get('controller') == card.controller:
+            if event == 'surveilled' and payload.get('player_id') == card.controller:
+                from rules_engine.scry import surveil_payoff
+                for line in oracle.splitlines():
+                    payoff = surveil_payoff(line)
+                    if not payoff:
+                        continue
+                    if payoff['once'] and state.surveils_this_turn[card.controller] != 1:
+                        continue
+                    if payoff['kind'] == 'counter':
+                        key, data = 'add_counters', {'target_card_id': cid, 'counter': '+1/+1',
+                            'amount': payoff['amount'], 'effect_timestamp': object_incarnation(card)}
+                    elif payoff['kind'] == 'return':
+                        key, data = 'return_permanent_to_hand', {'target_card_id': cid,
+                            'effect_timestamp': object_incarnation(card)}
+                    else:
+                        key, data = 'effect_sequence', {'effects': [
+                            {'effect_key': 'deal_damage', 'payload': {'target_player': 3-card.controller, 'amount': payoff['damage']}},
+                            {'effect_key': 'gain_life', 'payload': {'amount': payoff['life']}},
+                        ]}
+                    out.append({'source_card_id': cid, 'controller': card.controller,
+                                'label': f'{card.name} surveil trigger', 'effect_key': key, 'payload': data})
+            elif event == 'proliferated' and payload.get('controller') == card.controller:
                 for line in oracle.splitlines():
                     if re.fullmatch(r'whenever you proliferate, [^.]+\.', line.strip()):
                         out.append(_trigger_from_oracle(state, cid, card.controller, line.strip(),
@@ -1228,6 +1254,13 @@ def _trigger_from_oracle(
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    if event == 'spell_cast':
+        from rules_engine.scry import cast_surveillance_clause
+        for line in oracle.splitlines():
+            amount = cast_surveillance_clause(line)
+            if amount is not None:
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'surveil', 'payload': {'amount': amount}}
     matchers = {
         'enters_battlefield': _matches_enters_battlefield_trigger,
         'creature_dies': _matches_creature_dies_trigger,
@@ -1273,6 +1306,15 @@ def _trigger_from_oracle(
         if len(matching_clauses) == 1:
             oracle = matching_clauses[0]
     opponent = 1 if controller == 2 else 2
+    if event == 'draw_card':
+        draw_mill = re.fullmatch(r'whenever you draw a card, (each opponent mills (?:one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?)\.', oracle.strip())
+        if draw_mill:
+            from rules_engine.oracle_effects import infer_effect_from_oracle
+            proxy = copy(source)
+            proxy.oracle_text = draw_mill[1]
+            key, data = infer_effect_from_oracle(state, proxy, controller)
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     gain_amount = _first_number(oracle, r"gain (\d+) life")
     lose_amount = _first_number(oracle, r"lose (\d+) life")
     source_card = state.cards.get(source_card_id)
@@ -1410,7 +1452,8 @@ def _trigger_from_oracle(
                 "controller": controller,
                 "label": default_label,
                 "effect_key": "cast_from_graveyard",
-                "payload": {"target_card_id": target},
+                "payload": {"target_card_id": target, 'exile_after_cast':
+                    bool(re.search(r'if that spell would be put into your graveyard, exile it instead', oracle))},
             }
         if (
             event == "creature_dies"

@@ -200,6 +200,12 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] in {'surveil', 'surveil_top_order'}:
+                selected = (self._surveil_graveyard_choices(state, options, player_id)
+                            if choice['kind'] == 'surveil'
+                            else self._choose_library_search(state, options, len(options), player_id))
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
+                                  reasoning='Surveil from inspected cards, curve/fixing needs and known graveyard access')
             if choice['kind'] in {'scry', 'scry_top_order'}:
                 selected = self._choose_library_search(state, options, len(options), player_id)
                 if choice['kind'] == 'scry':
@@ -2574,7 +2580,7 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
-    def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False) -> dict:
+    def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
         mtype = move.get("type")
         from rules_engine.attachments import is_aura
         source = state.cards.get(move.get("card_id"))
@@ -2913,7 +2919,7 @@ class AIAgent:
                 xv = int(targets.get("x_value", 0) or 0)
             except Exception:
                 xv = 0
-            if xv <= 0:
+            if xv < 0 or (xv == 0 and not allow_zero_x):
                 out["_invalid_ai_choice"] = True
             if mtype == "activate_ability" and "x damage to each creature and each player" in str(move.get("ability_label", "")).lower():
                 if (xv >= state.players[player_id].life
@@ -3949,6 +3955,40 @@ class AIAgent:
         ranked = sorted(legal, key=lambda mv: (quick_score(mv), self._move_sort_key(mv)), reverse=True)
         top = ranked[: min(3, len(ranked))]
         return top[0]
+
+    def _surveil_graveyard_choices(self, state, options, player_id):
+        player = state.players[player_id]
+        known = player.hand + options
+        lands = sum('Land' in state.cards[cid].types for cid in player.hand + player.battlefield)
+        goal = max([3, *(mana_value(state.cards[cid].mana_cost) for cid in known if 'Land' not in state.cards[cid].types)])
+        demand = self._color_demand(state, player_id)
+        for cid in options:
+            if 'Land' not in state.cards[cid].types:
+                for color, count in _fixed_color_pips(state.cards[cid].mana_cost).items():
+                    demand[color] = demand.get(color, 0) + count
+        sources = self._current_color_sources(state, player_id)
+        for cid in player.hand:
+            if 'Land' in state.cards[cid].types:
+                for color in self._land_colors(state.cards[cid]):
+                    sources[color] = sources.get(color, 0) + 1
+        reanimation = any(re.fullmatch(r'return target creature card from your graveyard to the battlefield\.',
+                                   _oracle_text(state.cards[cid]))
+                         and self._can_pay_card_cost(state, player_id, state.cards[cid]) for cid in player.hand)
+        graveyard = []
+        for cid in self._choose_library_search(state, options, len(options), player_id):
+            card = state.cards[cid]
+            if 'Land' in card.types:
+                fixing = any(demand.get(color, 0) and not sources.get(color, 0) for color in self._land_colors(card))
+                if lands >= goal + 1 and not fixing:
+                    graveyard.append(cid)
+                else:
+                    lands += 1
+                    for color in self._land_colors(card):
+                        sources[color] = sources.get(color, 0) + 1
+            elif (reanimation and 'Creature' in card.types and not self._can_pay_card_cost(state, player_id, card)
+                  and graveyard_destination(state, card) == 'graveyard'):
+                graveyard.append(cid)
+        return list(reversed(graveyard))
 
     def _choose_library_search(self, state: MatchState, options: list[str], count: int, player_id: int, *, free_battlefield: bool = False, destination: str = "hand") -> list[str]:
         demand = self._color_demand(state, player_id)

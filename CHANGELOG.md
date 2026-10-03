@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-10-03 - Surveil, fixed mill and effect-authorized casting
+
+- Batch fixed private surveil partition/top ordering, supported surveil and
+  cast-surveil payoffs, player-level first-surveil history and fixed recipient
+  milling/draw-to-mill triggers. Original-object references, source suppression,
+  empty/short libraries and HTTP/SQLite/App continuations have canonical tests.
+- All AI difficulties preserve needed mana/fixing and evaluate known payable
+  graveyard access without consulting uninspected cards or opposing hands.
+  This is conservative curation, not optimal nonland or expert-level planning.
+- Real Tempo/Dimir traces exposed a free graveyard casting path that bypassed
+  targets, costs and cast bookkeeping. It now uses ordinary engine admission,
+  mandatory costs/taxes, cast/ward events, printed-X=0 and recognized exile
+  departures. Following exile permission survives clause splitting as well as
+  the ETB event path. API clients cannot forge the internal permission.
+- Shared singular discard-or-sacrifice cost alternatives no longer demand both
+  payments. Fixed token-count grammar respects announced X, including zero;
+  draw-by-mana-spent uses actual payment rather than printed mana value.
+- Replace an old pregame/truncated-Oracle Gearhulk test with canonical data and
+  a valid post-mulligan state. Explicit pregame rejection remains tested.
+- Final isolated backend suite from an empty scratch database/cache: **3,621
+  passed**, 356 warnings, 773.24 seconds. Existing installed dependencies are
+  reused; this is not a fresh dependency-install test. The batch adds 139
+  backend cases. An earlier full run's obsolete fixture failure, focused failures
+  and intentionally superseded partial run remain archived rather than hidden.
+- Final frontend lint, boundary/unit tests and production build pass. Complete
+  Chromium passes again, including both-seat surveil/reload/payoff choices,
+  recovery, process restart, sideboarding and natural AI/human BO3 paths.
+- Final Master replay: twelve seat-balanced BO1 samples across four archetype
+  templates, each executed twice; 512.341 seconds, zero reported timeouts,
+  anomalies, determinism failures or drift labels. Final four traced Tempo/Dimir
+  games use seeds 73100/73101 in both seat orders with a 6,000-action cap; all
+  finish in 12-49 turns. All eleven observed Counterspell stack objects have
+  announced targets; no invalid announcement lines or tracked decision-quality
+  anomalies were found. These small samples do not establish balance/optimality.
+- An optional Python 3.12.3 timed traceback probe exited 139 while dumping a
+  thread traceback. Its failed evidence is retained separately; the same fresh
+  Control/Ramp BO3 without that diagnostic passes (428.58 seconds). The crash's
+  cause remains an explicit runtime investigation, not an asserted upstream fix.
+- Scope and remaining costs/replacements/human-choice/AI gaps are documented in
+  `docs/testing/surveil-mill.md`, README and plan. RCHFiles evidence is stored at
+  `diagnostics/surveil-mill/20261003T074125Z/`; archived copies are compared and
+  checksummed before owned disposable local files are removed. Live databases
+  and servers remain local. Graphify uses AST-only updates without API calls.
+
 ## 2026-10-03 - Legendary Channel cycle and tactical land retention
 
 - Batch all five canonical legendary Channel lands through shared grammar, not

@@ -69,6 +69,7 @@ class RulesEngine:
             state.spells_cast_this_turn[state.active_player] = 0
             state.declared_attackers_this_turn = {1: 0, 2: 0}
             state.draws_this_turn = {1: 0, 2: 0}
+            state.surveils_this_turn = {1: 0, 2: 0}
             state.players_with_permanent_departure = set()
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
@@ -370,7 +371,7 @@ class RulesEngine:
                 return True
         return False
 
-    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False) -> None:
+    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False) -> None:
         def reject(reason: str) -> None:
             if reject_invalid:
                 from rules_engine.action_validation import ActionRejected
@@ -646,7 +647,7 @@ class RulesEngine:
             apply_state_based_actions(state)
             return
 
-        if state.priority_player != player_id:
+        if state.priority_player != player_id and not (effect_cast and kind == 'cast_spell'):
             return
 
         player = state.players[player_id]
@@ -803,7 +804,7 @@ class RulesEngine:
                         reject('This card has no bestow cost')
                         return
                     face_card = bestow_cast_view(face_card)
-                timing_ok, timing_reason = can_cast_in_current_timing(state, face_card, player_id)
+                timing_ok, timing_reason = can_cast_in_current_timing(state, face_card, player_id, during_resolution=effect_cast)
                 if not timing_ok:
                     reject(timing_reason)
                     state.log.append(f"{player.name} cannot cast {card.name}: {timing_reason}")
@@ -814,7 +815,7 @@ class RulesEngine:
                     state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
                     return
-                options = collect_cost_options(state, player_id, face_card)
+                options = collect_cost_options(state, player_id, face_card, without_mana=effect_cast)
                 options = [option for option in options if (option.id == 'bestow') == bestowed]
                 if not options:
                     reject("No supported casting cost")
@@ -829,6 +830,9 @@ class RulesEngine:
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
+                if effect_cast and '{x}' in (face_card.mana_cost or '').lower() and x_value != 0:
+                    reject('X must be zero when casting without paying its mana cost')
+                    return
                 if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id")):
                     explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
                     if not explicit_choice:
@@ -929,7 +933,7 @@ class RulesEngine:
                 if "Planeswalker" in face_card.types and "compleated" in face_card.oracle_text.lower():
                     payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
                 if effect_key == "look_top_select_hand":
-                    payload["mana_spent_to_cast"] = mana_value(adjusted_cost, x_value=x_value)
+                    payload["mana_spent_to_cast"] = payment_details.get('mana_spent', 0)
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)
 
@@ -1316,7 +1320,8 @@ class RulesEngine:
                 return
             combat.combat_damage(state)
 
-        apply_state_based_actions(state)
+        if not effect_cast:
+            apply_state_based_actions(state)
 
     def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
         return legal_moves(state, player_id)

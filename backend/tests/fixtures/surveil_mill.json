@@ -1,0 +1,516 @@
+[
+  {
+    "name": "Consider",
+    "oracle_id": "4c9bcba6-87b5-4fb3-97ee-6fe5b739337d",
+    "uri": "https://api.scryfall.com/cards/4f28e706-c488-4525-ad8a-977a5fa77f80",
+    "scryfall_uri": "https://scryfall.com/card/tle/157/consider?utm_source=api",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\nDraw a card.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Surveil"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Sinister Sabotage",
+    "oracle_id": "973fd4d4-9255-4825-85b7-503606c4e932",
+    "uri": "https://api.scryfall.com/cards/c3471c9c-6354-483f-960d-494f0e0a424f",
+    "scryfall_uri": "https://scryfall.com/card/rvr/61/sinister-sabotage?utm_source=api",
+    "mana_cost": "{1}{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.\nSurveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Surveil"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Notion Rain",
+    "oracle_id": "f93dbe17-71d1-4542-96ff-81ac6da9513f",
+    "uri": "https://api.scryfall.com/cards/66ed78c5-be23-4fcb-9143-e6574cd6ec68",
+    "scryfall_uri": "https://scryfall.com/card/mkc/217/notion-rain?utm_source=api",
+    "mana_cost": "{1}{U}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Surveil 2, then draw two cards. Notion Rain deals 2 damage to you. (To surveil 2, look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Surveil"
+    ],
+    "colors": [
+      "B",
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Otherworldly Gaze",
+    "oracle_id": "be668c2d-71ea-4346-8980-1fbf5e4cbed3",
+    "uri": "https://api.scryfall.com/cards/40bafd2b-acd4-46f0-abb2-139e2918ae99",
+    "scryfall_uri": "https://scryfall.com/card/dsc/122/otherworldly-gaze?utm_source=api",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Surveil 3. (Look at the top three cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\nFlashback {1}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Surveil",
+      "Flashback"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Dimir Spybug",
+    "oracle_id": "3bb7041c-4f3e-4123-9181-3442ea0c98e8",
+    "uri": "https://api.scryfall.com/cards/69840910-eb86-49a4-915f-d21b5628fc04",
+    "scryfall_uri": "https://scryfall.com/card/mkc/206/dimir-spybug?utm_source=api",
+    "mana_cost": "{U}{B}",
+    "type_line": "Creature — Insect",
+    "oracle_text": "Flying\nMenace (This creature can't be blocked except by two or more creatures.)\nWhenever you surveil, put a +1/+1 counter on this creature.",
+    "power": "1",
+    "toughness": "1",
+    "keywords": [
+      "Flying",
+      "Menace"
+    ],
+    "colors": [
+      "B",
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Thoughtbound Phantasm",
+    "oracle_id": "ca14f1b6-e8c2-4ea5-9375-5ed63f355052",
+    "uri": "https://api.scryfall.com/cards/dbcdf292-a391-4452-8116-20084754f591",
+    "scryfall_uri": "https://scryfall.com/card/mkc/122/thoughtbound-phantasm?utm_source=api",
+    "mana_cost": "{U}",
+    "type_line": "Creature — Spirit",
+    "oracle_text": "Defender\nWhenever you surveil, put a +1/+1 counter on this creature.\nAs long as this creature has three or more +1/+1 counters on it, it can attack as though it didn't have defender.",
+    "power": "2",
+    "toughness": "2",
+    "keywords": [
+      "Defender"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Whispering Snitch",
+    "oracle_id": "b6836023-4475-415e-9671-980d9eb6e762",
+    "uri": "https://api.scryfall.com/cards/be9abe56-7d56-4fc6-ab24-7b78646266be",
+    "scryfall_uri": "https://scryfall.com/card/mkc/144/whispering-snitch?utm_source=api",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Vampire Rogue",
+    "oracle_text": "Whenever you surveil for the first time each turn, this creature deals 1 damage to each opponent and you gain 1 life.",
+    "power": "1",
+    "toughness": "3",
+    "keywords": [],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Disinformation Campaign",
+    "oracle_id": "1dd336b0-9b13-4180-b80a-e8ba5d63d04f",
+    "uri": "https://api.scryfall.com/cards/d34ea8c4-03b1-415f-80e1-7c3cf6933685",
+    "scryfall_uri": "https://scryfall.com/card/mkc/208/disinformation-campaign?utm_source=api",
+    "mana_cost": "{1}{U}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "When this enchantment enters, you draw a card and each opponent discards a card.\nWhenever you surveil, return this enchantment to its owner's hand.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "B",
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Psychic Corrosion",
+    "oracle_id": "328b42f1-d679-4f9c-80e3-38fe3b965d10",
+    "uri": "https://api.scryfall.com/cards/285d22fa-1623-463a-83c0-a9aa7c969ce2",
+    "scryfall_uri": "https://scryfall.com/card/m19/68/psychic-corrosion?utm_source=api",
+    "mana_cost": "{2}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "Whenever you draw a card, each opponent mills two cards.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Mill"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Glimpse the Unthinkable",
+    "oracle_id": "552f0163-a19d-4671-888f-044fc0354875",
+    "uri": "https://api.scryfall.com/cards/c54a2256-673d-4d93-9e1d-7790bf254881",
+    "scryfall_uri": "https://scryfall.com/card/2x2/218/glimpse-the-unthinkable?utm_source=api",
+    "mana_cost": "{U}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Target player mills ten cards.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Mill"
+    ],
+    "colors": [
+      "B",
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Thought Scour",
+    "oracle_id": "83101ba8-a569-4827-8c53-9ca0dfcd59a7",
+    "uri": "https://api.scryfall.com/cards/4afee6b3-55a4-44e5-b08c-85e0c813cd09",
+    "scryfall_uri": "https://scryfall.com/card/2x2/65/thought-scour?utm_source=api",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Target player mills two cards.\nDraw a card.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Mill"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Enhanced Surveillance",
+    "oracle_id": "bfb5104b-01e3-4d37-ac93-1dc342121531",
+    "uri": "https://api.scryfall.com/cards/42e6f705-2af7-47c2-961a-cf4c02b29f21",
+    "scryfall_uri": "https://scryfall.com/card/mkc/102/enhanced-surveillance?utm_source=api",
+    "mana_cost": "{1}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "You may look at an additional two cards each time you surveil.\nExile this enchantment: Shuffle your graveyard into your library.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Island",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "uri": "https://api.scryfall.com/cards/f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+    "scryfall_uri": "https://scryfall.com/card/trk/319/island?utm_source=api",
+    "mana_cost": "",
+    "type_line": "Basic Land — Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [],
+    "loyalty": null
+  },
+  {
+    "name": "Swamp",
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "uri": "https://api.scryfall.com/cards/b7387103-1df1-4fd0-9e91-1544509792c7",
+    "scryfall_uri": "https://scryfall.com/card/trk/321/swamp?utm_source=api",
+    "mana_cost": "",
+    "type_line": "Basic Land — Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [],
+    "loyalty": null
+  },
+  {
+    "name": "Grizzly Bears",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "uri": "https://api.scryfall.com/cards/409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "scryfall_uri": "https://scryfall.com/card/10e/268/grizzly-bears?utm_source=api",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Bear",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "keywords": [],
+    "colors": [
+      "G"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Mind Stone",
+    "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2",
+    "uri": "https://api.scryfall.com/cards/b30a8f92-ce42-4b27-a893-bcf97fde228d",
+    "scryfall_uri": "https://scryfall.com/card/mbc/76/mind-stone?utm_source=api",
+    "mana_cost": "{2}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [],
+    "loyalty": null
+  },
+  {
+    "name": "Leyline of the Void",
+    "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+    "uri": "https://api.scryfall.com/cards/aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+    "scryfall_uri": "https://scryfall.com/card/dsk/106/leyline-of-the-void?utm_source=api",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Enchantment",
+    "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nIf a card would be put into an opponent's graveyard from anywhere, exile it instead.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Reanimate",
+    "oracle_id": "a044474a-cd72-4e9d-bd8d-a08f2de9cdc0",
+    "uri": "https://api.scryfall.com/cards/368b6903-5fc4-43e7-bd44-46b8107c8bb4",
+    "scryfall_uri": "https://scryfall.com/card/dsc/155/reanimate?utm_source=api",
+    "mana_cost": "{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Put target creature card from a graveyard onto the battlefield under your control. You lose life equal to that card's mana value.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Griselbrand",
+    "oracle_id": "f759d112-76db-4091-a22b-b9f19ab6fa5f",
+    "uri": "https://api.scryfall.com/cards/4069e510-f3f3-4668-9f13-3546fa9bc7c3",
+    "scryfall_uri": "https://scryfall.com/card/inr/115/griselbrand?utm_source=api",
+    "mana_cost": "{4}{B}{B}{B}{B}",
+    "type_line": "Legendary Creature — Demon",
+    "oracle_text": "Flying, lifelink\nPay 7 life: Draw seven cards.",
+    "power": "7",
+    "toughness": "7",
+    "keywords": [
+      "Flying",
+      "Lifelink"
+    ],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Zombify",
+    "oracle_id": "bb95db4d-5017-4121-bf79-d68476602d8c",
+    "uri": "https://api.scryfall.com/cards/dc798e6f-13c4-457c-b052-b7b65bc83cfe",
+    "scryfall_uri": "https://scryfall.com/card/fdn/187/zombify?utm_source=api",
+    "mana_cost": "{3}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Return target creature card from your graveyard to the battlefield.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Torrential Gearhulk",
+    "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e",
+    "uri": "https://api.scryfall.com/cards/92872fea-2fb4-4154-815e-cad9d966e60f",
+    "scryfall_uri": "https://scryfall.com/card/cmm/128/torrential-gearhulk?utm_source=api",
+    "mana_cost": "{4}{U}{U}",
+    "type_line": "Artifact Creature — Construct",
+    "oracle_text": "Flash\nWhen this creature enters, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "power": "5",
+    "toughness": "6",
+    "keywords": [
+      "Flash"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Counterspell",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "uri": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "scryfall_uri": "https://scryfall.com/card/dsc/114/counterspell?utm_source=api",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Memory Deluge",
+    "oracle_id": "e6fd55f2-7e26-469c-a44a-ea2eb90e19a9",
+    "uri": "https://api.scryfall.com/cards/edcd3802-ddb3-4eb6-9b6e-a26d76557662",
+    "scryfall_uri": "https://scryfall.com/card/inr/75/memory-deluge?utm_source=api",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Look at the top X cards of your library, where X is the amount of mana spent to cast this spell. Put two of them into your hand and the rest on the bottom of your library in a random order.\nFlashback {5}{U}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Flashback"
+    ],
+    "colors": [
+      "U"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Lightning Bolt",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "scryfall_uri": "https://scryfall.com/card/msc/806/lightning-bolt?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "R"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Thalia, Guardian of Thraben",
+    "oracle_id": "9b7f1d05-707c-4ed3-9f0e-8ced1232c2ee",
+    "uri": "https://api.scryfall.com/cards/c9f8b8fb-1cd8-450e-a1fe-892e7a323479",
+    "scryfall_uri": "https://scryfall.com/card/vow/38/thalia-guardian-of-thraben?utm_source=api",
+    "mana_cost": "{1}{W}",
+    "type_line": "Legendary Creature — Human Soldier",
+    "oracle_text": "First strike\nNoncreature spells cost {1} more to cast.",
+    "power": "2",
+    "toughness": "1",
+    "keywords": [
+      "First strike"
+    ],
+    "colors": [
+      "W"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Bone Shards",
+    "oracle_id": "6e760cfe-45b9-4a3f-b2e2-4ca6ec2bd13a",
+    "uri": "https://api.scryfall.com/cards/1ee98955-4c47-4d45-9377-608dfa755337",
+    "scryfall_uri": "https://scryfall.com/card/mh2/76/bone-shards?utm_source=api",
+    "mana_cost": "{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a creature or discard a card.\nDestroy target creature or planeswalker.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Krosan Grip",
+    "oracle_id": "3e39224c-72ce-4ecc-aa17-12c071ea1f3e",
+    "uri": "https://api.scryfall.com/cards/d3571dee-7b90-4c0c-abc7-59b515ffa129",
+    "scryfall_uri": "https://scryfall.com/card/c21/198/krosan-grip?utm_source=api",
+    "mana_cost": "{2}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Split second (As long as this spell is on the stack, players can't cast spells or activate abilities that aren't mana abilities.)\nDestroy target artifact or enchantment.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Split second"
+    ],
+    "colors": [
+      "G"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Secure the Wastes",
+    "oracle_id": "b2347910-d6c6-4681-8316-7ef27056485c",
+    "uri": "https://api.scryfall.com/cards/83a01121-e5cd-45ba-97c2-7bd7d50158e6",
+    "scryfall_uri": "https://scryfall.com/card/frc/31/secure-the-wastes?utm_source=api",
+    "mana_cost": "{X}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Create X 1/1 white Warrior creature tokens.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "W"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Dragon's Rage Channeler",
+    "oracle_id": "0c016ccc-a341-4b76-87ba-69c639d2746d",
+    "uri": "https://api.scryfall.com/cards/4ced112a-e775-4f97-97b3-74877e9dce12",
+    "scryfall_uri": "https://scryfall.com/card/mh2/121/dragons-rage-channeler?utm_source=api",
+    "mana_cost": "{R}",
+    "type_line": "Creature — Human Shaman",
+    "oracle_text": "Whenever you cast a noncreature spell, surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)\nDelirium — As long as there are four or more card types among cards in your graveyard, this creature gets +2/+2, has flying, and attacks each combat if able.",
+    "power": "1",
+    "toughness": "1",
+    "keywords": [
+      "Delirium",
+      "Surveil"
+    ],
+    "colors": [
+      "R"
+    ],
+    "loyalty": null
+  },
+  {
+    "name": "Fatal Push",
+    "oracle_id": "16437a83-be52-44cd-a768-a767c9347eb2",
+    "uri": "https://api.scryfall.com/cards/6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+    "scryfall_uri": "https://scryfall.com/card/2xm/93/fatal-push?utm_source=api",
+    "mana_cost": "{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target creature if it has mana value 2 or less.\nRevolt — Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+    "power": null,
+    "toughness": null,
+    "keywords": [
+      "Revolt"
+    ],
+    "colors": [
+      "B"
+    ],
+    "loyalty": null
+  }
+]

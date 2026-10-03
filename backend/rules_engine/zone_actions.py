@@ -59,6 +59,8 @@ def move_spell_from_stack(state, item, destination: Zone = Zone.GRAVEYARD) -> Zo
         return None
     if payload.get("__flashback") or payload.get("__aftermath"):
         destination = Zone.EXILE
+    if destination == Zone.GRAVEYARD and payload.get('__exile_instead_of_graveyard'):
+        destination = Zone.EXILE
     if destination == Zone.GRAVEYARD:
         destination = put_into_graveyard(state, card.id)
     else:

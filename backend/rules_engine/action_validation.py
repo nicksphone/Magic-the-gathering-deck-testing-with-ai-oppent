@@ -206,7 +206,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
         elif pending["kind"] in {"draw", "land_entry", "saga_entry"}:
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
-        elif pending["kind"] in {"topdeck_put", "search_library", "proliferate", "scry"}:
+        elif pending["kind"] in {"topdeck_put", "search_library", "proliferate", "scry", "surveil"}:
             unique_ids(action.get("card_ids", []), pending["options"])
             require(len(action.get("card_ids", [])) <= pending["count"], "Too many topdeck cards selected")
         else:

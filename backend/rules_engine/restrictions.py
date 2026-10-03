@@ -103,7 +103,7 @@ def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> 
     return True
 
 
-def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
+def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution: bool = False) -> tuple[bool, str]:
     if split_second_active(state):
         return False, 'Split second prevents casting spells.'
     from rules_engine.alternative_casts import has_aftermath
@@ -129,7 +129,7 @@ def can_cast_in_current_timing(state, card, player_id: int) -> tuple[bool, str]:
     # clauses, which exposed ordinary sorceries/creatures as legal casts in
     # every priority window.
     non_instant_spell = bool(types & {"Sorcery", "Creature", "Artifact", "Enchantment", "Planeswalker", "Battle"})
-    if non_instant_spell and "Instant" not in types and not has_flash:
+    if non_instant_spell and "Instant" not in types and not has_flash and not during_resolution:
         if not (is_active and step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack):
             return (False, "Cast only at sorcery speed.")
 

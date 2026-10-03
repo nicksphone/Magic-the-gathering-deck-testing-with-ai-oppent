@@ -1032,29 +1032,11 @@ def test_arboreal_grazer_style_land_from_hand_enters_tapped_without_land_play() 
 
 
 def test_torrential_gearhulk_style_casts_target_instant_from_graveyard() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
-    spell = CardInstance(
-        id="grave-spell",
-        name="Shock",
-        owner=1,
-        controller=1,
-        zone=Zone.GRAVEYARD,
-        types=["Instant"],
-        oracle_text="Shock deals 2 damage to any target.",
-    )
-    state.cards[spell.id] = spell
-    state.players[1].graveyard.append(spell.id)
-    source = CardInstance(
-        id="gearhulk",
-        name="Torrential Gearhulk",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Artifact", "Creature"],
-        oracle_text="When Torrential Gearhulk enters the battlefield, you may cast target instant card from your graveyard without paying its mana cost.",
-    )
-    state.cards[source.id] = source
+    from tests.test_activation_modifiers import board
+    from tests.test_surveil_mill import add
+    state = board()
+    spell = add(state, 'Lightning Bolt', 1, Zone.GRAVEYARD)
+    source = add(state, 'Torrential Gearhulk', 1)
     effect_key, payload = infer_effect_from_oracle(state, source, 1)
 
     assert effect_key == "cast_from_graveyard"
@@ -1063,7 +1045,8 @@ def test_torrential_gearhulk_style_casts_target_instant_from_graveyard() -> None
     assert state.stack and state.stack[-1].source_card_id == spell.id
     assert spell.id not in state.players[1].graveyard
     resolve_top_of_stack(state)
-    assert spell.id in state.players[1].graveyard
+    assert spell.id in state.players[1].exile
+    assert state.players[2].life == 17
 
 
 def test_nissa_loyalty_lines_animate_land_and_put_green_creature() -> None:

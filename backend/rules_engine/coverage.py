@@ -74,6 +74,16 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     if any(unsupported_counter_prohibitions(text) for text in texts):
         out.append('unsupported counter prohibition')
     from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.scry import surveil_payoff, cast_surveillance_clause
+    for text in texts:
+        stripped = without_reminder_text(text).lower()
+        if re.search(r'\bsurveil x\b', stripped):
+            out.append('dynamic surveil')
+        if re.search(r'(?:additional .+ cards? .+surveil|if .+surveil.+instead)', stripped):
+            out.append('surveil modification/replacement fidelity')
+        if any('whenever' in line and 'surveil' in line and surveil_payoff(line) is None and cast_surveillance_clause(line) is None
+               for line in stripped.splitlines()):
+            out.append('unsupported surveil trigger clause')
     if any(re.search(r'\byou get (?:an?|\d+) [a-z-]+ counters?\b', line, re.I)
            and gain_clause(line) is None
            for text in texts for line in without_reminder_text(text).splitlines()):
