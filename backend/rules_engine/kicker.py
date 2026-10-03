@@ -1,13 +1,29 @@
-"""Single mana kicker and supported spell-conditional instruction surfaces."""
+"""Single fixed kicker cost and supported conditional instruction surfaces."""
 import re
 from copy import copy
 
 from rules_engine.oracle_text import without_reminder_text
 
-PRICE = re.compile(r'^kicker ((?:\{(?:\d+|[WUBRGCS]|[2WUBRGC]/[WUBRGC]|[WUBRG]/P)\})+)\s*$', re.I | re.M)
+PRICE = re.compile(r'^kicker(?: ((?:\{(?:\d+|[WUBRGCS]|[2WUBRGC]/[WUBRGC]|[WUBRG]/P)\})+)|[\u2014-]\s*([^\n.]+)\.?)\s*$', re.I | re.M)
 CONDITION = re.compile(r'\bif this spell was kicked, ([^.]+)\.', re.I)
 
 TOKEN_INSTRUCTION = r'create (?:a|an|one|two|three|four|five|\d+) \d+/\d+ (?:white|blue|black|red|green|colorless) [a-z-]+ creature tokens?(?: with flying)?\.'
+
+
+def kicker_components(price):
+    if price.startswith('{'):
+        return {'mana_cost': price}
+    from rules_engine.spell_cost_clauses import fixed_cost_component
+    parsed = fixed_cost_component(price)
+    return {'mana_cost': '', **parsed} if parsed else None
+
+
+def _fixed_price(text):
+    prices = list(PRICE.finditer(text))
+    if len(prices) != 1 or re.search(r'\bmultikicker\b', text, re.I):
+        return None
+    price = prices[0][1] or prices[0][2]
+    return price if kicker_components(price) else None
 
 
 def kicked_cast_clauses(text):
@@ -28,8 +44,8 @@ def permanent_kicker(text):
     """Recognize self-entry counters or a fixed conditional self-ETB payoff."""
     from rules_engine.spell_cost_clauses import COUNT, NUMBERS
     text = without_reminder_text(text or '').strip()
-    prices = list(PRICE.finditer(text))
-    if len(prices) != 1 or re.search(r'\bmultikicker\b', text, re.I):
+    price = _fixed_price(text)
+    if price is None:
         return None
     remaining = PRICE.sub('', text).strip()
     cast_clauses = {entry['clause'] for entry in kicked_cast_clauses(remaining)}
@@ -38,7 +54,7 @@ def permanent_kicker(text):
                            r' (\+1/\+1|-1/-1) counters? on it\.', remaining, re.I)
     if counter:
         amount = int(counter[1]) if counter[1].isdigit() else NUMBERS[counter[1].lower()]
-        return {'price': prices[0][1], 'counters': {counter[2]: amount}}
+        return {'price': price, 'counters': {counter[2]: amount}}
     trigger = re.fullmatch(r'(When this (?:creature|artifact|enchantment|permanent) enters(?: the battlefield)?,) '
                            r'if it was kicked, (.+\.)', remaining, re.I)
     if not trigger:
@@ -47,7 +63,7 @@ def permanent_kicker(text):
     if not re.fullmatch(r'(?:draw ' + COUNT + r' cards?|it deals \d+ damage to target creature|'
                         r'destroy target noncreature permanent)\.|' + TOKEN_INSTRUCTION, instruction, re.I):
         return None
-    return {'price': prices[0][1], 'instruction': instruction,
+    return {'price': price, 'instruction': instruction,
             'clause': trigger[1] + ' ' + instruction}
 
 
@@ -59,11 +75,16 @@ def kicker_price(card):
     return parsed['price'] if parsed else None
 
 
+def kicker_cost(card):
+    price = kicker_price(card)
+    return kicker_components(price) if price is not None else None
+
+
 def kicker_surfaces(text):
     """Return price/base/kicked text, or None when semantics remain unmodeled."""
     text = without_reminder_text(text or '').strip()
-    prices = list(PRICE.finditer(text))
-    if len(prices) != 1 or re.search(r'\bmultikicker\b', text, re.I):
+    price = _fixed_price(text)
+    if price is None:
         return None
     text = PRICE.sub('', text).strip()
     matches = list(CONDITION.finditer(text))
@@ -83,6 +104,7 @@ def kicker_surfaces(text):
         instruction = instruction[:-8]
         damage = re.fullmatch(r'it deals (\d+) damage( divided as you choose among any number of targets)?', instruction, re.I)
         pump = re.fullmatch(r'that creature gets ([+-]\d+/[+-]\d+) until end of turn', instruction, re.I)
+        discard = re.fullmatch(r'that player discards (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?', instruction, re.I)
         if damage:
             previous = list(re.finditer(r'([^.!\n]*?\bdeals? )\d+ damage([^.]*?)\.', prefix, re.I))
             if not previous:
@@ -96,10 +118,16 @@ def kicker_surfaces(text):
                 return None
             last = previous[-1]
             prefix = prefix[:last.start()] + 'gets ' + pump[1] + ' until end of turn' + prefix[last.end():]
+        elif discard:
+            previous = list(re.finditer(r'target player discards (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.', prefix, re.I))
+            if not previous:
+                return None
+            last = previous[-1]
+            prefix = prefix[:last.start()] + 'Target player discards ' + discard[1] + ' cards.' + prefix[last.end():]
         else:
             return None
         kicked = prefix + suffix
-    return prices[0][1], base, kicked.strip()
+    return price, base, kicked.strip()
 
 
 def spell_kicker_view(card, kicked=False):

@@ -64,7 +64,8 @@ retain real canonical cards and do not change legal mandatory targeting.
 
 ## Known Limitations and Next Upgrades
 
-General permanent kicker clauses, multiple/nonmana/X costs, multikicker,
+General permanent kicker clauses, multiple/X and compound/qualified nonmana costs
+beyond the [fixed-cost batch](nonmana-kicker.md), multikicker,
 cast-trigger consumers beyond the [recognized payoff batch](kicked-cast-payoffs.md), granted/changed linked kicker abilities,
 face-specific acceptance and arbitrary intervening conditions remain open.
 Most payoffs and spell semantics are still bounded by recognized Oracle grammar.

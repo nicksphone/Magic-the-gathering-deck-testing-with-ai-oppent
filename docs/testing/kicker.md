@@ -60,7 +60,7 @@ is not a fresh dependency-install or network-deployment certification.
 ## Known Limitations and Next Upgrades
 
 - Broader permanent kicker/ETB effects beyond the [bounded entry batch](permanent-kicker.md), cast-trigger consumers beyond the [recognized payoff batch](kicked-cast-payoffs.md), multiple costs,
-  multikicker, variable/nonmana costs and arbitrary conditional instructions.
+  multikicker, variable/qualified nonmana costs beyond the [fixed-cost batch](nonmana-kicker.md), and arbitrary conditional instructions.
 - Broader per-face kicker acceptance and complete any-target families, including
   battle lifecycle/defense integration. Unrecognized forms retain coverage gaps;
   no warning is not a guarantee of complete semantics.

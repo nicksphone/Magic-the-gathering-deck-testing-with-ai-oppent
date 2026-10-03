@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-03 - Nonmana kicker and scoped death payoffs
+
+- Reuse fixed life/discard/typed-sacrifice parsing for recognized kicker costs,
+  ordinary/free payment, selected cards, copies and snapshots. Support recognized
+  replacement discard counts and warn about mixed mandatory sacrifice types.
+- Make optional kicker choices compare payment loss against supported removal,
+  counter and discard gains. Both-seat checks preserve low life, avoid redundant
+  removal upgrades and allow chosen lands to fund mana before their sacrifice.
+- Repair the shared controller-scoped self-or-other-creature death matcher;
+  canonical sacrifice payoffs survive source departure and snapshot resolution.
+- Full isolated suite: 4,156 passed; 421 focused checks; frontend gates and full
+  Chromium pass with twelve new cases. Twelve seat-balanced repeated replay
+  samples report no anomaly/drift; 24 actual AI decision traces pass.
+- Strengthen an older browser hand-activation wait to observe committed server
+  state rather than a temporarily hidden UI control; original assertions remain.
+- Read-only corpus classification increases recognized kicker surfaces from 19
+  to 27, not whole-card certification. See `docs/testing/nonmana-kicker.md` for
+  remaining mechanics, canonical-golden and strategic-planning work.
+
 ## 2026-10-03 - Replacement-aware optional draw planning
 
 - Reuse default engine draw/life replacements and draw restrictions in a

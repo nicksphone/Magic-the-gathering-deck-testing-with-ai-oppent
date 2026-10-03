@@ -1,0 +1,53 @@
+[
+  {
+    "id": "8752a605-38f8-4d75-b122-063a788dff6e",
+    "oracle_id": "8574f57a-768d-42a0-ac8c-cc0a1de181e0",
+    "name": "Bog Down",
+    "mana_cost": "{2}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Kicker—Sacrifice two lands. (You may sacrifice two lands in addition to any other costs as you cast this spell.)\nTarget player discards two cards. If this spell was kicked, that player discards three cards instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/pls/39/bog-down?utm_source=api"
+  },
+  {
+    "id": "5b5b3b5c-121a-406e-a31a-537991309399",
+    "oracle_id": "af2845cf-8770-4efa-8a83-bf9eb4122b78",
+    "name": "Phyrexian Scuta",
+    "mana_cost": "{3}{B}",
+    "type_line": "Creature — Phyrexian Zombie",
+    "oracle_text": "Kicker—Pay 3 life. (You may pay 3 life in addition to any other costs as you cast this spell.)\nIf this creature was kicked, it enters with two +1/+1 counters on it.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dmr/100/phyrexian-scuta?utm_source=api"
+  },
+  {
+    "id": "aaed7828-57c1-4ad3-a91b-209c66f0876b",
+    "oracle_id": "c6adfaa7-d9cf-4501-8e7d-e035369390d2",
+    "name": "Vicious Offering",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Kicker—Sacrifice a creature. (You may sacrifice a creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -5/-5 until end of turn instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Kicker"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dom/110/vicious-offering?utm_source=api"
+  }
+]

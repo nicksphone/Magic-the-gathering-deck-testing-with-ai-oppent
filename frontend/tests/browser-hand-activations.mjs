@@ -28,6 +28,11 @@ for (const seat of [1, 2]) {
       await click(`Activate ${name}`);
       const get = async () => (await fetch(`${api}/matches/${fixture.id}`)).json();
       await waitFor(`!document.body.innerText.includes('Activate ${name}')`);
+      await waitFor(`(async () => {
+        const state = await (await fetch('${api}/matches/${fixture.id}')).json();
+        return state.players['${seat}'].graveyard.some(card => card.id === ${JSON.stringify(source.id)})
+          && state.stack.length === ${kind === 'channel' ? 1 : 2};
+      })()`);
       let state = await get();
       assert.ok(state.players[String(seat)].graveyard.some(card => card.id === source.id));
       assert.equal(state.stack.length, kind === 'channel' ? 1 : 2);
@@ -45,6 +50,10 @@ for (const seat of [1, 2]) {
         assert.equal(state.pending_mechanic_choice.player_id, 3-seat);
         await click('Decline payment');
         await waitFor("!document.body.innerText.includes('Decline payment')");
+        await waitFor(`(async () => {
+          const state = await (await fetch('${api}/matches/${fixture.id}')).json();
+          return !state.pending_mechanic_choice && state.stack.length === 0;
+        })()`);
         state = await get();
         assert.equal(state.players[String(3-seat)].mana_pool.C, 3);
       } else {

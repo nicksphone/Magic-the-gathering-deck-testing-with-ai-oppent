@@ -2586,6 +2586,20 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
+    def _spell_payment_loss(self, state, player_id, option, life_value=1):
+        life = option.get('pay_life', 0)
+        remaining = state.players[player_id].life - life
+        loss = float('inf') if life and remaining <= 0 else life * (2 if remaining <= 5 else life_value)
+        for key, count, rank in [
+            ('discard_card_ids', option.get('discard_cards', 0), self._hand_retention_value),
+            ('sacrifice_card_ids', option.get('sacrifice_creatures', 0), self._sacrifice_loss),
+        ]:
+            values = sorted(rank(state, cid, player_id) for cid in option.get(key, []))
+            if len(values) < count:
+                return float('inf')
+            loss += sum(values[:count])
+        return loss
+
     def _kicker_draw_gain(self, state, player_id, base_count, kicked_count):
         """Use public library counts and restrictions, never future card identities."""
         from rules_engine.draw_restrictions import forecast_draw_count
@@ -2672,7 +2686,23 @@ class AIAgent:
         def draws(text):
             return sum(_parse_count_token(amount) for amount in re.findall(r'\bdraw (a|one|two|three|\d+) cards?\b', text, re.I))
         score += self._kicker_draw_gain(state, player_id, draws(base), draws(kicked))
-        if re.search(r'gets [+-]\d+/[+-]\d+', kicked) and state.step in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS}:
+        pumps = [re.search(r'gets ([+-]\d+)/([+-]\d+)', text, re.I) for text in [base, kicked]]
+        if all(pumps) and int(pumps[1][2]) < int(pumps[0][2]) <= 0:
+            low, high = [int(pump[2]) for pump in pumps]
+            legal_creatures = {target['id'] for target in hints.get('creature_targets', [])}
+            for cid in state.players[opponent].battlefield:
+                remaining = effective_toughness(state, cid)
+                if not has_keyword(state, cid, 'indestructible'):
+                    remaining -= int(state.cards[cid].counters.get('__damage_marked', 0))
+                if cid in legal_creatures and -low < remaining <= -high:
+                    score += 5 + self._creature_threat_score(state, cid, player_id)
+                    break
+        def discards(text):
+            match = re.search(r'target player discards (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?', text, re.I)
+            return _parse_count_token(match[1].lower()) if match else 0
+        hand_count = len(state.players[opponent].hand)
+        score += 3 * max(0, min(hand_count, discards(kicked)) - min(hand_count, discards(base)))
+        if re.search(r'gets \+\d+/\+\d+', kicked) and state.step in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS}:
             score += 3
         return score
 
@@ -2730,28 +2760,22 @@ class AIAgent:
             if selected_cost.get('additional_cost_group'):
                 group = selected_cost['additional_cost_group']
                 alternatives = [option for option in cost_options if option.get('additional_cost_group') == group]
-                def payment_loss(option):
-                    life = option.get('pay_life', 0)
-                    remaining = state.players[player_id].life - life
-                    loss = float('inf') if life and remaining <= 0 else life * (2 if remaining <= 5 else 1)
-                    for key, count, rank in [
-                        ('discard_card_ids', option.get('discard_cards', 0), self._hand_retention_value),
-                        ('sacrifice_card_ids', option.get('sacrifice_creatures', 0), self._sacrifice_loss),
-                    ]:
-                        values = sorted(rank(state, cid, player_id) for cid in option.get(key, []))
-                        if len(values) < count:
-                            return float('inf')
-                        loss += sum(values[:count])
-                    return loss
-                selected_cost = min(alternatives, key=lambda option: (payment_loss(option), option['id']))
+                selected_cost = min(alternatives, key=lambda option: (self._spell_payment_loss(state, player_id, option), option['id']))
             if source is not None and not selected_cost.get('kicked'):
                 from rules_engine.costs import casting_method
+                from rules_engine.kicker import kicker_cost
+                extra = kicker_cost(source) or {}
                 alternatives = [option for option in cost_options if option.get('kicked')
                                 and option.get('kicker_base_id') == casting_method(selected_cost['id'])
-                                and all(option.get(key) == selected_cost.get(key) for key in
-                                        ['pay_life', 'discard_cards', 'sacrifice_creatures', 'sacrifice_kind'])]
-                if alternatives and self._kicker_gain(state, source, player_id, alternatives[0].get('target_hints') or {}) > 0:
-                    selected_cost = alternatives[0]
+                                and all(option.get(key, 0) == selected_cost.get(key, 0) + extra.get(key, 0)
+                                        for key in ['pay_life', 'discard_cards', 'sacrifice_creatures'])
+                                and option.get('sacrifice_kind') == extra.get('sacrifice_kind', selected_cost.get('sacrifice_kind'))]
+                if alternatives:
+                    candidate = alternatives[0]
+                    added_loss = (self._spell_payment_loss(state, player_id, candidate, life_value=0.25)
+                                  - self._spell_payment_loss(state, player_id, selected_cost, life_value=0.25))
+                    if self._kicker_gain(state, source, player_id, candidate.get('target_hints') or {}) > added_loss:
+                        selected_cost = candidate
             out["cost_choice"] = {"id": selected_cost["id"]}
         selected_cost = next((option for option in cost_options
                               if option['id'] == (out.get('cost_choice') or {}).get('id')), None)

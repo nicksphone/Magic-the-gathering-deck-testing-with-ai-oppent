@@ -45,6 +45,12 @@ def _component(text):
     return None
 
 
+def fixed_cost_component(text):
+    """Shared fixed life/discard/typed-sacrifice component, not an X payment."""
+    parsed = _component(text.strip().rstrip('.').lower())
+    return parsed if parsed and not parsed.get('pay_life_x') else None
+
+
 def spell_additional_costs(text, card_name=''):
     """Return supported cost branches, or None for any unmodeled clause."""
     text = without_reminder_text(text or '').lower()

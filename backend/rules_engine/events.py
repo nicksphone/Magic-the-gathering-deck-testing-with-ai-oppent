@@ -836,6 +836,8 @@ def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload
     dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
     if "whenever this creature or another creature dies" in oracle:
         return "Creature" in dead_types
+    if "whenever this creature or another creature you control dies" in oracle:
+        return bool(dead_card) and "Creature" in dead_types and (dead_id == card.id or dead_card.controller == card.controller)
     if "whenever a creature an opponent controls dies" in oracle:
         return bool(dead_card) and dead_card.controller != card.controller and "Creature" in dead_types
     if "when this creature dies" in oracle:

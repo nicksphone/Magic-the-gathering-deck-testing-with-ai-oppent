@@ -70,6 +70,18 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.spell_cost_clauses import spell_additional_costs
     if any(spell_additional_costs(text, name) is None for name, text in variants):
         out.append('unsupported spell additional cost')
+    from rules_engine.kicker import kicker_components, kicker_surfaces, permanent_kicker
+    for name, text in variants:
+        surfaces = kicker_surfaces(text)
+        permanent = permanent_kicker(text) if surfaces is None else None
+        price = surfaces[0] if surfaces else permanent['price'] if permanent else None
+        extra = kicker_components(price) if price is not None else None
+        if extra and extra.get('sacrifice_creatures'):
+            branches = spell_additional_costs(text, name) or []
+            if any(branch.get('sacrifice_creatures') and branch.get('sacrifice_kind') != extra['sacrifice_kind']
+                   for branch in branches):
+                out.append('unsupported mixed sacrifice cost')
+                break
     if any(activation_modifier_gaps(text, name) for name, text in variants):
         out.append('activation cost modifiers')
     if 'domain' in out:

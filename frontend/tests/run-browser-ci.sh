@@ -103,6 +103,8 @@ echo 'Browser CI: permanent kicker entry and owned ETB targets'
 (cd frontend && timeout 180s node tests/browser-permanent-kicker.mjs)
 echo 'Browser CI: kicked cast payoffs and first-cast discounts'
 (cd frontend && timeout 180s node tests/browser-kicked-cast.mjs)
+echo 'Browser CI: nonmana kicker costs and owned discard resolution'
+(cd frontend && timeout 180s node tests/browser-nonmana-kicker.mjs)
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'

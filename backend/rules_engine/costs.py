@@ -268,19 +268,28 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if alt and card.zone != Zone.GRAVEYARD and not without_mana:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
-    from rules_engine.kicker import kicker_price
-    kicker = kicker_price(card)
+    from rules_engine.kicker import kicker_price, kicker_cost
+    kicker = kicker_cost(card)
     if kicker:
         options = [variant for option in options for variant in (
             option, replace(option, id='kicker' if option.id == 'base' else option.id + '_kicker',
-                            label=option.label + f' + kicker {kicker}',
-                            mana_cost=_join_costs(option.mana_cost, kicker), kicked=True,
+                            label=option.label + f' + kicker {kicker_price(card)}',
+                            mana_cost=_join_costs(option.mana_cost, kicker['mana_cost']), kicked=True,
+                            pay_life=option.pay_life + kicker.get('pay_life', 0),
+                            discard_cards=option.discard_cards + kicker.get('discard_cards', 0),
+                            sacrifice_creatures=option.sacrifice_creatures + kicker.get('sacrifice_creatures', 0),
+                            sacrifice_kind=kicker.get('sacrifice_kind', option.sacrifice_kind),
                             kicker_base_id=option.id))]
 
     compiled = []
     for option in options:
         used_suffixes = set()
         for index, branch in enumerate(branches):
+            if (option.sacrifice_creatures and branch.get('sacrifice_creatures')
+                    and option.sacrifice_kind != branch.get('sacrifice_kind')):
+                # Mixed mandatory types need independent selection groups, not
+                # a summed count using whichever type appeared last.
+                continue
             suffix = ('discard' if set(branch) == {'discard_cards'} else
                       'sacrifice' if set(branch) == {'sacrifice_creatures', 'sacrifice_kind'} else
                       'life' if set(branch) == {'pay_life'} else f'additional_{index}')
