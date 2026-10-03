@@ -18,6 +18,7 @@ class CostContext:
     spell_is_aura: bool = False
     oracle_text: str = ""
     ability_kind: str | None = None
+    ability_index: int | None = None
     source_card_id: str | None = None
     target_card_id: str | None = None
     floored_reductions: list[tuple[int, int]] = field(default_factory=list)

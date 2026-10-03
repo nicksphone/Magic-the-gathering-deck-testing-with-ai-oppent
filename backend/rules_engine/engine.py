@@ -1073,6 +1073,7 @@ class RulesEngine:
                 return
             if not activated_cost_available(
                 state, player_id, cid, cost, action.get("hybrid_choices"), x_value, x_color,
+                ability_index=ability_index,
             ):
                 reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
@@ -1083,7 +1084,7 @@ class RulesEngine:
             if cost_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "ability_activation"
-            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices"), x_value=x_value, restricted_x_color=x_color):
+            if not apply_activated_costs(state, player_id, cid, cost, context=cost_context, hybrid_choices=action.get("hybrid_choices"), x_value=x_value, restricted_x_color=x_color, ability_index=ability_index):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False

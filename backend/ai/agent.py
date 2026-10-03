@@ -2881,7 +2881,7 @@ class AIAgent:
             proposed = max(0, int(targets.get('x_value', 0) or 0))
             targets['x_value'] = next((value for value in range(proposed, -1, -1)
                 if activated_cost_available(state, player_id, cid, mana_cost, x_value=value,
-                                            restricted_x_color=x_color)), 0)
+                                            restricted_x_color=x_color, ability_index=move.get('ability_index'))), 0)
 
         if requires_x:
             try:

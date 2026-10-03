@@ -8,6 +8,49 @@ FLOOR = "this effect can't reduce the mana in that cost to less than one mana"
 
 
 @lru_cache(maxsize=2048)
+def ability_cost_modifier(text):
+    match = re.search(r"\bthis ability costs \{(\d+)\} less to activate (.+?)\.$", text.lower().strip())
+    if not match:
+        return None
+    bases = {
+        'for each other artifact you control': 'other_artifacts',
+        'for each creature card in your graveyard': 'graveyard_creatures',
+        'for each +1/+1 counter on creatures you control': 'creature_counters',
+        'if you control a legendary creature': 'legendary_creature',
+        'if you control a creature with a +1/+1 counter on it': 'counter_creature',
+        'during your turn': 'controller_turn',
+    }
+    basis = bases.get(match[2])
+    if basis is None or 'this ability costs' in text[:match.start()].lower():
+        return None
+    return {'amount': int(match[1]), 'basis': basis, 'effect_text': text[:match.start()].strip()}
+
+
+def ability_cost_reduction(state, source, spec):
+    player = state.players[source.controller]
+    creatures = [state.cards[cid] for cid in player.battlefield
+                 if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in state.cards[cid].types]
+    basis = spec['basis']
+    if basis == 'other_artifacts':
+        units = sum(cid != source.id and state.cards[cid].zone == Zone.BATTLEFIELD
+                    and 'Artifact' in state.cards[cid].types for cid in player.battlefield)
+    elif basis == 'graveyard_creatures':
+        units = sum(state.cards[cid].zone == Zone.GRAVEYARD and 'Creature' in state.cards[cid].types
+                    and not state.cards[cid].is_token for cid in player.graveyard)
+    elif basis == 'creature_counters':
+        units = sum(max(0, card.counters.get('+1/+1', 0)) for card in creatures)
+    elif basis == 'legendary_creature':
+        units = any('Legendary' in (card.type_line or '').split() for card in creatures)
+    elif basis == 'counter_creature':
+        units = any(card.counters.get('+1/+1', 0) > 0 for card in creatures)
+    elif basis == 'controller_turn':
+        units = state.active_player == source.controller
+    else:
+        raise AssertionError(f'Unhandled activation discount: {basis}')
+    return units * spec['amount']
+
+
+@lru_cache(maxsize=2048)
 def parse_activation_modifier(clause, card_name=''):
     power = re.fullmatch(r"(.+), where x is (.+)'s power", clause)
     if power:
@@ -75,7 +118,9 @@ def activation_modifier_gaps(oracle, card_name=''):
     for line in without_reminder_text(oracle or '').lower().splitlines():
         if 'cost' in line and 'to activate' in line and (
                 line.startswith('during ') and turn_cost_taxes(line) is None or
-                'this ability costs' in line):
+                'this ability costs' in line and (':' not in line or
+                    ability_cost_modifier(line.split(':', 1)[1].strip()) is None or
+                    'add ' in line.split(':', 1)[1])):
             gaps.append(line)
     return gaps
 
@@ -90,6 +135,13 @@ def apply_activation_modifiers(context):
     from rules_engine.continuous import printed_abilities_suppressed, _printed_ability_loss_sources
     from rules_engine.combat_constraints import _recipient_body
     from rules_engine.continuous import effective_power
+    if context.ability_kind == 'activated' and context.ability_index is not None:
+        from rules_engine.oracle_effects import extract_activated_abilities
+        ability = next((item for item in extract_activated_abilities(recipient)
+                        if item['index'] == context.ability_index), None)
+        if (ability and ability.get('cost_modifier') and recipient.controller == context.player_id
+                and not printed_abilities_suppressed(state, recipient.id)):
+            context.generic_reduction += ability_cost_reduction(state, recipient, ability['cost_modifier'])
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]
@@ -128,13 +180,13 @@ def apply_activation_modifiers(context):
     return context
 
 
-def activation_cost_view(state, player_id, source_id, mana_cost, *, ability_kind='activated', x_value=0):
+def activation_cost_view(state, player_id, source_id, mana_cost, *, ability_kind='activated', x_value=0, ability_index=None):
     from rules_engine.hooks import CostContext, apply_cost_modifiers
     from rules_engine.mana import _payment_requirements
     source = state.cards[source_id]
     context = apply_cost_modifiers(CostContext(state=state, player_id=player_id,
         card_name=source.name, mana_cost=mana_cost, is_spell=False,
-        source_card_id=source_id, ability_kind=ability_kind))
+        source_card_id=source_id, ability_kind=ability_kind, ability_index=ability_index))
     return {'printed_mana_cost': mana_cost, 'generic_increase': context.generic_increase,
             'generic_reduction': context.generic_reduction, 'floored_reductions': context.floored_reductions,
             'requirements': _payment_requirements(mana_cost, False, x_value, context.generic_reduction,

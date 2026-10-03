@@ -28,9 +28,34 @@ not certification of every effect on either card (including Afterlife).
 - Requirements are computed before automatic mana-source consumption by the
   existing shared planner. This does not establish arbitrary interrupted-cost
   continuations or an explicit human ordering interface.
-- Ability-specific `This ability costs ...` clauses are reported as gaps, not
+- Unsupported ability-specific `This ability costs ...` clauses are reported as gaps, not
   applied to every ability on their card. Unsupported `During ...` activation
   modifiers are also reported instead of disappearing from static-clause filtering.
+
+Selected regular nonmana abilities now carry their authoritative ability index
+through cost availability, checked admission, actual payment, hints and AI X
+materialization/projections. Recognized cost notes are retained in the printed
+label but excluded from the effect text; canonical card Oracle remains unchanged.
+Canonical fixtures cover Tamiyo's Logbook, Deepwood Denizen, Battlefield Butcher,
+Starport Security, Esquire of the King and Hylda's Crown of Winter.
+
+- Supported numeric self-discounts count other controlled battlefield artifacts,
+  creature cards (not tokens) in the controller's graveyard, or +1/+1 counters on
+  controlled battlefield creatures.
+- Supported fixed conditions require a controlled legendary creature, a controlled
+  creature with a +1/+1 counter, or the source controller's turn.
+- Only the selected ability receives its modifier. Missing/unrelated indexes do
+  not provide the discount, and a second ability on the same source keeps its own
+  cost. Mana, cycling, keyword abilities and arbitrary zones are not certified by
+  this implementation.
+- Counts and conditions are live when the cost is determined, but the resulting
+  payment is locked before automatic mana-source consumption. Sacrificing a
+  counted Treasure for the required colored mana does not change that activation's
+  already-determined cost.
+- Generic discounts do not remove colored requirements. Suppressed sources do
+  not contribute a selected printed-ability discount. The shared tap parser now
+  recognizes `tap another target creature`; legal hints exclude the source and
+  checked admission rejects self-targets without costs.
 
 - Increases precede reductions. Recognized one-mana floors belong to each reduction,
   not a global minimum: independent equip reductions can still reach zero.
@@ -74,6 +99,18 @@ AI decisions (22 draw activations, including all 16 Strong/Master cases). Twelve
 logical four-deck replay samples were each repeated twice; a separate two-sample
 run uses the final engine source. Neither is a statistical balance measurement.
 
+Selected-ability follow-up evidence is archived under RCHFiles
+`diagnostics/ability-cost-discounts/20261003T045124Z`. The full suite passed
+3,368 tests; ten later integration cases were added with unchanged production
+code, and the expanded focused suite passed 223. Coverage includes HTTP/SQLite
+rejection/payment/restore, a counted Treasure consumed after cost locking, actual
+tap/pump/draw/drain effects, both seats, colored requirements, suppression,
+controller-relative counts, live conditions and a real two-ability card. Six
+matched Master decisions improve from zero to six actual discounted activations
+against committed `d83236e`; additional three-difficulty traces and twelve
+repeated Strong-AI seat-balanced samples are retained. This is bounded semantic
+and decision evidence, not arbitrary-card or seasoned-player certification.
+
 Independent before/after probes record 18 actual AI decisions per revision with
 full snapshots, hands, battlefield, legal moves, reasons and checked results. The
 baseline is commit `280df82`; these are constructed canonical interaction states,
@@ -92,7 +129,8 @@ abilities for the source-power reduction fixture.
 
 - Extend bestow phasing/type-layer fidelity and broader permissions beyond the
   [implemented casting/resolution/unattachment scope](bestow.md).
-- Extend ability-specific discounts, arbitrary conditions/dynamic expressions,
+- Extend ability-specific discounts beyond the selected regular-ability forms,
+  arbitrary conditions/dynamic expressions,
   copied-name references and other floors with canonical fixtures;
   do not silently interpret arbitrary Oracle clauses. Zirda's companion procedure
   and every unrelated clause on these fixture cards are not certified here.

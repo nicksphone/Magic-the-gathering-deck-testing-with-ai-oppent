@@ -50,7 +50,7 @@ def combat_tax_plan(state, move, player_id):
     for x in range(1, 21):
         projected = deepcopy(state)
         source = state.cards.get(move.get('card_id'))
-        if not source or not apply_activated_costs(projected, player_id, source.id, str(move.get('mana_cost') or ''), x_value=x):
+        if not source or not apply_activated_costs(projected, player_id, source.id, str(move.get('mana_cost') or ''), x_value=x, ability_index=move.get('ability_index')):
             continue
         if projected.players[player_id].life <= 0:
             continue

@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Tamiyo's Logbook",
+    "oracle_id": "d9356199-4ce3-44fa-9463-90fc134088f9",
+    "uri": "https://api.scryfall.com/cards/0edb2d01-9a94-410c-8ab7-ca1b404ab5f0",
+    "scryfall_uri": "https://scryfall.com/card/one/70/tamiyos-logbook?utm_source=api",
+    "mana_cost": "{2}{U}",
+    "type_line": "Artifact — Book",
+    "oracle_text": "{5}{U}, {T}: Draw a card. This ability costs {1} less to activate for each other artifact you control.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": [
+      "U"
+    ]
+  },
+  {
+    "name": "Deepwood Denizen",
+    "oracle_id": "4a6887e3-7a65-4f24-be71-183b00a0ad56",
+    "uri": "https://api.scryfall.com/cards/333f02f7-3b8a-41e3-9ae5-2151539e64ad",
+    "scryfall_uri": "https://scryfall.com/card/mh2/155/deepwood-denizen?utm_source=api",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature — Elf Warrior",
+    "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\n{5}{G}, {T}: Draw a card. This ability costs {1} less to activate for each +1/+1 counter on creatures you control.",
+    "power": "3",
+    "toughness": "2",
+    "keywords": [
+      "Vigilance"
+    ],
+    "colors": [
+      "G"
+    ]
+  },
+  {
+    "name": "Battlefield Butcher",
+    "oracle_id": "2978ba77-c0ce-4411-99c7-ef05dd602c8d",
+    "uri": "https://api.scryfall.com/cards/90c47e31-d4f6-46f3-94b7-1726c4a4a8eb",
+    "scryfall_uri": "https://scryfall.com/card/bro/86/battlefield-butcher?utm_source=api",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "{5}, {T}: Each opponent loses 2 life. This ability costs {1} less to activate for each creature card in your graveyard.",
+    "power": "1",
+    "toughness": "4",
+    "keywords": [],
+    "colors": [
+      "B"
+    ]
+  },
+  {
+    "name": "Starport Security",
+    "oracle_id": "5454dddf-c6e5-4b0d-b96d-4904c13606dc",
+    "uri": "https://api.scryfall.com/cards/238cb1db-6c41-4fe1-bc34-340048dfde18",
+    "scryfall_uri": "https://scryfall.com/card/eoe/39/starport-security?utm_source=api",
+    "mana_cost": "{W}",
+    "type_line": "Artifact Creature — Robot Soldier",
+    "oracle_text": "{3}{W}, {T}: Tap another target creature. This ability costs {2} less to activate if you control a creature with a +1/+1 counter on it.",
+    "power": "1",
+    "toughness": "1",
+    "keywords": [],
+    "colors": [
+      "W"
+    ]
+  },
+  {
+    "name": "Esquire of the King",
+    "oracle_id": "3ccaa78e-f3e5-4de4-b53c-cecd73a73b9c",
+    "uri": "https://api.scryfall.com/cards/8c8bbf73-2b36-4c27-bb69-aadb25dd828c",
+    "scryfall_uri": "https://scryfall.com/card/hoc/166/esquire-of-the-king?utm_source=api",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "{4}{W}, {T}: Creatures you control get +1/+1 until end of turn. This ability costs {2} less to activate if you control a legendary creature.",
+    "power": "1",
+    "toughness": "1",
+    "keywords": [],
+    "colors": [
+      "W"
+    ]
+  },
+  {
+    "name": "Hylda's Crown of Winter",
+    "oracle_id": "a8291d04-240e-456b-8c86-1fb4eb460476",
+    "uri": "https://api.scryfall.com/cards/b0d4a6c0-f00e-45a7-9c88-899460007020",
+    "scryfall_uri": "https://scryfall.com/card/woe/247/hyldas-crown-of-winter?utm_source=api",
+    "mana_cost": "{3}",
+    "type_line": "Legendary Artifact",
+    "oracle_text": "{1}, {T}: Tap target creature. This ability costs {1} less to activate during your turn.\n{3}, Sacrifice Hylda's Crown of Winter: Draw a card for each tapped creature your opponents control.",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": []
+  }
+]

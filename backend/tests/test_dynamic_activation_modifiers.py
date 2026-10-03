@@ -193,7 +193,7 @@ def test_unsupported_amount_references_and_ability_specific_discounts_stay_visib
     clause = "activated abilities of creatures you control cost {x} less to activate, where x is another creature's power"
     assert parse_activation_modifier(clause, 'Agatha of the Vile Cauldron') is None
     assert activation_modifier_gaps(clause, 'Agatha of the Vile Cauldron')
-    assert activation_modifier_gaps('{5}{U}, {T}: Draw a card. This ability costs {1} less to activate for each other artifact you control.')
+    assert activation_modifier_gaps('{7}{U}: Adapt 4. This ability costs {1} less to activate for each instant and sorcery card in your graveyard.')
     assert activation_modifier_gaps('During combat, abilities your opponents activate cost {1} more to activate.')
     for row in ROWS.values():
         assert not activation_modifier_gaps(row['oracle_text'], row['name'])

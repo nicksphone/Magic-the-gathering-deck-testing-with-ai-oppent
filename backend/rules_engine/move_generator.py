@@ -376,7 +376,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             cost = ability["mana_cost"]
             parsed_cost = parse_activated_cost(cost)
             if (not parsed_cost.supported or not activated_cost_available(
-                    state, player_id, cid, cost, restricted_x_color=restricted_x_color(ability["text"]))):
+                    state, player_id, cid, cost, restricted_x_color=restricted_x_color(ability["text"]), ability_index=ability['index'])):
                 continue
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
             if build_ability_spec(state, proxy, player_id, report_unsupported=False).effect.key == "noop":
@@ -394,7 +394,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "ability_index": ability["index"],
                     "ability_label": ability["label"],
                     "mana_cost": cost,
-                    'activation_costs': activation_cost_view(state, player_id, cid, parsed_cost.mana_cost),
+                    'activation_costs': activation_cost_view(state, player_id, cid, parsed_cost.mana_cost, ability_index=ability['index']),
                     "hybrid_symbols": hybrid_payment_symbols(parsed_cost.mana_cost),
                     "target_hints": hints,
                 }

@@ -120,7 +120,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
     )
 
 
-def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated') -> bool:
+def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
         return False
@@ -141,18 +141,18 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         state, player_id, cost.mana_cost, card_name=source.name, reserved_life=cost.pay_life,
         hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color,
         payment_kind="activation", payment_types=set(source.types),
-        ability_kind=ability_kind, source_card_id=source_id,
+        ability_kind=ability_kind, source_card_id=source_id, ability_index=ability_index,
         excluded_sources={source_id} if cost.tap_source or cost.sacrifice_source else None,
     )
 
 
-def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated') -> bool:
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated', ability_index=None) -> bool:
     cost = parse_activated_cost(cost_text)
-    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind):
+    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind, ability_index=ability_index):
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
-    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(source.types), source_id, ability_kind, {source_id} if cost.tap_source or cost.sacrifice_source else None):
+    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(source.types), source_id, ability_kind, {source_id} if cost.tap_source or cost.sacrifice_source else None, ability_index):
         return False
     if cost.tap_source:
         source.tapped = True
@@ -208,10 +208,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     return True
 
 
-def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, source_types: set[str] | None = None, source_id=None, ability_kind='activated', excluded_sources=None) -> bool:
+def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, source_types: set[str] | None = None, source_id=None, ability_kind='activated', excluded_sources=None, ability_index=None) -> bool:
     from rules_engine.mana import auto_pay_cost
 
-    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources)
+    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index)
 
 
 def collect_cost_options(state: MatchState, player_id: int, card) -> list[CostOption]:

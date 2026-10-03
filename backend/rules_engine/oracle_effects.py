@@ -428,7 +428,7 @@ def _looks_static_or_keyword_only(text: str) -> bool:
         return True
     action_verbs = [
         "draw", "destroy", "exile", "counter", "deals", "deal", "create", "return", "search",
-        "sacrifice", "tap target", "untap", "gain", "lose", "discard", "mill", "put ",
+        "sacrifice", "tap target", "tap another target", "untap", "gain", "lose", "discard", "mill", "put ",
     ]
     if any(v in t for v in action_verbs):
         return False
@@ -1121,7 +1121,11 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
         # be duplicated as stack actions here.
         if "add " in text.lower() and "target" not in text.lower():
             continue
-        out.append({"index": index, "mana_cost": cost, "text": text, "label": f"{cost}: {text}"})
+        from rules_engine.activation_modifiers import ability_cost_modifier
+        modifier = ability_cost_modifier(text)
+        out.append({"index": index, "mana_cost": cost,
+                    "text": modifier['effect_text'] if modifier else text,
+                    "cost_modifier": modifier, "label": f"{cost}: {text}"})
     return out
 
 
@@ -1439,7 +1443,7 @@ def _infer_clause_effect(
     if re.search(r'\btap all creatures your opponents control\b',oracle):
         return "tap_all_opponent_creatures", {}
 
-    if re.search(r'\btap target\b',oracle):
+    if re.search(r'\btap (?:another )?target\b',oracle):
         if "nonland permanent" in oracle:
             target = _choose_any_permanent_target(state, controller, action_targets, exclude_types={"Land"})
         else:
