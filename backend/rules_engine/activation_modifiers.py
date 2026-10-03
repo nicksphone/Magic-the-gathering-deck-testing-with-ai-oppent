@@ -9,10 +9,19 @@ FLOOR = "this effect can't reduce the mana in that cost to less than one mana"
 
 @lru_cache(maxsize=2048)
 def parse_activation_modifier(clause, card_name=''):
-    match = re.fullmatch(r"(.+) cost \{(\d+)\} (more|less) to activate( unless they're mana abilities)?", clause)
+    power = re.fullmatch(r"(.+), where x is (.+)'s power", clause)
+    if power:
+        reference = power[2]
+        name = card_name.lower()
+        if not name or not (name == reference or name.startswith(reference + ' ') or name.startswith(reference + ',')):
+            return None
+        clause = power[1]
+    match = re.fullmatch(r"(.+) cost \{(\d+|x)\} (more|less) to activate( unless they're mana abilities)?", clause)
     if not match:
         return None
     head, amount, direction, exception = match.groups()
+    if (amount == 'x') != bool(power) or power and direction != 'less':
+        return None
     scope, subject, nonmana = 'all', None, bool(exception)
     if head == 'activated abilities':
         pass
@@ -25,8 +34,22 @@ def parse_activation_modifier(clause, card_name=''):
         from rules_engine.combat_constraints import _supported_combat_subject
         if subject is None or not _supported_combat_subject(subject, card_name):
             return None
-    return {'amount': int(amount), 'increase': direction == 'more', 'scope': scope,
+    return {'amount': 'source_power' if power else int(amount), 'increase': direction == 'more', 'scope': scope,
             'subject': subject, 'nonmana': nonmana}
+
+
+@lru_cache(maxsize=2048)
+def turn_cost_taxes(oracle):
+    """Recognize a complete paired spell/ability tax, not fragments of triggers."""
+    from rules_engine.oracle_text import without_reminder_text
+    for line in without_reminder_text(oracle or '').lower().splitlines():
+        match = re.fullmatch(
+            r"during your turn, spells your opponents cast cost \{(\d+)\} more to cast "
+            r"and abilities your opponents activate cost \{(\d+)\} more to activate"
+            r"( unless they're mana abilities)?\.?", line.strip())
+        if match:
+            return int(match[1]), int(match[2]), bool(match[3])
+    return None
 
 
 def modifier_specs(oracle, card_name=''):
@@ -44,10 +67,17 @@ def modifier_specs(oracle, card_name=''):
 def activation_modifier_gaps(oracle, card_name=''):
     from rules_engine.combat_constraints import static_clauses
     clauses = static_clauses(oracle)
-    return [clause for index, clause in enumerate(clauses)
+    gaps = [clause for index, clause in enumerate(clauses)
             if re.search(r'(?:activated abilities|abilities you activate).*cost.*to activate', clause)
             and (parse_activation_modifier(clause, card_name) is None or
                  index+1 < len(clauses) and clauses[index+1].startswith("this effect can't reduce") and clauses[index+1] != FLOOR)]
+    from rules_engine.oracle_text import without_reminder_text
+    for line in without_reminder_text(oracle or '').lower().splitlines():
+        if 'cost' in line and 'to activate' in line and (
+                line.startswith('during ') and turn_cost_taxes(line) is None or
+                'this ability costs' in line):
+            gaps.append(line)
+    return gaps
 
 
 def apply_activation_modifiers(context):
@@ -59,6 +89,16 @@ def apply_activation_modifiers(context):
         return context
     from rules_engine.continuous import printed_abilities_suppressed, _printed_ability_loss_sources
     from rules_engine.combat_constraints import _recipient_body
+    from rules_engine.continuous import effective_power
+    for player in state.players.values():
+        for cid in player.battlefield:
+            source = state.cards[cid]
+            taxes = turn_cost_taxes(getattr(source, 'oracle_text', '') or '')
+            if (taxes and source.zone == Zone.BATTLEFIELD and state.active_player == source.controller
+                    and context.player_id != source.controller
+                    and not (taxes[2] and context.ability_kind == 'mana')
+                    and not printed_abilities_suppressed(state, cid)):
+                context.generic_increase += taxes[1]
     sources = [(state.cards[cid], tuple(modifier_specs(state.cards[cid].oracle_text, state.cards[cid].name)))
                for player in state.players.values() for cid in player.battlefield
                if 'to activate' in getattr(state.cards[cid], 'oracle_text', '').lower()
@@ -78,12 +118,13 @@ def apply_activation_modifiers(context):
             if spec['subject'] and (recipient.zone != Zone.BATTLEFIELD or _recipient_body(
                     state, source, recipient, f"{spec['subject']} can't attack") is None):
                 continue
+            amount = max(0, effective_power(state, source.id)) if spec['amount'] == 'source_power' else spec['amount']
             if spec['increase']:
-                context.generic_increase += spec['amount']
+                context.generic_increase += amount
             elif spec['floor']:
-                context.floored_reductions.append((spec['floor'], spec['amount']))
+                context.floored_reductions.append((spec['floor'], amount))
             else:
-                context.generic_reduction += spec['amount']
+                context.generic_reduction += amount
     return context
 
 

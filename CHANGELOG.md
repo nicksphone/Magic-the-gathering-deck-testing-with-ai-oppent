@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03 - Dynamic activation discounts and paired turn taxes
+
+- Batched two generic cost families: source-effective-power activation reductions and controller-turn opponent spell/ability taxes. Existing recipient scope, mana floors, colored requirements, mana exceptions and suppression remain shared across hints and payment; both halves of the turn tax use one complete-clause recognizer. Canonical Agatha/Tithe fixtures retain Scryfall provenance, without named-card rules dispatch or fabricated decks.
+- Unsupported ability-specific discounts and unrecognized `During ...` modifiers now produce explicit gaps rather than disappearing from static-clause filtering. Arbitrary conditions/expressions, copied-name references, payment-order choices and unrelated card abilities remain unfinished. Corrected stale bestow limitations in README and related scope documents.
+- Validation: 3,311 isolated backend tests passed (279 deprecation warnings, 434.47s). Two additional checked-instant tests were then added without changing production code; the expanded focused suite passed 158 tests. Frontend lint, unit/contracts and production build passed; both live health checks returned 200. A 12-sample four-deck seat-balanced matrix, repeated twice, resolved without timeout/determinism/drift/anomaly; a separate final-source two-sample repeated run also passed. Matrix source versions are identified in the archive.
+- The committed baseline fails 25 of the first 37 canonical cases, versus all passing after the patch. A grammar-only probe preserves 98 canonical cost-related cards; 24 constructed AI decisions execute 22 discounted draw activations, including all 16 Strong/Master cases. These are rule/decision fixtures, not whole-card, balance or expert-AI certification. README, plan and Graphify updated; verified evidence/source archives and closed scratch cleanup are on RCHFiles `diagnostics/dynamic-activation-costs/20261003T042248Z`. Superseded failures are retained separately; live databases and the user's untracked coder-plan remain intact.
+
 ## 2026-10-03 - Replay progress and atomic diagnostic records
 
 - Optional `--progress` emits flushed JSON counts, observed-average ETA, last-sample outcome/determinism details and terminal failures. It atomically replaces `<output>.progress.json`; failed replacements preserve the previous record and clean temporary files. Logical seat-balanced samples are distinct from their two repeatability executions, and default CLI output is unchanged.

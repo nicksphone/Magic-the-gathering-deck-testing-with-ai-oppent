@@ -56,7 +56,7 @@ This is combat-clause support, not certification that these entire cards work.
 Oppressive Rays's numeric activation-cost modifier is now implemented in the
 [shared activation payment increment](activation-modifiers.md). Noble Quarry's
 bestow alternative casting, Aura transition, illegal-target fallback and
-unattachment transition are not implemented. Unsupported forms have explicit
+unattachment now have [bounded execution support](bestow.md). Unsupported forms have explicit
 coverage/preflight warnings; previously these missing mechanics could go unseen.
 No fabricated enchant instruction, card definition or competitive deck was used
 to make the integration tests pass. Scryfall omits power/toughness for
@@ -64,13 +64,13 @@ noncreatures; the fixture preserves raw provenance and normalizes absent stats
 to null only for the reusable test adapter.
 
 Rules reference: [Comprehensive Rules](https://media.wizards.com/2026/downloads/MagicCompRules%2020260619.pdf),
-CR 508.1/509.1 for declared costs and CR 702.103 for outstanding bestow semantics.
+CR 508.1/509.1 for declared costs and CR 702.103 for bestow semantics.
 
 ## Known Limitations and Next Upgrades
 
-- Finish bestow and remaining activation-cost forms end to end, including actual
-  human/AI announcements, effective spell characteristics, target legality,
-  cost modification, resolution, source/target departures and restart.
+- Extend bestow phasing/type layers and arbitrary permissions beyond the bounded
+  casting/resolution/unattachment implementation. Extend activation-cost forms
+  beyond supported numeric/source-power and paired controller-turn modifiers.
 - Finish qualified blocker subsets, temporary/granted targeted requirements,
   nonmana declaration costs, mana-source choices and interrupted payments.
 - Continue wide-board/resource/hidden-choice planning; small scenario or replay

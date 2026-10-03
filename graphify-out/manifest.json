@@ -1075,6 +1075,10 @@
     "mtime": 1790714533.4034598,
     "hash": "a321f43680bf69f4a9ee6a2a8aeb1d8a"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_dynamic_activation_modifiers.py": {
+    "mtime": 1791001773.0327215,
+    "hash": "dc562ddcf330f89c7076390562ad641a"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_combat_minimums_payments.py": {
     "mtime": 1790982353.9989707,
     "hash": "b1022c7e9e8ad0be2f61647feb86f5d1"
@@ -1316,8 +1320,8 @@
     "hash": "500b98d3fc253e4658cce68aeb042bc7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/hooks.py": {
-    "mtime": 1790996357.9831333,
-    "hash": "58d81e8f62f497ebb049a432fe27091c"
+    "mtime": 1791000964.9754076,
+    "hash": "726d558dfe566ec8b38562d84e9734ef"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/alternative_casts.py": {
     "mtime": 1790745844.813543,
@@ -1376,8 +1380,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/activation_modifiers.py": {
-    "mtime": 1790993915.3240097,
-    "hash": "fbcfa02446fef7b602b602e1a091ab21"
+    "mtime": 1791001294.2270875,
+    "hash": "394115a129375d79e901e071808f0986"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/ability_model.py": {
     "mtime": 1790716590.4651358,
@@ -1720,16 +1724,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1790999573.7725632,
-    "hash": "34ace1814a55b28ea932dd1a56aed9e6"
+    "mtime": 1791001114.5419078,
+    "hash": "c05e6fb17096fd9687448f2b3615af89"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1790999573.7715633,
-    "hash": "5840b7417cf65c14030f4bc7ffc9497a"
+    "mtime": 1791001114.5459077,
+    "hash": "a528328bd2be1ce9c9e15de5c69a5ab0"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1790999573.774563,
-    "hash": "3c10429386c5546c8c5c3d9fa83ddcb7"
+    "mtime": 1791001832.0787885,
+    "hash": "ff50436d8cbd86d26f1c6acf5670a862"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -1836,8 +1840,8 @@
     "hash": "94318a1a8f3e16c38e38050f8c9a437e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/recipient-combat.md": {
-    "mtime": 1790993969.8650954,
-    "hash": "b23b9fce607eec3d1136fde715156f0a"
+    "mtime": 1791001294.2270875,
+    "hash": "04cb8d5e7a2bbbf9ffa60ea23756f27b"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/conditional-combat.md": {
     "mtime": 1790982555.166933,
@@ -1880,8 +1884,8 @@
     "hash": "03cb594e5566cc404332287739ccf465"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/activation-modifiers.md": {
-    "mtime": 1790993969.8630953,
-    "hash": "4b4c07549e3e04123b795ca3c0d0e9b1"
+    "mtime": 1791001832.0787885,
+    "hash": "fb3d594785218f5d2b57f97af3c19858"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/combat-setup.md": {
     "mtime": 1790999573.7725632,

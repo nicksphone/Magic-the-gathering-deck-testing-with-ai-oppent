@@ -149,6 +149,8 @@ _SPELL_TAX_RE = re.compile(
 
 def _apply_static_spell_taxes(context: CostContext) -> CostContext:
     from rules_engine.continuous import printed_abilities_suppressed
+    from rules_engine.activation_modifiers import turn_cost_taxes
+    from game_state.state import Zone
     """Apply generic spell taxes from supported battlefield Oracle text."""
     if context.state is None or not context.is_spell or not context.spell_types:
         return context
@@ -164,6 +166,10 @@ def _apply_static_spell_taxes(context: CostContext) -> CostContext:
             if printed_abilities_suppressed(context.state, cid):
                 continue
             text = (getattr(source, "oracle_text", "") or "").lower()
+            taxes = turn_cost_taxes(text)
+            if (taxes and source.zone == Zone.BATTLEFIELD
+                    and context.state.active_player == source.controller and context.player_id != source.controller):
+                increase += taxes[0]
             for match in _SPELL_TAX_RE.finditer(text):
                 scope = (match.group("scope") or "").strip()
                 if scope == "your" and source.controller != context.player_id:
