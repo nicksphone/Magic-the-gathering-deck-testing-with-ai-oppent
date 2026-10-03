@@ -365,12 +365,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
 
-    # Activated abilities expose common tap/mana/life/discard/sacrifice costs.
-    for cid in player.battlefield:
+    # Source-bound discard abilities activate from hand; other supported forms from battlefield.
+    from rules_engine.oracle_effects import activation_source_eligible
+    for cid in [*player.battlefield, *player.hand]:
         card = state.cards[cid]
         if printed_abilities_suppressed(state, cid):
             continue
         for ability in extract_activated_abilities(card):
+            if not activation_source_eligible(state, player_id, cid, ability):
+                continue
             if not can_activate_in_current_timing(state, ability["text"], player_id):
                 continue
             cost = ability["mana_cost"]

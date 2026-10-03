@@ -1,0 +1,89 @@
+[
+  {
+    "name": "Colossal Skyturtle",
+    "oracle_id": "871e4c4e-8105-4cb9-b1cd-53c5f8e64494",
+    "uri": "https://api.scryfall.com/cards/f40bd797-4d12-4098-a1a8-d7e5b7b82ac9",
+    "scryfall_uri": "https://scryfall.com/card/neo/216/colossal-skyturtle?utm_source=api",
+    "mana_cost": "{4}{G}{G}{U}",
+    "type_line": "Enchantment Creature — Turtle",
+    "oracle_text": "Flying, ward {2}\nChannel — {2}{G}, Discard this card: Return target card from your graveyard to your hand.\nChannel — {1}{U}, Discard this card: Return target creature to its owner's hand.",
+    "power": "6",
+    "toughness": "5",
+    "keywords": [
+      "Flying",
+      "Ward",
+      "Channel"
+    ],
+    "colors": [
+      "G",
+      "U"
+    ]
+  },
+  {
+    "name": "Twinshot Sniper",
+    "oracle_id": "b72fd535-0051-4f59-9d99-75895f751006",
+    "uri": "https://api.scryfall.com/cards/08a86009-4637-4b6c-9d36-367151583668",
+    "scryfall_uri": "https://scryfall.com/card/neo/168/twinshot-sniper?utm_source=api",
+    "mana_cost": "{3}{R}",
+    "type_line": "Artifact Creature — Goblin Archer",
+    "oracle_text": "Reach\nWhen this creature enters, it deals 2 damage to any target.\nChannel — {1}{R}, Discard this card: It deals 2 damage to any target.",
+    "power": "2",
+    "toughness": "3",
+    "keywords": [
+      "Reach",
+      "Channel"
+    ],
+    "colors": [
+      "R"
+    ]
+  },
+  {
+    "name": "Greater Tanuki",
+    "oracle_id": "b2d19232-9a80-4ea2-9aa7-c47b4719106c",
+    "uri": "https://api.scryfall.com/cards/65a193bb-22f3-4732-93cd-877cd8c8417c",
+    "scryfall_uri": "https://scryfall.com/card/dsc/181/greater-tanuki?utm_source=api",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Enchantment Creature — Dog",
+    "oracle_text": "Trample\nChannel — {2}{G}, Discard this card: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "power": "6",
+    "toughness": "5",
+    "keywords": [
+      "Trample",
+      "Channel"
+    ],
+    "colors": [
+      "G"
+    ]
+  },
+  {
+    "name": "Mirrorshell Crab",
+    "oracle_id": "cd727e02-5064-4b89-9398-e3cc4463ba56",
+    "uri": "https://api.scryfall.com/cards/0394c8df-2e8a-4477-93b7-569934d7b936",
+    "scryfall_uri": "https://scryfall.com/card/neo/63/mirrorshell-crab?utm_source=api",
+    "mana_cost": "{5}{U}{U}",
+    "type_line": "Artifact Creature — Crab",
+    "oracle_text": "Ward {3} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {3}.)\nChannel — {2}{U}, Discard this card: Counter target spell or ability unless its controller pays {3}.",
+    "power": "5",
+    "toughness": "7",
+    "keywords": [
+      "Ward",
+      "Channel"
+    ],
+    "colors": [
+      "U"
+    ]
+  },
+  {
+    "name": "Swamp",
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "uri": "https://api.scryfall.com/cards/b7387103-1df1-4fd0-9e91-1544509792c7",
+    "scryfall_uri": "https://scryfall.com/card/trk/321/swamp?utm_source=api",
+    "mana_cost": "",
+    "type_line": "Basic Land — Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "power": null,
+    "toughness": null,
+    "keywords": [],
+    "colors": []
+  }
+]

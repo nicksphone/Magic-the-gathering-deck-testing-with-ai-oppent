@@ -13,7 +13,7 @@ CHOOSE_TWO_RE = re.compile(r"choose two(?:\s*[—-])?", re.IGNORECASE)
 FIXED_DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage", re.IGNORECASE)
 TARGET_KEYS = (
     "player_targets", "creature_targets", "planeswalker_targets", "stack_targets",
-    "graveyard_spell_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+    "graveyard_spell_targets", "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
     "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
     "land_targets", "noncreature_permanent_targets",
 )
@@ -116,7 +116,7 @@ def build_cast_hints(
         hints["choice_schema"]["target_card_id"] = {"type": "string", "required": False}
     if hints.get("permanent_targets"):
         hints["choice_schema"]["target_card_id"] = {"type": "string", "required": False}
-    if hints.get("graveyard_creature_targets"):
+    if hints.get("graveyard_creature_targets") or hints.get("graveyard_card_targets"):
         hints["choice_schema"]["target_card_id"] = {"type": "string", "required": False}
     if hints.get("aura_targets"):
         hints["choice_schema"]["target_card_id"] = {

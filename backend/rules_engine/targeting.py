@@ -161,6 +161,8 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if target_hints.get("permanent_targets") and ("target permanent" in mode_oracle or "nonland permanent" in mode_oracle or "return target" in mode_oracle):
         if not action_targets.get("target_card_id") and not (action_targets.get("target_card_ids") or []):
             return False, "A permanent target is required."
+    if target_hints.get("graveyard_card_targets") and not action_targets.get("target_card_id"):
+        return False, "A graveyard card target is required."
     if target_hints.get("graveyard_creature_targets") and ("graveyard" in mode_oracle or "reanimate" in mode_oracle):
         if not action_targets.get("target_card_id"):
             return False, "A graveyard creature target is required."
@@ -199,13 +201,13 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         for key in (
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
             "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
-            "graveyard_creature_targets", "graveyard_permanent_targets",
+            "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
         ):
             candidate_ids.update(str(item.get("id")) for item in (target_hints.get(key) or []) if item.get("id") is not None)
         candidate_surface_present = bool(candidate_ids) or any(key in target_hints for key in (
             "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
-            "graveyard_creature_targets", "graveyard_permanent_targets",
+            "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
         )) or "planeswalker_targets" in target_hints
         if candidate_surface_present and any(str(cid) not in candidate_ids for cid in selected_card_ids):
             return False, "The selected card is not a legal target for this effect."

@@ -95,7 +95,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                        {**pending['effect_payload'], 'recipients': ids})
         resume_paused_resolution(state, pending)
         return True
-    if pending and pending["kind"] in {"ward_payment", "ward_cost_cards"}:
+    if pending and pending["kind"] in {"ward_payment", "ward_cost_cards", "counter_payment"}:
         from rules_engine.ward import finish_ward_choice
         return finish_ward_choice(state, player_id, action)
     if pending and pending["kind"] == "attacking_token_target":

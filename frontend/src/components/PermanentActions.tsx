@@ -24,7 +24,7 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
   const hints = move.target_hints;
   const targetText = move.ability_label ?? "";
   const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
-  const options = [...new Map([...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []), ...(hints?.permanent_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []), ...(hints?.land_targets ?? []), ...(hints?.artifact_targets ?? []), ...(hints?.enchantment_targets ?? []), ...(hints?.noncreature_permanent_targets ?? []), ...(hints?.aura_targets ?? []), ...(move.targets ?? [])].map((target) => [target.id, target])).values()];
+  const options = [...new Map([...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []), ...(hints?.permanent_targets ?? []), ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []), ...(hints?.land_targets ?? []), ...(hints?.artifact_targets ?? []), ...(hints?.enchantment_targets ?? []), ...(hints?.noncreature_permanent_targets ?? []), ...(hints?.aura_targets ?? []), ...(move.targets ?? [])].map((target) => [target.id, target])).values()];
   return <article className="cast-card-box">
     <strong>{move.card_name}: {move.ability_label}</strong>
     <small>{move.mana_cost}</small>
@@ -72,7 +72,7 @@ export function PermanentActions(props: Props) {
   const actions = props.moves.filter((move) => ["activate_ability", "crew", "ninjutsu"].includes(move.type));
   const missing = props.moves.filter((move) => !handled.has(move.type));
   return <>
-    {actions.length ? <div className="hand-row" aria-label="Permanent and combat abilities">{actions.map((move) => {
+    {actions.length ? <div className="hand-row" aria-label="Card and combat abilities">{actions.map((move) => {
       const key = `${move.type}:${move.card_id}:${move.ability_index}:${move.return_card_id}`;
       if (move.type === "activate_ability") return <AbilityAction key={key} {...props} move={move} />;
       if (move.type === "crew") return <CrewAction key={key} {...props} move={move} />;

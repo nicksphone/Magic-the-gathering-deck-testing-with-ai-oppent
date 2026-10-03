@@ -1023,15 +1023,17 @@ class RulesEngine:
 
         elif kind == "activate_ability":
             cid = action.get("card_id")
-            if not cid or cid not in player.battlefield:
+            if not cid or cid not in state.cards:
                 apply_state_based_actions(state)
                 return
             abilities = extract_activated_abilities(state.cards[cid])
             ability_index = int(action.get("ability_index", -1))
             ability = next((item for item in abilities if item["index"] == ability_index), None)
-            if ability is None:
+            from rules_engine.oracle_effects import activation_source_eligible
+            if ability is None or not activation_source_eligible(state, player_id, cid, ability):
                 apply_state_based_actions(state)
                 return
+            activation_source_zone = state.cards[cid].zone
             if not can_activate_in_current_timing(state, ability["text"], player_id):
                 reject("Ability can only be activated at sorcery speed")
                 return
@@ -1099,7 +1101,8 @@ class RulesEngine:
                                 "__announced_targets": dict(action_targets),
                                 "__ward_trigger_specs": ward_specs,
                                 "__ability_target_text": ability["text"]}
-            if state.cards[cid].zone != Zone.BATTLEFIELD and state.cards[cid].last_known_battlefield:
+            if (activation_source_zone == Zone.BATTLEFIELD and state.cards[cid].zone != Zone.BATTLEFIELD
+                    and state.cards[cid].last_known_battlefield):
                 resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)
             add_to_stack(
                 state,

@@ -44,6 +44,7 @@ class ActivatedCost:
     tap_source: bool = False
     pay_life: int = 0
     discard_cards: int = 0
+    discard_source: bool = False
     sacrifice_creatures: int = 0
     sacrifice_kind: str = "creature"
     sacrifice_source: bool = False
@@ -57,6 +58,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
     pay_life = discard_cards = sacrifice_creatures = 0
     sacrifice_kind = "creature"
     sacrifice_source = False
+    discard_source = False
     supported = True
     for part in (segment.strip() for segment in (cost_text or "").split(",")):
         if not part:
@@ -94,6 +96,9 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             elif "ENCHANTMENT" in upper:
                 sacrifice_kind = "enchantment"
         elif "DISCARD" in upper and "CARD" in upper:
+            if upper == 'DISCARD THIS CARD':
+                discard_source = True
+                continue
             match = ACTIVATED_DISCARD_RE.search(upper)
             if not match:
                 supported = False
@@ -113,6 +118,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
         tap_source=tap_source,
         pay_life=pay_life,
         discard_cards=discard_cards,
+        discard_source=discard_source,
         sacrifice_creatures=sacrifice_creatures,
         sacrifice_kind=sacrifice_kind,
         sacrifice_source=sacrifice_source,
@@ -126,9 +132,11 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     source = state.cards[source_id]
     player = state.players[player_id]
-    if cost.tap_source and source.tapped:
+    if cost.tap_source and (source.zone != Zone.BATTLEFIELD or source.tapped):
         return False
-    if not can_pay_life(state, player_id, cost.pay_life) or sum(not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
+    if cost.discard_source and (source_id not in player.hand or source.zone != Zone.HAND):
+        return False
+    if not can_pay_life(state, player_id, cost.pay_life) or sum(cid != source_id and not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
         return False
     creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind)
     if cost.sacrifice_source:
@@ -161,6 +169,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         pay_life(state, player_id, cost.pay_life)
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, was_creature_on_battlefield
+    if cost.discard_source:
+        from rules_engine.zone_actions import discard_selected
+        if not discard_selected(state, player_id, [source_id]):
+            return False
     for _ in range(cost.discard_cards):
         discard_id = _first_discardable_card(state, player_id, exclude={source_id})
         if discard_id is None:

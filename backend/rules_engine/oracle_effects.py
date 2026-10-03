@@ -138,9 +138,20 @@ CAST_INSTANT_FROM_GRAVEYARD_RE = re.compile(
     re.IGNORECASE,
 )
 COUNTER_UNLESS_PAY_RE = re.compile(
-    r"counter target (?P<kind>noncreature )?spell unless its controller pays\s+(?P<cost>\{[^}]+\}(?:\{[^}]+\})*)",
+    r"counter target (?P<kind>noncreature )?(?P<objects>spell(?: or ability)?|(?:activated or triggered |activated |triggered )?ability) unless its controller pays\s+(?P<cost>\{[^}]+\}(?:\{[^}]+\})*)",
     re.IGNORECASE,
 )
+
+
+def _counter_unless_kinds(match):
+    objects = match['objects'].lower()
+    if objects == 'spell or ability':
+        return ['spell', 'activated', 'triggered']
+    if objects in {'ability', 'activated or triggered ability'}:
+        return ['activated', 'triggered']
+    return [objects.split()[0]]
+
+
 COUNTER_TARGET_SPELL_RE = re.compile(
     r"\bcounter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\b",
     re.IGNORECASE,
@@ -227,6 +238,7 @@ def infer_effect_from_oracle(
             "target_stack_id": target_stack_id,
             "unless_cost": unless_match.group("cost").upper(),
             "target_kind": "noncreature" if unless_match.group("kind") else "any",
+            "stack_kinds": _counter_unless_kinds(unless_match),
             "pay_unless_counter": action_targets.get("pay_unless_counter"),
         }
     if COUNTER_TARGET_SPELL_RE.search(oracle):
@@ -664,9 +676,12 @@ def inspect_target_hints(
 
     if (COUNTER_TARGET_SPELL_RE.search(oracle)
             or "counter target activated ability" in oracle or "counter target triggered ability" in oracle
-            or "counter target activated or triggered ability" in oracle or COPY_STACK_RE.search(oracle)):
+            or "counter target activated or triggered ability" in oracle or COUNTER_UNLESS_PAY_RE.search(oracle)
+            or COPY_STACK_RE.search(oracle)):
         stack_restrictions = infer_target_restrictions(state, oracle, controller)
         allowed_kinds = set()
+        if unless_match := COUNTER_UNLESS_PAY_RE.search(oracle):
+            allowed_kinds.update(_counter_unless_kinds(unless_match))
         if COUNTER_TARGET_SPELL_RE.search(oracle):
             allowed_kinds.add("spell")
         if "counter target activated ability" in oracle:
@@ -674,6 +689,8 @@ def inspect_target_hints(
         if "counter target triggered ability" in oracle:
             allowed_kinds.add("triggered")
         if "counter target activated or triggered ability" in oracle:
+            allowed_kinds.update(("activated", "triggered"))
+        if "counter target spell or ability" in oracle or "counter target ability" in oracle:
             allowed_kinds.update(("activated", "triggered"))
         for match in COPY_STACK_RE.finditer(oracle):
             kind = match.group(1)
@@ -757,7 +774,14 @@ def inspect_target_hints(
             if ("Artifact" in state.cards[cid].types or "Enchantment" in state.cards[cid].types)
         ]
     if "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
-        hints["graveyard_creature_targets"] = graveyard_creatures
+        if re.search(r"return target card from (?:your|a) graveyard", oracle):
+            hints["graveyard_card_targets"] = [
+                {"id": cid, "name": state.cards[cid].name}
+                for pid in state.players for cid in state.players[pid].graveyard
+                if "your graveyard" not in oracle or pid == controller
+            ]
+        else:
+            hints["graveyard_creature_targets"] = graveyard_creatures
         graveyard_permanents = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
@@ -896,7 +920,7 @@ def clause_target_assignments(
         hints = inspect_target_hints(state, clause_card, controller, announced)
         card_target = "target" in clause and any(key in hints for key in (
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
-            "artifact_targets", "enchantment_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "artifact_targets", "enchantment_targets", "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
         ))
         allowed = {"target_card_id": card_target, "target_player": "player_targets" in hints,
                    "target_stack_id": "stack_targets" in hints}
@@ -1123,10 +1147,20 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
             continue
         from rules_engine.activation_modifiers import ability_cost_modifier
         modifier = ability_cost_modifier(text)
+        from rules_engine.costs import parse_activated_cost
         out.append({"index": index, "mana_cost": cost,
                     "text": modifier['effect_text'] if modifier else text,
+                    "activation_zone": 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
     return out
+
+
+def activation_source_eligible(state, player_id, card_id, ability):
+    card = state.cards.get(card_id)
+    zone = ability.get('activation_zone', 'battlefield')
+    return (card is not None and card.zone.value == zone
+            and card_id in getattr(state.players[player_id], zone)
+            and (zone == 'hand' or card.controller == player_id))
 
 
 def crew_value(card: CardInstance) -> int | None:

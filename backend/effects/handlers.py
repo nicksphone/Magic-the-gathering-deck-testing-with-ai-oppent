@@ -748,22 +748,35 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
 def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) -> None:
     """Counter a spell unless its controller chooses and can pay the tax.
 
-    Automated games use the conservative default of paying when legal. API
-    callers can provide ``pay_unless_counter`` to model the target player's
-    actual choice; the spell still cannot be countered if its target is
-    uncounterable.
+    Human target controllers receive a durable owned payment choice. Direct
+    automated callers retain the optional legacy override and pay-if-legal
+    default. Declared stack kinds distinguish spells and abilities.
     """
     target_stack_id = payload.get("target_stack_id")
     item = next((entry for entry in state.stack if entry.id == target_stack_id), None)
     if item is None:
         return
     from rules_engine.targeting import spell_cant_be_countered, stack_object_kind, stack_source_card
-    if stack_object_kind(state, item) != "spell":
+    kind = stack_object_kind(state, item)
+    if kind not in payload.get('stack_kinds', ['spell']):
         return
     source = stack_source_card(state, item)
-    if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
+    if kind == 'spell' and payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
         return
-    if payload.get("uncounterable") or spell_cant_be_countered(state, item):
+    if item.controller in state.mechanic_choice_players:
+        from rules_engine.ward import can_pay
+        cost = {'kind': 'mana', 'cost': str(payload.get('unless_cost') or '{2}')}
+        state.pending_mechanic_choice = {
+            'kind': 'counter_payment', 'player_id': item.controller, 'count': 1,
+            'options': ['decline', 'pay'] if can_pay(state, item.controller, cost) else ['decline'],
+            'option_labels': {'pay': f"Pay {cost['cost']}", 'decline': 'Decline payment'},
+            'label': f"Pay {cost['cost']} to keep {item.label}?", 'ward_cost': cost,
+            'effect_payload': {**payload, 'ward_cost': cost['cost']}, 'controller': controller,
+        }
+        state.priority_player = item.controller
+        state.passed_priority = set()
+        return
+    if payload.get("uncounterable") or (spell_cant_be_countered(state, item) if kind == 'spell' else (item.payload or {}).get('uncounterable')):
         state.log.append(f"{item.label} can't be countered.")
         return
 
@@ -780,7 +793,8 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
             state.log.append(f"{state.players[item.controller].name} pays {cost} for {item.label}.")
             return
         state.log.append(f"{state.players[item.controller].name} cannot pay {cost} for {item.label}.")
-    counter_spell(state, controller, {"target_stack_id": target_stack_id})
+    handler = counter_spell if kind == 'spell' else counter_ability
+    handler(state, controller, {"target_stack_id": target_stack_id})
 
 
 def counter_ability(state: MatchState, controller: int, payload: dict) -> None:

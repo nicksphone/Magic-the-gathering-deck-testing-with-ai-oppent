@@ -224,10 +224,10 @@ class AIAgent:
                 selected = preferred_recipients(state, player_id, available)
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
                                   reasoning='Evaluate all counter kinds together; avoid self-poison and strengthen favorable public recipients')
-            if choice["kind"] in {"ward_payment", "ward_cost_cards"}:
+            if choice["kind"] in {"ward_payment", "ward_cost_cards", "counter_payment"}:
                 selected = self._ward_selection(state, player_id, choice)
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected},
-                                  reasoning="Compare ward payment with losing the targeted stack object")
+                                  reasoning="Compare stack payment with losing the targeted stack object")
             if choice["kind"] == "opening_hand":
                 # ponytail: free-entry heuristic; symmetric-effect matchup planning remains open.
                 candidates = [cid for cid in options if cid in state.cards]
@@ -2753,7 +2753,7 @@ class AIAgent:
                 targets["target_card_id"] = best_land["id"]
                 targets["target_card_name"] = best_land.get("name") or ""
 
-        graveyard_creature_targets = hints.get("graveyard_creature_targets") or []
+        graveyard_creature_targets = hints.get("graveyard_creature_targets") or hints.get("graveyard_card_targets") or []
         if graveyard_creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(
                 graveyard_creature_targets,

@@ -232,10 +232,12 @@ def finish_ward_choice(state, player, action):
             from rules_engine.zone_actions import sacrifice_selected
             if not sacrifice_selected(state, player, ids):
                 return False
-        state.log.append(f"{state.players[player].name} pays ward: {payload['ward_cost']}.")
+        payment = 'counter tax' if pending['kind'] == 'counter_payment' else 'ward'
+        state.log.append(f"{state.players[player].name} pays {payment}: {payload['ward_cost']}.")
     elif item is not None:
         handler = counter_spell if stack_object_kind(state, item) == 'spell' else counter_ability
-        handler(state, pending['controller'], {'target_stack_id': item.id})
+        handler(state, pending['controller'], {'target_stack_id': item.id,
+            'uncounterable': bool(payload.get('uncounterable')) if pending['kind'] == 'counter_payment' else False})
     state.pending_mechanic_choice = None
     resume_paused_resolution(state, pending)
     return True

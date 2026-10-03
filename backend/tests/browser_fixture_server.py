@@ -51,6 +51,24 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'channel_1', 'channel_2', 'counter_payment_1', 'counter_payment_2'}:
+        from tests.test_hand_activations import board, hand_card, add
+        from tests.test_counterability_scope import add_card
+        seat = int(face_kind[-1])
+        state = board(seat)
+        state.mechanic_choice_players = {1, 2}
+        if face_kind.startswith('channel_'):
+            hand_card(state, 'Colossal Skyturtle', seat)
+            add_card(state, 'Lightning Bolt', Zone.GRAVEYARD, seat)
+            state.players[seat].mana_pool.update(C=2, G=1)
+        else:
+            hand_card(state, 'Mirrorshell Crab', seat)
+            source = add(state, 'Azure Mage', 3-seat)
+            state.stack.append(StackItem(state.allocate_object_id(), source.id, 3-seat,
+                                         'Azure Mage ability', 'draw_cards', {'count': 1}))
+            state.players[seat].mana_pool.update(C=2, U=1)
+            state.players[3-seat].mana_pool['C'] = 3
+        return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
     if face_kind in {'bestow_1', 'bestow_2'}:
         from tests.test_bestow import cast_board
         state, _, _ = cast_board(int(face_kind[-1]))

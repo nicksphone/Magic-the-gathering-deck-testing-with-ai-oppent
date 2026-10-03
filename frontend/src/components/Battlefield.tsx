@@ -580,6 +580,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
+              ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []),
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
@@ -743,7 +744,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     ...(modeHints?.creature_targets ?? []), ...(modeHints?.planeswalker_targets ?? []),
                     ...(modeHints?.permanent_targets ?? []), ...(modeHints?.artifact_targets ?? []),
                     ...(modeHints?.enchantment_targets ?? []), ...(modeHints?.land_targets ?? []),
-                    ...(modeHints?.graveyard_creature_targets ?? []), ...(modeHints?.graveyard_permanent_targets ?? []),
+                    ...(modeHints?.graveyard_card_targets ?? []), ...(modeHints?.graveyard_creature_targets ?? []), ...(modeHints?.graveyard_permanent_targets ?? []),
                   ].map((option) => [option.id, option])).values()];
                   return <div key={`${card.id}-${mode}`} className="mode-target-choice">
                     <label>{mode}</label>

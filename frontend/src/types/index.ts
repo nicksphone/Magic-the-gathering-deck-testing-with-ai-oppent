@@ -104,7 +104,7 @@ export type MatchState = {
   sideboarding?: Record<string, { mainboard: DeckItem[]; sideboard: DeckItem[]; applied: boolean }>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "scry" | "scry_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "saga_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
+    kind: "scry" | "scry_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "saga_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
     player_id: number;
     options?: string[];
     count?: number;
@@ -133,7 +133,7 @@ export type MatchState = {
 export type LegalMove = {
   cast_variant?: 'bestow';
   selected_face_index?: number;
-  kind?: "scry" | "scry_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "saga_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
+  kind?: "scry" | "scry_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "saga_entry" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
   entry_choice?: "tapped" | "pay_two_life";
   player_id?: number;
   count?: number;
@@ -200,6 +200,7 @@ export type LegalMove = {
     player_targets?: { id: number; name: string }[];
     creature_targets?: { id: string; name: string }[];
     permanent_targets?: { id: string; name: string }[];
+    graveyard_card_targets?: { id: string; name: string }[];
     graveyard_creature_targets?: { id: string; name: string }[];
     graveyard_permanent_targets?: { id: string; name: string }[];
     land_targets?: { id: string; name: string }[];
@@ -222,6 +223,7 @@ export type LegalMove = {
       artifact_targets?: { id: string; name: string }[];
       enchantment_targets?: { id: string; name: string }[];
       land_targets?: { id: string; name: string }[];
+      graveyard_card_targets?: { id: string; name: string }[];
       graveyard_creature_targets?: { id: string; name: string }[];
       graveyard_permanent_targets?: { id: string; name: string }[];
       stack_targets?: { id: string; label: string }[];
