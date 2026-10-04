@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from copy import copy, deepcopy
@@ -64,7 +65,7 @@ def spell_cant_be_countered(state: Any, item: Any) -> bool:
         return True
     from rules_engine.colors import card_color_names
 
-    subjects = {str(kind).lower() for kind in source.types} | card_color_names(source)
+    subjects = {str(kind).lower() for kind in effective_types(state, source)} | card_color_names(source)
     for player in state.players.values():
         for cid in player.battlefield:
             permanent = state.cards.get(cid)
@@ -277,7 +278,7 @@ def validate_hexproof_shroud_targets(
             if 'hexproof' in keywords:
                 return False, f"Target {target.name} has hexproof."
             for keyword in keywords:
-                if keyword.startswith('hexproof from ') and source_matches_quality(source_card,keyword.removeprefix('hexproof from ')):
+                if keyword.startswith('hexproof from ') and source_matches_quality(source_card,keyword.removeprefix('hexproof from '), state=state):
                     return False, f'Target {target.name} has {keyword}.'
     return True, ""
 

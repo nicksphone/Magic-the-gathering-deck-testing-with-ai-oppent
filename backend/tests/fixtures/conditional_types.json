@@ -1,0 +1,387 @@
+[
+  {
+    "id": "52705c53-883e-4b6a-9c08-3fa35f6f17d5",
+    "oracle_id": "af206aed-1f58-4f5a-ba42-0e0d1f282940",
+    "name": "Athreos, God of Passage",
+    "mana_cost": "{1}{W}{B}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to white and black is less than seven, Athreos isn't a creature.\nWhenever another creature you own dies, return it to your hand unless target opponent pays 3 life.",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "B",
+      "W"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/jou/146/athreos-god-of-passage?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b5275d76-2947-4219-be21-614c7421614a",
+    "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+    "name": "Blood Artist",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Vampire",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/soc/209/blood-artist?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "54bb0672-adb4-4aad-a4c0-77a0e7373bac",
+    "oracle_id": "cb0e1afa-fd9e-4bf9-bcb1-6e8110d6e2ff",
+    "name": "Cloudfin Raptor",
+    "mana_cost": "{U}",
+    "type_line": "Creature — Bird Mutant",
+    "oracle_text": "Flying\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Evolve"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/rvr/37/cloudfin-raptor?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+    "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+    "name": "Elvish Mystic",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/hoc/205/elvish-mystic?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6832e495-7ee9-43e0-94ea-03c88344080e",
+    "oracle_id": "5968ecb5-5728-429f-9324-0c108820ebe8",
+    "name": "Ephara, God of the Polis",
+    "mana_cost": "{2}{W}{U}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to white and blue is less than seven, Ephara isn't a creature.\nAt the beginning of each upkeep, if you had another creature enter the battlefield under your control last turn, draw a card.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/bng/145/ephara-god-of-the-polis?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "d0787e1f-0b75-44ab-a8fd-90358906a787",
+    "oracle_id": "1cfc7b12-a595-492d-81ee-bd100ba7de6a",
+    "name": "Erebos, God of the Dead",
+    "mana_cost": "{3}{B}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to black is less than five, Erebos isn't a creature. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)\nYour opponents can't gain life.\n{1}{B}, Pay 2 life: Draw a card.",
+    "power": "5",
+    "toughness": "7",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ths/85/erebos-god-of-the-dead?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "581eaadb-442b-40c9-b8f9-9e19d5eba824",
+    "oracle_id": "f19d06af-6caf-41d8-8d0a-d5d50bd67900",
+    "name": "Fanatic of Mogis",
+    "mana_cost": "{3}{R}",
+    "type_line": "Creature — Minotaur Shaman",
+    "oracle_text": "When this creature enters, it deals damage to each opponent equal to your devotion to red. (Each {R} in the mana costs of permanents you control counts toward your devotion to red.)",
+    "power": "4",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ths/121/fanatic-of-mogis?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b83e9693-4996-498c-95f7-884d40341298",
+    "oracle_id": "4ea488b2-5ba0-4565-b928-570c8e03b926",
+    "name": "Heliod, God of the Sun",
+    "mana_cost": "{3}{W}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to white is less than five, Heliod isn't a creature. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)\nOther creatures you control have vigilance.\n{2}{W}{W}: Create a 2/1 white Cleric enchantment creature token.",
+    "power": "5",
+    "toughness": "6",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/cmm/826/heliod-god-of-the-sun?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b4036bb7-835d-4690-aca1-1ab566776e9a",
+    "oracle_id": "36041cf2-159f-4809-9377-930ac4db545f",
+    "name": "Iroas, God of Victory",
+    "mana_cost": "{2}{R}{W}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to red and white is less than seven, Iroas isn't a creature.\nCreatures you control have menace.\nPrevent all damage that would be dealt to attacking creatures you control.",
+    "power": "7",
+    "toughness": "4",
+    "colors": [
+      "R",
+      "W"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c16/205/iroas-god-of-victory?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "2bd9d26e-984c-4cf8-8c46-447f9776668f",
+    "oracle_id": "984e763c-5a83-4231-8ec4-1be76846479a",
+    "name": "Karametra, God of Harvests",
+    "mana_cost": "{3}{G}{W}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to green and white is less than seven, Karametra isn't a creature.\nWhenever you cast a creature spell, you may search your library for a Forest or Plains card, put it onto the battlefield tapped, then shuffle.",
+    "power": "6",
+    "toughness": "7",
+    "colors": [
+      "G",
+      "W"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/c20/218/karametra-god-of-harvests?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ab70c262-37a9-4dcd-80bb-d4422368eade",
+    "oracle_id": "2bd6f13a-ae02-426d-8f99-c20c5c08cf55",
+    "name": "Keranos, God of Storms",
+    "mana_cost": "{3}{U}{R}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to blue and red is less than seven, Keranos isn't a creature.\nReveal the first card you draw on each of your turns. Whenever you reveal a land card this way, draw a card. Whenever you reveal a nonland card this way, Keranos deals 3 damage to any target.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/jou/151/keranos-god-of-storms?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "27427233-da58-45af-ade8-e0727929efaa",
+    "oracle_id": "b2cefcd6-4b81-479c-86ff-1695b836972c",
+    "name": "Kruphix, God of Horizons",
+    "mana_cost": "{3}{G}{U}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to green and blue is less than seven, Kruphix isn't a creature.\nYou have no maximum hand size.\nIf you would lose unspent mana, that mana becomes colorless instead.",
+    "power": "4",
+    "toughness": "7",
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/jou/152/kruphix-god-of-horizons?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "521911e5-9ce5-4d55-bfc4-fbfeba4047fe",
+    "oracle_id": "e5912d21-e188-4b9e-8e92-a6e8196353c6",
+    "name": "Mogis, God of Slaughter",
+    "mana_cost": "{2}{B}{R}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to black and red is less than seven, Mogis isn't a creature.\nAt the beginning of each opponent's upkeep, Mogis deals 2 damage to that player unless they sacrifice a creature of their choice.",
+    "power": "7",
+    "toughness": "5",
+    "colors": [
+      "B",
+      "R"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dsc/89/mogis-god-of-slaughter?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f185a734-a32a-4244-88e8-dabafbfd064f",
+    "oracle_id": "43674fdf-496f-42dc-8a0a-5c42a7c7d910",
+    "name": "Nylea, God of the Hunt",
+    "mana_cost": "{3}{G}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to green is less than five, Nylea isn't a creature. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)\nOther creatures you control have trample.\n{3}{G}: Target creature gets +2/+2 until end of turn.",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ths/166/nylea-god-of-the-hunt?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "75ec8548-5790-4eac-8780-cdd126438192",
+    "oracle_id": "b7d05d00-1e69-4d11-bff0-c1ca2026aad6",
+    "name": "Pharika, God of Affliction",
+    "mana_cost": "{1}{B}{G}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to black and green is less than seven, Pharika isn't a creature.\n{B}{G}: Exile target creature card from a graveyard. Its owner creates a 1/1 black and green Snake enchantment creature token with deathtouch.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/jou/154/pharika-god-of-affliction?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "8dfcb129-4665-40e4-b5cb-a79f3f40ae5c",
+    "oracle_id": "046ccc8a-ec0d-4dc5-b41d-5e8a6d86812a",
+    "name": "Phenax, God of Deception",
+    "mana_cost": "{3}{U}{B}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to blue and black is less than seven, Phenax isn't a creature.\nCreatures you control have \"{T}: Target player mills X cards, where X is this creature's toughness.\"",
+    "power": "4",
+    "toughness": "7",
+    "colors": [
+      "B",
+      "U"
+    ],
+    "keywords": [
+      "Indestructible",
+      "Mill"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/bng/152/phenax-god-of-deception?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "4736a2c4-c89c-48db-a104-6303e7e2eee8",
+    "oracle_id": "4fdbbec2-e921-4b63-958d-f9ba1e417197",
+    "name": "Purphoros, God of the Forge",
+    "mana_cost": "{3}{R}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to red is less than five, Purphoros isn't a creature.\nWhenever another creature you control enters, Purphoros deals 2 damage to each opponent.\n{2}{R}: Creatures you control get +1/+0 until end of turn.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/cmm/246/purphoros-god-of-the-forge?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "d96266b3-a7cb-40ce-a328-ac13719fe5f0",
+    "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b",
+    "name": "Soul Warden",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Human Cleric",
+    "oracle_text": "Whenever another creature enters, you gain 1 life.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mm3/24/soul-warden?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "9f9db424-e668-48b4-b275-7b35be4e1bf8",
+    "oracle_id": "69e5df2f-be1f-4608-a90f-3e2f51e2fea4",
+    "name": "Thassa, God of the Sea",
+    "mana_cost": "{2}{U}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to blue is less than five, Thassa isn't a creature. (Each {U} in the mana costs of permanents you control counts toward your devotion to blue.)\nAt the beginning of your upkeep, scry 1.\n{1}{U}: Target creature you control can't be blocked this turn.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Indestructible",
+      "Scry"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lcc/176/thassa-god-of-the-sea?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6f1bc3bb-46da-492a-850c-f1f588ad8d18",
+    "oracle_id": "cb15a8dd-57fe-466f-847e-66476b690a1f",
+    "name": "Xenagos, God of Revels",
+    "mana_cost": "{3}{R}{G}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to red and green is less than seven, Xenagos isn't a creature.\nAt the beginning of combat on your turn, another target creature you control gains haste and gets +X/+X until end of turn, where X is that creature's power.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lcc/295/xenagos-god-of-revels?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

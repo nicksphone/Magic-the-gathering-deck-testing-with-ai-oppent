@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 
 from effects.registry import resolve_effect
@@ -141,7 +142,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             item.payload.pop('__announced_targets', None)
             if item.payload.get('__copied_card'):
                 item.payload['__copied_card'] = {**item.payload['__copied_card'],
-                    'types': list(card.types), 'type_line': card.type_line, 'bestow_characteristics': {}}
+                    'types': list(effective_types(state, card)), 'type_line': card.type_line, 'bestow_characteristics': {}}
             announced, target_count = {}, 0
             state.log.append(f'{item.label} ceases to be bestowed and resolves as a creature.')
     if card and item.payload.get("__ability_target_text") and target_count == 1:
@@ -345,7 +346,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
     card = state.cards.get(item.source_card_id)
     if card and card.zone == Zone.STACK and not is_trigger:
         owner = state.players[getattr(card, "owner", card.controller)]
-        if "Instant" in card.types or "Sorcery" in card.types or payload.get("__failed_to_resolve"):
+        if "Instant" in effective_types(state, card) or "Sorcery" in effective_types(state, card) or payload.get("__failed_to_resolve"):
             if payload.get("__flashback") or payload.get("__aftermath"):
                 move_spell_from_stack(state, item)
             elif card.layout == "adventure" and (card.selected_face_index or 0) > 0 and not payload.get("__failed_to_resolve"):
@@ -370,7 +371,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             card.zone = Zone.BATTLEFIELD
             card.summoning_sick = True
             card.entered_turn = state.turn
-            if "Planeswalker" in card.types and card.loyalty is not None:
+            if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
                 card.printed_characteristics.setdefault("loyalty", card.loyalty)
                 card.loyalty = 0
             assign_static_order_on_battlefield_entry(state, card.id)

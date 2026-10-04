@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -12,7 +13,7 @@ def basic_land_type_count(state: MatchState, player_id: int) -> int:
     types: set[str] = set()
     for card_id in state.players[player_id].battlefield:
         card = state.cards[card_id]
-        if card.zone != Zone.BATTLEFIELD or card.controller != player_id or "Land" not in card.types:
+        if card.zone != Zone.BATTLEFIELD or card.controller != player_id or "Land" not in effective_types(state, card):
             continue
         subtype_line = re.split(r"\s+[—–-]\s+", card.type_line, maxsplit=1)
         if len(subtype_line) == 2:

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from game_state.state import MatchState, Zone
 from rules_engine.card_types import is_token_card
@@ -14,7 +15,7 @@ DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 def creature_has_lethal_state(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
-    if "Creature" not in card.types or card.zone != Zone.BATTLEFIELD:
+    if "Creature" not in effective_types(state, card) or card.zone != Zone.BATTLEFIELD:
         return False
     toughness = effective_combat_stats(state, card_id)[1]
     if toughness is None:
@@ -152,12 +153,12 @@ def apply_state_based_actions(state: MatchState) -> None:
     # A source leaving the battlefield can make another permanent illegal or
     # lethal. No trigger gets a stack position until those waves stabilize.
     for _ in range(len(state.cards) + 1):
-        before = tuple((cid, card.zone, card.attached_to, tuple(card.types), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        before = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
         if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
-        after = tuple((cid, card.zone, card.attached_to, tuple(card.types), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        after = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         if after == before:
             break
     from rules_engine.events import flush_staged_triggers
@@ -165,6 +166,8 @@ def apply_state_based_actions(state: MatchState) -> None:
 
 
 def _apply_state_based_actions_once(state: MatchState) -> None:
+    from rules_engine.combat import remove_noncreatures_from_combat
+    remove_noncreatures_from_combat(state)
     from rules_engine.alternative_casts import restore_printed_characteristics
     state.adventure_permissions = {cid: pid for cid, pid in state.adventure_permissions.items()
                                    if cid in state.cards and state.cards[cid].zone == Zone.EXILE}
@@ -193,7 +196,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
 
     lethal_ids: list[str] = []
     for cid, card in list(state.cards.items()):
-        if "Creature" in card.types and card.zone == Zone.BATTLEFIELD:
+        if "Creature" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
             if creature_has_lethal_state(state, cid):
                 options = replacement_options(state, "die_zone", target_card_id=cid)
                 if _human_die_choice_required(state, cid) and len(options) > 1:
@@ -215,7 +218,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
         _resolve_lethal_creature_batch(state, lethal_ids)
 
     for cid, card in list(state.cards.items()):
-        if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
+        if "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
             battlefield_owner = state.players[card.controller]
             if cid in battlefield_owner.battlefield:
                 emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})

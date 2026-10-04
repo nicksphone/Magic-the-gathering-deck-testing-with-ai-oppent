@@ -47,8 +47,17 @@ It is designed for serious deck work:
   counts feed supported pump, damage, life gain/actual-loss drain, counters and
   token instructions at resolution. Existing replacements and snapshot choices
   are reused. Double-faced instances initialize front characteristics; current
-  effect proxies do not accidentally reparse an entire face. Devotion-based God
-  type changes and general variable expressions remain unsupported.
+  effect proxies do not accidentally reparse an entire face. General variable
+  expressions and devotion mana abilities remain unsupported.
+
+- [Conditional creature types](docs/testing/conditional-creature-types.md):
+  shared effective types drive supported devotion-based
+  self-removal, combat/targets, ability loss and public stats without overwriting
+  copiable characteristics. New entry/control tenure does not bypass summoning
+  sickness when a permanent becomes a creature. Combat departure preserves
+  blocked status and announced bands; counted life loss uses current types.
+  Both-seat HTTP/restart and actual browser casts have regression coverage.
+  Arbitrary type clauses, devotion mana and full dependencies remain unfinished.
 
 - [Resolution-created type effects](docs/testing/type-effect-lifecycle.md): crew
   and supported indefinite land animations share object-bound type additions,

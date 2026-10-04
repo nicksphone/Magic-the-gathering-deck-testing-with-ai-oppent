@@ -1,5 +1,6 @@
 """Resumable scalar counter events, with effect-only replacement provenance."""
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from functools import lru_cache
 import re
@@ -53,12 +54,12 @@ def counter_options(state, controller, payload, used=()):
                     (scope == 'controlled_permanent' and controlled and payload.get('__counter_is_effect', True))
                     or (scope == 'placer_self' and controller == source.controller)
                     or (scope == 'placer_opponent' and controller != source.controller)
-                    or (scope == 'controlled_artifact_creature' and controlled and bool({'Artifact', 'Creature'} & set(card.types)))
+                    or (scope == 'controlled_artifact_creature' and controlled and bool({'Artifact', 'Creature'} & set(effective_types(state, card))))
                     or (scope == 'recipient_self' and player == source.controller)
                     or (scope == 'placer_controlled' and controller == source.controller
-                        and (player == source.controller or controlled and bool({'Creature', 'Planeswalker'} & set(card.types))))
-                    or (scope == 'controlled_plus_creature' and controlled and 'Creature' in card.types and kind == '+1/+1')
-                    or (scope == 'plus_creature' and card is not None and 'Creature' in card.types and kind == '+1/+1')
+                        and (player == source.controller or controlled and bool({'Creature', 'Planeswalker'} & set(effective_types(state, card)))))
+                    or (scope == 'controlled_plus_creature' and controlled and 'Creature' in effective_types(state, card) and kind == '+1/+1')
+                    or (scope == 'plus_creature' and card is not None and 'Creature' in effective_types(state, card) and kind == '+1/+1')
                     or (scope == 'controlled_plus_permanent' and controlled and kind == '+1/+1')
                 )
                 if applies:

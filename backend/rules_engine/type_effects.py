@@ -1,5 +1,62 @@
 """Object-bound type additions, with a materialized view for current type readers."""
+import re
+from functools import lru_cache
+
 from game_state.state import Zone, allocate_effect_timestamp, object_incarnation
+
+
+@lru_cache(maxsize=4096)
+def devotion_type_condition(oracle_text, name):
+    """Recognize the complete self-only type instruction, not a card name."""
+    from rules_engine.devotion import COLORS
+    from rules_engine.oracle_text import without_reminder_text
+    numbers = {word: value for value, word in enumerate(
+        ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'))}
+    subjects = {name.lower(), name.split(',', 1)[0].lower(),
+                'this permanent', 'this creature'} - {''}
+    subject = '|'.join(re.escape(value) for value in sorted(subjects))
+    for line in without_reminder_text(oracle_text or '').lower().splitlines():
+        match = re.fullmatch(
+            r'as long as your devotion to ([a-z]+(?: and [a-z]+)?) is less than '
+            r'(\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten), '
+            rf"(?:{subject}) (?:isn't|is not) a creature\.", line.strip())
+        if match:
+            colors = match[1].split(' and ')
+            if all(color in COLORS for color in colors):
+                amount = int(match[2]) if match[2].isdigit() else numbers[match[2]]
+                return tuple(COLORS[color] for color in colors), amount
+    return None
+
+
+def effective_types(state, card_or_id):
+    """Pure layer-four view; later ability loss does not undo this layer."""
+    card = state.cards.get(card_or_id) if isinstance(card_or_id, str) and state is not None else card_or_id
+    if card is None:
+        return []
+    current = list(getattr(card, 'types', []) or [])
+    if state is None or getattr(card, 'zone', None) != Zone.BATTLEFIELD:
+        return current
+    condition = devotion_type_condition(getattr(card, 'oracle_text', ''), getattr(card, 'name', ''))
+    if condition is None:
+        return current
+    from rules_engine.devotion import devotion_count
+    colors, threshold = condition
+    if devotion_count(state, card.controller, colors) >= threshold:
+        return current
+    effects = active_type_effects(card)
+    types = copiable_types(card)
+    stamp = int(getattr(card, 'effect_timestamp', 0) or getattr(card, 'static_order', 0) or 0)
+    operations = [(stamp, 0, 'remove', ['Creature'])]
+    operations.extend((effect['timestamp'], index + 1, 'add', effect['types'])
+                      for index, effect in enumerate(effects))
+    if '__crew_until_turn' in card.counters:
+        operations.append((stamp, len(operations), 'add', ['Artifact', 'Creature']))
+    for _, _, operation, values in sorted(operations):
+        if operation == 'remove':
+            types = [kind for kind in types if kind not in values]
+        else:
+            types = list(dict.fromkeys([*types, *values]))
+    return types
 
 
 def active_type_effects(card):

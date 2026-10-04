@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import copy
 import re
@@ -203,7 +204,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 return 0
         if card.zone == Zone.BATTLEFIELD and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
-                if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+                if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
                 return 0
             replaced_amount = apply_permanent_damage_replacements(
@@ -223,17 +224,17 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             if post <= 0:
                 return 0
             from rules_engine.damage_results import apply_creature_damage
-            if "Creature" in card.types:
+            if "Creature" in effective_types(state, card):
                 apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
                                       controller=controller, counter_is_effect=True)
                 state.log.append(f"{card.name} takes {post} damage.")
-            if "Planeswalker" in card.types and card.loyalty is not None:
+            if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
                 card.loyalty -= int(post)
                 state.log.append(f"{card.name} loses {post} loyalty.")
             if not payload.get("__batch_damage"):
                 _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
             # Check for lethal damage — creatures die state-based, not just at combat cleanup.
-            if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in card.types and _creature_is_lethally_damaged(state, target_card_id):
+            if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
                 _move_creature_to_graveyard(state, target_card_id)
             return int(post)
     if target_player is not None:
@@ -441,11 +442,16 @@ def _count_controlled_type(state: MatchState, controller: int, type_name: str) -
     else:
         needle = needle.rstrip("s")
     count = 0
+    from rules_engine.continuous import _has_subtype
+    card_types = {'creature', 'artifact', 'enchantment', 'land', 'planeswalker', 'battle', 'instant', 'sorcery', 'kindred', 'tribal'}
     for cid in state.players[controller].battlefield:
         card = state.cards[cid]
-        types = {str(value).lower().rstrip("s") for value in (getattr(card, "types", []) or [])}
+        types = {str(value).lower().rstrip("s") for value in (effective_types(state, card) or [])}
         type_line = str(getattr(card, "type_line", "") or "").lower()
-        if needle in types or needle in type_line.split():
+        # Printed type words cannot restore removed types or creature subtypes.
+        subtype_match = (_has_subtype(card, needle, state=state) if 'Creature' in card.types
+                         else needle in type_line.split())
+        if needle in types or (needle not in card_types and subtype_match):
             count += 1
     return count
 
@@ -492,6 +498,8 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
             old_battlefield.remove(target_id)
         state.players[new_controller].battlefield.append(target_id)
         card.controller = new_controller
+        card.summoning_sick = True
+        card.entered_turn = state.turn
     if payload.get("until_end_of_turn"):
         state.temporary_control_changes[target_id] = {
             "controller": old_controller,
@@ -508,7 +516,7 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
     destinations = {
         cid: replace_die_zone(state, card.controller, cid)
         for cid, card in state.cards.items()
-        if "Creature" in card.types and cid in state.players[card.controller].battlefield
+        if "Creature" in effective_types(state, card) and cid in state.players[card.controller].battlefield
         and not destruction_prevented(state, cid)
     }
     for cid in destinations:
@@ -551,7 +559,7 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
     destinations = {
         cid: replace_die_zone(state, card.controller, cid)
         for cid, card in state.cards.items()
-        if allowed_types.intersection(set(card.types or [])) and cid in state.players[card.controller].battlefield
+        if allowed_types.intersection(set(effective_types(state, card) or [])) and cid in state.players[card.controller].battlefield
         and not destruction_prevented(state, cid)
     }
     for cid in destinations:
@@ -577,7 +585,7 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
             destroyed = True
             state.log.append(f"{card.name} is destroyed.")
             permanent_deaths.append(event_payload)
-            if "Creature" in card.types:
+            if "Creature" in effective_types(state, card):
                 creature_deaths.append(event_payload)
     emit_event_batch(state, "leaves_battlefield", leaves)
     emit_event_batch(state, "permanent_dies", permanent_deaths)
@@ -604,10 +612,10 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> in
     leaves: list[dict] = []
     for player in state.players.values():
         for cid in player.battlefield:
-            if "Creature" in state.cards[cid].types:
+            if "Creature" in effective_types(state, state.cards[cid]):
                 capture_last_known_battlefield(state, cid)
     for cid, card in list(state.cards.items()):
-        if card.zone != Zone.BATTLEFIELD or "Creature" not in card.types:
+        if card.zone != Zone.BATTLEFIELD or "Creature" not in effective_types(state, card):
             continue
         battlefield = state.players[card.controller]
         owner = state.players[getattr(card, "owner", card.controller)]
@@ -738,7 +746,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             if stack_object_kind(state, item) != "spell":
                 return
             source = stack_source_card(state, item)
-            if payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
+            if payload.get("target_kind") == "noncreature" and source and "Creature" in (effective_types(state, source) or []):
                 return
             restrictions = payload.get("target_restrictions") or {}
             if restrictions:
@@ -775,7 +783,7 @@ def counter_spell_unless_pay(state: MatchState, controller: int, payload: dict) 
     if kind not in payload.get('stack_kinds', ['spell']):
         return
     source = stack_source_card(state, item)
-    if kind == 'spell' and payload.get("target_kind") == "noncreature" and source and "Creature" in (source.types or []):
+    if kind == 'spell' and payload.get("target_kind") == "noncreature" and source and "Creature" in (effective_types(state, source) or []):
         return
     if item.controller in state.mechanic_choice_players:
         from rules_engine.ward import can_pay
@@ -1240,7 +1248,7 @@ def mill_cards(state: MatchState, controller: int, payload: dict) -> None:
 def choose_graveyard_return(state: MatchState, controller: int, payload: dict) -> None:
     eligible = [cid for cid in state.players[controller].graveyard
                 if not is_departed_token(state.cards[cid])
-                and set(payload['allowed_types']).intersection(state.cards[cid].types)]
+                and set(payload['allowed_types']).intersection(effective_types(state, state.cards[cid]))]
     if not eligible:
         return
     if controller in state.mechanic_choice_players and payload.get('selected_card_ids') is None:
@@ -1290,7 +1298,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     controller's land-play allowance and the effect may enter the land tapped.
     """
     player = state.players[controller]
-    eligible = [cid for cid in player.hand if cid in state.cards and "Land" in state.cards[cid].types and not is_departed_token(state.cards[cid])]
+    eligible = [cid for cid in player.hand if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not is_departed_token(state.cards[cid])]
     land_id = payload.get("land_id") if payload.get("land_id") in eligible else next(iter(eligible), None)
     if not land_id:
         state.log.append(f"{player.name} has no land in hand for the effect.")
@@ -1303,6 +1311,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     player.battlefield.append(land_id)
     land.zone = Zone.BATTLEFIELD
     land.controller = controller
+    land.summoning_sick = True
     land.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, land_id)
     emit_event(state, "enters_battlefield", {"card_id": land_id, "controller": controller})
@@ -1323,7 +1332,7 @@ def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> No
     if not target or target not in player.graveyard or target not in state.cards or is_departed_token(state.cards[target]):
         return
     card = state.cards[target]
-    if not ({"Instant", "Sorcery"} & set(card.types)):
+    if not ({"Instant", "Sorcery"} & set(effective_types(state, card))):
         return
     if controller in state.mechanic_choice_players:
         state.pending_mechanic_choice = {
@@ -1363,7 +1372,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     card.zone = Zone.BATTLEFIELD
     card.controller = controller
     card.tapped = False
-    card.summoning_sick = "Creature" in card.types
+    card.summoning_sick = True
     card.entered_turn = state.turn
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
     assign_static_order_on_battlefield_entry(state, target)
@@ -1397,8 +1406,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, target)
     commit_entry_counters(state, card, payload)
-    if "Creature" in card.types:
-        card.summoning_sick = True
+    card.summoning_sick = True
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
 
@@ -1500,12 +1508,12 @@ def _place_searched_card(
         put_into_graveyard(state, card_id)
         return
     if destination == "battlefield":
-        if "Land" in card.types:
+        if "Land" in effective_types(state, card):
             apply_entry_choice(state, controller, card, choice=entry_choice, effect_tapped=tapped)
         player.battlefield.append(card_id)
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
-        if "Land" not in card.types:
+        if "Land" not in effective_types(state, card):
             card.tapped = tapped
         card.summoning_sick = True
         card.entered_turn = state.turn
@@ -1647,8 +1655,8 @@ def create_token_copy(state: MatchState, controller: int, payload: dict) -> None
     source_id = payload.get("__source_card_id")
     target = state.cards.get(target_id)
     if (target is None or target_id == source_id or target.zone != Zone.BATTLEFIELD
-            or target.controller != controller or "Creature" not in target.types
-            or "Legendary" in target.types or "legendary" in (target.type_line or "").lower()):
+            or target.controller != controller or "Creature" not in effective_types(state, target)
+            or "Legendary" in effective_types(state, target) or "legendary" in (target.type_line or "").lower()):
         state.log.append("Copy token ability has no legal target at resolution.")
         return
     keywords = list(target.keywords or [])
@@ -1836,7 +1844,7 @@ def transform_if_top_matches(state: MatchState, controller: int, payload: dict) 
     top_card = state.cards[top_id]
     required = {str(value).lower() for value in (payload.get("required_types") or [])}
     state.log.append(f"{player.name} reveals {top_card.name} for {state.cards[target_id].name}.")
-    if not required.intersection({str(value).lower() for value in (top_card.types or [])}):
+    if not required.intersection({str(value).lower() for value in (effective_types(state, top_card) or [])}):
         return
     card = state.cards[target_id]
     faces = list(getattr(card, "card_faces", []) or [])
@@ -1861,11 +1869,11 @@ def transform_card(state: MatchState, controller: int, payload: dict) -> None:
         return
     from rules_engine.card_faces import apply_transform_face
     previous_face = getattr(card, "selected_face_index", None)
-    loyalty_counters = int(card.loyalty or 0) if 'Planeswalker' in card.types else int(card.counters.pop('loyalty', 0))
+    loyalty_counters = int(card.loyalty or 0) if 'Planeswalker' in effective_types(state, card) else int(card.counters.pop('loyalty', 0))
     apply_transform_face(card, index)
     # Transforming is not entering: preserve physical loyalty counters instead
     # of replacing them with the newly displayed face's printed starting value.
-    if 'Planeswalker' in card.types:
+    if 'Planeswalker' in effective_types(state, card):
         card.loyalty = loyalty_counters
     else:
         card.loyalty = None
@@ -1914,7 +1922,7 @@ def exile_return_transformed(state: MatchState, controller: int, payload: dict) 
     card.zone = Zone.BATTLEFIELD
     card.controller = controller
     apply_entry_choice(state, controller, card, choice=(payload.get('__entry_choices') or {}).get(card.id, 'tapped'))
-    card.summoning_sick = "Creature" in card.types
+    card.summoning_sick = True
     card.entered_turn = state.turn
     state.players[controller].battlefield.append(target_id)
     assign_static_order_on_battlefield_entry(state, target_id)
@@ -1931,7 +1939,7 @@ def reveal_defending_top_land(state: MatchState, controller: int, payload: dict)
     cid = player.library[-1]
     card = state.cards[cid]
     state.log.append(f"{player.name} reveals {card.name} from the top of their library.")
-    if "Land" in card.types:
+    if "Land" in effective_types(state, card):
         player.library.pop()
         player.hand.append(cid)
         card.move_to_zone(Zone.HAND)
@@ -1999,7 +2007,7 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
         if amount is None:
             return
         put_counters(state, counter, amount, target_card_id=target)
-        if payload.get("animate_land") and "Land" in card.types:
+        if payload.get("animate_land") and "Land" in effective_types(state, card):
             from rules_engine.type_effects import add_type_effect
             from rules_engine.keyword_effects import add_keyword_effect
             stamp = payload.get('resolution_timestamp') or allocate_effect_timestamp(state)
@@ -2023,7 +2031,7 @@ def add_counters_each_creature(state: MatchState, controller: int, payload: dict
         {'effect_key': 'add_counters', 'payload': {**payload, 'target_card_id': cid,
                                                 'effect_timestamp': object_incarnation(state.cards[cid])}}
         for cid in list(state.players[controller].battlefield)
-        if cid in state.cards and 'Creature' in state.cards[cid].types
+        if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid])
     ]})
 
 
@@ -2055,7 +2063,7 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
             for cid in player.hand
             if cid in state.cards
             and not is_departed_token(state.cards[cid])
-            and "Creature" in state.cards[cid].types
+            and "Creature" in effective_types(state, state.cards[cid])
             and "{G}" in (state.cards[cid].mana_cost or "").upper()
         ),
         None,
@@ -2102,7 +2110,7 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
     for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
-            if "Creature" not in card.types:
+            if "Creature" not in effective_types(state, card):
                 continue
             if required_subtypes:
                 from rules_engine.library_permissions import creature_types
@@ -2171,7 +2179,7 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
     recipients = [
         {"target_card_id": cid, "amount": amount}
         for player in state.players.values() for cid in list(player.battlefield)
-        if "Creature" in state.cards[cid].types
+        if "Creature" in effective_types(state, state.cards[cid])
     ]
     recipients.extend({"target_player": pid, "amount": amount} for pid in state.players)
     deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id"),
@@ -2243,7 +2251,7 @@ def tap_all_opponent_creatures(state: MatchState, controller: int, payload: dict
     for player_id, player in state.players.items():
         if player_id != controller:
             for cid in player.battlefield:
-                if "Creature" in state.cards[cid].types:
+                if "Creature" in effective_types(state, state.cards[cid]):
                     state.cards[cid].tapped = True
 
 
@@ -2259,7 +2267,7 @@ def equip_attachment(state: MatchState, controller: int, payload: dict) -> None:
     target = state.cards.get(payload.get("target_card_id"))
     if (source is None or target is None or source.zone != Zone.BATTLEFIELD
             or target.zone != Zone.BATTLEFIELD or target.controller != controller
-            or "Creature" not in target.types or "Creature" in source.types
+            or "Creature" not in effective_types(state, target) or "Creature" in effective_types(state, source)
             or not is_equipment(source)
             or object_incarnation(source) != payload.get("source_timestamp")
             or object_incarnation(target) != payload.get("target_timestamp")):
@@ -2314,7 +2322,7 @@ def temporary_ability_loss(state: MatchState, controller: int, payload: dict) ->
     source = state.cards.get(source_id)
     for card_id in card_ids:
         card = state.cards.get(card_id)
-        if card is None or card.zone != Zone.BATTLEFIELD or (player_id in state.players and 'Creature' not in card.types):
+        if card is None or card.zone != Zone.BATTLEFIELD or (player_id in state.players and 'Creature' not in effective_types(state, card)):
             continue
         add_keyword_effect(state, card_id, ['all abilities'], operation='remove', until_end_of_turn=True,
                            timestamp=stamp, source_card_id=source_id)
@@ -2437,8 +2445,8 @@ def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict)
     revealed = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
     options = [cid for cid in revealed
                if ("Land" not in excluded or not is_land_card(state.cards[cid]))
-               and ("Creature" not in excluded or "Creature" not in state.cards[cid].types)
-               and (not allowed or allowed.intersection(state.cards[cid].types))
+               and ("Creature" not in excluded or "Creature" not in effective_types(state, state.cards[cid]))
+               and (not allowed or allowed.intersection(effective_types(state, state.cards[cid])))
                and ("mv_max" not in payload or mana_value(state.cards[cid].mana_cost or "") <= int(payload["mv_max"]))
                and ("mv_min" not in payload or mana_value(state.cards[cid].mana_cost or "") >= int(payload["mv_min"]))]
     names = ", ".join(state.cards[cid].name for cid in revealed) or "(empty)"
@@ -2502,7 +2510,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
 
     def is_eligible(cid: str) -> bool:
         card = state.cards[cid]
-        if "Creature" not in card.types:
+        if "Creature" not in effective_types(state, card):
             return False
         return mana_value(card.mana_cost or "") <= mv_max
 
@@ -2538,7 +2546,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
     for cid in chosen:
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
-        card.summoning_sick = "Creature" in card.types
+        card.summoning_sick = True
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
@@ -2583,8 +2591,8 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
 
     eligible = [
         cid for cid in top_slice
-        if set(state.cards[cid].types).intersection(permanent_types)
-        and (not payload.get("allowed_type") or payload["allowed_type"] in state.cards[cid].types)
+        if set(effective_types(state, state.cards[cid])).intersection(permanent_types)
+        and (not payload.get("allowed_type") or payload["allowed_type"] in effective_types(state, state.cards[cid]))
         and (mv_max is None or mana_value_for(cid) <= max(0, int(mv_max)))
     ]
     if _pause_topdeck_put(state, controller, {**payload, "__effect_key": "topdeck_put_permanents_battlefield"}, top_slice, eligible, max_permanents):
@@ -2608,11 +2616,11 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
         card.controller = controller
-        if "Land" in card.types:
+        if "Land" in effective_types(state, card):
             apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(cid, "tapped"), effect_tapped=bool(payload.get("tapped")))
         else:
             card.tapped = False
-        card.summoning_sick = "Creature" in card.types
+        card.summoning_sick = True
         card.entered_turn = state.turn
         player.battlefield.append(cid)
         assign_static_order_on_battlefield_entry(state, cid)
@@ -2648,7 +2656,7 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
     eligible = []
     for cid in top_slice:
         card = state.cards[cid]
-        if "Creature" not in card.types:
+        if "Creature" not in effective_types(state, card):
             continue
         if "mv_max" in payload and mana_value(card.mana_cost or "") > int(payload["mv_max"]):
             continue

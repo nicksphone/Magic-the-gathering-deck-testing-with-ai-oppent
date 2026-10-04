@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from game_state.state import MatchState
 
@@ -21,11 +22,11 @@ def top_library_creature_for_type(state: MatchState, player_id: int):
         return None
     top_id = player.library[-1]
     top = state.cards.get(top_id)
-    if top is None or "Creature" not in (getattr(top, "types", []) or []):
+    if top is None or "Creature" not in (effective_types(state, top) or []):
         return None
     for source_id in player.battlefield:
         source = state.cards.get(source_id)
-        if source is None or "Creature" not in (getattr(source, "types", []) or []):
+        if source is None or "Creature" not in (effective_types(state, source) or []):
             continue
         if printed_abilities_suppressed(state, source_id):
             continue

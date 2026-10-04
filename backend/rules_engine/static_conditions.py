@@ -1,4 +1,5 @@
 """Shared supported static predicates: parse immutable text, evaluate live state."""
+from rules_engine.type_effects import effective_types
 import re
 from functools import lru_cache
 
@@ -93,7 +94,7 @@ def parse_static_condition(text, card_name=''):
 
 
 def _land_count(state, player_ids, subtype=None):
-    return sum(card.zone == Zone.BATTLEFIELD and 'Land' in card.types
+    return sum(card.zone == Zone.BATTLEFIELD and 'Land' in effective_types(state, card)
                and (subtype is None or subtype in re.split(r'\s+', re.split(r'\s+[—–-]\s+', (card.type_line or '').lower())[-1]))
                for pid in player_ids for cid in state.players[pid].battlefield
                for card in [state.cards[cid]])
@@ -118,8 +119,8 @@ def evaluate_static_condition(state, source, target, text):
         if characteristic in COLORS:
             return COLORS[characteristic] in card_color_symbols(target)
         if characteristic in TYPES:
-            return characteristic.title() in target.types
-        return _has_subtype(target, characteristic)
+            return characteristic.title() in effective_types(state, target)
+        return _has_subtype(target, characteristic, state=state)
     if kind == 'color_permanent':
         from rules_engine.colors import card_color_symbols
         scope, mode, colors = args
@@ -140,7 +141,7 @@ def evaluate_static_condition(state, source, target, text):
     if kind == 'life':
         return state.players[source.controller].life >= args[0]
     if kind == 'permanents':
-        return sum(state.cards[cid].zone == Zone.BATTLEFIELD and args[1] in state.cards[cid].types
+        return sum(state.cards[cid].zone == Zone.BATTLEFIELD and args[1] in effective_types(state, state.cards[cid])
                    for cid in state.players[source.controller].battlefield) >= args[0]
     if kind == 'empty_hand':
         return not state.players[source.controller].hand

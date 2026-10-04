@@ -227,7 +227,7 @@ def test_devotion_compilation_isolated_from_mutable_action_payloads_and_admissio
     assert devotion_instruction(text)['colors'] == ['G']
     for name in ['Aspect of Hydra', 'Gray Merchant of Asphodel', 'Abhorrent Overlord']:
         assert known_unsupported_mechanics(ROWS[name]['oracle_text'], card_name=name) == []
-    assert 'unsupported devotion instruction' in known_unsupported_mechanics(
+    assert 'unsupported devotion instruction' not in known_unsupported_mechanics(
         ROWS['Nylea, God of the Hunt']['oracle_text'], card_name='Nylea, God of the Hunt')
     assert known_unsupported_mechanics('', [ROWS['Gray Merchant of Asphodel']], card_name='face fixture') == []
 

@@ -1,4 +1,5 @@
 """Intrinsic combat keywords use ordinary APNAP/stack and durable delayed events."""
+from rules_engine.type_effects import effective_types
 import re
 from game_state.state import Zone, object_incarnation
 from rules_engine.continuous import effective_keyword_counts
@@ -91,7 +92,7 @@ def resolve_keyword_trigger(state, controller, key, payload):
             blockers = state.blocks.get(cid, []) if cid in state.attackers else []
             amount *= max(0, sum(
                 bid in state.cards and state.cards[bid].zone == Zone.BATTLEFIELD
-                and 'Creature' in state.cards[bid].types
+                and 'Creature' in effective_types(state, state.cards[bid])
                 and state.cards[bid].controller != card.controller
                 and (bid not in payload['blocker_incarnations']
                      or object_incarnation(state.cards[bid]) == payload['blocker_incarnations'][bid])

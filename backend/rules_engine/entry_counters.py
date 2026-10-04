@@ -1,4 +1,5 @@
 """Prepare supported entry counters before battlefield mutation or token creation."""
+from rules_engine.type_effects import effective_types
 from copy import copy, deepcopy
 from dataclasses import asdict
 import re
@@ -87,7 +88,7 @@ def resume_entry_batch(state, controller, payload):
 
 def commit_entry_counters(state, card, payload):
     from rules_engine.counter_placement import put_counters
-    if 'Planeswalker' in card.types:
+    if 'Planeswalker' in effective_types(state, card):
         card.printed_characteristics.setdefault('loyalty', card.loyalty)
         card.loyalty = 0
     for kind, amount in payload['__entry_counters_by_id'].get(card.id, {}).items():
@@ -115,14 +116,14 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
         kicker = permanent_kicker(card.oracle_text)
         if kicker and entry.get('__kicked'):
             counts.update(kicker.get('counters', {}))
-        if 'Planeswalker' in card.types and card.loyalty is not None:
+        if 'Planeswalker' in effective_types(state, card) and card.loyalty is not None:
             loyalty = int(card.loyalty)
             counts['loyalty'] = loyalty
         if chapters:
             counts['lore'] = int(entry.get('__read_ahead_chapter', 1))
         if 'enters with x +1/+1 counters' in card.oracle_text.lower():
             counts['+1/+1'] = max(0, int(entry.get('x_value', 0)))
-        if 'Creature' in card.types:
+        if 'Creature' in effective_types(state, card):
             if entry.get('__escaped'):
                 match = re.search(r'escapes with (a|one|\d+) \+1/\+1 counters?', card.oracle_text, re.I)
                 if match:

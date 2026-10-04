@@ -1,4 +1,5 @@
 """Bounded response comparisons from declared combat and publicly announced effects."""
+from rules_engine.type_effects import effective_types
 from ai.heuristics import evaluate_board
 from ai.pending_effects import _projection_copy, _settle_announced_stack, planning_copy
 from game_state.state import MatchState, Step
@@ -65,7 +66,7 @@ def choose_response(agent, state, legal_moves, player_id):
     candidates = [move for move in legal_moves if move.get('type') in {'cast_spell', 'activate_ability'}]
     if not candidates or len(candidates) > 16:
         return None
-    if sum('Creature' in state.cards[cid].types for player in state.players.values()
+    if sum('Creature' in effective_types(state, state.cards[cid]) for player in state.players.values()
            for cid in player.battlefield) > 6:
         return None
     actions = []

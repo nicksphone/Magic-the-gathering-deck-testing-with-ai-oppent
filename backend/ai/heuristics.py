@@ -1,8 +1,9 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
-from game_state.state import MatchState
+from game_state.state import MatchState, Zone
 from card_data.tactical import tactical_tags
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
@@ -23,7 +24,7 @@ def recurring_engine_value(state, card_id: str, *, surface_card=None) -> float:
             from rules_engine.events import _matches_creature_dies_trigger
             from rules_engine.replacement import replacement_options
             if not any(
-                "Creature" in state.cards[cid].types
+                "Creature" in effective_types(state, state.cards[cid])
                 and _matches_creature_dies_trigger(state, card, line.lower(), {"card_id": cid})
                 and not replacement_options(state, "die_zone", target_card_id=cid)
                 for player in state.players.values() for cid in player.battlefield
@@ -63,7 +64,7 @@ def repeatable_mana_value(state, card_id: str, *, surface_card=None) -> float:
     controller = getattr(card, "controller", None)
     if not outputs or controller not in state.players:
         return 0.0
-    lands = sum("Land" in state.cards[cid].types
+    lands = sum("Land" in effective_types(state, state.cards[cid])
                 for cid in state.players[controller].battlefield)
     return max(outputs.values()) * (2.0 if lands < 4 else 0.75)
 
@@ -83,11 +84,11 @@ def choose_damage_trigger_target(state: MatchState, controller: int, amount: int
         if card.controller != opponent:
             return (-1000.0, card_id)
         keywords = {str(keyword).lower() for keyword in effective_keywords(state, card_id)}
-        if "Creature" in card.types:
+        if "Creature" in effective_types(state, card):
             remaining = effective_toughness(state, card_id) - int(card.counters.get("__damage_marked", 0))
             if remaining <= amount and "indestructible" not in keywords:
                 return (_creature_value(state, card_id), card_id)
-        if "Planeswalker" in card.types and card.loyalty is not None:
+        if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
             return (6.0 if card.loyalty <= amount else 0.5 * amount, card_id)
         return (0.0, card_id)
 
@@ -114,7 +115,7 @@ def _planeswalker_count(state: MatchState, player_id: int) -> int:
     return sum(
         1
         for cid in (getattr(state.players[player_id], "battlefield", []) or [])
-        if cid in state.cards and "Planeswalker" in (getattr(state.cards[cid], "types", []) or [])
+        if cid in state.cards and "Planeswalker" in (effective_types(state, state.cards[cid]) or [])
     )
 
 
@@ -125,8 +126,9 @@ def _board_value(state: MatchState, player_id: int) -> float:
         if not card:
             continue
         surface = _active_card_surface(card)
-        types = set(getattr(card, "types", []) or [])
-        types.update(_types_from_type_line(surface["type_line"]))
+        types = set(effective_types(state, card) or [])
+        if getattr(card, 'zone', None) != Zone.BATTLEFIELD:
+            types.update(_types_from_type_line(surface["type_line"]))
         if "Creature" in types:
             total += _creature_value(state, cid)
             continue

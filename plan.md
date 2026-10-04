@@ -2,11 +2,23 @@
 
 ## Current Priority: Backend First
 
+- [x] Finish shared conditional-type acceptance: effective battlefield types,
+  live devotion thresholds, animation/ability-loss ordering, combat removal,
+  band persistence, counted life loss and entry/control tenure. All 102 new
+  checks plus nine existing banding checks pass. All 5,609 isolated backend
+  tests, frontend gates and complete Chromium pass; 24 seat-balanced samples
+  repeated twice report no anomalies, timeouts or drift. See
+  [scope, evidence and checklist](docs/testing/conditional-creature-types.md).
+  Keep arbitrary type/dependency/copy layers and devotion mana explicitly open.
+- [ ] Extend shared devotion mana and conditional/global type effects with
+  canonical fixtures, layer/dependency tests and both-seat live/simulator parity;
+  do not infer complete-card support from a recognized type clause.
+
 - [x] Finish bounded shared post-block tactical forecasting: forty-four canonical regression/HTTP checks and 5,405 isolated backend tests pass; twenty-eight actual Master decisions improve from zero to twenty-eight checked wins across fixed/live-variable pumps, both seats and six archetypes. Frontend gates, complete Chromium and two repeated seat-balanced matrices (24 samples/48 executions) pass. See [scope and checklist](docs/testing/ai-combat-responses.md); unanswered winning forecasts are not adversarial/expert-AI certification.
 - [x] Finish bounded defensive/announced-stack/between-strike acceptance: 103 new checks, expanded 380-check selection, 5,508 isolated backend tests, fifty-two actual before/after outcomes (0 to 52), frontend gates and Chromium with four new casts pass. Twelve seat-balanced replay samples repeated twice report no anomaly, timeout or drift. See [scope and checklist](docs/testing/ai-defensive-responses.md); future-turn/adversarial planning and heuristic calibration remain open.
 - [ ] Expand adversarial response likelihoods, end-step deferral/future-turn resources, public choice branching and larger/multiaction/multitarget boards. Calibrate life/hand weights across deck styles; never inspect hidden hands or force matchup percentages.
 
-- [x] Finish shared live devotion payoff acceptance and front-characteristic/proxy boundaries. Seventy-nine new checks, 5,361 isolated backend tests, frontend gates, complete Chromium with fourteen new casting cases and final repeated seat-balanced replay samples pass. Keep God type changes and devotion mana abilities explicitly unsupported; the then-observed post-block Master gap is subsequently fixed in its tested scope, not expert-AI certification. See [scope and checklist](docs/testing/devotion.md).
+- [x] Finish shared live devotion payoff acceptance and front-characteristic/proxy boundaries. Seventy-nine new checks, 5,361 isolated backend tests, frontend gates, complete Chromium with fourteen new casting cases and repeated seat-balanced replay samples pass. The conditional-type batch subsequently implements bounded God type changes; devotion mana remains open. This is not expert-AI certification. See [scope and checklist](docs/testing/devotion.md).
 
 - [x] Finish bounded shared crew/indefinite land-animation effect lifecycles and copiable-type boundaries. Validation: 48 new both-seat lifecycle/HTTP/trigger checks, 5,282 isolated backend tests, frontend gates, complete Chromium and twelve repeated seat-balanced replay samples pass. Conditional/global type changes, dependency ordering and full copy layers remain open. See [scope and acceptance](docs/testing/type-effect-lifecycle.md).
 

@@ -1,5 +1,6 @@
 """Project declared actions and stack effects without guessing opponents."""
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from copy import copy, deepcopy
 from contextlib import contextmanager
@@ -130,7 +131,7 @@ def keyword_target_value(state, card, player_id, targets):
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:
     """Conserve pure destruction against indestructible or friendly targets."""
-    if ability_text is None and not set(card.types).intersection({"Instant", "Sorcery"}):
+    if ability_text is None and not set(effective_types(state, card)).intersection({"Instant", "Sorcery"}):
         return set()
     text = ability_text or "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
     text = without_reminder_text(text).strip()
@@ -234,7 +235,7 @@ def _pending_removal_destinations(state: MatchState, player_id: int) -> dict | N
 
 def covered_removal_targets(state: MatchState, card, player_id: int, targets: dict) -> set[str] | None:
     """Conserve simple removal, but retain secondary value and zone upgrades."""
-    if not state.stack or not set(card.types).intersection({"Instant", "Sorcery"}):
+    if not state.stack or not set(effective_types(state, card)).intersection({"Instant", "Sorcery"}):
         return set()
     text = "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
     if SECONDARY_EFFECT_RE.search(without_reminder_text(text)):

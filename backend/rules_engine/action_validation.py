@@ -1,4 +1,5 @@
 """Checked, copy-on-write actions for external callers, using engine legality."""
+from rules_engine.type_effects import effective_types
 from copy import deepcopy
 import re
 
@@ -117,7 +118,7 @@ def checked_action(state, rules, player_id: int, action: dict):
             for bid in bids:
                 card = candidate.cards[bid]
                 require(card.zone == Zone.BATTLEFIELD and card.controller == player_id and not card.tapped
-                        and 'Creature' in card.types and not card_cant_block(candidate, bid)
+                        and 'Creature' in effective_types(state, card) and not card_cant_block(candidate, bid)
                         and _can_block_attacker(candidate, candidate.cards[aid], card), 'Illegal block assignment')
         require(len(selected) != 1 or not card_cant_block_alone(candidate, next(iter(selected))), 'Illegal block assignment')
         require(all(sum(bid in bids for bids in blocks.values()) <= _max_attackers_blockable_by_creature(candidate, candidate.cards[bid])
@@ -136,12 +137,12 @@ def checked_action(state, rules, player_id: int, action: dict):
     rules.take_action(candidate, player_id, action, reject_invalid=True)
     if action["type"] == "attack":
         remaining = {cid for cid in action['attackers'] if candidate.cards[cid].zone == Zone.BATTLEFIELD
-                     and candidate.cards[cid].controller == player_id and 'Creature' in candidate.cards[cid].types}
+                     and candidate.cards[cid].controller == player_id and 'Creature' in effective_types(candidate, candidate.cards[cid])}
         require(remaining.issubset(candidate.attackers), "An attacker cannot attack in this declaration")
     if action["type"] == "block":
         for attacker, blockers in action["blocks"].items():
             remaining = {bid for bid in blockers if candidate.cards[bid].zone == Zone.BATTLEFIELD
-                         and candidate.cards[bid].controller == player_id and 'Creature' in candidate.cards[bid].types}
+                         and candidate.cards[bid].controller == player_id and 'Creature' in effective_types(candidate, candidate.cards[bid])}
             require(remaining.issubset(candidate.blocks.get(attacker, [])), "Illegal block assignment")
     return candidate
 
@@ -286,7 +287,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             require(all(branch in symbol["choices"] for branch, symbol in zip(hybrid_choices, symbols)), "Invalid hybrid payment branch")
             require(can_pay_with_pool_and_lands(
                 state, player_id, option.mana_cost, card_name=face_card.name,
-                x_value=int(targets.get("x_value") or 0), spell_types=set(face_card.types),
+                x_value=int(targets.get("x_value") or 0), spell_types=set(effective_types(state, face_card)),
                 oracle_text=face_card.oracle_text or "",
                 spell_is_aura=is_aura(face_card),
                 source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),

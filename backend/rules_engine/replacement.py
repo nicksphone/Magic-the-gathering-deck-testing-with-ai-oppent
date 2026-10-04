@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -88,9 +89,9 @@ def _permanent_damage_candidates(state, target_card_id, prevention_locked=False)
         return []
     candidates = [
         (card, text) for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-        if (_PERMANENT_DAMAGE_REDUCTION_RE.search(text) and 'Creature' in target.types)
+        if (_PERMANENT_DAMAGE_REDUCTION_RE.search(text) and 'Creature' in effective_types(state, target))
         or (not prevention_locked and _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
-            and ('creature you control' not in text or 'Creature' in target.types))
+            and ('creature you control' not in text or 'Creature' in effective_types(state, target)))
     ]
     if target.counters.get('shield', 0) > 0 or shield_applied_in_event(state, target_card_id):
         source = copy(target)
@@ -258,7 +259,7 @@ def replace_noncombat_damage_to_creature(
         return None
     controller = damage_controller(state, source_card_id, source_lki)
     target = state.cards[target_card_id]
-    if "Creature" not in (getattr(target, "types", []) or []) or controller == target.controller or amount <= 0:
+    if "Creature" not in (effective_types(state, target) or []) or controller == target.controller or amount <= 0:
         return None
     candidates = [
         (card, text)
@@ -319,7 +320,7 @@ def damage_cant_be_prevented(
             return True
         if combat and _matches_phrase(text, ("combat damage can't be prevented", "combat damage cannot be prevented")):
             return True
-        if (combat and source and source.controller == card.controller and 'Creature' in source.types
+        if (combat and source and source.controller == card.controller and 'Creature' in effective_types(state, source)
                 and _matches_phrase(text, (
                     "combat damage that would be dealt by creatures you control can't be prevented",
                     "combat damage that would be dealt by creatures you control cannot be prevented",

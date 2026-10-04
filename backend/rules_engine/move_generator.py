@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from itertools import permutations
 
@@ -63,7 +64,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             from rules_engine.effect_casts import cast_moves
             return cast_moves(state, player_id)
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
-        type_lines = {cid: state.cards[cid].type_line or " ".join(state.cards[cid].types)
+        type_lines = {cid: state.cards[cid].type_line or " ".join(effective_types(state, state.cards[cid]))
                       for cid in pending.get("options", []) if cid in state.cards}
         if pending["kind"] == "each_player_discard":
             return [{"type": "choose_mechanic", "kind": pending["kind"], "player_id": player_id,
@@ -139,7 +140,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         attackers = [
             cid
             for cid in player.battlefield
-            if "Creature" in state.cards[cid].types
+            if "Creature" in effective_types(state, state.cards[cid])
             and not state.cards[cid].tapped
             and (not state.cards[cid].summoning_sick or has_keyword(state, cid, "haste"))
             and not has_keyword(state, cid, "defender")
@@ -147,7 +148,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         ]
         for cid in player.battlefield:
             c = state.cards[cid]
-            if "Creature" not in c.types:
+            if "Creature" not in effective_types(state, c):
                 continue
             if c.tapped:
                 restricted_attackers.append({"type": "attack_restricted", "card_id": cid, "card_name": c.name, "reason": "Tapped"})
@@ -167,7 +168,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "kind": "planeswalker",
                 }
                 for cid in state.players[defender_id].battlefield
-                if "Planeswalker" in state.cards[cid].types and state.cards[cid].zone == Zone.BATTLEFIELD
+                if "Planeswalker" in effective_types(state, state.cards[cid]) and state.cards[cid].zone == Zone.BATTLEFIELD
             )
             from rules_engine.declaration_limits import declaration_limit_view
             from rules_engine.combat_payments import attack_tax_sources, attack_payment_view
@@ -186,7 +187,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         blockers = [
             cid
             for cid in player.battlefield
-            if "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ]
         attacker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in state.attackers]
         blocker_opts = [{"id": cid, "name": state.cards[cid].name} for cid in blockers]
@@ -209,7 +210,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             for x_value in x_values:
                 if not can_pay_with_pool_and_lands(
                     state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
-                    payment_kind="activation", payment_types=set(card.types),
+                    payment_kind="activation", payment_types=set(effective_types(state, card)),
                     source_card_id=cid, ability_kind='cycling',
                 ):
                     continue
@@ -343,7 +344,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
     if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
         for cid in player.battlefield:
             card = state.cards[cid]
-            if "Planeswalker" not in card.types:
+            if "Planeswalker" not in effective_types(state, card):
                 continue
             if printed_abilities_suppressed(state, cid):
                 continue
@@ -422,10 +423,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             )
     # Equipment equip abilities (sorcery speed only).
     if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
-        own_creatures = [cid for cid in player.battlefield if "Creature" in state.cards[cid].types]
+        own_creatures = [cid for cid in player.battlefield if "Creature" in effective_types(state, state.cards[cid])]
         for cid in player.battlefield:
             card = state.cards[cid]
-            if "Artifact" not in card.types:
+            if "Artifact" not in effective_types(state, card):
                 continue
             if printed_abilities_suppressed(state, cid):
                 continue
@@ -439,7 +440,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
                        and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card)[0]
                        and can_pay_with_pool_and_lands(state, player_id, equip_cost,
-                           payment_kind="activation", payment_types=set(card.types), ability_kind="equip",
+                           payment_kind="activation", payment_types=set(effective_types(state, card)), ability_kind="equip",
                            source_card_id=cid, target_card_id=target)]
             if targets:
                 moves.append(
@@ -459,13 +460,13 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if printed_abilities_suppressed(state, vehicle_id) or split_second_active(state):
             continue
         crew = crew_value(vehicle)
-        if crew is None or "Artifact" not in vehicle.types:
+        if crew is None or "Artifact" not in effective_types(state, vehicle):
             continue
         candidates = [
             cid
             for cid in player.battlefield
             if cid != vehicle_id
-            and "Creature" in state.cards[cid].types
+            and "Creature" in effective_types(state, state.cards[cid])
             and not state.cards[cid].tapped
         ]
         if sum(max(0, effective_power(state, cid)) for cid in candidates) >= crew:
@@ -499,7 +500,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if original.zone == Zone.EXILE and not exile_permission(state, player_id, cid, index):
                 continue
             face = select_cast_face(original, index)
-            if "Land" in face.types:
+            if "Land" in effective_types(state, face):
                 if original.layout == "modal_dfc" and original.zone in {Zone.HAND, Zone.EXILE} and state.active_player == player_id and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack:
                     used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn) if player.last_land_play_turn == state.turn else 0
                     if used < compute_max_land_plays_this_turn(state, player_id):
@@ -544,7 +545,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
     if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
         return True
-    if "Instant" in card.types:
+    if "Instant" in effective_types(state, card):
         return True
     if has_keyword(state, card.id, "flash"):
         return True

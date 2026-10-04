@@ -1,4 +1,5 @@
 """Maximize recognized requirements without disobeying combat restrictions."""
+from rules_engine.type_effects import effective_types
 from itertools import combinations
 from fractions import Fraction
 import re
@@ -17,7 +18,7 @@ def requirement_weights(state, ids, kind):
 
 def attack_candidates(state):
     return [cid for cid in state.players[state.active_player].battlefield
-            if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in state.cards[cid].types
+            if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in effective_types(state, state.cards[cid])
             and not state.cards[cid].tapped
             and (not state.cards[cid].summoning_sick or has_keyword(state, cid, 'haste'))
             and not has_keyword(state, cid, 'defender') and not card_cant_attack(state, cid)]
@@ -137,7 +138,7 @@ def best_required_blocks(state, pinned=None, volunteered=()):
     from rules_engine.combat_payments import block_payment_view
     volunteered = set(volunteered) | {bid for ids in (pinned or {}).values() for bid in ids}
     blockers = [cid for cid in state.players[defender].battlefield
-                if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in state.cards[cid].types
+                if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in effective_types(state, state.cards[cid])
                 and not state.cards[cid].tapped and not card_cant_block(state, cid)
                 and (cid in volunteered or not block_payment_view(state, [cid])['payments'])]
     weights = requirement_weights(state, blockers, 'block')

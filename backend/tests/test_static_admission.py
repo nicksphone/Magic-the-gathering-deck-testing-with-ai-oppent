@@ -44,7 +44,7 @@ def test_opponent_resources_are_live_controller_relative_and_snapshot_safe(seat,
         assert has_keyword(restored, source.id, keyword) is active
 
 
-@pytest.mark.parametrize('name', ['Thunderfoot Baloth', "Tyrant's Familiar", 'Xenagos, God of Revels'])
+@pytest.mark.parametrize('name', ['Thunderfoot Baloth', "Tyrant's Familiar"])
 def test_unimplemented_static_clauses_are_visible_in_admission(name):
     row = ROWS[name]
     mechanics = known_unsupported_mechanics(row['oracle_text'], card_name=name)
@@ -96,7 +96,7 @@ def test_completeness_and_public_diagnostics_share_static_admission(game):
     from persistence.repository import Repository
     from card_data.service import CardService
     client, match = game
-    row = ROWS['Xenagos, God of Revels']
+    row = ROWS['Thunderfoot Baloth']
     add(match.state, row['name'], cards=ROWS)
     before = snapshot(match)
     public = client.get(f'/matches/{match.state.id}/rules-diagnostics')
@@ -131,7 +131,7 @@ def test_triggered_activated_and_temporary_grammar_is_not_a_static_instruction()
 
 
 def test_unknown_second_face_keeps_face_provenance_and_deduplicates_reasons():
-    row = ROWS['Xenagos, God of Revels']
+    row = ROWS['Thunderfoot Baloth']
     report = deck_pair_coverage([], [{'card_name': 'Face fixture', 'oracle_text': '', 'card_faces': [row, row]}])
     card = report['known_unsupported_cards'][0]
     assert card['deck'] == 'B'
@@ -143,7 +143,7 @@ def test_unknown_second_face_keeps_face_provenance_and_deduplicates_reasons():
 def test_http_preflight_exposes_static_gaps_without_mutating_match(game, monkeypatch):
     import main
     client, match = game
-    row = ROWS['Xenagos, God of Revels']
+    row = ROWS['Thunderfoot Baloth']
     monkeypatch.setattr(main, '_hydrate_deck_cards', lambda repo, deck: [dict(row, **item) for item in deck])
     before = snapshot(match)
     deck = [{'card_name': row['name'], 'quantity': 60}]

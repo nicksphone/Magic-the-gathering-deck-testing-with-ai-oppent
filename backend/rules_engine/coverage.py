@@ -61,6 +61,7 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.kicker import kicked_cast_clauses
     from rules_engine.oracle_text import without_reminder_text
     from rules_engine.devotion import devotion_instruction
+    from rules_engine.type_effects import devotion_type_condition
     variants = [(card_name, oracle_text or ''),
                 *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
                   for face in card_faces or [] if isinstance(face, dict))]
@@ -70,7 +71,7 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
                 continue
             instruction = re.sub(r'^when (?:this creature|' + re.escape(name.lower())
                                  + r') enters(?: the battlefield)?, ', '', line.strip())
-            if devotion_instruction(instruction, name) is None:
+            if devotion_instruction(instruction, name) is None and devotion_type_condition(line.strip(), name) is None:
                 out.append('unsupported devotion instruction')
     for text in texts:
         clauses = {item['clause'].lower() for item in kicked_cast_clauses(text)}

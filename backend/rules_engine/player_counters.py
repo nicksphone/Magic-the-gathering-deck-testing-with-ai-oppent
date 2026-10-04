@@ -1,5 +1,6 @@
 """Shared player counters and explicitly supported Oracle counter clauses."""
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -61,14 +62,14 @@ def gain_matches(state, source, event, payload, instruction):
         if kind == 'cast_combat':
             return state.step in COMBAT_STEPS
         card = state.cards.get(payload.get('source_card_id'))
-        if not card or not set(selector.split(' or ')).intersection(t.lower() for t in card.types):
+        if not card or not set(selector.split(' or ')).intersection(t.lower() for t in effective_types(state, card)):
             return False
         from rules_engine.mana import mana_value
         return threshold is None or mana_value(card.mana_cost, x_value=int(payload.get('x_value', 0))) >= threshold
     if event != 'enters_battlefield':
         return False
     card = state.cards.get(payload.get('card_id'))
-    if not card or card.controller != source.controller or selector.title() not in card.types:
+    if not card or card.controller != source.controller or selector.title() not in effective_types(state, card):
         return False
     from rules_engine.continuous import effective_power
     return threshold is None or effective_power(state, card.id) <= threshold

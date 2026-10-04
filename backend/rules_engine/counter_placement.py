@@ -1,5 +1,6 @@
 """Physical counter placement and bounded, unconditional Oracle prohibitions."""
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from functools import lru_cache
@@ -70,9 +71,9 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
                 elif target is not None:
                     if category == 'self' and source.id == target.id:
                         return True
-                    if category == 'types' and any(value[:-1].title() in target.types for value in selector):
+                    if category == 'types' and any(value[:-1].title() in effective_types(state, target) for value in selector):
                         return True
-                    if (category == 'controlled_creature' and counter == kind and 'Creature' in target.types
+                    if (category == 'controlled_creature' and counter == kind and 'Creature' in effective_types(state, target)
                             and target.controller == source.controller):
                         return True
     return False
@@ -107,7 +108,7 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
     if target_player is not None and kind == 'poison':
         target.poison += amount
     elif (target_player is None and kind == 'loyalty'
-          and (target.loyalty is not None or 'Planeswalker' in target.types)):
+          and (target.loyalty is not None or 'Planeswalker' in effective_types(state, target))):
         target.loyalty = int(target.loyalty or 0) + amount
     else:
         key = '__lore' if target_player is None and kind == 'lore' and 'Saga' in target.type_line else kind

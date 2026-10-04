@@ -1,4 +1,5 @@
 """Source-bound generic activation changes, shared by hints and payment."""
+from rules_engine.type_effects import effective_types
 import re
 from functools import lru_cache
 
@@ -30,13 +31,13 @@ def ability_cost_modifier(text):
 def ability_cost_reduction(state, source, spec):
     player = state.players[source.controller]
     creatures = [state.cards[cid] for cid in player.battlefield
-                 if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in state.cards[cid].types]
+                 if state.cards[cid].zone == Zone.BATTLEFIELD and 'Creature' in effective_types(state, state.cards[cid])]
     basis = spec['basis']
     if basis == 'other_artifacts':
         units = sum(cid != source.id and state.cards[cid].zone == Zone.BATTLEFIELD
-                    and 'Artifact' in state.cards[cid].types for cid in player.battlefield)
+                    and 'Artifact' in effective_types(state, state.cards[cid]) for cid in player.battlefield)
     elif basis == 'graveyard_creatures':
-        units = sum(state.cards[cid].zone == Zone.GRAVEYARD and 'Creature' in state.cards[cid].types
+        units = sum(state.cards[cid].zone == Zone.GRAVEYARD and 'Creature' in effective_types(state, state.cards[cid])
                     and not state.cards[cid].is_token for cid in player.graveyard)
     elif basis == 'creature_counters':
         units = sum(max(0, card.counters.get('+1/+1', 0)) for card in creatures)
@@ -208,7 +209,7 @@ def payable_crew_group(state, player_id, vehicle_id, required, candidates):
         if power+tails[index] < required:
             continue
         if not can_pay_with_pool_and_lands(state, player_id, '', payment_kind='activation',
-                payment_types=set(state.cards[vehicle_id].types),
+                payment_types=set(effective_types(state, state.cards[vehicle_id])),
                 source_card_id=vehicle_id, ability_kind='crew', excluded_sources=set(selected)):
             continue
         if power >= required:

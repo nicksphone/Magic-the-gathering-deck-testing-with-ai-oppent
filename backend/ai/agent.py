@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import copy
 import re
@@ -141,7 +142,7 @@ class AIAgent:
                 return True
             x_value = self._choose_x_value(state, player_id, mana_cost, card=card)
             return any(
-                cid in state.cards and "Creature" in state.cards[cid].types
+                cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                 and effective_toughness(state, cid) <= x_value
                 for cid in state.players[3 - player_id].battlefield
             )
@@ -155,7 +156,7 @@ class AIAgent:
             if (
                 getattr(item, "controller", player_id) != player_id
                 and source is not None
-                and "Creature" in getattr(source, "types", [])
+                and "Creature" in effective_types(state, source)
                 and self._stack_item_threat_score(state, item.id, player_id) < 2.0
             ):
                 legal_moves = [
@@ -184,7 +185,7 @@ class AIAgent:
             move for move in legal_moves
             if move.get("type") != "crew"
             or (move.get("card_id") not in pending_crews
-                and "Creature" not in (getattr(state.cards.get(move.get("card_id")), "types", []) or []))
+                and "Creature" not in (effective_types(state, state.cards.get(move.get("card_id"))) or []))
         ]
         legal_moves = [move for move in legal_moves if not self._burn_has_only_friendly_targets(state, move, player_id)]
         if getattr(state, "pregame_pending", False) and not any(move.get("type") == "choose_mechanic" for move in legal_moves):
@@ -217,14 +218,14 @@ class AIAgent:
                 if choice['kind'] == 'scry':
                     # Preserve curve/fixing resources; do not apply one land
                     # threshold to ramp, aggro and control alike.
-                    lands = sum('Land' in state.cards[cid].types for cid in state.players[player_id].hand)
-                    lands += sum('Land' in state.cards[cid].types for cid in state.players[player_id].battlefield)
+                    lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in state.players[player_id].hand)
+                    lands += sum('Land' in effective_types(state, state.cards[cid]) for cid in state.players[player_id].battlefield)
                     known = state.players[player_id].hand + options
                     goal = max([3, *(mana_value(state.cards[cid].mana_cost) for cid in known
-                                     if 'Land' not in state.cards[cid].types)])
+                                     if 'Land' not in effective_types(state, state.cards[cid]))])
                     demand = self._color_demand(state, player_id)
                     sources = self._current_color_sources(state, player_id)
-                    selected = [cid for cid in reversed(selected) if 'Land' in state.cards[cid].types
+                    selected = [cid for cid in reversed(selected) if 'Land' in effective_types(state, state.cards[cid])
                                 and lands > goal + 1 and not any(demand.get(color, 0) and not sources.get(color, 0)
                                                                for color in self._land_colors(state.cards[cid]))]
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
@@ -298,7 +299,7 @@ class AIAgent:
                                     return -100.0
                                 amount = int(effect.get("payload", {}).get("amount", 0) or 0)
                                 toughness = effective_combat_stats(state, value)[1]
-                                lethal = ("Creature" in card.types and toughness is not None
+                                lethal = ("Creature" in effective_types(state, card) and toughness is not None
                                           and amount > 0 and toughness <= amount + int(card.counters.get("__damage_marked", 0))
                                           and not has_keyword(state, value, "indestructible"))
                                 return 5.0 + self._creature_threat_score(state, value, player_id) if lethal else 0.0
@@ -399,10 +400,10 @@ class AIAgent:
                                       if search_card_matches(state.cards[cid], payload.get('contains'), None)]
                         basics = self._choose_library_search(state, candidates, len(options), player_id)
                         target = 6 if self.archetype == 'Ramp' else 4
-                        lands = sum('Land' in state.cards[cid].types for cid in state.players[player_id].battlefield + state.players[player_id].hand)
+                        lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in state.players[player_id].battlefield + state.players[player_id].hand)
                         scored = [(0.0, 0)]
                         for size in range(1, min(len(basics), len(options), choice['count']) + 1):
-                            removed_lands = sum('Land' in state.cards[cid].types for cid in options[:size])
+                            removed_lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in options[:size])
                             if size <= max(0, target - lands + removed_lands):
                                 gain = sum(self._hand_retention_value(state, cid, player_id) for cid in basics[:size])
                                 loss = sum(self._hand_retention_value(state, cid, player_id) for cid in options[:size])
@@ -413,7 +414,7 @@ class AIAgent:
                         count, _ = self._linked_draw_trade(state, player_id, options, choice['count'])
                     return AIDecision(action={'type': 'choose_mechanic', 'card_ids': options[:count]}, reasoning='Preserve hand unless linked follow-up improves known resources')
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
-            options.sort(key=lambda cid: (("Creature" in state.cards[cid].types), mana_value(state.cards[cid].mana_cost), cid))
+            options.sort(key=lambda cid: (("Creature" in effective_types(state, state.cards[cid])), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
         legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)]
         self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
@@ -956,12 +957,12 @@ class AIAgent:
         my_untapped = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         )
         opp_untapped = sum(
             1
             for cid in state.players[opp].battlefield
-            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         )
         f = 0.0
         f += (my_life - opp_life) * 0.25
@@ -991,7 +992,7 @@ class AIAgent:
         chosen = self._choose_attackers(state, options, player_id)
         if not chosen:
             chosen = self._fallback_progress_attackers(state, options, player_id)
-            if not any("Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if not any("Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
                        for cid in state.players[3 - player_id].battlefield):
                 chosen = self._reserve_postcombat_mana(state, chosen, player_id)
         if not chosen:
@@ -1007,7 +1008,7 @@ class AIAgent:
         opp_blockers = [
             cid
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ]
         out: list[str] = []
         for cid in candidates:
@@ -1067,7 +1068,7 @@ class AIAgent:
 
     def _closure_spell_score(self, card, text: str, *, state=None, player_id=None) -> float:
         score = 0.0
-        types = set(getattr(card, "types", []) or [])
+        types = set(effective_types(state, card) or [])
         if "Planeswalker" in types:
             score += 5.0
         if "Creature" in types:
@@ -1135,7 +1136,7 @@ class AIAgent:
             card = _card_for_move(state, move)
             if not card:
                 continue
-            if "Instant" not in (getattr(card, "types", []) or []):
+            if "Instant" not in (effective_types(state, card) or []):
                 continue
             text = _oracle_text(card)
             if "draw" not in self._spell_tags(card) and not any(k in text for k in ["scry", "surveil"]):
@@ -1157,12 +1158,12 @@ class AIAgent:
         own_creatures = [
             cid
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         ]
         opp_creatures = [
             cid
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         ]
         if not opp_creatures:
             return None
@@ -1428,7 +1429,7 @@ class AIAgent:
                 continue
             cid = m.get("card_id")
             card = state.cards.get(cid) if cid else None
-            if card and "Creature" in card.types:
+            if card and "Creature" in effective_types(state, card):
                 castable_creature_moves.append(m)
         # Deep-copy two-ply search is valuable on ordinary boards but scales
         # poorly with token armies and large action surfaces. Preserve the
@@ -1471,7 +1472,7 @@ class AIAgent:
                 # when the card is low-impact or the hand needs filtering.
                 base += 2.0
                 card = state.cards.get(move.get("card_id"))
-                if card and "Land" in getattr(card, "types", []):
+                if card and "Land" in effective_types(state, card):
                     base -= 2.0
                 if len(state.players[player_id].hand) <= 3:
                     base += 1.5
@@ -1580,12 +1581,12 @@ class AIAgent:
         opp_block_power = sum(
             _effective_combat_stats(state, c)[0]
             for c in state.players[opp_id].battlefield
-            if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
+            if c in state.cards and "Creature" in effective_types(state, state.cards[c]) and not state.cards[c].tapped
         )
         opp_blockers = sum(
             1
             for c in state.players[opp_id].battlefield
-            if c in state.cards and "Creature" in state.cards[c].types and not state.cards[c].tapped
+            if c in state.cards and "Creature" in effective_types(state, state.cards[c]) and not state.cards[c].tapped
         )
         race_pressure = max(0, 20 - state.players[opp_id].life) * 0.2
         role = self._board_role(state, player_id)
@@ -1621,7 +1622,7 @@ class AIAgent:
             if not c:
                 continue
             keywords = [k.lower() for k in (getattr(c, "keywords", []) or [])]
-            if "Instant" in c.types or "flash" in keywords:
+            if "Instant" in effective_types(state, c) or "flash" in keywords:
                 has_instant_like = True
                 break
         if getattr(state, "stack", []) or []:
@@ -1672,7 +1673,7 @@ class AIAgent:
         opp_untapped = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if "Land" in (state.cards.get(cid).types if cid in state.cards else []) and not state.cards[cid].tapped
+            if "Land" in (effective_types(state, state.cards.get(cid)) if cid in state.cards else []) and not state.cards[cid].tapped
         )
         # If opponent cannot realistically represent interaction, be more proactive.
         if opp_untapped <= 1:
@@ -1695,17 +1696,17 @@ class AIAgent:
         opp_board_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         opp_board_power = sum(
             max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         my_board_creatures = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         if mtype == "cast_spell":
             cid = move.get("card_id")
@@ -1753,7 +1754,7 @@ class AIAgent:
         opp_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         stack_live = bool(getattr(state, "stack", []) or [])
         for cid in state.players[player_id].hand:
@@ -1772,7 +1773,7 @@ class AIAgent:
     def _has_castable_value_spell(self, state: MatchState, player_id: int) -> bool:
         for cid in state.players[player_id].hand:
             card = state.cards.get(cid)
-            if not card or "Land" in (getattr(card, "types", []) or []):
+            if not card or "Land" in (effective_types(state, card) or []):
                 continue
             if not self._can_pay_card_cost(state, player_id, card):
                 continue
@@ -1791,7 +1792,7 @@ class AIAgent:
                 return bool(available_cast_options_and_hints(state, card, player_id)[0])
             return bool(can_pay_with_pool_and_lands(
                 state, player_id, getattr(card, "mana_cost", ""),
-                card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+                card_name=getattr(card, "name", ""), spell_types=set(effective_types(state, card) or []),
                 oracle_text=getattr(card, "oracle_text", "") or "",
             ))
         except Exception:
@@ -1858,15 +1859,15 @@ class AIAgent:
         if move.get('cast_variant') == 'bestow':
             from rules_engine.bestow import bestow_cast_view
             card = bestow_cast_view(card)
-        if self._should_hold_up_interaction(state, player_id) and "Instant" not in card.types and not self._is_major_threat_card(card):
+        if self._should_hold_up_interaction(state, player_id) and "Instant" not in effective_types(state, card) and not self._is_major_threat_card(card):
             return -1.4
-        is_creature = "Creature" in card.types
+        is_creature = "Creature" in effective_types(state, card)
         arche = self.archetype
         tags = self._spell_tags(card)
         my_creatures = sum(
             1
             for perm_id in state.players[player_id].battlefield
-            if "Creature" in state.cards.get(perm_id, type("X", (), {"types": []})()).types
+            if "Creature" in effective_types(state, state.cards.get(perm_id, type("X", (), {"types": []})()))
         )
         early_turn = state.turn <= 4
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
@@ -1875,7 +1876,7 @@ class AIAgent:
             and getattr(state, "active_player", player_id) == player_id
             and not (getattr(state, "stack", []) or [])
         )
-        mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=("Land" in card.types))
+        mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=("Land" in effective_types(state, card)))
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         mana_cost_text = (getattr(card, "mana_cost", "") or "").upper()
         x_value = 0
@@ -1948,12 +1949,12 @@ class AIAgent:
             opp_creatures = sum(
                 1
                 for cid in state.players[opp_id].battlefield
-                if cid in state.cards and "Creature" in state.cards[cid].types
+                if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
             )
             opp_untapped_lands = sum(
                 1
                 for cid in state.players[opp_id].battlefield
-                if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+                if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
             )
             if "counter" in tags:
                 bonus += 5.5 if getattr(state, "stack", []) else -2.5
@@ -1961,7 +1962,7 @@ class AIAgent:
                 bonus += 2.2
                 if self._should_force_inevitability_plan(state, player_id):
                     bonus += 1.4
-                if "Instant" in card.types:
+                if "Instant" in effective_types(state, card):
                     on_opp_turn = getattr(state, "active_player", player_id) != player_id
                     in_end = _step_key(getattr(state, "step", "")) == "end_step"
                     if on_opp_turn or in_end:
@@ -2009,7 +2010,7 @@ class AIAgent:
                     bonus += 0.4
                 if role in {"stabilize", "convert"}:
                     bonus += 0.8
-            if ("Planeswalker" in set(getattr(card, "types", []) or []) or is_big_threat) and own_main_sorcery_window:
+            if ("Planeswalker" in set(effective_types(state, card) or []) or is_big_threat) and own_main_sorcery_window:
                 if self._should_force_proactive_control_line(state, player_id):
                     bonus += 2.3
                 if self._should_force_inevitability_plan(state, player_id):
@@ -2026,7 +2027,7 @@ class AIAgent:
         if arche in {"Midrange"}:
             bonus = 0.0
             # Midrange: prefer board development on-curve, hold premium removal for real pressure.
-            if "Creature" in set(getattr(card, "types", []) or []):
+            if "Creature" in set(effective_types(state, card) or []):
                 bonus += 1.6
                 if 2 <= cmc <= 4 and state.turn <= 6:
                     bonus += 1.2
@@ -2036,7 +2037,7 @@ class AIAgent:
                 opp_creatures = sum(
                     1
                     for ocid in state.players[opp_id].battlefield
-                    if ocid in state.cards and "Creature" in state.cards[ocid].types
+                    if ocid in state.cards and "Creature" in effective_types(state, state.cards[ocid])
                 )
                 if opp_creatures == 0:
                     bonus -= 2.2
@@ -2056,14 +2057,14 @@ class AIAgent:
             opp_creatures = sum(
                 1
                 for ocid in state.players[opp_id].battlefield
-                if ocid in state.cards and "Creature" in state.cards[ocid].types
+                if ocid in state.cards and "Creature" in effective_types(state, state.cards[ocid])
             )
             # Under pressure, stabilize before greed.
             if state.players[player_id].life <= 10 and opp_creatures >= 2 and "ramp" in tags:
                 bonus -= 2.0
             if "removal" in tags and opp_creatures > 0:
                 bonus += 2.0
-            if "Creature" in set(getattr(card, "types", []) or []) and cmc >= 5 and state.turn >= 5:
+            if "Creature" in set(effective_types(state, card) or []) and cmc >= 5 and state.turn >= 5:
                 bonus += 1.8
             if "draw" in tags:
                 bonus += 1.5
@@ -2077,7 +2078,7 @@ class AIAgent:
                 bonus += 5.5
             if "anthem" in tags:
                 bonus += 5.0 if my_creatures >= 2 else 2.2
-            if "Enchantment" in card.types:
+            if "Enchantment" in effective_types(state, card):
                 bonus += 3.2
                 if state.turn <= 4:
                     bonus += 1.2
@@ -2110,7 +2111,7 @@ class AIAgent:
 
         if arche in {"Tempo"}:
             bonus = 0.0
-            if "Creature" in set(getattr(card, "types", []) or []) and cmc <= 2:
+            if "Creature" in set(effective_types(state, card) or []) and cmc <= 2:
                 bonus += 2.4
             if "counter" in tags:
                 bonus += 3.6 if getattr(state, "stack", []) else -1.4
@@ -2122,7 +2123,7 @@ class AIAgent:
             my_creatures_now = sum(
                 1
                 for pid in state.players[player_id].battlefield
-                if pid in state.cards and "Creature" in state.cards[pid].types
+                if pid in state.cards and "Creature" in effective_types(state, state.cards[pid])
             )
             if my_creatures_now > 0 and "counter" in tags and (getattr(state, "stack", []) or []):
                 bonus += 1.0
@@ -2140,7 +2141,7 @@ class AIAgent:
             1
             for grave_id in getattr(state.players[player_id], "graveyard", []) or []
             if grave_id in state.cards
-            and bool(set(getattr(state.cards[grave_id], "types", []) or []) & {"Instant", "Sorcery"})
+            and bool(set(effective_types(state, state.cards[grave_id]) or []) & {"Instant", "Sorcery"})
         )
         # Graveyard-casting threats are premium only when a qualifying spell
         # is available to recast; otherwise preserve mana for another line.
@@ -2173,7 +2174,7 @@ class AIAgent:
         early_rate = float(row.get("early_turn_cast_rate", 0.0) or 0.0)
         late_rate = float(row.get("late_turn_cast_rate", 0.0) or 0.0)
         text = (getattr(card, "oracle_text", "") or "").lower()
-        non_creature = "Creature" not in set(getattr(card, "types", []) or [])
+        non_creature = "Creature" not in set(effective_types(state, card) or [])
         # Slow-play/control heuristics from logs: punish premature timing on low-early cards.
         if turn < preferred_min and early_rate <= 0.2 and non_creature:
             severity = min(3.5, max(0.6, (preferred_min - turn) * 0.8))
@@ -2195,7 +2196,7 @@ class AIAgent:
         if ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
             opponent = state.players[3 - player_id]
             if not any(
-                cid in state.cards and "Creature" in state.cards[cid].types
+                cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                 and effective_toughness(state, cid) <= x_value
                 for cid in opponent.battlefield
             ):
@@ -2318,17 +2319,17 @@ class AIAgent:
         mana_req = parse_mana_cost(getattr(proxy, "mana_cost", ""), is_land=False)
         cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
         score = 0.0
-        types = set(getattr(proxy, "types", []) or [])
+        types = set(effective_types(state, proxy) or [])
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         my_creatures = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
         early_turn = int(getattr(state, "turn", 1) or 1) <= 4
@@ -2444,12 +2445,12 @@ class AIAgent:
         opp_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         my_creatures = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         opp_life = int(getattr(state.players[opp_id], "life", 20) or 20)
         turn = int(getattr(state, "turn", 1) or 1)
@@ -2971,7 +2972,7 @@ class AIAgent:
             if bounce_targets:
                 selected = max(bounce_targets, key=lambda cid: (
                     state.cards[cid].controller != player_id,
-                    self._creature_threat_score(state, cid, player_id) if 'Creature' in state.cards[cid].types
+                    self._creature_threat_score(state, cid, player_id) if 'Creature' in effective_types(state, state.cards[cid])
                     else self._noncreature_permanent_threat_score(state, cid, player_id), cid))
                 targets['target_card_id'] = selected
         from rules_engine.oracle_effects import parse_temporary_target_buff
@@ -3114,7 +3115,7 @@ class AIAgent:
                 key=lambda t: (
                     int(state.cards[t["id"]].controller != player_id),
                     self._creature_threat_score(state, t["id"], player_id)
-                    if "Creature" in state.cards[t["id"]].types
+                    if "Creature" in effective_types(state, state.cards[t["id"]])
                     else self._noncreature_permanent_threat_score(state, t["id"], player_id),
                 ),
             )
@@ -3269,7 +3270,7 @@ class AIAgent:
                                 key=lambda t: (
                                     int(state.cards[t["id"]].controller == opponent),
                                     self._creature_threat_score(state, t["id"], player_id)
-                                    if "Creature" in state.cards[t["id"]].types
+                                    if "Creature" in effective_types(state, state.cards[t["id"]])
                                     else self._noncreature_permanent_threat_score(state, t["id"], player_id),
                                 ),
                             )["id"]
@@ -3566,7 +3567,7 @@ class AIAgent:
         opp_blockers = [
             cid
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ]
         if not opp_blockers:
             if self._combat_keyword_board(state, player_id):
@@ -3591,11 +3592,11 @@ class AIAgent:
         board_pressure = sum(
             max(0, _eff_pow(state, cid))
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ) - sum(
             max(0, _eff_pow(state, cid))
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         )
         commit_attack = (
             role in {"race", "convert"}
@@ -3666,7 +3667,7 @@ class AIAgent:
             return list(candidates)
         sources = [cid for cid in candidates if cid in state.cards
                    and "vigilance" not in {kw.lower() for kw in effective_keywords(state, cid)}
-                   and ("Land" in state.cards[cid].types or repeatable_nonland_mana_outputs(
+                   and ("Land" in effective_types(state, state.cards[cid]) or repeatable_nonland_mana_outputs(
                        state.cards[cid], state=state, payment_context=("spell", CARD_TYPES)))
                    and mana_source_outputs(state, player_id, cid)]
         if not sources:
@@ -3769,7 +3770,7 @@ class AIAgent:
             return None
         from rules_engine.combat_constraints import combat_rule_view
         if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
-               for cid in player.battlefield if 'Creature' in state.cards[cid].types):
+               for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
             return None
         from ai.pending_effects import _settle_announced_stack
         sim = planning_copy(state)
@@ -3783,7 +3784,7 @@ class AIAgent:
                 return None
             self.engine.next_step(sim)
             blockers = [cid for cid in sim.players[opponent].battlefield
-                        if 'Creature' in sim.cards[cid].types and not sim.cards[cid].tapped]
+                        if 'Creature' in effective_types(sim, sim.cards[cid]) and not sim.cards[cid].tapped]
             blocks = {}
             if blockers:
                 blocks = self._search_block_assignments(sim,
@@ -3814,8 +3815,8 @@ class AIAgent:
                       if move.get('type') in {'cast_spell', 'equip', 'activate_ability', 'activate_loyalty'}]
         if not candidates or len(candidates) > 16:
             return None
-        own_creatures = [cid for cid in state.players[player_id].battlefield if 'Creature' in state.cards[cid].types]
-        opposing_creatures = [cid for cid in state.players[3-player_id].battlefield if 'Creature' in state.cards[cid].types]
+        own_creatures = [cid for cid in state.players[player_id].battlefield if 'Creature' in effective_types(state, state.cards[cid])]
+        opposing_creatures = [cid for cid in state.players[3-player_id].battlefield if 'Creature' in effective_types(state, state.cards[cid])]
         # A setup action can create the first attackers (for example hasty tokens).
         if len(own_creatures) > 3 or len(opposing_creatures) > 2:
             return None
@@ -3897,14 +3898,14 @@ class AIAgent:
             return None
         if not force and int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
             return None
-        candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in state.cards[cid].types]
+        candidate_ids = [cid for cid in candidates if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])]
         if not candidate_ids or len(candidate_ids) > 3:
             return None
         opponent = 1 if player_id == 2 else 2
         available_blockers = [
             cid
             for cid in state.players[opponent].battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         ]
         # Block search already has its own combinatorial bound. Keep attack
         # search below that bound as well so full matchup matrices stay usable.
@@ -3940,7 +3941,7 @@ class AIAgent:
         if not creature_id or creature_id not in state.cards:
             return -999.0
         card = state.cards[creature_id]
-        if "Creature" not in (getattr(card, "types", []) or []):
+        if "Creature" not in (effective_types(state, card) or []):
             return -500.0
         from rules_engine.continuous import effective_power as _eff_pow
         from rules_engine.continuous import effective_toughness as _eff_tgh
@@ -3975,13 +3976,13 @@ class AIAgent:
             our_remaining = [
                 cid
                 for cid in state.players[player_id].battlefield
-                if cid in state.cards and "Creature" in state.cards[cid].types and cid not in attackers
+                if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and cid not in attackers
             ]
             our_block_value = sum(max(0, _eff_pow(state, cid)) for cid in our_remaining if not state.cards[cid].tapped)
             opp_attack_value = sum(
                 max(0, _eff_pow(state, cid))
                 for cid in state.players[opp_id].battlefield
-                if cid in state.cards and "Creature" in state.cards[cid].types and not state.cards[cid].tapped
+                if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
             )
             return max(0, opp_attack_value - int(our_block_value * 0.6))
 
@@ -4007,7 +4008,7 @@ class AIAgent:
             (pid, cid, effective_toughness(state, cid))
             for pid in (player_id, opponent)
             for cid in state.players[pid].battlefield
-            if "Creature" in state.cards[cid].types
+            if "Creature" in effective_types(state, state.cards[cid])
         ]
         if not creatures:
             return 0
@@ -4032,11 +4033,11 @@ class AIAgent:
         untapped_lands = sum(
             1
             for cid in state.players[player_id].battlefield
-            if "Land" in state.cards.get(cid, type("X", (), {"types": []})()).types and not state.cards[cid].tapped
+            if "Land" in effective_types(state, state.cards.get(cid, type("X", (), {"types": []})())) and not state.cards[cid].tapped
         )
         upper = max(0, pool_total + untapped_lands)
         floor = self._minimum_useful_x_value(state, player_id, card, mana_cost)
-        spell_types = set(getattr(card, "types", []) or []) if card is not None else None
+        spell_types = set(effective_types(state, card) or []) if card is not None else None
         card_name = str(getattr(card, "name", "") or "") if card is not None else ""
         scored: list[tuple[float, int]] = []
         for x in range(upper, 0, -1):
@@ -4077,25 +4078,25 @@ class AIAgent:
         opp_creatures = sum(
             1
             for cid in opp.battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         my_creatures = sum(
             1
             for cid in me.battlefield
-            if cid in state.cards and "Creature" in state.cards[cid].types
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         score = 0.0
         if ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
             defeated = sum(
                 max(1.0, self._creature_threat_score(state, cid, player_id))
                 for cid in opp.battlefield
-                if cid in state.cards and "Creature" in state.cards[cid].types
+                if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                 and effective_toughness(state, cid) <= x_value
             )
             lost = sum(
                 max(1.0, self._creature_threat_score(state, cid, opp_id))
                 for cid in me.battlefield
-                if cid in state.cards and "Creature" in state.cards[cid].types
+                if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                 and effective_toughness(state, cid) <= x_value
             )
             score += defeated - lost - 0.35 * x_value
@@ -4133,9 +4134,9 @@ class AIAgent:
                 return -100.0
             if opp.life <= x_value:
                 return 100.0
-            defeated = sum(1 for cid in opp.battlefield if cid in state.cards and "Creature" in state.cards[cid].types
+            defeated = sum(1 for cid in opp.battlefield if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                            and effective_toughness(state, cid) <= x_value)
-            lost = sum(1 for cid in me.battlefield if cid in state.cards and "Creature" in state.cards[cid].types
+            lost = sum(1 for cid in me.battlefield if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                        and effective_toughness(state, cid) <= x_value)
             score += 3.0 * (defeated - lost) - 0.25 * x_value
         elif "deal x damage" in text or "deals x damage" in text or "lose x life" in text:
@@ -4275,16 +4276,16 @@ class AIAgent:
     def _surveil_graveyard_choices(self, state, options, player_id):
         player = state.players[player_id]
         known = player.hand + options
-        lands = sum('Land' in state.cards[cid].types for cid in player.hand + player.battlefield)
-        goal = max([3, *(mana_value(state.cards[cid].mana_cost) for cid in known if 'Land' not in state.cards[cid].types)])
+        lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in player.hand + player.battlefield)
+        goal = max([3, *(mana_value(state.cards[cid].mana_cost) for cid in known if 'Land' not in effective_types(state, state.cards[cid]))])
         demand = self._color_demand(state, player_id)
         for cid in options:
-            if 'Land' not in state.cards[cid].types:
+            if 'Land' not in effective_types(state, state.cards[cid]):
                 for color, count in _fixed_color_pips(state.cards[cid].mana_cost).items():
                     demand[color] = demand.get(color, 0) + count
         sources = self._current_color_sources(state, player_id)
         for cid in player.hand:
-            if 'Land' in state.cards[cid].types:
+            if 'Land' in effective_types(state, state.cards[cid]):
                 for color in self._land_colors(state.cards[cid]):
                     sources[color] = sources.get(color, 0) + 1
         reanimation = any(re.fullmatch(r'return target creature card from your graveyard to the battlefield\.',
@@ -4293,7 +4294,7 @@ class AIAgent:
         graveyard = []
         for cid in self._choose_library_search(state, options, len(options), player_id):
             card = state.cards[cid]
-            if 'Land' in card.types:
+            if 'Land' in effective_types(state, card):
                 fixing = any(demand.get(color, 0) and not sources.get(color, 0) for color in self._land_colors(card))
                 if lands >= goal + 1 and not fixing:
                     graveyard.append(cid)
@@ -4301,7 +4302,7 @@ class AIAgent:
                     lands += 1
                     for color in self._land_colors(card):
                         sources[color] = sources.get(color, 0) + 1
-            elif (reanimation and 'Creature' in card.types and not self._can_pay_card_cost(state, player_id, card)
+            elif (reanimation and 'Creature' in effective_types(state, card) and not self._can_pay_card_cost(state, player_id, card)
                   and graveyard_destination(state, card) == 'graveyard'):
                 graveyard.append(cid)
         return list(reversed(graveyard))
@@ -4319,12 +4320,12 @@ class AIAgent:
                     text = str(getattr(card, "oracle_text", "") or "").lower()
                     if graveyard_destination(state, card) != "graveyard":
                         return (-self._closure_spell_score(card, text, state=state, player_id=player_id), card.name)
-                    if "Creature" in card.types:
+                    if "Creature" in effective_types(state, card):
                         return (self._graveyard_creature_reanimation_score(state, cid, player_id), card.name)
                     if any(keyword in text for keyword in ("flashback", "escape", "jump-start", "retrace")):
                         return (3.0 + self._closure_spell_score(card, text, state=state, player_id=player_id), card.name)
-                    return (-1.0 if "Land" in card.types else 0.0, card.name)
-                if "Land" in card.types:
+                    return (-1.0 if "Land" in effective_types(state, card) else 0.0, card.name)
+                if "Land" in effective_types(state, card):
                     colors = self._land_colors(card)
                     fixing = sum((3.5 if sources.get(color, 0) == 0 else 0.0) +
                                  0.4 * demand.get(color, 0) for color in colors if demand.get(color, 0))
@@ -4341,7 +4342,7 @@ class AIAgent:
             chosen = max(candidates, key=lambda cid: (score(cid), cid))
             selected.append(chosen)
             card = state.cards[chosen]
-            if "Land" in card.types:
+            if "Land" in effective_types(state, card):
                 for color in self._land_colors(card):
                     sources[color] = sources.get(color, 0) + 1
             candidates.remove(chosen)
@@ -4349,7 +4350,7 @@ class AIAgent:
 
     def _sacrifice_loss(self, state: MatchState, cid: str, player_id: int) -> float:
         card = state.cards[cid]
-        types = set(card.types)
+        types = set(effective_types(state, card))
         if "Land" in types:
             demand = self._color_demand(state, player_id)
             sources = self._current_color_sources(state, player_id)
@@ -4375,15 +4376,15 @@ class AIAgent:
         card = state.cards[cid]
         archetype = archetype or self.archetype
         player = state.players[player_id]
-        lands_in_play = sum("Land" in state.cards[pid].types for pid in player.battlefield)
-        lands_in_hand = sum("Land" in state.cards[hid].types for hid in player.hand)
-        if "Land" in card.types:
+        lands_in_play = sum("Land" in effective_types(state, state.cards[pid]) for pid in player.battlefield)
+        lands_in_hand = sum("Land" in effective_types(state, state.cards[hid]) for hid in player.hand)
+        if "Land" in effective_types(state, card):
             if lands_in_play < 3:
                 return 9.0 if lands_in_hand <= 2 else 5.0
             return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0
         cost = mana_value(card.mana_cost)
         value = 5.0 - max(0, cost - lands_in_play - 1) * 0.8
-        if archetype == "Reanimator" and "Creature" in card.types and cost > lands_in_play + 2:
+        if archetype == "Reanimator" and "Creature" in effective_types(state, card) and cost > lands_in_play + 2:
             value -= 2.0
         if archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
             value += 1.5
@@ -4440,9 +4441,9 @@ class AIAgent:
                       and state.active_player == player_id and not state.stack)
         for cid in player.hand:
             spell = simulated.cards.get(cid)
-            if not spell or "Land" in spell.types:
+            if not spell or "Land" in effective_types(state, spell):
                 continue
-            if not main_phase and "Instant" not in spell.types and "flash" not in spell.keywords:
+            if not main_phase and "Instant" not in effective_types(state, spell) and "flash" not in spell.keywords:
                 continue
             if not self._can_pay_card_cost(state, player_id, state.cards[cid]) and self._can_pay_card_cost(simulated, player_id, spell):
                 return True
@@ -4495,7 +4496,7 @@ class AIAgent:
         untapped_lands = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Land" in state.cards[cid].types and not state.cards[cid].tapped
+            if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
         )
         # Late game or near hand-cap should proactively deploy card advantage/threats.
         return turn >= 6 and (hand_size >= 6 or untapped_lands >= 5)
@@ -4565,12 +4566,12 @@ class AIAgent:
                     opp_creatures = sum(
                         1
                         for ocid in state.players[opp_id].battlefield
-                        if ocid in state.cards and "Creature" in state.cards[ocid].types
+                        if ocid in state.cards and "Creature" in effective_types(state, state.cards[ocid])
                     )
                     score += 2.2 if opp_creatures > 0 else -1.3
-                if "Planeswalker" in set(getattr(card, "types", []) or []):
+                if "Planeswalker" in set(effective_types(state, card) or []):
                     score += 3.6
-                if "Creature" in set(getattr(card, "types", []) or []):
+                if "Creature" in set(effective_types(state, card) or []):
                     power = int(getattr(card, "power", 0) or 0)
                     score += min(2.8, power * 0.5)
             scored.append((score, mat))
@@ -4715,13 +4716,13 @@ class AIAgent:
         my_lands = sum(
             1
             for cid in (getattr(state.players[player_id], "battlefield", []) or [])
-            if cid in state.cards and "Land" in (getattr(state.cards[cid], "types", []) or [])
+            if cid in state.cards and "Land" in (effective_types(state, state.cards[cid]) or [])
         )
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
             1
             for cid in (getattr(state.players[opp_id], "battlefield", []) or [])
-            if cid in state.cards and "Creature" in (getattr(state.cards[cid], "types", []) or [])
+            if cid in state.cards and "Creature" in (effective_types(state, state.cards[cid]) or [])
         )
         sig = (player_id, int(getattr(state, "turn", 1) or 1), hand_key, my_lands, opp_creatures)
         cur = int(self._main_pass_signature_counts.get(sig, 0) or 0) + 1
@@ -4739,7 +4740,7 @@ class AIAgent:
         opp_untapped_lands = sum(
             1
             for cid in (getattr(state.players[opp_id], "battlefield", []) or [])
-            if cid in state.cards and "Land" in (getattr(state.cards[cid], "types", []) or []) and not state.cards[cid].tapped
+            if cid in state.cards and "Land" in (effective_types(state, state.cards[cid]) or []) and not state.cards[cid].tapped
         )
         if opp_untapped_lands > 2:
             return None
@@ -4760,7 +4761,7 @@ class AIAgent:
                 continue
             tags = self._spell_tags(card)
             score = 0.0
-            if "Creature" in set(getattr(card, "types", []) or []):
+            if "Creature" in set(effective_types(state, card) or []):
                 score += 3.2
             if "draw" in tags:
                 score += 2.4
@@ -4772,7 +4773,7 @@ class AIAgent:
                 opp_creatures = sum(
                     1
                     for x in (getattr(state.players[opp_id], "battlefield", []) or [])
-                    if x in state.cards and "Creature" in (getattr(state.cards[x], "types", []) or [])
+                    if x in state.cards and "Creature" in (effective_types(state, state.cards[x]) or [])
                 )
                 score += 1.2 if opp_creatures > 0 else -1.5
             scored.append((score, mv))
@@ -4799,7 +4800,7 @@ class AIAgent:
             card = _card_for_move(state, mv)
             if not card:
                 continue
-            types = set(getattr(card, "types", []) or [])
+            types = set(effective_types(state, card) or [])
             mana_req = parse_mana_cost(getattr(card, "mana_cost", ""), is_land=False)
             cmc = mana_req["generic"] + sum(mana_req[c] for c in ["W", "U", "B", "R", "G"])
             if "Creature" in types and cmc <= 2:
@@ -4863,7 +4864,7 @@ class AIAgent:
             if cid not in player.hand:
                 return True
             card = state.cards.get(cid)
-            if not card or "Land" not in (getattr(card, "types", []) or []):
+            if not card or "Land" not in (effective_types(state, card) or []):
                 return True
             if getattr(state, "active_player", player_id) != player_id:
                 return True
@@ -4899,14 +4900,14 @@ class AIAgent:
                 continue
             if can_pay_with_pool_and_lands(
                 state, player_id, getattr(card, "mana_cost", ""),
-                card_name=getattr(card, "name", ""), spell_types=set(getattr(card, "types", []) or []),
+                card_name=getattr(card, "name", ""), spell_types=set(effective_types(state, card) or []),
                 oracle_text=getattr(card, "oracle_text", "") or "",
             ):
                 opp_id = 1 if player_id == 2 else 2
                 opp_creatures = sum(
                     1
                     for oid in getattr(state.players[opp_id], "battlefield", [])
-                    if oid in state.cards and "Creature" in state.cards[oid].types
+                    if oid in state.cards and "Creature" in effective_types(state, state.cards[oid])
                 )
                 # Preserve early-game hold-up discipline, but deploy sooner when the board is clear.
                 if turn >= 5:
@@ -4919,7 +4920,7 @@ class AIAgent:
         demand = {c: 0 for c in ["W", "U", "B", "R", "G"]}
         for cid in state.players[player_id].hand:
             card = state.cards.get(cid)
-            if not card or "Land" in card.types:
+            if not card or "Land" in effective_types(state, card):
                 continue
             mana_cost = getattr(card, "mana_cost", "") or ""
             cost = _fixed_color_pips(mana_cost)
@@ -4957,22 +4958,22 @@ class AIAgent:
         my_power = sum(
             max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not getattr(state.cards[cid], "tapped", False)
         )
         opp_power = sum(
             max(0, _effective_combat_stats(state, cid)[0])
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not getattr(state.cards[cid], "tapped", False)
         )
         my_creatures = sum(
             1
             for cid in state.players[player_id].battlefield
-            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not getattr(state.cards[cid], "tapped", False)
         )
         opp_creatures = sum(
             1
             for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in getattr(state.cards[cid], "types", []) and not getattr(state.cards[cid], "tapped", False)
+            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not getattr(state.cards[cid], "tapped", False)
         )
         hand_delta = len(getattr(state.players[player_id], "hand", []) or []) - len(getattr(state.players[opp_id], "hand", []) or [])
         if opp_life <= 7 or (my_power >= opp_life and opp_life <= 10):
@@ -4993,7 +4994,7 @@ class AIAgent:
         sources = {c: 0 for c in ["W", "U", "B", "R", "G"]}
         for cid in state.players[player_id].battlefield:
             card = state.cards.get(cid)
-            if not card or "Land" not in card.types:
+            if not card or "Land" not in effective_types(state, card):
                 continue
             for c in self._land_colors(card):
                 if c in sources:
@@ -5019,7 +5020,7 @@ class AIAgent:
         if controller == player_id:
             return -10.0
         score = 0.0
-        types = set(getattr(card, "types", []) or [])
+        types = set(effective_types(state, card) or [])
         text = _oracle_text(card)
         if "Planeswalker" in types:
             score += 8.0
@@ -5054,7 +5055,7 @@ class AIAgent:
             return 0.0
         card = state.cards[card_id]
         score = float(getattr(card, "power", 0) or 0) * 0.9 + float(getattr(card, "toughness", 0) or 0) * 0.3
-        if "legendary" in " ".join(getattr(card, "types", [])).lower():
+        if "legendary" in " ".join(effective_types(state, card)).lower():
             score += 0.5
         text = _oracle_text(card)
         if any(k in text for k in ["draw", "counter", "remove", "destroy", "exile", "return"]):
@@ -5099,7 +5100,7 @@ class AIAgent:
         if source is None:
             return 1.0
         score = 0.0
-        types = set(getattr(source, "types", []) or [])
+        types = set(effective_types(state, source) or [])
         if "Planeswalker" in types:
             score += 8.0
         if "Artifact" in types:

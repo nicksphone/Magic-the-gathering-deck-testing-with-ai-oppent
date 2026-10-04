@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -154,9 +155,9 @@ def payment_cards(state, player, cost):
         return []
     subject, quality = cost['subject'], cost['quality']
     return [cid for cid in state.players[player].battlefield
-            if (subject == 'permanent' or (subject == 'artifact or creature' and {'Artifact', 'Creature'} & set(state.cards[cid].types)) or subject.title() in state.cards[cid].types)
+            if (subject == 'permanent' or (subject == 'artifact or creature' and {'Artifact', 'Creature'} & set(effective_types(state, state.cards[cid]))) or subject.title() in effective_types(state, state.cards[cid]))
             and (quality != 'legendary' or 'Legendary' in state.cards[cid].type_line)
-            and (quality != 'nonland' or 'Land' not in state.cards[cid].types)
+            and (quality != 'nonland' or 'Land' not in effective_types(state, state.cards[cid]))
             and (quality != 'nontoken' or not state.cards[cid].is_token)]
 
 

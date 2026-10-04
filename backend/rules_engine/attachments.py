@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -38,7 +39,7 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
     target = state.cards.get(target_id)
     if not target or target.zone != Zone.BATTLEFIELD:
         return False
-    if is_equipment(attachment) and ("Creature" in attachment.types or "Creature" not in target.types):
+    if is_equipment(attachment) and ("Creature" in effective_types(state, attachment) or "Creature" not in effective_types(state, target)):
         return False
     if protected_from_source(state, target_id, attachment):
         return False
@@ -46,11 +47,11 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
         return True
     from rules_engine.bestow import is_bestowed
     if is_bestowed(attachment):
-        return 'Creature' in target.types
+        return 'Creature' in effective_types(state, target)
     restriction = enchant_restriction(attachment.oracle_text)
     if restriction is None:
         return False
-    target_types = {str(value).lower() for value in (getattr(target, "types", []) or [])}
+    target_types = {str(value).lower() for value in (effective_types(state, target) or [])}
     quality, subject, alternative, control = restriction.groups()
     if control == "you control" and target.controller != attachment.controller:
         return False

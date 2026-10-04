@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -60,5 +61,5 @@ def apply_entry_choice(state, controller: int, card, *, choice: str = "tapped", 
         card.tapped = effect_tapped or choice == "tapped"
     else:
         card.tapped = effect_tapped
-        if "Land" in (card.types or []):
+        if "Land" in (effective_types(state, card) or []):
             apply_land_entry(card)

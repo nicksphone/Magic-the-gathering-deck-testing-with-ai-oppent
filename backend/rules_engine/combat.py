@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -19,6 +20,19 @@ from rules_engine.restrictions import (
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 BLOCK_ONLY_KEYWORD_RE = re.compile(r"\bcan block only creatures with ([a-z][a-z ]*?)(?:[.\n]|$)", re.IGNORECASE)
+
+
+def remove_noncreatures_from_combat(state):
+    """A type transition removes combatants; returning to creature doesn't rejoin."""
+    def remains(cid):
+        card = state.cards.get(cid)
+        return card is not None and card.zone == Zone.BATTLEFIELD and 'Creature' in effective_types(state, card)
+    state.attackers = [cid for cid in state.attackers if remains(cid)]
+    state.attack_targets = {cid: target for cid, target in state.attack_targets.items() if cid in state.attackers}
+    # Preserve an empty block entry: the attacker remains blocked (rule 509.1h).
+    state.blocks = {cid: [bid for bid in bids if remains(bid)]
+                    for cid, bids in state.blocks.items() if cid in state.attackers}
+    # Announced bands persist; block assignment filters out departed members.
 
 
 def valid_attack_bands(state: MatchState, attackers: list[str], targets: dict[str, str], bands: list[list[str]]) -> bool:
@@ -56,7 +70,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
             continue
         if card.zone != Zone.BATTLEFIELD:
             continue
-        if "Creature" not in card.types:
+        if "Creature" not in effective_types(state, card):
             continue
         if card.tapped:
             continue
@@ -92,7 +106,7 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
         state.__dict__.update(paid.__dict__)
     # Chosen creatures sacrificed during mana activation never become attackers.
     legal = [cid for cid in legal if state.cards[cid].zone == Zone.BATTLEFIELD
-             and state.cards[cid].controller == state.active_player and 'Creature' in state.cards[cid].types]
+             and state.cards[cid].controller == state.active_player and 'Creature' in effective_types(state, state.cards[cid])]
     legal_targets = {cid: target for cid, target in legal_targets.items() if cid in legal}
     for cid in legal:
         if not has_keyword(state, cid, "vigilance"):
@@ -145,7 +159,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
                 continue
             if block_card.tapped:
                 continue
-            if "Creature" not in block_card.types:
+            if "Creature" not in effective_types(state, block_card):
                 continue
             if card_cant_block(state, blocker):
                 continue
@@ -191,7 +205,7 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
     # Eligibility/restrictions were checked before locked costs. Tapping a
     # chosen blocker for mana does not prevent it from becoming a blocker.
     legal = {aid: [bid for bid in bids if state.cards[bid].zone == Zone.BATTLEFIELD
-                  and state.cards[bid].controller == defender and 'Creature' in state.cards[bid].types]
+                  and state.cards[bid].controller == defender and 'Creature' in effective_types(state, state.cards[bid])]
              for aid, bids in legal.items()}
     legal = {aid: bids for aid, bids in legal.items() if bids}
     # A legal direct block of one band member blocks every member, regardless
@@ -233,6 +247,8 @@ def combat_damage(state: MatchState) -> None:
 
 
 def _assigns_damage(state: MatchState, cid: str, first_only: bool) -> bool:
+    if 'Creature' not in effective_types(state, cid):
+        return False
     return cid in state.first_strike_damage_ids if first_only else cid not in state.first_strike_damage_ids or has_keyword(state, cid, "double strike")
 
 
@@ -583,7 +599,7 @@ def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
             power = effective_power(state, blocker.id)
             if power_limit[2] == 'less' and power <= int(power_limit[1]) or power_limit[2] == 'greater' and power >= int(power_limit[1]):
                 return False
-    if re.search(r"(?:can't|cannot) block artifact creatures", blocker_text) and 'Artifact' in attacker.types:
+    if re.search(r"(?:can't|cannot) block artifact creatures", blocker_text) and 'Artifact' in effective_types(state, attacker):
         return False
     only_keyword = BLOCK_ONLY_KEYWORD_RE.search(blocker_text)
     if only_keyword:
@@ -602,14 +618,14 @@ def _can_block_attacker(state: MatchState, attacker, blocker) -> bool:
     # Fear: blocked only by artifact creatures and/or black creatures.
     if has_keyword(state, attacker.id, "fear"):
         blocker_colors = card_color_names(state.cards.get(blocker.id))
-        if "Artifact" not in (getattr(blocker, "types", []) or []) and "black" not in blocker_colors:
+        if "Artifact" not in (effective_types(state, blocker) or []) and "black" not in blocker_colors:
             return False
     # Intimidate: blocked only by artifact creatures and/or creatures sharing a color.
     if has_keyword(state, attacker.id, "intimidate"):
         blocker_colors = card_color_names(state.cards.get(blocker.id))
         attacker_colors = card_color_names(state.cards.get(attacker.id))
         shares_color = bool(attacker_colors & blocker_colors)
-        if "Artifact" not in (getattr(blocker, "types", []) or []) and not shares_color:
+        if "Artifact" not in (effective_types(state, blocker) or []) and not shares_color:
             return False
     # Landwalk: unblockable if defending player controls relevant land type.
     if _attacker_has_active_landwalk_with_state(state, attacker, blocker.controller):
@@ -690,7 +706,7 @@ def _valid_defenders(state: MatchState, defending_player: int) -> set[str]:
     out = {f"player:{defending_player}"}
     for cid in state.players[defending_player].battlefield:
         card = state.cards[cid]
-        if "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
+        if "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
             out.add(f"planeswalker:{cid}")
     return out
 
@@ -713,7 +729,7 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
     if defender_key.startswith("planeswalker:"):
         cid = defender_key.split(":", 1)[1]
         card = state.cards.get(cid)
-        if card and "Planeswalker" in card.types and card.zone == Zone.BATTLEFIELD:
+        if card and "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
             prevention_locked = damage_cant_be_prevented(state, source_card_id=source_id,
                                                         target_card_id=cid, combat=True)
             if not prevention_locked and source_id is not None and source_id in state.cards and _damage_prevented_by_protection(state, source_id, cid):

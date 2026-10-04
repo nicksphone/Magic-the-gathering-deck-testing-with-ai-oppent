@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from collections import Counter
@@ -25,12 +26,12 @@ GLOBAL_BASE_RE = re.compile(r"\b(?:(all|other) )?creatures (?:have|lose all abil
 def _attached_effects(state, source, target):
     """Only the current attachment receives supported static bonuses."""
     if (not getattr(source, "attached_to", None) or source.attached_to != getattr(target, "id", None) or not _is_battlefield(source)
-            or not _is_battlefield(target) or "Creature" in source.types):
+            or not _is_battlefield(target) or "Creature" in effective_types(state, source)):
         return (0, 0, [], [])
     text = _attached_static_text(source)
 
     def matches(subject):
-        return subject == "permanent" or subject.title() in target.types
+        return subject == "permanent" or subject.title() in effective_types(state, target)
 
     power = toughness = 0
     keywords = set()
@@ -178,7 +179,7 @@ def _attached_scale_count(state, source, target, phrase):
 
     def selected(card):
         subtype = (card.type_line or "").lower().split("—", 1)[-1].split()
-        return any(selector.title() in card.types or ("Land" in card.types and selector in subtype)
+        return any(selector.title() in effective_types(state, card) or ("Land" in effective_types(state, card) and selector in subtype)
                    for selector in selectors)
 
     return sum(selected(state.cards[cid]) for cid in state.players[source.controller].battlefield
@@ -220,6 +221,9 @@ def _conditional_static_instructions(oracle_text, name):
     clauses = [component for line in re.split(r'[.\n]', without_reminder_text(oracle_text).lower())
                for component in static_clause_components(line)]
     for raw in clauses:
+        from rules_engine.type_effects import devotion_type_condition
+        if devotion_type_condition(raw.strip() + '.', name) is not None:
+            continue  # The earlier type layer owns this instruction.
         raw = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '""', raw.strip())
         line = re.sub(r'^[a-z][a-z ]*\s+[—–-]\s+', '', raw)
         if 'as long as' not in line or ':' in line or 'until end of turn' in line or re.match(r'^(?:when|whenever|at the beginning|if|during)\b', line):
@@ -384,7 +388,7 @@ def _continuous_layer_sort_key(state, source_id: str, layer: str) -> tuple[int, 
     Keyword changes are layer 6; base P/T setters and modifiers are 7b/7c.
     The remaining fields keep same-layer, same-timestamp fixtures deterministic.
     """
-    if layer.startswith('type-add:'):
+    if layer.startswith(('type-add:', 'type-remove:')):
         layer_rank = 4
         sublayer = 0
     elif layer.startswith("keyword-"):
@@ -722,7 +726,7 @@ def _stat_resource_count(state, card, expression):
         return sum(_graveyard_card_matches_selector(value, match[2] or '') for value in cards)
     if (match := re.fullmatch(r'(.+?) you control', expression)):
         selector = match[1].removeprefix('other ')
-        return sum(_battlefield_card_matches_selector(state.cards.get(cid), selector)
+        return sum(_battlefield_card_matches_selector(state.cards.get(cid), selector, state=state)
                    for cid in state.players[pid].battlefield
                    if not match[1].startswith('other ') or cid != card.id)
     return None
@@ -732,7 +736,7 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
     card = state.cards[card_id]
     if not _is_battlefield(card):
         return (0, 0)
-    if "Creature" not in card.types:
+    if "Creature" not in effective_types(state, card):
         return (0, 0)
     p_bonus = 0
     t_bonus = 0
@@ -874,8 +878,8 @@ def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
     if not _is_battlefield(target):
         return False
     if scope == "attached":
-        return (source.attached_to == target_id and "Creature" not in source.types
-                and (subject == "permanent" or subject.title() in target.types))
+        return (source.attached_to == target_id and "Creature" not in effective_types(state, source)
+                and (subject == "permanent" or subject.title() in effective_types(state, target)))
     return ((scope == "all" or _scope_controller(source.controller, scope, target.controller))
             and not (other_only and source.id == target_id)
             and _subject_matches(state, target_id, subject))
@@ -969,15 +973,15 @@ def _subject_matches(state, card_id: str, subject: str) -> bool:
     s = (subject or "").strip().lower()
     type_nouns = _STATIC_TYPE_NOUNS
     if s in type_nouns:
-        return type_nouns[s] in card.types
+        return type_nouns[s] in effective_types(state, card)
     if s == "permanents":
-        return _is_battlefield(card) and bool(set(card.types) & set(type_nouns.values()))
+        return _is_battlefield(card) and bool(set(effective_types(state, card)) & set(type_nouns.values()))
     if s == "tokens":
         return is_token_card(card)
     if s == "creature tokens":
-        return "Creature" in card.types and is_token_card(card)
+        return "Creature" in effective_types(state, card) and is_token_card(card)
     if s.endswith(" creatures"):
-        if "Creature" not in card.types:
+        if "Creature" not in effective_types(state, card):
             return False
         colors = set(getattr(card, "colors", None) or [])
         color_names = _COLOR_SYMBOLS
@@ -993,19 +997,20 @@ def _subject_matches(state, card_id: str, subject: str) -> bool:
             elif word == "colorless":
                 matched = not colors
             elif word.title() in type_nouns.values():
-                matched = word.title() in card.types
+                matched = word.title() in effective_types(state, card)
             elif word in {"legendary", "snow"}:
                 matched = word in front_types
             else:
-                matched = _has_subtype(card, word)
+                matched = _has_subtype(card, word, state=state)
             return not matched if negative else matched
 
         return all(matches(word) for word in s.removesuffix(" creatures").split())
-    return any(_has_subtype(card, singular) for singular in creature_subtype_candidates(s))
+    return any(_has_subtype(card, singular, state=state) for singular in creature_subtype_candidates(s))
 
 
-def _has_subtype(card, subtype: str) -> bool:
-    if "Creature" not in (getattr(card, "types", []) or []):
+def _has_subtype(card, subtype: str, *, state=None) -> bool:
+    types = effective_types(state, card) if state is not None else (getattr(card, "types", []) or [])
+    if "Creature" not in types:
         return False
     type_line = (getattr(card, "type_line", "") or "").lower()
     if "—" in type_line:
@@ -1041,23 +1046,24 @@ def _graveyard_card_matches_selector(card, selector: str) -> bool:
     return _has_subtype(card, s)
 
 
-def _battlefield_card_matches_selector(card, selector: str) -> bool:
+def _battlefield_card_matches_selector(card, selector: str, *, state=None) -> bool:
     if not card:
         return False
     s = selector.strip().lower()
+    types = effective_types(state, card) if state is not None else (getattr(card, 'types', []) or [])
     type_map = {word: kind for kind in CARD_TYPES for word in [kind.lower(), kind.lower() + 's']}
     if s in type_map:
-        return type_map[s] in (getattr(card, 'types', []) or [])
+        return type_map[s] in types
     if s in {"creature", "creatures"}:
-        return "Creature" in (getattr(card, "types", []) or [])
+        return "Creature" in types
     if s in {"artifact creature", "artifact creatures"}:
-        return "Creature" in (getattr(card, "types", []) or []) and "Artifact" in (getattr(card, "types", []) or [])
+        return "Creature" in types and "Artifact" in types
     if s.endswith(" creatures"):
         tribe = s.replace(" creatures", "").strip()
-        return _has_subtype(card, tribe)
+        return _has_subtype(card, tribe, state=state)
     if s.endswith("s"):
         s = s[:-1]
-    return _has_subtype(card, s)
+    return _has_subtype(card, s, state=state)
 
 
 def _all_battlefield_ids(state) -> list[str]:
@@ -1100,7 +1106,17 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
     applied_layers: list[tuple[tuple[int, int, int, int, int, str], dict[str, Any]]] = []
     layer_index = 0
     if _is_battlefield(card):
-        from rules_engine.type_effects import active_type_effects
+        from rules_engine.type_effects import active_type_effects, devotion_type_condition
+        from rules_engine.devotion import devotion_count
+        condition = devotion_type_condition(card.oracle_text, card.name)
+        if condition is not None and devotion_count(state, card.controller, condition[0]) < condition[1]:
+            key = _continuous_layer_sort_key(state, card_id, 'type-remove:Creature')
+            applied_layers.append((key, {
+                'source_id': card_id, 'source_name': card.name, 'target_id': card_id,
+                'layer': 'type-remove:Creature', 'effect_timestamp': effect_timestamp(card),
+                'timestamp_origin': 'battlefield', 'devotion_colors': list(condition[0]),
+                'devotion_threshold': condition[1],
+            }))
         for effect in active_type_effects(card):
             layer = 'type-add:' + ','.join(effect['types'])
             key = _continuous_layer_sort_key(state, card_id, layer)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from collections import Counter
@@ -73,9 +74,9 @@ def land_can_produce_mana(state: MatchState, card_id: str, *, free_only=True) ->
     from rules_engine.continuous import printed_abilities_suppressed
     card = state.cards[card_id]
     return (
-        "Land" in card.types and not card.tapped
+        "Land" in effective_types(state, card) and not card.tapped
         and not printed_abilities_suppressed(state, card_id)
-        and ("Creature" not in card.types or not card.summoning_sick or has_keyword(state, card_id, "haste"))
+        and ("Creature" not in effective_types(state, card) or not card.summoning_sick or has_keyword(state, card_id, "haste"))
         and (not free_only or mana_activation_is_free(state, card_id, ''))
     )
 
@@ -85,7 +86,7 @@ def land_mana_amount(state: MatchState, player_id: int, card_id: str) -> int:
     from rules_engine.continuous import printed_abilities_suppressed
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        if "Planeswalker" not in card.types or card.controller != player_id:
+        if "Planeswalker" not in effective_types(state, card) or card.controller != player_id:
             continue
         if printed_abilities_suppressed(state, cid):
             continue
@@ -111,7 +112,7 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
 def mana_source_outputs(state: MatchState, player_id: int, card_id: str) -> dict[str, int]:
     """Ready outputs used by both ordinary and snow payment planning."""
     card = state.cards[card_id]
-    if "Land" in card.types and land_can_produce_mana(state, card_id):
+    if "Land" in effective_types(state, card) and land_can_produce_mana(state, card_id):
         amount = land_mana_amount(state, player_id, card_id)
         return {color: amount for color in land_mana_colors(card)}
     return nonland_mana_outputs(state, card_id, card)
@@ -265,7 +266,7 @@ def _plan_mana_sources(
         card = state.cards[cid]
         if not eligible(spending_rule(card), payment_context):
             continue
-        land = "Land" in card.types
+        land = "Land" in effective_types(state, card)
         outputs = mana_source_outputs(state, player_id, cid)
         if outputs:
             sources.append((cid, outputs, land))
@@ -338,7 +339,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         card = state.cards[cid]
         if not is_snow_source(card) or not eligible(spending_rule(card), payment_context):
             continue
-        land = "Land" in card.types
+        land = "Land" in effective_types(state, card)
         outputs = mana_source_outputs(state, player_id, cid)
         if outputs:
             sources.append((cid, outputs, land))
@@ -576,7 +577,7 @@ def choose_mana_color_for_player(state: MatchState, player_id: int, preferred: l
         card = state.cards.get(cid)
         if not card:
             continue
-        cost = parse_mana_cost(getattr(card, "mana_cost", "") or "", is_land=("Land" in getattr(card, "types", []) or []))
+        cost = parse_mana_cost(getattr(card, "mana_cost", "") or "", is_land=("Land" in effective_types(state, card) or []))
         for color in ["W", "U", "B", "R", "G"]:
             scores[color] += int(cost.get(color, 0))
     if all(scores[c] == 0 for c in ["W", "U", "B", "R", "G"]):
@@ -611,7 +612,7 @@ def nonland_mana_outputs(state: MatchState, card_id: str, card, *, free_only=Tru
     from rules_engine.continuous import printed_abilities_suppressed
     if printed_abilities_suppressed(state, card_id):
         return {}
-    card_types = set(getattr(card, "types", []) or [])
+    card_types = set(effective_types(state, card) or [])
     if "Land" in card_types:
         return {}
     if getattr(card, "tapped", False):
@@ -638,7 +639,7 @@ def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -
         from rules_engine.continuous import printed_abilities_suppressed
         if printed_abilities_suppressed(state, getattr(card, 'id', None)):
             return {}
-    if "Land" in (getattr(card, "types", []) or []):
+    if "Land" in (effective_types(state, card) or []):
         return {}
     text = getattr(card, "oracle_text", "") or ""
     ability = NONLAND_MANA_ABILITY_RE.search(text)

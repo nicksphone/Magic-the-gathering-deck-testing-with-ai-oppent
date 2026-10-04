@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from dataclasses import dataclass, replace
@@ -159,7 +160,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     return can_pay_with_pool_and_lands(
         state, player_id, cost.mana_cost, card_name=source.name, reserved_life=cost.pay_life,
         hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color,
-        payment_kind="activation", payment_types=set(source.types),
+        payment_kind="activation", payment_types=set(effective_types(state, source)),
         ability_kind=ability_kind, source_card_id=source_id, ability_index=ability_index,
         excluded_sources={source_id} if cost.tap_source or cost.sacrifice_source else None,
     )
@@ -171,7 +172,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
-    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(source.types), source_id, ability_kind, {source_id} if cost.tap_source or cost.sacrifice_source else None, ability_index):
+    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source or cost.sacrifice_source else None, ability_index):
         return False
     if cost.tap_source:
         source.tapped = True
@@ -205,7 +206,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         state.trigger_staging = True
         state.trigger_staging_event = "ability_activation"
     for sac_id in sacrifice_ids:
-        if context is not None and "Creature" in state.cards[sac_id].types:
+        if context is not None and "Creature" in effective_types(state, state.cards[sac_id]):
             from rules_engine.continuous import effective_toughness
             context["__sacrificed_toughness"] = effective_toughness(state, sac_id)
     emit_event_batch(state, "leaves_battlefield", events)
@@ -336,8 +337,8 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
     return can_pay_with_pool_and_lands(
-        state, player_id, option.mana_cost, is_land=("Land" in card.types),
-        card_name=card.name, x_value=x_value, spell_types=set(card.types),
+        state, player_id, option.mana_cost, is_land=("Land" in effective_types(state, card)),
+        card_name=card.name, x_value=x_value, spell_types=set(effective_types(state, card)),
         spell_is_aura=is_aura(card),
         spell_kicked=option.kicked,
         oracle_text=card.oracle_text or "",
@@ -436,7 +437,7 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
         card = state.cards.get(cid)
         if card is None or card.zone != Zone.BATTLEFIELD or card.controller != player_id:
             continue
-        types = set(card.types or [])
+        types = set(effective_types(state, card) or [])
         if not types.intersection({'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'}):
             continue
         if kind.startswith('subtype_'):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from typing import Any
@@ -198,7 +199,7 @@ def infer_effect_from_oracle(
     # A real planeswalker card's loyalty lines are activated later, not cast as
     # one combined spell effect. Loyalty proxies intentionally do not carry
     # the Planeswalker type and continue through the normal parser below.
-    if "Planeswalker" in (getattr(card, "types", []) or []):
+    if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
@@ -428,7 +429,7 @@ def infer_effect_from_oracle(
     if len(effects) == 1:
         return effects[0][0], effects[0][1]
 
-    if not oracle and not card.oracle_text and set(card.types).intersection({'Instant', 'Sorcery'}):
+    if not oracle and not card.oracle_text and set(effective_types(state, card)).intersection({'Instant', 'Sorcery'}):
         if report_unsupported:
             state.log.append(f'Oracle effect not inferred for {card.name}: missing spell Oracle text; no effect fabricated.')
         return 'noop', {}
@@ -697,7 +698,7 @@ def inspect_target_hints(
         {"id": cid, "name": state.cards[cid].name, "owner": state.cards[cid].owner, "controller": state.cards[cid].controller}
         for pid in state.players
         for cid in getattr(state.players[pid], "graveyard", [])
-        if cid in state.cards and "Creature" in state.cards[cid].types
+        if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         and ("your graveyard" not in oracle or pid == controller)
     ]
     faces = list(getattr(card, "card_faces", []) or [])
@@ -806,7 +807,7 @@ def inspect_target_hints(
         hints["creature_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
-            if "Creature" in state.cards[cid].types
+            if "Creature" in effective_types(state, state.cards[cid])
             and ("nonlegendary creature" not in oracle or not _is_legendary_target(state.cards[cid]))
             and ("another target" not in oracle or cid != getattr(card, "id", None))
         ]
@@ -816,7 +817,7 @@ def inspect_target_hints(
             {"id": cid, "name": state.cards[cid].name}
             for pid in land_players
             for cid in state.players[pid].battlefield
-            if "Land" in state.cards[cid].types
+            if "Land" in effective_types(state, state.cards[cid])
         ]
     if re.search(r"^enchant ", oracle, re.M):
         from rules_engine.attachments import attachment_target_is_legal
@@ -829,25 +830,25 @@ def inspect_target_hints(
         hints["permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
-            if "nonland permanent" not in oracle or "Land" not in state.cards[cid].types
+            if "nonland permanent" not in oracle or "Land" not in effective_types(state, state.cards[cid])
         ]
     if "artifact" in oracle:
         hints["artifact_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
-            if "Artifact" in state.cards[cid].types
+            if "Artifact" in effective_types(state, state.cards[cid])
         ]
     if "enchantment" in oracle:
         hints["enchantment_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
-            if "Enchantment" in state.cards[cid].types
+            if "Enchantment" in effective_types(state, state.cards[cid])
         ]
     if "artifact" in oracle and "enchantment" in oracle:
         hints["noncreature_permanent_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
-            if ("Artifact" in state.cards[cid].types or "Enchantment" in state.cards[cid].types)
+            if ("Artifact" in effective_types(state, state.cards[cid]) or "Enchantment" in effective_types(state, state.cards[cid]))
         ]
     if "target" in oracle and "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
         if re.search(r"return target card from (?:your|a) graveyard", oracle):
@@ -862,21 +863,21 @@ def inspect_target_hints(
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
             for cid in state.players[pid].graveyard
-            if any(t in {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"} for t in state.cards[cid].types)
+            if any(t in {"Creature", "Artifact", "Enchantment", "Land", "Planeswalker"} for t in effective_types(state, state.cards[cid]))
             and ("your graveyard" not in oracle or pid == controller)
         ]
         graveyard_artifacts = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
             for cid in state.players[pid].graveyard
-            if "Artifact" in state.cards[cid].types
+            if "Artifact" in effective_types(state, state.cards[cid])
             and ("your graveyard" not in oracle or pid == controller)
         ]
         graveyard_enchantments = [
             {"id": cid, "name": state.cards[cid].name}
             for pid in state.players
             for cid in state.players[pid].graveyard
-            if "Enchantment" in state.cards[cid].types
+            if "Enchantment" in effective_types(state, state.cards[cid])
             and ("your graveyard" not in oracle or pid == controller)
         ]
         if "artifact" in oracle:
@@ -889,7 +890,7 @@ def inspect_target_hints(
         hints["graveyard_spell_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[controller].graveyard
-            if cid in state.cards and {"Instant", "Sorcery"}.intersection(state.cards[cid].types)
+            if cid in state.cards and {"Instant", "Sorcery"}.intersection(effective_types(state, state.cards[cid]))
         ]
     search_effect = _infer_search_effect(oracle, {})
     if search_effect is not None:
@@ -922,7 +923,7 @@ def inspect_target_hints(
         hints[f"{kind}_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for player in state.players.values() for cid in player.battlefield
-            if kind == "permanent" or kind.capitalize() in state.cards[cid].types
+            if kind == "permanent" or kind.capitalize() in effective_types(state, state.cards[cid])
         ]
     if DIVIDE_RE.search(oracle):
         hints["supports_divide"] = True
@@ -933,19 +934,19 @@ def inspect_target_hints(
             {"id": cid, "name": state.cards[cid].name}
             for player in state.players.values()
             for cid in player.battlefield
-            if "Creature" in state.cards[cid].types
+            if "Creature" in effective_types(state, state.cards[cid])
         ]
         hints["planeswalker_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for player in state.players.values()
             for cid in player.battlefield
-            if "Planeswalker" in state.cards[cid].types
+            if "Planeswalker" in effective_types(state, state.cards[cid])
         ]
     elif "target creature or planeswalker" in oracle:
         hints["planeswalker_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
-            if "Planeswalker" in state.cards[cid].types
+            if "Planeswalker" in effective_types(state, state.cards[cid])
         ]
     restrictions = infer_target_restrictions(state, oracle, controller)
     if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
@@ -1103,7 +1104,7 @@ def _target_id_matches_restrictions(
 def _target_card_matches_restrictions(state, card, restrictions, controller, x_value=0) -> bool:
     if card is None:
         return False
-    types = set(card.types or [])
+    types = set(effective_types(state, card) or [])
     excluded = set(restrictions.get("exclude_types") or [])
     if types.intersection(excluded):
         return False
@@ -1128,7 +1129,7 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
         max_value = sum(
             1
             for cid in state.players[controller].battlefield
-            if subtype in {str(t).lower() for t in state.cards[cid].types}
+            if subtype in {str(t).lower() for t in effective_types(state, state.cards[cid])}
             or subtype in str(state.cards[cid].type_line or "").lower().split()
         )
     min_value = restrictions.get("mana_value_min")
@@ -1146,7 +1147,7 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
 
 def _first_creature(state: MatchState, player_id: int) -> str | None:
     for cid in state.players[player_id].battlefield:
-        if "Creature" in state.cards[cid].types:
+        if "Creature" in effective_types(state, state.cards[cid]):
             return cid
     return None
 
@@ -1305,7 +1306,7 @@ def _infer_clause_effect(
     if incubate_match:
         raw = incubate_match.group(1)
         if raw == "x" and "where x is the number of lands you control" in oracle:
-            amount = sum("Land" in state.cards[cid].types for cid in state.players[controller].battlefield)
+            amount = sum("Land" in effective_types(state, state.cards[cid]) for cid in state.players[controller].battlefield)
         elif raw == "x" and ("where x is" in oracle or "x_value" not in action_targets):
             return None
         else:
@@ -1516,7 +1517,7 @@ def _infer_clause_effect(
         if target is None:
             for cid in state.players[controller].graveyard:
                 candidate = state.cards.get(cid)
-                if candidate and cast_from_graveyard.group(1).title() in candidate.types:
+                if candidate and cast_from_graveyard.group(1).title() in effective_types(state, candidate):
                     target = cid
                     break
         # Keep the effect structured even when no qualifying graveyard card
@@ -1768,7 +1769,7 @@ def _infer_clause_effect(
             return None
         if target is None and counters_match.group(2).lower() == "land":
             target = next(
-                (cid for cid in state.players[controller].battlefield if "Land" in state.cards[cid].types),
+                (cid for cid in state.players[controller].battlefield if "Land" in effective_types(state, state.cards[cid])),
                 None,
             )
         if target is None:
@@ -1811,7 +1812,7 @@ def _infer_clause_effect(
         target = target_card_id
         if target:
             return "sacrifice", {"target_card_id": target}
-        own_creatures = [cid for cid in state.players[controller].battlefield if "Creature" in state.cards[cid].types]
+        own_creatures = [cid for cid in state.players[controller].battlefield if "Creature" in effective_types(state, state.cards[cid])]
         if own_creatures and amount == 1:
             return "sacrifice", {"target_card_id": own_creatures[0]}
 
@@ -1840,7 +1841,7 @@ def _choose_noncreature_permanent_target(
     target_card_id = action_targets.get("target_card_id")
     if target_card_id in state.cards:
         target_card = state.cards[target_card_id]
-        if allowed_types.intersection(set(target_card.types or [])):
+        if allowed_types.intersection(set(effective_types(state, target_card) or [])):
             return target_card_id
     opponent = 1 if controller == 2 else 2
     candidates: list[str] = []
@@ -1848,15 +1849,15 @@ def _choose_noncreature_permanent_target(
         card = state.cards.get(cid)
         if not card:
             continue
-        if allowed_types.intersection(set(card.types or [])):
+        if allowed_types.intersection(set(effective_types(state, card) or [])):
             candidates.append(cid)
     if not candidates:
         return None
     return sorted(
         candidates,
         key=lambda cid: (
-            0 if "Artifact" in state.cards[cid].types else 1,
-            0 if "Enchantment" in state.cards[cid].types else 1,
+            0 if "Artifact" in effective_types(state, state.cards[cid]) else 1,
+            0 if "Enchantment" in effective_types(state, state.cards[cid]) else 1,
             str(state.cards[cid].name).lower(),
             cid,
         ),
@@ -1873,7 +1874,7 @@ def _choose_any_permanent_target(
     target_card_id = action_targets.get("target_card_id")
     if target_card_id in state.cards:
         target_card = state.cards[target_card_id]
-        if not exclude_types.intersection(set(target_card.types or [])):
+        if not exclude_types.intersection(set(effective_types(state, target_card) or [])):
             return target_card_id
     opponent = 1 if controller == 2 else 2
     candidates: list[str] = []
@@ -1881,7 +1882,7 @@ def _choose_any_permanent_target(
         card = state.cards.get(cid)
         if not card:
             continue
-        if exclude_types.intersection(set(card.types or [])):
+        if exclude_types.intersection(set(effective_types(state, card) or [])):
             continue
         candidates.append(cid)
     if not candidates:
@@ -1889,9 +1890,9 @@ def _choose_any_permanent_target(
     return sorted(
         candidates,
         key=lambda cid: (
-            0 if "Creature" in state.cards[cid].types else 1,
-            0 if "Artifact" in state.cards[cid].types else 1,
-            0 if "Enchantment" in state.cards[cid].types else 1,
+            0 if "Creature" in effective_types(state, state.cards[cid]) else 1,
+            0 if "Artifact" in effective_types(state, state.cards[cid]) else 1,
+            0 if "Enchantment" in effective_types(state, state.cards[cid]) else 1,
             str(state.cards[cid].name).lower(),
             cid,
         ),

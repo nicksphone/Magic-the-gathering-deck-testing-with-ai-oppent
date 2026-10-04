@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -105,7 +106,7 @@ def _apply_aura_discounts(context: CostContext) -> CostContext:
             if modifier is None:
                 continue
             kind, amount = modifier
-            applies = kind == "all" or (target is not None and "Creature" in target.types and (
+            applies = kind == "all" or (target is not None and "Creature" in effective_types(context.state, target) and (
                 (kind == "enchanted creature" and is_aura(source) and source.attached_to == target.id)
                 or (kind == "this creature" and source.id == target.id)))
             if applies:
@@ -121,7 +122,7 @@ def _apply_equip_discounts(context: CostContext) -> CostContext:
     from rules_engine.attachments import is_aura, is_equipment
     target = context.state.cards.get(context.target_card_id)
     equipment = context.state.cards.get(context.source_card_id)
-    if (target is None or target.zone != Zone.BATTLEFIELD or "Creature" not in target.types
+    if (target is None or target.zone != Zone.BATTLEFIELD or "Creature" not in effective_types(context.state, target)
             or equipment is None or equipment.zone != Zone.BATTLEFIELD or not is_equipment(equipment)):
         return context
     for cid in context.state.players[context.player_id].battlefield:
@@ -133,7 +134,7 @@ def _apply_equip_discounts(context: CostContext) -> CostContext:
             modifier = equip_cost_modifier(clause)
             if modifier:
                 kind, amount = modifier
-                applies = (is_aura(source) and source.attached_to == target.id) if kind == "enchanted creature" else (source.id == target.id and "Creature" in source.types) if kind == "this creature" else True
+                applies = (is_aura(source) and source.attached_to == target.id) if kind == "enchanted creature" else (source.id == target.id and "Creature" in effective_types(context.state, source)) if kind == "this creature" else True
                 if applies:
                     context.generic_reduction += amount
     if re.search(r"^equip (?:\{[^}]+\})+\. this ability costs \{x\} less to activate, where x is the power of the creature it targets\.$",

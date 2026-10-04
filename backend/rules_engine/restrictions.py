@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -29,7 +30,7 @@ def _land_gate_prevents(state, card_id: str, action: str) -> bool | None:
         if required is None:
             continue
         lands = sum(
-            state.cards[cid].zone == Zone.BATTLEFIELD and "Land" in state.cards[cid].types
+            state.cards[cid].zone == Zone.BATTLEFIELD and "Land" in effective_types(state, state.cards[cid])
             for cid in state.players[card.controller].battlefield
         )
         return lands < required
@@ -113,7 +114,7 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
     step = state.step
     is_active = state.active_player == player_id
     opponent_turn = state.active_player != player_id
-    types = {str(value) for value in (getattr(card, "types", []) or [])}
+    types = {str(value) for value in (effective_types(state, card) or [])}
     has_flash = "flash" in {str(value).lower() for value in (getattr(card, "keywords", []) or [])} or "flash" in text
     in_combat = step in {
         Step.BEGIN_COMBAT,

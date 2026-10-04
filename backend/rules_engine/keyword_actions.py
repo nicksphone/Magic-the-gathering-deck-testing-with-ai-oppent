@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -29,7 +30,7 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     card = state.cards[card_id]
     cost = ninjutsu_cost(card)
     if not cost or not auto_pay_cost(state, player_id, cost, card_name=card.name,
-            payment_kind='activation', payment_types=set(card.types), source_card_id=card_id, ability_kind='ninjutsu'):
+            payment_kind='activation', payment_types=set(effective_types(state, card)), source_card_id=card_id, ability_kind='ninjutsu'):
         return False
     returned = state.cards[return_id]
     target = state.attack_targets.get(return_id, f"player:{3-player_id}")
@@ -108,7 +109,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if pending['kind'] == 'graveyard_return' and (
                 ids[0] not in state.players[player_id].graveyard
                 or state.cards[ids[0]].zone != Zone.GRAVEYARD
-                or not set(pending['effect_payload']['allowed_types']).intersection(state.cards[ids[0]].types)):
+                or not set(pending['effect_payload']['allowed_types']).intersection(effective_types(state, state.cards[ids[0]]))):
             return False
         state.pending_mechanic_choice = None
         if pending['kind'] == 'graveyard_return':
@@ -467,7 +468,7 @@ def ninjutsu_moves(state, player_id: int) -> list[dict]:
             continue
         cost = ninjutsu_cost(card)
         if cost and can_pay_with_pool_and_lands(state, player_id, cost, card_name=card.name,
-                payment_kind='activation', payment_types=set(card.types), source_card_id=cid, ability_kind='ninjutsu'):
+                payment_kind='activation', payment_types=set(effective_types(state, card)), source_card_id=cid, ability_kind='ninjutsu'):
             for return_id in attackers:
                 moves.append({"type": "ninjutsu", "card_id": cid, "return_card_id": return_id, "card_name": card.name, "mana_cost": cost})
     return moves

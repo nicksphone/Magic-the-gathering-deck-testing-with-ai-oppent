@@ -1,4 +1,5 @@
 """Shared mana attack taxes, fixed before activating mana abilities."""
+from rules_engine.type_effects import effective_types
 import re
 from copy import deepcopy
 from functools import lru_cache
@@ -106,7 +107,7 @@ def static_combat_tax_sources(state, kind):
                         from rules_engine.domain import basic_land_type_count
                         amount = basic_land_type_count(state, source.controller)
                     elif amount is None:
-                        amount = sum('Enchantment' in state.cards[other].types and state.cards[other].zone == Zone.BATTLEFIELD
+                        amount = sum('Enchantment' in effective_types(state, state.cards[other]) and state.cards[other].zone == Zone.BATTLEFIELD
                                      for other in state.players[source.controller].battlefield)
                     rows.append({**spec, 'kind': kind, 'amount': amount, 'mana_cost': f'{{{amount}}}' if spec['scaling'] else spec['mana_cost'], 'controller': source.controller,
                                  'source_id': cid, 'source_name': source.name, 'clause': clause})

@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-04 - Conditional creature types and entry timing
+
+- Share a pure layer-four view across combat, targets, static/resource/cost
+  readers, AI and public card views; preserve copiable/snapshot characteristics.
+- Recognize complete self-only devotion type clauses across single/two colors,
+  before ability loss, with timestamp ordering against supported animations.
+- Remove noncreatures from combat without making their blocked attackers
+  unblocked; capture simultaneous departure types before resources leave.
+- Track new entry/control tenure for all permanents so becoming a creature
+  cannot bypass summoning sickness.
+- Preserve announced bands when members leave combat and stop counted life loss
+  from restoring removed types/subtypes from printed metadata.
+- Add canonical corpus, 102 new checks and four browser transitions. All 5,609
+  backend tests, frontend gates and complete Chromium harness pass. Twenty-four
+  seat-balanced replay samples repeated twice report no anomalies, timeouts or
+  drift; see [scope and acceptance](docs/testing/conditional-creature-types.md).
+
 ## 2026-10-04 - Defensive resources and between-strike planning
 
 - Remove unconditional post-block passing; compare bounded defensive and

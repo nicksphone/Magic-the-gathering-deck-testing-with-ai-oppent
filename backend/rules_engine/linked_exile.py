@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 from game_state.state import MatchState, Zone, assign_static_order_on_battlefield_entry, object_incarnation
 from rules_engine.events import emit_event_batch
@@ -12,7 +13,7 @@ def linked_exiled_creatures(state: MatchState, source_id: str, timestamp: int) -
         if cid in state.cards and state.cards[cid].zone == Zone.EXILE
         and cid in state.players[state.cards[cid].owner].exile
         and object_incarnation(state.cards[cid]) == link.get("card_timestamps", {}).get(cid, object_incarnation(state.cards[cid]))
-        and "Creature" in state.cards[cid].types
+        and "Creature" in effective_types(state, state.cards[cid])
     ))
 
 
@@ -91,7 +92,7 @@ def return_linked_exiles(state: MatchState, controller: int, payload: dict) -> N
         else:
             card.controller = card.owner
             apply_entry_choice(state, card.owner, card, choice=(payload.get('__entry_choices') or {}).get(cid, 'tapped'))
-            card.summoning_sick = "Creature" in card.types
+            card.summoning_sick = True
             card.entered_turn = state.turn
             owner.battlefield.append(cid)
             assign_static_order_on_battlefield_entry(state, cid)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 from copy import copy
@@ -40,7 +41,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card.last_known_battlefield = {
         "name": card.name,
         "oracle_text": card.oracle_text,
-        "types": list(card.types),
+        "types": list(effective_types(state, card)),
         "controller": card.controller,
         "power": effective_power(state, card_id),
         "toughness": effective_toughness(state, card_id),
@@ -399,7 +400,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         for player in state.players.values():
             for cid in player.battlefield:
                 target = state.cards[cid]
-                if not {"Creature", "Planeswalker"}.intersection(target.types):
+                if not {"Creature", "Planeswalker"}.intersection(effective_types(state, target)):
                     continue
                 choice = {"target_card_id": cid}
                 if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
@@ -694,7 +695,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 cast_controller = int(payload.get("controller", 0) or 0)
                 source_card_id = str(payload.get("source_card_id", "") or "")
                 source_card = state.cards.get(source_card_id) if source_card_id else None
-                source_types = {t.lower() for t in (getattr(source_card, "types", []) or [])}
+                source_types = {t.lower() for t in (effective_types(state, source_card) or [])}
                 if event == "spell_cast" and cast_controller == card.controller and "whenever you cast a spell" in oracle:
                     out.append(
                         _trigger_from_oracle(
@@ -835,7 +836,7 @@ def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload
         return any(_matches_creature_dies_trigger(state, card, line.strip(), payload) for line in oracle.splitlines())
     dead_id = payload.get("card_id")
     dead_card = _departed_card_view(state, dead_id)
-    dead_types = set(getattr(dead_card, "types", []) or []) if dead_card else set()
+    dead_types = set(effective_types(state, dead_card) or []) if dead_card else set()
     if "whenever this creature or another creature dies" in oracle:
         return "Creature" in dead_types
     if "whenever this creature or another creature you control dies" in oracle:
@@ -886,7 +887,7 @@ def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payloa
         return (
             "target opponent loses life equal to this creature's power" in oracle
             and dead_card.controller == card.controller
-            and "Artifact" in (dead_card.types or [])
+            and "Artifact" in (effective_types(state, dead_card) or [])
         )
     if "whenever another permanent you control dies" in oracle:
         return dead_card.controller == card.controller and dead_id != card.id
@@ -909,17 +910,17 @@ def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payloa
     if "whenever one or more nontoken permanents you control die" in oracle:
         return dead_card.controller == card.controller and not is_token_card(dead_card)
     if "whenever an artifact dies" in oracle or "whenever another artifact dies" in oracle:
-        return "Artifact" in (getattr(dead_card, "types", []) or [])
+        return "Artifact" in (effective_types(state, dead_card) or [])
     if "whenever an artifact you control dies" in oracle or "whenever another artifact you control dies" in oracle:
-        return dead_card.controller == card.controller and "Artifact" in (getattr(dead_card, "types", []) or [])
+        return dead_card.controller == card.controller and "Artifact" in (effective_types(state, dead_card) or [])
     if "whenever one or more artifacts you control die" in oracle:
-        return dead_card.controller == card.controller and "Artifact" in (getattr(dead_card, "types", []) or [])
+        return dead_card.controller == card.controller and "Artifact" in (effective_types(state, dead_card) or [])
     if "whenever an enchantment dies" in oracle or "whenever another enchantment dies" in oracle:
-        return "Enchantment" in (getattr(dead_card, "types", []) or [])
+        return "Enchantment" in (effective_types(state, dead_card) or [])
     if "whenever an enchantment you control dies" in oracle or "whenever another enchantment you control dies" in oracle:
-        return dead_card.controller == card.controller and "Enchantment" in (getattr(dead_card, "types", []) or [])
+        return dead_card.controller == card.controller and "Enchantment" in (effective_types(state, dead_card) or [])
     if "whenever one or more enchantments you control die" in oracle:
-        return dead_card.controller == card.controller and "Enchantment" in (getattr(dead_card, "types", []) or [])
+        return dead_card.controller == card.controller and "Enchantment" in (effective_types(state, dead_card) or [])
     if "whenever an artifact or enchantment dies" in oracle or "whenever another artifact or enchantment dies" in oracle:
         return _has_artifact_or_enchantment_type(dead_card)
     if "whenever an artifact or enchantment you control dies" in oracle or "whenever another artifact or enchantment you control dies" in oracle:
@@ -934,7 +935,7 @@ def _matches_leaves_battlefield_trigger(state: MatchState, card, oracle: str, pa
     leaving = state.cards.get(leaving_id) if leaving_id else None
     if leaving is None:
         return False
-    leaving_types = {str(value).lower() for value in (getattr(leaving, "types", []) or [])}
+    leaving_types = {str(value).lower() for value in (effective_types(state, leaving) or [])}
     controlled = leaving.controller == card.controller
     other = leaving_id != card.id
     if "whenever another creature you control leaves the battlefield" in oracle:
@@ -999,13 +1000,13 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
         return (
             entering_card.controller == card.controller
             and (not tribal_group.group(1) or entering_id != card.id)
-            and "Creature" in (entering_card.types or [])
+            and "Creature" in (effective_types(state, entering_card) or [])
             and (bool(subtypes & creature_types(entering_card))
                  or "changeling" in {keyword.lower() for keyword in (entering_card.keywords or [])})
         )
     # Check controller-scoped clauses before their broader prefixes. Without
     # this ordering, "a creature enters" also matches "under your control".
-    entering_types = set(getattr(entering_card, "types", []) or [])
+    entering_types = set(effective_types(state, entering_card) or [])
     enters_for_controller = entering_card.controller == card.controller
     if "another creature enters the battlefield under your control" in oracle:
         return "Creature" in entering_types and enters_for_controller and entering_id != card.id
@@ -1033,11 +1034,11 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if any(f"when {subject} enters the battlefield" in oracle for subject in ("this creature", "this permanent", "this artifact", "this enchantment", "this planeswalker")):
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:
-        return "Creature" in (getattr(entering_card, "types", []) or []) and entering_id != card.id
+        return "Creature" in (effective_types(state, entering_card) or []) and entering_id != card.id
     if "whenever a creature enters the battlefield" in oracle:
-        return "Creature" in (getattr(entering_card, "types", []) or [])
+        return "Creature" in (effective_types(state, entering_card) or [])
     if "whenever a creature enters the battlefield under your control" in oracle:
-        return "Creature" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller
+        return "Creature" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller
     if "whenever another permanent enters the battlefield" in oracle:
         return entering_id != card.id
     if "whenever a permanent enters the battlefield" in oracle:
@@ -1047,21 +1048,21 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if "whenever another permanent enters the battlefield under your control" in oracle:
         return entering_card.controller == card.controller and entering_id != card.id
     if "whenever an artifact enters the battlefield" in oracle:
-        return "Artifact" in (getattr(entering_card, "types", []) or [])
+        return "Artifact" in (effective_types(state, entering_card) or [])
     if "whenever an artifact enters the battlefield under your control" in oracle:
-        return "Artifact" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller
+        return "Artifact" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller
     if "whenever another artifact enters the battlefield" in oracle:
-        return "Artifact" in (getattr(entering_card, "types", []) or []) and entering_id != card.id
+        return "Artifact" in (effective_types(state, entering_card) or []) and entering_id != card.id
     if "whenever another artifact enters the battlefield under your control" in oracle:
-        return "Artifact" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller and entering_id != card.id
+        return "Artifact" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller and entering_id != card.id
     if "whenever an enchantment enters the battlefield" in oracle:
-        return "Enchantment" in (getattr(entering_card, "types", []) or [])
+        return "Enchantment" in (effective_types(state, entering_card) or [])
     if "whenever an enchantment enters the battlefield under your control" in oracle:
-        return "Enchantment" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller
+        return "Enchantment" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller
     if "whenever another enchantment enters the battlefield" in oracle:
-        return "Enchantment" in (getattr(entering_card, "types", []) or []) and entering_id != card.id
+        return "Enchantment" in (effective_types(state, entering_card) or []) and entering_id != card.id
     if "whenever another enchantment enters the battlefield under your control" in oracle:
-        return "Enchantment" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller and entering_id != card.id
+        return "Enchantment" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller and entering_id != card.id
     if "whenever an artifact or enchantment enters the battlefield" in oracle:
         return _has_artifact_or_enchantment_type(entering_card)
     if "whenever an artifact or enchantment enters the battlefield under your control" in oracle:
@@ -1075,13 +1076,13 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     if "whenever a token enters the battlefield under your control" in oracle:
         return is_token_card(entering_card) and entering_card.controller == card.controller
     if "landfall" in oracle:
-        return "Land" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller
+        return "Land" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller
     if "whenever a land enters the battlefield under your control" in oracle:
-        return "Land" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller
+        return "Land" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller
     if "whenever another land enters the battlefield under your control" in oracle:
-        return "Land" in (getattr(entering_card, "types", []) or []) and entering_card.controller == card.controller and entering_id != card.id
+        return "Land" in (effective_types(state, entering_card) or []) and entering_card.controller == card.controller and entering_id != card.id
     if "whenever a land enters the battlefield" in oracle:
-        return "Land" in (getattr(entering_card, "types", []) or [])
+        return "Land" in (effective_types(state, entering_card) or [])
     return False
 
 
@@ -1107,21 +1108,21 @@ def _matches_sacrifice_trigger(state: MatchState, card, oracle: str, payload: di
     if "whenever a permanent you control is sacrificed" in oracle or "whenever a permanent you control is sacrificed" in oracle:
         return sac_card.controller == card.controller
     if "whenever you sacrifice a creature" in oracle:
-        return sac_card.controller == card.controller and "Creature" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and "Creature" in (effective_types(state, sac_card) or [])
     if "whenever a creature you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and "Creature" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and "Creature" in (effective_types(state, sac_card) or [])
     if "whenever an artifact you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and "Artifact" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and "Artifact" in (effective_types(state, sac_card) or [])
     if "whenever an enchantment you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and "Enchantment" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and "Enchantment" in (effective_types(state, sac_card) or [])
     if "whenever an artifact or enchantment you control is sacrificed" in oracle or "whenever an enchantment or artifact you control is sacrificed" in oracle:
         return sac_card.controller == card.controller and _has_artifact_or_enchantment_type(sac_card)
     if "whenever a creature is sacrificed" in oracle:
-        return "Creature" in (getattr(sac_card, "types", []) or [])
+        return "Creature" in (effective_types(state, sac_card) or [])
     if "whenever an artifact is sacrificed" in oracle:
-        return "Artifact" in (getattr(sac_card, "types", []) or [])
+        return "Artifact" in (effective_types(state, sac_card) or [])
     if "whenever an enchantment is sacrificed" in oracle:
-        return "Enchantment" in (getattr(sac_card, "types", []) or [])
+        return "Enchantment" in (effective_types(state, sac_card) or [])
     if "whenever an artifact or enchantment is sacrificed" in oracle or "whenever an enchantment or artifact is sacrificed" in oracle:
         return _has_artifact_or_enchantment_type(sac_card)
     if "whenever a permanent is sacrificed" in oracle:
@@ -1129,11 +1130,11 @@ def _matches_sacrifice_trigger(state: MatchState, card, oracle: str, payload: di
     if "whenever another permanent you control is sacrificed" in oracle:
         return sac_card.controller == card.controller and sac_id != card.id
     if "whenever another creature you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and sac_id != card.id and "Creature" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and sac_id != card.id and "Creature" in (effective_types(state, sac_card) or [])
     if "whenever another artifact you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and sac_id != card.id and "Artifact" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and sac_id != card.id and "Artifact" in (effective_types(state, sac_card) or [])
     if "whenever another enchantment you control is sacrificed" in oracle:
-        return sac_card.controller == card.controller and sac_id != card.id and "Enchantment" in (getattr(sac_card, "types", []) or [])
+        return sac_card.controller == card.controller and sac_id != card.id and "Enchantment" in (effective_types(state, sac_card) or [])
     if "whenever another artifact or enchantment you control is sacrificed" in oracle or "whenever another enchantment or artifact you control is sacrificed" in oracle:
         return sac_card.controller == card.controller and sac_id != card.id and _has_artifact_or_enchantment_type(sac_card)
     return False
@@ -1200,7 +1201,7 @@ def _matches_combat_damage_trigger(state: MatchState, card, oracle: str, payload
         if "whenever this creature deals combat damage to a player" in oracle:
             return source_id == card.id
         if "whenever a creature you control deals combat damage to a player" in oracle:
-            return "Creature" in (getattr(source_card, "types", []) or [])
+            return "Creature" in (effective_types(state, source_card) or [])
     if target_card_id is not None:
         target_card = state.cards.get(target_card_id)
         if not target_card:
@@ -1210,7 +1211,7 @@ def _matches_combat_damage_trigger(state: MatchState, card, oracle: str, payload
         if "whenever this creature deals combat damage to a creature" in oracle:
             return source_id == card.id
         if "whenever a creature you control deals combat damage to a creature" in oracle:
-            return "Creature" in (getattr(source_card, "types", []) or [])
+            return "Creature" in (effective_types(state, source_card) or [])
     return False
 
 
@@ -1244,7 +1245,7 @@ def _matches_attack_trigger(state: MatchState, card, oracle: str, payload: dict[
     if "whenever a creature attacks" in oracle:
         return True
     if "whenever a creature you control attacks" in oracle:
-        return attacking_card.controller == card.controller and "Creature" in (getattr(attacking_card, "types", []) or [])
+        return attacking_card.controller == card.controller and "Creature" in (effective_types(state, attacking_card) or [])
     if "whenever you attack" in oracle:
         return attacking_card.controller == card.controller
     if "whenever one or more creatures attack" in oracle:
@@ -1266,9 +1267,9 @@ def _matches_block_trigger(state: MatchState, card, oracle: str, payload: dict[s
     if "whenever a creature blocks" in oracle:
         return True
     if "whenever a creature you control blocks" in oracle:
-        return "Creature" in (getattr(blocker_card, "types", []) or [])
+        return "Creature" in (effective_types(state, blocker_card) or [])
     if "whenever another creature you control blocks" in oracle:
-        return blocker_card.controller == card.controller and blocker_id != card.id and "Creature" in (getattr(blocker_card, "types", []) or [])
+        return blocker_card.controller == card.controller and blocker_id != card.id and "Creature" in (effective_types(state, blocker_card) or [])
     if "whenever this creature or another creature blocks" in oracle:
         return True
     return False
@@ -1506,7 +1507,7 @@ def _trigger_from_oracle(
                 (
                     cid
                     for cid in state.players[controller].graveyard
-                    if cid in state.cards and "Instant" in (state.cards[cid].types or [])
+                    if cid in state.cards and "Instant" in (effective_types(state, state.cards[cid]) or [])
                 ),
                 None,
             )

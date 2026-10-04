@@ -86,8 +86,10 @@ Publication and disposable-scratch cleanup receipts accompany the archive.
 
 ## Known Limitations and Next Upgrades
 
-Devotion-based creature type removal (Gods), arbitrary static/global type changes,
-devotion mana abilities, other variable expressions/targets, unsupported composite
+At this payoff milestone, devotion-based creature type removal remained open;
+the subsequent [conditional-type batch](conditional-creature-types.md) implements
+and tests the supported self-only clause, with full acceptance still in progress.
+Arbitrary static/global type changes, devotion mana abilities, other variable expressions/targets, unsupported composite
 clauses and devotion-increasing modifiers retain admission warnings. Existing matches with
 already-resolved approximations are not retroactively repaired. Start new matches
 for acceptance. Full-card correctness, expert devotion deck planning, broad AI

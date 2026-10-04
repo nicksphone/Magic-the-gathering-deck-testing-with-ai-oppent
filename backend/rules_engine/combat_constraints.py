@@ -1,4 +1,5 @@
 """Pure, condition-aware supported static combat clauses and their provenance."""
+from rules_engine.type_effects import effective_types
 import re
 from functools import lru_cache
 
@@ -125,7 +126,7 @@ def _recipient_body(state, source, target, text):
             return text[match.end():]
         if BODY.match(text):
             return text
-    if getattr(source, 'attached_to', None) == target.id and 'Creature' not in source.types:
+    if getattr(source, 'attached_to', None) == target.id and 'Creature' not in effective_types(state, source):
         match = re.match(r'(?:enchanted|equipped|fortified) (?:creature|permanent|artifact|enchantment|land|planeswalker|battle) |it ', text)
         if match:
             return text[match.end():]

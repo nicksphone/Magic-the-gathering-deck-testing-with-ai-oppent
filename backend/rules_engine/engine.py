@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor, object_incarnation
@@ -256,6 +257,8 @@ class RulesEngine:
                     current.remove(cid)
                 state.players[original].battlefield.append(cid)
                 card.controller = original
+                card.summoning_sick = True
+                card.entered_turn = state.turn
                 state.log.append(f"Control of {card.name} returns to {state.players[original].name}.")
             state.temporary_control_changes.pop(cid, None)
 
@@ -921,8 +924,8 @@ class RulesEngine:
                     state.trigger_staging_event = "spell_cast"
                 payment_details: dict = {}
                 paid = auto_pay_cost(
-                    state, player_id, adjusted_cost, is_land=("Land" in face_card.types),
-                    card_name=face_card.name, x_value=x_value, spell_types=set(face_card.types),
+                    state, player_id, adjusted_cost, is_land=("Land" in effective_types(state, face_card)),
+                    card_name=face_card.name, x_value=x_value, spell_types=set(effective_types(state, face_card)),
                     oracle_text=face_card.oracle_text or "",
                     spell_is_aura=bestowed or is_aura(face_card),
                     spell_kicked=chosen.kicked,
@@ -955,7 +958,7 @@ class RulesEngine:
                 payload["__ward_trigger_specs"] = ward_specs
                 payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
                 payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
-                if "Planeswalker" in face_card.types and "compleated" in face_card.oracle_text.lower():
+                if "Planeswalker" in effective_types(state, face_card) and "compleated" in face_card.oracle_text.lower():
                     payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
                 if effect_key == "look_top_select_hand":
                     payload["mana_spent_to_cast"] = payment_details.get('mana_spent', 0)
@@ -1015,7 +1018,7 @@ class RulesEngine:
                 state.trigger_staging = True
                 state.trigger_staging_event = "discard"
             if not cycle_cost or not auto_pay_cost(state, player_id, cycle_cost, card_name=card.name, x_value=x_value,
-                                                 payment_kind="activation", payment_types=set(card.types), source_card_id=cid, ability_kind='cycling'):
+                                                 payment_kind="activation", payment_types=set(effective_types(state, card)), source_card_id=cid, ability_kind='cycling'):
                 if cost_staging:
                     state.staged_triggers.clear()
                     state.trigger_staging = False
@@ -1161,7 +1164,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             pw = state.cards[cid]
-            if "Planeswalker" not in pw.types:
+            if "Planeswalker" not in effective_types(state, pw):
                 apply_state_based_actions(state)
                 return
             abilities = extract_loyalty_abilities(pw)
@@ -1264,20 +1267,20 @@ class RulesEngine:
             valid = (
                 vehicle is not None
                 and vehicle_id in player.battlefield
-                and "Artifact" in vehicle.types
+                and "Artifact" in effective_types(state, vehicle)
                 and required is not None
                 and len(selected) == len(set(selected))
                 and all(
                     cid in player.battlefield
                     and cid != vehicle_id
-                    and "Creature" in state.cards[cid].types
+                    and "Creature" in effective_types(state, state.cards[cid])
                     and not state.cards[cid].tapped
                     for cid in selected
                 )
                 and sum(max(0, effective_power(state, cid)) for cid in selected) >= required
             )
             if valid:
-                if not auto_pay_cost(state, player_id, '', payment_kind='activation', payment_types=set(vehicle.types),
+                if not auto_pay_cost(state, player_id, '', payment_kind='activation', payment_types=set(effective_types(state, vehicle)),
                         source_card_id=vehicle_id, ability_kind='crew', excluded_sources=set(selected)):
                     reject('Cannot pay crew activation mana costs')
                     return
@@ -1306,7 +1309,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             target = state.cards.get(target_id)
-            if (target is None or target.controller != player_id or "Creature" not in target.types
+            if (target is None or target.controller != player_id or "Creature" not in effective_types(state, target)
                     or not attachment_target_is_legal(state, state.cards[cid], target_id)):
                 reject("Cannot legally equip this target")
                 return
@@ -1315,7 +1318,7 @@ class RulesEngine:
                 apply_state_based_actions(state)
                 return
             if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name,
-                                 payment_kind="activation", payment_types=set(state.cards[cid].types),
+                                 payment_kind="activation", payment_types=set(effective_types(state, state.cards[cid])),
                                  ability_kind="equip", source_card_id=cid, target_card_id=target_id):
                 reject("Cannot pay equipment cost")
                 state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
@@ -1459,8 +1462,8 @@ def _auto_bottom_cards(state: MatchState, player_id: int, count: int, exclude: s
     hand_cards = [state.cards[cid] for cid in state.players[player_id].hand if cid not in exclude]
     scored = []
     for card in hand_cards:
-        land_bias = -3 if "Land" in card.types else 0
-        cmc = mana_value(card.mana_cost, is_land=("Land" in card.types))
+        land_bias = -3 if "Land" in effective_types(state, card) else 0
+        cmc = mana_value(card.mana_cost, is_land=("Land" in effective_types(state, card)))
         score = cmc + land_bias
         scored.append((score, card.id))
     scored.sort(reverse=True)

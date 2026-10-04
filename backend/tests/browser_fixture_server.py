@@ -51,6 +51,17 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'creature_type_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
+        from tests.test_conditional_creature_types import CARDS, position, add
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, god = position(['Nylea, God of the Hunt', 'Xenagos, God of Revels'][index], seat)
+        state.step = Step.PRECOMBAT_MAIN
+        for _ in range(index + 2):
+            add(state, 'Elvish Mystic', seat, cards=CARDS)
+        add(state, 'Burning-Tree Emissary', seat, Zone.HAND, cards=CARDS)
+        for player in state.players.values():
+            player.mana_pool = {color: 8 for color in 'WUBRGC'}
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'defense_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
         from tests.test_ai_defensive_responses import board
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.type_effects import effective_types
 
 import re
 
@@ -40,7 +41,7 @@ _HEXPROOF_QUALITY = '(?:' + '|'.join(re.escape(value) for value in sorted(_COLOR
 HEXPROOF_VARIANT_RE = re.compile(r'\bhexproof from ' + _HEXPROOF_QUALITY + r'(?: and from ' + _HEXPROOF_QUALITY + r')*\b',re.I)
 
 
-def source_matches_quality(source_card, quality: str) -> bool:
+def source_matches_quality(source_card, quality: str, *, state=None) -> bool:
     """Shared supported color/type qualities, not an arbitrary Oracle predicate."""
     if source_card is None:
         return False
@@ -52,7 +53,7 @@ def source_matches_quality(source_card, quality: str) -> bool:
     if quality in {'multicolored', 'monocolored'}:
         return len(colors) >= 2 if quality == 'multicolored' else len(colors) == 1
     kind = _TYPE_PROTECTION_MAP.get(quality)
-    types = set(getattr(source_card, 'types', []) or [])
+    types = set(effective_types(state, source_card) if state is not None else (getattr(source_card, 'types', []) or []))
     return (kind[1:] not in types if kind.startswith('!') else kind in types) if kind else False
 
 
@@ -88,7 +89,7 @@ def protection_match_reason(state, target_id: str, source_card) -> str | None:
     if "monocolored" in protections and len(source_colors) == 1:
         return "monocolored"
 
-    source_types = set(getattr(source_card, "types", []) or [])
+    source_types = set(effective_types(state, source_card) or [])
     for token, canonical in _TYPE_PROTECTION_MAP.items():
         if token in protections:
             if canonical.startswith("!"):
