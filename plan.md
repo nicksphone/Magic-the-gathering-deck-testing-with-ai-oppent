@@ -2,6 +2,12 @@
 
 ## Current Priority: Backend First
 
+- [ ] Complete the [casting/trigger repair batch](docs/plans/casting-trigger-repair-batch.md).
+  The second canonical regression wave reproduces six failures on current main;
+  cost-linked damage, ordered distinct target allocations, granted flashback
+  and self-return triggers require shared repairs. A separate instrumented
+  Control/Ramp run completes but exposes expensive destruction projections.
+
 - [x] Integrate offline backup/restore verification and dry-run retention tools.
   The combined 128-test storage/recovery gate and cold offline 119-name probe
   pass. These tools do not close the operational release gate: online cache
@@ -9,8 +15,10 @@
 
 - [x] Integrate the reviewed battlefield-first UI into the live frontend.
   Unit checks, lint/build and five isolated browser suites pass against the
-  repaired backend. The full integrated harness remains assigned through
-  `ui-integration-plan.md`; do not infer its completion from these checks.
+  repaired backend. The full integrated browser harness also passes, including
+  natural AI/human BO3 and restart recovery. Its stale collapsed-log selector
+  was corrected without weakening authoritative state assertions. The second
+  visual pass is delegated in `uiplan-v2.md`; this is not a long-session soak.
 
 Work follows [the capability-batch protocol](docs/development/batch-workflow.md).
 Group connected rules/AI work; retain fast per-change checks and broader batch

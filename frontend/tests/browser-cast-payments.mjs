@@ -9,7 +9,7 @@ for (const seat of [1, 2]) for (const free of [false, true]) for (const payment 
   const owner = fixture.players[String(seat)];
   const paid = (payment === 'discard' ? owner.hand : owner.battlefield).find(card => card.name === (payment === 'discard' ? 'Island' : 'Grizzly Bears'));
   const target = fixture.players[String(3-seat)].battlefield.find(card => card.name === 'Grizzly Bears');
-  const { evaluate, command, waitFor, click, close } = await openBrowser('http://127.0.0.1:15173/');
+  const { evaluate, command, waitFor, click, reload, close } = await openBrowser('http://127.0.0.1:15173/');
   const ready = label => `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(label)}) && !button.matches(':disabled'))`;
   try {
     await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
@@ -40,8 +40,8 @@ for (const seat of [1, 2]) for (const free of [false, true]) for (const payment 
       if (i === 0) await waitFor(`document.body.innerText.includes('Priority: P${3-seat}')`);
     }
     await waitFor(`(async () => (await (await fetch('${api}/matches/${fixture.id}')).json()).stack.length === 0)()`);
-    await command('Page.reload');
-    await waitFor("document.body.innerText.includes('Bone Shards')");
+    await reload();
+    await waitFor("document.body.innerText.includes('Battlefield') && document.body.innerText.includes('Griselbrand') && !document.body.innerText.includes('Restoring saved session')");
     const final = await (await fetch(`${api}/matches/${fixture.id}`)).json();
     assert.ok(final.players[String(seat)].graveyard.some(card => card.id === paid.id));
     assert.ok(final.players[String(seat)].hand.some(card => card.name === 'Lightning Bolt'));

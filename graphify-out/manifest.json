@@ -2064,8 +2064,8 @@
     "hash": "f6b5d0b987a70e6503b7f575ec105a60"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-cast-payments.mjs": {
-    "mtime": 1791021366.9828508,
-    "hash": "24ec6de6b6fcfdabc41f68a0e357f3fa"
+    "mtime": 1791150474.8823302,
+    "hash": "b178bec924dfed224f7c4b09f4b5dced"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/api-errors.mjs": {
     "mtime": 1790541646.5613577,
@@ -2131,6 +2131,14 @@
     "mtime": 1778288880.6446936,
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
+  "/home/nick/mtg-deck-testing-lab/uiplan-v2.md": {
+    "mtime": 1791150630.8312137,
+    "hash": "0e942cfd1b5cf499dd29c8ce54b45ecf"
+  },
+  "/home/nick/mtg-deck-testing-lab/ai-performance-plan.md": {
+    "mtime": 1791150891.5600433,
+    "hash": "11b33b44c7b2b024b965119c373f09e9"
+  },
   "/home/nick/mtg-deck-testing-lab/rules-regression-plan.md": {
     "mtime": 1791146051.3607333,
     "hash": "6a06d1eb64444fe6c1a72afc72ca7e84"
@@ -2152,12 +2160,12 @@
     "hash": "6963d3f0efc84518ff3781f07c888506"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791150248.5803657,
-    "hash": "0cebdc50034a704a7d789a8b4949bbe1"
+    "mtime": 1791150949.4450738,
+    "hash": "37657a147c874a610cf6751800bf7ad5"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791150248.5773656,
-    "hash": "35b6fef98ce329e2dbe36cd4986a676c"
+    "mtime": 1791150949.447074,
+    "hash": "83406ee9eaaf99e6243fd6b79e0de2ba"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2168,8 +2176,8 @@
     "hash": "b1acf8ecb4e87166e005d0499e7d9056"
   },
   "/home/nick/mtg-deck-testing-lab/docs/ui-redesign.md": {
-    "mtime": 1791150190.3471375,
-    "hash": "a0f95ff439fd48ac5ebb7e795ee0e304"
+    "mtime": 1791150949.444074,
+    "hash": "901abda5a48f1d80007629549f5a54c0"
   },
   "/home/nick/mtg-deck-testing-lab/docs/development/batch-workflow.md": {
     "mtime": 1791138255.6093936,
@@ -2186,6 +2194,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/plans/2026-09-09-ai-knowledge-base.md": {
     "mtime": 1790532757.789285,
     "hash": "1ed232216aeef7419453df84a44cf236"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/plans/casting-trigger-repair-batch.md": {
+    "mtime": 1791150442.0447736,
+    "hash": "40ba9a2d6d26f5706c9123ebc1f0fff5"
   },
   "/home/nick/mtg-deck-testing-lab/docs/rules/expanded-keywords.md": {
     "mtime": 1790538609.689391,
@@ -2448,8 +2460,8 @@
     "hash": "e491219812826dd80179833cd3ff0f7e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/rules-regression-repairs.md": {
-    "mtime": 1791150190.3461375,
-    "hash": "b72f6722719279e71c476fe235621cc5"
+    "mtime": 1791150949.447074,
+    "hash": "5b7c4b2d58eb3963400b15258da75313"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/counter-replacements.md": {
     "mtime": 1790822625.5611777,

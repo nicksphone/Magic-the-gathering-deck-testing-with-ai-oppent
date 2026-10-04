@@ -10,9 +10,15 @@ again in main, and the existing LAN Vite server serves the new `table.css`.
 Before integration, the parent ran UI redesign, lab, human-actions, recovery and
 simulation-preflight browser suites against the repaired frozen backend; all
 passed. Evidence is under the rules repair archive's verified gate bundle.
-The full integrated browser harness is still separately assigned in
-`ui-integration-plan.md`. This is not a claim of a completed long-session soak,
-every possible action, or a finished UI release.
+The parent subsequently completed the full integrated browser harness with
+exit 0, including natural AI, human-vs-AI and human-vs-human BO3 and process
+restart/recovery. Its first run failed because the cost-payment test waited for
+a historical spell name inside the now-collapsed log. That test now waits for a
+completed document reload and visible battlefield, preserving all authoritative
+payment/target/result assertions; the complete rerun passes. Both attempts are
+retained under the rules-repair archive, with final browser artifacts in
+`integrated-browser-final.tgz`. This is not a claim of a completed long-session
+soak, every possible action, or a finished UI release.
 
 ## Inspection checklist
 

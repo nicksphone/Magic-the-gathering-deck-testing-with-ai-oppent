@@ -96,6 +96,12 @@ No broad simulator-strength or deck-balance claim follows from ten samples.
   complete card support, arbitrary Magic semantics, expert AI or deck balance.
 - The UI redesign and release/storage work remain separately owned agent tasks.
 
+Integration follow-up: UI and offline storage tools have since landed in main
+as distinct milestones. The complete integrated browser harness passes after
+correcting its stale collapsed-log expectation; see `docs/ui-redesign.md`.
+Their release/long-session limitations remain, and the next casting/trigger
+batch is open rather than included in this rules gate.
+
 The second regression investigation is assigned in
 `rules-regression-next-plan.md`, focusing on costs, faces, targets and AI legality
 without modifying engine code or duplicating these five repair families.

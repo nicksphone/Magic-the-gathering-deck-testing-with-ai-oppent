@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-04 - Integrated browser acceptance and next batch
+
+- Complete the full browser harness on the integrated UI and repaired backend,
+  including natural AI/human BO3, sideboarding and restart recovery. Adapt the
+  cost-payment test to wait for the reloaded battlefield rather than a spell
+  name in the collapsed historical log; retain its authoritative assertions.
+- Reproduce the next canonical casting/trigger wave: six failures in 40 cases.
+  Track shared repairs in `docs/plans/casting-trigger-repair-batch.md`; these
+  repairs are not yet published or claimed complete.
+- Delegate a second visual pass and a separate Master-AI performance
+  investigation through `uiplan-v2.md` and `ai-performance-plan.md`.
+
 ## 2026-10-04 - Offline storage recovery and retention tools
 
 - Integrate the release agent's explicit-path SQLite backup/restore verifier and
