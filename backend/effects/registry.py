@@ -100,6 +100,10 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key in {'foretell_from_hand', 'foretell_self'}:
+        from rules_engine.foretell import resolve_hand, resolve_self
+        (resolve_hand if effect_key == 'foretell_from_hand' else resolve_self)(state, controller, payload)
+        return
     if effect_key == 'foretell_spell':
         # Copies have no prior card/exile history (CR 702.143c, 707.10).
         foretold = payload['was_foretold'] and payload.get('__stack_copy_kind') != 'spell'

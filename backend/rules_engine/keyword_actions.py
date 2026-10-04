@@ -80,6 +80,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending['kind'] == 'foretell_from_hand':
+        from rules_engine.foretell import finish_hand_choice
+        return finish_hand_choice(state, player_id, action)
     if pending and pending['kind'] in {'scry', 'scry_top_order', 'surveil', 'surveil_top_order'}:
         from rules_engine.scry import finish_scry
         return finish_scry(state, player_id, action)

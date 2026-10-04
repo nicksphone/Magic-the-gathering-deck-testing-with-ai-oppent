@@ -6,6 +6,23 @@ from rules_engine.foretell import take_special_action
 from ai.pending_effects import planning_copy
 
 
+def choose_effect_foretell_card(agent, state, player_id, options, reduction):
+    from rules_engine.type_effects import effective_types
+    from rules_engine.foretell import _reduced_cost
+    from rules_engine.mana import mana_value
+    spells = [cid for cid in options if 'Land' not in effective_types(state, state.cards[cid])]
+    def value(cid):
+        card = state.cards[cid]
+        saving = mana_value(card.mana_cost) - mana_value(_reduced_cost(card.mana_cost, reduction))
+        immediate_answer = bool({'counter', 'removal'} & agent._spell_tags(card)) and any(
+            can_pay_with_pool_and_lands(state, player_id, option.mana_cost,
+                                       spell_types=card.types, source_card_id=cid)
+            for option in collect_cost_options(state, player_id, card))
+        return (2 * saving - 0.35 * agent._hand_retention_value(state, cid, player_id)
+                - 4 * immediate_answer, cid)
+    return max(spells or options, key=value)
+
+
 def idle_foretell_action(agent, state, moves, player_id):
     moves = [move for move in moves if move['type'] == 'foretell']
     if not moves:

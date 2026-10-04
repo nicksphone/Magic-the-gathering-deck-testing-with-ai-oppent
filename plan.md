@@ -46,7 +46,17 @@
   final-source Chromium flows pass. Six seat-balanced offline-data samples,
   repeated twice, resolve without reported timeout, anomaly or drift; these
   are repeatability checks, not expert-play or matchup-balance certification.
-- [ ] Complete other Foretold conditional effects, effect-created permissions,
+- [x] Add bounded effect-created Foretell permissions through ordinary draw/hand
+  and damage/self-exile triggers. Preserve owner access, countering, prevention,
+  copied-object identity, replacement-aware draws, saved choices and selected-face
+  costs; share AI hand selection across styles and difficulties. Fix absent versus
+  zero mana costs in shared casting, preserving explicit free/alternative costs.
+  Validation: 6,630 checks across 282 isolated test files, all 41 Chromium scripts
+  and frontend gates pass. Four seat-balanced mechanic samples reproduce exactly
+  on rerun with no timeout or invalid-action messages; these are not balance data.
+  The slowest integration shard takes 1,112.66 seconds, keeping latency work open.
+  See [acceptance evidence and remaining boundaries](docs/testing/foretell.md).
+- [ ] Complete other Foretold conditional effects and effect-created clause families,
   broader exile rewards, browser restart/countering and strategic/X-cost planning.
 - [ ] Measure and bound wide-state tactical planning latency without silently
   skipping legal actions or losing deterministic decision behavior. The seeded

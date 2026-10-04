@@ -123,6 +123,10 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "nonland_mana").catch((failure) => setError(String(failure)))}>Nonland Mana Fixture</button>
     <button onClick={() => reset(false, false, 3, "foretell_1").catch((failure) => setError(String(failure)))}>Foretell Seat 1 Fixture</button>
     <button onClick={() => reset(false, false, 3, "foretell_2").catch((failure) => setError(String(failure)))}>Foretell Seat 2 Fixture</button>
+    {[0, 1].flatMap(index => [1, 2].map(seat => <button key={`foretell-created-${index}-${seat}`}
+      onClick={() => reset(false, false, 3, `foretell_created_${index}_${seat}`).catch(failure => setError(String(failure)))}>
+      Foretell Created {index} Seat {seat} Fixture
+    </button>))}
     {[0, 1, 2].flatMap(index => [1, 2].map(seat => <button key={`foretell-effect-${index}-${seat}`}
       onClick={() => reset(false, false, 3, `foretell_effect_${index}_${seat}`).catch(failure => setError(String(failure)))}>
       Foretell Effect {index} Seat {seat} Fixture

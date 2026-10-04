@@ -329,6 +329,11 @@ class AIAgent:
                 target_archetype = self.opponent_archetype if target != player_id else self.archetype
                 options.sort(key=lambda cid: (-self._hand_retention_value(state, cid, target, target_archetype or "Midrange"), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:1]}, reasoning="Remove the opponent's most useful revealed card")
+            if choice['kind'] == 'foretell_from_hand':
+                from ai.foretell_policy import choose_effect_foretell_card
+                selected = choose_effect_foretell_card(self, state, player_id, options, choice['reduction'])
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
+                                  reasoning='Foretell a future spell while retaining affordable interaction')
             if choice["kind"] == "linked_exile_copy":
                 selected = self._choose_library_search(state, options, 1, player_id)
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Copy the most useful eligible exiled creature")

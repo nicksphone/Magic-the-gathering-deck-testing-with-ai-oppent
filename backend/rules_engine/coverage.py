@@ -60,15 +60,17 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
     from rules_engine.kicker import kicked_cast_clauses
     from rules_engine.oracle_text import without_reminder_text
-    from rules_engine.foretell import PRINTED, GRANT, MODIFIER, FIRST, spell_variants
+    from rules_engine.foretell import PRINTED, GRANT, MODIFIER, FIRST, spell_variants, created_clauses
     for text in texts:
+        created_lines = {clause['line'] for clause in created_clauses(text, card_name)}
         for line in without_reminder_text(text).splitlines():
             if not re.search(r'\bforet(?:ell|old|elling)\b', line, re.I):
                 continue
             reward = re.fullmatch(r'whenever you foretell a card, (?:this creature|' + re.escape(card_name)
                                   + r') gets [+-]\d+/[+-]\d+ until end of turn\.', line.strip(), re.I)
             if not (spell_variants(text) or PRINTED.fullmatch(line.strip()) or GRANT.fullmatch(line.strip())
-                    or MODIFIER.fullmatch(line.strip()) or FIRST.fullmatch(line.strip()) or reward):
+                    or MODIFIER.fullmatch(line.strip()) or FIRST.fullmatch(line.strip()) or reward
+                    or line.strip() in created_lines):
                 out.append('foretell-related effect fidelity')
     from rules_engine.devotion import devotion_instruction, devotion_mana_instruction
     from rules_engine.type_effects import devotion_type_condition

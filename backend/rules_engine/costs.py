@@ -271,7 +271,8 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     elif foretell_only:
         options = []
     else:
-        options = [base]
+        # An absent mana cost is unpayable, unlike an explicit {0} (CR 118.6).
+        options = [base] if card.mana_cost else []
         from rules_engine.bestow import bestow_cost
         if bestow_cost(card):
             options.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))

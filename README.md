@@ -384,7 +384,11 @@ It is designed for serious deck work:
   idle mana conservatively across archetypes. Supported conditional token and
   scry clauses use shared effect handlers; selected alternative X costs drive
   human choices and AI action construction. Mandatory game-end reveals survive
-  saved history and BO3 transitions. Effect-created permissions, other conditional
+  saved history and BO3 transitions. Supported draw/hand-exile and damage/self-exile
+  clauses create owner-held Foretell permissions through counterable triggers,
+  not special actions; saved choices, selected-face costs and AI hand selection
+  share the same paths. Absent mana costs are unpayable rather than free unless
+  an explicit alternative/free-cast permission applies. Other conditional
   clauses and deeper planning remain open. See
   [implemented scope and limitations](docs/testing/foretell.md).
 - AI vs AI autoplay

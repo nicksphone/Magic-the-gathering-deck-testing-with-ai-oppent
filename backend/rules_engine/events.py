@@ -470,6 +470,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
     from rules_engine.foretell import collect_foretell_triggers
     out.extend(collect_foretell_triggers(state, event, payload))
+    if event == 'damage_dealt':
+        return out
     if event == 'surveilled':
         player_id = payload.get('player_id')
         if player_id not in state.players or payload.get('amount', 0) <= 0:
@@ -559,6 +561,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
                 continue
             oracle = without_reminder_text((card.oracle_text or "").lower())
+            from rules_engine.foretell import without_created_clauses
+            oracle = without_created_clauses(oracle, card.name.lower())
             from rules_engine.kicker import kicked_cast_clauses
             kicker_clauses = kicked_cast_clauses(oracle)
             if (event == 'spell_cast' and payload.get('controller') == card.controller

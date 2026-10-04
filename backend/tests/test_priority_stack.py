@@ -4,10 +4,11 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.handlers import counter_spell
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from card_data.fallback_cards import fallback_card_payload
 
 
 def test_stack_resolves_after_priority_passes() -> None:
-    deck_a = [{"quantity": 60, "card_name": "Lightning Bolt"}]
+    deck_a = [{**fallback_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck_a, deck_b)
     engine = RulesEngine()
@@ -16,8 +17,9 @@ def test_stack_resolves_after_priority_passes() -> None:
 
     state.step = Step.PRECOMBAT_MAIN
     state.priority_player = 1
+    state.players[1].mana_pool = {'R': 1}
     cid = state.players[1].hand[0]
-    engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid})
+    engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid, "targets": {"target_player": 2}})
     assert len(state.stack) >= 1
     assert state.priority_player == 1
     engine.take_action(state, 1, {"type": "pass_priority"})
@@ -27,7 +29,7 @@ def test_stack_resolves_after_priority_passes() -> None:
 
 def test_casting_player_retains_priority_for_additional_spell() -> None:
     deck_a = [
-        {"quantity": 30, "card_name": "Lightning Bolt"},
+        {**fallback_card_payload('Lightning Bolt'), "quantity": 30, "card_name": "Lightning Bolt"},
         {"quantity": 30, "card_name": "Mountain"},
     ]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
@@ -56,11 +58,11 @@ def test_casting_player_retains_priority_for_additional_spell() -> None:
         state.cards[bolt].zone = Zone.HAND
         bolts.append(bolt)
 
-    engine.take_action(state, 1, {"type": "cast_spell", "card_id": bolts[0]})
+    engine.take_action(state, 1, {"type": "cast_spell", "card_id": bolts[0], "targets": {"target_player": 2}})
     assert state.priority_player == 1
     assert len(state.stack) == 1
 
-    engine.take_action(state, 1, {"type": "cast_spell", "card_id": bolts[1]})
+    engine.take_action(state, 1, {"type": "cast_spell", "card_id": bolts[1], "targets": {"target_player": 2}})
     assert state.priority_player == 1
     assert len(state.stack) == 2
 

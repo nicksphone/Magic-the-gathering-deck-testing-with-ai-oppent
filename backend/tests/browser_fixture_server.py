@@ -51,6 +51,17 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'foretell_created_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
+        from tests.test_foretell_created import position
+        from rules_engine.events import emit_event
+        from tests.test_ai_recurring_engines import resolve
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, source = position(seat, 'Ethereal Valkyrie' if index == 0 else 'The Foretold Soldier')
+        emit_event(state, 'enters_battlefield' if index == 0 else 'damage_dealt',
+                   {'card_id': source.id, 'source_card_id': source.id, 'amount': 1})
+        if index == 0:
+            state = resolve(state)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind in {f'foretell_effect_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
         from tests.test_foretell_effects import cast_position
         from tests.test_ai_recurring_engines import add

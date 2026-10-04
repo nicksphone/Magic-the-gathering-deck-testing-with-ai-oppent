@@ -10,8 +10,9 @@ only on a later turn and still respects the selected face's ordinary timing.
 Spell/activated-ability cost modifiers do not modify the special action.
 Supported explicit Foretell modifiers use the live, unsuppressed battlefield.
 
-The foretelling player, not automatically the owner, receives look and casting
-permission. Saved records include the action's turn, order, cost options and
+For the special action, the foretelling player, not automatically the owner,
+receives look and casting permission. For an effect making a card foretold,
+its owner receives that permission. Saved records include the origin, turn, order, cost options and
 zone-change sequence. Permission survives removal of a granting source, but
 does not follow a card leaving and returning to exile. Generic face-down exile
 does not grant access. Human controllers receive authorized exile views; other
@@ -90,7 +91,8 @@ small Foretell microbenchmark.
 - [x] Both-seat browser normal/foretold casting, X announcement and scry choices.
 - [x] Mandatory reveal survives BO3 transitions, SQLite restoration and saved history.
 - [ ] Other Foretold conditional/additional effects and tactical X valuation.
-- [ ] Effect-created Foretell permissions, including selected-hand and self-exile effects.
+- [x] Bounded selected-hand and self-exile effect-created permissions (see below).
+- [ ] Other effect-created Foretell clause families and general exile rewards.
 - [ ] Broader exile and cast-from-exile reward triggers and interacting replacements.
 - [ ] Complete browser later-turn casting, countering, restart and face-choice series.
 - [ ] Authoritative look-permitted face-down costs in wider AI resource/curve planning.
@@ -120,7 +122,7 @@ and [official Kaldheim release notes](https://magic.wizards.com/en/news/feature/
 
 The cross-style checks cover action construction, not strategic choice to cast
 now rather than hold. Conservative banking still defers printed X-cost cards;
-effect-created permissions and multi-turn/opponent-response planning remain open.
+other effect-created clause families and multi-turn/opponent-response planning remain open.
 Follow-up evidence is stored separately from the foundation milestone under
 `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/foretell-effects/20261004-working/`.
 
@@ -150,3 +152,79 @@ Follow-up evidence is stored separately from the foundation milestone under
 - Temporary browser services are stopped; user LAN services remain available
   on `0.0.0.0:9999` and `0.0.0.0:5173`. Live SQLite size/modification time and
   the pre-existing untracked coder plan remain unchanged.
+
+## Effect-Created Permissions Follow-Up
+
+The engine recognizes complete draw/hand-exile and damage/self-exile clauses,
+not arbitrary mentions of Foretell. Canonical Ethereal Valkyrie and The Foretold
+Soldier exercise these two paths; recognition uses ordinary self references,
+not card-name-specific gameplay branches. Other unrecognized clauses retain
+unsupported-mechanic diagnostics.
+
+These abilities trigger and use the stack, can be countered and respect printed
+ability suppression. Draw replacement processing precedes the durable hand
+selection. A failed empty-library draw does not end a resolving ability midway:
+state-based loss is checked after its remaining selection/effects finish.
+Positive noncombat damage emits a shared event after prevention; combat uses
+the existing damage event. Self-exile checks the original object's incarnation,
+and token disappearance follows ordinary state-based actions.
+
+Effect-created permissions belong to the owner, not necessarily the trigger
+controller, and do not increment special-action Foretell counters or trigger
+"whenever you foretell" rewards. Hand-exile reductions preserve colored symbols
+and use each selected spell face's mana cost. Printed and granted costs coexist.
+Foretell alone does not allow a land face to be played; independent exile-play
+permissions still work. Copied battlefield characteristics do not survive in
+exile as a card's printed cost. Sources leaving later do not remove an already
+created permission.
+
+The shared casting path distinguishes no mana cost (unpayable) from an explicit
+`{0}` (payable). Explicit free-cast permissions and supported alternative costs
+are still available. Canonical Lotus Bloom, Memnite and Kolvori/Ringhart Crest
+records supplement the existing Foretell, suppression and draw fixtures.
+
+AI selection shares existing retention, removal/counter tags and payment reads
+across all styles and difficulties. It favors useful cost savings while keeping
+lands and affordable interaction when a spell can be exiled instead. It still
+must select a land if only lands remain; this is a legal forced effect, not land
+play. The heuristic does not establish optimal long-horizon valuation.
+
+Rules grounding: CR 118.6, 702.143c/d and 704.3/704.5b in the
+[2026-09-25 Comprehensive Rules](https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt),
+[Kaldheim release notes](https://magic.wizards.com/en/news/feature/kaldheim-release-notes-2021-01-22)
+and [Doctor Who release notes](https://magic.wizards.com/en/news/feature/magic-the-gathering-doctor-who-release-notes).
+
+Evidence archive for this follow-up:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/foretell-permissions/20261004-working/`.
+
+### Permission Follow-Up Validation
+
+- All 6,630 backend tests pass across four isolated database/source shards:
+  2,155 + 1,866 + 1,242 + 1,367. All 282 test files are assigned exactly once.
+  The 148 new cases include both seats, 84 style/difficulty combinations,
+  prevention, suppression, countering, copies, ownership, modal costs,
+  replacement-aware draw, invalid choices and HTTP/SQLite restoration.
+- Initial failures and corrected retests are retained separately. The empty-
+  library test initially expected loss during resolution rather than after it;
+  three older priority tests depended on missing card metadata making spells
+  free. Their fixtures now supply real costs, mana and targets. Rejected HTTP
+  choices use the existing structured 422 contract, not a guessed 409 status.
+- Frontend lint, runtime-contract/unit tests, production build and all 41 Chromium
+  scripts pass. New both-seat flows use the real selection and priority controls.
+  The first broad browser attempt used the wrong test API configuration; the
+  corrected run explicitly points at the isolated fixture API, not the LAN service.
+- Two seeds in both seat orders produce four BO1 samples, each executed twice
+  with identical complete results/logs. Actual hand/action traces show 10 hand-
+  created permissions and seven Soldier self-exile resolutions. No timeout or
+  invalid-action/cost messages occur. The 13/22/24/38-turn games use deliberately
+  land-heavy 60-card mechanic exercise lists, not tournament/balance baselines.
+  Inputs, canonical fixture data, source hashes and full repeated traces are
+  preserved. The ad-hoc runner's `created_choices` substring counter is not a
+  semantic metric; the validated summary counts actual resolution messages.
+- Production source hashes match across all four shards, browser API and replay.
+  This reused installed dependencies, not a fresh-install release certification.
+  The slowest shard takes 1,112.66 seconds including the live Control/Ramp BO3
+  restart case; wide-state planning latency remains unresolved.
+- The live SQLite size/mtime and pre-existing untracked coder plan are unchanged.
+  Temporary services and scratch are removed only after verified NFS archival;
+  the user's LAN services stay available on their existing ports.

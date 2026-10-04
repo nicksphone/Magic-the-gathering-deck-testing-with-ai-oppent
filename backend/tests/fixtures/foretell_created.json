@@ -1,0 +1,110 @@
+[
+  {
+    "id": "db89ae4d-1cc2-41d8-a4de-a54b958c4429",
+    "oracle_id": "04cf02dc-f053-414e-87d8-1537f25bcbf4",
+    "name": "Lotus Bloom",
+    "canonical_name": "Lotus Bloom",
+    "mana_cost": "",
+    "type_line": "Artifact",
+    "oracle_text": "Suspend 3—{0} (Rather than cast this card from your hand, pay {0} and exile it with three time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost.)\n{T}, Sacrifice this artifact: Add three mana of any one color.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [
+      "Suspend"
+    ],
+    "card_faces": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/tsr/270/lotus-bloom?utm_source=api"
+  },
+  {
+    "id": "975459ba-e1c2-4800-a3fa-5c0cf8ce728f",
+    "oracle_id": "7663ac7c-1de3-4250-b96a-fae9dbd66a27",
+    "name": "Memnite",
+    "canonical_name": "Memnite",
+    "mana_cost": "{0}",
+    "type_line": "Artifact Creature — Construct",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "1",
+    "colors": [],
+    "keywords": [],
+    "card_faces": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/td2/2/memnite?utm_source=api"
+  },
+  {
+    "id": "b76bed98-30b1-4572-b36c-684ada06826c",
+    "oracle_id": "490ac985-79b5-438d-a2e7-f47683b29683",
+    "name": "Kolvori, God of Kinship",
+    "canonical_name": "Kolvori, God of Kinship // The Ringhart Crest",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Legendary Creature — God",
+    "oracle_text": "As long as you control three or more legendary creatures, Kolvori gets +4/+2 and has vigilance.\n{1}{G}, {T}: Look at the top six cards of your library. You may reveal a legendary creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Kolvori, God of Kinship",
+        "mana_cost": "{2}{G}{G}",
+        "type_line": "Legendary Creature — God",
+        "oracle_text": "As long as you control three or more legendary creatures, Kolvori gets +4/+2 and has vigilance.\n{1}{G}, {T}: Look at the top six cards of your library. You may reveal a legendary creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+        "colors": [
+          "G"
+        ],
+        "power": "2",
+        "toughness": "4",
+        "artist": "Grzegorz Rutkowski",
+        "artist_id": "b5f49d0d-8056-48e3-b614-090e656b4f9c",
+        "illustration_id": "8a65028e-20a7-4470-ab12-9b6b90b95e14",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "normal": "https://cards.scryfall.io/normal/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "large": "https://cards.scryfall.io/large/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "png": "https://cards.scryfall.io/png/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.png?1783928215",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "thumb": "https://cards.scryfall.io/thumb/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "grid": "https://cards.scryfall.io/grid/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "display": "https://cards.scryfall.io/display/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "art": "https://cards.scryfall.io/art/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "crop": "https://cards.scryfall.io/crop/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "The Ringhart Crest",
+        "mana_cost": "{1}{G}",
+        "type_line": "Legendary Artifact",
+        "oracle_text": "As The Ringhart Crest enters, choose a creature type.\n{T}: Add {G}. Spend this mana only to cast a creature spell of the chosen type or a legendary creature spell.",
+        "colors": [
+          "G"
+        ],
+        "flavor_text": "Kolvori's love for her family knows no bounds.",
+        "artist": "Grzegorz Rutkowski",
+        "artist_id": "b5f49d0d-8056-48e3-b614-090e656b4f9c",
+        "illustration_id": "de379e44-b3d7-4c1f-bdf1-faf9c0fa2842",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "normal": "https://cards.scryfall.io/normal/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "large": "https://cards.scryfall.io/large/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "png": "https://cards.scryfall.io/png/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.png?1783928215",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+          "thumb": "https://cards.scryfall.io/thumb/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "grid": "https://cards.scryfall.io/grid/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "display": "https://cards.scryfall.io/display/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "art": "https://cards.scryfall.io/art/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215",
+          "crop": "https://cards.scryfall.io/crop/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.webp?1783928215"
+        }
+      }
+    ],
+    "layout": "modal_dfc",
+    "scryfall_uri": "https://scryfall.com/card/khm/181/kolvori-god-of-kinship-the-ringhart-crest?utm_source=api"
+  }
+]

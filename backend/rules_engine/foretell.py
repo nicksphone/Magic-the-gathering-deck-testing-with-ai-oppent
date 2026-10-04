@@ -134,12 +134,115 @@ def cast_costs(state, card, player_id):
         return []
     data = record(card)
     return list(dict.fromkeys(data['fixed_costs'] + [_reduced_cost(card.mana_cost, reduction)
-                                                   for reduction in data['granted_reductions']]))
+                                                   for reduction in data['granted_reductions']
+                                                   if card.mana_cost]))
+
+
+def created_clauses(text, name):
+    if 'becomes foretold' not in text.lower():
+        return []
+    reference = r'(?:this creature|' + re.escape(name) + r')'
+    out = []
+    for line in without_reminder_text(text).splitlines():
+        hand = re.fullmatch(r'whenever ' + reference + r' enters(?: the battlefield)? or attacks, '
+            r'draw a card, then exile a card from your hand face down\. It becomes foretold\. '
+            r'Its foretell cost is its mana cost reduced by \{(\d+)\}\.', line.strip(), re.I)
+        damage = re.fullmatch(r'whenever ' + reference + r' deals damage, exile '
+            r'(?:it|' + reference + r') face down\. It becomes foretold\.', line.strip(), re.I)
+        if hand:
+            out.append({'kind': 'hand', 'line': line.strip(), 'reduction': int(hand[1])})
+        elif damage:
+            out.append({'kind': 'self', 'line': line.strip()})
+    return out
+
+
+def without_created_clauses(text, name):
+    recognized = {clause['line'] for clause in created_clauses(text, name)}
+    return '\n'.join(line for line in text.splitlines() if line.strip() not in recognized) if recognized else text
+
+
+def _created_triggers(state, event, payload):
+    if event not in {'enters_battlefield', 'attack_declared', 'damage_dealt', 'combat_damage_dealt'}:
+        return []
+    from rules_engine.continuous import printed_abilities_suppressed
+    from game_state.state import object_incarnation
+    cid = payload.get('source_card_id') if 'damage' in event else payload.get('card_id')
+    card = state.cards.get(cid)
+    if (card is None or card.zone != Zone.BATTLEFIELD
+            or 'becomes foretold' not in (card.oracle_text or '').lower()
+            or printed_abilities_suppressed(state, cid)):
+        return []
+    out = []
+    for clause in created_clauses(card.oracle_text, card.name):
+        if clause['kind'] == 'hand' and event in {'enters_battlefield', 'attack_declared'}:
+            key, data = 'effect_sequence', {'effects': [
+                {'effect_key': 'draw_cards', 'payload': {'amount': 1}},
+                {'effect_key': 'foretell_from_hand', 'payload': {'reduction': clause['reduction']}},
+            ]}
+        elif clause['kind'] == 'self' and 'damage' in event and payload.get('amount', 0) > 0:
+            key, data = 'foretell_self', {'card_id': cid, 'incarnation': object_incarnation(card),
+                                        'sequence': card.zone_change_sequence}
+        else:
+            continue
+        out.append({'source_card_id': cid, 'controller': card.controller,
+                    'label': f'{card.name} effect-created foretell', 'effect_key': key, 'payload': data})
+    return out
+
+
+def mark_foretold(state, card, player_id, fixed_costs, reductions, *, origin):
+    card.exile_face_down = True
+    card.foretell_record = {'player_id': player_id, 'turn': state.turn, 'origin': origin,
+                           'sequence': card.zone_change_sequence, 'order': allocate_effect_timestamp(state),
+                           'fixed_costs': fixed_costs, 'granted_reductions': reductions}
+
+
+def resolve_hand(state, controller, payload):
+    options = list(state.players[controller].hand)
+    if options and state.winner is None:
+        state.pending_mechanic_choice = {'kind': 'foretell_from_hand', 'player_id': controller,
+            'options': options, 'count': 1, 'min_count': 1, 'reduction': payload['reduction'],
+            'label': 'Exile a card from your hand face down; it becomes foretold'}
+        state.priority_player = controller
+        state.passed_priority.clear()
+
+
+def finish_hand_choice(state, player_id, action):
+    from rules_engine.stack_engine import resume_paused_resolution
+    pending = state.pending_mechanic_choice
+    ids = action.get('card_ids')
+    if (pending['player_id'] != player_id or not isinstance(ids, list) or len(ids) != 1
+            or ids[0] not in pending['options'] or ids[0] not in state.players[player_id].hand):
+        return False
+    card = state.cards[ids[0]]
+    if card.zone != Zone.HAND:
+        return False
+    state.pending_mechanic_choice = None
+    state.players[player_id].hand.remove(card.id)
+    card.move_to_zone(Zone.EXILE)
+    state.players[card.owner].exile.append(card.id)
+    mark_foretold(state, card, card.owner, PRINTED.findall(without_reminder_text(card.oracle_text)),
+                  [pending['reduction']], origin='effect')
+    state.log.append(f'{state.players[player_id].name} exiles a hand card face down; it becomes foretold.')
+    resume_paused_resolution(state, pending)
+    return True
+
+
+def resolve_self(state, controller, payload):
+    from game_state.state import object_incarnation
+    from effects.handlers import exile_permanent
+    card = state.cards.get(payload['card_id'])
+    if (card is None or card.zone != Zone.BATTLEFIELD or object_incarnation(card) != payload['incarnation']
+            or card.zone_change_sequence != payload['sequence']):
+        return
+    exile_permanent(state, controller, {'target_card_id': card.id})
+    if card.zone == Zone.EXILE:
+        mark_foretold(state, card, card.owner, PRINTED.findall(without_reminder_text(card.oracle_text)),
+                      [], origin='effect')
 
 
 def collect_foretell_triggers(state, event, payload):
     if event != 'foretell':
-        return []
+        return _created_triggers(state, event, payload)
     from rules_engine.continuous import printed_abilities_suppressed
     from game_state.state import object_incarnation
     out = []
@@ -174,10 +277,7 @@ def take_special_action(state, player_id, card_id):
     state.players[player_id].hand.remove(card_id)
     card.move_to_zone(Zone.EXILE)
     state.players[card.owner].exile.append(card_id)
-    card.exile_face_down = True
-    card.foretell_record = {'player_id': player_id, 'turn': state.turn,
-                           'sequence': card.zone_change_sequence, 'order': allocate_effect_timestamp(state),
-                           'fixed_costs': options['fixed_costs'], 'granted_reductions': options['granted_reductions']}
+    mark_foretold(state, card, player_id, options['fixed_costs'], options['granted_reductions'], origin='special_action')
     state.foretells_this_turn[player_id] = state.foretells_this_turn.get(player_id, 0) + 1
     state.passed_priority.clear()
     state.log.append(f'{state.players[player_id].name} foretells a card face down.')

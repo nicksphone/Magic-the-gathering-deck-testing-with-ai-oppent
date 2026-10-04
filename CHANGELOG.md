@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-04 - Effect-created Foretell and unpayable mana costs
+
+- Add reusable, complete-clause recognition for draw/hand-exile and damage/self-exile
+  Foretell triggers, grounded in canonical Ethereal Valkyrie and The Foretold Soldier.
+  They use ordinary counterable triggers, not Foretell special-action rewards.
+- Preserve owner-held later-turn permissions, private hand choices and costs across
+  snapshots and HTTP/SQLite restoration. Compute granted costs per selected spell face;
+  do not permit land play through Foretell alone or reuse a departed object.
+- Route actual noncombat damage after prevention through a shared event; copied
+  battlefield characteristics do not become a card's printed exile cost.
+- Share AI hand-exile selection across all archetypes/difficulties, retaining affordable
+  interaction where possible. This bounded heuristic is not multi-turn optimal play.
+- Correct the shared casting distinction between absent and explicit zero mana costs;
+  retain explicit free-cast permissions and alternative costs. Repair legacy priority
+  fixtures that incorrectly depended on incomplete metadata making spells free.
+- Add canonical fixtures, both-seat checked-action/HTTP recovery regressions and
+  browser choice/self-exile checks. Broader Foretell effects remain explicitly open.
+
 ## 2026-10-04 - Conditional Foretell effects and durable reveals
 
 - Add reusable conditional token and additional-scry branches grounded in the
@@ -14,7 +32,8 @@
 - Reveal remaining foretold identities once at game end, preserving the reveal
   in snapshots, saved history, BO3 log transitions and public opponent memory.
 - Add both-seat HTTP/SQLite and browser regressions. Other Foretell clauses,
-  effect-created permissions and strategic timing remain explicitly unfinished.
+  effect-created permissions and strategic timing were unfinished at this milestone;
+  the subsequent entry above records the bounded permission implementation.
 
 ## 2026-10-04 - Foretell foundation
 
