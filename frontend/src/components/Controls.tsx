@@ -163,8 +163,9 @@ export function Controls(props: Props) {
   return (
     <section className="panel controls">
       <h2>Match Controls</h2>
+      <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
-        <select value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
+        <select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
           <option value="">Deck A</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -172,7 +173,7 @@ export function Controls(props: Props) {
             </option>
           ))}
         </select>
-        <select value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
+        <select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
           <option value="">Deck B</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -182,7 +183,7 @@ export function Controls(props: Props) {
         </select>
       </div>
       <div className="row">
-        <select value={props.startMode} onChange={(e) => {
+        <select aria-label="Match mode" value={props.startMode} onChange={(e) => {
           const mode = e.currentTarget.value;
           if (mode === "player_vs_ai" || mode === "ai_vs_ai" || mode === "human_vs_human") {
             props.setStartMode(mode);
@@ -192,13 +193,13 @@ export function Controls(props: Props) {
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
         </select>
-        <select value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
+        <select aria-label="AI difficulty" value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>
           <option value="master">Master</option>
           <option value="master_plus">Master+</option>
         </select>
-        <select value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
+        <select aria-label="Match length" value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
           <option value={3}>Best-of-3</option>
           <option value={5}>Best-of-5</option>
           <option value={7}>Best-of-7</option>
@@ -206,6 +207,7 @@ export function Controls(props: Props) {
         </select>
       </div>
       <button disabled={props.startDisabled} onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
+      </details>
       {props.match ? (
         <div className="match-status-grid">
           <div className="status-card">
@@ -360,10 +362,10 @@ export function Controls(props: Props) {
           </div>
         </div>
       ) : null}
-      <div className="block-panel">
-        <h3>AI Playback Speed</h3>
+      <details className="block-panel"><summary>AI Playback Speed</summary>
         <p>{(props.autoplayDelayMs / 1000).toFixed(1)}s per AI beat</p>
         <input
+          aria-label="AI playback delay"
           type="range"
           min={600}
           max={3500}
@@ -371,7 +373,7 @@ export function Controls(props: Props) {
           value={props.autoplayDelayMs}
           onChange={(e) => props.setAutoplayDelayMs(Number(e.target.value))}
         />
-      </div>
+      </details>
       {props.match ? (
         <div className={`block-panel interrupt-window ${interruptWindowLive ? "interrupt-window-live" : ""}`}>
           <h3>Interrupt Window</h3>
@@ -392,10 +394,9 @@ export function Controls(props: Props) {
         </div>
       ) : null}
       {props.match ? (
-        <div className="block-panel">
-          <h3>Priority Stops</h3>
+        <details className="block-panel"><summary>Priority Stops</summary>
           <div className="row">
-            <select value={stopPlayer} onChange={(e) => setStopPlayer(Number(e.target.value))}>
+            <select aria-label="Priority stop player" value={stopPlayer} onChange={(e) => setStopPlayer(Number(e.target.value))}>
               <option value={1}>Player 1</option>
               <option value={2}>Player 2</option>
             </select>
@@ -422,10 +423,10 @@ export function Controls(props: Props) {
               );
             })}
           </div>
-        </div>
+        </details>
       ) : null}
       <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
+        <button onClick={props.onPassPriority} disabled={!props.match || currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Pass Priority
         </button>
         <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>

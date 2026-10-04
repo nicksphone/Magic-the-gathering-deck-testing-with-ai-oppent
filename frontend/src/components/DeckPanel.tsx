@@ -138,11 +138,15 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     await refreshDeckData();
   }
 
+  function report(operation: () => Promise<void>) {
+    return () => { void operation().catch((error: unknown) => setStatus(`Deck request failed: ${error instanceof Error ? error.message : String(error)}`)); };
+  }
+
   return (
     <section className="panel deck-panel">
       <h2>Deck Import Lab</h2>
       <div className="row">
-        <select value={selectedBuiltin} onChange={(e) => setSelectedBuiltin(e.target.value)}>
+        <select aria-label="Built-in deck" value={selectedBuiltin} onChange={(e) => setSelectedBuiltin(e.target.value)}>
           <option value="">Built-in Master Decks</option>
           {builtins.map((d) => (
             <option key={d} value={d}>
@@ -150,12 +154,12 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
             </option>
           ))}
         </select>
-        <button onClick={loadBuiltin}>Load Built-in</button>
-        <button onClick={importSelectedBuiltin}>Import Built-in</button>
-        <button onClick={refreshDeckData}>Refresh Decks</button>
+        <button onClick={report(loadBuiltin)}>Load Built-in</button>
+        <button onClick={report(importSelectedBuiltin)}>Import Built-in</button>
+        <button onClick={report(refreshDeckData)}>Refresh Decks</button>
       </div>
       <div className="row">
-        <select value={selectedExpansionCode} onChange={(e) => setSelectedExpansionCode(e.target.value)}>
+        <select aria-label="Historical deck or archetype template" value={selectedExpansionCode} onChange={(e) => setSelectedExpansionCode(e.target.value)}>
           <option value="">Historical Decks and Archetype Templates</option>
           {expansionDecks.map((d) => (
             <option key={d.code} value={d.code}>
@@ -163,9 +167,9 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
             </option>
           ))}
         </select>
-        <button onClick={loadExpansionTopDeck}>Load Expansion Deck</button>
-        <button onClick={importSelectedExpansionTopDeck}>Import Expansion Deck</button>
-        <button onClick={importAllExpansionTopDecks}>Sync Expansion Catalog</button>
+        <button onClick={report(loadExpansionTopDeck)}>Load Expansion Deck</button>
+        <button onClick={report(importSelectedExpansionTopDeck)}>Import Expansion Deck</button>
+        <button onClick={report(importAllExpansionTopDecks)}>Sync Expansion Catalog</button>
       </div>
       {selectedExpansion?.kind === "tournament" && (
         <p className="status">
@@ -175,15 +179,16 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
           . Current-format legality and full rules support are not certified.
         </p>
       )}
-      <input placeholder="Deck Name" value={deckName} onChange={(e) => setDeckName(e.target.value)} />
+      <input aria-label="Deck name" placeholder="Deck Name" value={deckName} onChange={(e) => setDeckName(e.target.value)} />
       <textarea
+        aria-label="Deck list"
         value={deckText}
         onChange={(e) => setDeckText(e.target.value)}
         placeholder="Paste decklist, e.g. 4 Lightning Bolt"
         rows={10}
       />
-      <button onClick={importDeck}>Save Deck</button>
-      <p className="status">{status}</p>
+      <button onClick={report(importDeck)}>Save Deck</button>
+      <p className="status" role={status.startsWith("Deck request failed:") || status.startsWith("Import errors:") ? "alert" : "status"}>{status}</p>
       {importAnalysis && (
         <div className="data-report" role="status">
           <strong>Imported deck analysis</strong>

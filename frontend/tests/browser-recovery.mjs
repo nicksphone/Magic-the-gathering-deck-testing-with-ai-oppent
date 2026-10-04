@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
+import { writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
-const backend = 'http://127.0.0.1:10199';
+const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const browser = await openBrowser('http://127.0.0.1:15173/');
 const {evaluate,waitFor,click,command,close,onIntercept} = browser;
 async function fresh() {
@@ -12,6 +13,7 @@ async function fresh() {
 }
 try {
   await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+  await evaluate("document.querySelector('.saved-games').open = true; document.querySelectorAll('.tool-disclosure').forEach(el => el.open = true)");
   if (process.argv.includes('--verify-restart')) {
     await waitFor("document.querySelector('.battlefield') && [...document.querySelectorAll('button')].some(b => b.textContent === 'Resume automatic play')");
     const id = await evaluate("localStorage.getItem('mtg.activeMatch')");
@@ -75,5 +77,11 @@ try {
   assert.equal(state.revision,1);
   assert.equal(state.players['2'].battlefield.filter(c=>c.id==='forest').length,1);
   console.log('PASS lost accepted response reconciles authoritative state without replaying write');
+  if (process.env.MTG_UI_EVIDENCE) {
+    await command('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate('window.scrollTo(0,0)');
+    const shot = await command('Page.captureScreenshot',{format:'png'});
+    await writeFile(`${process.env.MTG_UI_EVIDENCE}/reconciled-api-error.png`,Buffer.from(shot.data,'base64'));
+  }
   }
 } finally { await close(); }

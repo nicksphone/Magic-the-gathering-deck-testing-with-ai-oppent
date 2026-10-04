@@ -301,7 +301,7 @@ try {
   await click("Phyrexian Payment Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Mutagenic Growth'))");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Mutagenic Growth'));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Mutagenic Growth'));
     const payment = box.querySelector('[aria-label^="Pay hybrid symbol"]');
     const target = [...box.querySelectorAll('select')].find(s => [...s.options].some(o => o.value === 'phyrexian-target'));
     if (!payment || !target) throw new Error('Missing Phyrexian payment or target control');
@@ -317,7 +317,7 @@ try {
   await click("Phyrexian Ability Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Activate Pestilent Souleater'))");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Activate Pestilent Souleater'));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Activate Pestilent Souleater'));
     const payment = box.querySelector('[aria-label^="Ability hybrid symbol"]');
     if (!payment) throw new Error('Missing activated Phyrexian payment control');
     payment.value = 'P'; payment.dispatchEvent(new Event('change', { bubbles: true }));
@@ -334,7 +334,7 @@ try {
     await click("Compleated Payment Fixture");
     await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Tamiyo, Compleated Sage'))");
     await evaluate(`(() => {
-      const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Tamiyo, Compleated Sage'));
+      const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Tamiyo, Compleated Sage'));
       const payment = box.querySelector('[aria-label^="Pay hybrid symbol"]');
       if (!payment) throw new Error('Missing compleated payment control');
       payment.value = ${JSON.stringify(branch)}; payment.dispatchEvent(new Event('change', { bubbles: true }));
@@ -366,8 +366,8 @@ try {
 
   await click("Modal Targetless Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Izzet Charm'))");
-  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Izzet Charm')); const mode = box.querySelector('[aria-label=\"Spell mode\"]'); mode.value = 'Draw two cards, then discard two cards'; mode.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Izzet Charm')).querySelector('[aria-label=\"Spell mode\"]').options.length"), 2);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Izzet Charm')); const mode = box.querySelector('[aria-label=\"Spell mode\"]'); mode.value = 'Draw two cards, then discard two cards'; mode.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Izzet Charm");
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Izzet Charm')");
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.mode_text"), "Draw two cards, then discard two cards");
@@ -376,14 +376,14 @@ try {
   await click("Modal Two Targets Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Cryptic Command'))");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Cryptic Command'));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Cryptic Command'));
     const modes = box.querySelector('[aria-label="Spell modes"]');
     for (const option of modes.options) option.selected = option.value === 'Counter target spell' || option.value === "Return target permanent to its owner's hand";
     modes.dispatchEvent(new Event('change', { bubbles: true }));
   })()`);
   await waitFor(`[...document.querySelectorAll('select')].some(s => s.getAttribute('aria-label') === "Target for Return target permanent to its owner's hand")`);
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Cryptic Command'));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Cryptic Command'));
     const permanent = [...box.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === "Target for Return target permanent to its owner's hand");
     const stack = [...box.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === 'Target for Counter target spell');
     if (!permanent || !stack) throw new Error('Missing modal target controls');
@@ -411,7 +411,7 @@ try {
   await evaluate("document.querySelector('[aria-label=\"Player 2 graveyard\"]').parentElement.querySelector('button').focus()");
   await waitFor("document.querySelector('.card-hover-preview')?.textContent.includes('Llanowar Elves')");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes("Cast Kolaghan's Command"));
     const modes = box.querySelector('[aria-label="Spell modes"]');
     for (const option of modes.options) option.selected = option.value === 'Destroy target artifact' || option.value === "Kolaghan's Command deals 2 damage to any target";
     modes.dispatchEvent(new Event('change', { bubbles: true }));
@@ -435,7 +435,7 @@ try {
   await click("Modal Same Kind Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes("Cast Kolaghan's Command"));
     const modes = box.querySelector('[aria-label="Spell modes"]');
     for (const option of modes.options) option.selected = option.value === 'Return target creature card from your graveyard to your hand' || option.value === 'Destroy target artifact';
     modes.dispatchEvent(new Event('change', { bubbles: true }));
@@ -461,7 +461,7 @@ try {
   await click("Modal Same Kind Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes(\"Cast Kolaghan's Command\"))");
   await evaluate(`(() => {
-    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes("Cast Kolaghan's Command"));
+    const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes("Cast Kolaghan's Command"));
     const modes = box.querySelector('[aria-label="Spell modes"]');
     for (const option of modes.options) option.selected = option.value === 'Target player discards a card' || option.value === 'Destroy target artifact';
     modes.dispatchEvent(new Event('change', { bubbles: true }));
@@ -515,8 +515,8 @@ try {
 
   await click("Revealed Discard Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Coercion'))");
-  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]').options.length"), 2);
-  await evaluate("(() => { const select = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  assert.equal(await evaluate("[...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]').options.length"), 2);
+  await evaluate("(() => { const select = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Coercion')).querySelector('[aria-label=\"Player target\"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Coercion");
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Coercion')");
   await click("Resolve Stack");
@@ -537,7 +537,7 @@ try {
   ]) {
     await click(fixture);
     await waitFor(`[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast ${spell}'))`);
-    await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast ${spell}')); const select = box.querySelector('[aria-label="Player target"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast ${spell}')); const select = box.querySelector('[aria-label="Player target"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
     await click(`Cast ${spell}`);
     await waitFor(`window.fixtureState.stack.some(item => item.label === '${spell}')`);
     await click("Resolve Stack");
@@ -557,7 +557,7 @@ try {
 
   await click("Appetite Fixture");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Appetite for Brains'))");
-  await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Appetite for Brains')); const select = box.querySelector('[aria-label="Player target"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Appetite for Brains')); const select = box.querySelector('[aria-label="Player target"]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
   await click("Cast Appetite for Brains");
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Appetite for Brains')");
   await click("Resolve Stack");
@@ -625,7 +625,7 @@ try {
   console.log("PASS explicit crew taps as cost and animates only after its response stack resolves");
 
   await reset();
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Shock')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Shock')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Shock");
   await waitFor("window.fixtureState.stack.length === 1");
   assert.equal(await evaluate("window.fixtureActions[0].action.from_exile"), true);
@@ -647,7 +647,7 @@ try {
   await click("Player Hexproof Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Shock'))");
   assert.deepEqual(await evaluate("[...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player') && [...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player').options.length"), 2);
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Shock')); const player = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); const creature = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); player.value = '1'; player.dispatchEvent(new Event('change', { bubbles: true })); creature.value = 'bear'; creature.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Shock')); const player = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); const creature = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); player.value = '1'; player.dispatchEvent(new Event('change', { bubbles: true })); creature.value = 'bear'; creature.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await waitFor("[...document.querySelectorAll('.cast-card-box select')].find(s => s.options[0].text === 'Target Player')?.value === ''");
   await click("Cast Shock");
   await waitFor("window.fixtureState.stack.length === 1");
@@ -767,7 +767,7 @@ try {
   await click("Modal Choice Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('button')].some(b => b.textContent.includes('Cast Wandering Archaic'))");
   await evaluate("(() => { const select = document.querySelector('.cast-card-box select'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
-  await waitFor("document.querySelector('.cast-card-box button').textContent.includes('Cast Explore the Vastlands ({3})')");
+  await waitFor("document.querySelector('.cast-card-box button:not(.hand-face)').textContent.includes('Cast Explore the Vastlands ({3})')");
   await click("Cast Explore the Vastlands");
   await waitFor("window.fixtureState.stack.length === 1");
   assert.equal(await evaluate("window.fixtureState.players['2'].mana_pool.C"), 2);
@@ -804,7 +804,7 @@ try {
   await click("Adventure Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && !!document.querySelector('.cast-card-box select')");
   await evaluate("(() => { const select = document.querySelector('.cast-card-box select'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
-  await waitFor("document.querySelector('.cast-card-box button').textContent.includes('Cast Stomp')");
+  await waitFor("document.querySelector('.cast-card-box button:not(.hand-face)').textContent.includes('Cast Stomp')");
   await evaluate("(() => { const box = document.querySelector('.cast-card-box'); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Stomp");
   await waitFor("window.fixtureState.stack.length === 1");
@@ -820,8 +820,8 @@ try {
   await click("Multi-Target Adventure Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Meager Meal'))");
   const mealTarget = await evaluate("window.fixtureState.players['1'].battlefield[0].id");
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
-  await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); select.value = ${JSON.stringify(mealTarget)}; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Player'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate(`(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Meager Meal')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Creature'); select.value = ${JSON.stringify(mealTarget)}; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
   await click("Cast Meager Meal");
   await waitFor("window.fixtureState.stack.length === 1");
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_player"), 1);
@@ -849,9 +849,9 @@ try {
   await click("Split Card Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Fire'))");
   assert.deepEqual(await evaluate("window.fixtureState.players['2'].hand.find(c => c.name === 'Fire // Ice').colors.slice().sort()"), ["R", "U"]);
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Fire')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Face 1: Fire')); if (!select || select.options[1].disabled) throw new Error('Missing Ice face'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Fire')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Face 1: Fire')); if (!select || select.options[1].disabled) throw new Error('Missing Ice face'); select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await waitFor("[...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Ice'))");
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Ice')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Target Permanent')); if (!select) throw new Error('Missing Ice target'); select.value = 'split-target-island'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Ice')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text.includes('Target Permanent')); if (!select) throw new Error('Missing Ice target'); select.value = 'split-target-island'; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Ice");
   await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.stack[0].label === 'Ice'");
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.selected_face_index"), 1);
@@ -861,7 +861,7 @@ try {
 
   await click("Split Card Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Fire'))");
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Fire')); const row = [...box.querySelectorAll('.divide-box .row')].find(r => r.textContent.includes('Player A')); if (!row) throw new Error('Missing Fire damage recipient'); const input = row.querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '2'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Fire')); const row = [...box.querySelectorAll('.divide-box .row')].find(r => r.textContent.includes('Player A')); if (!row) throw new Error('Missing Fire damage recipient'); const input = row.querySelector('input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '2'); input.dispatchEvent(new Event('input', { bubbles: true })); })()");
   await click("Cast Fire");
   await waitFor("window.fixtureState.stack.length === 1 && window.fixtureState.stack[0].label === 'Fire'");
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_distribution['1']"), 2);
@@ -885,7 +885,7 @@ try {
   await click("Surviving Copy Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Negate'))");
   const survivingCopyId = await evaluate("window.fixtureState.stack[0].id");
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Negate')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Negate')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Negate");
   await waitFor("window.fixtureState.stack.length === 2 && window.fixtureState.stack[1].label === 'Negate'");
   assert.equal(await evaluate("window.fixtureActions.at(-1).action.targets.target_stack_id"), survivingCopyId);
@@ -897,7 +897,7 @@ try {
 
   await click("Stifle Protection Fixture");
   await waitFor("document.querySelector('[data-testid=ready]')?.textContent === 'Ready' && [...document.querySelectorAll('.cast-card-box button')].some(b => b.textContent.includes('Cast Stifle'))");
-  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button')?.textContent.includes('Cast Stifle')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await evaluate("(() => { const box = [...document.querySelectorAll('.cast-card-box')].find(b => b.querySelector('button:not(.hand-face)')?.textContent.includes('Cast Stifle')); const select = [...box.querySelectorAll('select')].find(s => s.options[0].text === 'Target Stack Item'); select.value = select.options[1].value; select.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await click("Cast Stifle");
   await waitFor("window.fixtureState.stack.length === 2 && window.fixtureState.stack[1].label === 'Stifle'");
   await click("Resolve Stack");

@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { groupBattlefield, cardStates, phaseIndex } from '../src/components/table-model.ts';
+const forest = {id:'f1',name:'Forest',types:['Land'],tapped:false,summoning_sick:false,power:null,toughness:null,mana_source_colors:['G'],mana_source_amounts:{G:1}};
+const cards = [forest,{...forest,id:'f2',tapped:true},{...forest,id:'f3',counters:{charge:1}},{...forest,id:'animated',types:['Land','Creature'],power:2,toughness:2}];
+const grouped = groupBattlefield(cards);
+assert.equal(grouped.lands.length,2,'differing counters must not be grouped');
+assert.deepEqual(grouped.lands[0].cards.map(c=>c.id),['f1','f2']);
+assert.equal(grouped.lands[0].untapped,1);
+assert.equal(grouped.nonLands[0].id,'animated','animated lands remain visible in combat row');
+assert.deepEqual(groupBattlefield([{...forest,mana_source_colors:undefined,mana_source_amounts:undefined}]).lands[0].colors,[],'never infer mana from a name');
+assert.deepEqual(cardStates({...forest,id:'a',types:['Creature'],summoning_sick:true,tapped:true},{attackers:['a'],blocks:{enemy:['a']}},true,true),['Tapped','Attacking','Blocking','Summoning sick','Targetable','Selected']);
+assert.equal(phaseIndex('declare_blockers'),2);
+assert.equal(phaseIndex('unrecognized'),-1);
+console.log('PASS table grouping identities, animated lands, authoritative mana, explicit states and phase mapping');

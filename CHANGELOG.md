@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-04 - Battlefield-first UI integration
+
+- Integrate the reviewed UI agent redesign: compact battlefield and action rail,
+  phase/resource indicators, conservative exact-ID land grouping, scrollable
+  hands, collapsible setup/log/lab panels, and keyboard/hover card inspection.
+- Preserve backend contracts and authoritative legal actions. Frontend unit
+  checks, lint and production build pass after integration; five isolated
+  browser suites pass against the repaired backend. The full integrated browser
+  harness remains separately tracked, not claimed complete here.
+- Serve the redesign from the existing LAN frontend on port 5173. See
+  `docs/ui-redesign.md` for the implementation and scoped verification.
+
 ## 2026-10-04 - Cross-family rules regression repairs
 
 - Integrate the independent canonical regression handoff and reproduce its

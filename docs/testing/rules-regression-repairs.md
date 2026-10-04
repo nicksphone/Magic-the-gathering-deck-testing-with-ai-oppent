@@ -46,7 +46,8 @@ measurement of AI strength. No card text or expected outcomes were invented.
 - [x] Review frontend lint/contracts/build and browser integration gate.
 - [x] Review five pinned pair manifests, both seats and repeated execution.
 - [x] Archive verified source/evidence on NFS.
-- [ ] Publish the milestone after the final documentation/graph checks.
+- [x] Publish the milestone after the final documentation/graph checks:
+  `0ce8fe1`, pushed to `origin/main`.
 
 All backend tests use disposable source copies with their own local SQLite
 databases. Tests never run against the live checkout's database. Running scratch

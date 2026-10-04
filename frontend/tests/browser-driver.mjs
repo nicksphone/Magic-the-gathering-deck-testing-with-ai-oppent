@@ -13,7 +13,8 @@ export async function waitForApiState(url, predicate, timeoutMs = 15000) {
 }
 
 export async function openBrowser(url) {
-  const origin = 'http://127.0.0.1:19222';
+  const origin = process.env.MTG_BROWSER_ORIGIN || 'http://127.0.0.1:19222';
+  if (process.env.MTG_FRONTEND_ORIGIN) url = url.replace('http://127.0.0.1:15173', process.env.MTG_FRONTEND_ORIGIN);
   const page = await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
   const socket = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
@@ -49,7 +50,7 @@ export async function openBrowser(url) {
   async function waitFor(expression, timeoutMs = 15000) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
-      if (await evaluate(`document.body && (${expression})`)) return;
+      if (await evaluate(`Boolean(document.body && (${expression}))`)) return;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     throw new Error(`Browser condition timed out: ${expression}\n${await evaluate('document.body?.innerText')}`);

@@ -2,6 +2,11 @@
 
 ## Current Priority: Backend First
 
+- [x] Integrate the reviewed battlefield-first UI into the live frontend.
+  Unit checks, lint/build and five isolated browser suites pass against the
+  repaired backend. The full integrated harness remains assigned through
+  `ui-integration-plan.md`; do not infer its completion from these checks.
+
 Work follows [the capability-batch protocol](docs/development/batch-workflow.md).
 Group connected rules/AI work; retain fast per-change checks and broader batch
 gates. Do not substitute parser coverage, smoke wins or unchanged buggy decisions

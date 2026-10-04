@@ -67,6 +67,18 @@ try {
   await evaluate("window.fixtureWrongJobId = true");
   await selectDeck(0, 3);
   await selectDeck(1, 2);
+  await evaluate("window.fixtureWrongJobId=false;window.fixtureCompleted=true");
+  await click("Run 20 Matches");
+  await waitFor("document.querySelector('.sim-status-pill')?.textContent === 'completed'");
+  assert.ok(await evaluate("document.querySelector('.analytics-summary').textContent.includes('Win Rate: A 50%')"));
+  assert.equal(await evaluate("localStorage.getItem('mtg.activeSimulationJobId')"),null);
+  await evaluate("window.fixtureCompleted=false;window.fixtureFailed=true");
+  await click("Run 20 Matches");
+  await waitFor("document.body.innerText.includes('Deliberate UI test failure')");
+  console.log('PASS styled simulator completion summary and explicit failure feedback (injected component fixtures, not actual simulation results)');
+  await evaluate("window.fixtureFailed=false;window.fixtureWrongJobId=true");
+  await selectDeck(0, 3);
+  await selectDeck(1, 2);
   await click("Run 20 Matches");
   await waitFor("document.body.innerText.includes('different job ID')");
   assert.equal(await evaluate("localStorage.getItem('mtg.activeSimulationJobId')"), null);

@@ -393,7 +393,7 @@ export function App() {
     <main className="layout">
       <header className="topbar">
         <h1>MTG Deck Testing Lab</h1>
-        <p>Rules-aware 2-player testing simulator for competitive deck validation</p>
+        <p>THE PLAYTEST TABLE · Two seats. Real decisions.</p>
         <div className={`api-status api-status-${apiStatus}`} role="status">
           <span aria-hidden="true" />
           Backend {apiStatus === "checking" ? "checking..." : apiStatus}
@@ -405,10 +405,16 @@ export function App() {
         </div>
       </header>
 
-      <section className="left-column">
-        {actionError ? <p role="alert">Match operation: {actionError}</p> : null}
-        <article className="panel">
-          <h2>Saved matches</h2>
+      {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
+      <nav className="table-navigation" aria-label="Workspace">
+        <a href="#table">Battlefield</a><a href="#match-controls">Actions & choices{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools">Decks & lab</a>
+        {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
+        {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
+        {mutationPending ? <span role="status">Match operation pending...</span> : null}
+      </nav>
+      <section className="lab-tools" id="lab-tools" aria-label="Lab tools">
+        <details className="panel saved-games">
+          <summary>Saved matches <span>{savedMatches.length} sessions</span></summary>
           {restoring ? <p role="status">Restoring saved session...</p> : null}
           <button disabled={mutationPending || restoring} onClick={reportAction(async () => { setSavedMatches(await api.savedMatches()); })}>Refresh saved matches</button>
           <div id="saved-match-list" style={{ display: "grid", gap: "0.5rem", maxHeight: "16rem", overflowY: "auto" }}>
@@ -416,10 +422,12 @@ export function App() {
           </div>
           {savedMatches.length > savedMatchLimit ? <button type="button" aria-controls="saved-match-list" onClick={() => setSavedMatchLimit((limit) => limit + 3)}>Show more saved matches</button> : null}
           {savedMatchLimit > 3 && savedMatches.length > 3 ? <button type="button" aria-controls="saved-match-list" onClick={() => setSavedMatchLimit(3)}>Show fewer saved matches</button> : null}
-          {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
-          {mutationPending ? <p role="status">Match operation pending...</p> : null}
-        </article>
-        <DeckPanel decks={decks} onDecksLoaded={onDecksLoaded} />
+        </details>
+        <details className="panel tool-disclosure" open={!match}><summary>Deck library & import</summary><DeckPanel decks={decks} onDecksLoaded={onDecksLoaded} /></details>
+        <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
+      </section>
+      <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
+        {match ? <StackLog match={match} /> : null}
         <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
           decks={decks}
@@ -460,16 +468,14 @@ export function App() {
           match={match}
         />
         </fieldset>
-        <AnalyticsPanel decks={decks} />
       </section>
 
-      <section className="right-column">
+      <section className="right-column" id="table" aria-label="Card table">
         {match ? (
           <>
             <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} />
             </fieldset>
-            <StackLog match={match} />
           </>
         ) : (
           <article className="panel empty-state">

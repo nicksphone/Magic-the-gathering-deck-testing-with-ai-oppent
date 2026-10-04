@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { resolveCardMediaUrl } from "../api/client";
+import { cardStates, groupBattlefield, phases, phaseIndex, type LandPile } from "./table-model";
 import type { LegalMove, MatchState, PlayerView } from "../types";
 import { PermanentActions } from "./PermanentActions";
 
@@ -39,54 +41,7 @@ type HoverPreview = {
   counters?: Record<string, number>;
 };
 
-type LandPile = {
-  key: string;
-  name: string;
-  imageUri?: string;
-  total: number;
-  untapped: number;
-  tapped: number;
-  colors: string[];
-  amounts: Record<string, number>;
-};
-
 type ManaSymbol = "W" | "U" | "B" | "R" | "G" | "C";
-
-function inferLandColor(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("plains")) return "W";
-  if (n.includes("island")) return "U";
-  if (n.includes("swamp")) return "B";
-  if (n.includes("mountain")) return "R";
-  if (n.includes("forest")) return "G";
-  return "C";
-}
-
-function groupBattlefield(cards: MatchState["players"]["1"]["battlefield"]): { nonLands: typeof cards; lands: LandPile[] } {
-  const nonLands = cards.filter((c) => !c.types.includes("Land"));
-  const piles = new Map<string, LandPile>();
-  for (const card of cards) {
-    if (!card.types.includes("Land")) continue;
-    const colors = card.mana_source_colors ?? [inferLandColor(card.name)];
-    const amounts = card.mana_source_amounts ?? Object.fromEntries(colors.map((color) => [color, 1]));
-    const key = `${card.name}|${card.image_uri ?? ""}|${colors.map((color) => `${color}:${amounts[color] ?? 1}`).join(",")}`;
-    const existing = piles.get(key) ?? {
-      key,
-      name: card.name,
-      imageUri: card.image_uri,
-      total: 0,
-      untapped: 0,
-      tapped: 0,
-      colors,
-      amounts,
-    };
-    existing.total += 1;
-    if (card.tapped) existing.tapped += 1;
-    else if (!card.types.includes("Creature") || !card.summoning_sick || card.keywords?.includes("haste")) existing.untapped += 1;
-    piles.set(key, existing);
-  }
-  return { nonLands, lands: Array.from(piles.values()).sort((a, b) => a.name.localeCompare(b.name)) };
-}
 
 function manaSummary(lands: LandPile[]): string {
   const counts: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
@@ -134,7 +89,19 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
-  const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null);
+  const [landSelections, setLandSelections] = useState<Record<string, string>>({});
+  const [transientPreview, setHoverPreview] = useState<HoverPreview | null>(null);
+  const [pinnedPreview, setPinnedPreview] = useState<HoverPreview | null>(null);
+  const previewOrigin = useRef<HTMLElement | null>(null);
+  const hoverPreview = pinnedPreview ?? transientPreview;
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") {
+      previewOrigin.current?.focus({preventScroll:true}); previewOrigin.current = null;
+      setHoverPreview(null); setPinnedPreview(null);
+    } };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
   useEffect(() => {
     setTargets({});
     setCostChoice({});
@@ -143,10 +110,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     setFaceChoices({});
     setCycleChoices({});
     setDivideInputs({});
+    setLandSelections({});
     setLandTapCounts({});
     setHoverPreview(null);
-  }, [match.id]);
-  const canManualTap = humanActor && match.priority_player === viewerSeat && !match.pregame_pending
+    setPinnedPreview(null);
+    previewOrigin.current = null;
+  }, [match.id, match.game_number, viewerSeat]);
+  const canManualTap = humanActor && match.winner === null && !match.match_complete && match.priority_player === viewerSeat && !match.pregame_pending
     && !match.pending_mechanic_choice && !match.pending_replacement_choice && !match.pending_trigger_order
     && match.step !== "cleanup";
   const playableCards = [...new Map([...p1.hand, ...legalMoves.filter((move) => move.card_view && (move.type === "cast_spell" || move.type === "play_land")).map((move) => move.card_view!)].map((card) => [card.id, card])).values()];
@@ -189,6 +159,24 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         {count > cards.length ? <span>{count - cards.length} face-down card(s)</span> : null}
       </div>
     </details>;
+  }
+
+  function statusBadges(card: typeof p1.battlefield[number]) {
+    const selected = Object.values(targets).some(choice => choice.target_card_id === card.id || (Array.isArray(choice.target_card_ids) && choice.target_card_ids.includes(card.id)));
+    const targetable = legalMoves.some(move => move.target_card_id === card.id || move.targets?.some(target => target.id === card.id) || Object.entries(move.target_hints ?? {}).some(([key, list]) => key.endsWith("_targets") && Array.isArray(list) && list.some(target => typeof target === "object" && target !== null && "id" in target && target.id === card.id)));
+    return <div className="card-badges">
+      {cardStates(card, match, targetable, selected).map(state => <span key={state} className={`badge badge-${state.toLowerCase().replaceAll(" ", "-")}`}>{state}</span>)}
+      {card.damage_marked ? <span className="badge">Damage {card.damage_marked}</span> : null}
+      {Object.entries(card.counters ?? {}).filter(([name, n]) => !name.startsWith("__") && n > 0).map(([name,n]) => <span className="badge" key={name}>{name} ×{n}</span>)}
+      {card.keywords?.length ? <small>{card.keywords.join(" · ")}</small> : null}
+    </div>;
+  }
+
+  function handFace(card: typeof p1.hand[number]) {
+    return <button type="button" className="hand-face" aria-label={`Inspect ${card.name}`} onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}>
+      {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt="" loading="lazy" /> : <span className="card-no-art">{card.name}<small>Image unavailable</small></span>}
+      <strong>{card.name}</strong><small>{card.mana_cost || card.type_line || card.types.join(" ")}</small>
+    </button>;
   }
 
   function castAction(cardId: string, selectedFaceIndex?: number) {
@@ -246,7 +234,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         <div>
           <h2>Battlefield</h2>
           <p>
-            Turn {match.turn} | Step {match.step} | Priority: P{match.priority_player}
+            Turn {match.turn} | {match.step.replaceAll("_", " ")} | Priority: P{match.priority_player}
             {match.step === "combat_damage" && match.combat_damage_stage === "first" ? " | First-strike damage" : ""}
             {match.step === "combat_damage" && match.combat_damage_stage === "regular" ? " | Regular damage" : ""}
             {match.game_number ? ` | Game ${match.game_number}` : ""}
@@ -259,8 +247,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         </div>
       </header>
 
+      <ol className="phase-track" aria-label="Turn progression">{phases.map((phase, index) => <li key={phase} aria-current={phaseIndex(match.step) === index ? "step" : undefined}>{phase}</li>)}</ol>
+
       <div className="player-row opponent">
         <div className="zone-meta">
+          <strong className="seat-label">P{opponentSeat} · Opponent <b>{p2.life}</b> life</strong>
           <span>Library {p2.library_count}</span>
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
@@ -286,17 +277,25 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             )}
           </span>
         </div>
+        <h3 className="zone-heading">Permanents</h3>
         <div className="cards">
           {p2Groups.nonLands.map((card) => (
             <article
               key={card.id}
               className={`card ${card.tapped ? "tapped" : ""}`}
+              tabIndex={0}
+              data-card-id={card.id}
+              aria-label={`Inspect ${card.name}; Enter to pin preview`}
+              onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); } }}
+              onFocus={() => setHoverPreview(previewFromCard(card))}
+              onBlur={() => setHoverPreview(null)}
               title={card.name}
               onMouseEnter={() => setHoverPreview(previewFromCard(card))}
               onMouseLeave={() => setHoverPreview(null)}
             >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
+              {statusBadges(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
@@ -314,6 +313,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               <article
                 key={pile.key}
                 className="land-stack"
+                tabIndex={0}
+                onFocus={() => setHoverPreview(previewFromCard(pile.cards[0]))}
+                onBlur={() => setHoverPreview(null)}
                 onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
                 onMouseLeave={() => setHoverPreview(null)}
               >
@@ -330,6 +332,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
 
       <div className="player-row player">
         <div className="zone-meta">
+          <strong className="seat-label">P{viewerSeat} · Your seat <b>{p1.life}</b> life</strong>
           <span>Library {p1.library_count}</span>
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
@@ -355,17 +358,25 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             )}
           </span>
         </div>
+        <h3 className="zone-heading">Permanents</h3>
         <div className="cards">
           {p1Groups.nonLands.map((card) => (
             <article
               key={card.id}
               className={`card ${card.tapped ? "tapped" : ""}`}
+              tabIndex={0}
+              data-card-id={card.id}
+              aria-label={`Inspect ${card.name}; Enter to pin preview`}
+              onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); } }}
+              onFocus={() => setHoverPreview(previewFromCard(card))}
+              onBlur={() => setHoverPreview(null)}
               title={card.name}
               onMouseEnter={() => setHoverPreview(previewFromCard(card))}
               onMouseLeave={() => setHoverPreview(null)}
             >
               {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
               <h4>{card.name}</h4>
+              {statusBadges(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small>{card.mana_cost}</small> : null}
               <p>{card.types.join(" ")}</p>
@@ -379,7 +390,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   {card.mana_source_colors.map((color) => (
                     <button
                       key={`${card.id}-mana-${color}`}
-                      onClick={() => onCardAction(viewerSeat, { type: "tap_nonland_for_mana", card_id: card.id, color })}
+                      disabled={card.tapped || (card.types.includes("Creature") && card.summoning_sick && !card.keywords?.includes("haste"))}
+                      onClick={() => onCardAction(viewerSeat, { type: card.types.includes("Land") ? "tap_land_for_mana" : "tap_nonland_for_mana", card_id: card.id, color })}
                       title={`Activate ${card.name} for ${color}`}
                     >
                       Add {(card.mana_source_amounts?.[color] ?? 1) > 1 ? `${card.mana_source_amounts?.[color]} ` : ""}{color}
@@ -396,6 +408,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               <article
                 key={pile.key}
                 className="land-stack"
+                tabIndex={0}
+                onFocus={() => setHoverPreview(previewFromCard(pile.cards[0]))}
+                onBlur={() => setHoverPreview(null)}
                 onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
                 onMouseLeave={() => setHoverPreview(null)}
                 >
@@ -403,9 +418,19 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 <div>
                   <strong>{pile.name}</strong>
                   <p>{pile.total}x | Ready {pile.untapped} | Tapped {pile.tapped}</p>
-                  {canManualTap && pile.untapped > 0 ? (
+                  <details className="land-members"><summary>Individual lands ({pile.total})</summary>
+                    <select aria-label={`Individual ${pile.name}`} value={landSelections[pile.key] ?? pile.cards[0].id} onChange={event => setLandSelections(previous => ({...previous, [pile.key]: event.target.value}))}>
+                      {pile.cards.map((card, index) => <option value={card.id} key={card.id}>{index + 1}. {card.name} · {card.tapped ? "Tapped" : "Untapped"} · {card.id}</option>)}
+                    </select>
+                    {pile.colors.map(color => {
+                      const card = pile.cards.find(member => member.id === landSelections[pile.key]) ?? pile.cards[0];
+                      return <button key={color} disabled={!canManualTap || card.tapped} onClick={() => onCardAction(viewerSeat, {type: "tap_land_for_mana", card_id: card.id, color})}>Tap selected for {color}</button>;
+                    })}
+                  </details>
+                  {canManualTap && pile.untapped > 0 && p1Groups.lands.filter(group => group.name === pile.name).length === 1 ? (
                     <div className="row" style={{ marginBottom: 0 }}>
                       <select
+                        aria-label={`Number of ${pile.name} to tap`}
                         value={landTapCounts[pile.key] ?? 1}
                         onChange={(e) =>
                           setLandTapCounts((prev) => ({
@@ -425,7 +450,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                           onCardAction(viewerSeat, {
                             type: "tap_lands_bulk",
                             land_name: pile.name,
-                            count: landTapCounts[pile.key] ?? 1,
+                            count: Math.min(pile.untapped, landTapCounts[pile.key] ?? 1),
                             color,
                           })
                         }
@@ -543,7 +568,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             })}
           </div>
         ) : null}
-        <div className="hand-row">
+        <h3 className="zone-heading">Hand & permitted plays <span>{playableCards.length}</span></h3>
+        <div className="hand-row playable-hand" aria-label="Hand and permitted plays">
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
             const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
@@ -567,10 +593,15 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               return (
                 <div
                   key={card.id}
-                  className="cast-card-box"
+                  className="cast-card-box hand-card"
+                  tabIndex={0}
+                  data-hand-card-id={card.id}
+                  onFocus={() => setHoverPreview(previewFromCard(card))}
+                  onBlur={() => setHoverPreview(null)}
                   onMouseEnter={() => setHoverPreview(previewFromCard(card))}
                   onMouseLeave={() => setHoverPreview(null)}
                 >
+                  {handFace(card)}
                   {landControls.length ? landControls : cycleMove ? (
                     <>
                     {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
@@ -629,10 +660,15 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             return (
               <div
                 key={card.id}
-                className="cast-card-box"
+                className="cast-card-box hand-card playable"
+                tabIndex={0}
+                data-hand-card-id={card.id}
+                onFocus={() => setHoverPreview(previewFromCard(card))}
+                onBlur={() => setHoverPreview(null)}
                 onMouseEnter={() => setHoverPreview(previewFromCard(card))}
                 onMouseLeave={() => setHoverPreview(null)}
               >
+                {handFace(card)}
                 {landControls}
                 {foretellControl}
                 <button
@@ -926,8 +962,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         </div>
       </div>
       <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
-      {hoverPreview ? (
-        <aside className="card-hover-preview">
+      {hoverPreview ? createPortal(
+        <aside className="card-hover-preview" aria-label="Card inspection" tabIndex={0}>
+          <button className="preview-close" onClick={() => { previewOrigin.current?.focus({preventScroll:true}); previewOrigin.current = null; setHoverPreview(null); setPinnedPreview(null); }}>Close inspection · Esc</button>
           {resolveCardMediaUrl(hoverPreview.imageUri) ? (
             <img src={resolveCardMediaUrl(hoverPreview.imageUri)} alt={hoverPreview.name} loading="lazy" />
           ) : null}
@@ -949,7 +986,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             {hoverPreview.counters ? Object.entries(hoverPreview.counters).filter(([name, count]) => !name.startsWith("__") && count > 0).map(([name, count]) => <p key={name}>{name}: {count}</p>) : null}
             {hoverPreview.oracleText ? <small>{hoverPreview.oracleText}</small> : null}
           </div>
-        </aside>
+        </aside>, document.body
       ) : null}
     </section>
   );

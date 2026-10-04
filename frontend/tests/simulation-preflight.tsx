@@ -1,10 +1,11 @@
 import { createRoot } from "react-dom/client";
+import "../src/styles/app.css";
 import { AnalyticsPanel } from "../src/components/AnalyticsPanel";
 import { api } from "../src/api/client";
 import type { DeckRecord } from "../src/types";
 
 declare global {
-  interface Window { fixturePreflights?: number; fixtureStarts?: number; fixtureAttempts?: number; fixtureResponseLosses?: number; fixtureWrongJobId?: boolean; fixtureCancels?: number; fixturePolls?: number; fixtureClientStartHeader?: string }
+  interface Window { fixtureCompleted?: boolean; fixtureFailed?: boolean; fixturePreflights?: number; fixtureStarts?: number; fixtureAttempts?: number; fixtureResponseLosses?: number; fixtureWrongJobId?: boolean; fixtureCancels?: number; fixturePolls?: number; fixtureClientStartHeader?: string }
 }
 
 const realFetch = window.fetch;
@@ -59,8 +60,9 @@ api.startSimulateBatchJob = async (_deckA, _deckB, _matches, _difficulty, _maxTi
 api.getSimulateBatchJob = async (jobId) => {
   window.fixturePolls = (window.fixturePolls ?? 0) + 1;
   return {
-    job_id: jobId, status: canceled ? "canceled" : "running", completed_matches: 0,
-    total_matches: 20, started_at: Date.now() / 1000, result: null,
+    job_id: jobId, status: canceled ? "canceled" : window.fixtureCompleted ? "completed" : window.fixtureFailed ? "failed" : "running", completed_matches: window.fixtureCompleted ? 20 : 0,
+    total_matches: 20, started_at: Date.now() / 1000, error: window.fixtureFailed ? "Deliberate UI test failure" : null,
+    result: window.fixtureCompleted ? {win_rate_deck_a:50,win_rate_deck_b:50,average_turns:5,deterministic_replay_fingerprint:"UI fixture, not a simulation result"} : null,
   };
 };
 api.cancelSimulateBatchJob = async (jobId) => {

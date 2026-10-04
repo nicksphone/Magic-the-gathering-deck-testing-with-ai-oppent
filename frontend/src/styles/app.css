@@ -1,3 +1,7 @@
+@import "./table.css";
+
+/* Existing feature-specific surfaces remain below the table theme. */
+@layer legacy {
 :root {
   --bg-0: #0b1319;
   --bg-1: #111f27;
@@ -804,4 +808,5 @@ h3 {
     width: min(280px, calc(100vw - 20px));
     max-height: 42vh;
   }
+}
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import "../src/styles/app.css";
 import { createRoot } from "react-dom/client";
 import { Battlefield } from "../src/components/Battlefield";
 import { Controls } from "../src/components/Controls";
 import type { LegalMove, MatchState } from "../src/types";
 
-const BASE = "http://127.0.0.1:10199";
+const BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:10199";
 declare global { interface Window { fixtureState?: MatchState; fixtureActions?: unknown[] } }
 
 function Harness() {

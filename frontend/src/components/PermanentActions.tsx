@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { LegalMove } from "../types";
 
 type Props = { moves: LegalMove[]; playerId: number; onAction: (playerId: number, action: Record<string, unknown>) => void };
-const handled = new Set(["cast_spell", "cast_spell_restricted", "cycle_card", "play_land", "activate_loyalty", "equip", "activate_ability", "crew", "ninjutsu", "pass_priority", "attack", "attack_restricted", "block", "keep_hand", "mulligan", "choose_mechanic", "choose_replacement", "choose_trigger_order"]);
+const handled = new Set(["cast_spell", "cast_spell_restricted", "cycle_card", "play_land", "activate_loyalty", "equip", "activate_ability", "crew", "ninjutsu", "pass_priority", "attack", "attack_restricted", "block", "keep_hand", "mulligan", "choose_mechanic", "choose_replacement", "choose_trigger_order", "choose_trigger_target", "choose_optional_effect", "foretell", "activate_mana_ability"]);
 
 function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }) {
   const [targets, setTargets] = useState<Record<string, unknown>>({});

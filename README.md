@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+The live frontend uses a battlefield-first playtest table with compact controls,
+scrollable hands, exact-ID grouped lands, and keyboard/hover card inspection.
+Setup, saved sessions, diagnostics and logs can be collapsed to preserve table
+space. See [UI implementation and verification](docs/ui-redesign.md).
+
 Backend combat declarations share unconditional numeric attack/block limits and
 recognized each-combat requirement maximization across checked actions and all
 AI difficulties. Limits, source provenance and remaining gaps are exposed through
