@@ -2,7 +2,8 @@
 
 ## Current Priority: Backend First
 
-- [ ] Fix shared tactical forecasting for variable payoffs: the final-source public-state probe shows Master passing a checked winning devotion-pump line in both seats while Strong casts it. Generalize resource/stack/combat projection, not card-name heuristics; retain no-response and adversarial response cases across deck styles. Reproducer and checked outcomes are preserved with [devotion evidence](docs/testing/devotion.md).
+- [x] Finish bounded shared post-block tactical forecasting: forty-four canonical regression/HTTP checks and 5,405 isolated backend tests pass; twenty-eight actual Master decisions improve from zero to twenty-eight checked wins across fixed/live-variable pumps, both seats and six archetypes. Frontend gates, complete Chromium and two repeated seat-balanced matrices (24 samples/48 executions) pass. See [scope and checklist](docs/testing/ai-combat-responses.md); unanswered winning forecasts are not adversarial/expert-AI certification.
+- [ ] Replace unconditional defensive post-block passing and expand known counter/removal, first-strike and variable-payoff response planning. Keep public-state/hidden-information boundaries, resource payment and snapshot/replay parity; do not infer adversarial or expert play from an unanswered winning forecast.
 
 - [x] Finish shared live devotion payoff acceptance and front-characteristic/proxy boundaries. Seventy-nine new checks, 5,361 isolated backend tests, frontend gates, complete Chromium with fourteen new casting cases and final repeated seat-balanced replay samples pass. Keep God type changes and devotion mana abilities explicitly unsupported; Master tactical forecasting remains an observed bug, not expert-AI certification. See [scope and checklist](docs/testing/devotion.md).
 

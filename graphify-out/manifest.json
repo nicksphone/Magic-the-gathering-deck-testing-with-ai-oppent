@@ -48,8 +48,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1791074735.3102982,
-    "hash": "e7a6cb49c133d7edb494809e365e601e"
+    "mtime": 1791077029.7988126,
+    "hash": "07d73b272c23eaf255d25181ba978f60"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -1271,6 +1271,10 @@
     "mtime": 1791028588.2093642,
     "hash": "f5ae7fb9599ea1ec004ac0d1085a118b"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_combat_responses.py": {
+    "mtime": 1791077067.614381,
+    "hash": "428a54054fd3c084125ad270f9c02c9e"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_saga_counter_events.py": {
     "mtime": 1790857614.7016714,
     "hash": "ef140cc6bf06ea8a25b3d026a5db8ff4"
@@ -1928,16 +1932,16 @@
     "hash": "5d2d08f9326605e93025f275af112fda"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791073611.0398972,
-    "hash": "6a2bbf1d3d7225be7e383bf533dafa90"
+    "mtime": 1791077309.9223776,
+    "hash": "1843994da8d4d5c647532ee085e49058"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791076431.2033365,
-    "hash": "8e7e1fefead1b212c989ecda58044af4"
+    "mtime": 1791078104.5439723,
+    "hash": "6b7eecda2b23968c4221677d28071cf8"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791073611.048897,
-    "hash": "4044517dc085d6a83d446a674abd64aa"
+    "mtime": 1791077309.9213777,
+    "hash": "9568900ce3790ee0afbf13a4cbc011a7"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2330,6 +2334,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/combat-intents.md": {
     "mtime": 1790990365.0129719,
     "hash": "a7e01572cd3b4c041b50248297ca691d"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ai-combat-responses.md": {
+    "mtime": 1791078104.5429723,
+    "hash": "af2395abfe2c23cab0f74b82061393e6"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/hand-activations.md": {
     "mtime": 1791009350.9963703,

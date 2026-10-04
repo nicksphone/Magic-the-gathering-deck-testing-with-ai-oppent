@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-04 - Checked post-block combat responses
+
+- Extend bounded Master/Master-plus combat forecasting to the declared-blocker
+  response window, resolving candidates and damage through the shared engine.
+- Check alternative legal single-creature recipients instead of assuming the
+  largest creature is best; preserve a pump when combat already wins.
+- Add forty-four both-seat regression/HTTP checks and twenty-eight before/after
+  checked decision traces. See [scope and acceptance](docs/testing/ai-combat-responses.md);
+  defensive and adversarial response planning remain open.
+
 ## 2026-10-04 - Live devotion resources and front-characteristic boundaries
 
 - Add shared live mana-symbol counts and six supported devotion payoff families,

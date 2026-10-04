@@ -3803,9 +3803,11 @@ class AIAgent:
             return None
 
     def _tactical_combat_setup_action(self, state, legal_moves, player_id):
-        """One setup action plus bounded known combat; unknown is not a win."""
+        """One setup/response action plus bounded combat; unknown is not a win."""
+        response_window = (getattr(state, 'step', None) == Step.DECLARE_BLOCKERS
+                           and getattr(state, 'blockers_declared', False))
         if (not isinstance(state, MatchState) or self.difficulty not in {'master', 'master_plus'} or state.active_player != player_id
-                or state.step != Step.PRECOMBAT_MAIN or state.stack or state.pregame_pending):
+                or (state.step != Step.PRECOMBAT_MAIN and not response_window) or state.stack or state.pregame_pending):
             return None
         candidates = [move for move in legal_moves
                       if move.get('type') in {'cast_spell', 'equip', 'activate_ability', 'activate_loyalty'}]
@@ -3822,13 +3824,24 @@ class AIAgent:
             action = self._materialize_action(state, move, player_id)
             if action.get('_invalid_ai_choice'):
                 continue
-            sim = planning_copy(state)
-            try:
-                self.engine.take_action(sim, player_id, action, reject_invalid=True)
-                if self._setup_combat_forecast(sim, player_id) is True:
-                    return action
-            except (ValueError, KeyError):
-                continue
+            actions = [action]
+            targets = action.get('targets') or {}
+            target = state.cards.get(targets.get('target_card_id'))
+            # A larger creature is not necessarily the winning recipient. Keep
+            # the materializer's controller preference and validate each line.
+            if target is not None and not targets.get('target_card_ids'):
+                for option in (move.get('target_hints') or {}).get('creature_targets', []):
+                    alternate = state.cards.get(option.get('id'))
+                    if alternate is not None and alternate.id != target.id and alternate.controller == target.controller:
+                        actions.append({**action, 'targets': {**targets, 'target_card_id': alternate.id}})
+            for action in actions:
+                sim = planning_copy(state)
+                try:
+                    self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                    if self._setup_combat_forecast(sim, player_id) is True:
+                        return action
+                except (ValueError, KeyError):
+                    continue
         return None
 
     def _setup_combat_forecast(self, sim, player_id):
@@ -3851,6 +3864,13 @@ class AIAgent:
                    or tuple(player.library) != libraries[pid] for pid, player in sim.players.items()):
                 return None
             if sim.winner is not None:
+                return sim.winner == player_id
+            if sim.step == Step.DECLARE_BLOCKERS and sim.blockers_declared:
+                original = planning_copy(sim)
+                if not self._finish_combat_projection(sim, original):
+                    return None
+                if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                    return None
                 return sim.winner == player_id
             if sim.step == Step.DECLARE_ATTACKERS:
                 attack = next((move for move in self.engine.legal_moves(sim, player_id) if move['type'] == 'attack'), None)

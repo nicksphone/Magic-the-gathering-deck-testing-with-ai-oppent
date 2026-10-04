@@ -7,6 +7,11 @@ legal hints and live rules diagnostics. See [implemented scope and limitations](
 
 MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
 
+Master AI uses bounded checked-engine combat forecasting before combat and after
+blockers, including live variable pumps and alternative legal recipients.
+[Tested scope and remaining response-planning gaps](docs/testing/ai-combat-responses.md)
+distinguish unanswered winning lines from expert or adversarial play.
+
 Resource-defined creature stats share zone-aware layers, effective damage checks,
 printed-expression persistence and static AI entry valuation. See the
 [tested scope and remaining gaps](docs/testing/characteristic-stats.md); this is
