@@ -399,6 +399,14 @@ It is designed for serious deck work:
 - AI vs AI autoplay
 - Batch simulation with progress tracking
 - Replay inspection and deterministic regression checks
+- Strategic search preserves scoring perspective while executing replies as their
+  actual player, then reuses selected executed prefixes without reducing search
+  depth or candidate limits. [Acceptance and open risks](docs/testing/ai-search-prefix.md)
+  distinguish search correctness/performance from optimal play.
+- Replay matrices can export and import hash-verified resolved deck manifests,
+  pinning deck order and card metadata across runs without rehydrating from a
+  changed cache. Reports include input/corpus provenance; hashes establish
+  repeatability, not canonical-data correctness or rules coverage.
 - Seeded best-of-3/5/7/9 replay validation with per-game hashes, legal-action traces, and timeout classification
 - Timeout classification distinguishes isolated legal conditional-counter payment failures from repeated recent cost failures; low tick caps can still end legitimate long games
 - Match logs, anomaly output, and training trace export
@@ -706,12 +714,21 @@ Run frontend unit checks with `cd frontend && npm test` (`npm run test:unit` is 
 
 ## Development Notes
 
+Backend work follows [capability-sized batches](docs/development/batch-workflow.md):
+focused checks during implementation, broader regression/replay gates per milestone,
+and explicit evidence before publication. This does not reduce the release goals.
+
 - Gameplay rules live in application code, not in SQL.
 - `README.md` describes the current product state.
 - `CHANGELOG.md` records milestone-level history.
 - `plan.md` tracks the remaining finish work.
 
 ## Known Limitations and Next Upgrades
+
+- Deeper strategic planning still needs explicit hidden-information invariance
+  and better optional-action utility. A captured decision wastes removal on its
+  own animated land; deterministic replay does not certify seasoned-player AI.
+  These are priority backend follow-ups, alongside wider latency/choice planning.
 
 - Restricted-X payment, Crypt Rats/Pyrotechnics-style damage batches and departed damage-source characteristics have bounded tests, not universal certification. Other color-spending restrictions, source-dependent replacement/prevention wording, sacrifice-trigger ordering and arbitrary all-recipient wording still need rules and AI coverage.
 - All shipped deck names have offline Oracle metadata. Temporary Lockdown's battlefield linked-exile wording, Valki's hand linked-exile ETB and bounded exiled-card copy activation, and Atraxa's Kindred-aware reveal now have regressions, alongside Cartographer's Survey and Imodane's Recruiter. Full copy-layer fidelity, other linked-exile wordings, zone-change replacements, and cards classified as structured may still have incorrect semantics; parser status is not certification.

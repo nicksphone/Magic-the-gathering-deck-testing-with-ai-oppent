@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-04 - Actor-correct search and capability-batch workflow
+
+- Correct deeper strategic search so the scoring perspective does not replace
+  the opponent who actually owns a simulated reply. Continue selected executed
+  states rather than replaying their actions, costs, events and scores.
+- Preserve search depths, candidate limits, ranked tie order and rejected-branch
+  handling. Compare prefix reuse against an actor-correct replaying reference,
+  not against preserving the original defect.
+- Add hash-verified resolved replay manifests, export/import flags and report
+  provenance. Imported manifests bypass mutable database bootstrap/hydration;
+  malformed or tampered inputs are rejected before games run.
+- Adopt connected capability batches with focused checks during implementation
+  and broader per-milestone gates. Broader rules, AI and release goals stay open.
+
 ## 2026-10-04 - Pure-query reuse and planning-clone overhead
 
 - Profile seeded Blue Control/Ramp play and capture fixed slow-decision snapshots

@@ -842,13 +842,17 @@ class AIAgent:
         score = evaluate_board(sim, player_id)
         score += self._strategic_features(sim, player_id)
         score += self._stack_two_ply_value(sim, player_id)
+        return self._strategic_state_score(sim, player_id, depth, score)
+
+    def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
+        """Continue the chosen, already executed prefix from its original perspective."""
         if depth <= 0 or sim.winner is not None:
             return score
         pid = sim.priority_player
         legal = self._rank_moves(sim, self.engine.legal_moves(sim, pid), pid, shallow=True)
         if not legal:
             return score
-        beam: list[tuple[float, dict]] = []
+        beam: list[tuple[float, MatchState]] = []
         for cand in legal[:6]:
             try:
                 materialized = self._materialize_action(sim, cand, pid)
@@ -859,15 +863,16 @@ class AIAgent:
                 val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
                 )
-                beam.append((val, materialized))
+                beam.append((val, nxt))
             except Exception:
                 continue
         if not beam:
             return score
         beam.sort(key=lambda x: x[0], reverse=(pid == player_id))
         # Opponent turn: assume best line against us; own turn: assume best for us.
-        chosen = beam[0][1]
-        return 0.6 * score + 0.4 * self._strategic_line_score(sim, chosen, player_id, depth - 1)
+        chosen_score, chosen_state = beam[0]
+        beam.clear()
+        return 0.6 * score + 0.4 * self._strategic_state_score(chosen_state, player_id, depth - 1, chosen_score)
 
     def _stack_two_ply_value(self, state: MatchState, player_id: int) -> float:
         """Depth-limited stack planner for counter wars; only runs while stack is active."""

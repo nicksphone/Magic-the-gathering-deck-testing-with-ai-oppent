@@ -2,6 +2,25 @@
 
 ## Current Priority: Backend First
 
+Work follows [the capability-batch protocol](docs/development/batch-workflow.md).
+Group connected rules/AI work; retain fast per-change checks and broader batch
+gates. Do not substitute parser coverage, smoke wins or unchanged buggy decisions
+for correctness or seasoned-player acceptance.
+
+- [x] Finish the current search/provenance batch: correct recursive reply actors,
+  continue already executed selected prefixes without reducing search breadth,
+  pin resolved replay manifests, and validate both seats across multiple styles.
+  Full backend/frontend/browser gates and reference/repeat replay comparisons
+  pass, with the final manifest validation covered by affected follow-up checks.
+  Six snapshot medians improve 14-30% against an actor-correct replaying reference;
+  two remain over one second. See [scope and evidence](docs/testing/ai-search-prefix.md).
+- [ ] Next connected AI batch: enforce unexposed-hand/library invariance in deeper
+  reply planning, repair harmful forced non-pass fallbacks without banning useful
+  self-sacrifice/friendly targeting, and extend public pending-choice/future-resource
+  decisions. A captured Ramp decision destroys its own animated land; exact
+  replay parity does not make that decision good. Use actual before/after outcomes
+  across proactive and reactive styles rather than forced matchup percentages.
+
 - [x] Finish shared basic-land subtype layers: global, controller-only
   and Aura additions/replacements, source-existence dependencies, intrinsic mana,
   entry, counted subtypes, landwalk, AI resource reads and public/snapshot parity.
@@ -71,7 +90,11 @@
   seat-balanced samples preserve complete baseline traces on both optimized
   repeats. Hardest sampled decisions still exceed one second; the latency
   requirement above remains open rather than becoming a smaller completion goal.
-- [ ] Pin matrix deck manifests/corpus hashes and initial cache provenance for
+- [x] Export/import hash-verified resolved matrix deck manifests with preserved
+  roster order and source/selected corpus provenance. Imported runs bypass mutable
+  cache/bootstrap state and validate all inputs before simulation; final CLI
+  repeatability and no-database runtime checks pass.
+- [ ] Verify canonical corpus/initial cache provenance beyond input consistency for
   paired before/after reports. Separate databases used by tests from replay
   databases; bootstrap/metadata history can change the selected representative
   roster. Internal repeated execution is not fixed-corpus cross-run validation.

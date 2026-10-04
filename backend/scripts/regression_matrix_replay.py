@@ -96,6 +96,58 @@ def _positive_int(value: str) -> int:
     return parsed
 
 
+def _corpus_hash(decks: list[dict]) -> str:
+    return hashlib.sha256(json.dumps(decks, sort_keys=True, separators=(',', ':'),
+                                    allow_nan=False).encode('utf-8')).hexdigest()
+
+
+def _load_deck_manifest(path: str, max_decks: int) -> tuple[list[dict], dict]:
+    """Use already resolved inputs verbatim; never rehydrate from a mutable cache."""
+    raw = Path(path).read_bytes()
+    manifest = json.loads(raw)
+    if not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int or manifest['schema_version'] != 1:
+        raise ValueError('Deck manifest requires schema_version 1')
+    decks = manifest.get('decks')
+    if not isinstance(decks, list) or len(decks) < 2:
+        raise ValueError('Deck manifest requires at least two resolved decks')
+    names = set()
+    for deck in decks:
+        if not isinstance(deck, dict) or not isinstance(deck.get('name'), str) or not deck['name'].strip():
+            raise ValueError('Each manifest deck requires a nonempty name')
+        if deck['name'] in names:
+            raise ValueError('Manifest deck names must be unique')
+        names.add(deck['name'])
+        board = deck.get('mainboard')
+        if not isinstance(board, list) or not board or len(board) > 250:
+            raise ValueError('Each manifest deck requires a nonempty resolved mainboard of at most 250 entries')
+        for card in board:
+            if (not isinstance(card, dict) or type(card.get('quantity')) is not int
+                    or not 1 <= card['quantity'] <= 250
+                    or not isinstance(card.get('card_name'), str) or not card['card_name'].strip()
+                    or not isinstance(card.get('oracle_text'), str)
+                    or not isinstance(card.get('mana_cost'), str)
+                    or not isinstance(card.get('type_line'), str) or not card['type_line'].strip()):
+                raise ValueError('Manifest cards require bounded quantities, names, Oracle text, mana cost and resolved type lines')
+        if sum(card['quantity'] for card in board) > 250:
+            raise ValueError('Manifest deck exceeds the 250-card application resource limit')
+    expected = manifest.get('corpus_sha256')
+    if not isinstance(expected, str) or expected != _corpus_hash(decks):
+        raise ValueError('Manifest corpus_sha256 does not match its resolved decks')
+    selected = decks[:max_decks]
+    return selected, {'input_source': 'resolved_manifest',
+                      'manifest_sha256': hashlib.sha256(raw).hexdigest(),
+                      'source_corpus_sha256': expected, 'corpus_sha256': _corpus_hash(selected),
+                      'source_provenance': manifest.get('provenance')}
+
+
+def _write_deck_manifest(path: str, decks: list[dict], provenance: dict) -> None:
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({'schema_version': 1, 'decks': decks,
+                              'corpus_sha256': _corpus_hash(decks), 'provenance': provenance},
+                             indent=2, allow_nan=False), encoding='utf-8')
+
+
 _normalize_log_line = normalize_log_line
 _select_regression_matrix_decks = select_representative_decks
 
@@ -234,22 +286,31 @@ def main() -> None:
     p.add_argument("--max-decks", type=_positive_int, default=12)
     p.add_argument("--best-of", type=int, choices=(1, 3, 5, 7, 9), default=1)
     p.add_argument('--progress', action='store_true', help='Emit JSON progress and atomically update <output>.progress.json; not a resumable snapshot')
+    p.add_argument('--deck-manifest', help='Use hash-verified resolved decks without database bootstrap or hydration')
+    p.add_argument('--write-deck-manifest', help='Export selected resolved inputs and provenance before running games')
     args = p.parse_args()
 
-    init_db()
-    with Session(engine) as session:
-        repo = Repository(session)
-        ensure_builtin_decks(repo)
-        ensure_expansion_top_decks(repo)
-        rows = repo.list_decks()
-
-    selected_decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
-    with Session(engine) as session:
-        hydration_repo = Repository(session)
-        decks = [
-            {**deck, "mainboard": hydrate_deck_cards(hydration_repo, deck["mainboard"])}
-            for deck in selected_decks
-        ]
+    if args.deck_manifest:
+        try:
+            decks, input_provenance = _load_deck_manifest(args.deck_manifest, args.max_decks)
+        except (ValueError, OSError) as exc:
+            p.error(str(exc))
+    else:
+        init_db()
+        with Session(engine) as session:
+            repo = Repository(session)
+            ensure_builtin_decks(repo)
+            ensure_expansion_top_decks(repo)
+            rows = repo.list_decks()
+        selected_decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
+        with Session(engine) as session:
+            hydration_repo = Repository(session)
+            decks = [{**deck, "mainboard": hydrate_deck_cards(hydration_repo, deck["mainboard"])}
+                     for deck in selected_decks]
+        input_provenance = {'input_source': 'repository_bootstrap', 'corpus_sha256': _corpus_hash(decks),
+                            'cache_policy': 'resolved from this isolated repository database; export to pin subsequent runs'}
+    if args.write_deck_manifest:
+        _write_deck_manifest(args.write_deck_manifest, decks, input_provenance)
 
     summary = {
         "decks": len(decks),
@@ -257,6 +318,7 @@ def main() -> None:
         "games": 0,
         "matches": 0,
         "best_of": args.best_of,
+        "input_provenance": input_provenance,
         "protocol": {"seeds_per_pair": args.matches_per_pair, "seat_balanced": not args.single_seat,
                      "difficulty": args.difficulty, "max_ticks_per_game": args.max_ticks,
                      "seed_policy": "sha256(deck_a::deck_b::index), game seed = series seed + game index",
