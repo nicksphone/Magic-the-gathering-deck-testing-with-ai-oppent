@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-04 - Defensive resources and between-strike planning
+
+- Remove unconditional post-block passing; compare bounded defensive and
+  between-strike responses through actual stack/combat resolution.
+- Share legal recipient/stack-target alternatives and support combined temporary
+  stat buffs with recognized keyword grants and complete expiry.
+- Account for retained resources and life payments; reject certainty from
+  hidden draws, unresolved replacements and exhausted search.
+- Add 103 regression/HTTP checks, four browser cases and fifty-two before/after
+  decisions. See [scope and acceptance](docs/testing/ai-defensive-responses.md).
+
 ## 2026-10-04 - Checked post-block combat responses
 
 - Extend bounded Master/Master-plus combat forecasting to the declared-blocker

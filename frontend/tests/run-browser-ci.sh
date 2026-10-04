@@ -89,6 +89,8 @@ echo 'Browser CI: bestow casting choices'
 (cd frontend && timeout 120s node tests/browser-bestow.mjs)
 echo 'Browser CI: canonical devotion payoff families'
 (cd frontend && timeout 180s node tests/browser-devotion.mjs)
+echo 'Browser CI: compound defensive spell responses'
+(cd frontend && timeout 120s node tests/browser-defensive-responses.mjs)
 echo 'Browser CI: hand activations and owned counter payments'
 (cd frontend && timeout 120s node tests/browser-hand-activations.mjs)
 echo 'Browser CI: legendary channels and owned resolution choices'

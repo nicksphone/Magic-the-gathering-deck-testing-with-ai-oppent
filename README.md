@@ -12,6 +12,11 @@ blockers, including live variable pumps and alternative legal recipients.
 [Tested scope and remaining response-planning gaps](docs/testing/ai-combat-responses.md)
 distinguish unanswered winning lines from expert or adversarial play.
 
+Bounded defensive and between-strike planning compares announced counter/removal
+lines, legal recipients, actual costs and retained resources. Temporary buffs
+are not priced as permanent threats; combined pump/keyword instructions share
+existing handlers. See [tested scope and limitations](docs/testing/ai-defensive-responses.md).
+
 Resource-defined creature stats share zone-aware layers, effective damage checks,
 printed-expression persistence and static AI entry valuation. See the
 [tested scope and remaining gaps](docs/testing/characteristic-stats.md); this is

@@ -168,6 +168,20 @@ COUNTER_TARGET_SPELL_RE = re.compile(
 )
 ALL_CREATURES_X_DEBUFF_RE = re.compile(r"\b(?:all creatures get|each creature gets) -x/-x until end of turn\b", re.IGNORECASE)
 TARGET_PT_CHANGE_RE = re.compile(r"target creature gets ([+-]\d+)/([+-]\d+) until end of turn\.?", re.IGNORECASE)
+TARGET_PT_KEYWORDS_RE = re.compile(
+    r'target creature(?: you control| an opponent controls)? gets ([+-]\d+)/([+-]\d+)'
+    r'(?: and gains (.+?))? until end of turn\.?', re.I)
+
+
+def parse_temporary_target_buff(text):
+    match = TARGET_PT_KEYWORDS_RE.fullmatch(text.strip())
+    if match is None:
+        return None
+    from rules_engine.continuous import _attached_keywords
+    keywords = _attached_keywords((match[3] or '').lower())
+    if keywords is None or any(keyword.startswith('ward') for keyword in keywords):
+        return None
+    return {'power': int(match[1]), 'toughness': int(match[2]), 'keywords': keywords}
 
 
 def infer_effect_from_oracle(
@@ -1332,12 +1346,17 @@ def _infer_clause_effect(
                     payload['operation'] = 'remove'
                 return 'grant_keyword', payload
 
-    targeted_pt = TARGET_PT_CHANGE_RE.fullmatch(oracle.strip())
+    targeted_pt = parse_temporary_target_buff(oracle)
     if targeted_pt:
-        return "temporary_pt_buff", {
-            "target_card_id": action_targets.get("target_card_id"),
-            "power": int(targeted_pt.group(1)), "toughness": int(targeted_pt.group(2)),
-        }
+        payload = {'target_card_id': target_card_id,
+                   'power': targeted_pt['power'], 'toughness': targeted_pt['toughness']}
+        if not targeted_pt['keywords']:
+            return 'temporary_pt_buff', payload
+        return 'effect_sequence', {'effects': [
+            {'effect_key': 'temporary_pt_buff', 'payload': payload},
+            {'effect_key': 'grant_keyword', 'payload': {
+                'target_card_id': target_card_id, 'keywords': targeted_pt['keywords'], 'until_end_of_turn': True}},
+        ]}
 
     if ALL_CREATURES_X_DEBUFF_RE.search(oracle):
         return "temporary_pt_buff_all", {"power": -x_value, "toughness": -x_value}

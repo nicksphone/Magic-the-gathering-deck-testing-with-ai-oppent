@@ -420,9 +420,10 @@ class AIAgent:
         if self_removal_win is not None:
             return AIDecision(action=self_removal_win, reasoning="Announced self-removal line wins if unanswered")
         legal_moves = self._without_losing_mass_destruction(state, legal_moves, player_id)
-        if _step_key(getattr(state, "step", "")) == "declare_blockers" and getattr(state, "active_player", player_id) != player_id:
-            if bool(getattr(state, "blocks", {})):
-                return AIDecision(action={"type": "pass_priority"}, reasoning="Blocks already declared; pass priority")
+        from ai.combat_response import choose_response
+        combat_response = choose_response(self, state, legal_moves, player_id)
+        if combat_response is not None:
+            return AIDecision(action=combat_response, reasoning='Compare declared combat responses by checked outcomes and retained resources')
 
         if _step_key(getattr(state, "step", "")) == "declare_attackers" and getattr(state, "active_player", player_id) == player_id:
             forced_attack = self._forced_progress_attack(state, legal_moves, player_id)
@@ -2973,12 +2974,12 @@ class AIAgent:
                     self._creature_threat_score(state, cid, player_id) if 'Creature' in state.cards[cid].types
                     else self._noncreature_permanent_threat_score(state, cid, player_id), cid))
                 targets['target_card_id'] = selected
-        from rules_engine.oracle_effects import TARGET_PT_CHANGE_RE
-        pt_change = TARGET_PT_CHANGE_RE.fullmatch(without_reminder_text(target_text).strip())
+        from rules_engine.oracle_effects import parse_temporary_target_buff
+        pt_change = parse_temporary_target_buff(without_reminder_text(target_text).strip())
         from rules_engine.devotion import devotion_instruction, devotion_count
         devotion = devotion_instruction(target_text, getattr(card, 'name', '') or '')
         if pt_change or devotion and devotion['kind'] == 'pump':
-            power, toughness = (map(int, pt_change.groups()) if pt_change else
+            power, toughness = ((pt_change['power'], pt_change['toughness']) if pt_change else
                                 (devotion_count(state, player_id, devotion['colors']),) * 2)
             preferred_controller = player_id if power >= 0 and toughness >= 0 else opponent if power <= 0 and toughness <= 0 else None
             if preferred_controller is not None:
@@ -3002,9 +3003,9 @@ class AIAgent:
                         and not has_keyword(state, target["id"], "indestructible")
                     ]
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
-            if isinstance(state, MatchState) and pt_change and int(pt_change[2]) < 0:
+            if isinstance(state, MatchState) and pt_change and pt_change['toughness'] < 0:
                 from ai.pending_effects import negative_pt_would_be_lethal
-                power, toughness = map(int, pt_change.groups())
+                power, toughness = pt_change['power'], pt_change['toughness']
                 lethal = [target for target in creature_targets
                           if negative_pt_would_be_lethal(state,target['id'],power,toughness)]
                 if lethal:
@@ -3821,20 +3822,7 @@ class AIAgent:
         if self._setup_combat_forecast(planning_copy(state), player_id) is True:
             return {'type': 'pass_priority'}
         for move in candidates:
-            action = self._materialize_action(state, move, player_id)
-            if action.get('_invalid_ai_choice'):
-                continue
-            actions = [action]
-            targets = action.get('targets') or {}
-            target = state.cards.get(targets.get('target_card_id'))
-            # A larger creature is not necessarily the winning recipient. Keep
-            # the materializer's controller preference and validate each line.
-            if target is not None and not targets.get('target_card_ids'):
-                for option in (move.get('target_hints') or {}).get('creature_targets', []):
-                    alternate = state.cards.get(option.get('id'))
-                    if alternate is not None and alternate.id != target.id and alternate.controller == target.controller:
-                        actions.append({**action, 'targets': {**targets, 'target_card_id': alternate.id}})
-            for action in actions:
+            for action in self._combat_target_actions(state, move, player_id):
                 sim = planning_copy(state)
                 try:
                     self.engine.take_action(sim, player_id, action, reject_invalid=True)
@@ -3843,6 +3831,27 @@ class AIAgent:
                 except (ValueError, KeyError):
                     continue
         return None
+
+    def _combat_target_actions(self, state, move, player_id):
+        action = self._materialize_action(state, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return []
+        actions = [action]
+        targets = action.get('targets') or {}
+        hints = move.get('target_hints') or {}
+        for field, groups in [('target_card_id', ['creature_targets', 'permanent_targets',
+                                                'artifact_targets', 'enchantment_targets']),
+                              ('target_stack_id', ['stack_targets'])]:
+            if not targets.get(field) or targets.get('target_card_ids'):
+                continue
+            seen = {targets[field]}
+            for group in groups:
+                for option in hints.get(group, []):
+                    target = option.get('id')
+                    if target is not None and target not in seen:
+                        seen.add(target)
+                        actions.append({**action, 'targets': {**targets, field: target}})
+        return actions
 
     def _setup_combat_forecast(self, sim, player_id):
         from ai.pending_effects import _settle_announced_stack

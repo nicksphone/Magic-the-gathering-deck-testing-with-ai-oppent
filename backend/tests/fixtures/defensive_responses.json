@@ -1,0 +1,143 @@
+[
+  {
+    "id": "1fd2c9ab-b3dd-4f68-b91f-0f075a045757",
+    "oracle_id": "467e22c3-6107-40ff-afc7-5960710c970b",
+    "name": "Adamant Will",
+    "mana_cost": "{1}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +2/+2 and gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/fdn/488/adamant-will?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "994094f8-e175-4e2e-aa39-c096f0ed9e6a",
+    "oracle_id": "2f810936-2ba6-4c2b-84a0-ff4c1deb026b",
+    "name": "Fencing Ace",
+    "mana_cost": "{1}{W}",
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "Double strike (This creature deals both first-strike and regular combat damage.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Double strike"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/cmm/23/fencing-ace?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6156d61c-640e-4e8c-bd2f-838dfef0c885",
+    "oracle_id": "4e6c71e8-aeaf-404e-84c2-c79f2a1cbe4b",
+    "name": "Knight of Meadowgrain",
+    "mana_cost": "{W}{W}",
+    "type_line": "Creature — Kithkin Knight",
+    "oracle_text": "First strike\nLifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Lifelink",
+      "First strike"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ddg/5/knight-of-meadowgrain?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b17da4d0-f9fd-43af-85fc-ede9fa3962bf",
+    "oracle_id": "a167d593-cded-43e1-b9bb-2287dbd0cbec",
+    "name": "Moment of Heroism",
+    "mana_cost": "{1}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +2/+2 and gains lifelink until end of turn. (Damage dealt by the creature also causes its controller to gain that much life.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/jmp/124/moment-of-heroism?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+    "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+    "name": "Mutagenic Growth",
+    "mana_cost": "{G/P}",
+    "type_line": "Instant",
+    "oracle_text": "({G/P} can be paid with either {G} or 2 life.)\nTarget creature gets +2/+2 until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mm2/149/mutagenic-growth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6c7c8527-55f6-494d-b4f7-c427a5735053",
+    "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+    "name": "Raise the Alarm",
+    "mana_cost": "{1}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Create two 1/1 white Soldier creature tokens.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmr/41/raise-the-alarm?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "1f4fedc9-6dd1-4190-a0c9-e9d10fd91315",
+    "oracle_id": "c1909d70-d8f4-4c54-8587-0a910f123238",
+    "name": "Shelter",
+    "mana_cost": "{1}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature you control gains protection from the color of your choice until end of turn.\nDraw a card.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/56/shelter?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+    "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+    "name": "Unsummon",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Return target creature to its owner's hand.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/fra/46/unsummon?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

@@ -87,17 +87,18 @@ Publication and disposable-scratch cleanup receipts accompany the archive.
 ## Known Limitations and Next Upgrades
 
 Devotion-based creature type removal (Gods), arbitrary static/global type changes,
-devotion mana abilities, other variable expressions/targets and composite clauses
-and devotion-increasing modifiers
-remain unsupported and must retain admission warnings. Existing matches with
+devotion mana abilities, other variable expressions/targets, unsupported composite
+clauses and devotion-increasing modifiers retain admission warnings. Existing matches with
 already-resolved approximations are not retroactively repaired. Start new matches
 for acceptance. Full-card correctness, expert devotion deck planning, broad AI
 strength and balanced win percentages are not established by these fixtures.
 The alpha UI redesign remains deferred.
 
-A separate final-source public-state decision probe identifies an open Master
+A separate public-state decision probe at this milestone identified a Master
 bug: with a known unblocked 2/2, opponent at four life, devotion two and one
 green mana, Strong casts the pump while Master passes in both seats. The
 cast-and-priority line is validated through checked actions and wins at combat
-damage for each seat. Shared tactical effect forecasting is next; no engine
-statistics or cards are changed to force the decision or matchup balance.
+damage for each seat. That bounded post-block gap is subsequently fixed by
+[checked combat-response forecasting](ai-combat-responses.md); broader strategic
+and adversarial planning remain open. No engine statistics or cards are changed
+to force the decision or matchup balance.

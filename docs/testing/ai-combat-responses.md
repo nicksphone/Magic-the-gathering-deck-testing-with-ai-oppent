@@ -76,12 +76,12 @@ No production card, deck, damage value or matchup result was invented or changed
 
 ## Known Limitations and Next Upgrades
 
-Remove unconditional defensive post-block passing through a separately tested
-response policy. A checked both-seat probe still observes a blanket pass that
-trades the defender's 2/2; a legal fixed pump kills the attacker and retains the
+The subsequent [defensive-response milestone](ai-defensive-responses.md) removes
+unconditional defensive passing in its tested scope. The historical checked
+both-seat probe observed a blanket pass that
+traded the defender's 2/2; a legal fixed pump killed the attacker and retained the
 blocker. Whether spending that card is strategically best requires resource and
-future-pressure valuation, not a blanket "always save the blocker" rule. Expand
-bounded search to known counter/removal interactions,
-first-strike windows, larger boards and more variable payoff families without
-reading hidden cards or assuming unknown effects are harmless. Keep these open
-until legal decisions, costs, effective outcomes, replay and recovery agree.
+future-pressure valuation, not a blanket "always save the blocker" rule. Bounded
+announced counter/removal and between-strike windows are subsequently covered;
+larger boards, adversarial choices and more variable payoff families remain open
+without hidden-card inspection or an assumption that unknown effects are harmless.

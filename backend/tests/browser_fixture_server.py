@@ -51,6 +51,12 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'defense_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
+        from tests.test_ai_defensive_responses import board
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, *_ = board(seat, ['Adamant Will', 'Moment of Heroism'][index],
+                          attacker='Torrential Gearhulk' if index == 0 else 'Burning-Tree Emissary')
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'devotion_{index}_{seat}' for index in range(7) for seat in [1, 2]}:
         from tests.test_devotion import ROWS, add, fixture as devotion_board
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]
