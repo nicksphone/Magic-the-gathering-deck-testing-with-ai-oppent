@@ -1,0 +1,349 @@
+[
+  {
+    "id": "4415d050-7a76-4f8b-bf78-e33dd21fe4f1",
+    "oracle_id": "13f63240-a6bb-4333-a3dd-818725c6fb73",
+    "name": "Abhorrent Overlord",
+    "mana_cost": "{5}{B}{B}",
+    "type_line": "Creature — Demon",
+    "oracle_text": "Flying\nWhen this creature enters, create a number of 1/1 black Harpy creature tokens with flying equal to your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)\nAt the beginning of your upkeep, sacrifice a creature.",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ths/75/abhorrent-overlord?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "19353629-07be-47e2-a7d5-3a5e5e1120c8",
+    "oracle_id": "d1580692-ca1c-4682-8cad-7ad380b39454",
+    "name": "Aspect of Hydra",
+    "mana_cost": "{G}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +X/+X until end of turn, where X is your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/bng/117/aspect-of-hydra?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "0d4032a7-600c-4b30-a012-fe3cde1be9c9",
+    "oracle_id": "b86d3142-568a-4eea-b1ae-5fcfc1453533",
+    "name": "Boon Reflection",
+    "mana_cost": "{4}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "If you would gain life, you gain twice that much life instead.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/10/boon-reflection?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ba327a5e-bd57-4e24-b4b4-062202df30e1",
+    "oracle_id": "327d9679-0049-4401-8dab-e0fb362306bd",
+    "name": "Burning-Tree Emissary",
+    "mana_cost": "{R/G}{R/G}",
+    "type_line": "Creature — Human Shaman",
+    "oracle_text": "When this creature enters, add {R}{G}.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2x2/189/burning-tree-emissary?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "29538ff4-e28f-44d9-af23-6796edd56268",
+    "oracle_id": "ca0cc02b-b106-4eca-9388-d4b48dd3be49",
+    "name": "Corpsejack Menace",
+    "mana_cost": "{2}{B}{G}",
+    "type_line": "Creature — Fungus",
+    "oracle_text": "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on it instead.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "B",
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cm2/152/corpsejack-menace?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+    "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+    "name": "Dryad Arbor",
+    "mana_cost": "",
+    "type_line": "Land Creature — Forest Dryad",
+    "oracle_text": "(This land isn't a spell, it's affected by summoning sickness, and it has \"{T}: Add {G}.\")",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/273/dryad-arbor?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ccc00c82-7c2a-4699-8058-e57f690ece96",
+    "oracle_id": "4fbe1c02-f5bf-47c7-80de-09a32d01e5db",
+    "name": "Evangel of Heliod",
+    "mana_cost": "{4}{W}{W}",
+    "type_line": "Creature — Human Cleric",
+    "oracle_text": "When this creature enters, create a number of 1/1 white Soldier creature tokens equal to your devotion to white. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/khc/23/evangel-of-heliod?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "581eaadb-442b-40c9-b8f9-9e19d5eba824",
+    "oracle_id": "f19d06af-6caf-41d8-8d0a-d5d50bd67900",
+    "name": "Fanatic of Mogis",
+    "mana_cost": "{3}{R}",
+    "type_line": "Creature — Minotaur Shaman",
+    "oracle_text": "When this creature enters, it deals damage to each opponent equal to your devotion to red. (Each {R} in the mana costs of permanents you control counts toward your devotion to red.)",
+    "power": "4",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ths/121/fanatic-of-mogis?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "00d001d0-fd29-4b7c-9d0e-9131b995f910",
+    "oracle_id": "38f3b157-0df4-409b-89cc-086e1531cd5b",
+    "name": "Gray Merchant of Asphodel",
+    "mana_cost": "{3}{B}{B}",
+    "type_line": "Creature — Zombie",
+    "oracle_text": "When this creature enters, each opponent loses X life, where X is your devotion to black. You gain life equal to the life lost this way. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/142/gray-merchant-of-asphodel?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "004524bf-b249-4dac-9c10-44d57143feb9",
+    "oracle_id": "ea9c459a-6047-43aa-968f-a582be4000e8",
+    "name": "Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun",
+    "mana_cost": null,
+    "type_line": "Legendary Enchantment // Legendary Land",
+    "oracle_text": null,
+    "power": null,
+    "toughness": null,
+    "colors": null,
+    "keywords": [
+      "Transform"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lci/188/growing-rites-of-itlimoc-itlimoc-cradle-of-the-sun?utm_source=api",
+    "layout": "transform",
+    "card_faces": [
+      {
+        "object": "card_face",
+        "name": "Growing Rites of Itlimoc",
+        "mana_cost": "{2}{G}",
+        "type_line": "Legendary Enchantment",
+        "oracle_text": "When Growing Rites of Itlimoc enters, look at the top four cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.\nAt the beginning of your end step, if you control four or more creatures, transform Growing Rites of Itlimoc.",
+        "colors": [
+          "G"
+        ],
+        "artist": "Josu Hernaiz",
+        "artist_id": "74246024-92b4-43d0-a5af-a3f9f2a35d5f",
+        "illustration_id": "d097bf4c-243d-4a10-bcc3-457f1ceff7c7",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "normal": "https://cards.scryfall.io/normal/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "large": "https://cards.scryfall.io/large/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "png": "https://cards.scryfall.io/png/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.png?1783913751",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "thumb": "https://cards.scryfall.io/thumb/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "grid": "https://cards.scryfall.io/grid/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "display": "https://cards.scryfall.io/display/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "art": "https://cards.scryfall.io/art/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "crop": "https://cards.scryfall.io/crop/front/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751"
+        }
+      },
+      {
+        "object": "card_face",
+        "name": "Itlimoc, Cradle of the Sun",
+        "mana_cost": "",
+        "type_line": "Legendary Land",
+        "oracle_text": "(Transforms from Growing Rites of Itlimoc.)\n{T}: Add {G}.\n{T}: Add {G} for each creature you control.",
+        "colors": [],
+        "flavor_text": "Though the Sun Empire and the River Heralds once came together to plant the sacred forest, its roots have been tended by the mycoids ever since.",
+        "artist": "Josu Hernaiz",
+        "artist_id": "74246024-92b4-43d0-a5af-a3f9f2a35d5f",
+        "illustration_id": "a4cc664f-4ae2-4051-a6ef-4ac731dd64b6",
+        "image_uris": {
+          "small": "https://cards.scryfall.io/small/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "normal": "https://cards.scryfall.io/normal/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "large": "https://cards.scryfall.io/large/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "png": "https://cards.scryfall.io/png/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.png?1783913751",
+          "art_crop": "https://cards.scryfall.io/art_crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "border_crop": "https://cards.scryfall.io/border_crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.jpg?1783913751",
+          "thumb": "https://cards.scryfall.io/thumb/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "grid": "https://cards.scryfall.io/grid/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "display": "https://cards.scryfall.io/display/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "art": "https://cards.scryfall.io/art/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751",
+          "crop": "https://cards.scryfall.io/crop/back/0/0/004524bf-b249-4dac-9c10-44d57143feb9.webp?1783913751"
+        }
+      }
+    ]
+  },
+  {
+    "id": "290c6036-02a3-43fa-b0d4-af3818794c3c",
+    "oracle_id": "43dac6fa-4cdf-49ec-9e11-2e5e8f9f928b",
+    "name": "Myr Superion",
+    "mana_cost": "{2}",
+    "type_line": "Artifact Creature — Myr",
+    "oracle_text": "Spend only mana produced by creatures to cast this spell.",
+    "power": "5",
+    "toughness": "6",
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/nph/146/myr-superion?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f185a734-a32a-4244-88e8-dabafbfd064f",
+    "oracle_id": "43674fdf-496f-42dc-8a0a-5c42a7c7d910",
+    "name": "Nylea, God of the Hunt",
+    "mana_cost": "{3}{G}",
+    "type_line": "Legendary Enchantment Creature — God",
+    "oracle_text": "Indestructible\nAs long as your devotion to green is less than five, Nylea isn't a creature. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)\nOther creatures you control have trample.\n{3}{G}: Target creature gets +2/+2 until end of turn.",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Indestructible"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ths/166/nylea-god-of-the-hunt?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "a564c2e8-f49f-4ed7-850f-7c8bc92e4926",
+    "oracle_id": "340bbe8b-e987-4c3e-ab4e-9dee63e57d4f",
+    "name": "Phyrexian Metamorph",
+    "mana_cost": "{3}{U/P}",
+    "type_line": "Artifact Creature — Phyrexian Shapeshifter",
+    "oracle_text": "({U/P} can be paid with either {U} or 2 life.)\nYou may have this creature enter as a copy of any artifact or creature on the battlefield, except it's an artifact in addition to its other types.",
+    "power": "0",
+    "toughness": "0",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/eoc/75/phyrexian-metamorph?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "71b03143-9e85-4061-88e6-ad621f75ec3b",
+    "oracle_id": "bcd2f70c-36c2-44b2-9d4b-1000e9bb62b6",
+    "name": "Platinum Emperion",
+    "mana_cost": "{8}",
+    "type_line": "Artifact Creature — Golem",
+    "oracle_text": "Your life total can't change. (You can't gain or lose life. You can't pay any amount of life except 0.)",
+    "power": "8",
+    "toughness": "8",
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/uma/233/platinum-emperion?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "502740bf-0bff-4358-8996-1a27e5f0343f",
+    "oracle_id": "70034860-5198-421f-871d-7c1676337b6e",
+    "name": "Reaper King",
+    "mana_cost": "{2/W}{2/U}{2/B}{2/R}{2/G}",
+    "type_line": "Legendary Artifact Creature — Scarecrow",
+    "oracle_text": "({2/W} can be paid with any two mana or with {W}. This card's mana value is 10.)\nOther Scarecrow creatures you control get +1/+1.\nWhenever another Scarecrow you control enters, destroy target permanent.",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "B",
+      "G",
+      "R",
+      "U",
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/shm/260/reaper-king?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "97b4e736-d19a-42ac-8bcb-b8e6b7b7b539",
+    "oracle_id": "7b4502bc-9ece-4fd2-978d-bcfdb9358475",
+    "name": "Reverent Hunter",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature — Human Archer",
+    "oracle_text": "When this creature enters, put a number of +1/+1 counters on it equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ths/173/reverent-hunter?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "384495c2-238b-4f8d-89c2-e05b64f9dde0",
+    "oracle_id": "63d92a82-d77d-4c47-a49b-bde6a8c9dd8d",
+    "name": "Setessan Petitioner",
+    "mana_cost": "{1}{G}{G}",
+    "type_line": "Creature — Human Druid",
+    "oracle_text": "When this creature enters, you gain life equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/thb/199/setessan-petitioner?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

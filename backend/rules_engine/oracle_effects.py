@@ -188,6 +188,11 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.devotion import devotion_instruction
+    devotion = devotion_instruction(oracle, card.name)
+    if devotion is not None:
+        return 'devotion_effect', {**action_targets, 'devotion': devotion,
+                                   'source_incarnation': object_incarnation(card)}
     if re.search(r"choose a creature card exiled with .+? with (?:mana value|converted mana cost) x\.\s*.+? becomes a copy of that card", oracle):
         return "copy_linked_exiled_card", {
             "source_card_id": card.id, "x_value": int(action_targets.get("x_value", 0) or 0),
@@ -443,7 +448,9 @@ def _resolve_effective_card_surface(card: CardInstance, action_targets: dict[str
     faces = list(getattr(card, "card_faces", []) or [])
     if not faces:
         return card, (card.oracle_text or "").lower(), card.name.lower()
-    raw_index = action_targets.get("selected_face_index", getattr(card, "selected_face_index", None))
+    # Active objects/proxies already carry their current characteristics. Only
+    # an explicit casting choice may replace them with a printed card face.
+    raw_index = action_targets.get("selected_face_index")
     if raw_index is None:
         return card, (card.oracle_text or "").lower(), card.name.lower()
     try:

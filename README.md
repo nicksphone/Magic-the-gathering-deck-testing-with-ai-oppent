@@ -33,6 +33,13 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [Live devotion payoffs](docs/testing/devotion.md): controller-relative mana-symbol
+  counts feed supported pump, damage, life gain/actual-loss drain, counters and
+  token instructions at resolution. Existing replacements and snapshot choices
+  are reused. Double-faced instances initialize front characteristics; current
+  effect proxies do not accidentally reparse an entire face. Devotion-based God
+  type changes and general variable expressions remain unsupported.
+
 - [Resolution-created type effects](docs/testing/type-effect-lifecycle.md): crew
   and supported indefinite land animations share object-bound type additions,
   timestamped stats/keywords and separate copiable types. Cleanup, face changes,

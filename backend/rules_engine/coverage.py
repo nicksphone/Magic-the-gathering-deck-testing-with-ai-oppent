@@ -60,6 +60,18 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
     from rules_engine.kicker import kicked_cast_clauses
     from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.devotion import devotion_instruction
+    variants = [(card_name, oracle_text or ''),
+                *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+                  for face in card_faces or [] if isinstance(face, dict))]
+    for name, text in variants:
+        for line in without_reminder_text(text).lower().splitlines():
+            if 'devotion to' not in line:
+                continue
+            instruction = re.sub(r'^when (?:this creature|' + re.escape(name.lower())
+                                 + r') enters(?: the battlefield)?, ', '', line.strip())
+            if devotion_instruction(instruction, name) is None:
+                out.append('unsupported devotion instruction')
     for text in texts:
         clauses = {item['clause'].lower() for item in kicked_cast_clauses(text)}
         if any(re.search(r'^whenever\b.*\bkicked\b', line.strip(), re.I)
@@ -162,7 +174,7 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
         out.extend(reason for reason in row['reasons'] if reason not in out)
     for row in static_coverage_details(oracle_text, card_faces, card_name=card_name):
         out.extend(reason for reason in row['reasons'] if reason not in out)
-    return out
+    return list(dict.fromkeys(out))
 
 
 def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:

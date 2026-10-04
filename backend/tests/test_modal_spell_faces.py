@@ -168,16 +168,12 @@ def _valki_with_exiled_mystic():
     target_id = state.players[2].hand[0]
     printed = fallback_card_payload("Elvish Mystic")
     assert printed is not None
-    target = state.cards[target_id]
-    target.name = printed["name"]
-    target.type_line = printed["type_line"]
-    target.types = ["Creature"]
-    target.mana_cost = printed["mana_cost"]
-    target.oracle_text = printed["oracle_text"]
-    target.power = int(printed["power"])
-    target.toughness = int(printed["toughness"])
-    target.card_faces = []
-    target.layout = ""
+    sample = MatchFactory.from_decks([{**printed, 'card_name': 'Elvish Mystic', 'quantity': 1}], [], seed=4)
+    target = next(iter(sample.cards.values()))
+    target.id = target_id
+    target.owner = target.controller = 2
+    target.move_to_zone(Zone.HAND)
+    state.cards[target_id] = target
     assert not resolve_top_of_stack(state)
     state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [target_id]})
     state.players[1].mana_pool = {color: 0 for color in "WUBRGC"}
@@ -214,7 +210,7 @@ def test_valki_copy_ability_uses_announced_x_and_restores_printed_characteristic
     })
     assert state.players[1].mana_pool["B"] == 0
     assert state.stack[-1].effect_key == "copy_linked_exiled_card"
-    assert state.cards[source_id].name == "Valki, God of Lies // Tibalt, Cosmic Impostor"
+    assert state.cards[source_id].name == "Valki, God of Lies"
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert not resolve_top_of_stack(state)
     assert state.pending_mechanic_choice["kind"] == "linked_exile_copy"
@@ -228,7 +224,7 @@ def test_valki_copy_ability_uses_announced_x_and_restores_printed_characteristic
     assert copied.summoning_sick
     state = deserialize_match_snapshot(serialize_match_snapshot(state))
     resolve_effect(state, 2, "destroy_permanent", {"target_card_id": source_id})
-    assert state.cards[source_id].name == VALKI
+    assert state.cards[source_id].name == "Valki, God of Lies"
     assert state.cards[source_id].zone == Zone.GRAVEYARD
     assert state.cards[target_id].zone == Zone.HAND
     assert not state.cards[source_id].printed_characteristics
@@ -293,7 +289,7 @@ def test_copy_activation_has_no_choice_if_linked_card_left_exile() -> None:
     flush_linked_exile_returns(state)
     assert resolve_top_of_stack(state)
     assert state.pending_mechanic_choice is None
-    assert state.cards[source_id].name == VALKI
+    assert state.cards[source_id].name == "Valki, God of Lies"
 
 
 def fixture(name):
@@ -353,7 +349,7 @@ def test_selected_planeswalker_has_its_own_stats_and_survives_snapshot():
     assert restored.cards[card.id].loyalty == 5
     resolve_effect(restored, 2, "destroy_permanent", {"target_card_id": card.id})
     assert restored.cards[card.id].zone == Zone.GRAVEYARD
-    assert restored.cards[card.id].name == VALKI
+    assert restored.cards[card.id].name == "Valki, God of Lies"
     assert restored.cards[card.id].loyalty is None
 
 

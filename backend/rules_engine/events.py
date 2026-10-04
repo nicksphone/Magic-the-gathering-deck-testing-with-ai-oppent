@@ -1294,6 +1294,15 @@ def _trigger_from_oracle(
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
     if event == 'enters_battlefield' and source is not None:
+        from rules_engine.devotion import devotion_instruction
+        for line in oracle.splitlines():
+            entry = re.fullmatch(r'when (?:this creature|' + re.escape(source.name.lower())
+                                + r') enters(?: the battlefield)?, (.+)', line.strip().lower())
+            devotion = devotion_instruction(entry[1], source.name) if entry else None
+            if devotion is not None and _matches_enters_battlefield_trigger(state, source, line, payload):
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'devotion_effect',
+                        'payload': {'devotion': devotion, 'source_incarnation': object_incarnation(source)}}
         from rules_engine.kicker import permanent_kicker
         kicker = permanent_kicker(source.oracle_text)
         if kicker and kicker.get('instruction'):
@@ -1644,6 +1653,8 @@ def _trigger_from_oracle(
         if source_card is not None:
             parser_card = copy(source_card)
             parser_card.oracle_text = oracle
+            parser_card.card_faces = []
+            parser_card.selected_face_index = None
             parser_card.source_oracle_text = source_card.oracle_text
             parser_payload = dict(payload)
             # Cycle triggers need the permanent that owns the trigger as the

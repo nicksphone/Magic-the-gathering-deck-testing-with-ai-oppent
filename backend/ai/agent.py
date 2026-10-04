@@ -2975,8 +2975,11 @@ class AIAgent:
                 targets['target_card_id'] = selected
         from rules_engine.oracle_effects import TARGET_PT_CHANGE_RE
         pt_change = TARGET_PT_CHANGE_RE.fullmatch(without_reminder_text(target_text).strip())
-        if pt_change:
-            power, toughness = map(int, pt_change.groups())
+        from rules_engine.devotion import devotion_instruction, devotion_count
+        devotion = devotion_instruction(target_text, getattr(card, 'name', '') or '')
+        if pt_change or devotion and devotion['kind'] == 'pump':
+            power, toughness = (map(int, pt_change.groups()) if pt_change else
+                                (devotion_count(state, player_id, devotion['colors']),) * 2)
             preferred_controller = player_id if power >= 0 and toughness >= 0 else opponent if power <= 0 and toughness <= 0 else None
             if preferred_controller is not None:
                 creature_targets = [target for target in creature_targets if state.cards[target["id"]].controller == preferred_controller]

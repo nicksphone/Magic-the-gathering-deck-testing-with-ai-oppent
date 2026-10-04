@@ -108,6 +108,10 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         from rules_engine.scry import scry, surveil
         (surveil if effect_key == 'surveil' else scry)(state, controller, payload)
         return
+    if effect_key == 'devotion_effect':
+        from rules_engine.devotion import resolve_devotion_effect
+        resolve_devotion_effect(state, controller, payload)
+        return
     if effect_key == 'proliferate':
         from rules_engine.proliferation import proliferate
         proliferate(state, controller, payload)

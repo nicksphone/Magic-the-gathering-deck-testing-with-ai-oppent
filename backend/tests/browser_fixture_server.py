@@ -51,6 +51,19 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'devotion_{index}_{seat}' for index in range(7) for seat in [1, 2]}:
+        from tests.test_devotion import ROWS, add, fixture as devotion_board
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        name = ['Aspect of Hydra', 'Gray Merchant of Asphodel', 'Fanatic of Mogis',
+                'Reverent Hunter', 'Evangel of Heliod', 'Setessan Petitioner', 'Abhorrent Overlord'][index]
+        state = devotion_board()
+        for player in state.players.values():
+            player.mana_pool = {color: 0 for color in 'WUBRGC'}
+        state.active_player = state.priority_player = seat
+        add(state, 'Burning-Tree Emissary', seat, cards=ROWS)
+        add(state, name, seat, Zone.HAND, cards=ROWS)
+        state.players[seat].mana_pool.update({color: 8 for color in 'WUBRG'})
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'conditional_static_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
         from tests.test_conditional_static import setup
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

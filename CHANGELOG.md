@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-04 - Live devotion resources and front-characteristic boundaries
+
+- Add shared live mana-symbol counts and six supported devotion payoff families,
+  resolving through existing prevention, life, counter and token handlers.
+- Link drain gain to actual life lost and preserve amounts through replacement
+  choices/recovery; use the trigger controller after source control changes.
+- Initialize transform/modal front characteristics and keep clipped/current
+  effect surfaces from being overwritten with a whole printed face.
+- Reuse friendly-buff AI targeting for devotion pumps; retain explicit coverage
+  warnings for unimplemented devotion instructions and God type changes.
+- Add seventy-nine canonical regression/HTTP checks and fourteen browser casting
+  cases; scope, diagnostics and acceptance are in [the devotion checklist](docs/testing/devotion.md).
+
 ## 2026-10-03 - Resolution-created type-effect lifecycles
 
 - Share object-bound, timestamped type additions across crew and supported

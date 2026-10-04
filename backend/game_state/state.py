@@ -327,6 +327,12 @@ class MatchFactory:
                     instance_order=copy_index,
                     colors=raw_item.get("colors"),
                 )
+                if card.card_faces and card.layout in {'transform', 'modal_dfc'}:
+                    from rules_engine.card_faces import apply_transform_face
+                    previous_selection = card.selected_face_index
+                    apply_transform_face(card, 0)
+                    card.selected_face_index = previous_selection
+                    card.printed_characteristics['selected_face_index'] = previous_selection
                 cards[cid] = card
                 player.library.append(cid)
 

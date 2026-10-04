@@ -2,6 +2,10 @@
 
 ## Current Priority: Backend First
 
+- [ ] Fix shared tactical forecasting for variable payoffs: the final-source public-state probe shows Master passing a checked winning devotion-pump line in both seats while Strong casts it. Generalize resource/stack/combat projection, not card-name heuristics; retain no-response and adversarial response cases across deck styles. Reproducer and checked outcomes are preserved with [devotion evidence](docs/testing/devotion.md).
+
+- [x] Finish shared live devotion payoff acceptance and front-characteristic/proxy boundaries. Seventy-nine new checks, 5,361 isolated backend tests, frontend gates, complete Chromium with fourteen new casting cases and final repeated seat-balanced replay samples pass. Keep God type changes and devotion mana abilities explicitly unsupported; Master tactical forecasting remains an observed bug, not expert-AI certification. See [scope and checklist](docs/testing/devotion.md).
+
 - [x] Finish bounded shared crew/indefinite land-animation effect lifecycles and copiable-type boundaries. Validation: 48 new both-seat lifecycle/HTTP/trigger checks, 5,282 isolated backend tests, frontend gates, complete Chromium and twelve repeated seat-balanced replay samples pass. Conditional/global type changes, dependency ordering and full copy layers remain open. See [scope and acceptance](docs/testing/type-effect-lifecycle.md).
 
 - [x] Finish bounded conditional self/team static preflight admission and shared opponent-graveyard/low-life predicates. Validation: 5,234 isolated backend tests, frontend gates, complete Chromium and two repeated seat-balanced matrices (24 samples/48 executions) pass. Arbitrary composed clauses, attachment coverage, devotion and type-changing/layer fidelity remain open. See [scope and acceptance checklist](docs/testing/static-admission.md).
