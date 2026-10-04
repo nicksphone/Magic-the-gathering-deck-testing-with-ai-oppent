@@ -9,7 +9,7 @@ for (const seat of [1, 2]) {
   const ids = fixture.players[String(seat)].battlefield.map(card => card.id);
   const { evaluate, waitFor, click, reload, close } = await openBrowser('http://127.0.0.1:15173/');
   try {
-    await waitFor("document.body.innerText.includes('Saved matches')");
+    await waitFor("document.querySelector('.saved-games') !== null");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await reload();
     await waitFor("document.querySelector('[aria-label=\"Target 1 for Incremental Growth\"]') !== null");
@@ -34,7 +34,7 @@ for (const seat of [1, 2]) {
     assert.deepEqual(ids.map(id => final.players[String(seat)].battlefield.find(card => card.id === id).counters['+1/+1']), [1, 2, 3]);
     assert.equal(Object.values(final.players[String(seat)].mana_pool).reduce((sum, amount) => sum + amount, 0), 0);
     await reload();
-    await waitFor("document.body.innerText.includes('Battlefield') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.battlefield') !== null && !document.body.innerText.includes('Restoring saved session')");
     console.log(`PASS seat ${seat}: deliberate distinct 1/2/3 target allocation, batched selection, paid cast, priority resolution and reload through App/API`);
   } finally {
     await close();

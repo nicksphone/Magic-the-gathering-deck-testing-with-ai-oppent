@@ -11,7 +11,8 @@ export function StackLog({ match }: { match: MatchState }) {
         {[...match.stack].reverse().map((item, index) => (
           <div key={item.id} className="stack-item">
             <strong>{item.label}</strong>
-            <span>P{item.controller} · {index === 0 ? "Top of stack" : `Below ${index}`} · {item.effect_key}</span>
+            <span>Controller P{item.controller} · {index === 0 ? "Top of stack" : `Below ${index}`}</span>
+            <details className="stack-technical"><summary>Effect details</summary><code>{item.effect_key}</code></details>
           </div>
         ))}
       </div>

@@ -10,6 +10,7 @@ if (Path(main.__file__).resolve().parents[1] / ".git").exists():
     raise RuntimeError("UI fixtures require a disposable backend source copy")
 
 from tests.browser_fixture_server import app, publish, ACTIVE_MATCHES, Session, engine, Repository, _persist_active_match, get_match
+import tests.casting_trigger_browser_fixture  # Register the connected casting fixture routes.
 from tests.test_ai_recurring_engines import fixture, add
 from game_state.state import Zone
 

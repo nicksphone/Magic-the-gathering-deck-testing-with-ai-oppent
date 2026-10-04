@@ -10,7 +10,7 @@ for (const seat of [1, 2]) {
   const { evaluate, command, waitFor, click, close } = browser;
   const getState = async () => (await fetch(`${backend}/matches/${fixture.id}`)).json();
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
     await waitFor("Boolean(document.querySelector('[aria-label=\"Attack payment 1 for Gorm the Great\"]'))");

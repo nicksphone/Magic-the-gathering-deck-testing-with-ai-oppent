@@ -21,6 +21,8 @@ git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
   if [[ -f "$path" ]]; then install -D "$path" "$scratch/$path"; fi
 done
 
+cp frontend/tests/ui_fixture_server.py frontend/tests/ui_v2_fixture_server.py "$scratch/backend/tests/"
+
 backend_pid=''
 frontend_pid=''
 browser_pid=''
@@ -37,7 +39,7 @@ cleanup() {
 trap cleanup EXIT
 
 start_backend() {
-  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.casting_trigger_browser_fixture:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
@@ -65,6 +67,9 @@ wait_for_services() {
 }
 
 wait_for_services
+echo 'Browser CI: competitive table v2'
+(cd frontend && MTG_UI_EVIDENCE="$scratch/ui-v2-evidence" MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2.mjs)
+(cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2-costs.mjs)
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)

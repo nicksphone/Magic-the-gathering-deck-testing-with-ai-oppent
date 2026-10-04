@@ -8,7 +8,7 @@ const state = await fixtureResponse.json();
 const browser = await openBrowser('http://127.0.0.1:15173/');
 const { evaluate, command, waitFor, click, close } = browser;
 try {
-  await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+  await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
   await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(state.id)})`);
   await command('Page.reload');
   await waitFor("document.querySelectorAll('[aria-label=\"Attack with Llanowar Elves\"]').length === 2");

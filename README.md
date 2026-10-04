@@ -12,10 +12,12 @@ reproduces expensive duplicate late-control projections without changing AI
 decisions or search. Decision-local reuse remains planned, not an implemented
 speedup or an expert-player claim.
 
-The live frontend uses a battlefield-first playtest table with compact controls,
-scrollable hands, exact-ID grouped lands, and keyboard/hover card inspection.
-Setup, saved sessions, diagnostics and logs can be collapsed to preserve table
-space. See [UI implementation and verification](docs/ui-redesign.md).
+The live frontend uses a full-width two-sided competitive table, independently
+scrollable card rails, exact-ID grouped lands and keyboard/hover inspection.
+Decks, saved sessions and diagnostics live in a manually opened workbench;
+stack, actions and required choices have a separate command area. See
+[the current UI and acceptance evidence](docs/ui-redesign-v2.md). Large boards
+still require scrolling; this is not a long-session or accessibility certificate.
 
 Offline operator tools can verify local SQLite backup/restore equality and plan
 terminal simulation-job retention with dry-run defaults. They require explicit
@@ -523,14 +525,26 @@ The Vite development server proxies `/api` and `/card-images` to the backend on 
 ## Testing
 
 ### Backend
+Run committed backend sources in an isolated local directory from the repository
+root. API fixtures use source-relative SQLite; running them in the live checkout
+can overwrite user data and the canonical regression fixtures reject it.
 ```bash
-cd backend
-pytest -q
+PY="$PWD/backend/.venv/bin/python"
+scratch=$(mktemp -d)
+git archive HEAD backend | tar -xf - -C "$scratch"
+echo "Isolated test source: $scratch"
+(cd "$scratch/backend" && MTG_ISOLATED_TEST_ROOT="$scratch" "$PY" -m pytest -q)
+# Remove the isolated directory after reviewing/preserving its results.
 ```
+This tests committed `HEAD`, not uncommitted edits. Use a separate disposable
+source copy for developing changes; do not point test database paths at live
+SQLite or NFS. CI follows the same isolated-source contract.
 
 ### Frontend
 ```bash
 cd frontend
+npm test
+npm run lint
 npm run build
 ```
 

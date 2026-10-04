@@ -12,8 +12,8 @@ async function fresh() {
   return fixture.id;
 }
 try {
-  await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
-  await evaluate("document.querySelector('.saved-games').open = true; document.querySelectorAll('.tool-disclosure').forEach(el => el.open = true)");
+  await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
+  await evaluate("document.querySelector('nav a[href=\"#lab-tools\"]').click(); document.querySelector('.saved-games').open = true; document.querySelectorAll('.tool-disclosure').forEach(el => el.open = true)");
   if (process.argv.includes('--verify-restart')) {
     await waitFor("document.querySelector('.battlefield') && [...document.querySelectorAll('button')].some(b => b.textContent === 'Resume automatic play')");
     const id = await evaluate("localStorage.getItem('mtg.activeMatch')");

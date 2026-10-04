@@ -11,7 +11,7 @@ for (const seat of [1, 2]) for (const [index, name] of names.entries()) {
   const ready = label => `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(label)}) && !button.disabled)`;
   const read = async () => (await fetch(`${api}/matches/${fixture.id}`)).json();
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
     const label = index === 4 ? `${name}: -2:` : `Cast ${name}`;

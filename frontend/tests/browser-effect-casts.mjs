@@ -17,7 +17,7 @@ for (const seat of [1, 2]) {
       }
     };
     try {
-      await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+      await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
       await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
       await command('Page.reload');
       await waitFor(ready('Cast Torrential Gearhulk'));

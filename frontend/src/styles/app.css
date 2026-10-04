@@ -1,4 +1,5 @@
 @import "./table.css";
+@import "./competitive.css";
 
 /* Existing feature-specific surfaces remain below the table theme. */
 @layer legacy {

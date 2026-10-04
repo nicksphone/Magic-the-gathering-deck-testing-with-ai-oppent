@@ -1,5 +1,10 @@
 # UI Agent: Competitive Card Table, Second Visual Pass
 
+Status: completed, parent-reviewed and integrated. The combined browser harness
+passes with the current casting/trigger repairs; see
+[acceptance evidence and remaining manual review](docs/ui-redesign-v2.md).
+The original assignment below is retained for provenance, not an open task.
+
 ## User feedback and goal
 
 The user finds the integrated redesign better, but still too basic. Build a

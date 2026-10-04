@@ -13,7 +13,7 @@ for (const seat of [1, 2]) for (const index of [0, 1, 2, 3]) for (const kicked o
   const ready = label => `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(label)}) && !button.matches(':disabled'))`;
   const read = async () => (await fetch(`${api}/matches/${fixture.id}`)).json();
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
     await waitFor(`document.body.innerText.includes('Cast ${name}')`);

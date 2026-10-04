@@ -15,7 +15,7 @@ for (const seat of [1, 2]) for (let index = 0; index < names.length; index++) {
   const browser = await openBrowser('http://127.0.0.1:15173/');
   const { evaluate, reload, waitFor, click, close } = browser;
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await reload();
     await waitFor(`Boolean([...document.querySelectorAll('.cast-card-box')].find(box =>

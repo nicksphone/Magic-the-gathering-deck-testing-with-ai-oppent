@@ -9,6 +9,7 @@ const browser = await openBrowser('http://127.0.0.1:15173/');
 const { evaluate, waitFor, click, close } = browser;
 try {
   await waitFor(`Boolean(document.querySelector('.analytics > .row select option[value="${decks.a}"]'))`);
+  await evaluate("document.querySelector('nav a[href=\"#lab-tools\"]').click(); document.querySelectorAll('.tool-disclosure').forEach(el => el.open = true)");
   for (const [index, id] of [[0, decks.a], [1, decks.b]]) {
     await evaluate(`(() => {
       const select = document.querySelectorAll('.analytics > .row select')[${index}];

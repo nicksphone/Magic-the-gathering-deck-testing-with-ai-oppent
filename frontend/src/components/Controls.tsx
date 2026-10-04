@@ -162,28 +162,28 @@ export function Controls(props: Props) {
 
   return (
     <section className="panel controls">
-      <h2>Match Controls</h2>
+      <h2>{props.match ? "Command the turn" : "Choose your matchup"}</h2>
       <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
-        <select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
+        <label className="setup-seat"><span>Seat 01 <small>Your opening list</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
           <option value="">Deck A</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}
             </option>
           ))}
-        </select>
-        <select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
+        </select></label>
+        <label className="setup-seat"><span>Seat 02 <small>The other side of the table</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
           <option value="">Deck B</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}
             </option>
           ))}
-        </select>
+        </select></label>
       </div>
       <div className="row">
-        <select aria-label="Match mode" value={props.startMode} onChange={(e) => {
+        <label className="setup-setting">Seats<select aria-label="Match mode" value={props.startMode} onChange={(e) => {
           const mode = e.currentTarget.value;
           if (mode === "player_vs_ai" || mode === "ai_vs_ai" || mode === "human_vs_human") {
             props.setStartMode(mode);
@@ -192,21 +192,22 @@ export function Controls(props: Props) {
           <option value="player_vs_ai">Player vs AI</option>
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
-        </select>
-        <select aria-label="AI difficulty" value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
+        </select></label>
+        <label className="setup-setting">AI difficulty<select aria-label="AI difficulty" value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>
           <option value="master">Master</option>
           <option value="master_plus">Master+</option>
-        </select>
-        <select aria-label="Match length" value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
+        </select></label>
+        <label className="setup-setting">Match length<select aria-label="Match length" value={props.bestOf} onChange={(e) => props.setBestOf(Number(e.target.value))}>
           <option value={3}>Best-of-3</option>
           <option value={5}>Best-of-5</option>
           <option value={7}>Best-of-7</option>
           <option value={9}>Best-of-9</option>
-        </select>
+        </select></label>
       </div>
       <button disabled={props.startDisabled} onClick={props.onStart}>Start Best-of-{props.bestOf} Match</button>
+      {!props.match && (!props.selectedA || !props.selectedB) ? <p className="setup-hint">Choose a deck for each seat to take the table.</p> : null}
       </details>
       {props.match ? (
         <div className="match-status-grid">

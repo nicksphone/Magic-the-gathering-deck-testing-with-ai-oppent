@@ -25,7 +25,9 @@
   repaired backend. The full integrated browser harness also passes, including
   natural AI/human BO3 and restart recovery. Its stale collapsed-log selector
   was corrected without weakening authoritative state assertions. The second
-  visual pass is delegated in `uiplan-v2.md`; this is not a long-session soak.
+  visual pass is now integrated: the complete combined browser harness passes,
+  including dense-board checks and retained ordered-target controls. See
+  [v2 evidence and limits](docs/ui-redesign-v2.md); this is not a long-session soak.
 
 Work follows [the capability-batch protocol](docs/development/batch-workflow.md).
 Group connected rules/AI work; retain fast per-change checks and broader batch

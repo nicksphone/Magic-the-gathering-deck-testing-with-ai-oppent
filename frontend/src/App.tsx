@@ -34,6 +34,7 @@ function clearPendingStart() {
 
 export function App() {
   const [decks, setDecks] = useState<DeckRecord[]>([]);
+  const [labOpen, setLabOpen] = useState(false);
   const [selectedA, setSelectedA] = useState<number | null>(null);
   const [selectedB, setSelectedB] = useState<number | null>(null);
   const [mode, setMode] = useState<"player_vs_ai" | "ai_vs_ai" | "human_vs_human">("player_vs_ai");
@@ -390,7 +391,7 @@ export function App() {
   }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, passPriority]);
 
   return (
-    <main className="layout">
+    <main className={`layout ${match ? "workspace-match" : "workspace-lobby"}`}>
       <header className="topbar">
         <h1>MTG Deck Testing Lab</h1>
         <p>THE PLAYTEST TABLE · Two seats. Real decisions.</p>
@@ -407,12 +408,13 @@ export function App() {
 
       {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
       <nav className="table-navigation" aria-label="Workspace">
-        <a href="#table">Battlefield</a><a href="#match-controls">Actions & choices{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools">Decks & lab</a>
+        <a href="#table">{match ? "01 / Table" : "01 / Play"}</a><a href="#match-controls">{match ? "02 / Actions & choices" : "02 / Matchup"}{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools" aria-expanded={labOpen} onClick={() => setLabOpen(true)}>03 / Decks & lab</a>
         {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
         {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
         {mutationPending ? <span role="status">Match operation pending...</span> : null}
       </nav>
-      <section className="lab-tools" id="lab-tools" aria-label="Lab tools">
+      <section className="lab-tools" id="lab-tools" aria-label="Lab tools" hidden={!labOpen}>
+        <header className="workspace-heading"><div><span className="eyebrow">The workbench</span><h2>Prepare. Review. Refine.</h2></div><button onClick={() => { setLabOpen(false); document.querySelector<HTMLAnchorElement>('a[href="#lab-tools"]')?.focus(); }}>Close lab</button></header>
         <details className="panel saved-games">
           <summary>Saved matches <span>{savedMatches.length} sessions</span></summary>
           {restoring ? <p role="status">Restoring saved session...</p> : null}
@@ -427,6 +429,7 @@ export function App() {
         <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
+        {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
         {match ? <StackLog match={match} /> : null}
         <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
@@ -479,8 +482,11 @@ export function App() {
           </>
         ) : (
           <article className="panel empty-state">
-            <h2>Ready for Testing</h2>
-            <p>Import decks, choose matchup roles, and start a match.</p>
+            <span className="eyebrow">Your next matchup starts here</span>
+            <h2>Every card.<br />A decision.</h2>
+            <p>A focused table for testing your list, learning a matchup, and playing the next line.</p>
+            <div className="lobby-steps"><span><b>01</b> Choose two decks</span><span><b>02</b> Set your seats</span><span><b>03</b> Take the table</span></div>
+            <a href="#lab-tools" onClick={() => setLabOpen(true)}>Build your library · Import & saved matches ↗</a>
           </article>
         )}
       </section>

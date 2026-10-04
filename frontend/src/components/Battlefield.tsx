@@ -4,6 +4,8 @@ import { resolveCardMediaUrl } from "../api/client";
 import { cardStates, groupBattlefield, phases, phaseIndex, type LandPile } from "./table-model";
 import type { LegalMove, MatchState, PlayerView } from "../types";
 import { PermanentActions } from "./PermanentActions";
+import { CardRail } from "./CardRail";
+import { CardArt } from "./CardArt";
 
 type Props = {
   match: MatchState;
@@ -39,6 +41,7 @@ type HoverPreview = {
   keywords?: string[];
   colors?: string[];
   counters?: Record<string, number>;
+  faces?: PlayerView["hand"][number]["card_faces"];
 };
 
 type ManaSymbol = "W" | "U" | "B" | "R" | "G" | "C";
@@ -139,6 +142,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       keywords: card.keywords,
       colors: card.colors,
       counters: card.counters,
+      faces: card.card_faces,
     };
   }
 
@@ -153,6 +157,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           onMouseLeave={() => setHoverPreview(null)}
           onFocus={() => setHoverPreview(previewFromCard(card))}
           onBlur={() => setHoverPreview(null)}
+          onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}
         >
           {card.name}{card.mana_cost ? <small>{card.mana_cost}</small> : null}
         </button>) : count === 0 ? <span>Empty</span> : null}
@@ -174,7 +179,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
 
   function handFace(card: typeof p1.hand[number]) {
     return <button type="button" className="hand-face" aria-label={`Inspect ${card.name}`} onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}>
-      {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt="" loading="lazy" /> : <span className="card-no-art">{card.name}<small>Image unavailable</small></span>}
+      <CardArt uri={card.image_uri} name={card.name} />
       <strong>{card.name}</strong><small>{card.mana_cost || card.type_line || card.types.join(" ")}</small>
     </button>;
   }
@@ -252,6 +257,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row opponent">
         <div className="zone-meta">
           <strong className="seat-label">P{opponentSeat} · Opponent <b>{p2.life}</b> life</strong>
+          <span className="seat-state">{match.active_player === opponentSeat ? "◆ Active turn" : "◇ Waiting"}{match.priority_player === opponentSeat ? " · Priority" : ""}</span>
           <span>Library {p2.library_count}</span>
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
@@ -277,8 +283,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             )}
           </span>
         </div>
-        <h3 className="zone-heading">Permanents</h3>
-        <div className="cards">
+        <CardRail className="cards" label="Opponent permanents">
           {p2Groups.nonLands.map((card) => (
             <article
               key={card.id}
@@ -293,20 +298,20 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               onMouseEnter={() => setHoverPreview(previewFromCard(card))}
               onMouseLeave={() => setHoverPreview(null)}
             >
-              {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
+              <CardArt uri={card.image_uri} name={card.name} />
               <h4>{card.name}</h4>
               {statusBadges(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
-              {card.mana_cost ? <small>{card.mana_cost}</small> : null}
-              <p>{card.types.join(" ")}</p>
-              <small>
+              {card.mana_cost ? <small className="card-mana">{card.mana_cost}</small> : null}
+              <p className="card-type">{card.types.join(" ")}</p>
+              <small className="card-stats">
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
               {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
               {card.type_line?.includes("Saga") ? <small>LORE: {card.counters?.lore ?? 0}</small> : null}
             </article>
           ))}
-        </div>
+        </CardRail>
         {p2Groups.lands.length ? (
           <div className="land-stacks">
             {p2Groups.lands.map((pile) => (
@@ -314,6 +319,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 key={pile.key}
                 className="land-stack"
                 tabIndex={0}
+                onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(pile.cards[0])); } }}
                 onFocus={() => setHoverPreview(previewFromCard(pile.cards[0]))}
                 onBlur={() => setHoverPreview(null)}
                 onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
@@ -333,6 +339,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       <div className="player-row player">
         <div className="zone-meta">
           <strong className="seat-label">P{viewerSeat} · Your seat <b>{p1.life}</b> life</strong>
+          <span className="seat-state">{match.active_player === viewerSeat ? "◆ Active turn" : "◇ Waiting"}{match.priority_player === viewerSeat ? " · Priority" : ""}</span>
           <span>Library {p1.library_count}</span>
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
@@ -358,8 +365,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             )}
           </span>
         </div>
-        <h3 className="zone-heading">Permanents</h3>
-        <div className="cards">
+        <CardRail className="cards" label="Your permanents">
           {p1Groups.nonLands.map((card) => (
             <article
               key={card.id}
@@ -374,13 +380,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               onMouseEnter={() => setHoverPreview(previewFromCard(card))}
               onMouseLeave={() => setHoverPreview(null)}
             >
-              {resolveCardMediaUrl(card.image_uri) ? <img src={resolveCardMediaUrl(card.image_uri)} alt={card.name} loading="lazy" /> : null}
+              <CardArt uri={card.image_uri} name={card.name} />
               <h4>{card.name}</h4>
               {statusBadges(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
-              {card.mana_cost ? <small>{card.mana_cost}</small> : null}
-              <p>{card.types.join(" ")}</p>
-              <small>
+              {card.mana_cost ? <small className="card-mana">{card.mana_cost}</small> : null}
+              <p className="card-type">{card.types.join(" ")}</p>
+              <small className="card-stats">
                 {card.power ?? "-"}/{card.toughness ?? "-"}
               </small>
               {"Planeswalker" === card.types[0] || card.types.includes("Planeswalker") ? <small>LOY: {card.loyalty ?? 0}</small> : null}
@@ -401,7 +407,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ) : null}
             </article>
           ))}
-        </div>
+        </CardRail>
         {p1Groups.lands.length ? (
           <div className="land-stacks">
             {p1Groups.lands.map((pile) => (
@@ -409,6 +415,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 key={pile.key}
                 className="land-stack"
                 tabIndex={0}
+                onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(pile.cards[0])); } }}
                 onFocus={() => setHoverPreview(previewFromCard(pile.cards[0]))}
                 onBlur={() => setHoverPreview(null)}
                 onMouseEnter={() => setHoverPreview({ name: pile.name, imageUri: pile.imageUri, types: ["Land"] })}
@@ -569,7 +576,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           </div>
         ) : null}
         <h3 className="zone-heading">Hand & permitted plays <span>{playableCards.length}</span></h3>
-        <div className="hand-row playable-hand" aria-label="Hand and permitted plays">
+        <CardRail className="hand-row playable-hand" label="Hand and permitted plays">
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
             const selectedFaceIndex = faceChoices[card.id] ?? cardCastMoves[0]?.selected_face_index ?? 0;
@@ -988,15 +995,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               </div>
             );
           })}
-        </div>
+        </CardRail>
       </div>
+
       <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
       {hoverPreview ? createPortal(
-        <aside className="card-hover-preview" aria-label="Card inspection" tabIndex={0}>
+        <aside className="card-hover-preview" data-pinned={Boolean(pinnedPreview)} aria-label="Card inspection" tabIndex={0}>
           <button className="preview-close" onClick={() => { previewOrigin.current?.focus({preventScroll:true}); previewOrigin.current = null; setHoverPreview(null); setPinnedPreview(null); }}>Close inspection · Esc</button>
-          {resolveCardMediaUrl(hoverPreview.imageUri) ? (
-            <img src={resolveCardMediaUrl(hoverPreview.imageUri)} alt={hoverPreview.name} loading="lazy" />
-          ) : null}
+          <CardArt uri={hoverPreview.imageUri} name={hoverPreview.name} />
           <div className="card-hover-meta">
             <h4>{hoverPreview.name}</h4>
             {hoverPreview.manaCost ? <p>{hoverPreview.manaCost}</p> : null}
@@ -1014,6 +1020,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             {hoverPreview.colors?.length ? <p>Color: {hoverPreview.colors.map((color) => ({ W: "White", U: "Blue", B: "Black", R: "Red", G: "Green" }[color] ?? color)).join(", ")}</p> : null}
             {hoverPreview.counters ? Object.entries(hoverPreview.counters).filter(([name, count]) => !name.startsWith("__") && count > 0).map(([name, count]) => <p key={name}>{name}: {count}</p>) : null}
             {hoverPreview.oracleText ? <small>{hoverPreview.oracleText}</small> : null}
+            {hoverPreview.faces && hoverPreview.faces.length > 1 ? <div className="inspection-faces"><h3>Available faces · inspection only</h3>{hoverPreview.faces.map((face, index) => <details key={index}>
+              <summary>{face.name ?? `Face ${index + 1}`}</summary>
+              <CardArt uri={face.image_uri} name={face.name ?? `Face ${index + 1}`} />
+              <p>{face.mana_cost} · {face.type_line}</p><small>{face.oracle_text}</small>
+            </details>)}</div> : null}
           </div>
         </aside>, document.body
       ) : null}

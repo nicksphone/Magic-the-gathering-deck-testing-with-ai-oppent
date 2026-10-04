@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-04 - Competitive table v2 integrated
+
+- Deploy the reviewed full-width felt table, individual card rails, grouped
+  resources, pinned face inspection and dedicated response/choice workspace.
+  Move management surfaces into an explicitly opened workbench.
+- Preserve both-seat actions and the new ordered-target controls. Extend the
+  isolated browser harness with dense-board and deliberate-cost UI checks.
+  Update readiness selectors for hidden workbench text and CSS capitalization;
+  retain authoritative gameplay/payment/recovery assertions.
+- Pass the entire combined browser harness, including natural AI, human/AI and
+  human/human BO3, sideboarding, ambiguous writes and restart recovery. Root
+  frontend unit checks, lint and build also pass.
+- Document isolated backend test commands and allow installation time in the
+  expanded browser CI job, retaining its individual scenario timeout bounds.
+
 ## 2026-10-04 - AI performance diagnostic handoff
 
 - Import the isolated, read-only diagnostic and source-grounded performance

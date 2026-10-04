@@ -9,7 +9,7 @@ for (const seat of [1, 2]) for (const [index, name] of ['Rites of Spring', 'Tola
   const { evaluate, command, waitFor, click, close } = await openBrowser('http://127.0.0.1:15173/');
   const ready = label => `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(label)}) && !button.matches(':disabled'))`;
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
     await waitFor(ready(`Cast ${name}`)); await click(`Cast ${name}`);
@@ -62,7 +62,7 @@ for (const seat of [1, 2]) {
   const { evaluate, command, waitFor, click, close } = await openBrowser('http://127.0.0.1:15173/');
   const ready = label => `[...document.querySelectorAll('button')].some(button => button.textContent.trim().startsWith(${JSON.stringify(label)}) && !button.matches(':disabled'))`;
   try {
-    await waitFor("document.body.innerText.includes('Saved matches') && !document.body.innerText.includes('Restoring saved session')");
+    await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
     for (const actor of [3-seat, seat]) {
