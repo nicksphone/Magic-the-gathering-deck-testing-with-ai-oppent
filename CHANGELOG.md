@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-04 - Casting and trigger repair batch
+
+- Preserve paid sacrifice characteristics and ordered distinct counter targets;
+  resolve surviving recipients without changing their announced allocations.
+- Add bounded ETB flashback grants and self-return death triggers with durable
+  object references, expiry, ownership and restart checks.
+- Add deliberate ordered-target controls for both seats and checked AI choices.
+- Repair all six reproduced second-wave failures; 40 canonical and 38 new edge
+  cases pass, with 7,310 full backend tests, the full browser harness and eight
+  repeated seed/seat-balanced samples. Preserve historical failures and avoid
+  treating replay smoke results as expert-AI or balance evidence.
+- Run CI backend tests from isolated tracked-source copies, preserving the
+  regression fixture's prohibition against writing live-checkout databases.
+
 ## 2026-10-04 - Integrated browser acceptance and next batch
 
 - Complete the full browser harness on the integrated UI and repaired backend,

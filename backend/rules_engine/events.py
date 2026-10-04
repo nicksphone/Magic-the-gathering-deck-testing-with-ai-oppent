@@ -278,6 +278,8 @@ def _append_trigger_groups(
                 item.payload["__trigger_target_choice"] = True
         state.stack.append(item)
         if item.payload.get("__trigger_target_choice"):
+            from rules_engine.flashback_grants import remember_target
+            remember_target(state, item)
             targeted_items.append(item)
     if targeted_items:
         from rules_engine.ward import mark_stack_targets
@@ -363,6 +365,8 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         clause = sentence.strip()
         if not re.match(patterns[event], clause, re.I):
             continue
+        if item.effect_key == 'grant_flashback' and re.search(r'target instant or sorcery card in your graveyard gains flashback', clause, re.I):
+            return clause
         if item.effect_key == 'cast_from_graveyard' and re.search(r'cast target (?:instant|sorcery) card from your graveyard', clause, re.I):
             return clause
         if item.effect_key == "deal_damage" and "any target" in clause.lower():
@@ -390,7 +394,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
-    if item.effect_key == 'cast_from_graveyard':
+    if item.effect_key in {'cast_from_graveyard', 'grant_flashback'}:
         return [{'target_card_id': target['id'], 'target_name': target['name']}
                 for target in hints.get('graveyard_spell_targets', [])]
     if item.payload.get("__targeted_life_loss"):
@@ -463,6 +467,8 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     item.payload.pop("target_player", None)
     item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
+    from rules_engine.flashback_grants import remember_target
+    remember_target(state, item)
     from rules_engine.ward import mark_stack_targets
     if not state.trigger_staging:
         state.trigger_staging = True
@@ -669,6 +675,23 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 if cid == payload.get("card_id") and "power" not in payload and card.last_known_battlefield:
                     death_payload = {**payload, "power": card.last_known_battlefield["power"]}
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=death_payload))
+            elif (event == 'permanent_dies' and cid == payload.get('card_id')
+                  and any(re.fullmatch(
+                      r"when (?:" + re.escape(card.name.lower())
+                      + r"|this (?:aura|artifact|enchantment|creature|permanent))"
+                      + r" is put into a graveyard from the battlefield, return (?:"
+                      + re.escape(card.name.lower()) + r"|it) to its owner's hand\.",
+                      line.strip()) for line in oracle.splitlines())):
+                departed = state.cards[cid]
+                out.append({
+                    'source_card_id': cid, 'controller': card.controller,
+                    'label': f'{card.name} graveyard return trigger',
+                    'effect_key': 'return_from_graveyard',
+                    'payload': {'target_card_id': cid, 'target_player': departed.owner,
+                                '__graveyard_reference': {
+                                    'incarnation': object_incarnation(departed),
+                                    'zone_sequence': departed.zone_change_sequence}},
+                })
             elif event == "permanent_dies" and _matches_permanent_dies_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
@@ -1315,6 +1338,13 @@ def _trigger_from_oracle(
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
     if event == 'enters_battlefield' and source is not None:
+        from rules_engine.flashback_grants import grant_instruction
+        for line in oracle.splitlines():
+            entry = re.fullmatch(r'when (?:this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name.lower())
+                                 + r') enters(?: the battlefield)?, (.+)', line.strip().lower())
+            if entry and grant_instruction(entry[1]) and _matches_enters_battlefield_trigger(state, source, line, payload):
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'grant_flashback', 'payload': {}}
         from rules_engine.keyword_triggers import next_turn_draw_instruction
         for line in oracle.splitlines():
             entry = re.fullmatch(r'(?:when|whenever) [^,]+, (.+)', line.strip(), re.I)

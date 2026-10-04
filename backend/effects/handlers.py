@@ -482,7 +482,7 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
             state.log.append(f"{card.name} is exiled instead of dying.")
             return
         zone_owner.graveyard.append(target)
-        card.zone = Zone.GRAVEYARD
+        card.move_to_zone(Zone.GRAVEYARD)
         state.log.append(f"{card.name} is destroyed.")
         emit_event(state, "permanent_dies", {"card_id": target, "controller": card.controller})
         if was_creature_on_battlefield(card):
@@ -1303,7 +1303,7 @@ def destroy_with_controller_search(state: MatchState, controller: int, payload: 
 
 
 def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
-    player = state.players[controller]
+    player = state.players[int(payload.get('target_player', controller))]
     requested = payload.get("target_card_id")
     if requested is not None:
         card_id = requested if requested in player.graveyard and not is_departed_token(state.cards[requested]) else None
@@ -1311,9 +1311,16 @@ def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> 
         card_id = next((cid for cid in reversed(player.graveyard) if not is_departed_token(state.cards[cid])), None)
     if card_id is None:
         return
+    card = state.cards[card_id]
+    reference = payload.get('__graveyard_reference')
+    if reference and (card.zone != Zone.GRAVEYARD
+                      or object_incarnation(card) != reference['incarnation']
+                      or card.zone_change_sequence != reference['zone_sequence']):
+        return
     player.graveyard.remove(card_id)
     player.hand.append(card_id)
-    state.cards[card_id].move_to_zone(Zone.HAND)
+    card.move_to_zone(Zone.HAND)
+    card.controller = card.owner
     state.log.append(f"{state.cards[card_id].name} returns from graveyard to hand.")
 
 

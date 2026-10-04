@@ -2,11 +2,15 @@
 
 ## Current Priority: Backend First
 
-- [ ] Complete the [casting/trigger repair batch](docs/plans/casting-trigger-repair-batch.md).
-  The second canonical regression wave reproduces six failures on current main;
-  cost-linked damage, ordered distinct target allocations, granted flashback
-  and self-return triggers require shared repairs. A separate instrumented
-  Control/Ramp run completes but exposes expensive destruction projections.
+- [x] Complete the supported [casting/trigger repair batch](docs/testing/casting-trigger-repairs.md).
+  All six reproduced failures are repaired. The final isolated 7,310-test
+  backend gate, complete rules-only browser harness and eight repeated
+  seed/seat-balanced samples pass. The report defines bounded support, not
+  arbitrary casting costs, grants or full-card certification.
+
+- [ ] Implement and validate decision-local AI projection reuse from the
+  completed performance diagnostic; preserve decisions, legality, privacy and
+  mutable-state isolation. Do not weaken search or force matchup win rates.
 
 - [x] Integrate offline backup/restore verification and dry-run retention tools.
   The combined 128-test storage/recovery gate and cold offline 119-name probe

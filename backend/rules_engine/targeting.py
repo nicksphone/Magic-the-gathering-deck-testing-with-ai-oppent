@@ -120,6 +120,12 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             return False, "X value is required and must be non-negative."
 
     up_to = int(target_hints.get("up_to_target_count", 0) or 0)
+    required = target_hints.get('required_distinct_target_count')
+    if required is not None:
+        ids = action_targets.get('target_card_ids') or []
+        if (len(ids) != required or len(set(ids)) != required
+                or action_targets.get('target_card_id') is not None):
+            return False, f'Exactly {required} different creature targets are required.'
     if up_to > 0:
         target_ids = action_targets.get("target_card_ids") or []
         if len(target_ids) > up_to:

@@ -327,6 +327,7 @@ class RulesEngine:
 
     def _clear_marked_damage(self, state: MatchState) -> None:
         for card in state.cards.values():
+            card.granted_flashback.clear()
             card.keyword_effects = [effect for effect in getattr(card,'keyword_effects',[]) if not effect['until_end_of_turn']]
             card.base_stat_effects = [effect for effect in getattr(card,'base_stat_effects',[]) if not effect['until_end_of_turn']]
             if "__damage_marked" in card.counters:
@@ -969,8 +970,9 @@ class RulesEngine:
                     state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
+                spell_cost_context: dict = {}
                 if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
-                                              choice=action.get('cost_choice')):
+                                              choice=action.get('cost_choice'), context=spell_cost_context):
                     if cost_staging:
                         state.staged_triggers.clear()
                         state.trigger_staging = False
@@ -978,7 +980,10 @@ class RulesEngine:
                     state.log.append(f"{player.name} failed additional costs for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                ability = build_spell_spec(state, face_card, player_id, action_targets=action_targets)
+                from copy import copy
+                effect_surface = copy(face_card)
+                effect_surface.paid_cost_context = spell_cost_context
+                ability = build_spell_spec(state, effect_surface, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
                 payload['__kicked'] = chosen.kicked

@@ -15,32 +15,36 @@ Repairs must support the recognized instruction families, not card-name hacks.
 ## Checklist
 
 - [x] Review the canonical second-wave handoff and reproduce on current main.
-- [ ] Preserve sacrificed creatures' paid-cost last-known characteristics in
+- [x] Preserve sacrificed creatures' paid-cost last-known characteristics in
   durable stack packets. Compile recognized sacrifice-linked damage through the
   common damage handler; verify countered spells, changed stats, departure
   replacements, tokens, both seats, restart and illegal sole-target behavior.
-- [ ] Preserve occurrence-specific target requirements and distinctness for
+- [x] Preserve occurrence-specific target requirements and distinctness for
   ordered counter-placement instructions. Resolve surviving targets with their
   announced allocation; reject duplicate required-different targets before
   payment without banning repetitions that other spell clauses permit.
-- [ ] Add supported ETB flashback grants through ordinary trigger target choice,
+- [x] Add supported ETB flashback grants through ordinary trigger target choice,
   durable object references and temporary permissions. Share actual cost and
   expiry logic with native flashback, preserve X/additional kicker, prohibit
   competing alternative costs, and validate departure/reentry and restart.
-- [ ] Add bounded self-return-to-hand graveyard-from-battlefield triggers using
+- [x] Add bounded self-return-to-hand graveyard-from-battlefield triggers using
   predeparture ability/controller information and the correct new graveyard
   object reference. Verify suppression, replacement to exile, stale references,
   ownership, attachments and snapshot resume.
-- [ ] Keep unsupported clauses explicit in coverage diagnostics; do not admit
+- [x] Keep unsupported clauses explicit in coverage diagnostics; do not admit
   a paid no-op as complete semantic support.
-- [ ] Expand production AI decisions for the newly supported actions and actual
+- [x] Expand production AI decisions for the newly supported actions and actual
   payments without consulting private opposing identities. Check multiple
   archetypes and legal choices; legality alone is not optimal-play evidence.
-- [ ] Run the 40 canonical tests, focused neighboring cost/target/trigger tests,
+- [x] Run the 40 canonical tests, focused neighboring cost/target/trigger tests,
   HTTP/SQLite boundaries, complete isolated backend/frontend/browser gates,
   and pinned seed/seat-balanced repeated matches before publication.
-- [ ] Archive verified evidence on RCHFiles, update README/CHANGELOG/plan and
+- [x] Archive verified evidence on RCHFiles, update README/CHANGELOG/plan and
   Graphify, publish the milestone, and clean completed disposable copies.
+
+Acceptance evidence and bounded support are recorded in
+[the repair report](../testing/casting-trigger-repairs.md). General payment
+ordering and unrecognized grants/instructions remain outside this milestone.
 
 ## Separate performance investigation
 

@@ -98,6 +98,7 @@ class CardInstance:
     last_known_battlefield: dict = field(default_factory=dict)
     exile_face_down: bool = False
     foretell_record: dict = field(default_factory=dict)
+    granted_flashback: dict = field(default_factory=dict)
     was_foretold: bool = False
     was_kicked: bool = False
     printed_power: str | None = None
@@ -126,6 +127,7 @@ class CardInstance:
             end_bestow(self)
         if zone != self.zone:
             self.foretell_record.clear()
+            self.granted_flashback.clear()
             if not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
                 self.was_foretold = False
             self.zone_change_sequence += 1

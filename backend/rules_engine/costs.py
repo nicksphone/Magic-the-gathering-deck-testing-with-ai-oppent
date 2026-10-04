@@ -256,6 +256,8 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                      and not ordinary_exile_permission(state, player_id, card.id, card.selected_face_index or 0))
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
+    from rules_engine.flashback_grants import granted_cost
+    granted_flashback = granted_cost(state, card, player_id)
     if without_mana:
         options = [base]
     elif card.zone == Zone.GRAVEYARD:
@@ -266,6 +268,9 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
             options.append(CostOption(id="escape", label="Escape", mana_cost=escape[0], exile_graveyard=escape[1]))
         if flashback:
             options.append(CostOption(id="flashback", label="Flashback", mana_cost=flashback))
+        if granted_flashback and granted_flashback != flashback:
+            options.append(CostOption(id='flashback_granted' if flashback else 'flashback',
+                                      label='Granted flashback', mana_cost=granted_flashback))
         if not options:
             return []
     elif foretell_only:
@@ -401,7 +406,7 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
 
 
 def apply_additional_costs(state: MatchState, player_id: int, option: CostOption, spell_card_id: str,
-                           x_value: int = 0, choice=None) -> bool:
+                           x_value: int = 0, choice=None, *, context: dict | None = None) -> bool:
     player = state.players[player_id]
     selected = additional_cost_selection(state, player_id, option, spell_card_id, choice, x_value=x_value)
     if selected is None:
@@ -420,6 +425,14 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
         return False
     sacrifices = selected['sacrifice_card_ids']
     names = {cid: state.cards[cid].name for cid in sacrifices}
+    if context is not None:
+        from rules_engine.continuous import effective_combat_stats
+        # Costs precede resolution; later zone changes must not recompute power.
+        context['sacrificed_creatures'] = [
+            {'card_id': cid, 'power': effective_combat_stats(state, cid)[0],
+             'toughness': effective_combat_stats(state, cid)[1]}
+            for cid in sacrifices if 'Creature' in effective_types(state, state.cards[cid])
+        ]
     if sacrifices and not sacrifice_selected(state, player_id, sacrifices):
         return False
     for cid in sacrifices:

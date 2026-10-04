@@ -18,8 +18,11 @@ jobs:
       - name: Install backend dependencies
         run: python -m pip install -r backend/requirements.txt
       - name: Backend tests
-        working-directory: backend
-        run: python -m pytest -q
+        run: |
+          scratch=$(mktemp -d "$RUNNER_TEMP/mtg-backend-tests-XXXXXX")
+          git archive HEAD backend | tar -xf - -C "$scratch"
+          cd "$scratch/backend"
+          MTG_ISOLATED_TEST_ROOT="$scratch" python -m pytest -q
 
   frontend:
     runs-on: ubuntu-latest

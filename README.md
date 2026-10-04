@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+Supported sacrifice-linked damage, ordered distinct counter allocations,
+temporary graveyard flashback grants and self-return triggers now share checked
+payments, durable object references and restart behavior. Both human seats can
+deliberately assign ordered targets; AI uses the same legality/payment paths.
+See [casting and trigger scope and acceptance](docs/testing/casting-trigger-repairs.md)
+for the canonical regressions, full gates and remaining instruction boundaries.
+
 The live frontend uses a battlefield-first playtest table with compact controls,
 scrollable hands, exact-ID grouped lands, and keyboard/hover card inspection.
 Setup, saved sessions, diagnostics and logs can be collapsed to preserve table

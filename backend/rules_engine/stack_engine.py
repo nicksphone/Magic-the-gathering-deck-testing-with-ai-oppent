@@ -172,6 +172,27 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal_distribution:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    elif card and card.zone == Zone.STACK and item.payload.get('__ordered_distinct_targets'):
+        from game_state.state import object_incarnation
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+        hints = inspect_target_hints(state, card, item.controller, announced)
+        hints.pop('required_distinct_target_count', None)
+        legal_effects = []
+        for effect in item.payload.get('effects', []):
+            packet = effect['payload']
+            target = state.cards.get(packet['target_card_id'])
+            selected = {'target_card_id': packet['target_card_id']}
+            if (target is not None and target.zone == Zone.BATTLEFIELD
+                    and object_incarnation(target) == packet['__target_incarnation']
+                    and target.zone_change_sequence == packet['__target_zone_sequence']
+                    and validate_cast_targets(hints, selected)[0]
+                    and validate_protection_targets(state, card, selected)[0]
+                    and validate_hexproof_shroud_targets(state, item.controller, selected, card)[0]):
+                legal_effects.append(effect)
+        if not legal_effects:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
     elif card and card.zone == Zone.STACK and target_count > 0 and item.effect_key == "effect_sequence" and announced.get("mode_texts") and (target_count > 1 or announced.get("mode_targets")):
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets

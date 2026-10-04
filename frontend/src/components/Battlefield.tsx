@@ -629,6 +629,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
             const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const hints = selectedCost?.target_hints ?? move.target_hints;
+            const orderedCount = hints?.required_distinct_target_count ?? 0;
+            const orderedTargets = Array.isArray(targets[card.id]?.target_card_ids)
+              ? targets[card.id].target_card_ids as string[] : [];
+            const incompleteOrderedTargets = orderedCount > 0 && (
+              orderedTargets.length !== orderedCount || !orderedTargets.every(Boolean)
+              || new Set(orderedTargets).size !== orderedCount
+              || orderedTargets.some(id => !hints?.creature_targets?.some(target => target.id === id))
+            );
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
             const chosenModes = targets[card.id]?.mode_texts;
             const selectedModeTexts = Array.isArray(chosenModes) ? chosenModes as string[] : [];
@@ -672,7 +680,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {landControls}
                 {foretellControl}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards}
+                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
@@ -874,7 +882,28 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     }
                   />
                 ) : null}
-                {!perModeSelected && !showAlternativeSelect && alternativeTargets.length ? (
+                {orderedCount > 0 ? <fieldset>
+                  <legend>Choose {orderedCount} different creatures</legend>
+                  {Array.from({ length: orderedCount }, (_, index) => <label key={index}>
+                    Target {index + 1}: {hints?.ordered_counter_amounts?.[index]} {hints?.ordered_counter_type} counters
+                    <select aria-label={`Target ${index + 1} for ${card.name}`}
+                      value={orderedTargets[index] ?? ""}
+                      onChange={event => {
+                        const value = event.target.value;
+                        setTargets(previous => {
+                          const current = previous[card.id]?.target_card_ids;
+                          const selected = Array.from({ length: orderedCount }, (_, slot) => Array.isArray(current) ? current[slot] ?? "" : "");
+                          selected[index] = value;
+                          return { ...previous, [card.id]: { ...previous[card.id], target_card_id: undefined, target_card_ids: selected } };
+                        });
+                      }}>
+                      <option value="">Choose creature</option>
+                      {(hints?.creature_targets ?? []).map(target => <option key={target.id} value={target.id}
+                        disabled={orderedTargets.some((id, slot) => slot !== index && id === target.id)}>{target.name} ({target.id.slice(-6)})</option>)}
+                    </select>
+                  </label>)}
+                </fieldset> : null}
+                {!orderedCount && !perModeSelected && !showAlternativeSelect && alternativeTargets.length ? (
                   hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple

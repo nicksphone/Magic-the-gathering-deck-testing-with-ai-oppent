@@ -37,7 +37,7 @@ cleanup() {
 trap cleanup EXIT
 
 start_backend() {
-  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.browser_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.casting_trigger_browser_fixture:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
@@ -68,6 +68,7 @@ wait_for_services
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
+(cd frontend && timeout 120s node tests/browser-ordered-targets.mjs)
 echo 'Browser CI: simulation preflight'
 (cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: canonical combat coverage preflight'

@@ -205,6 +205,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "layout": card.layout,
                 "exile_face_down": card.exile_face_down,
                 "foretell_record": deepcopy(card.foretell_record),
+                "granted_flashback": deepcopy(card.granted_flashback),
                 "was_foretold": card.was_foretold,
                 "was_kicked": card.was_kicked,
                 "selected_face_index": card.selected_face_index,
@@ -282,6 +283,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
             exile_face_down=bool(raw.get("exile_face_down", False)),
             foretell_record=deepcopy(raw.get('foretell_record', {})),
+            granted_flashback=deepcopy(raw.get('granted_flashback', {})),
             was_foretold=bool(raw.get('was_foretold', False)),
             was_kicked=bool(raw.get('was_kicked', False)),
         )

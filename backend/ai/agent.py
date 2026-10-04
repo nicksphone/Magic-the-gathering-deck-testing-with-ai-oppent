@@ -3051,6 +3051,19 @@ class AIAgent:
                         >= _effective_combat_stats(state, target["id"])[1]
                         and not has_keyword(state, target["id"], "indestructible")
                     ]
+        required = hints.get('required_distinct_target_count')
+        if required and not targets.get('target_card_ids'):
+            beneficiary = player_id if hints.get('ordered_counter_type', '').startswith('+') else opponent
+            candidates = [target for target in creature_targets if state.cards[target['id']].controller == beneficiary]
+            if len({target['id'] for target in candidates}) < required:
+                out['_invalid_ai_choice'] = True
+                return out
+            candidates.sort(key=lambda target: (self._creature_threat_score(state, target['id'], player_id), target['id']), reverse=True)
+            assignments = [None] * required
+            for index, target in zip(sorted(range(required), key=lambda index: hints['ordered_counter_amounts'][index], reverse=True), candidates):
+                assignments[index] = target['id']
+            targets.pop('target_card_id', None)
+            targets['target_card_ids'] = assignments
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             if isinstance(state, MatchState) and pt_change and pt_change['toughness'] < 0:
                 from ai.pending_effects import negative_pt_would_be_lethal

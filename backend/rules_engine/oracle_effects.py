@@ -220,6 +220,27 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.ordered_targets import ordered_counter_allocations
+    allocation = ordered_counter_allocations(oracle)
+    if allocation:
+        effects = []
+        for target_id, amount in zip(action_targets.get('target_card_ids', []), allocation['amounts']):
+            target = state.cards[target_id]
+            effects.append({'effect_key': 'add_counters', 'payload': {
+                'target_card_id': target_id, 'counter': allocation['counter'], 'amount': amount,
+                '__target_incarnation': object_incarnation(target),
+                '__target_zone_sequence': target.zone_change_sequence}})
+        return 'effect_sequence', {'effects': effects, '__ordered_distinct_targets': True}
+    sacrifice_damage = re.fullmatch(
+        r"(?:as an additional cost to cast this spell, sacrifice a creature\.\s*)?"
+        + re.escape(card.name.lower())
+        + r" deals damage equal to the sacrificed creature's power to any target\.",
+        oracle.strip(),
+    )
+    if sacrifice_damage:
+        paid = getattr(card, 'paid_cost_context', {}).get('sacrificed_creatures', [])
+        amount = max(0, int(paid[0]['power'])) if len(paid) == 1 else 0
+        return 'deal_damage', {**action_targets, 'amount': amount}
     from rules_engine.keyword_triggers import next_turn_draw_instruction
     delayed_lines = [(line, next_turn_draw_instruction(line)) for line in oracle.splitlines()]
     if any(instruction is not None for _, instruction in delayed_lines):
@@ -758,6 +779,12 @@ def inspect_target_hints(
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
+    from rules_engine.ordered_targets import ordered_counter_allocations
+    allocation = ordered_counter_allocations(oracle)
+    if allocation:
+        hints['required_distinct_target_count'] = len(allocation['amounts'])
+        hints['ordered_counter_amounts'] = allocation['amounts']
+        hints['ordered_counter_type'] = allocation['counter']
     opponent = 1 if controller == 2 else 2
     graveyard_only_target = bool(re.search(r"\btarget\b[^.\n]{0,100}\bfrom\b[^.\n]{0,50}\bgraveyard\b", oracle))
     graveyard_creatures = [
@@ -952,7 +979,8 @@ def inspect_target_hints(
             hints["graveyard_enchantment_targets"] = graveyard_enchantments
         if "permanent" in oracle or ("artifact" in oracle and "enchantment" in oracle):
             hints["graveyard_permanent_targets"] = graveyard_permanents if "permanent" in oracle else graveyard_artifacts + graveyard_enchantments
-    if "cast target" in oracle and "from your graveyard" in oracle:
+    if ("cast target" in oracle and "from your graveyard" in oracle
+            or "target instant or sorcery card in your graveyard gains flashback" in oracle):
         hints["graveyard_spell_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[controller].graveyard
