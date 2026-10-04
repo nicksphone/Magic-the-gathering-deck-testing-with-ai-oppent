@@ -1,4 +1,6 @@
 from fastapi.testclient import TestClient
+import json
+from pathlib import Path
 
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
 from game_state.state import MatchFactory, Zone
@@ -7,14 +9,17 @@ from rules_engine.engine import RulesEngine
 
 
 def _state_with_exile():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    cards = {row['name']: row for name in ('land_types', 'public_foretell')
+             for row in json.loads((Path(__file__).parent / 'fixtures' / (name + '.json')).read_text())}
+    deck = [{"quantity": 58, "card_name": "Island"},
+            *[{**cards[name], 'quantity': 1, 'card_name': name} for name in ('Lightning Bolt', 'Saw It Coming')]]
     state = MatchFactory.from_decks(deck, deck, seed=1023)
-    visible_id = state.players[1].hand.pop()
-    hidden_id = state.players[2].hand.pop()
+    visible_id = next(card.id for card in state.cards.values() if card.owner == 1 and card.name == 'Lightning Bolt')
+    hidden_id = next(card.id for card in state.cards.values() if card.owner == 2 and card.name == 'Saw It Coming')
     visible = state.cards[visible_id]
     hidden = state.cards[hidden_id]
-    visible.name = "Lightning Bolt"
-    hidden.name = "Counterspell"
+    for card in (visible, hidden):
+        getattr(state.players[card.owner], card.zone.value).remove(card.id)
     visible.move_to_zone(Zone.EXILE)
     hidden.move_to_zone(Zone.EXILE)
     hidden.exile_face_down = True
@@ -31,7 +36,7 @@ def test_public_exile_view_hides_face_down_card_and_survives_snapshot():
         assert [card["id"] for card in view["players"][1]["exile"]] == [visible_id]
         assert view["players"][2]["exile_count"] == 1
         assert view["players"][2]["exile"] == []
-        assert "Counterspell" not in str(view)
+        assert "Saw It Coming" not in str(view)
         assert current.cards[hidden_id].exile_face_down
     state.cards[hidden_id].move_to_zone(Zone.HAND)
     assert not state.cards[hidden_id].exile_face_down

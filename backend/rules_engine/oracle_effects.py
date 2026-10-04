@@ -203,6 +203,22 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.keyword_triggers import next_turn_draw_instruction
+    delayed_lines = [(line, next_turn_draw_instruction(line)) for line in oracle.splitlines()]
+    if any(instruction is not None for _, instruction in delayed_lines):
+        from copy import copy
+        proxy = copy(card)
+        proxy.oracle_text = '\n'.join(line for line, instruction in delayed_lines if instruction is None)
+        proxy.card_faces = []
+        effects = []
+        if proxy.oracle_text.strip():
+            key, data = infer_effect_from_oracle(state, proxy, controller, action_targets,
+                                               report_unsupported=report_unsupported)
+            effects.append({'effect_key': key, 'payload': data})
+        effects.extend({'effect_key': 'schedule_next_turn_draw',
+                        'payload': {**instruction, 'source_card_id': card.id}}
+                       for _, instruction in delayed_lines if instruction is not None)
+        return 'effect_sequence', {'effects': effects}
     from rules_engine.devotion import devotion_instruction
     devotion = devotion_instruction(oracle, card.name)
     if devotion is not None:

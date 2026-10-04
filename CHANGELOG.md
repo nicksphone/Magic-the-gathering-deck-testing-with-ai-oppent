@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-04 - Public mana changes and delayed draw events
+
+- Value supported fixing/disruption through actual paid projections and public
+  resources across AI styles; dynamically retain unhelpful pure fixing and
+  compare special-land resource changes with ordinary alternatives.
+- Exclude face-down exile from resource reads; use canonical privacy fixtures
+  and explicitly report unimplemented Foretell mechanics.
+- Recognize additional self-entry subjects without treating quoted token entry
+  abilities as abilities of their creator.
+- Schedule supported fixed next-turn-upkeep draws as durable, counterable
+  one-shot triggers; retain immediate effects and independent copied draws.
+- Correct attached-creature "other creatures" stat recipients and public traces.
+- All 6,134 final-source backend tests, frontend gates and full Chromium pass.
+  Sixty seat-balanced six-archetype samples, repeated twice, resolve with zero
+  timeout, anomaly or drift. This is bounded acceptance, not release-completion
+  or expert-AI certification.
+  See [acceptance checklist](docs/testing/ai-public-mana-changes.md).
+
 ## 2026-10-04 - Basic-land layers and per-ability mana payment
 
 - Share global, controller-only and Aura basic-land additions/replacements

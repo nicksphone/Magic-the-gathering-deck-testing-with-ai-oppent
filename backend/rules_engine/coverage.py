@@ -23,6 +23,7 @@ _UNSUPPORTED_PATTERNS = (
     ("bands with other", re.compile(r"\bbands with other\b", re.IGNORECASE)),
     ("fuse", re.compile(r"\bfuse\b", re.IGNORECASE)),
     ("morph", re.compile(r"\bmorph\b", re.IGNORECASE)),
+    ("foretell", re.compile(r"\bforetell\b", re.IGNORECASE)),
     ("manifest", re.compile(r"\bmanifest(?:ed|ing)?\b", re.IGNORECASE)),
     ("suspend", re.compile(r"\bsuspend(?:ed|ing)?\b", re.IGNORECASE)),
     ("mutate", re.compile(r"\bmutat(?:e|ed|ing)\b", re.IGNORECASE)),

@@ -11,15 +11,30 @@
   pass. Twenty-four cross-archetype seat-balanced samples, repeated twice,
   finish with zero timeout, anomaly or drift. See
   [current checklist and boundaries](docs/testing/land-type-layers.md).
-- [ ] Extend AI valuation for public resource changes from type-changing
+- [x] Extend AI valuation for public resource changes from type-changing
   effects, including own fixing and opponent disruption. Use shared projections
   and known information, not hidden opposing hands or forced matchup win rates;
   verify actual before/after decisions across archetypes and difficulties.
-- [ ] For that valuation batch, first reproduce both useful fixing and harmful
+  Shared projections, dynamic retention, Aura targets and comparable ordinary
+  land alternatives pass focused checks, including HTTP/SQLite paths. Canonical
+  quoted token abilities, next-turn draw scheduling and attached-creature
+  recipient references are repaired alongside this batch. Missing Oracle metadata
+  no longer crashes the new heuristic; focused compatibility checks pass.
+  All 6,134 isolated backend tests and final-source browser/frontend gates pass.
+  Sixty six-archetype seat-balanced samples, repeated twice, resolve with zero
+  timeout, anomaly or determinism failure; see
+  [scope and checklist](docs/testing/ai-public-mana-changes.md).
+- [x] For that valuation batch, first reproduce both useful fixing and harmful
   self-disruption using canonical additions/replacements. Compare legal spell
   access and retained resources through checked projected actions, including
   source/controller changes, restricted abilities and entry costs. Test both
   seats and multiple archetypes before running the repeated replay matrix.
+- [ ] Implement actual Foretell actions, later-turn alternative costs and
+  durable cast/look permissions. Hidden-exile views are not Foretell support;
+  canonical fixtures now verify privacy and explicitly warn it is unsupported.
+- [ ] Measure and bound wide-state tactical planning latency without silently
+  skipping legal actions or losing deterministic decision behavior. The seeded
+  live Control/Ramp BO3 restart regression passes but remains an expensive gate.
 
 - [x] Finish shared mana-ability acceptance: live devotion and counted outputs,
   paid activations, pure multipliers and resource-preserving spell payments.

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "3d634087-77ba-4543-aa7a-8a3774d69cd7",
+    "oracle_id": "61822bbe-0407-4425-b8d7-0263a8c521ec",
+    "name": "Dragonbroods' Relic",
+    "mana_cost": "{1}{G}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}, Tap an untapped creature you control: Add one mana of any color.\n{3}{W}{U}{B}{R}{G}, Sacrifice this artifact: Create a 4/4 Dragon creature token named Reliquary Dragon that's all colors. It has flying, lifelink, and \"When this token enters, it deals 3 damage to any target.\" Activate only as a sorcery.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tdm/140/dragonbroods-relic?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "5d7585ab-a364-471c-8ef1-318e459b4020",
+    "oracle_id": "78826624-8784-4003-8813-230f299a588f",
+    "name": "Outlaws' Merriment",
+    "mana_cost": "{1}{R}{W}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "At the beginning of your upkeep, choose one at random. Create a red and white creature token with those characteristics.\n• 3/1 Human Warrior with trample and haste.\n• 2/1 Human Cleric with lifelink and haste.\n• 1/2 Human Rogue with haste and \"When this token enters, it deals 1 damage to any target.\"",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R",
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/eld/198/outlaws-merriment?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

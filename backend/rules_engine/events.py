@@ -983,6 +983,9 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 
 
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    # Granted token abilities are not entry abilities of their creator. Keep
+    # original text for effect parsing; only the match surface excludes quotes.
+    oracle = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '', oracle)
     if re.search(r'\bif it was kicked\b', oracle, re.I) and not getattr(card, 'was_kicked', False):
         return False
     # Modern Oracle abbreviates battlefield entry to "enters".
@@ -1031,7 +1034,9 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     self_names = {card.name.lower(), card.name.split(",", 1)[0].lower()}
     if any(f"when {name} enters the battlefield" in oracle for name in self_names):
         return entering_id == card.id
-    if any(f"when {subject} enters the battlefield" in oracle for subject in ("this creature", "this permanent", "this artifact", "this enchantment", "this planeswalker")):
+    if any(f"when this {subject} enters the battlefield" in oracle for subject in
+           ("creature", "permanent", "artifact", "enchantment", "planeswalker",
+            "aura", "equipment", "vehicle", "land", "battle", "token")):
         return entering_id == card.id
     if "whenever another creature enters the battlefield" in oracle:
         return "Creature" in (effective_types(state, entering_card) or []) and entering_id != card.id
@@ -1295,6 +1300,14 @@ def _trigger_from_oracle(
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
     if event == 'enters_battlefield' and source is not None:
+        from rules_engine.keyword_triggers import next_turn_draw_instruction
+        for line in oracle.splitlines():
+            entry = re.fullmatch(r'(?:when|whenever) [^,]+, (.+)', line.strip(), re.I)
+            instruction = next_turn_draw_instruction(entry[1]) if entry else None
+            if instruction is not None and _matches_enters_battlefield_trigger(state, source, line, payload):
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'schedule_next_turn_draw',
+                        'payload': {**instruction, 'source_card_id': source_card_id}}
         from rules_engine.devotion import devotion_instruction
         for line in oracle.splitlines():
             entry = re.fullmatch(r'when (?:this creature|' + re.escape(source.name.lower())

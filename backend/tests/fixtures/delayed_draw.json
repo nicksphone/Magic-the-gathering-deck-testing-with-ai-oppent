@@ -1,0 +1,19 @@
+[
+  {
+    "id": "d5c531fc-4e4e-44c9-a2ee-4f7fe41bb3f0",
+    "oracle_id": "52512d7a-9b1c-4475-80aa-c95f4efa1015",
+    "name": "Fevered Strength",
+    "mana_cost": "{2}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +2/+0 until end of turn.\nDraw a card at the beginning of the next turn's upkeep.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/me3/66/fevered-strength?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

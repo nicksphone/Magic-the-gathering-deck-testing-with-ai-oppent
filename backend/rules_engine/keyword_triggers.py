@@ -5,13 +5,39 @@ from game_state.state import Zone, object_incarnation
 from rules_engine.continuous import effective_keyword_counts
 
 
+def next_turn_draw_instruction(text):
+    match = re.fullmatch(
+        r'draw (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards? '
+        r"at the beginning of the next turn['\u2019]s upkeep\.?", text.strip(), re.I,
+    )
+    if match is None:
+        return None
+    from rules_engine.oracle_effects import _parse_count_token
+    return {'amount': _parse_count_token(match[1])}
+
+
+def schedule_next_turn_draw(state, controller, payload):
+    source_id = payload.get('__source_card_id') or payload.get('source_card_id')
+    source = state.cards.get(source_id)
+    state.delayed_triggers.append({
+        'step': 'upkeep', 'earliest_turn': state.turn + 1,
+        'source_card_id': source_id, 'controller': controller,
+        'label': f'{source.name if source else "Delayed"} next-turn draw',
+        'effect_key': 'draw_cards', 'payload': {'amount': payload['amount'], 'target_player': controller},
+    })
+
+
 def collect_keyword_triggers(state, event, payload):
     if event == 'block_declared':
         return _block_keyword_triggers(state, payload)
-    if event == 'begin_step' and payload.get('step') == 'end_combat':
-        due = [record for record in state.delayed_triggers if record['step'] == 'end_combat']
-        state.delayed_triggers = [record for record in state.delayed_triggers if record['step'] != 'end_combat']
-        return [{key: value for key, value in record.items() if key != 'step'} for record in due]
+    if event == 'begin_step':
+        due, remaining = [], []
+        for record in state.delayed_triggers:
+            (due if record['step'] == payload.get('step')
+             and state.turn >= record.get('earliest_turn', state.turn) else remaining).append(record)
+        state.delayed_triggers = remaining
+        return [{key: value for key, value in record.items() if key not in {'step', 'earliest_turn'}}
+                for record in due]
     if event != 'attack_declared':
         return []
     attacker = state.cards.get(payload.get('card_id'))

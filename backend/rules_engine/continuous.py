@@ -766,7 +766,7 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(src):
             if not _scope_controller(src.controller, scope, card.controller):
                 continue
-            if other_only and src_id == card_id:
+            if other_only and _other_creature_reference(src, subject) == card_id:
                 continue
             if not _subject_matches(state, card_id, subject):
                 continue
@@ -878,6 +878,15 @@ def _iter_pt_setters(text):
         match = GLOBAL_BASE_RE.fullmatch(clause.strip())
         if match:
             yield ("all", match.group(1) == "other", "creatures", int(match.group(2)), int(match.group(3)))
+
+
+def _other_creature_reference(source, subject):
+    # Attached creature text makes "other creatures" relative to its recipient,
+    # not to the noncreature Aura/Equipment that carries the instruction.
+    if (source.attached_to and subject == 'creatures'
+            and re.search(r'\b(?:enchanted|equipped) creature\b', _static_oracle_text(source))):
+        return source.attached_to
+    return source.id
 
 
 def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
@@ -1241,7 +1250,7 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if attached_keywords:
         entries.append({"layer": f"keyword-grant:{','.join(attached_keywords)}"})
     for scope, other_only, subject, p_delta, t_delta in _iter_pt_modifiers(source_card):
-        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and source_card.id == target_card_id) and _subject_matches(state, target_card_id, subject):
+        if _scope_controller(source_card.controller, scope, target.controller) and not (other_only and _other_creature_reference(source_card, subject) == target_card_id) and _subject_matches(state, target_card_id, subject):
             entries.append({"layer": f"pt-mod:{p_delta}/{t_delta}"})
             break
     for scope, other_only, subject, _p_set, _t_set in _iter_pt_setters(source_card):

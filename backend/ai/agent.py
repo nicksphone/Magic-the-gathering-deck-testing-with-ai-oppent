@@ -418,7 +418,10 @@ class AIAgent:
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Discard least useful hand cards")
             options.sort(key=lambda cid: (("Creature" in effective_types(state, state.cards[cid])), mana_value(state.cards[cid].mana_cost), cid))
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
-        legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)]
+        from ai.mana_resource_policy import resource_change_plan
+        legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)
+                       and not ((plan := resource_change_plan(self, state, move, player_id))
+                                and move.get('type') == 'cast_spell' and plan['defer'])]
         self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
         if self_removal_win is not None:
             return AIDecision(action=self_removal_win, reasoning="Announced self-removal line wins if unanswered")
@@ -1451,6 +1454,10 @@ class AIAgent:
             cast_moves = [m for m in moves if m.get("type") == "cast_spell"]
             if mtype == "cast_spell":
                 card = _card_for_move(state, move)
+                from ai.mana_resource_policy import resource_change_plan
+                resource_plan = resource_change_plan(self, state, move, player_id)
+                if resource_plan is not None:
+                    base += resource_plan['score']
                 tags = self._spell_tags(card)
                 from rules_engine.attachments import is_aura
                 if is_aura(card):
@@ -2674,7 +2681,11 @@ class AIAgent:
                 apply_state_based_actions(projected)
             except (ValueError, KeyError):
                 continue
-            gain = evaluate_board(projected, player_id) - before
+            from ai.mana_resource_policy import resource_delta
+            from rules_engine.land_types import land_type_instructions
+            gain = (evaluate_board(projected, player_id) - before
+                    + (resource_delta(state, projected, player_id, excluded_card_ids={source.id})
+                       if land_type_instructions(source.oracle_text) else 0.0))
             if gain <= 1e-9:
                 continue
             score = (gain, self._creature_threat_score(projected, target["id"], player_id), target["id"])
@@ -4395,6 +4406,9 @@ class AIAgent:
     def _best_land_move(self, state: MatchState, land_moves: list[dict], player_id: int) -> dict:
         demand = self._color_demand(state, player_id)
         current_sources = self._current_color_sources(state, player_id)
+        from rules_engine.land_types import land_type_instructions
+        compare_resources = any(land_type_instructions(state.cards[move['card_id']].oracle_text)
+                                for move in land_moves if move.get('card_id') in state.cards)
 
         def score_land(move: dict) -> float:
             cid = move.get("card_id")
@@ -4415,6 +4429,11 @@ class AIAgent:
                 if current_sources.get(color, 0) == 0 and demand.get(color, 0) > 0:
                     score += 3.5
             score += len(produced) * 0.15
+            from ai.mana_resource_policy import resource_change_plan
+            resource_plan = resource_change_plan(self, state, move, player_id,
+                                                 include_normal_land=compare_resources)
+            if resource_plan is not None:
+                score += resource_plan['score']
             if move.get("entry_choice") == "pay_two_life":
                 score += 0.25 if self._should_pay_two_life_for_land(state, player_id, cid) else -0.25
             return score
