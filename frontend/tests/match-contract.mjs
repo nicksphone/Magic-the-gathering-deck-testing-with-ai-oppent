@@ -108,3 +108,11 @@ for (const history of [{ 1: -1, 2: 0 }, { 1: 1.5, 2: 0 }, { 1: 0 }, { 1: 0, 2: 0
   assert.throws(() => parseMatchState({ ...state, discards_this_turn: history }), /discard history/);
 }
 console.log("PASS optional public discard-history contract");
+const manaMove = {type: 'activate_mana_ability', card_id: 'nykthos', ability_index: 1,
+  cost_text: '{2}, {T}', outputs: {G: 3, U: 0}};
+assert.equal(parseLegalMoves({player_id: 2, revision: 1, moves: [manaMove]}).moves[0], manaMove);
+for (const invalid of [{...manaMove, ability_index: -1}, {...manaMove, cost_text: 2},
+  {...manaMove, outputs: {G: -1}}, {...manaMove, outputs: {X: 3}}, {...manaMove, outputs: {G: 1.5}}]) {
+  assert.throws(() => parseLegalMoves({player_id: 2, revision: 1, moves: [invalid]}), /legal-moves/);
+}
+console.log('PASS indexed mana ability contracts, zero output and invalid costs/colors/counts');

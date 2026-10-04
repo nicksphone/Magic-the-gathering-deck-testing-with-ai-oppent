@@ -19,6 +19,7 @@ def test_discard_additional_cost_is_paid() -> None:
     p1 = state.players[1]
     lid = p1.library.pop()
     p1.battlefield.append(lid)
+    state.cards[lid].zone = Zone.BATTLEFIELD
     state.cards[lid].types = ["Land"]
     state.cards[lid].name = "Island"
 

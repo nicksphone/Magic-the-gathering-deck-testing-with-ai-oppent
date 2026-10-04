@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-04 - Shared mana abilities and resource sequencing
+
+- Share bounded devotion/count-based outputs, paid tap activations and pure
+  doubling/tripling replacements across payment, AI, actions and public views.
+- Add both-seat indexed mana controls, immediate zero-output activation,
+  guarded source funding and resource-preserving spell payment selection.
+- Preserve exact-name legacy dual fallback without substring guessing; classify
+  library-moving abilities according to the current mana-ability definition.
+- Replace fabricated Nissa-style test text with canonical Mana Reflection;
+  preserve decision assertions while repairing old fixture bookkeeping.
+- Add 41 regressions and nineteen canonical fixtures. All 5,650 backend tests,
+  frontend gates, complete Chromium and repeated seat-balanced replay gates pass.
+  Eighty-four controlled AI decisions cover fourteen styles and all difficulties.
+  See [scope, acceptance and remaining limits](docs/testing/mana-abilities.md).
+
 ## 2026-10-04 - Conditional creature types and entry timing
 
 - Share a pure layer-four view across combat, targets, static/resource/cost

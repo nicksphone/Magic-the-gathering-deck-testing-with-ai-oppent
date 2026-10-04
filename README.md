@@ -106,6 +106,13 @@ It is designed for serious deck work:
 
 ### Gameplay
 
+- [Shared mana abilities](docs/testing/mana-abilities.md): bounded devotion and
+  battlefield/graveyard-counted outputs, paid tap activations and pure mana
+  doubling/tripling use one reader for payment, legal actions, AI and public
+  views. Either human seat can choose an indexed mana ability and output color.
+  Automatic payments compare supported plans to preserve follow-up resources;
+  mixed-color bundles, triggered extra mana and general replacements remain open.
+
 - [Kicked-cast payoffs](docs/testing/kicked-cast-payoffs.md): recognized token, self-counter and temporary base-stat triggers share actual cast events, source suppression and original-object history. First-kicked-spell discounts share affordability/payment and persisted per-turn counts; copies do not consume them. Fixed token ETBs and AI guards for prohibited counters and draw exhaustion are tested. Broader kicker forms, general payoff forecasting and expert decisions remain unfinished.
 - [Replacement-aware optional draw estimates](docs/testing/ai-draw-forecast.md): kicker valuation reuses shared default draw replacements, first-draw exceptions and restrictions with public library counts. Canonical before/after decisions avoid doubled-draw deck-out while retaining tested safe choices. Optional dredge, downstream draw triggers, alternative replacement ordering and general draw strategy remain unfinished.
 - [Fixed nonmana kicker](docs/testing/nonmana-kicker.md): recognized life/discard/typed-sacrifice payments reuse ordinary checked costs, branch effects, copies and snapshots. Both seats have tested resource selections and owned discard resolution. AI weighs payment loss and supported removal/counter gains; controller-scoped self-or-other death triggers preserve sacrifice payoffs. Compounds, qualified costs, multikicker and deeper resource strategy remain unfinished.

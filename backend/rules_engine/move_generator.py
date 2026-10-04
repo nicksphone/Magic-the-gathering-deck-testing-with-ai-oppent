@@ -131,6 +131,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
 
     if state.priority_player != player_id:
         return moves
+    from rules_engine.mana_abilities import mana_ability_views
+    for cid in player.battlefield:
+        for ability in mana_ability_views(state, state.cards[cid]):
+            moves.append({'type': 'activate_mana_ability', 'card_id': cid,
+                          'card_name': state.cards[cid].name, **ability})
     from rules_engine.keyword_actions import ninjutsu_moves
     if not split_second_active(state):
         moves.extend(ninjutsu_moves(state, player_id))

@@ -93,6 +93,8 @@ echo 'Browser CI: compound defensive spell responses'
 (cd frontend && timeout 120s node tests/browser-defensive-responses.mjs)
 echo 'Browser CI: conditional creature type transitions'
 (cd frontend && timeout 120s node tests/browser-conditional-creature-types.mjs)
+echo 'Browser CI: indexed mana, paid activations and multipliers'
+(cd frontend && timeout 180s node tests/browser-mana-abilities.mjs)
 echo 'Browser CI: hand activations and owned counter payments'
 (cd frontend && timeout 120s node tests/browser-hand-activations.mjs)
 echo 'Browser CI: legendary channels and owned resolution choices'

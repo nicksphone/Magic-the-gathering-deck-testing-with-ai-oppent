@@ -8,6 +8,17 @@ from rules_engine.oracle_text import without_reminder_text
 COLORS = {'white': 'W', 'blue': 'U', 'black': 'B', 'red': 'R', 'green': 'G'}
 
 
+@lru_cache(maxsize=4096)
+def devotion_mana_instruction(text):
+    text = without_reminder_text(text).strip().lower().rstrip('.')
+    if text == 'choose a color. add an amount of mana of that color equal to your devotion to that color':
+        return {'choice': True}
+    match = re.fullmatch(r'add an amount of \{([wubrgc])\} equal to your devotion to ([a-z]+(?: and [a-z]+)?)', text)
+    if match and all(color in COLORS for color in match[2].split(' and ')):
+        return {'output_color': match[1].upper(), 'colors': tuple(COLORS[color] for color in match[2].split(' and '))}
+    return None
+
+
 def devotion_count(state, player_id, colors):
     """Each matching mana symbol contributes once, including hybrid symbols."""
     wanted = set(colors).intersection(COLORS.values())

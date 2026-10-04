@@ -132,7 +132,9 @@ class AIAgent:
             selected = preferred_counter_option(pending)
             move = next(move for move in legal_moves if move.get('replacement_source_id') == selected)
             return AIDecision(action=move, reasoning='Order counter replacements by resulting public counter amount')
-        legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")]
+        # Payment planning activates mana sources when a chosen action needs them.
+        legal_moves = [move for move in legal_moves if not str(move.get("type", "")).endswith("_restricted")
+                       and move.get('type') != 'activate_mana_ability']
         def useful_variable_sweep(move: dict) -> bool:
             if move.get("type") != "cast_spell":
                 return True

@@ -723,11 +723,18 @@ class RulesEngine:
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
 
+        elif kind == 'activate_mana_ability':
+            from rules_engine.mana_abilities import activate_mana_ability
+            if not activate_mana_ability(state, player_id, action['card_id'], action['ability_index'], action['color']):
+                reject('Cannot activate selected mana ability')
+                return
+
         elif kind == "tap_land_for_mana":
             from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
             if cid in player.battlefield and land_can_produce_mana(state, cid, free_only=False):
-                colors = land_mana_colors(state.cards[cid])
+                from rules_engine.mana_abilities import tap_only_outputs
+                colors = set(tap_only_outputs(state, state.cards[cid]))
                 if action.get("color") and action["color"] not in colors:
                     reject("Land cannot produce the selected color now")
                     return
@@ -735,21 +742,23 @@ class RulesEngine:
                     reject('Cannot pay mana ability costs')
                     return
                 color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
-                amount = land_mana_amount(state, player_id, cid)
+                amount = land_mana_amount(state, player_id, cid, color)
                 add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
 
         elif kind == "tap_nonland_for_mana":
-            from rules_engine.mana import _consume_nonland_mana_source, add_mana_to_pool, nonland_mana_outputs
+            from rules_engine.mana import nonland_mana_outputs
 
             cid = action["card_id"]
             color = action["color"]
             outputs = nonland_mana_outputs(state, cid, state.cards[cid], free_only=False) if cid in player.battlefield else {}
             if color in outputs:
-                name = state.cards[cid].name
-                if _consume_nonland_mana_source(state, player_id, cid):
-                    add_mana_to_pool(state, player_id, color, outputs[color], source_id=cid)
-                    state.log.append(f"{player.name} activates {name} for {outputs[color]} {color}.")
+                from rules_engine.mana_abilities import mana_ability_views, activate_mana_ability
+                spec = next(view for view in mana_ability_views(state, state.cards[cid])
+                            if view['outputs'].get(color) == outputs[color])
+                if not activate_mana_ability(state, player_id, cid, spec['ability_index'], color):
+                    reject('Cannot activate mana source')
+                    return
 
         elif kind == "tap_lands_bulk":
             from rules_engine.action_validation import ActionRejected, validate_tap
@@ -780,7 +789,7 @@ class RulesEngine:
                         reject('Cannot pay mana ability costs')
                         return
                     color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
-                    amount = land_mana_amount(state, player_id, cid)
+                    amount = land_mana_amount(state, player_id, cid, color)
                     add_mana_to_pool(state, player_id, color, amount, source_id=cid)
                     produced = color
                     produced_total += amount

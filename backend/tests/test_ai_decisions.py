@@ -8,6 +8,22 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack
 
 
+def complete_card_bookkeeping(state):
+    """Give policy-test doubles the same zone/identity bookkeeping as live cards."""
+    for cid, card in state.cards.items():
+        for seat, player in state.players.items():
+            for attribute, zone in [('battlefield', Zone.BATTLEFIELD), ('hand', Zone.HAND),
+                                    ('library', Zone.LIBRARY), ('graveyard', Zone.GRAVEYARD)]:
+                if cid not in getattr(player, attribute, []):
+                    continue
+                for field, value in {'id': cid, 'zone': zone, 'controller': seat,
+                                     'owner': seat, 'summoning_sick': False,
+                                     'tapped': False, 'counters': {}}.items():
+                    if not hasattr(card, field):
+                        setattr(card, field, value)
+    return state
+
+
 def test_ai_materializes_land_only_target_without_creature_target() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck, seed=81)
@@ -170,7 +186,7 @@ def test_ai_prefers_non_pass_action_when_available() -> None:
         players = {1: type("P", (), {"life": 20, "hand": [], "battlefield": []})(), 2: type("P", (), {"life": 20, "hand": [], "battlefield": []})()}
         cards = {}
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -218,7 +234,7 @@ def test_ai_avoids_mana_tap_loop_when_no_cast_available() -> None:
         cards = {}
         stack = []
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -240,7 +256,7 @@ def test_ai_ignores_attack_restricted_placeholder_actions() -> None:
         cards = {}
         stack = []
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -265,7 +281,7 @@ def test_aggro_ai_prefers_creature_development_over_burn_early() -> None:
         }
         stack = []
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["card_id"] == "creature-1"
 
 
@@ -290,7 +306,7 @@ def test_control_ai_prefers_card_draw_over_creature_on_empty_stack() -> None:
         }
         stack = []
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["card_id"] == "draw-1"
 
 
@@ -323,7 +339,7 @@ def test_control_ai_prefers_value_draw_over_idle_hold_up_when_stable() -> None:
             "i4": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
@@ -361,8 +377,8 @@ def test_matchup_profile_boosts_counterspell_score_against_aggro() -> None:
         }
 
     move = {"type": "cast_spell", "card_id": "counter-1", "card_name": "Counterspell"}
-    score_vs_aggro = control_vs_aggro._matchup_move_adjustment(FakeState(), move, 1)
-    score_vs_control = control_vs_control._matchup_move_adjustment(FakeState(), move, 1)
+    score_vs_aggro = control_vs_aggro._matchup_move_adjustment(complete_card_bookkeeping(FakeState()), move, 1)
+    score_vs_control = control_vs_control._matchup_move_adjustment(complete_card_bookkeeping(FakeState()), move, 1)
     assert score_vs_aggro > score_vs_control
 
 
@@ -381,8 +397,8 @@ def test_matchup_profile_changes_attack_bias_for_tempo_pressure() -> None:
             "b2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
         }
 
-    score_vs_control = tempo_vs_control._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
-    score_vs_ramp = tempo_vs_ramp._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
+    score_vs_control = tempo_vs_control._attack_bias(complete_card_bookkeeping(FakeState()), {"attackers": ["a1"]}, 1)
+    score_vs_ramp = tempo_vs_ramp._attack_bias(complete_card_bookkeeping(FakeState()), {"attackers": ["a1"]}, 1)
     assert score_vs_control > score_vs_ramp
 
 
@@ -461,7 +477,7 @@ def test_control_ai_prefers_sweeper_over_draw_when_stabilizing() -> None:
             "atk-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "sweeper-1"
 
@@ -565,7 +581,7 @@ def test_control_ai_sets_counterspell_stack_target() -> None:
         }
         stack = [type("S", (), {"id": "stack-a", "label": "Lightning Bolt"})()]
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["targets"]["target_stack_id"] == "stack-a"
 
@@ -599,7 +615,7 @@ def test_aggro_ai_avoids_suicide_attack_into_larger_blocker() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -632,7 +648,7 @@ def test_late_game_forced_progress_attack_avoids_empty_attack_stall() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "attack"
     assert decision.action.get("attackers") == ["atk-1"]
 
@@ -668,7 +684,7 @@ def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_press
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -857,7 +873,7 @@ def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
         winner = None
         pregame_pending = False
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["targets"]["target_stack_id"] == "stack-big"
 
@@ -884,7 +900,7 @@ def test_control_ai_mulligans_land_light_hand() -> None:
             "s6": Card(["Instant"], "{4}{U}"),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "mulligan"
 
 
@@ -913,7 +929,7 @@ def test_control_ai_mulligans_missing_primary_color_access() -> None:
             "s5": Card(["Instant"], "{2}{U}", name="Negate"),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "mulligan"
 
 
@@ -973,7 +989,7 @@ def test_control_ai_keeps_borderline_two_land_hand_with_real_action() -> None:
             "s3": Card(["Instant"], "{1}{B}", name="Go for the Throat", oracle_text="Destroy target creature."),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "keep_hand"
 
 
@@ -1000,7 +1016,7 @@ def test_ramp_ai_keeps_two_land_hand_with_acceleration() -> None:
             "s3": Card(["Sorcery"], "{1}{G}", name="Explore", oracle_text="Draw a card. You may play an additional land this turn."),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "keep_hand"
 
 
@@ -1029,7 +1045,7 @@ def test_aggro_ai_mulligans_hand_without_early_pressure() -> None:
             "s4": Card(["Enchantment"], "{4}{R}", name="Slow Engine", oracle_text="Whenever you cast a spell, draw a card."),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "mulligan"
 
 
@@ -1047,7 +1063,7 @@ def test_attack_bias_defensive_role_discourages_attacks() -> None:
             "b2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
         }
 
-    score = ai._attack_bias(FakeState(), {"attackers": ["a1"]}, 1)
+    score = ai._attack_bias(complete_card_bookkeeping(FakeState()), {"attackers": ["a1"]}, 1)
     assert score < 5
 
 
@@ -1092,7 +1108,7 @@ def test_master_ai_casts_big_creature_when_castable() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -1137,7 +1153,7 @@ def test_control_ai_casts_big_creature_on_clear_turn_four_board() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -1184,7 +1200,7 @@ def test_master_ai_uses_deeper_planner_on_complex_midgame_board() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -1219,7 +1235,7 @@ def test_ai_targets_highest_threat_creature_not_just_highest_toughness() -> None
             "dragon": type("C", (), {"types": ["Creature"], "name": "Dragon", "power": 5, "toughness": 5, "keywords": ["Flying"], "oracle_text": "", "tapped": False})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["targets"]["target_card_id"] == "dragon"
 
@@ -1253,7 +1269,7 @@ def test_control_ai_more_proactive_when_opponent_tapped_down() -> None:
             "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": True})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -1298,7 +1314,7 @@ def test_control_ai_casts_big_finisher_on_clear_main_phase() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
@@ -1330,7 +1346,7 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["targets"]["target_card_id"] == "enemy-1"
     assert out["targets"]["x_value"] >= 1
 
@@ -1478,7 +1494,7 @@ def test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -1519,7 +1535,7 @@ def test_ai_avoids_low_value_secure_the_wastes_early() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -1541,7 +1557,7 @@ def test_ai_rejects_low_impact_x_value_for_token_spells() -> None:
             "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
         }
 
-    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    x_value = ai._choose_x_value(complete_card_bookkeeping(FakeState()), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
     assert x_value == 0
 
 
@@ -1566,7 +1582,7 @@ def test_ai_prefers_positive_x_for_interactive_x_removal() -> None:
             "enemy-1": type("C", (), {"types": ["Artifact"], "name": "Lockstone", "tapped": False})(),
         }
 
-    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    x_value = ai._choose_x_value(complete_card_bookkeeping(FakeState()), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
     assert x_value >= 1
 
 
@@ -1600,7 +1616,7 @@ def test_control_ai_prefers_moderate_x_value_over_max_on_stable_board() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    x_value = ai._choose_x_value(FakeState(), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
+    x_value = ai._choose_x_value(complete_card_bookkeeping(FakeState()), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
     assert x_value == 3
 
 
@@ -1659,7 +1675,7 @@ def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> N
         loyalty_activated_this_turn = set()
 
     try:
-        decision = ai.choose_action(FakeState(), moves, 1)
+        decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
         assert decision.action["type"] == "pass_priority"
     finally:
         AIAgent._log_priors_cache = old
@@ -1731,7 +1747,7 @@ def test_ai_uses_role_specific_log_priors_when_board_is_stable() -> None:
         loyalty_activated_this_turn = set()
 
     try:
-        assert ai._historical_cast_timing_bias(FakeState(), FakeState.cards["deluge-1"], 1) > 0
+        assert ai._historical_cast_timing_bias(complete_card_bookkeeping(FakeState()), FakeState.cards["deluge-1"], 1) > 0
     finally:
         AIAgent._log_priors_cache = old
 
@@ -1760,7 +1776,7 @@ def test_ai_materialize_sets_default_cost_choice_when_options_present() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["cost_choice"]["id"] == "base"
 
 
@@ -1788,7 +1804,7 @@ def test_ai_forces_land_drop_on_own_main_phase() -> None:
             "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "play_land"
 
 
@@ -1817,7 +1833,7 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
             "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "play_land"
     assert decision.action["card_id"] == "island-1"
 
@@ -1845,7 +1861,7 @@ def test_ai_does_not_invent_land_drop_when_legal_moves_omit_it() -> None:
             "forest-1": type("C", (), {"types": [], "name": "Forest", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": ""})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] in {move["type"] for move in moves}
     assert decision.action["type"] != "play_land"
 
@@ -1887,7 +1903,7 @@ def test_ai_forces_legal_land_drop_even_if_land_counter_is_desynced() -> None:
             "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "play_land"
     assert decision.action["card_id"] == "island-1"
 
@@ -1910,7 +1926,7 @@ def test_control_ai_mulligan_counts_land_with_missing_types_from_oracle() -> Non
             "s6": type("C", (), {"types": ["Instant"], "name": "Consider", "type_line": "Instant", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
         }
 
-    decision = ai.choose_mulligan_action(FakeState(), 1)
+    decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "mulligan"
 
 
@@ -1936,7 +1952,7 @@ def test_ai_does_not_treat_mana_creature_as_land_in_forced_land_logic() -> None:
             "elves-1": type("C", (), {"types": [], "name": "Llanowar Elves", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": "{G}"})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] != "play_land"
 
 
@@ -1975,7 +1991,7 @@ def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
             "tok-b": type("C", (), {"types": ["Creature"], "name": "Human Token", "power": 1, "toughness": 1, "tapped": False})(),
         }
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "wedding-1"
 
@@ -2010,7 +2026,7 @@ def test_control_ai_breaks_late_game_main_phase_pass_loop_with_proactive_spell()
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "teferi-1"
 
@@ -2054,7 +2070,7 @@ def test_control_ai_deploys_major_threat_instead_of_holding_counter_late() -> No
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "threat-1"
 
@@ -2086,7 +2102,7 @@ def test_ai_materializes_block_assignments() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "block"
     assert out.get("blocks")
     assert "atk-1" in out["blocks"]
@@ -2116,7 +2132,7 @@ def test_ai_passes_in_declare_blockers_when_no_assignment_exists() -> None:
         turn = 3
         winner = None
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "pass_priority"
 
 
@@ -2137,7 +2153,7 @@ def test_ai_attack_selection_avoids_suicidal_one_one_into_bigger_board() -> None
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "attack"
     assert "a_small" not in out.get("attackers", [])
 
@@ -2162,7 +2178,7 @@ def test_ai_blocks_with_stronger_creature_to_prevent_damage() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "block"
     assert out.get("blocks") == {"atk-2-2": "blk-3-3"}
 
@@ -2198,7 +2214,7 @@ def test_ai_prefers_preserving_mana_creature_when_other_good_block_exists() -> N
         active_player = 2
         turn = 5
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "block"
     assert out.get("blocks") == {"atk-3-3": "safe-blocker"}
 
@@ -2230,7 +2246,7 @@ def test_ai_blocks_with_mana_creature_when_it_is_the_only_profitable_assignment(
         active_player = 2
         turn = 5
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "block"
     assert out.get("blocks") == {"atk-6-6": "mana-dork"}
 
@@ -2264,7 +2280,7 @@ def test_ai_prefers_block_over_pass_when_good_block_exists() -> None:
         }
         stack = []
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "block"
     assert decision.action.get("blocks") == {"atk-2-2": "blk-3-3"}
 
@@ -2297,7 +2313,7 @@ def test_ai_assigns_two_blockers_against_menace_attacker() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["type"] == "block"
     assert isinstance(out.get("blocks", {}).get("atk-menace"), list)
     assert len(out["blocks"]["atk-menace"]) == 2
@@ -2351,7 +2367,7 @@ def test_tribal_ai_prefers_collected_company_style_spell_over_pass() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "cc-1"
 
@@ -2406,7 +2422,7 @@ def test_control_inevitability_planner_prefers_draw_over_pass() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
@@ -2463,7 +2479,7 @@ def test_control_inevitability_planner_avoids_counter_on_empty_stack() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
@@ -2495,7 +2511,7 @@ def test_ai_targets_high_threat_enchantment_when_available() -> None:
         }
         stack = []
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["targets"]["target_card_id"] == "ench-high"
 
 
@@ -2537,7 +2553,7 @@ def test_counter_target_prefers_high_impact_artifact_stack_spell() -> None:
         winner = None
         pregame_pending = False
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["targets"]["target_stack_id"] == "stack-big"
 
@@ -2572,7 +2588,7 @@ def test_early_turn_cheap_proactive_cast_over_pass_when_opponent_tapped_low() ->
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(FakeState(), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "delver-1"
 
@@ -2640,8 +2656,8 @@ def test_aggro_cast_bias_values_stronger_modal_face_higher() -> None:
             )(),
         }
 
-    weak_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "weak"}, 1)
-    strong_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "strong"}, 1)
+    weak_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "weak"}, 1)
+    strong_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "strong"}, 1)
     assert strong_score > weak_score
 
 
@@ -2708,8 +2724,8 @@ def test_midrange_cast_bias_values_stronger_modal_face_higher() -> None:
             )(),
         }
 
-    weak_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "weak"}, 1)
-    strong_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "strong"}, 1)
+    weak_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "weak"}, 1)
+    strong_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "strong"}, 1)
     assert strong_score > weak_score
 
 
@@ -2739,7 +2755,7 @@ def test_control_cast_bias_engine_tag_path_does_not_crash() -> None:
             )(),
         }
 
-    score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "engine"}, 1)
+    score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "engine"}, 1)
     assert score > 0
 
 
@@ -2779,8 +2795,8 @@ def test_control_values_graveyard_recursion_when_a_spell_is_available() -> None:
         }
 
     assert "recursion" in ai._spell_tags(FakeState.cards["recursion"])
-    recursion_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "recursion"}, 1)
-    value_score = ai._cast_bias(FakeState(), {"type": "cast_spell", "card_id": "value"}, 1)
+    recursion_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "recursion"}, 1)
+    value_score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "value"}, 1)
     assert recursion_score > value_score
 
 
@@ -2823,7 +2839,7 @@ def test_modal_face_proxy_uses_face_type_line_for_scoring() -> None:
         }
         stack = []
 
-    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    idx, score = ai._select_modal_face_index(complete_card_bookkeeping(FakeState()), FakeState.cards["modal"], 1)
     assert idx == 1
     assert score > 0
 
@@ -2867,7 +2883,7 @@ def test_modal_face_proxy_prefers_creature_face_when_board_is_empty() -> None:
         }
         stack = []
 
-    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    idx, score = ai._select_modal_face_index(complete_card_bookkeeping(FakeState()), FakeState.cards["modal"], 1)
     assert idx == 0
     assert score > 0
 
@@ -2915,7 +2931,7 @@ def test_control_modal_face_prefers_interaction_face_under_pressure() -> None:
         }
         stack = []
 
-    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    idx, score = ai._select_modal_face_index(complete_card_bookkeeping(FakeState()), FakeState.cards["modal"], 1)
     assert idx == 1
     assert score > 0
 
@@ -2961,7 +2977,7 @@ def test_aggro_modal_face_prefers_creature_face_when_board_is_empty() -> None:
         }
         stack = []
 
-    idx, score = ai._select_modal_face_index(FakeState(), FakeState.cards["modal"], 1)
+    idx, score = ai._select_modal_face_index(complete_card_bookkeeping(FakeState()), FakeState.cards["modal"], 1)
     assert idx == 0
     assert score > 0
 
@@ -3011,7 +3027,7 @@ def test_control_selects_counter_mode_when_stack_is_live() -> None:
         "target_hints": {"modes": ["Counter target spell", "Create two 1/1 white Soldier creature tokens."]},
     }
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["targets"]["mode_text"] == "Counter target spell"
 
 
@@ -3036,7 +3052,7 @@ def test_control_prefers_removal_mode_over_draw_when_opponent_has_board_pressure
         }
         stack = []
 
-    mode = ai._select_mode_text(FakeState(), type("C", (), {"oracle_text": "", "types": ["Instant"]})(), ["Draw two cards.", "Destroy target creature."], 1)
+    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"oracle_text": "", "types": ["Instant"]})(), ["Draw two cards.", "Destroy target creature."], 1)
     assert mode == "Destroy target creature."
 
 
@@ -3054,7 +3070,7 @@ def test_aggro_prefers_token_mode_over_draw_when_board_is_empty() -> None:
         cards = {}
         stack = []
 
-    mode = ai._select_mode_text(FakeState(), type("C", (), {"oracle_text": "", "types": ["Sorcery"]})(), ["Draw a card.", "Create two 1/1 creature tokens."], 1)
+    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"oracle_text": "", "types": ["Sorcery"]})(), ["Draw a card.", "Create two 1/1 creature tokens."], 1)
     assert mode == "Create two 1/1 creature tokens."
 
 
@@ -3110,7 +3126,7 @@ def test_strategic_planner_considers_beyond_top_four_moves_on_complex_boards() -
     ai._materialize_action = fake_materialize  # type: ignore[method-assign]
     ai._strategic_line_score = fake_score  # type: ignore[method-assign]
 
-    result = ai._strategic_plan_action(FakeState(), moves, 1)
+    result = ai._strategic_plan_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert result is not None
     assert result["card_id"] == "m6"
 
@@ -3189,5 +3205,5 @@ def test_aggro_selects_token_mode_when_board_is_empty() -> None:
         "target_hints": {"modes": ["Deal 3 damage to any target", "Create a 2/2 white Knight creature token"]},
     }
 
-    out = ai._materialize_action(FakeState(), move, 1)
+    out = ai._materialize_action(complete_card_bookkeeping(FakeState()), move, 1)
     assert out["targets"]["mode_text"] == "Create a 2/2 white Knight creature token"

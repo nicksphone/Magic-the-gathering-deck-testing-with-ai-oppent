@@ -133,6 +133,10 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
+      && (move.type !== 'activate_mana_ability' || (Number.isInteger(move.ability_index)
+        && (move.ability_index as number) >= 0 && typeof move.cost_text === 'string'
+        && record(move.outputs) && Object.entries(move.outputs).every(([color, amount]) =>
+          /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) >= 0)))
       && (move.card_view === undefined || card(move.card_view))
       && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
         record(option) && typeof option.id === 'string'

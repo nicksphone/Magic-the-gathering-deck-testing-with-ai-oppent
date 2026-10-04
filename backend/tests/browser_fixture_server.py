@@ -51,6 +51,23 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'mana_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
+        from tests.test_mana_abilities import add, paid_position, clean
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        if index in (0, 1):
+            state = paid_position(seat)
+        else:
+            state = clean()
+            state.active_player = state.priority_player = seat
+            if index == 2:
+                add(state, 'Forest', seat)
+                add(state, 'Mana Reflection', seat)
+                add(state, 'Nyxbloom Ancient', seat)
+            else:
+                add(state, "Karametra's Acolyte", seat)
+                add(state, 'Steel Leaf Champion', seat)
+        add(state, 'Steel Leaf Champion' if index in (1, 2) else 'Llanowar Elves', seat, Zone.HAND)
+        return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
     if face_kind in {f'creature_type_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
         from tests.test_conditional_creature_types import CARDS, position, add
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

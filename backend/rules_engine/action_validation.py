@@ -160,10 +160,19 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     if kind == 'cast_spell':
         bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
         available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
-    if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana"}:
+    if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana", 'activate_mana_ability'}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
-        validate_tap(state, player_id, action)
+        if kind == 'activate_mana_ability':
+            from rules_engine.mana_abilities import mana_ability_views
+            card = state.cards.get(action.get('card_id'))
+            require(card is not None and card.id in state.players[player_id].battlefield and card.controller == player_id,
+                    'Mana source must be a permanent you control')
+            require(any(view['ability_index'] == action.get('ability_index')
+                        and action.get('color') in view['outputs'] for view in mana_ability_views(state, card)),
+                    'Mana ability, color or activation payment is not legal')
+        else:
+            validate_tap(state, player_id, action)
         return
     # Declaring no attackers is legal even when the move generator has none.
     if kind == "attack" and not action["attackers"]:
@@ -314,7 +323,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
 
 
 def validate_tap(state, player_id: int, action: dict) -> None:
-    from rules_engine.mana import _nonland_mana_source_colors, land_can_produce_mana, land_mana_colors
+    from rules_engine.mana import _nonland_mana_source_colors, land_can_produce_mana
+    from rules_engine.mana_abilities import tap_only_outputs
     player = state.players[player_id]
     if action["type"] == "tap_nonland_for_mana":
         cid = action["card_id"]
@@ -327,7 +337,7 @@ def validate_tap(state, player_id: int, action: dict) -> None:
     else:
         ids = [cid for cid in player.battlefield if state.cards[cid].name.strip().lower() == action["land_name"].strip().lower()
                and land_can_produce_mana(state, cid, free_only=False)
-               and (not action.get("color") or action["color"] in land_mana_colors(state.cards[cid]))]
+               and (not action.get("color") or action["color"] in tap_only_outputs(state, state.cards[cid]))]
         require(len(ids) >= action["count"], "Not enough untapped matching lands")
         ids = ids[:action["count"]]
     for cid in ids:
@@ -335,5 +345,5 @@ def validate_tap(state, player_id: int, action: dict) -> None:
         require(cid in player.battlefield and card is not None and land_can_produce_mana(state, cid, free_only=False), "Mana source must be a ready land you control")
         from rules_engine.costs import activated_cost_available
         require(activated_cost_available(state, player_id, cid, '{T}', ability_kind='mana'), 'Cannot pay mana ability costs')
-        colors = land_mana_colors(card)
+        colors = tap_only_outputs(state, card)
         require(not action.get("color") or action["color"] in colors, "Land cannot produce the selected color")

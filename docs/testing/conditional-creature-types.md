@@ -90,7 +90,8 @@ leave combat.
 ## Known Limitations and Next Upgrades
 
 Arbitrary conditional/global type effects, dependencies, full copy/subtype layers,
-devotion mana, complete-card certification and expert AI remain open. Replay
+broader mana abilities, complete-card certification and expert AI remain open.
+Bounded devotion mana is now covered by the [mana-ability batch](mana-abilities.md). Replay
 repeatability is not a balance or AI-strength certificate. The alpha UI redesign
 remains deferred. Earlier browser state-read timeouts remain a retained,
 unexplained diagnostic; the isolated final harness passed unchanged checks.

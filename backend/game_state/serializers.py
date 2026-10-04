@@ -34,7 +34,8 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
     counters = dict(card.counters)
     if 'Saga' in card.type_line and '__lore' in counters:
         counters['lore'] = counters.pop('__lore')
-    outputs = ({color: land_mana_amount(state, card.controller, cid) for color in land_mana_colors(card)}
+    from rules_engine.mana_abilities import tap_only_outputs
+    outputs = (tap_only_outputs(state, card, ignore_readiness=True)
                if "Land" in effective_types(state, card) else nonland_mana_outputs(state, cid, card, free_only=False)) if card.zone == Zone.BATTLEFIELD else {}
     return {
         "id": cid, "name": card.name, "tapped": card.tapped,

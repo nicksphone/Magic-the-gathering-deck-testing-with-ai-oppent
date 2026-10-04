@@ -1246,7 +1246,8 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
         text = match.group(2).strip()
         # Mana abilities are handled by the mana source model and should not
         # be duplicated as stack actions here.
-        if "add " in text.lower() and "target" not in text.lower():
+        if "add " in text.lower() and "target" not in text.lower() and not re.search(
+                r'\b(?:draw|mill|library|libraries)\b', cost + ' ' + text, re.I):
             continue
         from rules_engine.activation_modifiers import ability_cost_modifier
         modifier = ability_cost_modifier(text)

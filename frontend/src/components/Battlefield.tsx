@@ -124,6 +124,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
+  const manaMoves = useMemo(() => legalMoves.filter((m) => m.type === 'activate_mana_ability'), [legalMoves]);
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [costCards, setCostCards] = useState<Record<string, string[]>>({});
@@ -229,6 +230,17 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
 
   return (
     <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-revision={match.revision}>
+      {manaMoves.length > 0 ? <details className="zone-tray">
+        <summary>Mana abilities ({manaMoves.length})</summary>
+        {manaMoves.map(move => <div className="row" key={`${move.card_id}-mana-${move.ability_index}`}>
+          <span>{move.card_name}: {move.cost_text}</span>
+          {Object.entries(move.outputs ?? {}).map(([color, amount]) => <button key={color}
+            onClick={() => onCardAction(viewerSeat, {type: 'activate_mana_ability', card_id: move.card_id,
+              ability_index: move.ability_index, color})}>
+            Add {amount} {color}
+          </button>)}
+        </div>)}
+      </details> : null}
       <header>
         <div>
           <h2>Battlefield</h2>
