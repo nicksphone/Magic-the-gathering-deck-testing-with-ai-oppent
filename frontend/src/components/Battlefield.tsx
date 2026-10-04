@@ -234,7 +234,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         <summary>Mana abilities ({manaMoves.length})</summary>
         {manaMoves.map(move => <div className="row" key={`${move.card_id}-mana-${move.ability_index}`}>
           <span>{move.card_name}: {move.cost_text}</span>
-          {Object.entries(move.outputs ?? {}).map(([color, amount]) => <button key={color}
+          {Object.entries(move.outputs ?? {}).map(([color, amount]) => <button key={color} title={move.label}
             onClick={() => onCardAction(viewerSeat, {type: 'activate_mana_ability', card_id: move.card_id,
               ability_index: move.ability_index, color})}>
             Add {amount} {color}

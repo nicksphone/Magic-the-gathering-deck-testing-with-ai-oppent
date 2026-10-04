@@ -178,8 +178,8 @@ def _attached_scale_count(state, source, target, phrase):
         return None
 
     def selected(card):
-        subtype = (card.type_line or "").lower().split("—", 1)[-1].split()
-        return any(selector.title() in effective_types(state, card) or ("Land" in effective_types(state, card) and selector in subtype)
+        from rules_engine.land_types import has_land_type
+        return any(selector.title() in effective_types(state, card) or ("Land" in effective_types(state, card) and has_land_type(state, card, selector))
                    for selector in selectors)
 
     return sum(selected(state.cards[cid]) for cid in state.players[source.controller].battlefield
@@ -488,6 +488,9 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
         return dict(sorted(out.items()))
+    from rules_engine.land_types import printed_land_abilities_lost
+    if printed_land_abilities_lost(state, card):
+        out.clear()
     ability_losses = _printed_ability_loss_sources(state)
     modifiers = _resolved_keyword_modifiers(card)
     modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
@@ -592,11 +595,15 @@ def _printed_ability_loss_sources(state):
     return losses
 
 
-def printed_abilities_suppressed(state, card_id: str, *, losses=None) -> bool:
+def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_land_types=True) -> bool:
     """Supported all-ability losses; new keyword grants do not restore Oracle abilities."""
     card = state.cards.get(card_id)
     if card is None or not _is_battlefield(card):
         return False
+    if include_land_types:
+        from rules_engine.land_types import printed_land_abilities_lost
+        if printed_land_abilities_lost(state, card):
+            return True
     from rules_engine.keyword_effects import active_keyword_effects
     if any(effect['operation'] == 'remove' and effect['keyword'] == 'all abilities'
            for effect in active_keyword_effects(card)):

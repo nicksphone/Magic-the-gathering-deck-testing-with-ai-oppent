@@ -57,6 +57,9 @@ const aiChoice = { ...state, controllers: { 1: "human", 2: "ai" }, pending_mecha
 assert.equal(parseMatchState(aiChoice), aiChoice);
 assert.throws(() => parseMatchState({ ...aiChoice, pending_mechanic_choice: { ...aiChoice.pending_mechanic_choice, options: ["hidden-card"] } }), /pending mechanic choice/);
 const legal = { player_id: 1, revision: 0, moves: [{ type: "play_land", card_id: mountain.id, card_view: mountain }] };
+for (const field of ['type_line', 'base_type_line']) {
+  assert.throws(() => parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1], hand: [{ ...mountain, [field]: 42 }] } } }), /card view/);
+}
 const castCosts = { id: 'base_discard', discard_cards: 1, sacrifice_creatures: 0, discard_card_ids: ['fodder'] };
 for (const flag of ['discard_x', 'discard_all', 'sacrifice_all']) {
   assert.equal(parseLegalMoves({ ...legal, moves: [{ type: 'cast_spell', cost_options: [{ ...castCosts, [flag]: true }] }] }).moves.length, 1);

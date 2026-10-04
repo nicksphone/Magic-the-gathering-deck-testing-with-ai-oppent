@@ -66,6 +66,7 @@ wait_for_services() {
 
 wait_for_services
 echo 'Browser CI: action scenarios'
+(cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
 echo 'Browser CI: simulation preflight'
 (cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)

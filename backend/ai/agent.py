@@ -229,7 +229,7 @@ class AIAgent:
                     sources = self._current_color_sources(state, player_id)
                     selected = [cid for cid in reversed(selected) if 'Land' in effective_types(state, state.cards[cid])
                                 and lands > goal + 1 and not any(demand.get(color, 0) and not sources.get(color, 0)
-                                                               for color in self._land_colors(state.cards[cid]))]
+                                                               for color in self._land_colors(state.cards[cid], state))]
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
                                   reasoning='Scry using known inspected cards, current resources and library-search ordering')
             if choice['kind'] == 'proliferate':
@@ -4288,7 +4288,7 @@ class AIAgent:
         sources = self._current_color_sources(state, player_id)
         for cid in player.hand:
             if 'Land' in effective_types(state, state.cards[cid]):
-                for color in self._land_colors(state.cards[cid]):
+                for color in self._land_colors(state.cards[cid], state):
                     sources[color] = sources.get(color, 0) + 1
         reanimation = any(re.fullmatch(r'return target creature card from your graveyard to the battlefield\.',
                                    _oracle_text(state.cards[cid]))
@@ -4297,12 +4297,12 @@ class AIAgent:
         for cid in self._choose_library_search(state, options, len(options), player_id):
             card = state.cards[cid]
             if 'Land' in effective_types(state, card):
-                fixing = any(demand.get(color, 0) and not sources.get(color, 0) for color in self._land_colors(card))
+                fixing = any(demand.get(color, 0) and not sources.get(color, 0) for color in self._land_colors(card, state))
                 if lands >= goal + 1 and not fixing:
                     graveyard.append(cid)
                 else:
                     lands += 1
-                    for color in self._land_colors(card):
+                    for color in self._land_colors(card, state):
                         sources[color] = sources.get(color, 0) + 1
             elif (reanimation and 'Creature' in effective_types(state, card) and not self._can_pay_card_cost(state, player_id, card)
                   and graveyard_destination(state, card) == 'graveyard'):
@@ -4328,7 +4328,7 @@ class AIAgent:
                         return (3.0 + self._closure_spell_score(card, text, state=state, player_id=player_id), card.name)
                     return (-1.0 if "Land" in effective_types(state, card) else 0.0, card.name)
                 if "Land" in effective_types(state, card):
-                    colors = self._land_colors(card)
+                    colors = self._land_colors(card, state)
                     fixing = sum((3.5 if sources.get(color, 0) == 0 else 0.0) +
                                  0.4 * demand.get(color, 0) for color in colors if demand.get(color, 0))
                     return (2.0 + fixing + 0.1 * len(colors), card.name)
@@ -4345,7 +4345,7 @@ class AIAgent:
             selected.append(chosen)
             card = state.cards[chosen]
             if "Land" in effective_types(state, card):
-                for color in self._land_colors(card):
+                for color in self._land_colors(card, state):
                     sources[color] = sources.get(color, 0) + 1
             candidates.remove(chosen)
         return selected
@@ -4357,7 +4357,7 @@ class AIAgent:
             demand = self._color_demand(state, player_id)
             sources = self._current_color_sources(state, player_id)
             unique_color_need = sum(
-                demand.get(color, 0) for color in self._land_colors(card)
+                demand.get(color, 0) for color in self._land_colors(card, state)
                 if sources.get(color, 0) <= 1
             )
             return 20.0 + unique_color_need
@@ -4404,7 +4404,7 @@ class AIAgent:
             if getattr(card, "layout", "") == "modal_dfc":
                 from rules_engine.card_faces import select_cast_face
                 card = select_cast_face(card, move.get("selected_face_index", 0))
-            produced = self._land_colors(card)
+            produced = self._land_colors(card, state)
             if not produced:
                 return 0.0
             score = 0.0
@@ -4998,15 +4998,15 @@ class AIAgent:
             card = state.cards.get(cid)
             if not card or "Land" not in effective_types(state, card):
                 continue
-            for c in self._land_colors(card):
+            for c in self._land_colors(card, state):
                 if c in sources:
                     sources[c] += 1
         return sources
 
-    def _land_colors(self, card) -> set[str]:
+    def _land_colors(self, card, state=None) -> set[str]:
         from rules_engine.mana import _land_colors, land_mana_colors
-        if isinstance(card, CardInstance) and card.zone == Zone.BATTLEFIELD:
-            return land_mana_colors(card)
+        if isinstance(card, CardInstance) and (state is not None or card.zone == Zone.BATTLEFIELD):
+            return land_mana_colors(card, state)
         return _land_colors(getattr(card, "name", ""), getattr(card, "type_line", ""), getattr(card, "oracle_text", ""))
 
     def _is_counter_card(self, card) -> bool:

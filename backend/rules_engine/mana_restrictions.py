@@ -4,9 +4,17 @@ from functools import lru_cache
 
 COLORS = "CWUBRG"
 TYPES = {word.lower(): word for word in ("Artifact", "Creature", "Enchantment", "Instant", "Sorcery", "Planeswalker", "Battle")}
+UNFILTERED = object()
 
 
-def spending_rule(card):
+def ability_spending_rule(spec):
+    return _parse_rule(spec[2])
+
+
+def spending_rule(card, state=None):
+    from rules_engine.land_types import printed_land_abilities_lost
+    if printed_land_abilities_lost(state, card):
+        return None
     return _parse_rule(getattr(card, "oracle_text", "") or "")
 
 
@@ -17,7 +25,7 @@ def _parse_rule(text):
         return {"unsupported": True} if re.search(r"\bspend\b[^.\n]*\bonly\b|\bcan't be spent\b", text, re.I) else None
     if len(clauses) != 1:
         return {"unsupported": True}
-    match = re.fullmatch(r"cast (.+?) spells(?: or activate abilities of (.+))?", clauses[0])
+    match = re.fullmatch(r"cast (?:an? )?(.+?) spells?(?: or activate abilities of (.+))?", clauses[0])
     if not match:
         return {"unsupported": True}
 

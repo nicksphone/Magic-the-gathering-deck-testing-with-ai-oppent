@@ -15,6 +15,7 @@ export type CardView = {
   mana_cost?: string;
   oracle_text?: string;
   type_line?: string;
+  base_type_line?: string;
   image_uri?: string;
   card_faces?: {
     name?: string;

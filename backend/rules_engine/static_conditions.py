@@ -94,8 +94,9 @@ def parse_static_condition(text, card_name=''):
 
 
 def _land_count(state, player_ids, subtype=None):
+    from rules_engine.land_types import has_land_type
     return sum(card.zone == Zone.BATTLEFIELD and 'Land' in effective_types(state, card)
-               and (subtype is None or subtype in re.split(r'\s+', re.split(r'\s+[—–-]\s+', (card.type_line or '').lower())[-1]))
+               and (subtype is None or has_land_type(state, card, subtype))
                for pid in player_ids for cid in state.players[pid].battlefield
                for card in [state.cards[cid]])
 

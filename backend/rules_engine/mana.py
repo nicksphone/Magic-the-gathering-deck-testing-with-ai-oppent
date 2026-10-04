@@ -6,10 +6,10 @@ from collections import Counter
 from functools import lru_cache
 from typing import Set
 
-from game_state.state import MatchState
+from game_state.state import MatchState, Zone
 from rules_engine.continuous import has_keyword
 from rules_engine.hooks import CostContext, apply_cost_modifiers
-from rules_engine.mana_restrictions import available_pool, consume_pool, eligible, spending_rule
+from rules_engine.mana_restrictions import UNFILTERED, _parse_rule, available_pool, consume_pool, eligible, spending_rule
 
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
@@ -75,7 +75,7 @@ def land_can_produce_mana(state: MatchState, card_id: str, *, free_only=True) ->
     card = state.cards[card_id]
     return (
         "Land" in effective_types(state, card) and not card.tapped
-        and not printed_abilities_suppressed(state, card_id)
+        and not printed_abilities_suppressed(state, card_id, include_land_types=False)
         and ("Creature" not in effective_types(state, card) or not card.summoning_sick or has_keyword(state, card_id, "haste"))
         and (not free_only or mana_activation_is_free(state, card_id, ''))
         and bool(mana_source_outputs(state, card.controller, card_id) if free_only else
@@ -103,13 +103,11 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
     return out
 
 
-def mana_source_outputs(state: MatchState, player_id: int, card_id: str) -> dict[str, int]:
+def mana_source_outputs(state: MatchState, player_id: int, card_id: str, *, payment_context=UNFILTERED) -> dict[str, int]:
     """Ready outputs used by both ordinary and snow payment planning."""
     card = state.cards[card_id]
-    if "Land" in effective_types(state, card):
-        from rules_engine.mana_abilities import free_outputs
-        return free_outputs(state, card)
-    return nonland_mana_outputs(state, card_id, card)
+    from rules_engine.mana_abilities import free_outputs
+    return free_outputs(state, card, payment_context=payment_context)
 
 
 def can_pay_with_pool_and_lands(
@@ -233,12 +231,14 @@ def is_snow_source(card) -> bool:
     return "Snow" in card.types or bool(re.search(r"\bsnow\b", type_line, re.IGNORECASE))
 
 
-def add_mana_to_pool(state: MatchState, player_id: int, color: str, amount: int, *, source_id: str | None = None) -> None:
+def add_mana_to_pool(state: MatchState, player_id: int, color: str, amount: int, *, source_id: str | None = None, ability_effect: str | None = None) -> None:
     player = state.players[player_id]
     player.mana_pool[color] = player.mana_pool.get(color, 0) + amount
     if source_id in state.cards and is_snow_source(state.cards[source_id]):
         player.snow_mana_pool[color] = player.snow_mana_pool.get(color, 0) + amount
-    if source_id in state.cards and (rule := spending_rule(state.cards[source_id])) is not None and amount > 0:
+    rule = (_parse_rule(ability_effect) if ability_effect is not None else
+            spending_rule(state.cards[source_id], state) if source_id in state.cards else None)
+    if rule is not None and amount > 0:
         from copy import deepcopy
         player.restricted_mana_pool.append({"color": color, "amount": amount,
                                            "snow": is_snow_source(state.cards[source_id]), "rule": deepcopy(rule)})
@@ -258,10 +258,8 @@ def _plan_mana_sources(
         if cid in (excluded_sources or set()):
             continue
         card = state.cards[cid]
-        if not eligible(spending_rule(card), payment_context):
-            continue
         land = "Land" in effective_types(state, card)
-        outputs = mana_source_outputs(state, player_id, cid)
+        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context)
         if outputs:
             sources.append((cid, outputs, land))
 
@@ -324,13 +322,13 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         return plan
     from copy import deepcopy
     from rules_engine.mana_abilities import paid_candidates, activate_mana_ability, PaidManaStep
-    candidates = list(paid_candidates(state, player_id, excluded_sources or ()))
+    candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context))
     if not candidates:
         return plan
     best, best_score = plan, None
     if plan is not None:
         trial = deepcopy(state)
-        if _produce_planned_mana(trial, player_id, plan[0]):
+        if _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context):
             best_score = _remaining_mana_score(trial, player_id, payment_context)
     for cid, spec, color in candidates:
         # Each pending activation excludes its own source, preventing circular funding.
@@ -344,7 +342,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
             candidate = [PaidManaStep(cid, spec[0], color, excluded), *steps], snow
             if not optimize_paid:
                 return candidate
-            if _produce_planned_mana(trial, player_id, steps):
+            if _produce_planned_mana(trial, player_id, steps, payment_context=payment_context):
                 score = _remaining_mana_score(trial, player_id, payment_context)
                 if best_score is None or score > best_score:
                     best, best_score = candidate, score
@@ -361,15 +359,13 @@ def _remaining_mana_score(state, player_id, payment_context):
     pool, _ = available_pool(state.players[player_id], payment_context)
     score = sum(amount * weights[color] for color, amount in pool.items())
     for cid in state.players[player_id].battlefield:
-        if eligible(spending_rule(state.cards[cid]), payment_context):
-            score += max((amount * weights[color] for color, amount in
-                          mana_source_outputs(state, player_id, cid).items()), default=0)
+        score += max((amount * weights[color] for color, amount in
+                      mana_source_outputs(state, player_id, cid, payment_context=payment_context).items()), default=0)
     return score + state.players[player_id].life / 10
 
 
-def _produce_planned_mana(state, player_id, steps):
-    from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability, mana_ability_specs, ability_outputs
-    from rules_engine.costs import parse_activated_cost
+def _produce_planned_mana(state, player_id, steps, *, payment_context=None):
+    from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability, preferred_free_spec
     for step in steps:
         if isinstance(step, PaidManaStep):
             if not activate_mana_ability(state, player_id, step.source_id, step.ability_index,
@@ -377,9 +373,7 @@ def _produce_planned_mana(state, player_id, steps):
                 return False
             continue
         cid, color, amount, _ = step
-        spec = next((spec for spec in mana_ability_specs(state.cards[cid], state)
-                     if mana_activation_is_free(state, cid, parse_activated_cost(spec[1]).mana_cost)
-                     and ability_outputs(state, state.cards[cid], spec).get(color) == amount), None)
+        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context)
         if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color):
             return False
     return True
@@ -398,10 +392,10 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
         if cid in (excluded_sources or set()):
             continue
         card = state.cards[cid]
-        if not is_snow_source(card) or not eligible(spending_rule(card), payment_context):
+        if not is_snow_source(card):
             continue
         land = "Land" in effective_types(state, card)
-        outputs = mana_source_outputs(state, player_id, cid)
+        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context)
         if outputs:
             sources.append((cid, outputs, land))
 
@@ -512,11 +506,8 @@ def auto_pay_cost(
                 return False
             continue
         cid, color, amount, land = step
-        from rules_engine.mana_abilities import mana_ability_specs, ability_outputs
-        from rules_engine.costs import parse_activated_cost
-        spec = next((spec for spec in mana_ability_specs(state.cards[cid])
-                     if mana_activation_is_free(state, cid, parse_activated_cost(spec[1]).mana_cost)
-                     and ability_outputs(state, state.cards[cid], spec).get(color) == amount), None)
+        from rules_engine.mana_abilities import preferred_free_spec
+        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context)
         if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color):
             return False
         cost_kind = payment_kind
@@ -598,8 +589,14 @@ def _counter_mana_replacement(name: str, text: str):
     return None
 
 
-def land_mana_colors(card) -> Set[str]:
+def land_mana_colors(card, state=None) -> Set[str]:
     """Supported counter-presence replacement, using current permanent state."""
+    if state is not None:
+        from rules_engine.mana_abilities import mana_ability_specs, ability_outputs
+        from rules_engine.costs import ActivatedCost, parse_activated_cost
+        return {color for spec in mana_ability_specs(card, state, entering=card.zone != Zone.BATTLEFIELD)
+                if parse_activated_cost(spec[1]) == ActivatedCost(tap_source=True)
+                for color, amount in ability_outputs(state, card, spec).items() if amount > 0}
     text = card.oracle_text or ""
     replacement = _counter_mana_replacement(card.name, text)
     if replacement:
@@ -711,7 +708,7 @@ def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -
     if "Land" in (effective_types(state, card) or []):
         return {}
     text = getattr(card, "oracle_text", "") or ""
-    if not text or not eligible(spending_rule(card), payment_context) or re.search(
+    if not text or not eligible(spending_rule(card, state), payment_context) or re.search(
         r"\bactivate (?:this ability )?only\b"
         r"|\bdoesn't untap during your untap step\b", text, re.I,
     ):
@@ -747,9 +744,10 @@ def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[
             return {devotion['output_color']: devotion_count(state, card.controller, devotion['colors'])}
         lands = re.fullmatch(r'ADD \{([WUBRGC])\} FOR EACH (BASIC )?(PLAINS|ISLAND|SWAMP|MOUNTAIN|FOREST) YOU CONTROL', effect)
         if lands:
+            from rules_engine.land_types import has_land_type
             return {lands[1]: sum('Land' in effective_types(state, target)
                 and (not lands[2] or 'Basic' in target.type_line.split())
-                and lands[3].lower() in target.type_line.lower().split()
+                and has_land_type(state, target, lands[3])
                 for cid in state.players[card.controller].battlefield for target in [state.cards[cid]])}
         grave = re.fullmatch(r'ADD \{([WUBRGC])\} FOR EACH (WHITE|BLUE|BLACK|RED|GREEN) CREATURE CARD IN YOUR GRAVEYARD', effect)
         if grave:

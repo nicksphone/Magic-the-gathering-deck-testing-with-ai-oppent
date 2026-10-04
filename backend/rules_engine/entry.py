@@ -7,8 +7,11 @@ from rules_engine.land_rules import apply_land_entry
 from rules_engine.replacement import can_pay_life, pay_life
 
 
-def has_two_life_land_entry(card) -> bool:
+def has_two_life_land_entry(card, state=None, controller=None) -> bool:
     if "Land" not in (card.types or []):
+        return False
+    from rules_engine.land_types import printed_land_abilities_lost
+    if printed_land_abilities_lost(state, card, entering=True, controller=controller):
         return False
     subject = rf"(?:this land|{re.escape(card.name)})"
     return bool(re.search(
@@ -18,7 +21,7 @@ def has_two_life_land_entry(card) -> bool:
 
 
 def land_entry_options(state, controller: int, card) -> list[str]:
-    if not has_two_life_land_entry(card):
+    if not has_two_life_land_entry(card, state, controller):
         return []
     options = ["tapped"]
     if can_pay_life(state, controller, 2):
@@ -30,9 +33,9 @@ def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_k
     choices = payload.get("__entry_choices") or {}
     for card_id in card_ids:
         card = (projections or {}).get(card_id, state.cards[card_id])
-        if not has_two_life_land_entry(card) or card_id in choices:
-            continue
         recipient = (controllers or {}).get(card_id, controller)
+        if not has_two_life_land_entry(card, state, recipient) or card_id in choices:
+            continue
         options = land_entry_options(state, recipient, card)
         reserved_life = 2 * sum(value == "pay_two_life" and (controllers or {}).get(cid, controller) == recipient
                                 for cid, value in choices.items())
@@ -52,7 +55,7 @@ def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_k
 
 
 def apply_entry_choice(state, controller: int, card, *, choice: str = "tapped", effect_tapped: bool = False) -> None:
-    if has_two_life_land_entry(card):
+    if has_two_life_land_entry(card, state, controller):
         if choice not in land_entry_options(state, controller, card):
             raise ValueError("Unavailable land-entry payment choice")
         if choice == "pay_two_life":
@@ -61,5 +64,6 @@ def apply_entry_choice(state, controller: int, card, *, choice: str = "tapped", 
         card.tapped = effect_tapped or choice == "tapped"
     else:
         card.tapped = effect_tapped
-        if "Land" in (effective_types(state, card) or []):
+        from rules_engine.land_types import printed_land_abilities_lost
+        if "Land" in (effective_types(state, card) or []) and not printed_land_abilities_lost(state, card, entering=True, controller=controller):
             apply_land_entry(card)

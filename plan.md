@@ -2,6 +2,25 @@
 
 ## Current Priority: Backend First
 
+- [x] Finish shared basic-land subtype layers: global, controller-only
+  and Aura additions/replacements, source-existence dependencies, intrinsic mana,
+  entry, counted subtypes, landwalk, AI resource reads and public/snapshot parity.
+  Seventeen canonical fixtures and 74 new regressions cover shared subtype and
+  per-ability spending/payment paths. All 5,724 backend tests across isolated
+  shards and the complete final-source Chromium harness (eight new scenarios)
+  pass. Twenty-four cross-archetype seat-balanced samples, repeated twice,
+  finish with zero timeout, anomaly or drift. See
+  [current checklist and boundaries](docs/testing/land-type-layers.md).
+- [ ] Extend AI valuation for public resource changes from type-changing
+  effects, including own fixing and opponent disruption. Use shared projections
+  and known information, not hidden opposing hands or forced matchup win rates;
+  verify actual before/after decisions across archetypes and difficulties.
+- [ ] For that valuation batch, first reproduce both useful fixing and harmful
+  self-disruption using canonical additions/replacements. Compare legal spell
+  access and retained resources through checked projected actions, including
+  source/controller changes, restricted abilities and entry costs. Test both
+  seats and multiple archetypes before running the repeated replay matrix.
+
 - [x] Finish shared mana-ability acceptance: live devotion and counted outputs,
   paid activations, pure multipliers and resource-preserving spell payments.
   All 5,650 isolated backend tests, frontend gates, complete Chromium and 24

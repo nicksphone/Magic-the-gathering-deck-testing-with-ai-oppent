@@ -4,6 +4,7 @@ from functools import lru_cache
 
 from game_state.state import Zone
 from rules_engine.type_effects import effective_types
+from rules_engine.mana_restrictions import UNFILTERED, ability_spending_rule, eligible
 
 
 @dataclass(frozen=True)
@@ -35,22 +36,37 @@ def _printed_specs(name, type_line, oracle_text, is_land):
         if not colors and not oracle_text and not type_line:
             colors = DUAL_LAND_NAME_COLORS.get(name.strip().lower(), set())
         if colors:
-            effect = 'Add ' + ' or '.join('{' + color + '}' for color in sorted(colors)) + '.'
-            rows.append((max((row[0] for row in rows), default=-1) + 1, '{T}', effect))
+            for color in sorted(colors):
+                effect = 'Add {' + color + '}.'
+                if not any(cost == '{T}' and printed == effect for _, cost, printed in rows):
+                    rows.append((max((row[0] for row in rows), default=-1) + 1, '{T}', effect))
     return tuple(rows)
 
 
-def mana_ability_specs(card, state=None):
-    return _printed_specs(getattr(card, 'name', ''), getattr(card, 'type_line', '') or '',
+def mana_ability_specs(card, state=None, *, entering=False):
+    from rules_engine.land_types import effective_type_line, printed_land_abilities_lost
+    line = getattr(card, 'type_line', '') or ''
+    rows = _printed_specs(getattr(card, 'name', ''), line,
                           getattr(card, 'oracle_text', '') or '', 'Land' in effective_types(state, card))
+    current = effective_type_line(state, card, entering=entering)
+    lost = printed_land_abilities_lost(state, card, entering=entering)
+    if not lost and current == line:
+        return rows
+    rows = [] if lost else list(rows)
+    for _, cost, effect in _printed_specs('', current, '', 'Land' in effective_types(state, card)):
+        if not any(existing_cost == cost and existing_effect == effect
+                   for _, existing_cost, existing_effect in rows):
+            rows.append((max((row[0] for row in rows), default=-1) + 1, cost, effect))
+    return tuple(rows)
 
 
 def ability_outputs(state, card, spec):
     import re
-    from rules_engine.mana_restrictions import spending_rule
     from rules_engine.mana import _nonland_mana_effect_outputs, _counter_mana_replacement
     _, _, effect = spec
-    rule = spending_rule(card)
+    rule = ability_spending_rule(spec)
+    if rule and rule.get('unsupported'):
+        return {}
     if rule is not None and not rule.get('unsupported'):
         effect = re.sub(r'\.\s*Spend this mana only to [^.]+\.$', '', effect, flags=re.I)
     replacement = _counter_mana_replacement(card.name, card.oracle_text or '')
@@ -79,21 +95,21 @@ def multiplied_outputs(state, card, outputs):
 
 def source_ready(state, card):
     from rules_engine.continuous import printed_abilities_suppressed, has_keyword
-    from rules_engine.mana_restrictions import spending_rule
-    rule = spending_rule(card)
-    return (not (rule and rule.get('unsupported')) and card.zone == Zone.BATTLEFIELD and not card.tapped
-            and not printed_abilities_suppressed(state, card.id)
+    return (card.zone == Zone.BATTLEFIELD and not card.tapped
+            and not printed_abilities_suppressed(state, card.id, include_land_types=False)
             and ('Creature' not in effective_types(state, card) or not card.summoning_sick
                  or has_keyword(state, card.id, 'haste')))
 
 
-def free_outputs(state, card, *, ignore_readiness=False):
+def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTERED):
     from rules_engine.mana import mana_activation_is_free
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     if not ignore_readiness and not source_ready(state, card):
         return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
+        if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
+            continue
         cost = parse_activated_cost(spec[1])
         if not cost.supported or not mana_activation_is_free(state, card.id, cost.mana_cost):
             continue
@@ -108,7 +124,7 @@ def free_outputs(state, card, *, ignore_readiness=False):
 def tap_only_outputs(state, card, *, ignore_readiness=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.continuous import printed_abilities_suppressed
-    if printed_abilities_suppressed(state, card.id) or (not ignore_readiness and not source_ready(state, card)):
+    if printed_abilities_suppressed(state, card.id, include_land_types=False) or (not ignore_readiness and not source_ready(state, card)):
         return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
@@ -119,7 +135,7 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
     return outputs
 
 
-def paid_candidates(state, player_id, excluded_sources=()):
+def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.mana import mana_activation_is_free
     for cid in state.players[player_id].battlefield:
@@ -127,6 +143,8 @@ def paid_candidates(state, player_id, excluded_sources=()):
         if cid in excluded_sources or not source_ready(state, card):
             continue
         for spec in mana_ability_specs(card, state):
+            if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
+                continue
             cost = parse_activated_cost(spec[1])
             if cost != ActivatedCost(mana_cost=cost.mana_cost, tap_source=True):
                 continue
@@ -158,7 +176,7 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
         return False
     # Amounts are determined after costs, including any resource departures.
     amount = ability_outputs(state, card, spec).get(color, 0)
-    add_mana_to_pool(state, player_id, color, amount, source_id=source_id)
+    add_mana_to_pool(state, player_id, color, amount, source_id=source_id, ability_effect=spec[2])
     state.log.append(f'{state.players[player_id].name} activates {card.name} for {amount} {color}.')
     return True
 
@@ -172,3 +190,25 @@ def mana_ability_views(state, card):
             for spec in mana_ability_specs(card, state)
             if (outputs := ability_outputs(state, card, spec))
             and activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0])]
+
+
+def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERED, tap_only=False):
+    """Preserve the selected ability's rule; prefer unrestricted tied outputs."""
+    from rules_engine.costs import ActivatedCost, parse_activated_cost, activated_cost_available
+    from rules_engine.mana import mana_activation_is_free
+    candidates = []
+    for spec in mana_ability_specs(card, state):
+        cost = parse_activated_cost(spec[1])
+        if not cost.supported or (tap_only and cost != ActivatedCost(tap_source=True)):
+            continue
+        if not tap_only and not mana_activation_is_free(state, card.id, cost.mana_cost):
+            continue
+        rule = ability_spending_rule(spec)
+        if payment_context is not UNFILTERED and not eligible(rule, payment_context):
+            continue
+        if not activated_cost_available(state, card.controller, card.id, spec[1],
+                ability_kind='mana', ability_index=spec[0]):
+            continue
+        if ability_outputs(state, card, spec).get(color) == amount:
+            candidates.append(spec)
+    return min(candidates, key=lambda spec: (ability_spending_rule(spec) is not None, spec[0]), default=None)

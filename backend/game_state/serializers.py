@@ -16,6 +16,7 @@ def _tupleize(value):
 
 
 def serialize_card_view(state: MatchState, cid: str) -> dict:
+    from rules_engine.land_types import effective_type_line
     from rules_engine.continuous import effective_combat_stats, effective_keyword_counts, attachment_effect_warnings
     from rules_engine.colors import card_color_symbols
     from rules_engine.mana import nonland_mana_outputs, land_mana_colors, land_mana_amount
@@ -47,7 +48,8 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "counters": counters, "damage_marked": int(card.counters.get("__damage_marked", 0)),
         "loyalty": card.loyalty, "mana_cost": card.mana_cost,
         "oracle_text": card.oracle_text, "image_uri": card.image_uri,
-        "types": list(effective_types(state, card)), "is_token": is_token_card(card), "type_line": card.type_line,
+        "types": list(effective_types(state, card)), "is_token": is_token_card(card), "type_line": effective_type_line(state, card),
+        "base_type_line": card.type_line,
         "attached_to": card.attached_to,
         "bestowed": bool(card.bestow_characteristics),
         "effect_warnings": attachment_effect_warnings(state, cid),

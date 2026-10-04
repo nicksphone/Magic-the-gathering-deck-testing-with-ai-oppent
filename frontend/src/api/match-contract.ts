@@ -9,6 +9,7 @@ function card(value: unknown): boolean {
   return record(value)
     && typeof value.id === "string"
     && typeof value.name === "string"
+    && [value.type_line, value.base_type_line].every(line => line === undefined || typeof line === "string")
     && typeof value.tapped === "boolean"
     && Array.isArray(value.types)
     && value.types.every((type) => typeof type === "string")

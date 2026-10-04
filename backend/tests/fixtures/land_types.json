@@ -1,0 +1,283 @@
+[
+  {
+    "id": "d072e9ca-aae7-45dc-8025-3ce590bae63f",
+    "oracle_id": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+    "name": "Blood Moon",
+    "mana_cost": "{2}{R}",
+    "type_line": "Enchantment",
+    "oracle_text": "Nonbasic lands are Mountains.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/118/blood-moon?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e1efb0d3-2c72-46ff-bdc1-1069967365a0",
+    "oracle_id": "7358e164-5704-4e78-9b21-6a9bf2a968ce",
+    "name": "Cabal Coffers",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{2}, {T}: Add {B} for each Swamp you control.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mh2/301/cabal-coffers?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+    "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+    "name": "Dryad Arbor",
+    "mana_cost": "",
+    "type_line": "Land Creature — Forest Dryad",
+    "oracle_text": "(This land isn't a spell, it's affected by summoning sickness, and it has \"{T}: Add {G}.\")",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/273/dryad-arbor?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "43be1363-7e73-4862-b45f-07f490ab46be",
+    "oracle_id": "bdbde5d0-f5e4-44da-b27c-b4ad6f374cc9",
+    "name": "Dryad of the Ilysian Grove",
+    "mana_cost": "{2}{G}",
+    "type_line": "Enchantment Creature — Nymph Dryad",
+    "oracle_text": "You may play an additional land on each of your turns.\nLands you control are every basic land type in addition to their other types.",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/891/dryad-of-the-ilysian-grove?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+    "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+    "name": "Hallowed Fountain",
+    "mana_cost": "",
+    "type_line": "Land — Plains Island",
+    "oracle_text": "({T}: Add {W} or {U}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/trk/286/hallowed-fountain?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "d62047f2-a41f-44b5-a6bc-28e35fad093b",
+    "oracle_id": "c8f8fbf0-4f51-4a5c-82f9-99917513df6d",
+    "name": "Lush Growth",
+    "mana_cost": "{G}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant land\nEnchanted land is a Mountain, Forest, and Plains.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ala/136/lush-growth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "7c9bd75c-9606-4607-bfa6-d6acdee12820",
+    "oracle_id": "6800d01c-345d-4932-a2a4-8df0fb1902f2",
+    "name": "Magus of the Moon",
+    "mana_cost": "{2}{R}",
+    "type_line": "Creature — Human Wizard",
+    "oracle_text": "Nonbasic lands are Mountains.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tsr/175/magus-of-the-moon?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e75594cc-de47-49f2-9a8b-ba76c576368e",
+    "oracle_id": "d90882ae-6572-4214-8d9c-0bdfb75f9be2",
+    "name": "Prismatic Omen",
+    "mana_cost": "{1}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "Lands you control are every basic land type in addition to their other types.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/shm/126/prismatic-omen?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "edfbf056-c3b7-40e9-8e2b-333585978ac9",
+    "oracle_id": "86187aed-77ce-4b2d-aab0-0a8f807a9451",
+    "name": "River Boa",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Snake",
+    "oracle_text": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\n{G}: Regenerate this creature.",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Regenerate",
+      "Islandwalk"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ddm/49/river-boa?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "37454c1c-4098-4ac2-884e-3f65f1384bdb",
+    "oracle_id": "af32757c-9d3c-4f6c-a6fa-d5729a440382",
+    "name": "Spreading Seas",
+    "mana_cost": "{1}{U}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land is an Island.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/zen/70/spreading-seas?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "9e1a9e38-6ffc-490f-b0be-23ba4e8204c6",
+    "oracle_id": "db6174d7-211d-4817-b8e4-8384594c83f9",
+    "name": "Urborg, Tomb of Yawgmoth",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "Each land is a Swamp in addition to its other land types.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tsr/287/urborg-tomb-of-yawgmoth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+    "oracle_id": "4c6a0c30-b547-4eff-8ff4-0ca25803c076",
+    "name": "Urza's Saga",
+    "mana_cost": "",
+    "type_line": "Enchantment Land — Urza's Saga",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — This Saga gains \"{T}: Add {C}.\"\nII — This Saga gains \"{2}, {T}: Create a 0/0 colorless Construct artifact creature token with 'This token gets +1/+1 for each artifact you control.'\"\nIII — Search your library for an artifact card with mana cost {0} or {1}, put it onto the battlefield, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mh2/259/urzas-saga?utm_source=api",
+    "layout": "saga",
+    "card_faces": null
+  },
+  {
+    "id": "4e4b6e22-93b2-4896-bba5-0ceaa5d8ea3c",
+    "oracle_id": "8dd5f5af-d2d8-4356-8617-8381081b930c",
+    "name": "Yavimaya, Cradle of Growth",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "Each land is a Forest in addition to its other land types.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mh2/261/yavimaya-cradle-of-growth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "136f1e4e-ca24-45cb-a39c-4dd159bb1488",
+    "oracle_id": "0baabe39-72ae-47bd-a095-cbf7eb8a6361",
+    "name": "Ancient Ziggurat",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{T}: Add one mana of any color. Spend this mana only to cast a creature spell.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ecc/144/ancient-ziggurat?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "d3782952-3839-4a94-95bc-716611d3ece6",
+    "oracle_id": "584b15f2-6ae9-413a-8b8d-9244dbea4878",
+    "name": "Unclaimed Territory",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "As this land enters, choose a creature type.\n{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/msc/275/unclaimed-territory?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "3aad15a2-8a1b-4460-9b06-e85863081878",
+    "oracle_id": "89ca686a-7c72-4d8f-9290-e89635624a83",
+    "name": "Cavern of Souls",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "As this land enters, choose a creature type.\n{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/lci/269/cavern-of-souls?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "name": "Lightning Bolt",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/msc/806/lightning-bolt?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

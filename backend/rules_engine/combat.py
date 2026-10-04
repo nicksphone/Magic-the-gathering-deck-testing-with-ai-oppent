@@ -687,8 +687,10 @@ def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defend
     defender_bf = state.players[defending_player_id].battlefield
     for cid in defender_bf:
         card = state.cards[cid]
-        tl = (card.type_line or "").lower()
-        nm = (card.name or "").lower()
+        if 'Land' not in effective_types(state, card):
+            continue
+        from rules_engine.land_types import effective_type_line, has_land_type
+        tl = effective_type_line(state, card).lower()
         for walk in active_walks:
             if walk == "nonbasic landwalk" and "land" in tl and "basic" not in tl:
                 return True
@@ -697,7 +699,7 @@ def _attacker_has_active_landwalk_with_state(state: MatchState, attacker, defend
             if walk == "legendary landwalk" and "legendary" in tl and "land" in tl:
                 return True
             subtype = walk.replace(" landwalk", "").replace("walk", "")
-            if subtype in tl or subtype in nm:
+            if has_land_type(state, card, subtype):
                 return True
     return False
 

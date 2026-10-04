@@ -68,6 +68,19 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
                 add(state, 'Steel Leaf Champion', seat)
         add(state, 'Steel Leaf Champion' if index in (1, 2) else 'Llanowar Elves', seat, Zone.HAND)
         return publish(state, [{'quantity': 60, 'card_name': 'Forest'}])
+    if face_kind in {f'land_types_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
+        from tests.test_land_type_layers import CARDS, add, clean
+        from tests.test_ai_recurring_engines import add as add_card
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state = clean()
+        state.active_player = state.priority_player = seat
+        add(state, ['Blood Moon', 'Prismatic Omen', 'Urborg, Tomb of Yawgmoth', 'Blood Moon'][index], seat)
+        if index == 2:
+            add(state, 'Blood Moon', seat)
+        add_card(state, 'Unclaimed Territory' if index == 3 else 'Hallowed Fountain', seat, Zone.HAND, cards=CARDS)
+        if index == 3:
+            add_card(state, 'Lightning Bolt', seat, Zone.HAND, cards=CARDS)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind in {f'creature_type_{index}_{seat}' for index in range(2) for seat in [1, 2]}:
         from tests.test_conditional_creature_types import CARDS, position, add
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

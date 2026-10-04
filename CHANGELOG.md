@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-04 - Basic-land layers and per-ability mana payment
+
+- Share global, controller-only and Aura basic-land additions/replacements
+  across mana, prospective entry, counted subtypes, landwalk, AI and public views.
+- Preserve printed/snapshot characteristics and use bounded source-existence
+  dependencies before timestamps; preserve distinct intrinsic mana abilities.
+- Track spending restrictions on the selected ability and its produced mana,
+  rather than blocking every ability on a restricted source. Use effective
+  types during actual automatic payment and recompute outputs after costs.
+- Add seventeen canonical fixtures, 74 regressions and eight both-seat browser
+  scenarios, including actual spell casting/payment/resolution and restoration.
+  All 5,724 isolated backend tests and frontend gates pass. Twenty-four
+  seat-balanced replay samples, each repeated twice, finish without timeout,
+  anomaly or drift; earlier low-cap timeout evidence remains documented.
+  See [scope and acceptance](docs/testing/land-type-layers.md).
+
 ## 2026-10-04 - Shared mana abilities and resource sequencing
 
 - Share bounded devotion/count-based outputs, paid tap activations and pure
