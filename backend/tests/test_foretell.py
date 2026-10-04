@@ -260,7 +260,7 @@ def test_ai_keeps_affordable_counter_in_hand_and_mana_available(seat):
     assert idle_foretell_action(agent, state, RulesEngine().legal_moves(state, seat), seat) is None
 
 
-@pytest.mark.parametrize('name', ['Starnheim Unleashed', 'Ethereal Valkyrie', 'The Foretold Soldier'])
+@pytest.mark.parametrize('name', ['Haunting Voyage', 'Ethereal Valkyrie', 'The Foretold Soldier'])
 def test_unimplemented_foreTell_clauses_remain_explicit_diagnostics(name):
     from rules_engine.coverage import known_unsupported_mechanics
     assert 'foretell-related effect fidelity' in known_unsupported_mechanics(CARDS[name]['oracle_text'], card_name=name)

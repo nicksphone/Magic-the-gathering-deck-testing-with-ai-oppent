@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-04 - Conditional Foretell effects and durable reveals
+
+- Add reusable conditional token and additional-scry branches grounded in the
+  canonical Starnheim Unleashed and Poison the Cup fixtures; do not rewrite
+  printed Oracle text or silently remove unknown conditional clauses.
+- Share selected alternative-cost X hints across legal moves, validation,
+  casting and human controls. AI action materialization now sizes X from the
+  selected cost, fixing affordable alternative casts rejected across styles.
+- Preserve X while copying spells without transferring prior Foretell card
+  history; copied removal can choose a new target through ordinary copy paths.
+- Keep X-count token names, colors, types and keywords through shared parsing.
+- Reveal remaining foretold identities once at game end, preserving the reveal
+  in snapshots, saved history, BO3 log transitions and public opponent memory.
+- Add both-seat HTTP/SQLite and browser regressions. Other Foretell clauses,
+  effect-created permissions and strategic timing remain explicitly unfinished.
+
 ## 2026-10-04 - Foretell foundation
 
 - Add shared printed/granted Foretell special actions, live action-cost modifiers,

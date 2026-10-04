@@ -3156,7 +3156,9 @@ class AIAgent:
                 preferred = opponent if any(int(target["id"]) == opponent for target in player_targets) else int(player_targets[0]["id"])
                 targets["target_distribution"] = {str(preferred): 1}
 
-        mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
+        mana_cost = (selected_cost or {}).get('mana_cost')
+        if mana_cost is None:
+            mana_cost = move.get("mana_cost") or getattr(card, "mana_cost", "") or ""
         from rules_engine.costs import restricted_x_color
         x_color = restricted_x_color(str(move.get("ability_label", ""))) if mtype == "activate_ability" else None
         linked_copy = mtype == "activate_ability" and "becomes a copy of that card" in str(move.get("ability_label", "")).lower()

@@ -38,8 +38,16 @@
   Chromium pass. Six seat-balanced samples repeated twice show no reported
   timeout, anomaly or drift. The 855-second Control/Ramp integration shard
   confirms the wider latency work below remains open.
-- [ ] Complete Foretold conditional effects, effect-created permissions, broader
-  exile rewards, later-turn browser casts/restarts and strategic/X-cost planning.
+- [x] Add bounded conditional Foretold token/scry effects, selected-cost X
+  contracts, both-seat later-turn browser casting and durable game-end reveals.
+  Preserve unknown-clause warnings. Shared AI action construction now uses the
+  selected alternative cost rather than the printed cost when sizing X.
+  Validation: 6,482 isolated backend checks, frontend gates and complete
+  final-source Chromium flows pass. Six seat-balanced offline-data samples,
+  repeated twice, resolve without reported timeout, anomaly or drift; these
+  are repeatability checks, not expert-play or matchup-balance certification.
+- [ ] Complete other Foretold conditional effects, effect-created permissions,
+  broader exile rewards, browser restart/countering and strategic/X-cost planning.
 - [ ] Measure and bound wide-state tactical planning latency without silently
   skipping legal actions or losing deterministic decision behavior. The seeded
   live Control/Ramp BO3 restart regression passes but remains an expensive gate.

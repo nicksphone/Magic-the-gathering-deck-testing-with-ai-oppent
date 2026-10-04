@@ -1420,6 +1420,8 @@ def analytics_history(repo: Repository = Depends(get_repo)) -> dict:
 
 def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     state = match.state
+    from rules_engine.foretell import reveal_at_game_end
+    reveal_at_game_end(state)
     if state.winner is None or match.current_game_recorded:
         return
     p1 = state.players[1]
@@ -1531,7 +1533,8 @@ def _remember_public_types(match: MatchController) -> None:
         public_ids = (match.state.players[opponent].battlefield
                       + match.state.players[opponent].graveyard
                       + [cid for cid in match.state.players[opponent].exile
-                         if not match.state.cards[cid].exile_face_down])
+                         if not match.state.cards[cid].exile_face_down
+                         or match.state.cards[cid].foretell_record.get('revealed_at_game_end')])
         match.seen_opponent_types.setdefault(pid, set()).update(
             card_type for cid in public_ids for card_type in match.state.cards[cid].types
         )
@@ -1566,7 +1569,10 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True, r
         raise ValueError("A finished game is required before starting the next game")
     _remember_public_types(match)
     _ai_sideboard_for_next_game(match, repo)
-    prior_log_tail = list(match.state.log[-80:])
+    earlier = match.state.log[:-80]
+    public_reveals = [line for line in earlier if ' reveals foretold ' in line
+                      or line.startswith('--- Starting game ')]
+    prior_log_tail = public_reveals + list(match.state.log[-80:])
     prior_id = match.state.id
     p1_name = match.state.players[1].name
     p2_name = match.state.players[2].name

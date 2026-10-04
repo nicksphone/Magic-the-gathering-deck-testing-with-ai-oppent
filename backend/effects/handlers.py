@@ -870,10 +870,16 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     copied_payload["__source_card_id"] = item.source_card_id
     copied_payload["__copied_from_stack_id"] = item.id
     copied_payload["__copied_targets"] = list(getattr(item, "targets", []) or [])
+    copied_effect_key = item.effect_key
+    if copied_effect_key == 'foretell_spell':
+        branch = copied_payload['branches'][0]
+        copied_effect_key = branch['effect_key']
+        copied_payload = {**branch['payload'], **{key: value for key, value in copied_payload.items()
+                          if key.startswith('__') or key in {'x_value', 'snow_mana_spent', 'snow_mana_colors'}}}
     copied_item = StackItem(
         id=state.allocate_object_id(), source_card_id=item.source_card_id,
         controller=controller, label=f"{item.label} (copy)",
-        effect_key=item.effect_key, payload=copied_payload,
+        effect_key=copied_effect_key, payload=copied_payload,
         targets=list(getattr(item, "targets", []) or []),
     )
     state.stack.append(copied_item)

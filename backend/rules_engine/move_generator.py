@@ -48,10 +48,11 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         from rules_engine.costs import additional_cost_candidates
         view.update(additional_cost_candidates(state, player_id, card_id, option))
     if state is not None:
-        from rules_engine.kicker import kicker_surfaces, spell_kicker_view
+        from rules_engine.kicker import kicker_surfaces
         card = state.cards[card_id]
-        if kicker_surfaces(card.oracle_text):
-            view['target_hints'] = build_cast_hints(state, spell_kicker_view(card, option.kicked), player_id)
+        if kicker_surfaces(card.oracle_text) or '{X}' in option.mana_cost.upper():
+            from rules_engine.cast_choice import build_cost_cast_hints
+            view['target_hints'] = build_cost_cast_hints(state, card, player_id, option)
     return view
 
 

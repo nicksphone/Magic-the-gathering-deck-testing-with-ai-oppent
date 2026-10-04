@@ -906,7 +906,8 @@ class RulesEngine:
                 if face_card is not card:
                     action_targets = dict(action_targets)
                     action_targets.setdefault("selected_face_index", selected_face_index if selected_face_index is not None else 0)
-                hints = build_cast_hints(state, face_card, player_id, action_targets)
+                from rules_engine.cast_choice import build_cost_cast_hints
+                hints = build_cost_cast_hints(state, face_card, player_id, chosen, action_targets)
                 if reject_invalid:
                     from rules_engine.action_validation import require_declared_targets
                     require_declared_targets(face_card, hints, action_targets, player_id, spell=True)

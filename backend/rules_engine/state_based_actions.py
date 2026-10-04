@@ -163,6 +163,8 @@ def apply_state_based_actions(state: MatchState) -> None:
             break
     from rules_engine.events import flush_staged_triggers
     flush_staged_triggers(state)
+    from rules_engine.foretell import reveal_at_game_end
+    reveal_at_game_end(state)
 
 
 def _apply_state_based_actions_once(state: MatchState) -> None:

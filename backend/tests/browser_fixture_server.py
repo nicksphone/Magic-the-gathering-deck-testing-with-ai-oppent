@@ -51,6 +51,15 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {f'foretell_effect_{index}_{seat}' for index in range(3) for seat in [1, 2]}:
+        from tests.test_foretell_effects import cast_position
+        from tests.test_ai_recurring_engines import add
+        index, seat = [int(value) for value in face_kind.split('_')[-2:]]
+        state, _ = cast_position('Poison the Cup' if index == 2 else 'Starnheim Unleashed',
+                                 seat, index != 0)
+        if index == 2:
+            add(state, 'Grizzly Bears', 3 - seat, Zone.BATTLEFIELD)
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind in {'foretell_1', 'foretell_2'}:
         from tests.test_foretell import setup
         state, _ = setup(seat=int(face_kind[-1]))

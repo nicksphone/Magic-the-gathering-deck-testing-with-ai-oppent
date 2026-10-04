@@ -36,7 +36,7 @@ NAMED_ARTIFACT_TOKEN_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|si
 TOKEN_REMINDER_ABILITY_RE = re.compile(r"\b(?:it's|they're|it is|they are)\s+(?:an?\s+)?artifacts?\s+with\s+[\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
 SAC_TOUGHNESS_TOKEN_RE = re.compile(r"if the sacrificed creature's toughness was (\d+) or greater, create (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) ([a-z]+) tokens? instead", re.IGNORECASE)
 TOKEN_NAME_RE = re.compile(
-    r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
+    r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|x|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
     re.IGNORECASE,
 )
 TOKEN_CREATURE_ABILITY_RE = re.compile(r"creature tokens? with [\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
@@ -84,6 +84,8 @@ DESTROY_CONTROLLER_SEARCH_RE = re.compile(
 def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     if not set(getattr(card, "types", []) or []).intersection({"Instant", "Sorcery"}):
         return oracle_text
+    from rules_engine.foretell import resolution_text
+    oracle_text = resolution_text(card, oracle_text)
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
@@ -196,6 +198,21 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
+        from rules_engine.foretell import spell_variants, record
+        variants = spell_variants(card.oracle_text)
+        if variants:
+            from copy import copy
+            branches = []
+            for text in variants:
+                proxy = copy(card)
+                proxy.oracle_text = text
+                proxy.card_faces = []
+                key, data = infer_effect_from_oracle(state, proxy, controller, action_targets,
+                                                   report_unsupported=report_unsupported)
+                branches.append({'effect_key': key, 'payload': data})
+            return 'foretell_spell', {'branches': branches,
+                                     'was_foretold': bool(getattr(card, 'was_foretold', False) or record(card))}
     # A real planeswalker card's loyalty lines are activated later, not cast as
     # one combined spell effect. Loyalty proxies intentionally do not carry
     # the Planeswalker type and continue through the normal parser below.

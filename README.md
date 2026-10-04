@@ -381,8 +381,11 @@ It is designed for serious deck work:
 - Printed Foretell has special-action payments, later-turn alternative costs,
   durable private exile permissions and both-seat hand controls. Supported grants,
   action-cost modifiers and self-buff triggers use shared engine paths; AI banks
-  idle mana conservatively across archetypes. Conditional foretold effects,
-  effect-created permissions and deeper planning remain open. See
+  idle mana conservatively across archetypes. Supported conditional token and
+  scry clauses use shared effect handlers; selected alternative X costs drive
+  human choices and AI action construction. Mandatory game-end reveals survive
+  saved history and BO3 transitions. Effect-created permissions, other conditional
+  clauses and deeper planning remain open. See
   [implemented scope and limitations](docs/testing/foretell.md).
 - AI vs AI autoplay
 - Batch simulation with progress tracking

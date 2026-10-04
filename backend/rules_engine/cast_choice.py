@@ -44,8 +44,7 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
     from rules_engine.bestow import is_bestowed
     options = [option for option in options if (casting_method(option.id) == 'bestow') == is_bestowed(card)]
     if not is_aura(card):
-        from rules_engine.kicker import spell_kicker_view
-        variants = [(option, build_cast_hints(state, spell_kicker_view(card, option.kicked), controller))
+        variants = [(option, build_cost_cast_hints(state, card, controller, option))
                     for option in options if check_cost_option_available(state, controller, card, option)]
         variants = [(option, hints) for option, hints in variants if has_available_targets_for_action(hints)]
         return [option for option, _ in variants], variants[0][1] if variants else {}
@@ -58,6 +57,15 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
     hints["aura_cost_options"] = {t["id"]: compatible[t["id"]] for t in targets}
     hints["choice_schema"]["target_card_id"] = {"type": "string", "required": True, "enum": [t["id"] for t in targets]}
     return [o for o in options if any(o.id in compatible[t["id"]] for t in targets)], hints
+
+
+def build_cost_cast_hints(state, card, controller, option, action_targets=None):
+    from rules_engine.kicker import spell_kicker_view
+    hints = build_cast_hints(state, spell_kicker_view(card, option.kicked), controller, action_targets)
+    if '{X}' in option.mana_cost.upper():
+        hints['requires_x_value'] = True
+        hints['choice_schema']['x_value'] = {'type': 'integer', 'required': True, 'minimum': 0}
+    return hints
 
 
 def build_cast_hints(

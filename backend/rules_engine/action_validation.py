@@ -304,7 +304,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:
-            require("{X}" in face_card.mana_cost.upper() or any(option.pay_life_x or option.discard_x for option in options), "This casting cost does not have a chosen X")
+            require("{X}" in face_card.mana_cost.upper() or any(
+                '{X}' in option.mana_cost.upper() or option.pay_life_x or option.discard_x
+                for option in options if not choice or option.id == choice), "This casting cost does not have a chosen X")
     if kind == "activate_loyalty":
         require(action.get("hybrid_choices") is None, "Loyalty abilities do not use hybrid payment choices")
     if kind == "activate_ability" and action.get("hybrid_choices") is not None:

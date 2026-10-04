@@ -11,6 +11,43 @@ GRANT = re.compile(r'each nonland card in your hand( without foretell)? has fore
 MODIFIER = re.compile(r"foretelling cards from your hand costs \{(\d+)\} less "
                       r"and can be done on any player's turn\.", re.I)
 FIRST = re.compile(r'the first card you foretell each turn costs \{0\} to foretell\.', re.I)
+EXTRA_SCRY = re.compile(r'^(.*?)\s+If this spell was foretold, (scry \d+)\.$', re.I | re.S)
+TOKEN_INSTEAD = re.compile(r'^(Create (?:a|an|one) (.+?))\.\s*'
+                           r'If this spell was foretold, create X of those tokens instead\.$', re.I | re.S)
+
+
+def spell_variants(text):
+    """Recognize complete clauses; never strip an unrecognized conditional."""
+    if 'was foretold' not in text.lower():
+        return None
+    body = '\n'.join(line for line in without_reminder_text(text).splitlines()
+                     if not PRINTED.fullmatch(line.strip())).strip()
+    if match := EXTRA_SCRY.fullmatch(body):
+        if 'foretell' in match[1].lower() or 'foretold' in match[1].lower():
+            return None
+        return match[1], match[1] + '\n' + match[2] + '.'
+    if match := TOKEN_INSTEAD.fullmatch(body):
+        return match[1] + '.', 'Create X ' + match[2] + '.'
+    return None
+
+
+def resolution_text(card, text):
+    variants = spell_variants(text)
+    if variants:
+        return variants[int(bool(getattr(card, 'was_foretold', False) or record(card)))]
+    return text
+
+
+def reveal_at_game_end(state):
+    if state.winner is None:
+        return
+    cards = sorted((card for card in state.cards.values() if record(card)),
+                   key=lambda card: (card.foretell_record['order'], card.id))
+    for card in cards:
+        if not card.foretell_record.get('revealed_at_game_end'):
+            card.foretell_record['revealed_at_game_end'] = True
+            actor = state.players[card.foretell_record['player_id']]
+            state.log.append(f'{actor.name} reveals foretold {card.name} at game end.')
 
 
 def _sources(state, player_id):
@@ -70,8 +107,8 @@ def action_options(state, player_id, card):
 
 
 def record(card):
-    data = card.foretell_record
-    return data if (card.zone == Zone.EXILE and card.exile_face_down
+    data = getattr(card, 'foretell_record', {})
+    return data if (getattr(card, 'zone', None) == Zone.EXILE and getattr(card, 'exile_face_down', False)
                     and data.get('sequence') == card.zone_change_sequence) else {}
 
 
