@@ -35,6 +35,12 @@ for correctness or seasoned-player acceptance.
   shuffled identities; compare actual decisions across proactive and reactive
   styles. Profile the private observation boundary and complex trigger/search
   continuations before extending depth or claiming information-set/expert play.
+  The [known-composition draw/rummage checkpoint](docs/testing/ai-resource-priors.md)
+  adds reconciled own-list land/spell expectations, shared curve/role utility,
+  unknown fallbacks and public resolving-source visibility. The 7,135-test broader
+  gate, 468-check fixture follow-up, frontend gates, two-seat HTTP/SQLite probes
+  and ten repeated/final-compared seed/seat samples pass. Ordered knowledge, color
+  feasibility, opponent beliefs and multi-turn resource planning remain open.
 
 - [x] Finish shared basic-land subtype layers: global, controller-only
   and Aura additions/replacements, source-existence dependencies, intrinsic mana,

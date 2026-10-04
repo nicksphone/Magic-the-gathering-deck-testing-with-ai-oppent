@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-04 - Known-composition draw and rummage priors
+
+- Estimate unknown draws from reconciled owned submitted inventory, with land
+  expectations and hypergeometric probability; never synthesize future cards.
+- Share held-card curve/role utility with optional rummage and whole-hand draw
+  admission. Retain productive resource-finding trades without giving equally
+  expensive replacements fictitious flat credit.
+- Keep paused resolving stack-zone sources public in AI views. Preserve older
+  lightweight card fixtures with conservative missing-zone handling.
+- Add 82 both-seat regressions for six styles, three difficulties, hidden-data
+  invariance, inventory uncertainty, native paid choices and restoration. Broader
+  resource horizons and expert play remain open; see `docs/testing/ai-resource-priors.md`.
+- Save a separate-worktree regression-agent handoff in `rules-regression-plan.md`.
+- Save the independent retention/restore/release handoff in `release-agent-plan.md`.
+- Verification: 7,135-test broader backend gate, 468-check final fixture follow-up,
+  frontend gates, two-seat HTTP/SQLite probes and ten repeated/final-compared pinned
+  samples. Evidence distinguishes production-source and fixture stages.
+
 ## 2026-10-04 - Revealed-hand memory and selective private copies
 
 - Persist authorized card observations privately; supported whole-hand reveals

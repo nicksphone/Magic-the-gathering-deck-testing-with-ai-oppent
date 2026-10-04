@@ -1,6 +1,7 @@
 """Private decision copies; opaque objects are unknowns, not Magic card data."""
 from copy import deepcopy
 from collections import Counter
+from math import comb
 from types import SimpleNamespace
 
 from game_state.state import CardInstance, Zone
@@ -32,6 +33,9 @@ def decision_view(state, player_id, legal_moves):
     visible.update(state.players[player_id].hand)
     visible.update(getattr(item, 'source_card_id', getattr(item, 'card_id', None))
                    for item in getattr(state, 'stack', []))
+    # A resolving spell leaves the stack queue while an owned choice is pending,
+    # but its source remains a public stack-zone card until resolution completes.
+    visible.update(cid for cid, card in state.cards.items() if getattr(card, 'zone', None) == Zone.STACK)
     for player in state.players.values():
         visible.update(cid for cid in getattr(player, 'exile', [])
                        if not state.cards[cid].exile_face_down or can_look(state.cards[cid], player_id))
@@ -104,3 +108,62 @@ def known_search_land_count(state, player_id, contains):
             observed[name.casefold()] = max(0, observed[name.casefold()] - row['quantity'])
             count += available
     return min(count, len(player.library))
+
+
+def draw_resource_forecast(state, player_id, draws):
+    """Own-list exchangeable prior, or None when known inventory cannot reconcile.
+
+    Never inspect library card instances or transfer opposing deck knowledge.
+    Probabilities describe unknown draws, not executable projected card objects.
+    """
+    from card_data.fallback_cards import fallback_card_payload
+    from rules_engine.card_types import is_token_card
+    if getattr(state, 'ai_information_player', None) != player_id:
+        return None
+    rows = getattr(state, 'starting_decks', {}).get(player_id, [])
+    if not rows or draws < 0:
+        return None
+    remaining = Counter()
+    land_names = set()
+    descriptors = {}
+    for row in rows:
+        name = row['card_name'].casefold()
+        metadata = row if row.get('type_line') else fallback_card_payload(row['card_name'])
+        if not metadata or not metadata.get('type_line'):
+            return None
+        # Face choices need their own resource model; do not guess their value.
+        if '//' in metadata['type_line'] or metadata.get('layout', 'normal') not in {'', 'normal'}:
+            return None
+        remaining[name] += row['quantity']
+        descriptor = {'mana_cost': metadata.get('mana_cost', ''),
+                      'type_line': metadata['type_line'],
+                      'oracle_text': metadata.get('oracle_text', '')}
+        if name in descriptors and descriptors[name] != descriptor:
+            return None
+        descriptors[name] = descriptor
+        if 'Land' in metadata['type_line'].split():
+            land_names.add(name)
+    for card in state.cards.values():
+        if card.owner != player_id or is_token_card(card):
+            continue
+        if card.zone == Zone.LIBRARY:
+            # An authorized known top/search candidate violates exchangeability.
+            # Its conditioned/order-aware model is separate unfinished work.
+            if not is_unknown(card):
+                return None
+            continue
+        if is_unknown(card):
+            return None
+        name = card.printed_characteristics.get('name', card.name).casefold()
+        remaining[name] -= 1
+    population = len(state.players[player_id].library)
+    if any(count < 0 for count in remaining.values()) or sum(remaining.values()) != population or draws > population:
+        return None
+    lands = sum(remaining[name] for name in land_names)
+    expected = draws * lands / population if population else 0.0
+    probability = 1 - comb(population-lands, draws)/comb(population, draws) if draws else 0.0
+    return {'population': population, 'remaining_lands': lands,
+            'expected_lands': expected, 'expected_nonlands': draws-expected,
+            'probability_land': probability,
+            'nonland_inventory': [{'count': count, **descriptors[name]}
+                                  for name, count in remaining.items() if count and name not in land_names]}

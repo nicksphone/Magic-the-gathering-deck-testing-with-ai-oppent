@@ -583,7 +583,8 @@ class AIAgent:
             draws = forecast_draw_count(state, player_id, count)
             if draws <= len(state.players[player_id].library):
                 loss = sum(self._hand_retention_value(state, cid, player_id) for cid in ranked[:count])
-                scored.append((round(draws * 5 - loss, 6), -count))
+                gain = self._draw_trade_value(state, player_id, draws, ranked[:count])
+                scored.append((round(gain - loss, 6), -count))
         value, negative_count = max(scored)
         return -negative_count, value
 
@@ -616,7 +617,8 @@ class AIAgent:
             from rules_engine.draw_restrictions import forecast_draw_count
             draws = forecast_draw_count(state, player_id, amount)
             return (not draws or draws > len(state.players[player_id].library)
-                    or draws * 5 <= sum(self._hand_retention_value(state, cid, player_id) for cid in hand))
+                    or self._draw_trade_value(state, player_id, draws, hand)
+                    <= sum(self._hand_retention_value(state, cid, player_id) for cid in hand))
         match = EACH_PLAYER_DRAW_RE.fullmatch(str(getattr(card, "oracle_text", "") or "").strip())
         if match is None:
             return False
@@ -4423,22 +4425,40 @@ class AIAgent:
     def _hand_retention_value(self, state: MatchState, cid: str, player_id: int, archetype: str | None = None) -> float:
         card = state.cards[cid]
         archetype = archetype or self.archetype
-        player = state.players[player_id]
-        lands_in_play = sum("Land" in effective_types(state, state.cards[pid]) for pid in player.battlefield)
         if "Land" in effective_types(state, card):
             return self._land_retention_value(state, player_id)
-        cost = mana_value(card.mana_cost)
+        return self._nonland_retention_value(state, player_id, card.mana_cost,
+            effective_types(state, card), card.oracle_text, archetype)
+
+    def _nonland_retention_value(self, state, player_id, mana_cost, types, oracle_text, archetype=None):
+        archetype = archetype or self.archetype
+        lands_in_play = sum('Land' in effective_types(state, state.cards[cid])
+                            for cid in state.players[player_id].battlefield)
+        cost = mana_value(mana_cost)
         value = 5.0 - max(0, cost - lands_in_play - 1) * 0.8
-        if archetype == "Reanimator" and "Creature" in effective_types(state, card) and cost > lands_in_play + 2:
+        if archetype == "Reanimator" and "Creature" in types and cost > lands_in_play + 2:
             value -= 2.0
-        if archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
+        if archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(oracle_text):
             value += 1.5
         return value
 
-    def _land_retention_value(self, state: MatchState, player_id: int) -> float:
+    def _draw_trade_value(self, state, player_id, draws, discarded):
+        from ai.information import draw_resource_forecast
+        forecast = draw_resource_forecast(state, player_id, draws)
+        if forecast is None:
+            return draws * 5.0
+        nonlands = sum(row['count'] * self._nonland_retention_value(
+            state, player_id, row['mana_cost'], row['type_line'].split(), row['oracle_text'])
+            for row in forecast['nonland_inventory'])
+        spell_value = draws * nonlands / forecast['population'] if forecast['population'] else 0.0
+        return spell_value + forecast['expected_lands'] * self._land_retention_value(
+            state, player_id, excluded_card_ids=discarded)
+
+    def _land_retention_value(self, state: MatchState, player_id: int, *, excluded_card_ids=()) -> float:
         player = state.players[player_id]
         lands_in_play = sum('Land' in effective_types(state, state.cards[cid]) for cid in player.battlefield)
-        lands_in_hand = sum('Land' in effective_types(state, state.cards[cid]) for cid in player.hand)
+        lands_in_hand = sum('Land' in effective_types(state, state.cards[cid])
+                            for cid in player.hand if cid not in excluded_card_ids)
         if lands_in_play < 3:
             return 9.0 if lands_in_hand <= 2 else 5.0
         return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0

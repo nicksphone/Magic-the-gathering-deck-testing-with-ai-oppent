@@ -54,6 +54,13 @@ It is designed for serious deck work:
   metadata; broader memory, information-set inference and expert play remain
   unfinished.
 
+- [Known-composition draw priors](docs/testing/ai-resource-priors.md): supported
+  optional rummage and whole-hand draw decisions estimate land/spell draws from
+  the pilot's submitted list and known inventory, not hidden library order.
+  Curve/role credit is shared with held-card retention; unreconciled or ordered
+  information falls back conservatively. Resolving spell sources remain public
+  during pending choices. This is not a complete future-resource/belief model.
+
 - [Live devotion payoffs](docs/testing/devotion.md): controller-relative mana-symbol
   counts feed supported pump, damage, life gain/actual-loss drain, counters and
   token instructions at resolution. Existing replacements and snapshot choices
