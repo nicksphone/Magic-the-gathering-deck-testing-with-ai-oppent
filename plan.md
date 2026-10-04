@@ -14,12 +14,20 @@ for correctness or seasoned-player acceptance.
   pass, with the final manifest validation covered by affected follow-up checks.
   Six snapshot medians improve 14-30% against an actor-correct replaying reference;
   two remain over one second. See [scope and evidence](docs/testing/ai-search-prefix.md).
-- [ ] Next connected AI batch: enforce unexposed-hand/library invariance in deeper
-  reply planning, repair harmful forced non-pass fallbacks without banning useful
-  self-sacrifice/friendly targeting, and extend public pending-choice/future-resource
-  decisions. A captured Ramp decision destroys its own animated land; exact
-  replay parity does not make that decision good. Use actual before/after outcomes
-  across proactive and reactive styles rather than forced matchup percentages.
+- [x] Finish the AI observation/public-utility batch: exclude unexposed card
+  metadata from all agent decision paths, preserve owned inspection continuations,
+  persist private submitted-deck composition for linked land-search planning,
+  conserve pure removal without banning profitable friendly death-trigger lines,
+  and rank announced public trigger targets/optional acceptance. The captured
+  Ramp self-destruction decision is repaired. All 7,021 backend tests across 289
+  isolated test files pass, with frontend lint/contracts/build and the complete
+  41-script browser harness. See [scope and evidence](docs/testing/ai-information.md).
+- [ ] Next connected batch: durable public-card memory and uncertainty-aware
+  future-resource planning, including authorized observations surviving zone
+  changes and restart. Integrate known-list priors without reconstructing hidden
+  shuffled identities; compare actual decisions across proactive and reactive
+  styles. Profile the private observation boundary and complex trigger/search
+  continuations before extending depth or claiming information-set/expert play.
 
 - [x] Finish shared basic-land subtype layers: global, controller-only
   and Aura additions/replacements, source-existence dependencies, intrinsic mana,

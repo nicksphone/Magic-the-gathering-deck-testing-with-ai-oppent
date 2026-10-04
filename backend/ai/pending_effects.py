@@ -132,15 +132,14 @@ def keyword_target_value(state, card, player_id, targets):
     return evaluate_board(projected,player_id) - evaluate_board(state,player_id)
 
 
-def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None) -> set[str]:
+def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None,
+                                action: dict | None = None, own_choice_action=None, candidates=None) -> set[str]:
     """Conserve pure destruction against indestructible or friendly targets."""
     if ability_text is None and not set(effective_types(state, card)).intersection({"Instant", "Sorcery"}):
         return set()
     text = ability_text or "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
     text = without_reminder_text(text).strip()
-    if SECONDARY_EFFECT_RE.search(text) or not re.fullmatch(
-        r"destroy target [^.\n]+\.(?:\s*it can't be regenerated\.)?", text, re.I,
-    ):
+    if SECONDARY_EFFECT_RE.search(text):
         return set()
     proxy = copy(card)
     proxy.oracle_text = text
@@ -150,8 +149,50 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
     key, _ = infer_effect_from_oracle(state, proxy, player_id, targets, report_unsupported=False)
     if key != "destroy_permanent":
         return set()
-    return {cid for player in state.players.values() for cid in player.battlefield
-            if state.cards[cid].controller == player_id or has_keyword(state, cid, "indestructible")}
+    excluded = set()
+    for player in state.players.values():
+        for cid in player.battlefield:
+            if candidates is not None and cid not in candidates:
+                continue
+            friendly = state.cards[cid].controller == player_id
+            if not friendly and not has_keyword(state, cid, 'indestructible'):
+                continue
+            if friendly and action is not None:
+                profitable = friendly_destruction_profit(state, player_id,
+                    {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action)
+                if profitable is not False:
+                    continue
+            excluded.add(cid)
+    return excluded
+
+
+def friendly_destruction_profit(state, player_id, action, *, own_choice_action=None):
+    """Known resolved utility; incomplete/private continuations remain unknown."""
+    from ai.heuristics import evaluate_board
+    from rules_engine.action_validation import ActionRejected, checked_action
+    projected = _projection_copy(state)
+    libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
+    opposing_hand = tuple(state.players[3-player_id].hand)
+    try:
+        projected = checked_action(projected, RulesEngine(), player_id, action)
+    except ActionRejected:
+        return False
+    if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
+        return None
+    if projected.winner is not None:
+        return projected.winner == player_id
+    if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
+            or tuple(projected.players[3-player_id].hand) != opposing_hand):
+        return None
+    baseline = _projection_copy(state)
+    if not _settle_announced_stack(baseline, player_id=player_id, own_choice_action=own_choice_action):
+        return None
+    if baseline.winner is not None:
+        return baseline.winner != player_id
+    if (any(tuple(player.library) != libraries[pid] for pid, player in baseline.players.items())
+            or tuple(baseline.players[3-player_id].hand) != opposing_hand):
+        return None
+    return evaluate_board(projected, player_id) > evaluate_board(baseline, player_id)
 
 
 def _projection_copy(state: MatchState) -> MatchState:

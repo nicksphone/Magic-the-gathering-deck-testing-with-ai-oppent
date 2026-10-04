@@ -105,6 +105,8 @@ class AIAgent:
 
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
+        from ai.information import decision_view
+        state, legal_moves = decision_view(state, player_id, legal_moves)
         with decision_projection_scope(state, player_id):
             decision = self._choose_action(state, [move for move in legal_moves if move['type'] != 'foretell'], player_id)
             if decision.action.get('type') == 'pass_priority':
@@ -117,6 +119,13 @@ class AIAgent:
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         trigger_choice = getattr(state, 'pending_trigger_order', None) or {}
+        if trigger_choice.get('current_controller') == player_id and trigger_choice.get('phase') in {'targets', 'optional'}:
+            choices = [move for move in legal_moves if move.get('type') in {'choose_trigger_target', 'choose_optional_effect'}]
+            if choices:
+                from ai.trigger_targets import choose_target
+                action, known = choose_target(state, choices, player_id)
+                return AIDecision(action=action, reasoning='Choose the best projected public trigger option' if known
+                                  else 'Trigger continuation unknown; retain a legal option without claiming a forecast')
         if trigger_choice.get('current_controller') == player_id and trigger_choice.get('phase') != 'targets':
             from ai.trigger_policy import preferred_trigger_order
             group = trigger_choice.get('groups', {}).get(str(player_id), [])
@@ -403,21 +412,19 @@ class AIAgent:
             if choice["kind"] in {"cleanup_discard", "discard", "each_player_discard"}:
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
                 if choice['kind'] == 'discard' and choice.get('min_count') == 0:
-                    from rules_engine.oracle_effects import search_card_matches
+                    from ai.information import known_search_land_count
                     followup = choice.get('followup_effect') or {}
                     count = 0
                     if followup.get('effect_key') == 'search_library':
                         payload = followup.get('payload') or {}
-                        candidates = [cid for cid in state.players[player_id].library
-                                      if search_card_matches(state.cards[cid], payload.get('contains'), None)]
-                        basics = self._choose_library_search(state, candidates, len(options), player_id)
+                        basics = known_search_land_count(state, player_id, payload.get('contains'))
                         target = 6 if self.archetype == 'Ramp' else 4
                         lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in state.players[player_id].battlefield + state.players[player_id].hand)
                         scored = [(0.0, 0)]
-                        for size in range(1, min(len(basics), len(options), choice['count']) + 1):
+                        for size in range(1, min(basics, len(options), choice['count']) + 1):
                             removed_lands = sum('Land' in effective_types(state, state.cards[cid]) for cid in options[:size])
                             if size <= max(0, target - lands + removed_lands):
-                                gain = sum(self._hand_retention_value(state, cid, player_id) for cid in basics[:size])
+                                gain = size * self._land_retention_value(state, player_id)
                                 loss = sum(self._hand_retention_value(state, cid, player_id) for cid in options[:size])
                                 # Equal-value trades retain more cards despite float noise.
                                 scored.append((round(gain - loss, 6), -size))
@@ -2838,6 +2845,9 @@ class AIAgent:
         mtype = move.get("type")
         from rules_engine.attachments import is_aura
         source = state.cards.get(move.get("card_id"))
+        from ai.information import is_unknown
+        if is_unknown(source):
+            return {**move, '_invalid_ai_choice': True}
         if source is not None and move.get("selected_face_index") is not None:
             from rules_engine.card_faces import select_cast_face
             source = select_cast_face(source, int(move["selected_face_index"]))
@@ -2950,7 +2960,10 @@ class AIAgent:
         if isinstance(state, MatchState) and card is not None:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
-            excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text)
+            excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text,
+                action=out, own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action,
+                candidates={target.get('id') for key, group in hints.items() if key.endswith('_targets') and isinstance(group, list)
+                            for target in group if isinstance(target, dict)} | {targets.get('target_card_id')})
             friendly_target = targets.get("target_card_id")
             if allow_friendly_target and friendly_target in state.players[player_id].battlefield:
                 excluded.discard(friendly_target)
@@ -4412,11 +4425,8 @@ class AIAgent:
         archetype = archetype or self.archetype
         player = state.players[player_id]
         lands_in_play = sum("Land" in effective_types(state, state.cards[pid]) for pid in player.battlefield)
-        lands_in_hand = sum("Land" in effective_types(state, state.cards[hid]) for hid in player.hand)
         if "Land" in effective_types(state, card):
-            if lands_in_play < 3:
-                return 9.0 if lands_in_hand <= 2 else 5.0
-            return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0
+            return self._land_retention_value(state, player_id)
         cost = mana_value(card.mana_cost)
         value = 5.0 - max(0, cost - lands_in_play - 1) * 0.8
         if archetype == "Reanimator" and "Creature" in effective_types(state, card) and cost > lands_in_play + 2:
@@ -4424,6 +4434,14 @@ class AIAgent:
         if archetype in {"Control", "Counter-heavy"} and _has_counter_spell_text(card.oracle_text):
             value += 1.5
         return value
+
+    def _land_retention_value(self, state: MatchState, player_id: int) -> float:
+        player = state.players[player_id]
+        lands_in_play = sum('Land' in effective_types(state, state.cards[cid]) for cid in player.battlefield)
+        lands_in_hand = sum('Land' in effective_types(state, state.cards[cid]) for cid in player.hand)
+        if lands_in_play < 3:
+            return 9.0 if lands_in_hand <= 2 else 5.0
+        return 0.0 if lands_in_play >= 5 and lands_in_hand >= 2 else 3.0
 
     def _best_land_move(self, state: MatchState, land_moves: list[dict], player_id: int) -> dict:
         demand = self._color_demand(state, player_id)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import re
 import uuid
+from copy import deepcopy
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -179,6 +180,7 @@ class MatchState:
     cards: dict[str, CardInstance]
     stack: list[StackItem]
     rng: random.Random = field(default_factory=random.Random)
+    starting_decks: dict[int, list[dict]] = field(default_factory=dict)
     turn: int = 1
     active_player: int = 1
     priority_player: int = 1
@@ -343,6 +345,7 @@ class MatchFactory:
                 player.library.append(cid)
 
         match = MatchState(id=str(uuid.uuid4()), players={1: p1, 2: p2}, cards=cards, stack=[])
+        match.starting_decks = {1: deepcopy(deck_a), 2: deepcopy(deck_b)}
         match.rng = rng if seed is not None else random.Random()
         for pid in [1, 2]:
             for _ in range(7):

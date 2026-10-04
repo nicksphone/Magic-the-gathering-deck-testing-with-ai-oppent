@@ -43,6 +43,13 @@ It is designed for serious deck work:
 
 ## Current Features
 
+- [AI observation and utility boundary](docs/testing/ai-information.md): private
+  decision copies exclude unseen opposing hands and uninspected library metadata;
+  owned inspection choices and privately persisted submitted deck composition
+  remain available. Shared removal and optional-trigger projections conserve
+  resources while retaining profitable friendly death-trigger lines. Public
+  memory, information-set inference and expert play remain unfinished.
+
 - [Live devotion payoffs](docs/testing/devotion.md): controller-relative mana-symbol
   counts feed supported pump, damage, life gain/actual-loss drain, counters and
   token instructions at resolution. Existing replacements and snapshot choices

@@ -69,6 +69,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
     return {
         "id": state.id,
+        "starting_decks": {str(pid): deepcopy(rows) for pid, rows in state.starting_decks.items()},
         "turn": state.turn,
         "active_player": state.active_player,
         "priority_player": state.priority_player,
@@ -297,6 +298,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         if payload.get(key) is not None:
             setattr(state, key, int(payload[key]) if key != "winner" else payload[key])
     state.step = Step(payload.get("step", Step.UNTAP.value))
+    state.starting_decks = {int(pid): deepcopy(rows) for pid, rows in payload.get('starting_decks', {}).items()}
     state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))

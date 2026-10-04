@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-04 - AI information and public utility capability batch
+
+- Remove unseen hand/library/card-face metadata and private trace history from
+  agent planning copies; preserve authorized inspections, public sources and
+  owner-inspectable foretell records. Unknowns cannot become virtual free spells.
+- Persist each pilot's submitted deck composition privately for known-resource
+  search planning, without exposing hidden instance identities or draw order.
+  Legacy snapshots retain conservative behavior; public views omit the lists.
+- Evaluate pure friendly destruction through actual costs and public effects,
+  conserving removal without banning profitable sacrifice/death-trigger wins.
+- Rank announced public trigger targets and optional acceptance separately;
+  retain unknown continuations instead of inventing whole-stack outcomes.
+- Extend authorized observation coverage through scry/surveil retained-top and
+  inspected bottom-order continuations. See the scoped acceptance record in
+  `docs/testing/ai-information.md`; unrestricted rules and expert AI remain open.
+
 ## 2026-10-04 - Actor-correct search and capability-batch workflow
 
 - Correct deeper strategic search so the scoring perspective does not replace
