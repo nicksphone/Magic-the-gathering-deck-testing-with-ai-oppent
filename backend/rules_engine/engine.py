@@ -1390,7 +1390,9 @@ class RulesEngine:
                 state.priority_player = player_id
 
     def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
-        return legal_moves(state, player_id)
+        from rules_engine.query_context import rule_query_scope
+        with rule_query_scope(state):
+            return legal_moves(state, player_id)
 
     def _handle_pregame_action(self, state: MatchState, player_id: int, action: dict) -> None:
         kind = action.get("type")

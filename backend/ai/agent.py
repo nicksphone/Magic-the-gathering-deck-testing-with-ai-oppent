@@ -1432,6 +1432,11 @@ class AIAgent:
         return (2, 5)
 
     def _rank_moves(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
+        from rules_engine.query_context import rule_query_scope
+        with rule_query_scope(state):
+            return self._rank_moves_query(state, moves, player_id, shallow=shallow)
+
+    def _rank_moves_query(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main

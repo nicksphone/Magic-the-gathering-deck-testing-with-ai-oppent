@@ -1,6 +1,7 @@
 """Pure layer-four basic-land type additions, replacements and source dependencies."""
 import re
 from functools import lru_cache
+from rules_engine.query_context import query_cache
 
 from game_state.state import Zone
 from rules_engine.oracle_text import without_reminder_text
@@ -64,6 +65,16 @@ def _legacy_basic(row):
 
 
 def _view(state, entering=None, controller=None):
+    cache = query_cache(state) if entering is None and controller is None else None
+    if cache is not None and 'view' in cache:
+        return cache['view']
+    result = _uncached_view(state, entering, controller)
+    if cache is not None:
+        cache['view'] = result
+    return result
+
+
+def _uncached_view(state, entering=None, controller=None):
     candidates = (state.cards[cid] for player in state.players.values() for cid in player.battlefield)
     if not any(land_type_instructions(getattr(card, 'oracle_text', '') or '') for card in candidates) and not (
             entering is not None and land_type_instructions(entering.oracle_text)):

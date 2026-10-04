@@ -4,6 +4,7 @@ from rules_engine.type_effects import effective_types
 import re
 from collections import Counter
 from functools import lru_cache, wraps
+from rules_engine.query_context import scoped_query
 from typing import Any
 
 from game_state.state import Zone
@@ -423,6 +424,7 @@ def effective_toughness(state, card_id: str) -> int:
     return int(effective_combat_stats(state, card_id, unknown_as_zero=True)[1])
 
 
+@scoped_query
 def effective_combat_stats(state, card_id: str, *, unknown_as_zero=False) -> tuple[int | None, int | None]:
     """Public stats preserve unknown characteristics rather than inventing zero."""
     base_power, base_toughness = _base_pt_with_layers(state, card_id)
@@ -446,6 +448,7 @@ def _counter_pt_delta(card) -> int:
     return bonus
 
 
+@scoped_query
 def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     card = state.cards[card_id]
     out = Counter(str(k).lower() for k in (getattr(card, "keywords", None) or []))
@@ -581,6 +584,7 @@ def _apply_keyword_modifier(keywords, effect):
         keywords[effect['keyword']] += effect['count']
 
 
+@scoped_query
 def _printed_ability_loss_sources(state):
     losses = []
     # This union of recognized losses does not depend on source timestamp order.

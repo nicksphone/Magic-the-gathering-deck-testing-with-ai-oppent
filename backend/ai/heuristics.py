@@ -7,6 +7,7 @@ from game_state.state import MatchState, Zone
 from card_data.tactical import tactical_tags
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+from rules_engine.query_context import scoped_query
 
 
 def recurring_engine_value(state, card_id: str, *, surface_card=None) -> float:
@@ -36,6 +37,7 @@ def recurring_engine_value(state, card_id: str, *, surface_card=None) -> float:
                if role in roles)
 
 
+@scoped_query
 def evaluate_board(state: MatchState, player_id: int) -> float:
     me = state.players[player_id]
     opp_id = 1 if player_id == 2 else 2

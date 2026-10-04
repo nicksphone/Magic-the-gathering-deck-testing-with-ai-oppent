@@ -27,7 +27,9 @@ def decision_projection_scope(state, player_id):
     """Memoize only the immutable root of one synchronous AI decision."""
     token = _decision_projection.set((state, player_id, {}))
     try:
-        yield
+        from rules_engine.query_context import rule_query_scope
+        with rule_query_scope(state):
+            yield
     finally:
         _decision_projection.reset(token)
 
@@ -40,7 +42,7 @@ def planning_copy(state):
     # scalar of every card. Mutable metadata still shares one deepcopy memo.
     cards = [card for card in getattr(state, "cards", {}).values() if type(card) is CardInstance]
     for card in cards:
-        memo[id(card)] = copy(card)
+        memo[id(card)] = object.__new__(CardInstance)
         memo[id(card.__dict__)] = {}
         memo[id(card)].__dict__ = memo[id(card.__dict__)]
     for card in cards:
@@ -57,7 +59,8 @@ def _copy_card_field(value, memo):
     if id(value) in memo:
         return memo[id(value)]
     kind = type(value)
-    if ((kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
+    if ((kind in (list, dict, set) and not value)
+            or (kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
             or (kind is dict and all(type(key) in _immutable_card_types and type(item) in _immutable_card_types
                                      for key, item in value.items()))):
         result = value.copy()

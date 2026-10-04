@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-04 - Pure-query reuse and planning-clone overhead
+
+- Profile seeded Blue Control/Ramp play and capture fixed slow-decision snapshots
+  before editing. Reuse land-type views, stats, keyword counts, ability-loss sources
+  and board scores only within synchronous nonmutating queries.
+- Keep root, projected branch, nested and concurrent contexts separate. Entering-card
+  views bypass the ordinary battlefield cache; query results do not persist in
+  snapshots or across actions. Mutable result containers are copied for callers.
+- Reduce exact-card planning-copy reconstruction and empty-container overhead,
+  preserving mutable metadata, custom fields, shared aliases, cycles and RNG.
+- Keep search depths, beam/candidate limits and gameplay behavior unchanged.
+  Add query-lifetime, state-change, concurrency, flag, container-isolation and
+  cross-archetype/difficulty comparisons. Broad latency and expert AI remain open.
+
 ## 2026-10-04 - Effect-created Foretell and unpayable mana costs
 
 - Add reusable, complete-clause recognition for draw/hand-exile and damage/self-exile

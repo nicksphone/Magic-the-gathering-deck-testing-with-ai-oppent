@@ -373,6 +373,11 @@ It is designed for serious deck work:
 - AI block search and fallback use the same engine minimum-blocker requirement, including creatures that require three or more blockers; choosing no block remains legal. This is not a claim that all combat decisions are optimal.
 - Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
 - Decision-local announced-stack projection reuse, history-free alias-preserving flat-container clones and bounded immutable static-text instruction caches reduce repeated work while retaining gameplay state, RNG and search limits. Effective stats/keywords still read current state. Offline paired benchmarks check full decision/reasoning equality and authoritative-state preservation; see [projection scope](docs/testing/ai-projection-performance.md) and [hot-path scope](docs/testing/ai-hotpaths.md).
+- Synchronous pure-query scopes reuse land layers, effective stats/keyword counts,
+  ability-loss sources and board scores only while that state is unchanged.
+  Simulated branches, later actions and concurrent queries stay isolated;
+  search horizons and candidate limits are not reduced. See
+  [query latency scope and acceptance](docs/testing/ai-query-latency.md).
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 - Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).

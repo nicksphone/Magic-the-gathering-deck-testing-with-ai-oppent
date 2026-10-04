@@ -61,6 +61,16 @@
 - [ ] Measure and bound wide-state tactical planning latency without silently
   skipping legal actions or losing deterministic decision behavior. The seeded
   live Control/Ramp BO3 restart regression passes but remains an expensive gate.
+- [x] Profile fixed real-game decisions and reduce repeated pure-query and clone
+  work without changing search horizons, candidate limits or chosen actions.
+  Query scopes isolate root/branch/thread contexts and discard results before
+  authoritative mutation; mutable return containers and card aliases stay safe.
+  See [measurements and remaining latency work](docs/testing/ai-query-latency.md).
+  Validation: 6,685 isolated tests, 283 assigned files, frontend gates and all
+  41 Chromium scripts pass. Six fixed-snapshot medians improve 19-46%; six
+  seat-balanced samples preserve complete baseline traces on both optimized
+  repeats. Hardest sampled decisions still exceed one second; the latency
+  requirement above remains open rather than becoming a smaller completion goal.
 - [ ] Pin matrix deck manifests/corpus hashes and initial cache provenance for
   paired before/after reports. Separate databases used by tests from replay
   databases; bootstrap/metadata history can change the selected representative
