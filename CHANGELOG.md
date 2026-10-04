@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-04 - Foretell foundation
+
+- Add shared printed/granted Foretell special actions, live action-cost modifiers,
+  later-turn alternative costs and durable incarnation-bound cast/look records.
+- Preserve private exile views and snapshot records; expose both-seat hand controls.
+- Resolve supported self-buff rewards through ordinary, counterable stack triggers.
+- Add shared conservative idle-mana AI banking, canonical keyword/HTTP/privacy
+  checks and both-seat Chromium controls. Keep conditional effects and broader
+  effect-created permissions explicitly open; see `docs/testing/foretell.md`.
+- Validate 6,359 isolated backend checks, frontend gates, final-source Chromium
+  and six seat-balanced samples repeated twice with no reported anomaly/drift.
+  Preserve cold-start/compatibility failures and interrupted runs in RCHFiles;
+  keep broad search latency and fixed-corpus cross-run diagnostics open.
+
 ## 2026-10-04 - Public mana changes and delayed draw events
 
 - Value supported fixing/disruption through actual paid projections and public

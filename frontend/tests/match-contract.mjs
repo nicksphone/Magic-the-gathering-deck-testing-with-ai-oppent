@@ -11,6 +11,12 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+for (const fields of [{ was_foretold: 'yes' }, { foretell_order: -1 }, { foretold_turn: 1.5 }]) {
+  assert.throws(() => parseMatchState({ ...state, players: { ...state.players,
+    1: { ...state.players[1], hand: [{ ...mountain, ...fields }] } } }), /card view/);
+}
+assert.equal(parseMatchState({ ...state, players: { ...state.players,
+  1: { ...state.players[1], hand: [{ ...mountain, was_foretold: true, foretell_order: 2, foretold_turn: 1 }] } } }).id, state.id);
 assert.equal(parseMatchState({ ...state, players: { ...state.players, 1: { ...state.players[1],
   hand: [{ ...mountain, printed_power: "*", printed_toughness: "1+*" }] } } }).id, state.id);
 for (const printed_power of [1, {}, [], true]) {

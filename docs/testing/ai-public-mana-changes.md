@@ -7,7 +7,9 @@ plays on disposable state before valuing their resource effects. The comparison
 uses the shared mana planner, known own hand costs and public battlefield,
 graveyard and face-up exile footprints. It does not read opposing hands or
 libraries. Face-down exile is excluded for both players: ownership is not a
-look permission, and no authoritative per-player permission model exists yet.
+look permission. The subsequent Foretell foundation supplies explicit look
+permissions, but this resource evaluator still excludes face-down exile pending
+alternative-cost-aware integration.
 
 Pure fixing/disruption spells are retained when their measured benefit is too
 small or negative. They are reconsidered each decision as known resources

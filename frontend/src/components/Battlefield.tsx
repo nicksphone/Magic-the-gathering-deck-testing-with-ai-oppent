@@ -120,6 +120,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     battlefieldCount >= 16 ? "battlefield-packed" : battlefieldCount >= 9 ? "battlefield-dense" : battlefieldCount >= 5 ? "battlefield-comfort" : "battlefield-open";
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const cycleMoves = useMemo(() => legalMoves.filter((m) => m.type === "cycle_card"), [legalMoves]);
+  const foretellMoves = useMemo(() => legalMoves.filter((m) => m.type === "foretell"), [legalMoves]);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
@@ -550,6 +551,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const castCostOptions = [...new Map(faceCastMoves.flatMap((m) => m.cost_options ?? []).map((option) => [option.id, option])).values()];
             const move = faceCastMoves.find((m) => !costChoice[card.id] || m.cost_options?.some((option) => option.id === costChoice[card.id])) ?? faceCastMoves[0];
             const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
+            const foretellMove = foretellMoves.find((m) => m.card_id === card.id);
+            const foretellControl = foretellMove ? <button onClick={() => onCardAction(viewerSeat, { type: "foretell", card_id: card.id })}>
+              Foretell {card.name} ({foretellMove.mana_cost})
+            </button> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
             const landControls = cardLandMoves.map((landMove) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}-${landMove.entry_choice ?? "normal"}`}
@@ -586,6 +591,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </button>
                   )}
                   {restrictedMove?.reason ? <small>Restriction: {restrictedMove.reason}</small> : null}
+                  {foretellControl}
                 </div>
               );
             }
@@ -628,6 +634,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 onMouseLeave={() => setHoverPreview(null)}
               >
                 {landControls}
+                {foretellControl}
                 <button
                   disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}

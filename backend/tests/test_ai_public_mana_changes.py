@@ -292,9 +292,9 @@ def test_face_down_opponent_exile_never_becomes_public_color_demand(seat, name):
 
 
 @pytest.mark.parametrize('name', ['Saw It Coming', 'Behold the Multiverse'])
-def test_foretell_is_explicitly_unsupported_not_implied_by_exile_views(name):
+def test_printed_foretell_is_not_a_blanket_unsupported_gap(name):
     from rules_engine.coverage import known_unsupported_mechanics
-    assert 'foretell' in known_unsupported_mechanics(CARDS[name]['oracle_text'])
+    assert not any('foretell' in gap for gap in known_unsupported_mechanics(CARDS[name]['oracle_text']))
 
 
 @pytest.mark.parametrize('seat', [1, 2])

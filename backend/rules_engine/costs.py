@@ -250,6 +250,10 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if any(branch.get('discard_x') for branch in branches) and resource_x_effect_gaps(card.oracle_text or ''):
         return []
     base = CostOption(id="base", label="Base Cost", mana_cost='' if without_mana else card.mana_cost or "")
+    from rules_engine.foretell import cast_costs, record
+    from rules_engine.card_faces import ordinary_exile_permission
+    foretell_only = (card.zone == Zone.EXILE and bool(record(card))
+                     and not ordinary_exile_permission(state, player_id, card.id, card.selected_face_index or 0))
     escape = escape_cost(card) if card.zone == Zone.GRAVEYARD else None
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
     if without_mana:
@@ -264,17 +268,22 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
             options.append(CostOption(id="flashback", label="Flashback", mana_cost=flashback))
         if not options:
             return []
+    elif foretell_only:
+        options = []
     else:
         options = [base]
         from rules_engine.bestow import bestow_cost
         if bestow_cost(card):
             options.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))
+    if card.zone == Zone.EXILE and not without_mana:
+        options.extend(CostOption(id=f'foretell_{index}', label='Foretell', mana_cost=cost)
+                       for index, cost in enumerate(cast_costs(state, card, player_id)))
     prototype = prototype_characteristics(card)
-    if prototype and card.zone != Zone.GRAVEYARD and not without_mana:
+    if prototype and card.zone != Zone.GRAVEYARD and not without_mana and not foretell_only:
         options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
 
     alt = ALT_COST_RE.search(card.oracle_text or "")
-    if alt and card.zone != Zone.GRAVEYARD and not without_mana:
+    if alt and card.zone != Zone.GRAVEYARD and not without_mana and not foretell_only:
         options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
 
     from rules_engine.kicker import kicker_price, kicker_cost

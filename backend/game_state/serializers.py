@@ -59,6 +59,9 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "chosen_creature_type": card.chosen_creature_type,
         "card_faces": list(card.card_faces), "selected_face_index": card.selected_face_index,
         "layout": card.layout,
+        "was_foretold": card.was_foretold,
+        "foretell_order": card.foretell_record.get('order'),
+        "foretold_turn": card.foretell_record.get('turn'),
     }
 
 
@@ -83,6 +86,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "combat_damage_assignments": {source: dict(amounts) for source, amounts in state.combat_damage_assignments.items()},
         "combat_assignment_queue": list(state.combat_assignment_queue),
         "delayed_triggers": deepcopy(state.delayed_triggers),
+        "foretells_this_turn": dict(state.foretells_this_turn),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
         "cleanup_deferred_triggers": state.cleanup_deferred_triggers,
@@ -198,6 +202,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "card_faces": list(card.card_faces),
                 "layout": card.layout,
                 "exile_face_down": card.exile_face_down,
+                "foretell_record": deepcopy(card.foretell_record),
+                "was_foretold": card.was_foretold,
                 "was_kicked": card.was_kicked,
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
@@ -273,6 +279,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
             exile_face_down=bool(raw.get("exile_face_down", False)),
+            foretell_record=deepcopy(raw.get('foretell_record', {})),
+            was_foretold=bool(raw.get('was_foretold', False)),
             was_kicked=bool(raw.get('was_kicked', False)),
         )
 
@@ -306,6 +314,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.combat_assignment_queue = [str(cid) for cid in payload.get("combat_assignment_queue", [])]
     state.delayed_triggers = deepcopy(payload.get('delayed_triggers', []))
+    state.foretells_this_turn = {int(key): int(value) for key, value in
+                               payload.get('foretells_this_turn', {'1': 0, '2': 0}).items()}
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))
     state.cleanup_repeat_required = bool(payload.get("cleanup_repeat_required", False))
     state.cleanup_deferred_triggers = list(payload.get("cleanup_deferred_triggers", []))
@@ -378,7 +388,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     return state
 
 
-def serialize_match(state: MatchState) -> dict:
+def serialize_match(state: MatchState, *, look_players=()) -> dict:
+    from rules_engine.foretell import can_look
     step_order = [x.value for x in TURN_STEPS]
 
     def _sort_steps(steps: set) -> list[str]:
@@ -431,7 +442,10 @@ def serialize_match(state: MatchState) -> dict:
                     for cid in p.graveyard
                 ],
                 "graveyard_count": len(p.graveyard),
-                "exile": [serialize_card_view(state, cid) for cid in p.exile if not state.cards[cid].exile_face_down],
+                "exile": [serialize_card_view(state, cid) for cid in p.exile
+                          if not state.cards[cid].exile_face_down or any(
+                              can_look(state.cards[cid], pid)
+                              for pid in look_players) or state.winner is not None and state.cards[cid].foretell_record],
                 "exile_count": len(p.exile),
                 "mana_pool": p.mana_pool,
                 "snow_mana_pool": p.snow_mana_pool,

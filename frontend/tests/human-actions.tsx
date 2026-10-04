@@ -121,6 +121,8 @@ function Harness() {
     <button onClick={() => reset(false, false, 3, "search").catch((failure) => setError(String(failure)))}>Search Fixture</button>
     <button onClick={() => reset(false, false, 3, "draw_replacement").catch((failure) => setError(String(failure)))}>Draw Replacement Fixture</button>
     <button onClick={() => reset(false, false, 3, "nonland_mana").catch((failure) => setError(String(failure)))}>Nonland Mana Fixture</button>
+    <button onClick={() => reset(false, false, 3, "foretell_1").catch((failure) => setError(String(failure)))}>Foretell Seat 1 Fixture</button>
+    <button onClick={() => reset(false, false, 3, "foretell_2").catch((failure) => setError(String(failure)))}>Foretell Seat 2 Fixture</button>
     <button onClick={() => reset(false, false, 3, "draw_cap").catch((failure) => setError(String(failure)))}>Draw Cap Fixture</button>
     <button onClick={() => reset(false, false, 3, "bo3").catch((failure) => setError(String(failure)))}>BO3 Fixture</button>
     <button onClick={() => reset(false, false, 3, "bo3_draw").catch((failure) => setError(String(failure)))}>BO3 Draw Fixture</button>

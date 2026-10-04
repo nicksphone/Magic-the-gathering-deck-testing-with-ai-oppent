@@ -56,6 +56,13 @@ def exile_permission(state, player_id, card_id, face_index=0):
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.EXILE or is_token_card(card):
         return False
+    from rules_engine.foretell import cast_permission
+    if cast_permission(state, player_id, card) and 'Land' not in select_cast_face(card, face_index).types:
+        return True
+    return ordinary_exile_permission(state, player_id, card_id, face_index)
+
+
+def ordinary_exile_permission(state, player_id, card_id, face_index=0):
     player = state.players[player_id]
     temporary = card_id in player.exile and player.exile_play_until.get(card_id, 0) >= state.turn
     return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0)
@@ -65,7 +72,8 @@ def exile_candidates(state, player_id):
     return list(dict.fromkeys(state.players[player_id].exile + [
         cid for cid, pid in state.adventure_permissions.items()
         if pid == player_id and cid in state.cards and state.cards[cid].zone == Zone.EXILE
-    ]))
+    ] + [cid for cid, card in state.cards.items() if card.zone == Zone.EXILE
+         and card.foretell_record.get('player_id') == player_id]))
 
 
 def leave_exile(state, card_id):

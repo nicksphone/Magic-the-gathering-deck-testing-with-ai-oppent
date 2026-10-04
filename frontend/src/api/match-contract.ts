@@ -11,6 +11,9 @@ function card(value: unknown): boolean {
     && typeof value.name === "string"
     && [value.type_line, value.base_type_line].every(line => line === undefined || typeof line === "string")
     && typeof value.tapped === "boolean"
+    && (value.was_foretold === undefined || typeof value.was_foretold === 'boolean')
+    && ['foretell_order', 'foretold_turn'].every(key => value[key] === undefined || value[key] === null
+      || (Number.isInteger(value[key]) && (value[key] as number) >= 0))
     && Array.isArray(value.types)
     && value.types.every((type) => typeof type === "string")
     && (value.keyword_counts === undefined || (record(value.keyword_counts)

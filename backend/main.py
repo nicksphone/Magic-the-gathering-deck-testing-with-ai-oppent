@@ -1450,7 +1450,7 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
 
 
 def _serialize_match_controller(match: MatchController) -> dict:
-    payload = serialize_match(match.state)
+    payload = serialize_match(match.state, look_players=[pid for pid, control in match.controllers.items() if control == 'human'])
     pending = match.state.pending_mechanic_choice
     if pending and pending.get("kind") == "each_player_discard":
         payload["pending_mechanic_choice"] = {

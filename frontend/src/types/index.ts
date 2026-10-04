@@ -12,6 +12,9 @@ export type DeckRecord = {
 export type CardView = {
   id: string;
   name: string;
+  was_foretold?: boolean;
+  foretell_order?: number | null;
+  foretold_turn?: number | null;
   mana_cost?: string;
   oracle_text?: string;
   type_line?: string;

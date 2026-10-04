@@ -106,7 +106,12 @@ class AIAgent:
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
         with decision_projection_scope(state, player_id):
-            decision = self._choose_action(state, legal_moves, player_id)
+            decision = self._choose_action(state, [move for move in legal_moves if move['type'] != 'foretell'], player_id)
+            if decision.action.get('type') == 'pass_priority':
+                from ai.foretell_policy import idle_foretell_action
+                action = idle_foretell_action(self, state, legal_moves, player_id)
+                if action:
+                    decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
             from ai.declaration_policy import finalize_declaration
             return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning)
 

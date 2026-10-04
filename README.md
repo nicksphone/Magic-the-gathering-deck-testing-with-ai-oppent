@@ -378,6 +378,12 @@ It is designed for serious deck work:
 - Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).
 
 ### Simulation and Diagnostics
+- Printed Foretell has special-action payments, later-turn alternative costs,
+  durable private exile permissions and both-seat hand controls. Supported grants,
+  action-cost modifiers and self-buff triggers use shared engine paths; AI banks
+  idle mana conservatively across archetypes. Conditional foretold effects,
+  effect-created permissions and deeper planning remain open. See
+  [implemented scope and limitations](docs/testing/foretell.md).
 - AI vs AI autoplay
 - Batch simulation with progress tracking
 - Replay inspection and deterministic regression checks

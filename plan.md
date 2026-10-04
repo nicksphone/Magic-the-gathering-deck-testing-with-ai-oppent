@@ -29,12 +29,24 @@
   access and retained resources through checked projected actions, including
   source/controller changes, restricted abilities and entry costs. Test both
   seats and multiple archetypes before running the repeated replay matrix.
-- [ ] Implement actual Foretell actions, later-turn alternative costs and
-  durable cast/look permissions. Hidden-exile views are not Foretell support;
-  canonical fixtures now verify privacy and explicitly warn it is unsupported.
+- [x] Implement bounded printed Foretell actions, later-turn alternative costs,
+  saved cast/look permissions, live cost/grant modifiers and both-seat controls.
+  Self-buff rewards use the stack; all AI styles share conservative idle-mana
+  banking. Canonical keyword tests do not certify all card effects. See
+  [scope and remaining acceptance](docs/testing/foretell.md).
+  Validation: 6,359 isolated backend checks, frontend gates and final-source
+  Chromium pass. Six seat-balanced samples repeated twice show no reported
+  timeout, anomaly or drift. The 855-second Control/Ramp integration shard
+  confirms the wider latency work below remains open.
+- [ ] Complete Foretold conditional effects, effect-created permissions, broader
+  exile rewards, later-turn browser casts/restarts and strategic/X-cost planning.
 - [ ] Measure and bound wide-state tactical planning latency without silently
   skipping legal actions or losing deterministic decision behavior. The seeded
   live Control/Ramp BO3 restart regression passes but remains an expensive gate.
+- [ ] Pin matrix deck manifests/corpus hashes and initial cache provenance for
+  paired before/after reports. Separate databases used by tests from replay
+  databases; bootstrap/metadata history can change the selected representative
+  roster. Internal repeated execution is not fixed-corpus cross-run validation.
 
 - [x] Finish shared mana-ability acceptance: live devotion and counted outputs,
   paid activations, pure multipliers and resource-preserving spell payments.

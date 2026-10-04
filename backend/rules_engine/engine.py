@@ -69,6 +69,7 @@ class RulesEngine:
             state.active_player = 1 if state.active_player == 2 else 2
             state.spells_cast_this_turn[state.active_player] = 0
             state.kicked_spells_cast_this_turn = {1: 0, 2: 0}
+            state.foretells_this_turn = {1: 0, 2: 0}
             state.declared_attackers_this_turn = {1: 0, 2: 0}
             state.draws_this_turn = {1: 0, 2: 0}
             state.surveils_this_turn = {1: 0, 2: 0}
@@ -669,7 +670,11 @@ class RulesEngine:
             return
 
         player = state.players[player_id]
-        if kind == "ninjutsu":
+        if kind == 'foretell':
+            from rules_engine.foretell import take_special_action
+            if not take_special_action(state, player_id, action.get('card_id')):
+                reject('Cannot foretell this card or pay its special-action cost')
+        elif kind == "ninjutsu":
             from rules_engine.keyword_actions import activate_ninjutsu
             if not activate_ninjutsu(state, player_id, action):
                 reject("Cannot pay or activate Ninjutsu")
@@ -1008,12 +1013,17 @@ class RulesEngine:
                 from rules_engine.alternative_casts import has_aftermath
                 if from_graveyard and has_aftermath(face_card):
                     payload["__aftermath"] = True
+                from rules_engine.foretell import record
+                was_foretold = bool(record(card))
                 if from_exile:
                     leave_exile(state, cid)
                 else:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                if from_exile and was_foretold:
+                    card.was_foretold = True
+                    payload['__was_foretold'] = True
                 card.was_kicked = chosen.kicked
                 card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
@@ -1374,6 +1384,9 @@ class RulesEngine:
 
         if not effect_cast:
             apply_state_based_actions(state)
+            if kind == 'foretell' and not (state.pending_mechanic_choice or state.pending_replacement_choice
+                                          or state.pending_trigger_order):
+                state.priority_player = player_id
 
     def legal_moves(self, state: MatchState, player_id: int) -> list[dict]:
         return legal_moves(state, player_id)

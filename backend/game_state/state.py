@@ -96,6 +96,8 @@ class CardInstance:
     is_token: bool = False
     last_known_battlefield: dict = field(default_factory=dict)
     exile_face_down: bool = False
+    foretell_record: dict = field(default_factory=dict)
+    was_foretold: bool = False
     was_kicked: bool = False
     printed_power: str | None = None
     printed_toughness: str | None = None
@@ -122,6 +124,9 @@ class CardInstance:
             from rules_engine.bestow import end_bestow
             end_bestow(self)
         if zone != self.zone:
+            self.foretell_record.clear()
+            if not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
+                self.was_foretold = False
             self.zone_change_sequence += 1
         # Battlefield deaths defer this reset until their die triggers have
         # consumed last-known counters and combat state.
@@ -194,6 +199,7 @@ class MatchState:
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)
     delayed_triggers: list[dict] = field(default_factory=list)
+    foretells_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     winner: int | None = None
     failed_draw_players: set[int] = field(default_factory=set)
     best_of: int = 3

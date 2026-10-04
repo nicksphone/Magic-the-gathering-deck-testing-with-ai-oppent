@@ -111,7 +111,13 @@ def resolve_keyword_trigger(state, controller, key, payload):
         return
     if card is None or card.zone != Zone.BATTLEFIELD or object_incarnation(card) != payload['incarnation']:
         return
-    if key in {'exalted_buff', 'bushido_buff', 'rampage_buff', 'flanking_buff'}:
+    if key == 'referenced_pt_buff':
+        if card.zone_change_sequence != payload['zone_change_sequence']:
+            return
+        from effects.handlers import temporary_pt_buff
+        temporary_pt_buff(state, controller, {'target_card_id': cid, 'power': payload['power'],
+                                             'toughness': payload['toughness']})
+    elif key in {'exalted_buff', 'bushido_buff', 'rampage_buff', 'flanking_buff'}:
         from effects.handlers import temporary_pt_buff
         amount = payload.get('amount', 1)
         if key == 'rampage_buff':

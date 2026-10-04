@@ -51,6 +51,10 @@ def fixture_simulation_job_count():
 
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
+    if face_kind in {'foretell_1', 'foretell_2'}:
+        from tests.test_foretell import setup
+        state, _ = setup(seat=int(face_kind[-1]))
+        return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind in {f'mana_{index}_{seat}' for index in range(4) for seat in [1, 2]}:
         from tests.test_mana_abilities import add, paid_position, clean
         index, seat = [int(value) for value in face_kind.split('_')[-2:]]

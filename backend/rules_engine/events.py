@@ -468,6 +468,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
+    from rules_engine.foretell import collect_foretell_triggers
+    out.extend(collect_foretell_triggers(state, event, payload))
     if event == 'surveilled':
         player_id = payload.get('player_id')
         if player_id not in state.players or payload.get('amount', 0) <= 0:

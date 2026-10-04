@@ -1,0 +1,1124 @@
+[
+  {
+    "id": "c94fcb53-a7bd-4a80-a536-9fb0eb24261a",
+    "oracle_id": "bc842838-1993-4480-b8fe-f9d9f2dee7a4",
+    "name": "Alrund's Epiphany",
+    "mana_cost": "{5}{U}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Create two 1/1 blue Bird creature tokens with flying. Take an extra turn after this one. Exile Alrund's Epiphany.\nForetell {4}{U}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/41/alrunds-epiphany?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "a9947cfd-91d6-479e-a7f6-2a2050f020f3",
+    "oracle_id": "ee05fc58-1356-4b2f-b9ce-bda8cc716aee",
+    "name": "Augury Raven",
+    "mana_cost": "{3}{U}",
+    "type_line": "Creature — Bird",
+    "oracle_text": "Flying\nForetell {1}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/44/augury-raven?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "df70dc42-a28c-41f3-8d3b-5a0375aab326",
+    "oracle_id": "7a6db509-7ef4-483c-b8a0-62a4f3e16ef9",
+    "name": "Battle Mammoth",
+    "mana_cost": "{3}{G}{G}",
+    "type_line": "Creature — Elephant",
+    "oracle_text": "Trample\nWhenever a permanent you control becomes the target of a spell or ability an opponent controls, you may draw a card.\nForetell {2}{G}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Trample",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/clb/818/battle-mammoth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "27855a38-a682-4f97-ad22-ac625e86faec",
+    "oracle_id": "d7d2f701-77df-4169-bf98-0d51d6886e9b",
+    "name": "Behold the Multiverse",
+    "mana_cost": "{3}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Scry 2, then draw two cards.\nForetell {1}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell",
+      "Scry"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/46/behold-the-multiverse?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6e779a16-7528-49f4-8304-502bb603c15b",
+    "oracle_id": "ab31b652-ddf2-480f-a955-e8b5c87728f9",
+    "name": "Bohn, Beguiling Balladeer",
+    "mana_cost": "{1}{U}{R}",
+    "type_line": "Legendary Creature — Human Bard",
+    "oracle_text": "Each nonland card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}. (During your turn, you may pay {2} and exile it from your hand face down. Cast it on a later turn for its foretell cost.)\nWhenever you cast your second spell each turn, goad target creature an opponent controls.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "keywords": [
+      "Goad"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/slx/30/bohn-beguiling-balladeer?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "933c4a54-5c3a-496b-aa35-edf791155d8d",
+    "oracle_id": "cddccc2a-a76e-48b3-b4dd-dfeab89e1619",
+    "name": "Cosmic Intervention",
+    "mana_cost": "{3}{W}",
+    "type_line": "Instant",
+    "oracle_text": "If a permanent you control would be put into a graveyard from the battlefield this turn, exile it instead. Return it to the battlefield under its owner's control at the beginning of the next end step.\nForetell {1}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/3/cosmic-intervention?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "4ec318c6-b718-436f-b9e8-e0c6154e5010",
+    "oracle_id": "603e518c-8f12-432c-ae03-790db5be77bf",
+    "name": "Cosmos Charger",
+    "mana_cost": "{3}{U}",
+    "type_line": "Creature — Horse Spirit",
+    "oracle_text": "Flash\nFlying\nForetelling cards from your hand costs {1} less and can be done on any player's turn.\nForetell {2}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Flash",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/51/cosmos-charger?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "875a20c2-1d17-46ea-b4d2-3e70bc05aae3",
+    "oracle_id": "4aa119f7-d411-4188-956e-547f7d14e789",
+    "name": "Crush the Weak",
+    "mana_cost": "{2}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Crush the Weak deals 2 damage to each creature. If a creature dealt damage this way would die this turn, exile it instead.\nForetell {R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/128/crush-the-weak?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e59903e3-a344-4218-9d41-8b19a9bc8311",
+    "oracle_id": "99915b5a-5092-4900-8824-6de2aab1b2c1",
+    "name": "Delayed Blast Fireball",
+    "mana_cost": "{1}{R}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Delayed Blast Fireball deals 2 damage to each opponent and each creature they control. If this spell was cast from exile, it deals 5 damage to each opponent and each creature they control instead.\nForetell {4}{R}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/clb/676/delayed-blast-fireball?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "3c43bf24-399e-407a-a563-bb04f93a0497",
+    "oracle_id": "6e786f0b-e2cb-40ee-96bc-81945a0b35a3",
+    "name": "Demon Bolt",
+    "mana_cost": "{2}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Demon Bolt deals 4 damage to target creature or planeswalker.\nForetell {R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/clb/787/demon-bolt?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "2ce0403d-76ed-4eb0-abdd-74ed28f96137",
+    "oracle_id": "ae069ba4-8ca6-4eda-8f5d-fc82072d7d40",
+    "name": "Depart the Realm",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Return target nonland permanent to its owner's hand.\nForetell {U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/53/depart-the-realm?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "130ee895-1e5e-4f82-bb66-e1275bac75dd",
+    "oracle_id": "38ece0fa-2c94-4eae-b6ab-74b783862f3e",
+    "name": "Doomskar",
+    "mana_cost": "{3}{W}{W}",
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures.\nForetell {1}{W}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/9/doomskar?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6dae01c8-15bb-44ad-a2c6-9bcf7a9e8c17",
+    "oracle_id": "c1d8e97b-f34b-4e52-9795-a4433f26725a",
+    "name": "Doomskar Oracle",
+    "mana_cost": "{2}{W}",
+    "type_line": "Creature — Human Cleric",
+    "oracle_text": "Whenever you cast your second spell each turn, you gain 2 life.\nForetell {W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/10/doomskar-oracle?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "a4e125e4-103f-4a68-b85f-1382646da71e",
+    "oracle_id": "86692047-813f-47b1-9f4e-c8b9d5b17b1c",
+    "name": "Doomskar Titan",
+    "mana_cost": "{4}{R}{R}",
+    "type_line": "Creature — Giant Berserker",
+    "oracle_text": "When this creature enters, creatures you control get +1/+0 and gain haste until end of turn.\nForetell {4}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/130/doomskar-titan?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ff1d88a6-a74d-44b5-b7a8-866e866807f1",
+    "oracle_id": "0ff7440b-b831-40a9-81c4-99d77bf93b8d",
+    "name": "Dream Devourer",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Demon Cleric",
+    "oracle_text": "Each nonland card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}. (During your turn, you may pay {2} and exile it from your hand face down. Cast it on a later turn for its foretell cost.)\nWhenever you foretell a card, this creature gets +2/+0 until end of turn.",
+    "power": "0",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/khm/90/dream-devourer?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6ef580f8-efec-4d31-8dc3-2018dd48b6f4",
+    "oracle_id": "a498ca5f-7743-47b7-a57a-471efa1a99e8",
+    "name": "Dual Strike",
+    "mana_cost": "{R}{R}",
+    "type_line": "Instant",
+    "oracle_text": "When you next cast an instant or sorcery spell with mana value 4 or less this turn, copy that spell. You may choose new targets for the copy.\nForetell {R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/132/dual-strike?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "40bcc7cb-65dd-4bc6-8606-a162fa6c65f7",
+    "oracle_id": "b38c567e-fd79-4a74-ab5f-df4a6a8f7e00",
+    "name": "Dwarven Reinforcements",
+    "mana_cost": "{3}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Create two 2/1 red Dwarf Berserker creature tokens.\nForetell {1}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/134/dwarven-reinforcements?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "552912bf-4085-49ad-902f-5c41540df97a",
+    "oracle_id": "f0f7c3df-52f8-4835-a18f-69e56ffa3432",
+    "name": "Ethereal Valkyrie",
+    "mana_cost": "{4}{W}{U}",
+    "type_line": "Creature — Spirit Angel",
+    "oracle_text": "Flying\nWhenever this creature enters or attacks, draw a card, then exile a card from your hand face down. It becomes foretold. Its foretell cost is its mana cost reduced by {2}. (On a later turn, you may cast it for its foretell cost, even if this creature has left the battlefield.)",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/16/ethereal-valkyrie?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "0d85d8c7-07b2-4577-8c62-7a34dca73ad8",
+    "oracle_id": "51e0a61d-69f0-475d-b40b-50d69252800d",
+    "name": "Frost Fair Lure Fish",
+    "mana_cost": "{5}{U}{R}",
+    "type_line": "Creature — Fish",
+    "oracle_text": "When this creature enters, create two 1/1 blue Fish creature tokens and create two tapped Treasure tokens.\nFish you control have haste and can't be blocked by Humans.\nForetell {3}{U}{R}",
+    "power": "7",
+    "toughness": "7",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "keywords": [
+      "Treasure",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/who/129/frost-fair-lure-fish?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "3e63385a-e32f-4abc-aff6-bb022b2f56f7",
+    "oracle_id": "6bdc4996-f7d9-4dc4-b70a-aa63f6816b1d",
+    "name": "Glorious Protector",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Creature — Angel Cleric",
+    "oracle_text": "Flash\nFlying\nWhen this creature enters, you may exile any number of non-Angel creatures you control until this creature leaves the battlefield.\nForetell {2}{W}",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Flash",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/clb/695/glorious-protector?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e8e645c8-90ac-4865-b441-e64251d6c9a8",
+    "oracle_id": "7d22e071-4af4-4182-b387-ecca873d00cc",
+    "name": "Gods' Hall Guardian",
+    "mana_cost": "{5}{W}",
+    "type_line": "Creature — Cat",
+    "oracle_text": "Vigilance\nForetell {3}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "6",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Vigilance",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/13/gods-hall-guardian?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b1beaaae-9406-4beb-8e74-d278822434c7",
+    "oracle_id": "0ec5a688-a884-410c-adee-ab784789d6e8",
+    "name": "Green Slime",
+    "mana_cost": "{2}{G}",
+    "type_line": "Creature — Ooze",
+    "oracle_text": "Flash\nWhen this creature enters, counter target activated or triggered ability from an artifact or enchantment source. If a permanent's ability is countered this way, destroy that permanent.\nForetell {G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Flash",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/clb/680/green-slime?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "203ddc5e-3824-4a97-b97d-aeda7b82c704",
+    "oracle_id": "334c284e-7bc3-4c18-9f8d-4d846f80008e",
+    "name": "Haunting Voyage",
+    "mana_cost": "{4}{B}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Choose a creature type. Return up to two creature cards of that type from your graveyard to the battlefield. If this spell was foretold, return all creature cards of that type from your graveyard to the battlefield instead.\nForetell {5}{B}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ecc/75/haunting-voyage?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "98cc159d-74f7-41fe-a866-c18d96219794",
+    "oracle_id": "7089512e-f9b6-4d8e-bccc-29e6785cc041",
+    "name": "Impending Flux",
+    "mana_cost": "{2}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Paradox — Impending Flux deals X damage to each opponent and each creature they control, where X is 1 plus the number of spells you've cast from anywhere other than your hand this turn.\nForetell {1}{R}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Paradox",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/who/87/impending-flux?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "2fb38f5b-a2c2-4b06-8c9c-9615475a43e7",
+    "oracle_id": "70528ca9-195c-49a5-9d83-d51df3b0591f",
+    "name": "Iron Verdict",
+    "mana_cost": "{2}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Iron Verdict deals 5 damage to target tapped creature.\nForetell {W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/17/iron-verdict?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f5b12c6c-c3d6-4b8a-bed4-d61f67f565b9",
+    "oracle_id": "294c1fed-9473-4fbe-b10e-71a7a432b98d",
+    "name": "Jarl of the Forsaken",
+    "mana_cost": "{3}{B}",
+    "type_line": "Creature — Zombie Cleric",
+    "oracle_text": "Flash\nWhen this creature enters, destroy target creature or planeswalker an opponent controls that was dealt damage this turn.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Flash",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/100/jarl-of-the-forsaken?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "4911016c-b92a-47cc-9553-b424d7be196a",
+    "oracle_id": "0507a9d2-cbad-4a7b-b888-fbd5ac1ed02f",
+    "name": "Karfell Harbinger",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature — Zombie Wizard",
+    "oracle_text": "{T}: Add {U}. Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.",
+    "power": "1",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/khm/65/karfell-harbinger?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f28e151f-b61b-486f-b7f8-7abde207c442",
+    "oracle_id": "230811bf-52e7-451e-96ec-9d57c864ac5d",
+    "name": "Kaya's Onslaught",
+    "mana_cost": "{2}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +1/+1 and gains double strike until end of turn.\nForetell {W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/18/kayas-onslaught?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "48b4101b-3428-4b6b-818a-6097a093e9b5",
+    "oracle_id": "7cbdba72-ed33-40c6-a9c0-4d65c280a4d0",
+    "name": "Lifestream's Blessing",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Draw X cards, where X is the greatest power among creatures you controlled as you cast this spell. If this spell was cast from exile, you gain twice X life.\nForetell {4}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/fic/67/lifestreams-blessing?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "516c1c46-dccd-405c-a71f-d83619c681eb",
+    "oracle_id": "a0494d84-06c8-4a79-a9bc-ff4e16bbc68e",
+    "name": "Lupine Harbingers",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Wolf",
+    "oracle_text": "Trample, haste\nLupine Harbingers enters the battlefield with X +1/+1 counters on it, where X is the number of turns you've begun since it was foretold.\nForetell {4}{G}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Haste",
+      "Trample",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ymid/53/lupine-harbingers?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "0e55041f-69a5-4bcf-899f-a4b44c208b4d",
+    "oracle_id": "bd433a27-1f3f-4d69-8b7e-97239fdf165b",
+    "name": "Mammoth Growth",
+    "mana_cost": "{2}{G}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +4/+4 until end of turn.\nForetell {G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/183/mammoth-growth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f7b877e2-60eb-46cd-acd7-8555b9e7e993",
+    "oracle_id": "491dc110-b459-412e-8a0b-45e5744ee8d1",
+    "name": "Mystic Reflection",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Choose target nonlegendary creature. The next time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen creature.\nForetell {U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/69/mystic-reflection?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "19312f53-5b9d-4e76-91e8-65f444bb68c9",
+    "oracle_id": "e79bf038-071e-448e-ad95-234c207a9575",
+    "name": "Niko Defies Destiny",
+    "mana_cost": "{1}{W}{U}",
+    "type_line": "Enchantment — Saga",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — You gain 2 life for each foretold card you own in exile.\nII — Add {W}{U}. Spend this mana only to foretell cards or cast spells that have foretell.\nIII — Return target card with foretell from your graveyard to your hand.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/khm/226/niko-defies-destiny?utm_source=api",
+    "layout": "saga",
+    "card_faces": null
+  },
+  {
+    "id": "7fb94456-5266-47db-b514-a0e17e34b771",
+    "oracle_id": "58020778-554c-4af6-8484-0b90f64bc5d9",
+    "name": "Poison the Cup",
+    "mana_cost": "{1}{B}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target creature. If this spell was foretold, scry 2.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell",
+      "Scry"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/103/poison-the-cup?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "c5bbffb9-1f1c-40e5-97f4-29bf1fc68625",
+    "oracle_id": "bbe41a21-f8ad-4e5c-88d8-2a41dfd32d13",
+    "name": "Quakebringer",
+    "mana_cost": "{3}{R}{R}",
+    "type_line": "Creature — Giant Berserker",
+    "oracle_text": "Your opponents can't gain life.\nAt the beginning of your upkeep, Quakebringer deals 2 damage to each opponent. This ability triggers only if Quakebringer is on the battlefield or if Quakebringer is in your graveyard and you control a Giant.\nForetell {2}{R}{R}",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/145/quakebringer?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "1c8c41dd-8551-4ce8-a9be-9b9f65718852",
+    "oracle_id": "c73a9939-0742-4919-94d6-c3b537697f17",
+    "name": "Ranar the Ever-Watchful",
+    "mana_cost": "{2}{W}{U}",
+    "type_line": "Legendary Creature — Spirit Warrior",
+    "oracle_text": "Flying, vigilance\nThe first card you foretell each turn costs {0} to foretell.\nWhenever one or more cards are put into exile from your hand or a spell or ability you control exiles one or more permanents from the battlefield, create a 1/1 white Spirit creature token with flying.",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Vigilance"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/2/ranar-the-ever-watchful?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f2d5e87b-1ee8-47db-9bc3-f5becfe79b37",
+    "oracle_id": "d3d61a6a-7870-44df-92e5-513dac2c2c3e",
+    "name": "Ravenform",
+    "mana_cost": "{2}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Exile target artifact or creature. Its controller creates a 1/1 blue Bird creature token with flying.\nForetell {U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/lcc/167/ravenform?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "470601b0-9598-487f-bb14-4bfec7ca6d61",
+    "oracle_id": "b0bd6135-4257-4f71-bdfe-71fb3f7a36a5",
+    "name": "Return Upon the Tide",
+    "mana_cost": "{4}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Return target creature card from your graveyard to the battlefield. If it's an Elf, create two 1/1 green Elf Warrior creature tokens.\nForetell {3}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/106/return-upon-the-tide?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "9d3a1ec1-f362-494d-a23b-6a963ce44fdd",
+    "oracle_id": "0998768a-1632-4da1-8310-352582501c4b",
+    "name": "Rise of the Dread Marn",
+    "mana_cost": "{2}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Create X 2/2 black Zombie Berserker creature tokens, where X is the number of nontoken creatures that died this turn.\nForetell {B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/107/rise-of-the-dread-marn?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "226a4c5d-bf49-40d8-a7a4-341c18029634",
+    "oracle_id": "fc74f6a6-9064-4e1b-8dc1-446192bbc448",
+    "name": "Sage of the Beyond",
+    "mana_cost": "{5}{U}{U}",
+    "type_line": "Creature — Spirit Giant",
+    "oracle_text": "Flying\nSpells you cast from anywhere other than your hand cost {2} less to cast.\nForetell {4}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flying",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/otc/111/sage-of-the-beyond?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "6061113e-7dd8-4739-b4dd-55bb7f9e39a2",
+    "oracle_id": "f32caf11-abc1-4cae-a311-10210176ea3a",
+    "name": "Sarulf's Packmate",
+    "mana_cost": "{3}{G}",
+    "type_line": "Creature — Wolf",
+    "oracle_text": "When this creature enters, draw a card.\nForetell {1}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/192/sarulfs-packmate?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "877a1bb9-5eae-453a-bec0-a9de20ea6815",
+    "oracle_id": "90edaf33-d0ab-47e0-8f6a-6fba38286e6e",
+    "name": "Saw It Coming",
+    "mana_cost": "{1}{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.\nForetell {1}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/76/saw-it-coming?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "4fa13084-3e68-49f4-8cc9-6d02286fd150",
+    "oracle_id": "9ef2a604-4053-4ce0-bc08-43d9cc0b15cc",
+    "name": "Scorn Effigy",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature — Scarecrow",
+    "oracle_text": "Foretell {0} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "2",
+    "toughness": "3",
+    "colors": [],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/246/scorn-effigy?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ce33c84e-008c-48d8-a8e8-77cd19cc4f1f",
+    "oracle_id": "2c5aa155-646c-47f6-ba5c-6e1b41fd4bb2",
+    "name": "Shepherd of the Cosmos",
+    "mana_cost": "{4}{W}{W}",
+    "type_line": "Creature — Angel Warrior",
+    "oracle_text": "Flying\nWhen this creature enters, return target permanent card with mana value 2 or less from your graveyard to the battlefield.\nForetell {3}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/28/shepherd-of-the-cosmos?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "4589c520-4db3-47bf-bfb2-5d7e02ede4bf",
+    "oracle_id": "7d22c7ed-2f45-42af-b999-b921f4f4db25",
+    "name": "Skull Raid",
+    "mana_cost": "{3}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent discards two cards. If fewer than two cards were discarded this way, you draw cards equal to the difference.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/111/skull-raid?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "649e50e5-299b-4191-87a8-36e9378795be",
+    "oracle_id": "bc0da02c-2b85-4ddc-9ce0-63934dd14164",
+    "name": "Sozin's Comet",
+    "mana_cost": "{3}{R}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Each creature you control gains firebending 5 until end of turn. (Whenever it attacks, add {R}{R}{R}{R}{R}. This mana lasts until end of combat.)\nForetell {2}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/tla/154/sozins-comet?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "7238c46e-6338-4aca-96f2-934c44c8cc36",
+    "oracle_id": "bb9bb65e-504f-4edd-8d47-d0efa03e7d17",
+    "name": "Spectral Deluge",
+    "mana_cost": "{4}{U}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Return each creature your opponents control with toughness X or less to its owner's hand, where X is the number of Islands you control.\nForetell {1}{U}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/7/spectral-deluge?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "ea660d42-a441-48d8-98c1-00933cde94a4",
+    "oracle_id": "495ebe60-f0e5-4f0f-9d99-b2c64c95dbf4",
+    "name": "Starnheim Unleashed",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Sorcery",
+    "oracle_text": "Create a 4/4 white Angel Warrior creature token with flying and vigilance. If this spell was foretold, create X of those tokens instead.\nForetell {X}{X}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/33/starnheim-unleashed?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f53f39e9-f07e-444f-8420-4545e56253e5",
+    "oracle_id": "42820e09-f817-4485-a96a-ac2b0b798269",
+    "name": "Stoic Farmer",
+    "mana_cost": "{3}{W}",
+    "type_line": "Creature — Dwarf Peasant",
+    "oracle_text": "When this creature enters, search your library for a basic Plains card and reveal it. If an opponent controls more lands than you, put it onto the battlefield tapped. Otherwise, put it into your hand. Then shuffle.\nForetell {1}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/5/stoic-farmer?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "a67747a9-3299-4b4a-a4e0-e8a269c4f927",
+    "oracle_id": "a3bdb026-e09d-443f-ba02-fe0d5412fc97",
+    "name": "Struggle for Skemfar",
+    "mana_cost": "{3}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "Put a +1/+1 counter on target creature you control. Then that creature fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)\nForetell {G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Fight",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/196/struggle-for-skemfar?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "0001c639-8bd0-426f-89cb-4ca61f3cc054",
+    "oracle_id": "4d720849-56cd-4b78-b9a7-7b9484702f0f",
+    "name": "Surge of Brilliance",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Paradox — Draw a card for each spell you've cast this turn from anywhere other than your hand.\nForetell {1}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Paradox",
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/who/57/surge-of-brilliance?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "c286a74c-3714-4190-8322-84b161debe39",
+    "oracle_id": "49e3c192-862f-483e-abd1-e22863ea88dd",
+    "name": "Tales of the Ancestors",
+    "mana_cost": "{3}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Each player with fewer cards in hand than the player with the most cards in hand draws cards equal to the difference.\nForetell {1}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khc/8/tales-of-the-ancestors?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "417f71d2-d7da-4279-8847-d27c67e9ea9d",
+    "oracle_id": "692260bb-e01c-4550-832a-9611856a6ff0",
+    "name": "Tergrid's Shadow",
+    "mana_cost": "{3}{B}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Each player sacrifices two creatures.\nForetell {2}{B}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/113/tergrids-shadow?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "93391c14-a22c-4223-a980-5f98350c6a99",
+    "oracle_id": "02a45719-ee4a-49c4-96ec-a140cd6e1547",
+    "name": "The Foretold Soldier",
+    "mana_cost": "{2}{G}{G}",
+    "type_line": "Creature — Alien Zombie Soldier",
+    "oracle_text": "This creature must be blocked if able.\nThis creature can't be blocked by more than one creature.\nWhenever this creature deals damage, exile it face down. It becomes foretold.\nForetell {1}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/who/102/the-foretold-soldier?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "8fdb8414-2f08-42fb-ae0a-c7f0af1e144e",
+    "oracle_id": "1eae48aa-f01d-4398-a68e-3b5af0542ab1",
+    "name": "Ultimate Magic: Holy",
+    "mana_cost": "{2}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Permanents you control gain indestructible until end of turn. If this spell was cast from exile, prevent all damage that would be dealt to you this turn.\nForetell {2}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/fic/32/ultimate-magic:-holy?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b5b0f0fd-574a-4ae7-ab55-b815112d6b3a",
+    "oracle_id": "31cc5d9d-9384-4a9b-ba7f-6a4edbcb7a35",
+    "name": "Ultimate Magic: Meteor",
+    "mana_cost": "{5}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "Ultimate Magic: Meteor deals 7 damage to each creature. If this spell was cast from exile, for each opponent, choose an artifact or land that player controls. Destroy the chosen permanents.\nForetell {5}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/fic/62/ultimate-magic:-meteor?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "854c99fd-71ba-40b7-98cf-b783f01a77b4",
+    "oracle_id": "5d776be0-cece-4496-a3b0-b7424eca77fd",
+    "name": "Vengeful Reaper",
+    "mana_cost": "{3}{B}",
+    "type_line": "Creature — Angel Cleric",
+    "oracle_text": "Flying, deathtouch, haste\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "keywords": [
+      "Foretell",
+      "Deathtouch",
+      "Flying",
+      "Haste"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/116/vengeful-reaper?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "3fc98aff-edc0-4f78-ae4f-e08735c9e512",
+    "oracle_id": "8106606c-9a1c-44b2-a9bf-3f189ce050ef",
+    "name": "Warhorn Blast",
+    "mana_cost": "{4}{W}",
+    "type_line": "Instant",
+    "oracle_text": "Creatures you control get +2/+1 until end of turn.\nForetell {2}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [
+      "Foretell"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/khm/38/warhorn-blast?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

@@ -459,16 +459,19 @@ def auto_pay_cost(
     spell_is_aura: bool = False,
     spell_kicked: bool = False,
     ability_index: int | None = None,
+    apply_modifiers: bool = True,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
-    context = apply_cost_modifiers(CostContext(
+    context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types, spell_is_aura=spell_is_aura,
         spell_kicked=spell_kicked,
         oracle_text=oracle_text,
         is_spell=payment_kind == "spell", ability_kind=ability_kind, ability_index=ability_index,
         source_card_id=source_card_id, target_card_id=target_card_id,
-    ))
+    )
+    if apply_modifiers:
+        context = apply_cost_modifiers(context)
     from rules_engine.replacement import can_pay_life, pay_life
     branches = []
     requirements = _payment_requirements(

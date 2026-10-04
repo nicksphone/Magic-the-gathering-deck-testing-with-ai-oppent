@@ -137,6 +137,12 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             moves.append({'type': 'activate_mana_ability', 'card_id': cid,
                           'card_name': state.cards[cid].name, **ability})
     from rules_engine.keyword_actions import ninjutsu_moves
+    from rules_engine.foretell import action_options as foretell_options
+    for cid in player.hand:
+        card = state.cards[cid]
+        options = foretell_options(state, player_id, card)
+        if options:
+            moves.append({'type': 'foretell', 'card_id': cid, 'card_name': card.name, **options})
     if not split_second_active(state):
         moves.extend(ninjutsu_moves(state, player_id))
 

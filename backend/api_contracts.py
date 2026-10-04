@@ -89,6 +89,10 @@ class LandAction(CardAction):
     entry_choice: Literal["tapped", "pay_two_life"] | None = None
 
 
+class ForetellAction(CardAction):
+    type: Literal['foretell']
+
+
 class CostChoice(InputModel):
     id: Annotated[str, Field(min_length=1, max_length=100)]
     discard_card_ids: CardIDs | None = None
@@ -216,7 +220,7 @@ class OptionalEffectChoice(InputModel):
     accept: StrictBool
 
 
-Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | NonlandManaAction | ManaAbilityAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
+Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | ForetellAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | NonlandManaAction | ManaAbilityAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
 
 
 class ActionRequest(InputModel):

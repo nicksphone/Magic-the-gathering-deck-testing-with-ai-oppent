@@ -104,7 +104,7 @@ def resolve_effect(state: MatchState, controller: int, effect_key: str, payload:
         from rules_engine.keyword_triggers import schedule_next_turn_draw
         schedule_next_turn_draw(state, controller, payload)
         return
-    if effect_key in {'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff'}:
+    if effect_key in {'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff'}:
         from rules_engine.keyword_triggers import resolve_keyword_trigger
         resolve_keyword_trigger(state, controller, effect_key, payload)
         return
