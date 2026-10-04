@@ -48,7 +48,11 @@ It is designed for serious deck work:
   owned inspection choices and privately persisted submitted deck composition
   remain available. Shared removal and optional-trigger projections conserve
   resources while retaining profitable friendly death-trigger lines. Public
-  memory, information-set inference and expert play remain unfinished.
+  hand memory now survives supported reveals, public returns and restart through
+  a [private observation ledger](docs/testing/ai-memory.md). Hidden library trips
+  invalidate instance-based recall. Selective copying avoids traversing unseen
+  metadata; broader memory, information-set inference and expert play remain
+  unfinished.
 
 - [Live devotion payoffs](docs/testing/devotion.md): controller-relative mana-symbol
   counts feed supported pump, damage, life gain/actual-loss drain, counters and

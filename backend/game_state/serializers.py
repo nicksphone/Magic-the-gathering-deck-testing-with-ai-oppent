@@ -70,6 +70,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
     return {
         "id": state.id,
         "starting_decks": {str(pid): deepcopy(rows) for pid, rows in state.starting_decks.items()},
+        "card_observations": {str(pid): deepcopy(rows) for pid, rows in state.card_observations.items()},
         "turn": state.turn,
         "active_player": state.active_player,
         "priority_player": state.priority_player,
@@ -299,6 +300,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             setattr(state, key, int(payload[key]) if key != "winner" else payload[key])
     state.step = Step(payload.get("step", Step.UNTAP.value))
     state.starting_decks = {int(pid): deepcopy(rows) for pid, rows in payload.get('starting_decks', {}).items()}
+    state.card_observations = {int(pid): deepcopy(rows) for pid, rows in payload.get('card_observations', {}).items()}
     state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))

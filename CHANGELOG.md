@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-04 - Revealed-hand memory and selective private copies
+
+- Persist authorized card observations privately; supported whole-hand reveals
+  and public returns retain hand identities across snapshots and startup recovery.
+  Unseen library trips and face-down exile do not expose stale physical-ID records.
+- Make agent copies skip private metadata before traversal, retaining ordinary
+  planning-copy semantics, mutable isolation and aliases. Opening-position copy
+  timings improve in a scoped benchmark; this is not a whole-game latency claim.
+- Count owned lands outside the library even under another player's control,
+  without subtracting token land copies from submitted deck inventory.
+- Add both-seat, six-style search and privacy regressions. Final acceptance:
+  7,053 backend tests, frontend lint/contracts/build, 41 browser scripts, startup
+  HTTP/SQLite recovery and repeated pinned replay samples. See
+  `docs/testing/ai-memory.md`; broader uncertainty planning remains open.
+- Save a separate-worktree UI-agent handoff in `uiplan`; redesign is not implemented.
+
 ## 2026-10-04 - AI information and public utility capability batch
 
 - Remove unseen hand/library/card-face metadata and private trace history from

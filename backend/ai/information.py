@@ -22,8 +22,11 @@ def is_unknown(card):
 def decision_view(state, player_id, legal_moves):
     """Keep current authorized observations, never expose an unseen draw/reply."""
     from rules_engine.foretell import can_look
-    view = planning_copy(state)
-    view.starting_decks = {player_id: deepcopy(getattr(state, 'starting_decks', {}).get(player_id, []))}
+    memo = {}
+    deck_lists = getattr(state, 'starting_decks', None)
+    if deck_lists is not None:
+        memo[id(deck_lists)] = {player_id: deepcopy(deck_lists.get(player_id, []))}
+    observations = getattr(state, 'card_observations', None)
     visible = {cid for player in state.players.values()
                for cid in player.battlefield + getattr(player, 'graveyard', [])}
     visible.update(state.players[player_id].hand)
@@ -40,8 +43,20 @@ def decision_view(state, player_id, legal_moves):
         # Authoritative source actions include permitted top-library plays.
         if cid in state.cards:
             visible.add(cid)
-    for cid, card in list(view.cards.items()):
+    from game_state.observations import remembered_hand_card
+    remembered = {cid: known for cid, card in state.cards.items()
+                  if cid not in visible and (known := remembered_hand_card(state, player_id, card)) is not None}
+    if observations is not None:
+        memo[id(observations)] = {player_id: {
+            cid: deepcopy(record) for cid, record in observations.get(player_id, {}).items()
+            if cid in visible or cid in remembered}}
+    for cid, card in state.cards.items():
         if cid in visible:
+            continue
+        known = remembered.get(cid)
+        if known is not None:
+            memo[id(card)] = known
+            memo[id(card.__dict__)] = known.__dict__
             continue
         # No name, Oracle text, face, cost, stats or retained private metadata.
         # Preserve zone membership/counts; an unknown cannot be cast as a card.
@@ -49,9 +64,13 @@ def decision_view(state, player_id, legal_moves):
                               mana_cost=None, summoning_sick=False)
         opaque.exile_face_down = getattr(card, 'exile_face_down', False)
         opaque.ai_unknown = True
-        view.cards[cid] = opaque
-    view.log = ['[private trace omitted]' if line.startswith('AI TRACE ') else line
-                for line in getattr(state, 'log', [])]
+        memo[id(card)] = opaque
+        memo[id(card.__dict__)] = opaque.__dict__
+    log = getattr(state, 'log', None)
+    if isinstance(log, list):
+        memo[id(log)] = ['[private trace omitted]' if line.startswith('AI TRACE ') else line for line in log]
+    # Seed deepcopy before traversal: private metadata is never copied at all.
+    view = planning_copy(state, memo=memo)
     view.ai_information_player = player_id
     return view, deepcopy(legal_moves)
 
@@ -66,9 +85,10 @@ def known_search_land_count(state, player_id, contains):
     from rules_engine.oracle_effects import search_card_matches
     player = state.players[player_id]
     observed = Counter()
-    for cid in player.hand + player.battlefield + player.graveyard + player.exile:
-        card = state.cards[cid]
-        if card.owner == player_id and not is_unknown(card):
+    from rules_engine.card_types import is_token_card
+    for card in state.cards.values():
+        if (card.owner == player_id and card.zone != Zone.LIBRARY
+                and not is_token_card(card) and not is_unknown(card)):
             observed[card.printed_characteristics.get('name', card.name).casefold()] += 1
     count = 0
     for row in getattr(state, 'starting_decks', {}).get(player_id, []):

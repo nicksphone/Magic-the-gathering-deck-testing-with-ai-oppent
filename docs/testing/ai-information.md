@@ -68,8 +68,10 @@ privately under RCHFiles `diagnostics/ai-information/20261004-working/`.
 
 ## Remaining Boundaries
 
-- Persistent memory of previously revealed cards, inference from public actions,
-  opponent deck priors, bluffing and sampled information-set search remain open.
+- Bounded previously revealed hand memory is now implemented in the subsequent
+  [observation-memory batch](ai-memory.md). Broader public memory, inference from
+  public actions, opponent deck priors, bluffing and sampled information-set search
+  remain open.
 - Unknown replies are not actual unseen counterspells; this boundary does not
   establish optimal strategic play against an unknown opposing hand.
 - Draw/reveal continuations and complex interdependent trigger queues can remain

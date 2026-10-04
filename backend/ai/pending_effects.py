@@ -34,13 +34,16 @@ def decision_projection_scope(state, player_id):
         _decision_projection.reset(token)
 
 
-def planning_copy(state):
+def planning_copy(state, *, memo=None):
     """Copy all gameplay state, but not diagnostic history unused by search."""
     log = getattr(state, "log", None)
-    memo = {id(log): []} if isinstance(log, list) else {}
+    memo = {} if memo is None else dict(memo)
+    if isinstance(log, list):
+        memo.setdefault(id(log), [])
     # Avoid deepcopy's reconstruction/dispatch overhead for every immutable
     # scalar of every card. Mutable metadata still shares one deepcopy memo.
-    cards = [card for card in getattr(state, "cards", {}).values() if type(card) is CardInstance]
+    cards = [card for card in getattr(state, "cards", {}).values()
+             if type(card) is CardInstance and id(card) not in memo]
     for card in cards:
         memo[id(card)] = object.__new__(CardInstance)
         memo[id(card.__dict__)] = {}

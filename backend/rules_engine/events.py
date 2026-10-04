@@ -74,6 +74,9 @@ def was_creature_on_battlefield(card) -> bool:
 
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
+    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+        from game_state.observations import observe_cards
+        observe_cards(state, [payload.get('card_id')])
     if event == "leaves_battlefield":
         capture_last_known_battlefield(state, payload.get("card_id"))
         _record_departure(state, payload)
@@ -87,6 +90,9 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
     """Collect simultaneous events before putting their triggers on the stack."""
+    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+        from game_state.observations import observe_cards
+        observe_cards(state, [payload.get('card_id') for payload in payloads])
     triggers: list[dict[str, Any]] = []
     one_or_more_sources: set[str] = set()
     if event == "leaves_battlefield":

@@ -6,7 +6,7 @@ import pytest
 from ai.agent import AIAgent
 from ai.information import decision_view, known_search_land_count
 from game_state.serializers import serialize_match, serialize_match_snapshot, deserialize_match_snapshot
-from game_state.state import MatchFactory
+from game_state.state import MatchFactory, Zone
 from rules_engine.engine import RulesEngine
 from tests.test_linked_discard import setup
 
@@ -66,3 +66,23 @@ def test_known_search_count_subtracts_visible_copies_and_caps_by_library():
     assert known_search_land_count(state, 1, 'basic_land') == 1
     state.players[1].library = []
     assert known_search_land_count(state, 1, 'basic_land') == 0
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_known_inventory_counts_owned_lands_under_opponent_control_and_excludes_copied_tokens(seat):
+    deck = [{'card_name': 'Forest', 'quantity': 20}, {'card_name': 'Island', 'quantity': 40}]
+    state = MatchFactory.from_decks(deck, deck, seed=32)
+    forest = next(state.cards[cid] for cid in state.players[seat].hand if state.cards[cid].name == 'Forest')
+    expected = known_search_land_count(state, seat, 'forest')
+    state.players[seat].hand.remove(forest.id)
+    state.players[3-seat].battlefield.append(forest.id)
+    forest.move_to_zone(Zone.BATTLEFIELD)
+    forest.controller = 3-seat
+    assert known_search_land_count(state, seat, 'forest') == expected
+    token = deepcopy(forest)
+    token.id = 'copied-forest-token'
+    token.is_token = True
+    token.controller = seat
+    state.cards[token.id] = token
+    state.players[seat].battlefield.append(token.id)
+    assert known_search_land_count(state, seat, 'forest') == expected

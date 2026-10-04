@@ -181,6 +181,7 @@ class MatchState:
     stack: list[StackItem]
     rng: random.Random = field(default_factory=random.Random)
     starting_decks: dict[int, list[dict]] = field(default_factory=dict)
+    card_observations: dict[int, dict[str, dict]] = field(default_factory=dict)
     turn: int = 1
     active_player: int = 1
     priority_player: int = 1

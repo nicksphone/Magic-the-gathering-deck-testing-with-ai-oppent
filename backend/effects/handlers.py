@@ -1494,6 +1494,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         emit_event_batch(state, "enters_battlefield", entry_events)
     if found:
         public_names = bool(payload.get("reveal")) or destination in {"battlefield", "graveyard", "exile"}
+        if public_names:
+            from game_state.observations import observe_cards
+            observe_cards(state, chosen)
         detail = f": {', '.join(found)}" if public_names else ""
         state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s){detail}.")
     if payload.get("shuffle"):
@@ -2453,6 +2456,8 @@ def choose_revealed_hand_card(state: MatchState, controller: int, payload: dict)
     allowed = set(payload.get("allowed_types") or [])
     destination = payload.get("destination", "discard")
     revealed = [cid for cid in state.players[target].hand if not is_departed_token(state.cards[cid])]
+    from game_state.observations import observe_cards
+    observe_cards(state, revealed)
     options = [cid for cid in revealed
                if ("Land" not in excluded or not is_land_card(state.cards[cid]))
                and ("Creature" not in excluded or "Creature" not in effective_types(state, state.cards[cid]))

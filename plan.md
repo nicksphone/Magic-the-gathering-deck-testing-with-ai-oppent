@@ -22,7 +22,14 @@ for correctness or seasoned-player acceptance.
   Ramp self-destruction decision is repaired. All 7,021 backend tests across 289
   isolated test files pass, with frontend lint/contracts/build and the complete
   41-script browser harness. See [scope and evidence](docs/testing/ai-information.md).
-- [ ] Next connected batch: durable public-card memory and uncertainty-aware
+- [x] Complete the bounded revealed-hand memory/copy batch: retain authorized
+  identities through supported reveals/public returns and restart, exclude stale
+  hidden-library/face-down observation records, and avoid copying private metadata
+  before masking. Known land inventory counts owned stolen lands but not land
+  tokens. All 7,053 backend tests, frontend gates and 41 browser scripts pass;
+  ten pinned seed/seat samples repeat twice on each tested stage without timeout
+  or matching cast/payment errors. See [scope and evidence](docs/testing/ai-memory.md).
+- [ ] Continue durable public-card memory and uncertainty-aware
   future-resource planning, including authorized observations surviving zone
   changes and restart. Integrate known-list priors without reconstructing hidden
   shuffled identities; compare actual decisions across proactive and reactive

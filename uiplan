@@ -1,0 +1,81 @@
+# MTG Deck Testing Lab — UI redesign agent handoff
+
+Redesign the frontend into a polished, desktop-first Magic playtesting interface inspired by MTG Arena's battlefield clarity, card presentation, and interaction hierarchy. Use original styling and assets; do not copy Arena branding, proprietary artwork, or exact screens. Preserve real Magic rules and the existing backend contract. The backend agent is working concurrently: isolation is mandatory.
+
+## 1. Isolate your workspace
+
+Repository: /home/nick/mtg-deck-testing-lab.
+
+Create your own branch and worktree from committed main:
+
+```sh
+git -C /home/nick/mtg-deck-testing-lab worktree add -b ui/arena-inspired /home/nick/mtg-ui-redesign main
+```
+
+If the branch or directory already exists, inspect it rather than overwriting it. Do not modify the original checkout, stage its uncommitted backend changes, reset files, or merge into main. Commit your work only on your UI branch. Coordinate integration through a handoff to the backend agent.
+
+Read applicable AGENTS.md instructions and graphify-out/GRAPH_REPORT.md before source exploration. If a graph wiki index exists, use it for navigation. Treat graph relationships as navigation, not proof of current behavior.
+
+## 2. Ownership boundaries
+
+You may change frontend code, frontend tests, frontend-owned assets, and frontend dependency manifests when justified. Write your handoff notes in docs/ui-redesign.md in your worktree.
+
+Do not change backend code, API payloads, gameplay rules, live databases, root README.md, CHANGELOG.md, plan.md, or shared Graphify artifacts. Report any necessary backend/API change as a dependency instead of implementing it. Preserve existing features and actions; do not replace working gameplay with mock controls.
+
+Use a separate frontend port, 15174. If needed, use an isolated fixture backend on loopback port 10200 and a separate Chromium debugging port. Do not stop or restart the existing services on 9999, 5173, 10199, 15173, or 19222. Inspect port ownership before starting processes.
+
+Backend tests and fixture servers must run from a disposable source copy with their own local SQLite database/cache. Changing only the working directory does not isolate the source-relative database. Never use the live application database for UI tests or run SQLite on NFS.
+
+## 3. Visual direction
+
+Create an intentional, premium card-table experience: subdued textured battlefield, strong contrast, restrained animation, clear typography, and obvious interaction states. Keep the battlefield central rather than compressing it between oversized sidebars. Prioritize readability and playable controls over decoration.
+
+- Opponent battlefield above, local battlefield below, with clearly separated creature and land/resource rows.
+- Readable hand fan or compact scrollable hand, with hover/focus zoom that is not clipped by containers or placed offscreen.
+- Compact life, library, graveyard, exile, match score, turn, phase, and priority indicators.
+- Persistent but space-efficient stack and pending-choice panels.
+- Clear phase progression, pass-priority, response, combat, and autoplay controls.
+- Collapsible match log, diagnostics, and saved-game panels. Show only a small initial preview with a deliberate Show More control.
+- Scale cards and use scrolling/grouping so large boards remain usable. Group equivalent lands with counts, while retaining individual card IDs and legal tap selection.
+- Distinguish tapped, attacking, blocking, selected, targetable, summoning-sick, and unavailable states without relying only on color.
+- Work well at common desktop resolutions, narrow laptop widths, browser zoom, and mobile widths. Do not hide essential actions on smaller screens.
+
+## 4. Preserve complete gameplay interactions
+
+Inspect current types, API client, components, and tests before redesigning. Derive available actions from authoritative legal moves and pending choices, not visual guesses or printed card text.
+
+Preserve and validate:
+
+- Correct acting seat in human-vs-AI and human-vs-human; intentional opponent hidden information.
+- Land play, spell casting, mana payment, targets, modes, X values, alternative costs, and card-face choices.
+- Generic activated abilities, loyalty, equipment, cycling, crew, and permitted plays from non-hand zones.
+- Mulligan decisions, deliberate card selections, cleanup discards, and other pending choices.
+- Attackers, blockers, multi-block assignments, combat ordering, and readable combat state.
+- Priority passing, stack resolution, instant-speed response windows, autoplay, pause, and step controls.
+- Effective stats, counters, damage, keywords, and card inspection where supplied by the API.
+- Deck import/selection, simulator progress/errors/results, saved match recovery, and visible request failure feedback.
+
+Do not silently omit a supported action. Keep existing protections against duplicate/stale requests. Report contract gaps instead of fabricating state or changing rules. Never invent Magic cards or claim a graphical placeholder is an official card image.
+
+## 5. Workflow and validation
+
+Create a short checklist after inspection, then implement connected UI batches. Run relevant tests after each batch and the full frontend gates at the end. Fix errors rather than leaving a non-building design mockup.
+
+Use the repository's actual lint, test, and build scripts. Add focused component/browser tests for changed interactions. Validate in a real browser, not only server-rendered markup. Use isolated fixtures to cover both human seats, large boards, long hands, land groups, hover/focus previews, stack responses, pending choices, diagnostics, saved games, and visible API errors.
+
+Capture screenshots at representative desktop and narrow widths, including a crowded battlefield and an active choice/stack. Check keyboard navigation, focus visibility, reduced motion, contrast, and zoom. Record commands and actual results; do not label unrun tests as passing.
+
+Keep active test scratch local. Archive completed evidence under /mnt/rchfiles/codex-storage/mtg-deck-testing-lab/ only after verifying that NFS is mounted and writable. Verify copies before deleting your disposable scratch. Do not delete another agent's files or stop its processes.
+
+## 6. Handoff
+
+Commit the completed UI work to ui/arena-inspired without merging main or pushing directly to main. In docs/ui-redesign.md provide:
+
+- Branch, base revision, and completed commit IDs.
+- Files changed and design/interaction decisions.
+- Tests/build/lint/browser checks actually performed and their results.
+- Screenshots/evidence locations and known limitations.
+- Any requested backend contract changes, explicitly separated from implemented work.
+- Integration instructions and any changes that overlap newer frontend commits.
+
+The backend agent will review, reconcile with current main, run integration gates, update shared documentation/Graphify, and publish the milestone. Do not claim the entire app is finished merely because the redesigned frontend builds.

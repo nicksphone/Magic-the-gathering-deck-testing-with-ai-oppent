@@ -97,6 +97,17 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
 
 
 def resolve_effect(state: MatchState, controller: int, effect_key: str, payload: dict) -> None:
+    if getattr(state, 'ai_information_player', None) is not None:
+        return _resolve_effect(state, controller, effect_key, payload)
+    from game_state.observations import public_card_ids, observe_cards
+    from game_state.state import Zone
+    visible_before = public_card_ids(state)
+    _resolve_effect(state, controller, effect_key, payload)
+    observe_cards(state, [cid for cid in visible_before if cid in state.cards
+                         and state.cards[cid].zone == Zone.HAND])
+
+
+def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload: dict) -> None:
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
