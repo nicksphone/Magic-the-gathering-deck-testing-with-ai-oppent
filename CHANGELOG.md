@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-04 - AI performance diagnostic handoff
+
+- Import the isolated, read-only diagnostic and source-grounded performance
+  report. Independently reproduce the 84-call/12-input late-control hotspot and
+  the contrasting Memory Deluge decision, with checked execution and matching
+  fingerprints. Archive verified parent results on RCHFiles.
+- Keep memoization, policy-purity/invalidation tests and before/after benchmarks
+  as outstanding implementation work; no production AI optimization is claimed.
+- Normalize imported source and fixture permissions to non-executable files.
+
 ## 2026-10-04 - Casting and trigger repair batch
 
 - Preserve paid sacrifice characteristics and ordered distinct counter targets;

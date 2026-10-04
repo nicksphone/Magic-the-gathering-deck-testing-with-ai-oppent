@@ -11,6 +11,9 @@
 - [ ] Implement and validate decision-local AI projection reuse from the
   completed performance diagnostic; preserve decisions, legality, privacy and
   mutable-state isolation. Do not weaken search or force matchup win rates.
+  The [diagnostic handoff](docs/testing/ai-planning-performance-agent.md) is
+  independently reproduced; optimization and broader benchmark acceptance
+  remain open.
 
 - [x] Integrate offline backup/restore verification and dry-run retention tools.
   The combined 128-test storage/recovery gate and cold offline 119-name probe

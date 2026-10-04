@@ -7,6 +7,11 @@ deliberately assign ordered targets; AI uses the same legality/payment paths.
 See [casting and trigger scope and acceptance](docs/testing/casting-trigger-repairs.md)
 for the canonical regressions, full gates and remaining instruction boundaries.
 
+An isolated [AI planning performance diagnostic](docs/testing/ai-planning-performance-agent.md)
+reproduces expensive duplicate late-control projections without changing AI
+decisions or search. Decision-local reuse remains planned, not an implemented
+speedup or an expert-player claim.
+
 The live frontend uses a battlefield-first playtest table with compact controls,
 scrollable hands, exact-ID grouped lands, and keyboard/hover card inspection.
 Setup, saved sessions, diagnostics and logs can be collapsed to preserve table
