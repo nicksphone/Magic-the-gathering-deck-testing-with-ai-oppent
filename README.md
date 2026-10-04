@@ -125,6 +125,14 @@ It is designed for serious deck work:
 
 ### Gameplay
 
+- [Cross-family rules repairs](docs/testing/rules-regression-repairs.md): supported
+  compound counters retain later draws and conditional destinations; graveyard
+  exile uses legal zone-specific targets; linked recursion preserves post-entry
+  life loss through choices. Undying uses pre-death abilities/counters and original
+  object references. Canonical global damage doubling shares replacement chains
+  with supported spell/combat damage and is not disabled by prevention bans.
+  Arbitrary compound clauses and mixed replacement conversions remain unfinished.
+
 - [Basic-land subtype layers](docs/testing/land-type-layers.md): shared global,
   controller-only and Aura additions/replacements drive intrinsic mana,
   prospective land entry, counted subtypes, landwalk, AI color reads and public

@@ -319,14 +319,38 @@ def infer_effect_from_oracle(
             "target_stack_id": target_stack_id,
             "target_kind": "noncreature" if "counter target noncreature spell" in oracle else "any",
         }
-        followup = re.fullmatch(r'counter target (?:(?:noncreature|creature|artifact|enchantment|planeswalker|instant|sorcery) )?spell\.'
-                               r'\s*(scry|surveil) (\d+)\.?', oracle.strip())
-        if followup:
+        # A destination changes only a successful counter; subsequent draw or
+        # selection instructions still happen when the target is uncounterable.
+        tail = COUNTER_TARGET_SPELL_RE.sub('', oracle, count=1).strip(' .\t\r\n')
+        destination = re.match(
+            r"if that spell is countered this way, put it into its owner's "
+            r"(hand|exile) instead of into (?:their|that player's) graveyard\.\s*", tail)
+        if destination:
+            counter_payload['destination'] = destination[1]
+            tail = tail[destination.end():].strip(' .\t\r\n')
+        draw = DRAW_RE.fullmatch(tail)
+        selection = re.fullmatch(r'(scry|surveil) (\d+)', tail)
+        if draw or selection:
+            followup_key = 'draw_cards' if draw else selection[1]
+            amount = _parse_count_token(draw[1]) if draw else int(selection[2])
             return 'effect_sequence', {'effects': [
                 {'effect_key': 'counter_spell', 'payload': counter_payload},
-                {'effect_key': followup[1], 'payload': {'amount': int(followup[2])}},
+                {'effect_key': followup_key, 'payload': {'amount': amount}},
             ]}
         return 'counter_spell', counter_payload
+    graveyard_exile = re.fullmatch(
+        r'exile target card from (?:a|your) graveyard\.'
+        r'(?:\s*draw (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?)?',
+        oracle.strip())
+    if graveyard_exile:
+        exile = {'effect_key': 'exile_from_graveyard',
+                 'payload': {'target_card_id': action_targets.get('target_card_id')}}
+        if graveyard_exile[1]:
+            return 'effect_sequence', {'effects': [exile, {
+                'effect_key': 'draw_cards',
+                'payload': {'amount': _parse_count_token(graveyard_exile[1])},
+            }]}
+        return exile['effect_key'], exile['payload']
     revealed_choice = REVEAL_CHOOSE_HAND_RE.fullmatch(oracle.strip())
     if revealed_choice:
         restriction = (revealed_choice.group("restriction") or "").lower()
@@ -416,6 +440,15 @@ def infer_effect_from_oracle(
             ]}
         return search_effect
 
+    linked_return = re.fullmatch(
+        r'(?:put|return) target creature card from (?:a|your) graveyard '
+        r'(?:onto|to) the battlefield under your control\.\s*'
+        r"you lose life equal to that card's mana value\.?", oracle.strip())
+    if linked_return:
+        return 'return_creature_from_graveyard_to_battlefield', {
+            'target_card_id': action_targets.get('target_card_id'),
+            'lose_life_equal_to_mana_value': True,
+        }
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any], str]] = []
     for clause in clauses:
@@ -883,8 +916,8 @@ def inspect_target_hints(
             for pid in target_players for cid in state.players[pid].battlefield
             if ("Artifact" in effective_types(state, state.cards[cid]) or "Enchantment" in effective_types(state, state.cards[cid]))
         ]
-    if "target" in oracle and "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle):
-        if re.search(r"return target card from (?:your|a) graveyard", oracle):
+    if "target" in oracle and "graveyard" in oracle and ("return" in oracle or "put" in oracle or "reanimate" in oracle or "exile target" in oracle):
+        if re.search(r"(?:return|exile) target card from (?:your|a) graveyard", oracle):
             hints["graveyard_card_targets"] = [
                 {"id": cid, "name": state.cards[cid].name}
                 for pid in state.players for cid in state.players[pid].graveyard

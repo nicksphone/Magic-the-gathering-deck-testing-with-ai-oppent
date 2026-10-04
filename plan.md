@@ -7,6 +7,16 @@ Group connected rules/AI work; retain fast per-change checks and broader batch
 gates. Do not substitute parser coverage, smoke wins or unchanged buggy decisions
 for correctness or seasoned-player acceptance.
 
+- [x] Finish the cross-family rules regression repair batch: integrate the
+  canonical agent handoff, preserve compound counter/graveyard instructions,
+  implement bounded global damage doubling and undying with durable object
+  references. The independently reproduced 14 failures are repaired, with 195
+  integration checks and 24 new edges passing. The final isolated 7,189-case
+  backend gate and scoped frontend/browser gates pass. All ten pinned samples
+  repeat without timeout or drift, but reversed Blue Control/Ramp remains a
+  slow-planning investigation. The new UI's complete harness is separately
+  delegated. See [scope and open boundaries](docs/testing/rules-regression-repairs.md).
+
 - [x] Finish the current search/provenance batch: correct recursive reply actors,
   continue already executed selected prefixes without reducing search breadth,
   pin resolved replay manifests, and validate both seats across multiple styles.

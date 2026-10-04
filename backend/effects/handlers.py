@@ -240,14 +240,16 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 _move_creature_to_graveyard(state, target_card_id)
             return int(post)
     if target_player is not None:
-        replaced_amount = amount if prevention_locked else apply_damage_replacements(
+        replaced_amount = apply_damage_replacements(
             state,
             int(target_player),
             amount,
             replacement_source_id=selected_source_id,
             max_replacements=1 if human_chain else None,
+            used_source_ids=payload.get('__used_replacement_source_ids'),
+            prevention_locked=prevention_locked,
         )
-        if not prevention_locked and human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
+        if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
             return 0
         post, prevented = (replaced_amount, 0) if prevention_locked else consume_player_prevention_shield(state, int(target_player), replaced_amount)
         if prevented > 0:
@@ -766,7 +768,7 @@ def counter_spell(state: MatchState, controller: int, payload: dict) -> None:
             popped = state.stack.pop(i)
             card = state.cards.get(popped.source_card_id)
             if card and not (popped.payload or {}).get("__stack_copy_kind"):
-                move_spell_from_stack(state, popped)
+                move_spell_from_stack(state, popped, Zone(payload.get('destination', 'graveyard')))
             state.log.append(f"{item.label} was countered.")
             return
 
@@ -1206,6 +1208,20 @@ def copy_ability(state: MatchState, controller: int, payload: dict) -> None:
     _copy_stack_object(state, controller, payload, "ability")
 
 
+def exile_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:
+    target = payload.get('target_card_id')
+    card = state.cards.get(target)
+    if card is None or card.zone != Zone.GRAVEYARD or is_departed_token(card):
+        return
+    owner = state.players[card.owner]
+    if target not in owner.graveyard:
+        return
+    owner.graveyard.remove(target)
+    owner.exile.append(target)
+    card.move_to_zone(Zone.EXILE)
+    state.log.append(f'{card.name} is exiled from the graveyard.')
+
+
 def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if not target or target not in state.cards:
@@ -1367,6 +1383,10 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     if not target or target not in state.cards:
         return
     card = state.cards[target]
+    reference = payload.get('__graveyard_reference')
+    if reference and (object_incarnation(card) != reference['incarnation']
+                      or card.zone_change_sequence != reference['zone_change_sequence']):
+        return
     source_graveyard = None
     for player in state.players.values():
         if target in player.graveyard:
@@ -1374,12 +1394,15 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
             break
     if source_graveyard is None or is_departed_token(card):
         return
+    # Lock the graveyard characteristics before any resumable entry choice.
+    if payload.get('lose_life_equal_to_mana_value'):
+        payload.setdefault('__return_life_loss', mana_value(card.mana_cost or ''))
     if prepare_counter_entries(state, controller, [card], 'return_creature_from_graveyard_to_battlefield', payload):
         return
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
-    card.zone = Zone.BATTLEFIELD
+    card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = controller
     card.tapped = False
     card.summoning_sick = True
@@ -1388,6 +1411,8 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     assign_static_order_on_battlefield_entry(state, target)
     commit_entry_counters(state, card, payload)
     emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': controller})
+    if payload.get('lose_life_equal_to_mana_value'):
+        lose_life(state, controller, {'target_player': controller, 'amount': payload['__return_life_loss']})
 
 
 def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:

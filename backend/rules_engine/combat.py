@@ -9,7 +9,7 @@ from rules_engine.continuous import KNOWN_KEYWORDS, effective_power, effective_t
 from rules_engine.events import emit_event, emit_event_batch
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
-from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, apply_permanent_damage_replacements
+from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, apply_permanent_damage_replacements, apply_damage_replacements
 from rules_engine.restrictions import (
     card_cant_attack,
     card_cant_attack_alone,
@@ -752,6 +752,7 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         target_player=pid,
         combat=True,
     )
+    amount = apply_damage_replacements(state, pid, amount, prevention_locked=prevention_locked)
     post, prevented = (amount, 0) if prevention_locked else consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
         state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")

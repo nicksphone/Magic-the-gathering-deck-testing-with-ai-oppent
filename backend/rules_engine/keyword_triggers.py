@@ -28,6 +28,21 @@ def schedule_next_turn_draw(state, controller, payload):
 
 
 def collect_keyword_triggers(state, event, payload):
+    if event == 'creature_dies':
+        card = state.cards.get(payload.get('card_id'))
+        if card is None or card.zone != Zone.GRAVEYARD:
+            return []
+        lki = card.last_known_battlefield
+        if lki.get('counters', {}).get('+1/+1', 0) > 0:
+            return []
+        return [{
+            'source_card_id': card.id,
+            'controller': lki.get('controller', card.controller),
+            'label': f'{lki.get("name", card.name)} undying',
+            'effect_key': 'undying_return',
+            'payload': {'card_id': card.id, 'incarnation': object_incarnation(card),
+                        'zone_change_sequence': card.zone_change_sequence},
+        } for _ in range(lki.get('keyword_counts', {}).get('undying', 0))]
     if event == 'block_declared':
         return _block_keyword_triggers(state, payload)
     if event == 'begin_step':
@@ -99,6 +114,19 @@ def _block_keyword_triggers(state, payload):
 def resolve_keyword_trigger(state, controller, key, payload):
     cid = payload['card_id']
     card = state.cards.get(cid)
+    if key == 'undying_return':
+        if (card is None or card.zone != Zone.GRAVEYARD
+                or object_incarnation(card) != payload['incarnation']
+                or card.zone_change_sequence != payload['zone_change_sequence']
+                or card.counters.get('+1/+1', 0) > 0):
+            return
+        from effects.handlers import return_creature_from_graveyard_to_battlefield
+        return_creature_from_graveyard_to_battlefield(state, card.owner, {
+            'target_card_id': cid, 'counters': {'+1/+1': 1},
+            '__graveyard_reference': {'incarnation': payload['incarnation'],
+                                      'zone_change_sequence': payload['zone_change_sequence']},
+        })
+        return
     if key == 'decayed_attack':
         # The attack trigger creates a later, counterable trigger, even if the
         # original object has left. Its stored reference never follows a blink.

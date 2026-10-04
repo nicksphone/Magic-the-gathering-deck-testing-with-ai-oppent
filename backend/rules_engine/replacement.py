@@ -64,6 +64,16 @@ _DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
     r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
 )
 _LIFE_DOUBLE_RE = re.compile(r"(?:^|\n)if you would gain life, you gain twice that much life instead\.")
+_GLOBAL_DAMAGE_DOUBLE_RE = re.compile(
+    r'if a source would deal damage to a permanent or player, '
+    r'it deals double that damage to that permanent or player instead\.')
+
+
+def _player_damage_candidates(state, target_player, prevention_locked=False):
+    return [(card, text) for card, text in _battlefield_oracle_texts(state)
+            if _GLOBAL_DAMAGE_DOUBLE_RE.search(text)
+            or (not prevention_locked and card.controller == target_player
+                and _PLAYER_DAMAGE_PREVENTION_RE.search(text))]
 
 
 def _draw_doubler_applies(state, target_player: int, text: str) -> bool:
@@ -88,10 +98,12 @@ def _permanent_damage_candidates(state, target_card_id, prevention_locked=False)
     if target.zone != Zone.BATTLEFIELD:
         return []
     candidates = [
-        (card, text) for card, text in _battlefield_oracle_texts(state, controller=target.controller)
-        if (_PERMANENT_DAMAGE_REDUCTION_RE.search(text) and 'Creature' in effective_types(state, target))
-        or (not prevention_locked and _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
-            and ('creature you control' not in text or 'Creature' in effective_types(state, target)))
+        (card, text) for card, text in _battlefield_oracle_texts(state)
+        if _GLOBAL_DAMAGE_DOUBLE_RE.search(text)
+        or (card.controller == target.controller and (
+            (_PERMANENT_DAMAGE_REDUCTION_RE.search(text) and 'Creature' in effective_types(state, target))
+            or (not prevention_locked and _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
+                and ('creature you control' not in text or 'Creature' in effective_types(state, target)))))
     ]
     if target.counters.get('shield', 0) > 0 or shield_applied_in_event(state, target_card_id):
         source = copy(target)
@@ -130,15 +142,9 @@ def replacement_options(
             target_card_id=target_card_id,
             combat=combat,
         )
-        if prevention_locked and target_card_id is None:
-            return []
     candidates: list[tuple[object, str]] = []
     if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
-        candidates = [
-            (card, text)
-            for card, text in _battlefield_oracle_texts(state, controller=target_player)
-            if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
-        ]
+        candidates = _player_damage_candidates(state, target_player, prevention_locked)
     elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
         candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
     elif event_key in {"life_gain", "gain_life"} and target_player in state.players:
@@ -175,16 +181,15 @@ def apply_damage_replacements(
     amount: int,
     replacement_source_id: str | None = None,
     max_replacements: int | None = None,
+    used_source_ids=None,
+    prevention_locked=False,
 ) -> int:
     out = int(amount)
     if target_player is None:
         return out
-    candidates = [
-        (card, text)
-        for card, text in _battlefield_oracle_texts(state, controller=target_player)
-        if _PLAYER_DAMAGE_PREVENTION_RE.search(text)
-    ]
-    used: set[str] = set()
+    candidates = _player_damage_candidates(state, target_player, prevention_locked)
+    used: set[str] = set(used_source_ids or [])
+    used.discard(str(replacement_source_id))
     requested = replacement_source_id
     applied = 0
     while out > 0 and (max_replacements is None or applied < max_replacements):
@@ -193,7 +198,8 @@ def apply_damage_replacements(
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
-        out = max(0, out - 1)
+        text = next(text for card, text in available if card.id == chosen.id)
+        out = out * 2 if _GLOBAL_DAMAGE_DOUBLE_RE.search(text) else max(0, out - 1)
         applied += 1
         requested = None
     return out
@@ -233,7 +239,8 @@ def apply_permanent_damage_replacements(
             if not prevention_locked:
                 out = 0
         else:
-            out = max(0, out - 1)
+            text = next(text for card, text in available if card.id == chosen.id)
+            out = out * 2 if _GLOBAL_DAMAGE_DOUBLE_RE.search(text) else max(0, out - 1)
         applied += 1
         requested = None
     return out

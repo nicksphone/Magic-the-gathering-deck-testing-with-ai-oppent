@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-04 - Cross-family rules regression repairs
+
+- Integrate the independent canonical regression handoff and reproduce its
+  14 failures against current main before changing the engine.
+- Preserve supported counter follow-ups and conditional stack destinations,
+  including unconditional draw against uncounterable spells and flashback exile.
+- Admit graveyard exile targets and retain linked post-entry recursion life loss
+  through entry choices, without inventing card-specific Oracle text.
+- Add undying's pre-death counter/ability checks, APNAP trigger and original-owner
+  return with stale-object guards and shared entry-counter replacements.
+- Add canonical global damage doubling to shared player/permanent replacement
+  chains, preserving used-source identity and prevention-ban distinctions.
+- Add 24 edge regressions and a separately owned second-wave agent assignment.
+  Exact acceptance results and remaining fidelity boundaries are tracked in
+  `docs/testing/rules-regression-repairs.md`.
+
 ## 2026-10-04 - Known-composition draw and rummage priors
 
 - Estimate unknown draws from reconciled owned submitted inventory, with land

@@ -36,8 +36,9 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD:
         return
-    from rules_engine.continuous import effective_keywords, effective_power, effective_toughness, printed_abilities_suppressed
+    from rules_engine.continuous import effective_keyword_counts, effective_power, effective_toughness, printed_abilities_suppressed
     from rules_engine.colors import card_color_names, card_color_symbols
+    keyword_counts = effective_keyword_counts(state, card_id)
     card.last_known_battlefield = {
         "name": card.name,
         "oracle_text": card.oracle_text,
@@ -45,7 +46,9 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "controller": card.controller,
         "power": effective_power(state, card_id),
         "toughness": effective_toughness(state, card_id),
-        "keywords": effective_keywords(state, card_id),
+        "keywords": list(keyword_counts),
+        "keyword_counts": keyword_counts,
+        "counters": dict(card.counters),
         "colors": sorted(card_color_symbols(card)),
         "color_names": sorted(card_color_names(card)),
         "selected_face_index": card.selected_face_index,

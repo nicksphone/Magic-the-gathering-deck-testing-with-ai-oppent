@@ -337,6 +337,7 @@ PT_AND_KW_REMOVE_RE = re.compile(
     r"(you control|your opponents control)\s+get\s+[+-]\d+\/[+-]\d+\s+and\s+(?:lose|loses)\s+([^.]*)"
 )
 KNOWN_KEYWORDS = [
+    "undying",
     "flanking",
     "bushido",
     "rampage",
@@ -466,7 +467,7 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         out['ward'] = max(out.get('ward', 0), len(ward_costs))
     # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
     printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
-                      for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking'}
+                      for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking', 'undying'}
                       or re.fullmatch(r'(?:bushido|rampage) \d+', part.strip().lower()))
     for keyword, amount in printed.items():
         out[keyword] = max(out[keyword], amount)

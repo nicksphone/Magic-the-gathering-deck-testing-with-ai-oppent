@@ -49,6 +49,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,
     "exile": handlers.exile_permanent,
+    "exile_from_graveyard": handlers.exile_from_graveyard,
     "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,
     "put_land_from_hand": handlers.put_land_from_hand,
@@ -126,7 +127,7 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         from rules_engine.keyword_triggers import schedule_next_turn_draw
         schedule_next_turn_draw(state, controller, payload)
         return
-    if effect_key in {'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff'}:
+    if effect_key in {'undying_return', 'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff'}:
         from rules_engine.keyword_triggers import resolve_keyword_trigger
         resolve_keyword_trigger(state, controller, effect_key, payload)
         return
