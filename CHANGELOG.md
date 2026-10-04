@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-04 - Offline storage recovery and retention tools
+
+- Integrate the release agent's explicit-path SQLite backup/restore verifier and
+  dry-run-first terminal simulation-job retention utility. No scheduler, API
+  maintenance hook, live pruning or live database replacement is enabled.
+- Combined repaired-backend verification passes 128 storage/recovery tests.
+  A separate empty-cache/database offline probe hydrates 119 shipped names,
+  serves their fallback assets and restores a seeded snapshot without network.
+- Retention does not coordinate live job caches or preserve deleted idempotency
+  history. Deployment retention policy and retry-expiry semantics remain open.
+  See `docs/testing/release-storage-agent.md` for scope, commands and limitations.
+
 ## 2026-10-04 - Battlefield-first UI integration
 
 - Integrate the reviewed UI agent redesign: compact battlefield and action rail,

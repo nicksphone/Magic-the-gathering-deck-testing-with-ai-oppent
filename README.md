@@ -5,6 +5,12 @@ scrollable hands, exact-ID grouped lands, and keyboard/hover card inspection.
 Setup, saved sessions, diagnostics and logs can be collapsed to preserve table
 space. See [UI implementation and verification](docs/ui-redesign.md).
 
+Offline operator tools can verify local SQLite backup/restore equality and plan
+terminal simulation-job retention with dry-run defaults. They require explicit
+isolated local paths, refuse the source-relative live database and never replace
+it. Retention is not connected to live job admission or retry history; do not
+use it as online maintenance. See [storage verification and commands](docs/testing/release-storage-agent.md).
+
 Backend combat declarations share unconditional numeric attack/block limits and
 recognized each-combat requirement maximization across checked actions and all
 AI difficulties. Limits, source provenance and remaining gaps are exposed through

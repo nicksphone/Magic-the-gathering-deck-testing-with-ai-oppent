@@ -2,6 +2,11 @@
 
 ## Current Priority: Backend First
 
+- [x] Integrate offline backup/restore verification and dry-run retention tools.
+  The combined 128-test storage/recovery gate and cold offline 119-name probe
+  pass. These tools do not close the operational release gate: online cache
+  coordination, idempotency expiry, quotas and deployment policy remain open.
+
 - [x] Integrate the reviewed battlefield-first UI into the live frontend.
   Unit checks, lint/build and five isolated browser suites pass against the
   repaired backend. The full integrated harness remains assigned through
