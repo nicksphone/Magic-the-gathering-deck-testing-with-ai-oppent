@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab
 
-An isolated integration candidate repairs printed life restrictions after their
+The shared rules engine repairs printed life restrictions after their
 source loses its abilities. Control changes, expiry, real life payments and human
 recovery have targeted coverage; the combined source passes 7,988 backend tests
 and the full browser harness. The subsequent shared query optimization passes
