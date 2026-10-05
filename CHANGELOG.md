@@ -1,5 +1,16 @@
 # Changelog
 
+## Workflow And Documentation Consolidation
+
+- Replace the README's patch-history preamble with current capabilities, honest
+  scope and explicit staged-versus-main status; detailed history stays here.
+- Record focused development checks and full integration-milestone validation,
+  retained-position AI evaluation and preservation of the original finish scope.
+- Timing, graveyard, announcement and qualified cost fixes are consolidated on
+  `codex/announced-color-costs`; their combined gate is running, not yet released.
+- Live development backend automatically reloaded after the resource integration;
+  no forced server stop or user-data replacement was required.
+
 ## Qualified Resource Milestone Integrated Into Main
 
 - Fast-forwarded the qualified ff1210e runtime and its predecessors: shared

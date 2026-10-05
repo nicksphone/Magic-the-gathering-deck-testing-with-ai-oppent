@@ -1,5 +1,25 @@
 # MTG Deck Testing Lab Finish Plan
 
+## Current Execution Order
+
+1. Finish the single frozen integration gate for consolidated runtime `0efefe8`
+   on `codex/announced-color-costs`: full recursive backend coverage, browser
+   flows and frontend tests/lint/build. Main remains at the qualified resource
+   milestone until that gate passes.
+2. Fix integration failures with focused regressions, then promote the combined
+   batch to main and verify live recovery. Preserve user data and uncommitted work.
+3. Use retained AI mistakes and reconstructed positions across archetypes before
+   scheduling another broad matchup matrix. Repeats establish determinism, not
+   independent strength samples.
+4. Continue the original rules, AI and release gates below. Dynamic/compound
+   semantics, expert play and release readiness remain unfinished; successful
+   parser recognition or a smoke match is not completion evidence.
+
+Use [the engineering workflow](docs/engineering-workflow.md): focused affected
+checks during development, full checks at combined integration milestones,
+historical evidence reused only for unchanged code. Do not start another small
+feature branch while the implemented batch is awaiting integration.
+
 ## Current Priority: Backend First
 
 - [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
