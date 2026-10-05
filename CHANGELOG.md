@@ -1,5 +1,16 @@
 # Changelog
 
+## Strategic Draw Counts and Private Replay Views (Candidate)
+
+- Let the strategic horizon value guaranteed draws only in masked decision views;
+  preserve unknown identities, actual counters/draw limits and strict certainty
+  helpers. Reuse the caller's computed score without persistent state caching.
+- Add optional offline `--decision-output` with both hands/boards, canonical card
+  views, announced stack, combat and mana provenance. Deeply detach nested faces;
+  exclusively create owner-only files, reject overwrites and record completion.
+- Targeted qualification is complete; full qualification and fresh AI decision
+  comparisons remain open. See `docs/testing/strategic-draw-counts.md`.
+
 ## Direct Battlefield Combat Selection
 
 - Shared battlefield/panel selections for both human seats; click attackers,

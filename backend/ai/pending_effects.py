@@ -326,7 +326,31 @@ def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, o
     return None if outcome is None else outcome == "win"
 
 
-def settled_public_position(state: MatchState, player_id: int) -> MatchState | None:
+def _opaque_draw_count_changes(state, projected, player_id):
+    from ai.information import is_unknown
+    if getattr(state, 'ai_information_player', None) != player_id:
+        return False
+    # Only declared draw/counter instructions: no search, mill, reveal or selection.
+    if (not any(item.effect_key == 'draw_cards' for item in state.stack)
+            or any(item.effect_key not in {'draw_cards', 'counter_spell', 'counter_ability'}
+                   for item in state.stack)):
+        return False
+    for pid, original in state.players.items():
+        final = projected.players[pid]
+        removed = set(original.library) - set(final.library)
+        if final.library != [cid for cid in original.library if cid not in removed]:
+            return False
+        if final.hand[:len(original.hand)] != original.hand:
+            return False
+        added = final.hand[len(original.hand):]
+        if len(added) != len(removed) or set(added) != removed:
+            return False
+        if any(not is_unknown(state.cards[cid]) or not is_unknown(projected.cards[cid]) for cid in removed):
+            return False
+    return True
+
+
+def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False) -> MatchState | None:
     """Forecast unanswered declared effects, without choosing or revealing unknown cards."""
     if not state.stack:
         return state
@@ -338,7 +362,8 @@ def settled_public_position(state: MatchState, player_id: int) -> MatchState | N
         return None
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[opponent].hand) != opposing_hand):
-        return None
+        if not opaque_draw_counts or not _opaque_draw_count_changes(state, projected, player_id):
+            return None
     return projected
 
 

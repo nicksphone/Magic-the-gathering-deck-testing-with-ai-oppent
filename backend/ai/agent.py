@@ -900,7 +900,7 @@ class AIAgent:
         from ai.pending_effects import settled_public_position
         # Value a pending announcement at the horizon without removing responses
         # from the real search state or guessing unresolved/hidden-zone choices.
-        projected = settled_public_position(state, player_id)
+        projected = settled_public_position(state, player_id, opaque_draw_counts=True)
         position = projected if projected is not None else state
         return evaluate_board(position, player_id) + self._strategic_features(position, player_id)
 
@@ -911,7 +911,7 @@ class AIAgent:
         except Exception:
             return -9999.0
         score = self._strategic_position_score(sim, player_id)
-        score += self._stack_two_ply_value(sim, player_id)
+        score += self._stack_two_ply_value(sim, player_id, score)
         return self._strategic_state_score(sim, player_id, depth, score)
 
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
@@ -931,9 +931,8 @@ class AIAgent:
                     continue
                 nxt = planning_copy(sim)
                 self.engine.take_action(nxt, pid, materialized, reject_invalid=True)
-                val = self._strategic_position_score(nxt, player_id) + self._stack_two_ply_value(
-                    nxt, player_id
-                )
+                val = self._strategic_position_score(nxt, player_id)
+                val += self._stack_two_ply_value(nxt, player_id, val)
                 beam.append((val, nxt))
             except Exception:
                 continue
@@ -945,7 +944,7 @@ class AIAgent:
         beam.clear()
         return 0.6 * score + 0.4 * self._strategic_state_score(chosen_state, player_id, depth - 1, chosen_score)
 
-    def _stack_two_ply_value(self, state: MatchState, player_id: int) -> float:
+    def _stack_two_ply_value(self, state: MatchState, player_id: int, baseline_score: float | None = None) -> float:
         """Depth-limited stack planner for counter wars; only runs while stack is active."""
         stack_items = list(getattr(state, "stack", []) or [])
         if not stack_items or getattr(state, "winner", None) is not None:
@@ -995,7 +994,8 @@ class AIAgent:
         # The caller already scores this position. Add response improvement only,
         # not a second absolute score that rewards stacks while ahead and punishes
         # them while behind.
-        return 0.2 * (best - self._strategic_position_score(state, player_id))
+        baseline = self._strategic_position_score(state, player_id) if baseline_score is None else baseline_score
+        return 0.2 * (best - baseline)
 
     def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int) -> list[dict]:
         ranked = self._rank_moves(state, legal_moves, player_id)

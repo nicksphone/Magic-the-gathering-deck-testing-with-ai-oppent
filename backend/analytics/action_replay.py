@@ -1,8 +1,10 @@
 """Reconstruct seeded diagnostic actions without AI search or persistence."""
 from collections import Counter
 from copy import deepcopy
+from dataclasses import asdict
 import hashlib
 import json
+from typing import Callable
 
 from analytics.replay_tools import first_log_divergence, normalize_log_line
 from game_state.state import MatchFactory, Step, pregame_actor
@@ -16,7 +18,8 @@ class ReplayMismatch(ValueError):
         super().__init__(f'Recorded-action divergence at decision {decision}: {field}')
 
 
-def reconstruct_game(deck_a: list[dict], deck_b: list[dict], game: dict) -> dict:
+def reconstruct_game(deck_a: list[dict], deck_b: list[dict], game: dict, *,
+                     decision_observer: Callable[[dict], None] | None = None) -> dict:
     """Validate roots, checked actions and complete logs; passes are not misplays."""
     if (not isinstance(game, dict) or not {'seed', 'starting_player', 'winner', 'turn', 'ticks', 'log_hash', 'log'} <= game.keys()
             or type(game.get('seed')) is not int or type(game.get('starting_player')) is not int
@@ -60,6 +63,33 @@ def reconstruct_game(deck_a: list[dict], deck_b: list[dict], game: dict) -> dict
         legal = rules.legal_moves(state, pid)
         compare('legal_action_types', trace.get('legal_action_types'), sorted({str(move['type']) for move in legal}))
         action = deepcopy(trace['action'])
+        if decision_observer is not None:
+            from game_state.serializers import serialize_card_view
+
+            def card_view(cid):
+                card = state.cards[cid]
+                # Canonical UI/rules values, detached even for nested face metadata.
+                return {**deepcopy(serialize_card_view(state, cid)), 'owner': card.owner,
+                        'controller': card.controller, 'zone': card.zone.value,
+                        'raw_counters': dict(card.counters)}
+
+            # Private offline evidence, never a public API or an AI decision view.
+            decision_observer({'decision': decisions, 'trace': deepcopy(trace),
+                'legal_moves': deepcopy(legal), 'stack': [asdict(item) for item in state.stack],
+                'attackers': list(state.attackers), 'blocks': deepcopy(state.blocks),
+                'attack_bands': deepcopy(state.attack_bands), 'players': {
+                    str(seat): {'life': player.life, 'poison': player.poison, 'counters': dict(player.counters),
+                                'mana_pool': dict(player.mana_pool),
+                                'snow_mana_pool': dict(player.snow_mana_pool),
+                                'restricted_mana_pool': deepcopy(player.restricted_mana_pool),
+                                'lands_played_this_turn': player.lands_played_this_turn,
+                                'max_land_plays_this_turn': player.max_land_plays_this_turn,
+                                'library_count': len(player.library),
+                                'hand': [card_view(cid) for cid in player.hand],
+                                'battlefield': [card_view(cid) for cid in player.battlefield],
+                                'graveyard': [card_view(cid) for cid in player.graveyard],
+                                'exile': [card_view(cid) for cid in player.exile]}
+                    for seat, player in state.players.items()}})
         counts[pid]['decisions'] += 1
         counts[pid][action.get('type', '<missing>')] += 1
         if (action.get('type') == 'pass_priority' and not state.pregame_pending and not state.stack

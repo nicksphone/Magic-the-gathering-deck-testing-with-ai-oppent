@@ -26,7 +26,7 @@ def test_strategic_search_selects_best_own_or_worst_opponent_reply(monkeypatch, 
     monkeypatch.setattr(agent.engine, "take_action", take_action)
     monkeypatch.setattr(agent.engine, "legal_moves", lambda _sim, _pid: replies)
     monkeypatch.setattr(agent, "_strategic_features", lambda _sim, _pid: 0.0)
-    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid: 0.0)
+    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid, baseline_score=None: 0.0)
     monkeypatch.setattr("ai.agent.evaluate_board", lambda sim, _pid: float(sim.players[1].life))
 
     result = agent._strategic_line_score(state, {"type": "pass_priority", "branch": "root"}, 1, depth=1)
@@ -57,7 +57,7 @@ def test_strategic_search_materializes_targeted_opponent_reply(monkeypatch):
         {**move, "targets": {"target_player": 1}} if move.get("branch") == "punish" else move
     ))
     monkeypatch.setattr(agent, "_strategic_features", lambda _sim, _pid: 0.0)
-    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid: 0.0)
+    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid, baseline_score=None: 0.0)
     monkeypatch.setattr("ai.agent.evaluate_board", lambda sim, _pid: float(sim.players[1].life))
 
     result = agent._strategic_line_score(state, {"type": "pass_priority", "branch": "root"}, 1, depth=1)
@@ -129,7 +129,7 @@ def test_strategic_beam_uses_ranked_reply_beyond_lexical_prefix(monkeypatch):
     ))
     monkeypatch.setattr(agent, "_materialize_action", lambda _sim, move, _pid: move)
     monkeypatch.setattr(agent, "_strategic_features", lambda _sim, _pid: 0.0)
-    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid: 0.0)
+    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid, baseline_score=None: 0.0)
     monkeypatch.setattr("ai.agent.evaluate_board", lambda sim, _pid: float(sim.players[1].life))
 
     assert agent._strategic_line_score(state, {"type": "pass_priority", "branch": "root"}, 1, depth=1) == 18.0
@@ -193,7 +193,7 @@ def test_strategic_search_rejects_unpayable_cast_instead_of_scoring_noop(monkeyp
     state.priority_player = 1
     agent = AIAgent(difficulty="master", archetype="Control")
     monkeypatch.setattr(agent, "_strategic_features", lambda _sim, _pid: 0.0)
-    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid: 0.0)
+    monkeypatch.setattr(agent, "_stack_two_ply_value", lambda _sim, _pid, baseline_score=None: 0.0)
 
     score = agent._strategic_line_score(
         state,

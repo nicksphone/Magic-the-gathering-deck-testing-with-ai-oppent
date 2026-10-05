@@ -1,6 +1,8 @@
 """Offline reconstruction of a retained match trace and resolved deck manifest."""
 import argparse
+from contextlib import ExitStack
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -16,10 +18,17 @@ def main():
     parser.add_argument('--trace', required=True, help='Retained run_match JSON with complete games and per-game seeds')
     parser.add_argument('--reverse-seats', action='store_true')
     parser.add_argument('--output', required=True, help='Private JSON report; divergences may contain hand/log data')
+    parser.add_argument('--decision-output', help='New private JSONL file with BOTH hands/boards before each recorded action; never passed to AI')
     args = parser.parse_args()
     try:
-        if Path(args.output).resolve() in {Path(args.trace).resolve(), Path(args.deck_manifest).resolve()}:
-            raise ValueError('Output must not overwrite the trace or deck manifest')
+        inputs = {Path(args.trace).resolve(), Path(args.deck_manifest).resolve()}
+        outputs = [Path(args.output).resolve()]
+        if args.decision_output:
+            outputs.append(Path(args.decision_output).resolve())
+        if len(set(outputs)) != len(outputs) or any(path in inputs for path in outputs):
+            raise ValueError('Outputs must be distinct from each other, the trace and deck manifest')
+        if any(path.exists() for path in outputs):
+            raise ValueError('Outputs must be new files; existing evidence is never overwritten')
         decks, provenance = _load_deck_manifest(args.deck_manifest, 2)
         if len(decks) != 2:
             raise ValueError('Exactly two selected decks are required')
@@ -30,13 +39,35 @@ def main():
         if not isinstance(games, list) or not games or not all(isinstance(game, dict) for game in games):
             raise ValueError('Trace must contain a nonempty games array')
         report = {'matched': True, 'input_provenance': provenance, 'games': []}
-        for index, game in enumerate(games):
-            try:
-                report['games'].append(reconstruct_game(decks[0]['mainboard'], decks[1]['mainboard'], game))
-            except ReplayMismatch as error:
-                report.update({'matched': False, 'first_divergence': {'game': index, **error.diagnostic}})
-                break
-        Path(args.output).write_text(json.dumps(report, indent=2))
+        with ExitStack() as stack:
+            def private_file(path):
+                return stack.enter_context(os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w'))
+
+            output = private_file(args.output)
+            decisions = private_file(args.decision_output) if args.decision_output else None
+
+            def emit(record):
+                if decisions is not None:
+                    decisions.write(json.dumps(record) + '\n')
+                    decisions.flush()
+
+            emit({'kind': 'private_reconstruction_start', 'schema_version': 1, 'input_provenance': provenance,
+                  'reverse_seats': args.reverse_seats, 'games_expected': len(games),
+                  'warning': 'Contains both hands; offline evidence only, not an AI view or quality verdict'})
+            for index, game in enumerate(games):
+                def observe(record):
+                    emit({'kind': 'decision_state', 'game': index, 'seed': game['seed'],
+                          'starting_player': game['starting_player'], **record})
+
+                try:
+                    report['games'].append(reconstruct_game(decks[0]['mainboard'], decks[1]['mainboard'], game,
+                        decision_observer=observe if decisions is not None else None))
+                except ReplayMismatch as error:
+                    report.update({'matched': False, 'first_divergence': {'game': index, **error.diagnostic}})
+                    break
+            emit({'kind': 'private_reconstruction_end', 'matched': report['matched'],
+                  'games_verified': len(report['games']), 'first_divergence': report.get('first_divergence')})
+            output.write(json.dumps(report, indent=2))
     except (OSError, ValueError, TypeError) as error:
         parser.exit(2, f'Reconstruction input error: {error}\n')
     print(json.dumps({'matched': report['matched'], 'games_verified': len(report['games']), 'output': args.output}))

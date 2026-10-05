@@ -52,6 +52,80 @@ def test_checked_reconstruction_matches_without_ai_or_input_mutation(monkeypatch
     assert (deck, game) == before
 
 
+@pytest.mark.parametrize('starting_player', [1, 2])
+def test_private_observer_reports_both_hands_without_changing_replay(starting_player):
+    deck, game = recorded(starting_player=starting_player)
+    before = deepcopy((deck, game))
+    seen = []
+    report = reconstruct_game(deck, deck, game, decision_observer=seen.append)
+    assert report == reconstruct_game(deck, deck, game)
+    assert len(seen) == 80
+    assert [row['decision'] for row in seen] == list(range(80))
+    assert len(seen[0]['players']['1']['hand']) == len(seen[0]['players']['2']['hand']) == 7
+    assert seen[0]['trace']['pid'] == starting_player
+    for row in seen:
+        actor = str(row['trace']['pid'])
+        assert [card['name'] for card in row['players'][actor]['hand']] == row['trace']['hand']
+        assert [card['name'] for card in row['players'][actor]['battlefield']] == row['trace']['battlefield']
+        assert all('library' not in player for player in row['players'].values())
+        json.dumps(row)
+    assert (deck, game) == before
+
+
+def test_observer_mutations_cannot_change_actions_or_effective_stats(monkeypatch):
+    from game_state.serializers import serialize_card_view
+    from tests.test_attack_bands import _state
+    from tests.test_modal_spell_faces import fixture, ARCHAIC
+    from game_state.state import Zone
+    template = deepcopy(_state().cards['bears'])
+    _, face_template = fixture(ARCHAIC)
+    face_template = deepcopy(face_template)
+    original = MatchFactory.from_decks
+    created = []
+
+    def constructed_board(*args, **kwargs):
+        state = original(*args, **kwargs)
+        card = deepcopy(template)
+        card.owner = card.controller = 1
+        card.counters['+1/+1'] = 1
+        state.cards[card.id] = card
+        state.players[1].battlefield.append(card.id)
+        face = deepcopy(face_template)
+        face.id = 'observed-faces'
+        face.owner = face.controller = 1
+        face.move_to_zone(Zone.BATTLEFIELD)
+        state.cards[face.id] = face
+        state.players[1].battlefield.append(face.id)
+        created.append(state)
+        return state
+
+    monkeypatch.setattr(MatchFactory, 'from_decks', constructed_board)
+    deck, game = recorded()
+    seen = []
+
+    def mutate(record):
+        card = next(card for card in record['players']['1']['battlefield'] if card['id'] == 'bears')
+        expected = serialize_card_view(created[-1], 'bears')
+        assert {key: card[key] for key in expected} == expected
+        assert (card['owner'], card['controller'], card['zone']) == (1, 1, 'battlefield')
+        assert (card['base_power'], card['base_toughness']) == (2, 2)
+        assert (card['power'], card['toughness']) == (3, 3)
+        assert card['counters']['+1/+1'] == 1
+        face = next(card for card in record['players']['1']['battlefield'] if card['id'] == 'observed-faces')
+        assert face['card_faces'] == created[-1].cards['observed-faces'].card_faces
+        seen.append(deepcopy(record))
+        face['card_faces'][0]['oracle_text'] = 'observer mutation must not reach state'
+        card['counters']['+1/+1'] = 99
+        record['players']['1']['hand'].clear()
+        record['players']['1']['mana_pool']['U'] = 999
+        record['trace']['action']['type'] = 'invalid'
+        record['legal_moves'].clear()
+        record['blocks']['fabricated'] = ['bears']
+
+    assert reconstruct_game(deck, deck, game, decision_observer=mutate) == reconstruct_game(deck, deck, game)
+    assert len(seen) == 80
+
+
 @pytest.mark.parametrize('field,value', [('hand', []), ('battlefield', ['Island']),
     ('turn', 99), ('step', 'invalid'), ('priority_player', 99), ('pid', 2),
     ('legal_action_types', []), ('action', {'type': 'cast_spell'})])
@@ -113,3 +187,52 @@ def test_offline_cli_status_privacy_and_input_preservation(tmp_path, mode, expec
         assert report['matched'] is (expected_exit == 0)
         if mode == 'drift':
             assert report['first_divergence']['field'] == 'log_hash'
+
+
+@pytest.mark.parametrize('mode,expected_exit', [('valid', 0), ('drift', 1), ('existing', 2), ('existing_report', 2),
+    ('same_output', 2), ('input_alias', 2)])
+def test_cli_private_decision_export_provenance_privacy_and_no_overwrite(tmp_path, mode, expected_exit):
+    from scripts.regression_matrix_replay import _write_deck_manifest
+    deck, game = recorded()
+    if mode == 'drift':
+        game['log_hash'] = '0' * 64
+    manifest, trace, output, decisions = [tmp_path / name for name in ('decks.json', 'trace.json', 'report.json', 'decisions.jsonl')]
+    _write_deck_manifest(str(manifest), [{'name': 'A', 'mainboard': deck}, {'name': 'B', 'mainboard': deck}],
+                         {'source': 'canonical unit fixture; not a natural game'})
+    games = [game, recorded(seed=938, starting_player=2)[1]] if mode == 'valid' else [game]
+    trace.write_text(json.dumps({'games': games}))
+    if mode == 'existing':
+        decisions.write_text('preserve this evidence')
+    if mode == 'existing_report':
+        output.write_text('preserve this report')
+    if mode == 'same_output':
+        decisions = output
+    if mode == 'input_alias':
+        decisions.symlink_to(trace)
+    before = (manifest.read_bytes(), trace.read_bytes())
+    result = subprocess.run([sys.executable, str(Path(__file__).parents[1] / 'scripts/reconstruct_action_replay.py'),
+        '--deck-manifest', str(manifest), '--trace', str(trace), '--output', str(output),
+        '--decision-output', str(decisions)], capture_output=True, text=True, timeout=30)
+    assert result.returncode == expected_exit, result.stderr
+    assert (manifest.read_bytes(), trace.read_bytes()) == before
+    assert 'Island' not in result.stdout
+    if expected_exit in (0, 1):
+        rows = [json.loads(line) for line in decisions.read_text().splitlines()]
+        assert rows[0]['kind'] == 'private_reconstruction_start'
+        assert rows[-1]['kind'] == 'private_reconstruction_end'
+        assert rows[-1]['matched'] is (expected_exit == 0)
+        states = [row for row in rows if row['kind'] == 'decision_state']
+        assert len(states) == 80 * len(games)
+        for index, recorded_game in enumerate(games):
+            group = [row for row in states if row['game'] == index]
+            assert len(group) == 80
+            assert all(row['seed'] == recorded_game['seed'] and row['starting_player'] == recorded_game['starting_player'] for row in group)
+            assert [row['decision'] for row in group] == list(range(80))
+        assert all(len(states[0]['players'][str(seat)]['hand']) == 7 for seat in (1, 2))
+        assert decisions.stat().st_mode & 0o777 == output.stat().st_mode & 0o777 == 0o600
+    if mode == 'existing':
+        assert decisions.read_text() == 'preserve this evidence'
+    if mode == 'existing_report':
+        assert output.read_text() == 'preserve this report'
+    elif expected_exit == 2:
+        assert not output.exists()

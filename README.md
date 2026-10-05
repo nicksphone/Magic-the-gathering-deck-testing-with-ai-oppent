@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab
 
+The strategic draw-count/private replay candidate preserves unseen identities,
+reuses existing root scores and can export both hands/boards through the
+canonical card-view contract for offline analysis. It is under full qualification;
+targeted checks are not expert-play evidence. See
+[scope and validation](docs/testing/strategic-draw-counts.md).
+
 Combat can be declared directly on the battlefield: click eligible creatures
 to select attackers; click a blocker and then an attacker, or drag the blocker
 onto its target. Confirm the complete declaration once. Dragging attackers
