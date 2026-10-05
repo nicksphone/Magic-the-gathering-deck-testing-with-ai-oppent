@@ -16,6 +16,7 @@ def _tupleize(value):
 
 
 def serialize_card_view(state: MatchState, cid: str) -> dict:
+    from rules_engine.suspend import suspended
     from rules_engine.land_types import effective_type_line
     from rules_engine.continuous import effective_combat_stats, effective_keyword_counts, attachment_effect_warnings
     from rules_engine.colors import card_color_symbols
@@ -62,6 +63,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "was_foretold": card.was_foretold,
         "foretell_order": card.foretell_record.get('order'),
         "foretold_turn": card.foretell_record.get('turn'),
+        "suspended": suspended(card),
     }
 
 
@@ -208,6 +210,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "layout": card.layout,
                 "exile_face_down": card.exile_face_down,
                 "foretell_record": deepcopy(card.foretell_record),
+                "suspend_haste": deepcopy(card.suspend_haste),
                 "granted_flashback": deepcopy(card.granted_flashback),
                 "was_foretold": card.was_foretold,
                 "was_kicked": card.was_kicked,
@@ -286,6 +289,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
             exile_face_down=bool(raw.get("exile_face_down", False)),
             foretell_record=deepcopy(raw.get('foretell_record', {})),
+            suspend_haste=deepcopy(raw.get('suspend_haste', {})),
             granted_flashback=deepcopy(raw.get('granted_flashback', {})),
             was_foretold=bool(raw.get('was_foretold', False)),
             was_kicked=bool(raw.get('was_kicked', False)),

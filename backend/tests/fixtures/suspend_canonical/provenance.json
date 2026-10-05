@@ -1,0 +1,55 @@
+{
+  "fetched_utc": "2026-10-05T21:00:42Z",
+  "source": "https://api.scryfall.com/cards/named",
+  "cards": [
+    {
+      "name": "Aeon Chronicler",
+      "file": "aeon-chronicler.json",
+      "scryfall_id": "5cec8dcc-8ebb-4640-a5f3-90e6e62c27e5",
+      "source_uri": "https://scryfall.com/card/tsr/51/aeon-chronicler?utm_source=api",
+      "sha256": "667eb28d11a8e0a0c214f62700597b332cb8b4110ac3cd9cf9c8cd12c56f4bb2"
+    },
+    {
+      "name": "Ancestral Vision",
+      "file": "ancestral-vision.json",
+      "scryfall_id": "9ec075ba-db56-4dcf-b1dc-fe6270b7ab36",
+      "source_uri": "https://scryfall.com/card/tdc/144/ancestral-vision?utm_source=api",
+      "sha256": "50c0907a5d5798b472bc09f80a33b8ecb5ba20e05253a9886c4592aa1fb39332"
+    },
+    {
+      "name": "Errant Ephemeron",
+      "file": "errant-ephemeron.json",
+      "scryfall_id": "3779a76a-0171-4714-9713-a65dc173a33f",
+      "source_uri": "https://scryfall.com/card/tsr/66/errant-ephemeron?utm_source=api",
+      "sha256": "f18195f93e96ab8b925589e9a3fe34025a01dbd6d093112e82856234cd1f5b4e"
+    },
+    {
+      "name": "Rift Bolt",
+      "file": "rift-bolt.json",
+      "scryfall_id": "4ccd0ada-92b2-48f3-b5ae-96346fc138b6",
+      "source_uri": "https://scryfall.com/card/2x2/122/rift-bolt?utm_source=api",
+      "sha256": "ec6f3b79f495c69ef2e325b05b4970b6329e30ac0797a02261b59123c3909faa"
+    },
+    {
+      "name": "Drannith Magistrate",
+      "file": "drannith-magistrate.json",
+      "scryfall_id": "98b0a4a8-9319-451b-9b79-b0bca7a41e91",
+      "source_uri": "https://scryfall.com/card/iko/11/drannith-magistrate?utm_source=api",
+      "sha256": "2a1b516871da6126754fd7ef8315f506158a7b50166ff97997e3673d10c59db2"
+    },
+    {
+      "name": "Ivory Mask",
+      "file": "ivory-mask.json",
+      "scryfall_id": "b02422f7-728b-481b-9eb1-34d17c696ce6",
+      "source_uri": "https://scryfall.com/card/9ed/23/ivory-mask?utm_source=api",
+      "sha256": "108c3e712d362721bb1f3ced5df1c8d378b3afa839632eb06801197f2e31c3e4"
+    },
+    {
+      "name": "Solemnity",
+      "file": "solemnity.json",
+      "scryfall_id": "0a71fb62-acbd-49f5-842f-0fc9fa48afea",
+      "source_uri": "https://scryfall.com/card/hou/22/solemnity?utm_source=api",
+      "sha256": "c6a28e789f19ecfc52c98db9ef7fb1b40a47338b8634094499b6fe2ff9a25eb8"
+    }
+  ]
+}

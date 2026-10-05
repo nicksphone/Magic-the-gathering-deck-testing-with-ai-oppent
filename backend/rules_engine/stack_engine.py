@@ -365,7 +365,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                                   'controller': item.controller,
                                   'color_names': sorted(card_color_names(card)),
                                   'keywords': list(card.keywords or [])}
-    resolve_effect(state, item.controller, effect_key, payload)
+    if effect_key in {'suspend_upkeep', 'suspend_cast_trigger'}:
+        from rules_engine.suspend import resolve_trigger
+        resolve_trigger(state, item.controller, effect_key, payload)
+    else:
+        resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:
         from dataclasses import asdict

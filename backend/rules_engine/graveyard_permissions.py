@@ -180,16 +180,21 @@ def graveyard_land_permission(state, player_id, card_id):
 
 @scoped_query
 def zone_cast_prohibited(state, player_id, zone):
-    """The supported global graveyard/library prohibition also beats effect casts."""
-    if zone not in {Zone.GRAVEYARD, Zone.LIBRARY}:
+    """Complete supported zone prohibitions also beat effect-authorized casts."""
+    if zone == Zone.HAND:
         return False
     from rules_engine.continuous import printed_abilities_suppressed
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]
-            if (source.zone == Zone.BATTLEFIELD
-                    and "players can't cast spells from graveyards or libraries." in _clauses(source)
-                    and not printed_abilities_suppressed(state, cid)):
+            if source.zone != Zone.BATTLEFIELD or printed_abilities_suppressed(state, cid):
+                continue
+            clauses = _clauses(source)
+            if (zone in {Zone.GRAVEYARD, Zone.LIBRARY}
+                    and "players can't cast spells from graveyards or libraries." in clauses):
+                return True
+            if (source.controller != player_id
+                    and "your opponents can't cast spells from anywhere other than their hands." in clauses):
                 return True
     return False
 

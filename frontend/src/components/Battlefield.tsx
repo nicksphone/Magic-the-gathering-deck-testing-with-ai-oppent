@@ -70,7 +70,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const humanActor = (match.controllers?.[String(actingPlayerId)] ?? "human") === "human";
   const viewerSeat = humanActor ? actingPlayerId : ([1, 2].find((seat) => match.controllers?.[String(seat)] === "human") ?? 1);
   const opponentSeat = viewerSeat === 1 ? 2 : 1;
-  const legalMoves = useMemo(() => humanActor ? authoritativeMoves : [], [humanActor, authoritativeMoves]);
+  const suspendOwner = match.pending_mechanic_choice?.kind === "suspend_cast" ? match.pending_mechanic_choice.player_id : undefined;
+  const legalMoves = useMemo(() => humanActor && (suspendOwner === undefined || suspendOwner === actingPlayerId)
+    ? authoritativeMoves : [], [humanActor, suspendOwner, actingPlayerId, authoritativeMoves]);
   const p1 = match.players[String(viewerSeat)];
   const p2 = match.players[String(opponentSeat)];
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
@@ -83,6 +85,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const castMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell"), [legalMoves]);
   const cycleMoves = useMemo(() => legalMoves.filter((m) => m.type === "cycle_card"), [legalMoves]);
   const foretellMoves = useMemo(() => legalMoves.filter((m) => m.type === "foretell"), [legalMoves]);
+  const suspendMoves = useMemo(() => legalMoves.filter((m) => m.type === "suspend"), [legalMoves]);
+  const suspendChoice = legalMoves.find(move => move.type === "choose_mechanic" && move.kind === "suspend_cast"
+    && move.player_id === viewerSeat && match.pending_mechanic_choice?.kind === "suspend_cast"
+    && match.pending_mechanic_choice.player_id === viewerSeat);
   const playLandMoves = useMemo(() => legalMoves.filter((m) => m.type === "play_land"), [legalMoves]);
   const restrictedCastMoves = useMemo(() => legalMoves.filter((m) => m.type === "cast_spell_restricted"), [legalMoves]);
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
@@ -675,6 +681,16 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             })}
           </div>
         ) : null}
+        {suspendChoice ? <div className="block-panel suspend-cast-panel" role="region" aria-label="Suspended card casting choice">
+          <h3>{suspendChoice.label}</h3>
+          <p>{castMoves.some(move => move.from_exile)
+            ? "Choose the suspended spell and its legal targets below, or decline. Casting is optional."
+            : "No legal cast is available. Decline to leave the card exiled without time counters."}</p>
+          {suspendChoice.options?.includes("decline") ? <button type="button"
+            onClick={() => onCardAction(suspendChoice.player_id!, { type: "choose_mechanic", card_ids: ["decline"] })}>
+            Decline suspended casting
+          </button> : null}
+        </div> : null}
         <h3 className="zone-heading">Hand & permitted plays <span>{playableCards.length}</span></h3>
         <CardRail className="hand-row playable-hand" label="Hand and permitted plays">
           {playableCards.map((card) => {
@@ -687,6 +703,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const foretellMove = foretellMoves.find((m) => m.card_id === card.id);
             const foretellControl = foretellMove ? <button onClick={() => onCardAction(viewerSeat, { type: "foretell", card_id: card.id })}>
               Foretell {card.name} ({foretellMove.mana_cost})
+            </button> : null;
+            const suspendMove = suspendMoves.find(m => m.card_id === card.id);
+            const suspendControl = suspendMove ? <button type="button"
+              onClick={() => onCardAction(viewerSeat, { type: "suspend", card_id: card.id })}>
+              Suspend {card.name} ({suspendMove.mana_cost}; {suspendMove.time_counters} time counter{suspendMove.time_counters === 1 ? "" : "s"})
             </button> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
@@ -731,6 +752,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   )}
                   {restrictedMove?.reason ? <small>Restriction: {restrictedMove.reason}</small> : null}
                   {foretellControl}
+                  {suspendControl}
                 </div>
               );
             }
@@ -798,6 +820,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {handFace(card)}
                 {landControls}
                 {foretellControl}
+                {suspendControl}
                 <button
                   disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
@@ -1132,7 +1155,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         </CardRail>
       </div>
 
-      <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} cards={[...p1.hand, ...p1.battlefield]} onAction={onCardAction} />
+      <PermanentActions key={match.id} moves={legalMoves.filter(move => move.type !== 'suspend' || !p1.hand.some(card => card.id === move.card_id))}
+        playerId={viewerSeat} cards={[...p1.hand, ...p1.battlefield]} onAction={onCardAction} />
       {hoverPreview ? createPortal(
         <aside className="card-hover-preview" data-pinned={Boolean(pinnedPreview)} aria-label="Card inspection" tabIndex={0}>
           <button className="preview-close" onClick={() => { previewOrigin.current?.focus({preventScroll:true}); previewOrigin.current = null; setHoverPreview(null); setPinnedPreview(null); }}>Close inspection · Esc</button>

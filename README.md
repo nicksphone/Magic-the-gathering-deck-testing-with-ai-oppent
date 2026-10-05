@@ -501,6 +501,11 @@ Implementation scopes and remaining limits:
 - Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).
 
 ### Simulation and Diagnostics
+- Bounded printed fixed-cost Suspend has engine lifecycle, hand controls,
+  durable cast/decline choices and actual AI consumers. Parent qualification
+  passes 892 backend checks plus ten actual-App and ten real-HTTP AI cases.
+  Variable/granted/complex variants and expert timing remain unfinished. See
+  [supported scope](docs/testing/suspend.md).
 - Printed Foretell has special-action payments, later-turn alternative costs,
   durable private exile permissions and both-seat hand controls. Supported grants,
   action-cost modifiers and self-buff triggers use shared engine paths; AI banks

@@ -23,6 +23,7 @@ function card(value: unknown): boolean {
     && [value.type_line, value.base_type_line].every(line => line === undefined || typeof line === "string")
     && typeof value.tapped === "boolean"
     && (value.was_foretold === undefined || typeof value.was_foretold === 'boolean')
+    && (value.suspended === undefined || typeof value.suspended === 'boolean')
     && ['foretell_order', 'foretold_turn'].every(key => value[key] === undefined || value[key] === null
       || (Number.isInteger(value[key]) && (value[key] as number) >= 0))
     && Array.isArray(value.types)
@@ -212,6 +213,11 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
+      && (move.type !== 'suspend' || (typeof move.card_id === 'string' && move.card_id.length > 0
+        && typeof move.mana_cost === 'string' && /^(?:\{(?:\d+|[WUBRGCS])\})+$/.test(move.mana_cost)
+        && Number.isInteger(move.time_counters) && (move.time_counters as number) > 0))
+      && (move.kind !== 'suspend_cast' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
+        && move.count === 1 && Array.isArray(move.options) && move.options.length === 1 && move.options[0] === 'decline'))
       && (move.banding_attackers === undefined || (Array.isArray(move.banding_attackers)
         && move.banding_attackers.every(id => typeof id === "string" && Array.isArray(move.options) && move.options.includes(id))))
       && (move.legal_blocks === undefined || (record(move.legal_blocks) && Object.entries(move.legal_blocks).every(([id, targets]) =>

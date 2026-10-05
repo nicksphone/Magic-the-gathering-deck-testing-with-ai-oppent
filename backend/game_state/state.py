@@ -98,11 +98,18 @@ class CardInstance:
     last_known_battlefield: dict = field(default_factory=dict)
     exile_face_down: bool = False
     foretell_record: dict = field(default_factory=dict)
+    suspend_haste: dict = field(default_factory=dict)
     granted_flashback: dict = field(default_factory=dict)
     was_foretold: bool = False
     was_kicked: bool = False
     printed_power: str | None = None
     printed_toughness: str | None = None
+
+    def __setattr__(self, name, value):
+        # Suspend's granted haste ends permanently at the first control loss.
+        if name == 'controller' and self.__dict__.get('controller', value) != value:
+            object.__setattr__(self, 'suspend_haste', {})
+        object.__setattr__(self, name, value)
 
     def reset_zone_counters(self, zone: Zone) -> None:
         from rules_engine.type_effects import clear_type_effects
@@ -126,6 +133,8 @@ class CardInstance:
             from rules_engine.bestow import end_bestow
             end_bestow(self)
         if zone != self.zone:
+            if not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
+                self.suspend_haste.clear()
             self.foretell_record.clear()
             self.granted_flashback.clear()
             if not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):

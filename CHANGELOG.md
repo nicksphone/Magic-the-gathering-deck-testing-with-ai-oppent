@@ -1,5 +1,14 @@
 # Changelog
 
+## Integrated Bounded Suspend - 2026-10-05
+
+- Integrate fixed-cost printed Suspend, separate upkeep/final-counter triggers,
+  durable cast/decline choices and incarnation-bound creature haste through
+  engine, actual human controls and AI consumers. Preserve known plays/answers.
+- Parent gate passes 892 backend checks, ten actual-App and ten real-HTTP AI
+  cases plus frontend lint/build/unit/wire checks. Snapshot/restart is covered;
+  complex Suspend variants and optimal timing remain unfinished.
+
 ## Exact Metadata Import Validation - 2026-10-05
 
 - Recompute declared mechanic metadata from canonical card data during import;

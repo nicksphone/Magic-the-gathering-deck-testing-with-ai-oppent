@@ -1,8 +1,8 @@
 {
   "backend/api_contracts.py": {
-    "mtime": 1791213613.89169,
-    "seen": 1791232057.6668694,
-    "ast_hash": "d3fc6f9fb4c1c2f2365ec2ec59fccd6c",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3924956,
+    "ast_hash": "a8e51aec17893c0045f53e24794e7e9d",
     "semantic_hash": ""
   },
   "backend/main.py": {
@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791237218.1885226,
-    "seen": 1791237297.6578352,
-    "ast_hash": "7e4e52b571216cb57f41d8a212351c23",
+    "mtime": 1791240291.515549,
+    "seen": 1791240389.3924103,
+    "ast_hash": "ca26451c1a6b626bed61d173bde28278",
     "semantic_hash": ""
   },
   "backend/ai/sideboarding.py": {
@@ -2874,9 +2874,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
-    "mtime": 1791213613.8926902,
-    "seen": 1791232057.666931,
-    "ast_hash": "3cb292822b11d59c0b1cb81982d0e820",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3925726,
+    "ast_hash": "82341909fd958fad640b711acd9dfc05",
     "semantic_hash": ""
   },
   "backend/game_state/series_policy.py": {
@@ -2892,9 +2892,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791226554.3963015,
-    "seen": 1791232057.6669343,
-    "ast_hash": "d838d2c0e1a59d4f8f826422b1c82024",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3925767,
+    "ast_hash": "98674903d9bb61ffa36211d8ff79e229",
     "semantic_hash": ""
   },
   "backend/analytics/decision_comparison.py": {
@@ -3018,15 +3018,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/action_validation.py": {
-    "mtime": 1791211202.3713915,
-    "seen": 1791232057.666961,
-    "ast_hash": "5c1c26be0a9b2e58e264e45c79b90047",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3926046,
+    "ast_hash": "620bbd55a75fd5b040506d3ed25e1f46",
     "semantic_hash": ""
   },
   "backend/rules_engine/graveyard_permissions.py": {
-    "mtime": 1791213613.89469,
-    "seen": 1791232057.667032,
-    "ast_hash": "0f1a864ce38048159e745de0be3c15a8",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3926833,
+    "ast_hash": "678496782b3a8ff58dc08c9fa10f37a6",
     "semantic_hash": ""
   },
   "backend/rules_engine/prevention.py": {
@@ -3108,9 +3108,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791229229.9623652,
-    "seen": 1791232057.6670265,
-    "ast_hash": "296c17c2ba27420666a93359136bf98a",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3926775,
+    "ast_hash": "dcfa78a77b5b6c83913721a9f7539fba",
     "semantic_hash": ""
   },
   "backend/rules_engine/damage_results.py": {
@@ -3150,9 +3150,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/continuous.py": {
-    "mtime": 1791218582.2453146,
-    "seen": 1791232057.6669955,
-    "ast_hash": "635ddfb451a8584b44efca3feca8193f",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3926423,
+    "ast_hash": "8d3f9b930bd16f757b1ba4cf3bf11ded",
     "semantic_hash": ""
   },
   "backend/rules_engine/land_types.py": {
@@ -3246,9 +3246,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791232434.038084,
-    "seen": 1791232492.4133873,
-    "ast_hash": "6be576ed54eaa41fa230b52c8d18baba",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.392672,
+    "ast_hash": "430866c0d9d119ca8024afe2aff099fd",
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_discard.py": {
@@ -3324,9 +3324,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/move_generator.py": {
-    "mtime": 1791229229.9723651,
-    "seen": 1791232057.6670763,
-    "ast_hash": "dfd7cadce7a8a469b55d4b115d537188",
+    "mtime": 1791240291.4955492,
+    "seen": 1791240389.3927205,
+    "ast_hash": "de1bee3490f5b38b39d4d86abc96f269",
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_exile.py": {
@@ -3354,15 +3354,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791229229.975365,
-    "seen": 1791232057.6671062,
-    "ast_hash": "44c3adb465665cfcc12585bca7f48981",
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3927531,
+    "ast_hash": "e89b1e2e0cddd99734e51330258e707a",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791229229.974365,
-    "seen": 1791232057.6670818,
-    "ast_hash": "09c2f03af43b7eaa7bf2c3c525d93bbd",
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3927257,
+    "ast_hash": "f1e57195e95a46533ca639524aa4677a",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -3450,9 +3450,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791213613.90269,
-    "seen": 1791232057.6682847,
-    "ast_hash": "6b0c4b4c92cffba0d23d4f9039051867",
+    "mtime": 1791240291.503549,
+    "seen": 1791240389.398492,
+    "ast_hash": "e5f3c3a56fb523c28dd5af65f1ef11b1",
     "semantic_hash": ""
   },
   "frontend/src/components/combat-selection.ts": {
@@ -3522,9 +3522,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791229230.044364,
-    "seen": 1791232057.668303,
-    "ast_hash": "e382061cc2bbdef98fee1e46dee381f0",
+    "mtime": 1791240291.503549,
+    "seen": 1791240389.3985124,
+    "ast_hash": "ee4d47a421fe8aa48f92e0400294277f",
     "semantic_hash": ""
   },
   "frontend/src/api/simulation-contract.ts": {
@@ -3558,9 +3558,9 @@
     "semantic_hash": ""
   },
   "frontend/src/api/match-contract.ts": {
-    "mtime": 1791227257.1530063,
-    "seen": 1791232057.668273,
-    "ast_hash": "ffd0598748cf2e2b3dc148e93abe8c93",
+    "mtime": 1791240291.503549,
+    "seen": 1791240389.39848,
+    "ast_hash": "5f6aeacd490cf8516454861c567d6e9c",
     "semantic_hash": ""
   },
   "frontend/tests/browser-direct-combat.mjs": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791239832.767821,
-    "seen": 1791239878.4399397,
-    "ast_hash": "4f7710f5a89d044377cf8edc22d5ddfa",
+    "mtime": 1791240345.0777013,
+    "seen": 1791240389.398734,
+    "ast_hash": "2054eaa8721955b3c3e5502f7d4cda8b",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791239832.769821,
-    "seen": 1791239878.4403389,
-    "ast_hash": "98e4140d40a9720fb7deb5058beb9346",
+    "mtime": 1791240345.0787013,
+    "seen": 1791240389.399131,
+    "ast_hash": "6e2ffac7de943ffc509aec9021c3aee5",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791239832.772821,
-    "seen": 1791239878.4399376,
-    "ast_hash": "7d375ea808af74b48f5e97b7700c47bf",
+    "mtime": 1791240345.080701,
+    "seen": 1791240389.3987322,
+    "ast_hash": "5f3d559c20e574b1bd1756e016601b11",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -7089,6 +7089,150 @@
     "mtime": 1791239832.772821,
     "seen": 1791239878.4402432,
     "ast_hash": "166ed5adc7bd8ce58a953fc6073d5eac",
+    "semantic_hash": ""
+  },
+  "backend/ai/suspend_policy.py": {
+    "mtime": 1791240291.508549,
+    "seen": 1791240389.3924706,
+    "ast_hash": "5ba5d9276b1909c5441d60d308f6d115",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/suspend.py": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3927586,
+    "ast_hash": "99449c2c3c96f06c4f96c58e42bd5544",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/aeon-chronicler.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3973527,
+    "ast_hash": "4ace37ab5d020e7281059b351e75b90c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/ancestral-vision.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.397355,
+    "ast_hash": "77785c7d94f0feda7f060fa8c755bd9c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/drannith-magistrate.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.397357,
+    "ast_hash": "03d1592e1d0e9c2820fd04f80db308c8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/errant-ephemeron.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3973587,
+    "ast_hash": "f9e55a2841a8d298e5bdf9e36d3741ed",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/ivory-mask.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.39736,
+    "ast_hash": "2be3e843da35c0f860dac6dfb51d2197",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/provenance.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3973618,
+    "ast_hash": "e84a5d84880955397121e04bed9ff03f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/rift-bolt.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3973632,
+    "ast_hash": "448db0cfcb2cf021f60756516fbd96c1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/suspend_canonical/solemnity.json": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3973649,
+    "ast_hash": "7c93b1cbad86520cd34a5879b999ace5",
+    "semantic_hash": ""
+  },
+  "backend/tests/suspend_composition_fixture.py": {
+    "mtime": 1791240291.5205488,
+    "seen": 1791240389.3974094,
+    "ast_hash": "91e075e367e8279063195cb5b36570d1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_suspend_hook_probe.py": {
+    "mtime": 1791240291.508549,
+    "seen": 1791240389.3975646,
+    "ast_hash": "53a5761aa64d7c0714fa2a81feb34fa0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_suspend_policy.py": {
+    "mtime": 1791240291.508549,
+    "seen": 1791240389.3975668,
+    "ast_hash": "e242066aafcd5745ecd1ece9646a31e5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_suspend_api.py": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.3983295,
+    "ast_hash": "a1a84aa760aec6a7afa985ddbcb1ecf1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_suspend_composition_http.py": {
+    "mtime": 1791240291.5205488,
+    "seen": 1791240389.3983316,
+    "ast_hash": "3c38cb94147230037754085e47d45423",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_suspend_composition_selection.py": {
+    "mtime": 1791240291.5205488,
+    "seen": 1791240389.3983335,
+    "ast_hash": "b22f70062e642afa04f089fd9d23953e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_suspend_lifecycle.py": {
+    "mtime": 1791240291.4965494,
+    "seen": 1791240389.398335,
+    "ast_hash": "ae7d8258d73f68253f7d4fb568ddcc15",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-suspend.mjs": {
+    "mtime": 1791240291.504549,
+    "seen": 1791240389.3986783,
+    "ast_hash": "7fc9d4fc2185c6b9197de61fa226e3a6",
+    "semantic_hash": ""
+  },
+  "frontend/tests/suspend-human-actions.mjs": {
+    "mtime": 1791240291.504549,
+    "seen": 1791240389.398709,
+    "ast_hash": "b6c314548c9134a97eeeb8b733a92892",
+    "semantic_hash": ""
+  },
+  "frontend/tests/suspend_fixture_server.py": {
+    "mtime": 1791240291.504549,
+    "seen": 1791240389.3987105,
+    "ast_hash": "07f3c0d534341393fd3bc22100505062",
+    "semantic_hash": ""
+  },
+  "frontend/tests/test_suspend_fixture_guards.py": {
+    "mtime": 1791240291.504549,
+    "seen": 1791240389.3987174,
+    "ast_hash": "e2a864bb9eec18d10ce7c7c1b31eaf20",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend-ai-consumer.md": {
+    "mtime": 1791240345.0767012,
+    "seen": 1791240389.3990905,
+    "ast_hash": "27828526eecdda4c9909eba48090bc14",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend-human-actions.md": {
+    "mtime": 1791240291.503549,
+    "seen": 1791240389.3990924,
+    "ast_hash": "1b375a98c3a8369eb02ea18013476470",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend.md": {
+    "mtime": 1791240345.0757012,
+    "seen": 1791240389.399094,
+    "ast_hash": "098926ed939708e5f1f2d6fdb19f065b",
     "semantic_hash": ""
   }
 }

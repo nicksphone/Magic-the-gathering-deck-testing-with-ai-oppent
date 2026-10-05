@@ -388,7 +388,7 @@ class RulesEngine:
                 return True
         return False
 
-    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False) -> None:
+    def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False, suspend_cast: bool = False) -> None:
         def reject(reason: str) -> None:
             if reject_invalid:
                 from rules_engine.action_validation import ActionRejected
@@ -408,6 +408,11 @@ class RulesEngine:
                 reject("This permanent has lost its printed abilities")
                 return
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice['kind'] == 'suspend_cast':
+                from rules_engine.suspend import finish_cast_choice
+                if not finish_cast_choice(state, player_id, action):
+                    reject('Invalid suspend casting choice')
+                return
             if state.pending_mechanic_choice['kind'] == 'effect_cast':
                 from rules_engine.effect_casts import finish_cast_choice
                 if not finish_cast_choice(state, player_id, action):
@@ -673,7 +678,12 @@ class RulesEngine:
             return
 
         player = state.players[player_id]
-        if kind == 'foretell':
+        if kind == 'suspend':
+            from rules_engine.suspend import take_special_action
+            if not take_special_action(state, player_id, action.get('card_id')):
+                reject('Cannot suspend this card or pay its special-action cost')
+                return
+        elif kind == 'foretell':
             from rules_engine.foretell import take_special_action
             if not take_special_action(state, player_id, action.get('card_id')):
                 reject('Cannot foretell this card or pay its special-action cost')
@@ -858,7 +868,7 @@ class RulesEngine:
             from rules_engine.card_faces import exile_permission, leave_exile
             chosen_face = action.get("selected_face_index", (action.get("targets") or {}).get("selected_face_index", 0)) or 0
             allowed_source = (
-                exile_permission(state, player_id, cid, chosen_face)
+                (effect_cast and suspend_cast and cid in player.exile) or exile_permission(state, player_id, cid, chosen_face)
                 if from_exile
                 else (cid in player.graveyard if from_graveyard else cid in player.hand if not from_library else top_library_creature_for_type(state, player_id) is not None and player.library[-1] == cid)
             )
@@ -1456,7 +1466,7 @@ class RulesEngine:
 
         if not effect_cast:
             apply_state_based_actions(state)
-            if kind == 'foretell' and not (state.pending_mechanic_choice or state.pending_replacement_choice
+            if kind in {'foretell', 'suspend'} and not (state.pending_mechanic_choice or state.pending_replacement_choice
                                           or state.pending_trigger_order):
                 state.priority_player = player_id
 

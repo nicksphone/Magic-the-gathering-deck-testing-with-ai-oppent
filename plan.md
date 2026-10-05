@@ -3,7 +3,7 @@
 ## Current Execution Order
 
 1. Finish preserved selection/ranking and combat latency validation; extend
-   Suspend and choice-dependent mana families without card-name exceptions.
+   remaining Suspend and choice-dependent mana families without card-name exceptions.
 2. Apply the verified corpus safely, materialize bounded mechanic metadata and
    expand complete training choices/features. Preserve private observations,
    qualified snapshots and expert-data provenance; do not force matchup win rates.
@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Integrate fixed-cost printed Suspend across engine, human UI and actual AI:
+  892 composed backend checks, ten actual-App cases, ten real-HTTP AI cases and
+  frontend lint/build/unit/wire gates pass. Both seats and restart/replay are
+  covered; complex variants and strategic timing remain open. See
+  [scope](docs/testing/suspend.md).
 - [x] Offline nested mechanic metadata for all 38,690 profiles, plus strict
   extractor-body import validation: 132 composed checks pass and the full
   78-artifact replay passes with schema, nonmetadata fields, nine other tables

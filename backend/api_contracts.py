@@ -95,6 +95,10 @@ class ForetellAction(CardAction):
     type: Literal['foretell']
 
 
+class SuspendAction(CardAction):
+    type: Literal['suspend']
+
+
 class PaymentCards(InputModel):
     discard_card_ids: CardIDs | None = None
     sacrifice_card_ids: CardIDs | None = None
@@ -244,7 +248,7 @@ class OptionalEffectChoice(InputModel):
     accept: StrictBool
 
 
-Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | ForetellAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | NonlandManaAction | ManaAbilityAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
+Action = Annotated[PassAction | MulliganAction | KeepAction | LandAction | ForetellAction | SuspendAction | CastAction | CycleAction | AbilityAction | CrewAction | NinjutsuAction | EquipAction | TapAction | NonlandManaAction | ManaAbilityAction | BulkTapAction | AttackAction | BlockAction | MechanicChoice | ReplacementChoice | TriggerChoice | TriggerTargetChoice | OptionalEffectChoice, Field(discriminator="type")]
 
 
 class ActionRequest(InputModel):

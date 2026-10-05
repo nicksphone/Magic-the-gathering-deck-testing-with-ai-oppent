@@ -496,6 +496,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
     from rules_engine.foretell import collect_foretell_triggers
     out.extend(collect_foretell_triggers(state, event, payload))
+    from rules_engine.suspend import collect_triggers as collect_suspend_triggers
+    out.extend(collect_suspend_triggers(state, event, payload))
     if event == 'damage_dealt':
         return out
     if event == 'surveilled':

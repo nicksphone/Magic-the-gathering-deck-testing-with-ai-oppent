@@ -79,6 +79,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if pending['kind'] == 'effect_cast':
             from rules_engine.effect_casts import cast_moves
             return cast_moves(state, player_id)
+        if pending['kind'] == 'suspend_cast':
+            from rules_engine.suspend import cast_moves
+            return cast_moves(state, player_id)
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
         type_lines = {cid: state.cards[cid].type_line or " ".join(effective_types(state, state.cards[cid]))
                       for cid in pending.get("options", []) if cid in state.cards}
@@ -159,11 +162,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                           'card_name': state.cards[cid].name, **ability})
     from rules_engine.keyword_actions import ninjutsu_moves
     from rules_engine.foretell import action_options as foretell_options
+    from rules_engine.suspend import action_options as suspend_options
     for cid in player.hand:
         card = state.cards[cid]
         options = foretell_options(state, player_id, card)
         if options:
             moves.append({'type': 'foretell', 'card_id': cid, 'card_name': card.name, **options})
+        options = suspend_options(state, player_id, card)
+        if options:
+            moves.append({'type': 'suspend', 'card_id': cid, 'card_name': card.name, **options})
     if not split_second_active(state):
         moves.extend(ninjutsu_moves(state, player_id))
 

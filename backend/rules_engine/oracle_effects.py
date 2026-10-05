@@ -87,10 +87,12 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     if not set(getattr(card, "types", []) or []).intersection({"Instant", "Sorcery"}):
         return oracle_text
     from rules_engine.foretell import resolution_text
+    from rules_engine.suspend import PRINTED
     oracle_text = resolution_text(card, oracle_text)
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
+        and not PRINTED.fullmatch(without_reminder_text(line).strip())
         and without_reminder_text(line).strip().lower() not in {'split second', 'delve', 'convoke', 'improvise'}
     )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
@@ -1620,6 +1622,9 @@ def _infer_clause_effect(
             target_player = opponent
         return "deal_damage", {"target_player": target_player, "amount": amount}
 
+    targeted_draw = re.fullmatch(r'target (?:player|opponent) draws (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?', oracle.strip(), re.I)
+    if targeted_draw and target_player is not None:
+        return 'draw_cards', {'target_player': target_player, 'amount': _parse_count_token(targeted_draw[1])}
     each_draw = EACH_PLAYER_DRAW_RE.fullmatch(oracle.strip())
     if each_draw:
         raw = each_draw.group(1)

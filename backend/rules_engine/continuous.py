@@ -489,6 +489,8 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     counter_grants = sorted((int(stamps.get(kind, effect_timestamp(card))), keyword_counter(kind))
                             for kind, amount in (getattr(card, 'counters', {}) or {}).items()
                             if amount > 0 and keyword_counter(kind))
+    if card.suspend_haste and card.suspend_haste['controller'] == card.controller and card.zone in {Zone.STACK, Zone.BATTLEFIELD}:
+        counter_grants.append((card.suspend_haste['timestamp'], 'haste'))
     if not _is_battlefield(card):
         out.update(keyword for _, keyword in counter_grants)
         return dict(sorted(out.items()))
