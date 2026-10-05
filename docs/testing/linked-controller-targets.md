@@ -72,8 +72,8 @@ copy cases plus all eight damage cases pass. Six initial same-object/prevention
 cases failed before coalescing; the family now has fourteen cases including human
 replacement order/resume. An overlapping 306-check selection passes. The frozen
 copy/damage backend gate now passes 7,736 tests in 316 files, each included once;
-601 source/fixture files match all four shards. Its full browser gate is still
-running. Discovery was
+601 source/fixture files match all four shards. Its full browser gate passed,
+including the natural BO3 controller modes. Discovery was
 corrected from 310 top-level files to 316 recursive files before the waiting last
 shard began; no active run was restarted or tested source edited.
 
@@ -125,9 +125,24 @@ Twenty-four new cases failed before this repair. The corrected family and older
 copy/Ward/landfall cases pass an overlapping 188-test selection. An intermediate
 test incorrectly expected Rest for the Weary's ordinary gain to be two rather than
 the canonical four; only that test expectation was corrected, not printed data.
-These latest two runtime-file edits and the new test file are outside the active
-316-file copy/damage frozen gate. They require subsequent full and explicit
-conditional-copy browser acceptance before the candidate can be promoted.
+These latest two runtime-file edits and the new test file were outside the
+316-file copy/damage frozen gate. A subsequent frozen gate now passes 7,760 tests
+in all 317 recursive files, each included exactly once; all 602 backend
+source/fixture files match the current candidate and every shard.
+
+Eight additional Chromium cases use paid canonical Twincast, not direct copy
+effects. Both seats deliberately redirect Groundswell and Rest for the Weary,
+with ordinary and enhanced copy-controller history. Reload preserves the pending
+choice and selected target; the original is unchanged, the mana is spent,
+Twincast is in the graveyard, and only the copied spell resolves to the expected
+effective stats or life total. The test harness includes these cases by default.
+This is focused browser acceptance, not another complete browser run.
+
+A fresh seed/seat-balanced capability matrix is running against this latest
+frozen backend. It replaces four Memory Deluge with four canonical Twincast in
+the previously validated 60-card control exercise. No other card metadata changes,
+no forced hands or target win rate, and no competitive-deck claim. Retained
+decisions and actual copy use require inspection before promotion.
 
 ## Evidence Sources
 

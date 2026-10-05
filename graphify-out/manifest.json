@@ -2104,8 +2104,8 @@
     "hash": "c3698d8ae5e66c5641d9450ea5736df8"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/ui_v2_fixture_server.py": {
-    "mtime": 1791169145.51219,
-    "hash": "90372e6e721733ff9100f194f0f2e018"
+    "mtime": 1791170915.5663245,
+    "hash": "ff384f529a83126037f3762264a26ab4"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-coverage.mjs": {
     "mtime": 1791165013.900309,
@@ -2283,6 +2283,10 @@
     "mtime": 1791165013.904309,
     "hash": "a848807dc0134eff012073c07a9856c3"
   },
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-conditional-copy.mjs": {
+    "mtime": 1791170915.5673244,
+    "hash": "7236593461ba074b4ff61a5c9d8cb12f"
+  },
   "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-v2.mjs": {
     "mtime": 1791165013.905309,
     "hash": "7a24cbb1d9b74fc155907f69c5ae62d7"
@@ -2324,16 +2328,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-linked-landfall/README.md": {
-    "mtime": 1791169729.8859048,
-    "hash": "42b8d36e429360340db7bc6d8bba2fb7"
+    "mtime": 1791170990.7820997,
+    "hash": "edf24ccb3bf7c6b0328bfad3f15c1a03"
   },
   "/home/nick/mtg-linked-landfall/plan.md": {
-    "mtime": 1791170078.3080595,
-    "hash": "f1c61914bd6e713e2267607dfc14d5bd"
+    "mtime": 1791170990.7840998,
+    "hash": "86ac17153e69b03cc3ab98652159f494"
   },
   "/home/nick/mtg-linked-landfall/CHANGELOG.md": {
-    "mtime": 1791170078.3090594,
-    "hash": "2943ca1ceb292c48a60d3d3a2e0f3678"
+    "mtime": 1791170990.7870996,
+    "hash": "c90ac65ca3e96cab3263d104f9f89f5f"
   },
   "/home/nick/mtg-linked-landfall/backend/requirements.txt": {
     "mtime": 1791165013.82831,
@@ -2576,8 +2580,8 @@
     "hash": "4d49cb00ed182eb61f3f8f978eac875d"
   },
   "/home/nick/mtg-linked-landfall/docs/testing/linked-controller-targets.md": {
-    "mtime": 1791170078.3070595,
-    "hash": "e2a81c4a3284ad774d4a3e24da72432e"
+    "mtime": 1791170990.7850997,
+    "hash": "4f24c08ac297f287fdefc72c9744a327"
   },
   "/home/nick/mtg-linked-landfall/docs/testing/human-actions-browser.md": {
     "mtime": 1791165013.8813095,

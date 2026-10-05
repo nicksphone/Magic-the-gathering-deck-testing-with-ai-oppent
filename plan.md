@@ -12,14 +12,18 @@
   modes. Paired-copy choices and simultaneous same-object damage are now
   implemented: 306 overlapping backend checks and twelve focused browser cases
   pass. The frozen full backend gate passes 7,736 tests in all 316 recursive files;
-  its full browser gate remains running. Departed planeswalker
+  its full browser gate passed. Departed planeswalker
   LKI, broader protection corners and latest-source match acceptance remain open.
 
 - [ ] Complete conditional-copy acceptance after repairing stale branch recipients
   and branch-aware AI targeting. Twenty-four new canonical cases fail before and
   an overlapping 188-check selection passes after correction. Latest conditional
-  edits are outside the 316-file frozen copy/damage gate; add explicit paid human
-  browser cases and a current-source full gate, then retained natural copy games.
+  edits pass a subsequent 7,760-test full gate in all 317 recursive files, with
+  602 backend source/fixture files identical across candidate and four shards.
+  Eight paid human browser cases pass both seats and ordinary/enhanced branches,
+  including deliberate retarget, reload, untouched original and copy resolution.
+  Current-source retained natural copy games are running; their actual card use
+  and strict reconstruction still require review.
   The earlier four-game matrix has 2,217 logical decisions, eight matching strict
   reconstructions and actual casts of all four landfall families; it is not
   evidence of these subsequent copy repairs or competitive balance.

@@ -6,7 +6,11 @@ resolution. It is not deployed to the live root. Focused replacement, snapshot
 and copy checks pass. The pre-copy backend passes 7,688 tests; linked damage has
 typed human controls verified for both seats in eight focused browser cases.
 Independent paired-copy choices and single-source simultaneous damage aggregation
-now pass focused backend/browser gates; their full gates are running separately.
+pass the full 7,760-test backend gate in 317 files, with all 602 backend
+source/fixture files equal to the tested candidate. The preceding full browser
+gate passed; eight additional paid conditional-copy browser cases now verify
+both seats, ordinary/enhanced effects, retargeting, reload and actual resolution.
+Fresh current-source copy capability games are running separately.
 Departed-planeswalker dependency, broader protection corners, latest-source match
 acceptance and deeper AI planning remain open. See
 [landfall scope](docs/testing/land-entry-history.md) and

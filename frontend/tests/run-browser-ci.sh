@@ -91,6 +91,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && timeout 120s node tests/browser-ordered-copy.mjs)
 (cd frontend && timeout 180s node tests/browser-linked-damage.mjs)
 (cd frontend && timeout 120s node tests/browser-linked-copy.mjs)
+(cd frontend && timeout 180s node tests/browser-conditional-copy.mjs)
 echo 'Browser CI: simulation preflight'
 (cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: canonical combat coverage preflight'

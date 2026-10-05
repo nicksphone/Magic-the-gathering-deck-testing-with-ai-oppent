@@ -2,6 +2,12 @@
 
 ## Unreleased Candidate - Land-entry history and conditional alternatives
 
+- Verify the current conditional-copy backend: 7,760 tests in 317 recursive files,
+  exactly once, and 602 source/fixture files identical to every shard. Eight new
+  paid Chromium cases cover both seats, ordinary/enhanced pump and life branches,
+  deliberate retarget, reload and actual copy-only resolution. The prior full
+  browser gate passed; current-source natural copy games remain in progress.
+
 - Repair conditional spell copies whose announcement changed but effect branches
   retained old targets. AI values the current known branch instead of retaining
   harmful copied pumps/life gain. Twenty-four new regression cases fail before;
