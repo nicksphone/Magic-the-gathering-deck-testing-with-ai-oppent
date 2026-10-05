@@ -11,6 +11,10 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Stop human-game automatic ticks and stale actions after an authoritative
+  winner, with a visible result/series banner. Preserve manual between-game
+  choices and AI-series continuation; mocked actual-App browser, lint/build and
+  frontend tests pass. Do not infer losses solely from a life counter.
 - [x] Human Attack All declares ordinary eligible attacks directly; separate
   Select all preserves selection-only behavior. Costs, alternate defenders and
   bands require deliberate review/confirmation. Fifteen isolated browser cases

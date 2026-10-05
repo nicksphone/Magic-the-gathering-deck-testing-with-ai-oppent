@@ -25,7 +25,7 @@ Object.assign(window, { attackEvidence: { writes, state, move } });
 localStorage.removeItem('mtg.pendingStart');
 localStorage.setItem('mtg.activeMatch', state.id);
 window.fetch = async (input, init) => {
-  const path = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url, location.origin).pathname;
+  const path = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url, location.origin).pathname.replace(/^\/api(?=\/)/, '');
   let body: unknown = [];
   if (init?.method === 'POST') {
     writes.push({ path, body: JSON.parse(String(init.body || '{}')) });
@@ -37,7 +37,7 @@ window.fetch = async (input, init) => {
     moves: state.step === 'declare_attackers' ? [move, ...(kind === 'restriction' ? [{ type: 'attack_restricted', card_id: 'sick', reason: 'Summoning sickness' }] : [])] : [] };
   else if (path.endsWith(`/matches/${state.id}`)) body = state;
   else if (path.endsWith('/health')) body = { ok: true };
-  else if (!['/api/decks', '/api/decks/builtin', '/api/decks/expansion-top', '/api/matches'].includes(path)) {
+  else if (!['/decks', '/decks/builtin', '/decks/expansion-top', '/matches'].includes(path)) {
     return new Response(JSON.stringify({ detail: 'Not needed by attack fixture' }), { status: 503 });
   }
   return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });

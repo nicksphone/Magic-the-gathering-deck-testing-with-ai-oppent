@@ -453,10 +453,10 @@ export function Controls(props: Props) {
           disabled={!props.match || props.match.winner !== null || replacementPaused || triggerOrderPaused || mechanicPaused || (currentController === "human" && !props.legalMoves.some(move => move.type === "pass_priority"))}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || props.match.winner != null || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || props.match.winner != null || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
           AI Step x30
         </button>
       </div>

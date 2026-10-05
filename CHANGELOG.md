@@ -1,5 +1,12 @@
 # Changelog
 
+## Stopped Human Games - 2026-10-05
+
+- Show a prominent game result and series score when the engine declares a
+  winner; clear stale actions and stop human-game automatic ticks/countdowns.
+- Preserve manual best-of-three sideboarding and play/draw choice, and automatic
+  AI-series continuation. Negative life alone is not used to declare a winner.
+
 ## Human Attack All Declaration - 2026-10-05
 
 - Make Attack all eligible declare ordinary attacks directly; keep Select all

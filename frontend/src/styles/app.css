@@ -1,6 +1,10 @@
 @import "./table.css";
 @import "./competitive.css";
 
+.game-result { border: 2px solid var(--gold); background: var(--panel); padding: clamp(1rem, 3vw, 2rem); margin-bottom: 1rem; }
+.game-result h2 { margin: .5rem 0; }
+.game-ended #table *, .game-ended #table *::before, .game-ended #table *::after { animation: none !important; transition: none !important; }
+
 /* Existing feature-specific surfaces remain below the table theme. */
 @layer legacy {
 :root {

@@ -14,6 +14,8 @@ for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 Attack all eligible declares ordinary attacks directly. Select all only selects;
 attack costs, alternate defenders and bands require review and Submit Attackers.
 Blocking, responses and damage still follow the normal combat windows.
+An engine-declared game result stops human gameplay and displays the winner and
+series score; between-game sideboarding and next-game choices remain available.
 
 Main includes qualified resource payments/events, bounded AI resource opportunity
 and instant-window reservation, ordinary/limited graveyard permissions, announced

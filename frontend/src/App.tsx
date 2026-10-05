@@ -13,6 +13,10 @@ import { emptyCombatDraft } from "./components/combat-selection";
 const PENDING_START_KEY = "mtg.pendingStart";
 type PendingStart = { key: string; payload: StartMatchPayload };
 
+function isAiSeries(state: MatchState) {
+  return state.mode === "ai_vs_ai" || (state.controllers?.["1"] === "ai" && state.controllers?.["2"] === "ai");
+}
+
 function readPendingStart(): PendingStart | null {
   try {
     const raw = localStorage.getItem(PENDING_START_KEY);
@@ -75,16 +79,16 @@ export function App() {
     currentMatch.current = data;
     setMatch(data);
     setLegalPlayerId(legal.player_id);
-    setLegalMoves(legal.moves);
-    setCanAutoPass(legal.can_auto_pass === true);
+    setLegalMoves(data.winner != null ? [] : legal.moves);
+    setCanAutoPass(data.winner == null && legal.can_auto_pass === true);
     setMode(data.mode ?? "player_vs_ai");
     try { localStorage.setItem("mtg.activeMatch", data.id); } catch { /* Storage may be disabled. */ }
   }, []);
 
-  const mutateMatch = useCallback(async (operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>) => {
+  const mutateMatch = useCallback(async (operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>, allowBetweenGames = false) => {
     await gate.current.run(async () => {
       const state = currentMatch.current;
-      if (!state || restoring) return;
+      if (!state || restoring || state.match_complete || (state.winner != null && !allowBetweenGames)) return;
       setMutationPending(true);
       setLegalMoves([]);
       setCanAutoPass(false);
@@ -133,8 +137,8 @@ export function App() {
           if (legal.revision !== undefined && legal.revision !== data.revision) throw new Error("Saved match changed during restore. Resume it again.");
           currentMatch.current = data;
           setMatch(data); setMode(data.mode ?? "player_vs_ai");
-          setLegalPlayerId(legal.player_id); setLegalMoves(legal.moves);
-          setCanAutoPass(legal.can_auto_pass === true);
+          setLegalPlayerId(legal.player_id); setLegalMoves(data.winner != null ? [] : legal.moves);
+          setCanAutoPass(data.winner == null && legal.can_auto_pass === true);
           setAutoProgressPaused(true);
           if (pendingMatch) {
             try { localStorage.setItem("mtg.activeMatch", id); } catch { /* Optional persistence. */ }
@@ -239,7 +243,8 @@ export function App() {
   }
 
   const autoplayTick = useCallback(async (ticks: number) => {
-    await mutateMatch((state, write) => api.autoplay(state.id, ticks, write));
+    await mutateMatch((state, write) => state.winner != null && !isAiSeries(state)
+      ? Promise.resolve(state) : api.autoplay(state.id, ticks, write), true);
   }, [mutateMatch]);
 
   async function onCardAction(playerId: number, action: Record<string, unknown>) {
@@ -296,7 +301,7 @@ export function App() {
   }
 
   async function onApplySideboard(playerId: number, outCards: DeckItem[], inCards: DeckItem[]) {
-    await mutateMatch((state, write) => api.sideboard(state.id, playerId, outCards, inCards, write));
+    await mutateMatch((state, write) => api.sideboard(state.id, playerId, outCards, inCards, write), true);
   }
 
   async function onNextGame(playFirst?: boolean) {
@@ -305,7 +310,7 @@ export function App() {
       const choice = chooser && state.controllers?.[String(chooser)] === "human" && playFirst !== undefined
         ? { player_id: chooser, play_first: playFirst } : null;
       return api.nextGame(state.id, choice, write);
-    });
+    }, true);
   }
 
   async function onSetPriorityStops(playerId: number, stops: string[]) {
@@ -320,7 +325,8 @@ export function App() {
     const uiAiVsAi = match.mode === "ai_vs_ai";
     const actingPlayer = legalPlayerId;
     const actingController = controllers[String(actingPlayer)] ?? (uiAiVsAi ? "ai" : "human");
-    const bothAi = ((controllers["1"] ?? "human") === "ai" && (controllers["2"] ?? "human") === "ai") || uiAiVsAi;
+    const bothAi = isAiSeries(match);
+    if (match.winner != null && !bothAi) return;
     const emptyHumanWindow = match.mode === "player_vs_ai" && canAutoPass && match.winner === null;
     const shouldAutoRun = actingController === "ai" || emptyHumanWindow || (bothAi && match.winner !== null && !match.match_complete);
     if (!shouldAutoRun) return;
@@ -350,6 +356,7 @@ export function App() {
     && !!match
     && !match.pregame_pending
     && !match.match_complete
+    && match.winner == null
     && legalPlayerId === 1
     && (match.stack?.length ?? 0) > 0
     && legalMoves.some((move) => move.type === "pass_priority")
@@ -402,7 +409,7 @@ export function App() {
   }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, passPriority]);
 
   return (
-    <main className={`layout ${match ? "workspace-match" : "workspace-lobby"}`}>
+    <main className={`layout ${match ? "workspace-match" : "workspace-lobby"}${match?.winner != null ? " game-ended" : ""}`}>
       <header className="topbar">
         <h1>MTG Deck Testing Lab</h1>
         <p>THE PLAYTEST TABLE · Two seats. Real decisions.</p>
@@ -421,7 +428,7 @@ export function App() {
       <nav className="table-navigation" aria-label="Workspace">
         <a href="#table">{match ? "01 / Table" : "01 / Play"}</a><a href="#match-controls">{match ? "02 / Actions & choices" : "02 / Matchup"}{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools" aria-expanded={labOpen} onClick={() => setLabOpen(true)}>03 / Decks & lab</a>
         {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
-        {match ? <button disabled={mutationPending || restoring} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
+        {match ? <button disabled={mutationPending || restoring || !!match.match_complete || (match.winner != null && !isAiSeries(match))} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
         {mutationPending ? <span role="status">Match operation pending...</span> : null}
       </nav>
       <section className="lab-tools" id="lab-tools" aria-label="Lab tools" hidden={!labOpen}>
@@ -440,7 +447,7 @@ export function App() {
         <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
-        {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
+        {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
         {match ? <StackLog match={match} /> : null}
         <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
@@ -489,7 +496,14 @@ export function App() {
       <section className="right-column" id="table" aria-label="Card table">
         {match ? (
           <>
-            <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+            {match.winner != null ? <section className="game-result" role="status" aria-label="Game result">
+              <span className="eyebrow">{match.match_complete ? "Series complete" : "Between games"}</span>
+              <h2>Game {match.game_number ?? 1} over: {match.winner === 0 ? "Draw" : `P${match.winner} wins`}</h2>
+              <p>Series score: P1 {match.score["1"] ?? 0} - {match.score["2"] ?? 0} P2 · Best of {match.best_of ?? 3}.</p>
+              <p>{match.match_complete ? "The series is finished." : isAiSeries(match) ? "AI series continues when automatic play is running." : "Game actions are stopped. Sideboard and choose the next game when ready."}</p>
+              {!match.match_complete ? <a href="#match-controls">Sideboard & next game</a> : null}
+            </section> : null}
+            <fieldset disabled={mutationPending || restoring || match.winner != null} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} combatDraft={combatDraft} onCombatDraftChange={setCombatDraft} />
             </fieldset>
           </>
