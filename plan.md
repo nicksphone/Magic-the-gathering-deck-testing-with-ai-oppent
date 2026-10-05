@@ -11,6 +11,11 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Human Attack All declares ordinary eligible attacks directly; separate
+  Select all preserves selection-only behavior. Costs, alternate defenders and
+  bands require deliberate review/confirmation. Fifteen isolated browser cases
+  and captured-payload engine replay cover both seats and duplicate clicks;
+  frontend lint/build/tests pass. Live-game AI racing remains under review.
 - [x] Correct autoplay's thirty-second client deadline mismatch: ten-minute
   bounded ceiling, unchanged ordinary deadlines/write coordination; actual-client
   test, frontend unit/lint/build pass. Reject a more complex score-key encoder

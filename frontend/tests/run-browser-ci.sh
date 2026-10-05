@@ -91,6 +91,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && timeout 300s node tests/browser-announced-color-costs.mjs)
 (cd frontend && timeout 300s node tests/browser-opaque-selection.mjs)
 (cd frontend && timeout 180s node tests/browser-direct-combat.mjs)
+(cd frontend && MTG_TEST_PYTHON="$python_bin" MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 timeout 180s node tests/browser-attack-all.mjs)
 (cd frontend && timeout 120s node tests/browser-auto-progress.mjs)
 (cd frontend && timeout 180s node tests/browser-activation-payments.mjs)
 (cd frontend && timeout 120s node tests/browser-joint-activation-payments.mjs)

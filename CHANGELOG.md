@@ -1,5 +1,13 @@
 # Changelog
 
+## Human Attack All Declaration - 2026-10-05
+
+- Make Attack all eligible declare ordinary attacks directly; keep Select all
+  selection-only. Costs, chosen alternate defenders and bands require review
+  and explicit confirmation instead of silently spending resources.
+- Add both-seat browser coverage and isolated engine replay, including stale
+  draft selection, ineligible creatures and duplicate-click prevention.
+
 ## Autoplay Deadline And Rejected Key Prototype - 2026-10-05
 
 - Give autoplay the existing bounded long-request timeout rather than the

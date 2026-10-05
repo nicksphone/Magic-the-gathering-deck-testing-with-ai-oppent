@@ -2232,8 +2232,8 @@
     "hash": "cd6e1549750960d6596c03e80d1f5767"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/Controls.tsx": {
-    "mtime": 1791195264.91208,
-    "hash": "74e23561859046b6fc30f59e87fd029d"
+    "mtime": 1791222653.632449,
+    "hash": "ae34012412ff2fd3cabcfb2cec3508fd"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/components/PermanentActions.tsx": {
     "mtime": 1791183042.5041091,
@@ -2431,6 +2431,10 @@
     "mtime": 1791123528.2207546,
     "hash": "e017412972304f6945a656d8fb2a2d54"
   },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/attack-all-engine.py": {
+    "mtime": 1791222653.633449,
+    "hash": "eff5a921898235788bf619fefd0d8a02"
+  },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-announced-color-costs.mjs": {
     "mtime": 1791213613.9036899,
     "hash": "33fa83e429819fe2be301b40455aac50"
@@ -2491,6 +2495,10 @@
     "mtime": 1791153909.1954842,
     "hash": "7bbfd3c61f6ecde3acc58cc6ea381d8d"
   },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/attack-all.tsx": {
+    "mtime": 1791222653.639449,
+    "hash": "c33573f094ec9dd7b1dd5cf6dc3291a6"
+  },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/ui_fixture_server.py": {
     "mtime": 1791195264.91808,
     "hash": "1fe9c92c75622ad331de827d9b21e130"
@@ -2518,6 +2526,10 @@
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-surveil.mjs": {
     "mtime": 1791153909.2094839,
     "hash": "fc0654533f5ef6c3261e7d6fa1bb5d65"
+  },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-attack-all.mjs": {
+    "mtime": 1791222653.642449,
+    "hash": "1ca854048f8cc713a4ea2c783ccf9c08"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-mana-abilities.mjs": {
     "mtime": 1791153909.1894844,
@@ -2636,16 +2648,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791219278.1243477,
-    "hash": "9dfac95cd0a85c67ecdcbf9339f9d73a"
+    "mtime": 1791222653.7014482,
+    "hash": "5a2abf163ab5b294820c37047c51d33c"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791219278.1263475,
-    "hash": "e500c2c574f301b32a53e5bca7e39f45"
+    "mtime": 1791222684.8720734,
+    "hash": "5051684d3aed13a568e28b5b67edc40d"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791219278.1283476,
-    "hash": "ad7bbc9a5ff31f4538d8fde83a88a6b5"
+    "mtime": 1791222653.7004483,
+    "hash": "d0b9fa5ec95c36a478d1390252c22f48"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -3318,6 +3330,10 @@
   "/home/nick/mtg-deck-testing-lab/frontend/index.html": {
     "mtime": 1777063134.7080612,
     "hash": "1250802d02c62a61931a320dbaf1d1b1"
+  },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/attack-all.html": {
+    "mtime": 1791222653.6364489,
+    "hash": "55b0e722957314d2d7f769e3f62a7d8d"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/human-actions.html": {
     "mtime": 1790539201.41667,

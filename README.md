@@ -11,6 +11,10 @@ for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 
 ## Implementation Status
 
+Attack all eligible declares ordinary attacks directly. Select all only selects;
+attack costs, alternate defenders and bands require review and Submit Attackers.
+Blocking, responses and damage still follow the normal combat windows.
+
 Main includes qualified resource payments/events, bounded AI resource opportunity
 and instant-window reservation, ordinary/limited graveyard permissions, announced
 prototype/bestow checks and fixed color/type cost modifiers. The consolidated

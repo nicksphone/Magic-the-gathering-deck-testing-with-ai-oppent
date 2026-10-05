@@ -117,6 +117,7 @@ export function Controls(props: Props) {
   const [localExcludedAttackers, setExcludedAttackers] = useState<string[]>([]);
   const excludedAttackers = props.combatDraft ? (attackMove?.options ?? []).filter(id => !props.combatDraft?.attackers.includes(id)) : localExcludedAttackers;
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
+  const [attackReviewRequired, setAttackReviewRequired] = useState(false);
   const selectedAttackers = (attackMove?.options ?? []).filter(id => !excludedAttackers.includes(id));
   const attackNeedsPayment = selectedAttackers.some(id => {
     const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
@@ -134,6 +135,7 @@ export function Controls(props: Props) {
     setAttackPaymentChoices({});
     setExcludedAttackers([]);
     setAttackBandNumbers({});
+    setAttackReviewRequired(false);
   }, [props.match?.id, props.match?.game_number, props.match?.turn, props.match?.step]);
   const [sbPlayer, setSbPlayer] = useState(1);
   const [sbOut, setSbOut] = useState("");
@@ -559,8 +561,34 @@ export function Controls(props: Props) {
         }}>
           <h3>Declare Attackers</h3>
           <p>{props.combatDraft ? "Click creatures on the battlefield to select them. Drag an eligible attacker onto another to form a legal band. Confirm when ready." : "Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without."}</p>
-          {props.onCombatDraftChange ? <div className="row"><button type="button" onClick={() => props.onCombatDraftChange?.(draft => selectAttackers(draft, attackMove.options ?? []))}>Attack all eligible</button><button type="button" onClick={() => props.onCombatDraftChange?.(draft => selectAttackers(draft, []))}>Clear attackers</button><button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, bands: [] }))}>Separate bands</button></div> : null}
-          <details open={!props.combatDraft || selectedAttackers.some(id => attackMove.attack_costs?.[id]?.[attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`]?.mana_cost) ? true : undefined}>
+          <div className="row">
+            <button type="button" disabled={!attackMove.options?.length} onClick={() => {
+              const eligible = attackMove.options ?? [];
+              const defaultDefender = `player:${3 - (props.match?.active_player ?? 1)}`;
+              const needsReview = Object.values(attackMove.attack_costs ?? {}).some(costs => Object.keys(costs).length > 0)
+                || eligible.some(id => attackTargets[id] && attackTargets[id] !== defaultDefender)
+                || (props.combatDraft?.bands.some(band => band.filter(id => eligible.includes(id)).length > 1) ?? eligible.some(id => (attackBandNumbers[id] ?? 0) > 0));
+              if (needsReview) {
+                if (props.onCombatDraftChange) props.onCombatDraftChange(draft => selectAttackers(draft, eligible));
+                else setExcludedAttackers([]);
+                setAttackReviewRequired(true);
+                return;
+              }
+              // Submit this snapshot, not the asynchronously updated selection draft.
+              props.onSubmitAttack(eligible, {}, []);
+            }}>Attack all eligible</button>
+            <button type="button" onClick={() => {
+              if (props.onCombatDraftChange) props.onCombatDraftChange(draft => selectAttackers(draft, attackMove.options ?? []));
+              else setExcludedAttackers([]);
+            }}>Select all</button>
+            <button type="button" onClick={() => {
+              if (props.onCombatDraftChange) props.onCombatDraftChange(draft => selectAttackers(draft, []));
+              else setExcludedAttackers(attackMove.options ?? []);
+            }}>Clear attackers</button>
+            {props.onCombatDraftChange ? <button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, bands: [] }))}>Separate bands</button> : null}
+          </div>
+          {attackReviewRequired ? <p role="status">All eligible attackers selected. Review defenders, bands and attack costs, choose any required payments, then click Submit Attackers to confirm. No attack has been declared.</p> : null}
+          <details open={attackReviewRequired || !props.combatDraft || selectedAttackers.some(id => attackMove.attack_costs?.[id]?.[attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`]?.mana_cost) ? true : undefined}>
           <summary>Advanced attackers, defenders and payments</summary>
           {(attackMove.options ?? []).map((attackerId) => {
             const defender = attackTargets[attackerId] || `player:${3 - (props.match?.active_player ?? 1)}`;
