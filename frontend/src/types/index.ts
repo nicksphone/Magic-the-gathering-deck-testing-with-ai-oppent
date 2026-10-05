@@ -1,5 +1,17 @@
 export type DeckItem = { quantity: number; card_name: string };
 
+export type ConvokeColor = 'generic' | 'W' | 'U' | 'B' | 'R' | 'G';
+export type ResourcePaymentChoice = {
+  delve: string[];
+  convoke: { card_id: string; pay_as: ConvokeColor }[];
+  improvise: string[];
+};
+export type ResourceCandidates = {
+  delve: string[];
+  convoke: { card_id: string; pay_as: ConvokeColor[] }[];
+  improvise: string[];
+};
+
 export type DeckRecord = {
   id: number;
   name: string;
@@ -175,6 +187,7 @@ export type LegalMove = {
   block_costs?: Record<string, { mana_cost: string; hybrid_symbols: { symbol: string; choices: string[] }[] }>;
   x_value?: number;
   cost_options?: {
+    resource_payment_candidates?: ResourceCandidates;
     id: string;
     additional_cost_group?: string | null;
     kicked?: boolean;

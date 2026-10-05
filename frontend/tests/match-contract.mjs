@@ -206,3 +206,16 @@ for (const value of [{...combat,legal_blocks:{b:['outsider']}}, {...combat,legal
 }
 assert.deepEqual(parseLegalMoves(packet({type:'attack',options:['hero'],banding_attackers:['hero']})).moves[0].banding_attackers, ['hero']);
 console.log('PASS authoritative banding, blocker-target and finite/unlimited capacity contracts');
+
+const resources = {delve: ['grave'], improvise: ['artifact'], convoke: [{card_id: 'creature', pay_as: ['generic', 'G']}]};
+const resourcePacket = value => ({...legal, moves: [{type: 'cast_spell', cost_options: [{...castCosts, resource_payment_candidates: value}]}]});
+assert.equal(parseLegalMoves(resourcePacket(resources)).moves.length, 1);
+for (const invalid of [{...resources, delve: ['grave', 'grave']}, {...resources, improvise: [2]},
+  {...resources, convoke: [{card_id: 'creature', pay_as: ['C']}]},
+  {...resources, convoke: [{card_id: 'creature', pay_as: ['S']}]},
+  {...resources, convoke: [{card_id: 'creature', pay_as: []}]},
+  {...resources, convoke: [{card_id: 'creature', pay_as: ['G', 'G']}]},
+  {...resources, convoke: [...resources.convoke, ...resources.convoke]}]) {
+  assert.throws(() => parseLegalMoves(resourcePacket(invalid)), /legal-moves response/);
+}
+console.log('PASS non-mana casting resource candidates and colored/generic-only convoke contracts');

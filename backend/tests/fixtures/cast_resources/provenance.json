@@ -1,0 +1,123 @@
+{
+  "source": "https://api.scryfall.com/cards/collection",
+  "retrieved_at": "2026-10-05T12:15:33.888Z",
+  "sha256": "6c9deba3541b9033aca090ead1564cdb3b671570a3b4ba96cbf7540a1e01f17d",
+  "cards": [
+    {
+      "name": "Dig Through Time",
+      "id": "020939d6-72f0-4aa0-9ac2-d16cc896cd7f",
+      "oracle_id": "f8b17b89-26ce-4208-874a-9e1d66514640",
+      "rulings_uri": "https://api.scryfall.com/cards/020939d6-72f0-4aa0-9ac2-d16cc896cd7f/rulings"
+    },
+    {
+      "name": "Treasure Cruise",
+      "id": "42c45880-15c7-4259-8066-c04d031d8216",
+      "oracle_id": "5b6bdf5a-2742-4851-92cd-a857a3852836",
+      "rulings_uri": "https://api.scryfall.com/cards/42c45880-15c7-4259-8066-c04d031d8216/rulings"
+    },
+    {
+      "name": "Hooting Mandrills",
+      "id": "6dfbd094-1d59-4539-80e1-595227d3e64d",
+      "oracle_id": "70e35385-6129-4bd1-861c-df04469566b7",
+      "rulings_uri": "https://api.scryfall.com/cards/6dfbd094-1d59-4539-80e1-595227d3e64d/rulings"
+    },
+    {
+      "name": "Siege Wurm",
+      "id": "19c55fc1-11e5-4e67-ba49-604f5b574c2d",
+      "oracle_id": "8a802eae-abfb-47fd-8458-1689055531ef",
+      "rulings_uri": "https://api.scryfall.com/cards/19c55fc1-11e5-4e67-ba49-604f5b574c2d/rulings"
+    },
+    {
+      "name": "March of the Multitudes",
+      "id": "65c7067d-61ec-4558-b0d4-0048d2d86743",
+      "oracle_id": "0c26ab0d-80f6-4e5b-9d0e-af17c1519583",
+      "rulings_uri": "https://api.scryfall.com/cards/65c7067d-61ec-4558-b0d4-0048d2d86743/rulings"
+    },
+    {
+      "name": "Chord of Calling",
+      "id": "b18fe7e0-8344-40cc-b242-83f01c6be7a6",
+      "oracle_id": "6789a170-f2c5-4fc0-8a45-2b2361e67410",
+      "rulings_uri": "https://api.scryfall.com/cards/b18fe7e0-8344-40cc-b242-83f01c6be7a6/rulings"
+    },
+    {
+      "name": "Metallic Rebuke",
+      "id": "34785944-7b51-48a9-855c-3e656cd78251",
+      "oracle_id": "c4920e95-a6fc-4373-a0d6-244f51851364",
+      "rulings_uri": "https://api.scryfall.com/cards/34785944-7b51-48a9-855c-3e656cd78251/rulings"
+    },
+    {
+      "name": "Reverse Engineer",
+      "id": "07fff0a3-1315-42f7-9d36-4f5eaad0c62e",
+      "oracle_id": "f56596be-e12f-4ab6-af61-3ef8dc87134c",
+      "rulings_uri": "https://api.scryfall.com/cards/07fff0a3-1315-42f7-9d36-4f5eaad0c62e/rulings"
+    },
+    {
+      "name": "Herald of Anguish",
+      "id": "31a69ebe-4229-4067-8414-381b123fe63c",
+      "oracle_id": "97b559fe-b09d-4883-9509-c45ace2d8487",
+      "rulings_uri": "https://api.scryfall.com/cards/31a69ebe-4229-4067-8414-381b123fe63c/rulings"
+    },
+    {
+      "name": "Llanowar Elves",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "rulings_uri": "https://api.scryfall.com/cards/6a0b230b-d391-4998-a3f7-7b158a0ec2cd/rulings"
+    },
+    {
+      "name": "Ornithopter",
+      "id": "305078a5-ac18-4721-bba2-3434eba5b1cf",
+      "oracle_id": "a3a98bc9-caa0-49b7-951c-fe4e4f54e4ba",
+      "rulings_uri": "https://api.scryfall.com/cards/305078a5-ac18-4721-bba2-3434eba5b1cf/rulings"
+    },
+    {
+      "name": "Sol Ring",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "rulings_uri": "https://api.scryfall.com/cards/8ee443cc-e17a-493b-9c93-1f9e141a30e4/rulings"
+    },
+    {
+      "name": "Shambling Vent",
+      "id": "1f5bf05a-04a1-4dde-845b-eced21a785fa",
+      "oracle_id": "4725abd4-06bc-464a-bc5b-c9e0f71ec079",
+      "rulings_uri": "https://api.scryfall.com/cards/1f5bf05a-04a1-4dde-845b-eced21a785fa/rulings"
+    },
+    {
+      "name": "Cranial Plating",
+      "id": "e1375f17-bc25-4a65-98b7-4785bbdbe974",
+      "oracle_id": "75564721-e4e9-463a-b49e-f0c7cd6f53a7",
+      "rulings_uri": "https://api.scryfall.com/cards/e1375f17-bc25-4a65-98b7-4785bbdbe974/rulings"
+    },
+    {
+      "name": "Dryad Arbor",
+      "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+      "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+      "rulings_uri": "https://api.scryfall.com/cards/e3ddbebf-72cd-4d1b-ba0d-d94934654ab7/rulings"
+    },
+    {
+      "name": "Kitchen Finks",
+      "id": "a844d537-df73-422d-a154-f1c6b92d0469",
+      "oracle_id": "5470dcfa-4eff-43da-abf7-19922841f719",
+      "rulings_uri": "https://api.scryfall.com/cards/a844d537-df73-422d-a154-f1c6b92d0469/rulings"
+    },
+    {
+      "name": "Hogaak, Arisen Necropolis",
+      "id": "0049e68d-0caf-474f-9523-dad343f1250a",
+      "oracle_id": "97acd977-164d-49d5-b3a1-72e0d75c9016",
+      "rulings_uri": "https://api.scryfall.com/cards/0049e68d-0caf-474f-9523-dad343f1250a/rulings"
+    },
+    {
+      "name": "Emmara, Soul of the Accord",
+      "id": "41b930ee-e16b-4612-87de-c03ecc6ff6db",
+      "oracle_id": "c65ba242-3369-48a9-864f-1b1f85238f67",
+      "rulings_uri": "https://api.scryfall.com/cards/41b930ee-e16b-4612-87de-c03ecc6ff6db/rulings"
+    },
+    {
+      "name": "Tormod, the Desecrator",
+      "id": "89903d5e-241f-477e-a336-2abe0232c04a",
+      "oracle_id": "6dc0150d-7145-41e2-bd3d-2564d9d32301",
+      "rulings_uri": "https://api.scryfall.com/cards/89903d5e-241f-477e-a336-2abe0232c04a/rulings"
+    }
+  ],
+  "rules": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260619.pdf",
+  "scope": "Unaltered Scryfall collection response; constructed payment positions, not competitive deck changes"
+}

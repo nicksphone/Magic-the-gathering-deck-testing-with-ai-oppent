@@ -2,6 +2,13 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify the casting-resource candidate: shared ordinary delve/convoke/
+  improvise witnesses, strict API, deliberate both-seat UI, 439 expanded checks
+  and six new browser flows pass. Complete frozen gates, event-aware tapping and
+  graveyard departure, ordered compound costs, granted keyword/color fidelity
+  and tactical AI choices remain open. See
+  [acceptance](docs/testing/cast-resource-payments.md).
+
 - [ ] Qualify the offline private decision comparator and integrate it into
   natural replay review. Twenty targeted cases pass; preserve unequal-length
   prefix analysis, strict provenance, private output and explicit exceptions.
@@ -18,8 +25,9 @@
 - [ ] Implement casting-resource mechanics (delve, convoke and improvise),
   including deliberate human/AI resources, generic-only substitution, legal
   combinations with other costs, no double-spend and durable atomic rejection.
-  Current source has no payment implementations for these keyword families;
-  fully paid Dig Through Time resolution is not evidence of delve payment.
+  The isolated candidate now implements ordinary payment paths; full acceptance
+  remains open and main has not changed. Fully paid Dig Through Time resolution
+  alone is not evidence of delve payment.
 
 - [ ] Qualify the measured mana-multiplier query prefilter. Canonical selections
   and one recorded decision's action/state parity pass. Complete frozen gates

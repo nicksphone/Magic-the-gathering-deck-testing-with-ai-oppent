@@ -50,6 +50,9 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
     if state is not None:
         from rules_engine.kicker import kicker_surfaces
         card = state.cards[card_id]
+        from rules_engine.casting_resources import resource_keywords, resource_candidates
+        if resource_keywords(card):
+            view['resource_payment_candidates'] = resource_candidates(state, player_id, card)
         if kicker_surfaces(card.oracle_text) or '{X}' in option.mana_cost.upper():
             from rules_engine.cast_choice import build_cost_cast_hints
             view['target_hints'] = build_cost_cast_hints(state, card, player_id, option)

@@ -5,6 +5,17 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function resourceCandidates(value: unknown): boolean {
+  if (!record(value)) return false;
+  const ids = (items: unknown): items is string[] => Array.isArray(items)
+    && items.every(id => typeof id === 'string' && id.length > 0) && new Set(items).size === items.length;
+  return ids(value.delve) && ids(value.improvise) && Array.isArray(value.convoke)
+    && value.convoke.every(row => record(row) && typeof row.card_id === 'string' && row.card_id.length > 0
+      && ids(row.pay_as) && row.pay_as.length > 0
+      && row.pay_as.every(color => color === 'generic' || /^[WUBRG]$/.test(color)))
+    && new Set(value.convoke.map(row => row.card_id)).size === value.convoke.length;
+}
+
 function card(value: unknown): boolean {
   return record(value)
     && typeof value.id === "string"
@@ -207,6 +218,7 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && ['discard_x', 'discard_all', 'sacrifice_all'].every(key => option[key] === undefined || typeof option[key] === 'boolean')
         && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
         && (option.target_hints === undefined || targetHints(option.target_hints))
+        && (option.resource_payment_candidates === undefined || resourceCandidates(option.resource_payment_candidates))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
         && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
           (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')

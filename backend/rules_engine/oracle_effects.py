@@ -91,7 +91,7 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
-        and without_reminder_text(line).strip().lower() not in {'split second', 'delve'}
+        and without_reminder_text(line).strip().lower() not in {'split second', 'delve', 'convoke', 'improvise'}
     )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)

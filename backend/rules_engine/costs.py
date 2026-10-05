@@ -443,6 +443,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         oracle_text=card.oracle_text or "",
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,
+        cast_resource_card=card,
     )
 
 

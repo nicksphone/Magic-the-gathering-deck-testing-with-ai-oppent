@@ -134,6 +134,8 @@ def can_pay_with_pool_and_lands(
     ability_index: int | None = None,
     reserved_card_ids=(),
     protected_life=0,
+    cast_resource_card=None,
+    resource_choices=None,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -150,8 +152,11 @@ def can_pay_with_pool_and_lands(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life + protected_life)
         and not cost_payment_is_prohibited(state, player_id, payment_kind,
                                           life=req.get("life", 0) + reserved_life)
-        and (not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
-             or _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()), excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life) is not None)
+        and _spell_payment_plan(state, player_id, req,
+            payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()),
+            oracle_text=oracle_text, source_card_id=source_card_id, card=cast_resource_card,
+            resource_choices=resource_choices, excluded_sources=excluded_sources,
+            reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life) is not None
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color, floored_reductions=context.floored_reductions)
     )
 
@@ -478,6 +483,32 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
     return solve(snow_needed, pool, snow, [], {}, 0)
 
 
+def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='',
+                        source_card_id=None, card=None, resource_choices=None,
+                        excluded_sources=None, reserved_card_ids=(), protected_life=0,
+                        optimize_paid=False):
+    from types import SimpleNamespace
+    from rules_engine.casting_resources import resource_keywords, joint_resource_payment
+    view = card or SimpleNamespace(id=source_card_id, oracle_text=oracle_text, keywords=[])
+    enabled = payment_context[0] == 'spell' and resource_keywords(view)
+    cannot_spend = payment_context[0] == 'spell' and "you can't spend mana to cast this spell" in oracle_text.lower()
+
+    def physical(remaining, tapped=(), held=()):
+        if not any(remaining.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
+            return [], {}
+        if cannot_spend:
+            return None
+        return _plan_payment(state, player_id, remaining, payment_context=payment_context,
+                             excluded_sources=set(excluded_sources or ()) | set(tapped),
+                             reserved_card_ids=set(reserved_card_ids) | set(held),
+                             protected_life=protected_life, optimize_paid=optimize_paid)
+
+    if enabled or resource_choices is not None:
+        return joint_resource_payment(state, player_id, view, req, resource_choices, physical)
+    mana = physical(req)
+    return (req, None, mana) if mana is not None else None
+
+
 def auto_pay_cost(
     state: MatchState,
     player_id: int,
@@ -503,6 +534,8 @@ def auto_pay_cost(
     apply_modifiers: bool = True,
     reserved_card_ids=(),
     protected_life=0,
+    cast_resource_card=None,
+    resource_choices=None,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     context = CostContext(
@@ -525,26 +558,38 @@ def auto_pay_cost(
         ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life + protected_life)
         and not cost_payment_is_prohibited(state, player_id, payment_kind,
                                           life=req.get("life", 0) + reserved_life)
-        and (plan := ([], {}) if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
-             else _plan_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources,
-                                optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids,
-                                protected_life=reserved_life + protected_life)) is not None),
+        and (plan := _spell_payment_plan(state, player_id, req, payment_context=payment_context,
+                    oracle_text=oracle_text, source_card_id=source_card_id, card=cast_resource_card,
+                    resource_choices=resource_choices, excluded_sources=excluded_sources,
+                    optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids,
+                    protected_life=reserved_life + protected_life)) is not None),
         None,
     )
     if payment is None:
         return False
-    req, (plan, snow_spent) = payment
+    original_req, (req, resource_plan, (plan, snow_spent)) = payment
+    if resource_plan is not None:
+        reserved_card_ids = set(reserved_card_ids) | set(resource_plan.delve) | set(resource_plan.improvise) | {cid for cid, _ in resource_plan.convoke}
+    def pay_resources():
+        if resource_plan is None:
+            return True
+        from rules_engine.casting_resources import apply_resource_payment
+        return apply_resource_payment(state, player_id, cast_resource_card or
+                                      SimpleNamespace(id=source_card_id, oracle_text=oracle_text, keywords=[]), resource_plan)
+    from types import SimpleNamespace
     player = state.players[player_id]
     if payment_details is not None:
         payment_details['mana_spent'] = sum(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
         payment_details["phyrexian_life_symbols"] = req.get("life", 0) // 2
-        payment_details['hybrid_choices'] = branches[requirements.index(req)] if branches else []
+        payment_details['hybrid_choices'] = branches[requirements.index(original_req)] if branches else []
+        if resource_plan is not None:
+            payment_details['resource_payment'] = resource_plan.choice()
     if req.get("life", 0):
         if not pay_life(state, player_id, req["life"]):
             return False
         state.log.append(f"{player.name} pays {req['life']} life for Phyrexian mana.")
     if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
-        return True
+        return pay_resources()
     for color in MANA_COLORS:
         player.mana_pool.setdefault(color, 0)
     from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability
@@ -586,7 +631,7 @@ def auto_pay_cost(
     if payment_details is not None:
         payment_details["snow_mana_colors"] = {color: amount for color, amount in snow_by_color.items() if amount}
         payment_details["snow_mana_spent"] = sum(snow_by_color.values())
-    return True
+    return pay_resources()
 
 
 def _spend_pool_color(player, color: str, amount: int) -> int:

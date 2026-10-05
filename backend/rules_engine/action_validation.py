@@ -305,6 +305,8 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 x_value=int(targets.get("x_value") or 0), spell_types=set(effective_types(state, face_card)),
                 oracle_text=face_card.oracle_text or "",
                 spell_is_aura=is_aura(face_card),
+                cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
+                spell_kicked=option.kicked,
                 source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),
                 hybrid_choices=hybrid_choices,
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),

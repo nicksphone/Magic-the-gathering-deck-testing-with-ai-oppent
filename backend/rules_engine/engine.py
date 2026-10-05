@@ -963,6 +963,7 @@ class RulesEngine:
                     reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
                     payment_details=payment_details,
                     source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
+                    cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
                 )
                 if not paid:
                     if cost_staging:
@@ -988,6 +989,9 @@ class RulesEngine:
                 ability = build_spell_spec(state, effect_surface, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                payload['mana_spent'] = payment_details.get('mana_spent', 0)
+                if payment_details.get('resource_payment') is not None:
+                    payload['__casting_resource_payment'] = payment_details['resource_payment']
                 payload['__kicked'] = chosen.kicked
                 payload["__ward_trigger_specs"] = ward_specs
                 payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)

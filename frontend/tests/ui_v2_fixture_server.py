@@ -15,6 +15,42 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/cast-resources')
+def cast_resources(seat: int = 1, name: str = 'Dig Through Time'):
+    from fastapi import HTTPException
+    from tests.test_cast_resource_payments import position, ROWS
+    from tests.test_ai_recurring_engines import add as canonical
+    if seat not in (1, 2) or name not in {'Dig Through Time', 'Siege Wurm', 'Reverse Engineer'}:
+        raise HTTPException(422, 'Expected a supported seat and resource fixture')
+    state, card = position(seat, name)
+    state.kept_hands = {1, 2}
+    state.mechanic_choice_players = {1, 2}
+    state.players[seat].mana_pool = {color: 2 if color == 'U' and name != 'Siege Wurm' else 0 for color in 'WUBRGC'}
+    choices = {'delve': [], 'convoke': [], 'improvise': []}
+    if name == 'Siege Wurm':
+        for creature, count, color in [('Llanowar Elves', 2, 'G'), ('Ornithopter', 5, 'generic')]:
+            for _ in range(count):
+                resource = canonical(state, creature, seat, cards=ROWS)
+                choices['convoke'].append({'card_id': resource.id, 'pay_as': color})
+    else:
+        kind, count, zone = ('delve', 6, Zone.GRAVEYARD) if name == 'Dig Through Time' else ('improvise', 3, Zone.BATTLEFIELD)
+        choices[kind] = [canonical(state, 'Ornithopter', seat, zone, cards=ROWS).id for _ in range(count)]
+    state.log.append('Canonical casting-resource UI fixture; not a competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'spell_id': card.id, 'choices': choices}
+
+
+@app.get('/fixture/casting-payment/{match_id}')
+def casting_payment(match_id: str):
+    from fastapi import HTTPException
+    match = main.ACTIVE_MATCHES.get(match_id)
+    if match is None or len(match.state.stack) != 1:
+        raise HTTPException(422, 'Expected one fixture spell on stack')
+    item = match.state.stack[0]
+    return {'source_card_id': item.source_card_id, 'mana_spent': item.payload.get('mana_spent'),
+            'resources': item.payload.get('__casting_resource_payment')}
+
+
 @app.post('/fixture/opaque-selection')
 def opaque_selection(seat: int = 1, name: str = 'Impulse'):
     from fastapi import HTTPException

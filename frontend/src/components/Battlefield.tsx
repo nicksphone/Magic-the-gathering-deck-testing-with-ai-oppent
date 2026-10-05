@@ -3,7 +3,8 @@ import { assignBlocker, bandAttackers, toggleAttacker, type CombatDraft } from "
 import { createPortal } from "react-dom";
 import { resolveCardMediaUrl } from "../api/client";
 import { cardStates, groupBattlefield, landPlayHint, phases, phaseIndex, type LandPile } from "./table-model";
-import type { LegalMove, MatchState, PlayerView } from "../types";
+import type { LegalMove, MatchState, PlayerView, ResourcePaymentChoice } from "../types";
+import { CastingResources } from './CastingResources';
 import { PermanentActions } from "./PermanentActions";
 import { CardRail } from "./CardRail";
 import { CardArt } from "./CardArt";
@@ -172,6 +173,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [costCards, setCostCards] = useState<Record<string, string[]>>({});
+  const [resourceChoices, setResourceChoices] = useState<Record<string, ResourcePaymentChoice | undefined>>({});
   const [hybridChoice, setHybridChoice] = useState<Record<string, string>>({});
   const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
   const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
@@ -194,6 +196,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     setTargets({});
     setCostChoice({});
     setCostCards({});
+    setResourceChoices({});
     setHybridChoice({});
     setFaceChoices({});
     setCycleChoices({});
@@ -299,6 +302,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       from_exile: move?.from_exile,
       from_library: move?.from_library,
       from_graveyard: move?.from_graveyard,
+      resource_payment: resourceChoices[`${cardId}:${selectedFaceIndex ?? 0}:${optionId}`],
     });
   }
 
@@ -731,6 +735,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               );
             }
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
+            const selectedResources = resourceChoices[`${card.id}:${selectedFaceIndex}:${selectedCostId}`];
+            const resourceIds = selectedResources ? [...selectedResources.delve, ...selectedResources.improvise,
+              ...selectedResources.convoke.map(card => card.card_id)] : [];
+            const duplicateResources = new Set(resourceIds).size !== resourceIds.length;
             const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const hints = selectedCost?.target_hints ?? move.target_hints;
             const linkedPairs = hints?.linked_target_pairs;
@@ -791,7 +799,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {landControls}
                 {foretellControl}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair}
+                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
@@ -836,6 +844,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   </select>
                 ) : null}
                 {selectedCost?.discard_all ? <p>Additional cost: discard your entire hand (excluding this spell).</p> : null}
+                {duplicateResources ? <p role="alert">Choose each casting resource only once.</p> : null}
+                {selectedCost?.resource_payment_candidates ? <CastingResources name={card.name}
+                  candidates={selectedCost.resource_payment_candidates}
+                  names={Object.fromEntries([...p1.battlefield, ...p1.graveyard].map(card => [card.id, card.name]))}
+                  choice={resourceChoices[`${card.id}:${selectedFaceIndex}:${selectedCostId}`]}
+                  onChange={choice => setResourceChoices(previous => ({...previous,
+                    [`${card.id}:${selectedFaceIndex}:${selectedCostId}`]: choice}))} /> : null}
                 {selectedCost?.sacrifice_all ? <p>Additional cost: sacrifice all permanents you control.</p> : null}
                 {payments.filter(payment => payment.count > 0).map(payment => {
                   const key = `${card.id}:${selectedCostId}:${payment.key}`;

@@ -1,5 +1,15 @@
 # Changelog
 
+## Casting Resources (Candidate)
+
+- Add shared explicit and automatic payment witnesses for delve, convoke and
+  improvise, without producing mana or double-using selected mana sources.
+- Add strict resource input models, candidate response validation and deliberate
+  both-seat hand controls. Retain actual mana-spent/resource receipts in snapshots.
+- 439 expanded checks and six new browser scenarios pass. Full qualification and
+  trigger/compound-cost/strategic fidelity remain open; main is unchanged.
+  See `docs/testing/cast-resource-payments.md`.
+
 ## Private Decision Comparison (Candidate)
 
 - Add an offline first-divergence CLI for completed reconstruction views.

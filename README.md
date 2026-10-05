@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+An isolated casting-resource candidate connects ordinary delve, convoke and
+improvise payment to shared legality, strict inputs and deliberate both-seat
+human controls. The 439-check expanded selection and six new browser flows pass.
+Full qualification, event fidelity, compound costs and tactical resource choices
+remain open. This is not yet live. See
+[scope and remaining acceptance](docs/testing/cast-resource-payments.md).
+
 An isolated diagnostic candidate adds an offline comparison of completed private
 decision exports, including first divergence for unequal-length streams. It does
 not alter gameplay or certify optimal play. See

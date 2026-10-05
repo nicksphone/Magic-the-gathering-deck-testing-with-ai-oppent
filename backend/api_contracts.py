@@ -105,6 +105,17 @@ class CostChoice(PaymentCards):
 HybridChoices = Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)]
 
 
+class ConvokeCard(InputModel):
+    card_id: CardID
+    pay_as: Literal['generic', 'W', 'U', 'B', 'R', 'G']
+
+
+class ResourcePaymentChoice(InputModel):
+    delve: CardIDs = Field(default_factory=list)
+    convoke: Annotated[list[ConvokeCard], Field(max_length=250)] = Field(default_factory=list)
+    improvise: CardIDs = Field(default_factory=list)
+
+
 class CastAction(CardAction):
     type: Literal["cast_spell"]
     targets: Targets = Field(default_factory=Targets)
@@ -115,6 +126,7 @@ class CastAction(CardAction):
     from_library: StrictBool = False
     from_graveyard: StrictBool = False
     escape_exile_ids: CardIDs | None = None
+    resource_payment: ResourcePaymentChoice | None = None
 
 
 class CycleAction(CardAction):
