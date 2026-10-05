@@ -396,6 +396,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
 
 def serialize_match(state: MatchState, *, look_players=()) -> dict:
     from rules_engine.foretell import can_look
+    from rules_engine.land_rules import remaining_land_plays_this_turn
     step_order = [x.value for x in TURN_STEPS]
 
     def _sort_steps(steps: set) -> list[str]:
@@ -435,6 +436,7 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
                 "counters": public_counters(p),
                 "library_count": len(p.library),
                 "hand_count": len(p.hand),
+                "land_plays_remaining": remaining_land_plays_this_turn(state, pid),
                 "battlefield": [
                     serialize_card_view(state, cid)
                     for cid in p.battlefield

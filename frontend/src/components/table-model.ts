@@ -30,6 +30,17 @@ export function cardStates(card: CardView, match: Pick<MatchState, "attackers" |
     card.types.includes("Creature") && card.summoning_sick && "Summoning sick", targetable && "Targetable", selected && "Selected"].filter(Boolean) as string[];
 }
 export const phases = ["Beginning", "Main I", "Combat", "Main II", "Ending"];
+export function landPlayHint(match: MatchState, seat: number): string {
+  if (match.winner !== null || match.match_complete) return "Game over";
+  if (match.pregame_pending) return "Keep your opening hand first";
+  if (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order) return "Complete the pending choice first";
+  if (match.active_player !== seat) return "Wait for your turn";
+  if (match.priority_player !== seat) return "Wait for priority";
+  if (!["precombat_main", "postcombat_main"].includes(match.step)) return "Play in your main phase";
+  if (match.stack.length) return "Wait for the stack to clear";
+  if (match.players[String(seat)].land_plays_remaining === 0) return "No land plays remaining this turn";
+  return "No legal land play available";
+}
 export function phaseIndex(step: string) {
   if (["untap","upkeep","draw"].includes(step)) return 0;
   if (step === "precombat_main") return 1;

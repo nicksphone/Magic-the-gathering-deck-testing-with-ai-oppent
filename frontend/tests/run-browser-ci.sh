@@ -67,6 +67,8 @@ wait_for_services() {
 }
 
 wait_for_services
+echo 'Browser CI: async readiness helper'
+(cd frontend && timeout 30s node tests/browser-driver-async.mjs)
 echo 'Browser CI: competitive table v2'
 (cd frontend && MTG_UI_EVIDENCE="$scratch/ui-v2-evidence" MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2.mjs)
 (cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2-costs.mjs)

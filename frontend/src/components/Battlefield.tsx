@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { resolveCardMediaUrl } from "../api/client";
-import { cardStates, groupBattlefield, phases, phaseIndex, type LandPile } from "./table-model";
+import { cardStates, groupBattlefield, landPlayHint, phases, phaseIndex, type LandPile } from "./table-model";
 import type { LegalMove, MatchState, PlayerView } from "../types";
 import { PermanentActions } from "./PermanentActions";
 import { CardRail } from "./CardRail";
@@ -625,7 +625,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </>
                   ) : (
                     <button disabled>
-                      {card.name} {card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)
+                      {card.types.includes("Land") ? `${card.name} · ${landPlayHint(match, viewerSeat)}`
+                        : `${card.name} ${card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)`}
                     </button>
                   )}
                   {restrictedMove?.reason ? <small>Restriction: {restrictedMove.reason}</small> : null}

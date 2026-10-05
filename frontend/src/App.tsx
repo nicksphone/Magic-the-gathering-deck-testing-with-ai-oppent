@@ -226,7 +226,9 @@ export function App() {
   }
 
   async function nextStep() {
-    await autoplayTick(1);
+    await mutateMatch((state, write) => (state.controllers?.[String(legalPlayerId)] ?? "human") === "human"
+      ? api.act(state.id, legalPlayerId, { type: "pass_priority" }, write)
+      : api.autoplay(state.id, 1, write));
   }
 
   const autoplayTick = useCallback(async (ticks: number) => {

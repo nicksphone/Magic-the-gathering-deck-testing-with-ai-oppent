@@ -65,7 +65,7 @@ try {
         await click('Play Land Island');
         await syncAfter('seat-2-land', revision);
       } else {
-        await click('Pass Priority');
+        await click(step % 2 ? 'Next Step' : 'Pass Priority');
         await syncAfter('seat-2-pass', revision);
       }
       continue;
@@ -110,7 +110,7 @@ try {
         await click(`Cast ${cast.card_name}`);
         await syncAfter('cast', revision);
       } else {
-        await click('Pass Priority');
+        await click(step % 2 ? 'Next Step' : 'Pass Priority');
         await syncAfter('pass', revision);
       }
     }

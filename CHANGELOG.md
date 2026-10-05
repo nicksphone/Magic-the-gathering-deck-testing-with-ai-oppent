@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-05 - Decision-local AI projection reuse
+
+- Reuse choice-free destruction forecasts and one public baseline per exact
+  decision root, retaining one shared byte snapshot, full-action invalidation,
+  unknown results and mutable callback isolation.
+- Add 42 regressions, including missing-policy and retained-memory defects caught
+  during development. Pass all 7,354 combined backend tests and the declared
+  eight-state timing/parity gates; late-control hotspots improve 67-78%.
+- Complete a six-style, 15-pair matrix: 30 seat-balanced samples, 60 repeated
+  executions, identical complete results and no timeouts or matching action errors.
+  Retain all 36,234 decision traces; this is regression evidence, not expert AI.
+
+## 2026-10-04 - Human land timing and explicit progression
+
+- Repair Next Step's human autoplay no-op: explicitly pass the acting human seat's
+  priority while retaining AI single ticks, required choices and both-player passes.
+- Explain unavailable land timing, priority and exhausted allowance. Expose and
+  validate nonnegative public remaining land plays without granting illegal drops.
+- Add both-seat drop/restart/counter-purity and frontend contract/hint regressions.
+  Extend natural human BO3 tests to exercise both priority controls. Pass the full
+  final-source browser harness, including both human BO3 flows and restart recovery.
+- Repair the shared browser driver's truthy-Promise readiness race and add delayed,
+  false and rejected asynchronous predicate regressions; retain the original
+  discard assertions and engine behavior.
+
 ## 2026-10-04 - Competitive table v2 integrated
 
 - Deploy the reviewed full-width felt table, individual card rails, grouped

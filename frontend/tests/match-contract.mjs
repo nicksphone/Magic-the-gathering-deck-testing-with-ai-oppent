@@ -11,6 +11,10 @@ const state = {
   },
 };
 assert.equal(parseMatchState(state), state);
+for (const remaining of [-1, 1.5, '1', null]) {
+  assert.throws(() => parseMatchState({...state,players:{...state.players,1:{...state.players[1],land_plays_remaining:remaining}}}), /land allowance/);
+}
+assert.equal(parseMatchState({...state,players:{...state.players,1:{...state.players[1],land_plays_remaining:0}}}).id,state.id);
 for (const fields of [{ was_foretold: 'yes' }, { foretell_order: -1 }, { foretold_turn: 1.5 }]) {
   assert.throws(() => parseMatchState({ ...state, players: { ...state.players,
     1: { ...state.players[1], hand: [{ ...mountain, ...fields }] } } }), /card view/);

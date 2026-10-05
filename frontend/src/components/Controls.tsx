@@ -136,7 +136,7 @@ export function Controls(props: Props) {
   const scoreText = props.match ? `${p1Score}-${p2Score}` : "0-0";
   const sideboardStatus = betweenGames ? (humanSeats.length ? "Sideboarding open" : "No human sideboarding") : matchComplete ? "Match complete" : "Sideboarding locked";
   const stackSize = props.match?.stack?.length ?? 0;
-  const currentController = props.match?.controllers?.[String(props.match?.priority_player ?? 1)] ?? "human";
+  const currentController = props.match?.controllers?.[String(props.actingPlayerId ?? props.match?.priority_player ?? 1)] ?? "human";
   const interruptWindowLive = props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
@@ -430,7 +430,8 @@ export function Controls(props: Props) {
         <button onClick={props.onPassPriority} disabled={!props.match || currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}>
           Pass Priority
         </button>
-        <button onClick={props.onNextStep} disabled={!props.match || replacementPaused || triggerOrderPaused || mechanicPaused}>
+        <button onClick={props.onNextStep} title="Pass priority toward the next step. Both players must pass; stack objects resolve first."
+          disabled={!props.match || props.match.winner !== null || replacementPaused || triggerOrderPaused || mechanicPaused || (currentController === "human" && !props.legalMoves.some(move => move.type === "pass_priority"))}>
           Next Step
         </button>
         <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>

@@ -50,7 +50,8 @@ export async function openBrowser(url) {
   async function waitFor(expression, timeoutMs = 15000) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
-      if (await evaluate(`Boolean(document.body && (${expression}))`)) return;
+      // Await before coercion: an unresolved Promise is truthy, not readiness.
+      if (await evaluate(`(async () => Boolean(document.body && await (${expression})))()`)) return;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     throw new Error(`Browser condition timed out: ${expression}\n${await evaluate('document.body?.innerText')}`);

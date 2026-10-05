@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { groupBattlefield, cardStates, phaseIndex } from '../src/components/table-model.ts';
+import { groupBattlefield, cardStates, landPlayHint, phaseIndex } from '../src/components/table-model.ts';
 const forest = {id:'f1',name:'Forest',types:['Land'],tapped:false,summoning_sick:false,power:null,toughness:null,mana_source_colors:['G'],mana_source_amounts:{G:1}};
 const cards = [forest,{...forest,id:'f2',tapped:true},{...forest,id:'f3',counters:{charge:1}},{...forest,id:'animated',types:['Land','Creature'],power:2,toughness:2}];
 const grouped = groupBattlefield(cards);
@@ -12,3 +12,14 @@ assert.deepEqual(cardStates({...forest,id:'a',types:['Creature'],summoning_sick:
 assert.equal(phaseIndex('declare_blockers'),2);
 assert.equal(phaseIndex('unrecognized'),-1);
 console.log('PASS table grouping identities, animated lands, authoritative mana, explicit states and phase mapping');
+const main = {winner:null,step:'precombat_main',active_player:1,priority_player:1,stack:[],players:{1:{land_plays_remaining:0},2:{land_plays_remaining:1}}};
+assert.equal(landPlayHint(main,1),'No land plays remaining this turn');
+assert.equal(landPlayHint({...main,step:'draw'},1),'Play in your main phase');
+assert.equal(landPlayHint(main,2),'Wait for your turn');
+assert.equal(landPlayHint({...main,priority_player:2},1),'Wait for priority');
+assert.equal(landPlayHint({...main,stack:[{}]},1),'Wait for the stack to clear');
+assert.equal(landPlayHint({...main,pregame_pending:true},1),'Keep your opening hand first');
+assert.equal(landPlayHint({...main,pending_mechanic_choice:{}},1),'Complete the pending choice first');
+assert.equal(landPlayHint({...main,winner:2},1),'Game over');
+assert.equal(landPlayHint({...main,players:{1:{}}},1),'No legal land play available');
+console.log('PASS explicit land timing, priority, allowance and legacy-server hints');

@@ -53,6 +53,10 @@ export function parseMatchState(value: unknown): MatchState {
       || !Number.isInteger(player.exile_count) || (player.exile_count as number) < player.exile.length) {
       throw new Error(`Invalid match response: player ${seat} card view`);
     }
+    if (player.land_plays_remaining !== undefined && (!Number.isInteger(player.land_plays_remaining)
+      || (player.land_plays_remaining as number) < 0)) {
+      throw new Error(`Invalid match response: player ${seat} land allowance`);
+    }
     if (player.counters !== undefined && (!record(player.counters)
       || !Object.entries(player.counters).every(([kind, amount]) => /^[a-z]+(?:-[a-z]+)*$/.test(kind)
         && Number.isInteger(amount) && (amount as number) >= 0))) {

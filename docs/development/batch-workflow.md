@@ -52,7 +52,10 @@ when they contain user decks; archive completed evidence, not active SQLite, on 
 
 ## Upcoming Batch Boundaries
 
-- Search correctness, selected-prefix reuse and pinned replay provenance.
+- Extend latency investigation beyond the completed decision-local projection
+  reuse batch. Its two late-control hotspots improve 67-78%, but other multi-second
+  decisions remain. Preserve checked decisions, choice-policy side effects,
+  hidden-information boundaries and mutable-state isolation.
 - Hidden-information invariance, harmful forced non-pass fallback repair, public
   pending-choice branching, future-turn resources and response likelihoods,
   evaluated across control, tempo and proactive styles. Preserve useful friendly
@@ -63,4 +66,5 @@ when they contain user decks; archive completed evidence, not active SQLite, on 
   ownership, chosen faces/costs and restart continuations.
 
 These are scheduling groups, not completed features or a reduced release scope.
-Rules correctness remains ahead of AI strength; UI redesign remains deferred.
+Rules correctness remains ahead of AI strength. The competitive table v2 is live;
+long-session UI, accessibility and deployment validation remain unfinished.

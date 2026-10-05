@@ -8,12 +8,21 @@
   seed/seat-balanced samples pass. The report defines bounded support, not
   arbitrary casting costs, grants or full-card certification.
 
-- [ ] Implement and validate decision-local AI projection reuse from the
+- [x] Implement and validate decision-local AI projection reuse from the
   completed performance diagnostic; preserve decisions, legality, privacy and
   mutable-state isolation. Do not weaken search or force matchup win rates.
-  The [diagnostic handoff](docs/testing/ai-planning-performance-agent.md) is
-  independently reproduced; optimization and broader benchmark acceptance
-  remain open.
+  The [implemented scope and acceptance](docs/testing/ai-destruction-reuse.md)
+  cover 42 new invariants, 7,354 final combined backend tests, eight-state pinned
+  benchmarks and a six-style, thirty-sample matrix repeated twice. The two late
+  control hotspots improve 67-78%; other slow decisions and strategic quality
+  remain separate work, not solved by preserving decisions.
+
+- [x] Complete the broader browser gate for human land-play guidance and explicit
+  Next Step progression. Backend and frontend checks, real physical land clicks
+  and exhausted-allowance probes pass. The first broad run exposed the async
+  readiness helper's truthy-Promise bug; its regression and the complete final-source
+  harness now pass, including both human BO3 flows and restart recovery.
+  See [current evidence](docs/testing/human-land-progress.md).
 
 - [x] Integrate offline backup/restore verification and dry-run retention tools.
   The combined 128-test storage/recovery gate and cold offline 119-name probe
@@ -1001,4 +1010,4 @@ The scoped release is finished only after all three gates pass. Any remaining un
 
 ## Known Limitations and Next Upgrades
 
-Current priority is backend rules, supported-corpus simulation and measured AI decisions. The alpha UI redesign is deferred at the user's request; existing functional choice controls still receive necessary regression coverage. Broader rules fidelity, knowledge-driven AI, statistical validation and operational release checks remain open in Gates 2 and 3, alongside the unfinished human-release acceptance gates.
+Current priority is backend rules, supported-corpus simulation and measured AI decisions. The competitive table v2 is integrated; functional human choices and priority controls retain regression coverage. Long-session UI, accessibility, broader rules fidelity, knowledge-driven AI, statistical validation and operational release checks remain open, alongside unfinished human-release acceptance gates.

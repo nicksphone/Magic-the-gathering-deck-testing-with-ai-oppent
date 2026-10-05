@@ -7,10 +7,13 @@ deliberately assign ordered targets; AI uses the same legality/payment paths.
 See [casting and trigger scope and acceptance](docs/testing/casting-trigger-repairs.md)
 for the canonical regressions, full gates and remaining instruction boundaries.
 
-An isolated [AI planning performance diagnostic](docs/testing/ai-planning-performance-agent.md)
-reproduces expensive duplicate late-control projections without changing AI
-decisions or search. Decision-local reuse remains planned, not an implemented
-speedup or an expert-player claim.
+Decision-local reuse removes duplicate choice-free destruction and baseline
+projections while preserving policy callbacks, legality and hidden-information
+boundaries. Eight pinned states preserve checked decisions; two late-control
+positions are 67-78% faster, while several other decisions remain slow. See
+[implementation, benchmark and outstanding acceptance](docs/testing/ai-destruction-reuse.md)
+and the original [performance diagnostic](docs/testing/ai-planning-performance-agent.md).
+This is not an expert-player or whole-game speed claim.
 
 The live frontend uses a full-width two-sided competitive table, independently
 scrollable card rails, exact-ID grouped lands and keyboard/hover inspection.
@@ -18,6 +21,11 @@ Decks, saved sessions and diagnostics live in a manually opened workbench;
 stack, actions and required choices have a separate command area. See
 [the current UI and acceptance evidence](docs/ui-redesign-v2.md). Large boards
 still require scrolling; this is not a long-session or accessibility certificate.
+
+Human Next Step now explicitly passes priority instead of invoking a potentially
+paused autoplay tick. Unavailable lands explain their timing, priority or exhausted
+allowance; legal land controls still come from the backend's legal moves. See
+[human land-play behavior and checks](docs/testing/human-land-progress.md).
 
 Offline operator tools can verify local SQLite backup/restore equality and plan
 terminal simulation-job retention with dry-run defaults. They require explicit
@@ -788,10 +796,11 @@ and explicit evidence before publication. This does not reduce the release goals
 
 ## Known Limitations and Next Upgrades
 
-- Deeper strategic planning still needs explicit hidden-information invariance
-  and better optional-action utility. A captured decision wastes removal on its
-  own animated land; deterministic replay does not certify seasoned-player AI.
-  These are priority backend follow-ups, alongside wider latency/choice planning.
+- Hidden-information masking, bounded observation memory and pure-removal utility
+  have regression coverage; the captured self-removal decision is repaired. Broader
+  opponent beliefs, uncertain future-resource planning, complex choice continuations
+  and decision latency remain backend priorities. Deterministic replay does not
+  certify seasoned-player AI. See [implemented boundaries](docs/testing/ai-information.md).
 
 - Restricted-X payment, Crypt Rats/Pyrotechnics-style damage batches and departed damage-source characteristics have bounded tests, not universal certification. Other color-spending restrictions, source-dependent replacement/prevention wording, sacrifice-trigger ordering and arbitrary all-recipient wording still need rules and AI coverage.
 - All shipped deck names have offline Oracle metadata. Temporary Lockdown's battlefield linked-exile wording, Valki's hand linked-exile ETB and bounded exiled-card copy activation, and Atraxa's Kindred-aware reveal now have regressions, alongside Cartographer's Survey and Imodane's Recruiter. Full copy-layer fidelity, other linked-exile wordings, zone-change replacements, and cards classified as structured may still have incorrect semantics; parser status is not certification.

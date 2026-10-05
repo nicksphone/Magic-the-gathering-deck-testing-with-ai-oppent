@@ -5,6 +5,8 @@ from rules_engine.type_effects import effective_types
 from copy import copy, deepcopy
 from contextlib import contextmanager
 from contextvars import ContextVar
+import json
+import pickle
 import re
 
 from game_state.state import CardInstance, MatchState, Zone
@@ -171,6 +173,52 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
 
 def friendly_destruction_profit(state, player_id, action, *, own_choice_action=None):
     """Known resolved utility; incomplete/private continuations remain unknown."""
+    return _choice_free_projection(state, player_id, 'friendly_destruction', action,
+        lambda policy: _friendly_destruction_profit(state, player_id, action, own_choice_action=policy),
+        own_choice_action)
+
+
+def _choice_free_projection(state, player_id, kind, action, compute, policy):
+    scope = _decision_projection.get()
+    if scope is None or scope[0] is not state or scope[1] != player_id:
+        return compute(policy)
+
+    def key():
+        try:
+            # Bytes remain private in this short-lived scope; never unpickle input.
+            # Include RNG, object incarnations, aliases and extra gameplay fields.
+            return (pickle.dumps(state, protocol=5),
+                    (kind, policy is None,
+                     json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False)))
+        except (pickle.PicklingError, TypeError, ValueError, AttributeError, RecursionError):
+            return None
+
+    announced = key()
+    if announced is None:
+        return compute(policy)
+    memo = scope[2].get('choice_free_outcomes')
+    if memo is None or memo[0] != announced[0]:
+        # One shared snapshot, not a complete board copy for every target.
+        memo = (announced[0], {})
+        scope[2]['choice_free_outcomes'] = memo
+    if announced[1] in memo[1]:
+        return memo[1][announced[1]]
+    choice_used = False
+
+    def choice(*args):
+        nonlocal choice_used
+        choice_used = True
+        return policy(*args)
+
+    result = compute(choice if policy is not None else None)
+    # A skipped callback must not erase mutable agent/closure side effects.
+    if (not choice_used and key() == announced
+            and scope[2].get('choice_free_outcomes') is memo):
+        memo[1][announced[1]] = result
+    return result
+
+
+def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None):
     from ai.heuristics import evaluate_board
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
@@ -187,15 +235,27 @@ def friendly_destruction_profit(state, player_id, action, *, own_choice_action=N
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[3-player_id].hand) != opposing_hand):
         return None
+    status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
+        lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
+    if status == 'unknown':
+        return None
+    if winner is not None:
+        return winner != player_id
+    return evaluate_board(projected, player_id) > value
+
+
+def _destruction_baseline(state, player_id, policy):
+    from ai.heuristics import evaluate_board
     baseline = _projection_copy(state)
-    if not _settle_announced_stack(baseline, player_id=player_id, own_choice_action=own_choice_action):
-        return None
+    if not _settle_announced_stack(baseline, player_id=player_id, own_choice_action=policy):
+        return ('unknown', None, None)
     if baseline.winner is not None:
-        return baseline.winner != player_id
-    if (any(tuple(player.library) != libraries[pid] for pid, player in baseline.players.items())
-            or tuple(baseline.players[3-player_id].hand) != opposing_hand):
-        return None
-    return evaluate_board(projected, player_id) > evaluate_board(baseline, player_id)
+        return ('known', baseline.winner, None)
+    if (any(tuple(player.library) != tuple(state.players[pid].library)
+            for pid, player in baseline.players.items())
+            or tuple(baseline.players[3-player_id].hand) != tuple(state.players[3-player_id].hand)):
+        return ('unknown', None, None)
+    return ('known', None, evaluate_board(baseline, player_id))
 
 
 def _projection_copy(state: MatchState) -> MatchState:

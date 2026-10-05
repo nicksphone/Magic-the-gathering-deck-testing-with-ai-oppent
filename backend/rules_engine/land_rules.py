@@ -10,6 +10,12 @@ _NUMBER_WORDS = {
 }
 
 
+def remaining_land_plays_this_turn(state, player_id: int) -> int:
+    player = state.players[player_id]
+    used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn) if player.last_land_play_turn == state.turn else 0
+    return max(0, compute_max_land_plays_this_turn(state, player_id) - used)
+
+
 def compute_max_land_plays_this_turn(state, player_id: int) -> int:
     from rules_engine.continuous import printed_abilities_suppressed
     player = state.players[player_id]
