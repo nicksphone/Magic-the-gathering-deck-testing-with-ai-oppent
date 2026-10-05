@@ -784,6 +784,8 @@ def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker
 
 
 def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
+    from tests.test_ai_recurring_engines import add as add_canonical
+
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
     state = MatchFactory.from_decks(deck, deck, seed=935715)
     state.pregame_pending = False
@@ -804,7 +806,11 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
         state.players[1].hand.append(card.id)
     enemy = CardInstance("enemy-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
     state.cards[enemy.id] = enemy
-    target = add_to_stack(state, enemy.id, 2, enemy.name, "destroy_permanent", {"target_card_id": "own-threat"})
+    own_threat = add_canonical(state, 'Sheoldred, the Apocalypse', 1)
+    other_threat = add_canonical(state, 'Grim Haruspex', 1)
+    selected = {'target_card_id': own_threat.id}
+    target = add_to_stack(state, enemy.id, 2, enemy.name, "destroy_permanent",
+                          {**selected, '__announced_targets': selected})
     state.priority_player = 1
     ai = AIAgent(difficulty="master", archetype="Control")
     first = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
@@ -817,7 +823,9 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
 
     enemy_counter = CardInstance("enemy-counter", payload["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
     state.cards[enemy_counter.id] = enemy_counter
-    reply = add_to_stack(state, enemy_counter.id, 2, enemy_counter.name, "counter_spell", {"target_stack_id": state.stack[-1].id})
+    selected = {'target_stack_id': state.stack[-1].id}
+    reply = add_to_stack(state, enemy_counter.id, 2, enemy_counter.name, "counter_spell",
+                        {**selected, '__announced_targets': selected})
     state.priority_player = 1
     response = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
     assert response.action["type"] == "cast_spell"
@@ -826,7 +834,9 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
     state.stack.pop()
     other = CardInstance("other-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
     state.cards[other.id] = other
-    other_item = add_to_stack(state, other.id, 2, other.name, "destroy_permanent", {"target_card_id": "other-threat"})
+    selected = {'target_card_id': other_threat.id}
+    other_item = add_to_stack(state, other.id, 2, other.name, "destroy_permanent",
+                             {**selected, '__announced_targets': selected})
     state.stack.remove(other_item)
     state.stack.insert(-1, other_item)
     state.priority_player = 1
@@ -1158,50 +1168,21 @@ def test_control_ai_casts_big_creature_on_clear_turn_four_board() -> None:
 
 
 def test_master_ai_uses_deeper_planner_on_complex_midgame_board() -> None:
+    from tests.test_ai_recurring_engines import fixture, add
+
     ai = AIAgent(difficulty="master", archetype="Control")
-    moves = [
-        {"type": "pass_priority"},
-        {"type": "cast_spell", "card_name": "Dream Trawler", "card_id": "big-1"},
-    ]
-
-    class FakeState:
-        turn = 6
-        step = "precombat_main"
-        active_player = 1
-        priority_player = 1
-        pregame_pending = False
-        winner = None
-        stack = []
-        players = {
-            1: type("P", (), {"life": 18, "hand": ["big-1"], "battlefield": ["a1", "a2", "a3", "a4", "a5", "a6"], "mana_pool": {}})(),
-            2: type("P", (), {"life": 18, "hand": [], "battlefield": ["b1", "b2", "b3", "b4", "b5", "b6"], "mana_pool": {}})(),
-        }
-        cards = {
-            "big-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Creature"],
-                    "name": "Dream Trawler",
-                    "oracle_text": "Flying, lifelink.",
-                    "zone": "hand",
-                    "mana_cost": "{2}{W}{W}{U}{U}",
-                    "keywords": ["Flying", "Lifelink"],
-                    "power": 3,
-                    "toughness": 5,
-                },
-            )(),
-        }
-        for cid in ["a1", "a2", "a3", "a4", "a5", "a6", "b1", "b2", "b3", "b4", "b5", "b6"]:
-            cards[cid] = type("C", (), {"types": ["Creature"], "name": cid, "power": 1, "toughness": 1, "tapped": False})()
-        attackers = []
-        attack_targets = {}
-        blocks = {}
-        passed_priority = set()
-        loyalty_activated_this_turn = set()
-
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    state = fixture()
+    state.turn = 6
+    for seat in (1, 2):
+        for _ in range(6):
+            add(state, 'Grizzly Bears', seat)
+    state.players[1].mana_pool['U'] = 6
+    threat = add(state, 'Torrential Gearhulk', 1, Zone.HAND)
+    moves = RulesEngine().legal_moves(state, 1)
+    decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
+    assert decision.action['card_id'] == threat.id
+    assert decision.reasoning == 'Complex-board strategic planner selected best line'
 
 
 def test_ai_targets_highest_threat_creature_not_just_highest_toughness() -> None:

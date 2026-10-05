@@ -258,6 +258,38 @@ def _destruction_baseline(state, player_id, policy):
     return ('known', None, evaluate_board(baseline, player_id))
 
 
+def pending_counter_gain(state, player_id, stack_id):
+    """Public unanswered prevention value, not a prediction of opponent responses."""
+    return _choice_free_projection(state, player_id, 'pending_counter', stack_id,
+                                  lambda _policy: _pending_counter_gain(state, player_id, stack_id), None)
+
+
+def _pending_counter_gain(state, player_id, stack_id):
+    from ai.heuristics import evaluate_board
+    from effects.registry import resolve_effect
+    from rules_engine.targeting import spell_cant_be_countered, stack_object_kind
+    item = next((item for item in state.stack if item.id == stack_id), None)
+    if item is None or (stack_object_kind(state, item) == 'spell' and spell_cant_be_countered(state, item)):
+        return 0.0
+    status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
+        lambda policy: _destruction_baseline(state, player_id, policy), None)
+    if status == 'unknown':
+        return None
+    projected = _projection_copy(state)
+    counter = 'counter_spell' if stack_object_kind(state, item) == 'spell' else 'counter_ability'
+    resolve_effect(projected, player_id, counter, {'target_stack_id': stack_id, 'target_kind': 'any'})
+    if not _settle_announced_stack(projected):
+        return None
+    if (any(tuple(player.library) != tuple(state.players[pid].library)
+            for pid, player in projected.players.items())
+            or tuple(projected.players[3-player_id].hand) != tuple(state.players[3-player_id].hand)):
+        return None
+    if winner is not None or projected.winner is not None:
+        outcome = lambda winning: 1000 if winning == player_id else -1000 if winning is not None else 0
+        return float(outcome(projected.winner) - outcome(winner))
+    return evaluate_board(projected, player_id) - value
+
+
 def _projection_copy(state: MatchState) -> MatchState:
     # Resolution does not read historical logs; avoid copying growing traces.
     projected = planning_copy(state)
