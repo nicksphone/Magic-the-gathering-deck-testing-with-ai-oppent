@@ -15,9 +15,15 @@
   zero; all sixteen before/after executions strictly reconstruct. The subsequent
   latest full gate includes these repairs. This is not expert-player evidence.
 
-- [ ] Publish the qualified landfall/copy/beneficiary integration, verify live
-  startup and archive completed evidence on the mounted NFS share. Do not confuse
-  candidate qualification with live deployment or universal rules completion.
+- [x] Publish the qualified landfall/copy/beneficiary integration (`4b9903d`).
+  Live reload-enabled services respond to HTTP checks and retain all-interface
+  bindings. Test evidence, browser artifacts, committed source and an integrity-
+  checked pre-publication SQLite backup are verified on mounted NFS. This is not
+  a cross-device browser, expert-player or universal rules certificate.
+
+- [ ] Validate cross-device and long-session live behavior; continue broader
+  beneficiary planning, complete targeting dependencies and qualified/variable
+  damage/life instructions beyond the tested structural family.
 
 - [ ] Finish [linked conditional damage](docs/testing/linked-controller-targets.md).
   Complete-pair admission, exclusive damage amounts, captured recipients and

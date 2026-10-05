@@ -16,7 +16,9 @@ different recipients through casting, copied targets and reload.
 See [beneficiary semantics and current acceptance](docs/testing/beneficiary-polarity.md):
 7,829 backend tests, the full browser gate and eight matching replay executions
 qualify the supported families, not seasoned-player AI or arbitrary cards.
-Publication and live deployment remain separate operator steps.
+The qualified milestone is published; the local reload-enabled services serve it
+on `0.0.0.0:9999` and `0.0.0.0:5173`. Local HTTP health and page checks pass;
+this is not a new cross-device or long-session browser acceptance claim.
 Departed-planeswalker dependency, broader protection corners and deeper AI
 planning remain open. See
 [landfall scope](docs/testing/land-entry-history.md) and

@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased Candidate - Land-entry history and conditional alternatives
+## 2026-10-05 - Qualified land-entry, copy and beneficiary milestone
+
+- Publish integration `4b9903d`, preserve an integrity-checked live database backup
+  and verified evidence on NFS, and confirm local HTTP service availability with
+  all-interface bindings. Cross-device and long-session acceptance remain open.
 
 - Complete the latest exact-source qualification: 7,829 backend tests across
   all 318 recursive files, 606 matching backend source/fixture files, full browser
@@ -8,7 +12,8 @@
   test/lint/build. Four fresh Boros/Dimir capability games repeat and strictly
   reconstruct in eight executions, with 3,414 logical decisions and 22 checked
   caster-gain resolutions. This supersedes running/pending gate notes below;
-  publication, deployment and broader AI/rules certification remain separate.
+  broader AI/rules certification remains separate. Earlier pending notes below
+  describe intermediate candidates, not the current gate status.
 
 - Interpret complete simple fixed damage plus caster-life gain as separate ordered
   effects, and choose damage targets from the targeted instruction rather than

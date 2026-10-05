@@ -1,7 +1,9 @@
 # Beneficiary Polarity and Complete Damage/Life Instructions
 
-Status: qualified integration candidate; publication and live deployment are
-separate operator steps. Printed card data remains unchanged.
+Status: published qualified integration (`4b9903d`). The local reload-enabled
+services respond on ports 9999/5173 and remain bound to all interfaces. This HTTP
+smoke is separate from the isolated full browser gate. Printed card data remains
+unchanged.
 
 ## Implemented
 
@@ -70,12 +72,18 @@ the subsequently added damage/caster-gain cards.
   22 logical caster-gain resolutions are checked against authoritative state.
   Casts are not equivalent to successful resolutions. These decks are capability
   exercises, not tournament archetypes or a matchup-balance sample.
+- Additional strict reconstruction of the 782-decision reversed-seat game checks
+  the naturally exercised Ajani's Pridemate trigger against actual source state:
+  its +1/+1 counter increases from zero to one when the trigger resolves. Other
+  observed gains occurred for the opposing player or after Pridemate died; their
+  lack of a friendly trigger is not evidence of failure. This one trigger is not
+  broad life-trigger certification.
 
 ## Remaining Work
 
 Inspect wider life-trigger and control interactions rather than tuning decks to
 a desired win rate. A log mention count alone does not verify triggered ability
-coverage. Complete publication and live deployment separately;
+coverage. Cross-device and long-session live validation remain outstanding;
 retain unsupported planeswalker-dependency and wider targeting/layer boundaries.
 Strategic beneficiary selection under adverse life replacements, competing
 effects and complex modes needs public outcome planning beyond this basic repair.
