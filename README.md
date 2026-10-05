@@ -1,10 +1,17 @@
 # MTG Deck Testing Lab
 
+An isolated instant-timing candidate distinguishes opponent end-step value
+casting from early-turn tap-outs and prices actual payment that loses the last
+affordable own-hand response. Both-seat canonical decision tests pass; wider
+acceptance remains open. See [scope](docs/testing/instant-value-window.md).
+
 The AI resource-opportunity candidate compares bounded legal payments rather
 than blindly accepting the first witness. It weighs blockers, repeatable mana,
 graveyard payoffs, actual self-tap token triggers and affordable own-hand
 follow-ups. Twenty-three focused cases and 342 earlier overlapping checks pass; full/natural
-acceptance remains open. See [scope](docs/testing/ai-resource-opportunity.md).
+acceptance remains open. Frozen resource-opportunity qualification now passes
+8,650 backend tests and the full browser suite; natural review is running.
+See [scope](docs/testing/ai-resource-opportunity.md).
 
 The resource-event follow-up connects real taps and graveyard departures to
 shared trigger staging and pre-move ability checks. Both-seat canonical cases,

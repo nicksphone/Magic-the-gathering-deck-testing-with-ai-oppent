@@ -40,7 +40,11 @@ shared mana/resource legality.
 
 ## Limits And Next Gates
 
-- Run exact-source full backend and browser/natural replay qualification.
+- Frozen runtime ff1210e passes 8,650 tests across all 349 recursive files, with
+  all 685 source hashes verified in four initially DB-free copies. The complete
+  browser suite passes. Completed owned test copies were verified and archived
+  to RCHFiles before removal; natural replay/reconstruction is running.
+- Finish exact-source natural replay qualification and inspect changed decisions.
 - The search is bounded (ordinary fallback plus at most 16 explicit alternatives),
   not exhaustive optimization. Broaden swap/color/compound-cost alternatives and
   measure marginal runtime against decision quality on actual retained positions.

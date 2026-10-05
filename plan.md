@@ -7,7 +7,11 @@
   blocker/mana/graveyard opportunity costs and hidden-information invariants.
   Complete exact-source full/natural gates and broaden colored/compound payment
   alternatives. See [scope](docs/testing/ai-resource-opportunity.md).
-- [ ] Investigate natural Tempo/Control seat-two decision 524: control cashes
+- [ ] Qualify the instant-timing candidate for Tempo/Control seat-two decision 524:
+  generic end-step bonus and actual lost-interaction payment costs are implemented
+  in ranking and strategic choices; both-seat canonical checks pass. Finish wider
+  exact-source/natural comparison and refine opportunity/emergency estimates.
+  See [scope](docs/testing/instant-value-window.md). Original observation: control cashes
   a seven-mana graveyard card-selection spell in opponent upkeep while holding
   two counters, instead of waiting for an appropriate later window. Scope the
   fix to general interaction reservation/instant timing, not a card-name rule.

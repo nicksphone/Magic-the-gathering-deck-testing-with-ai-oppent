@@ -912,6 +912,7 @@ class AIAgent:
             return -9999.0
         score = self._strategic_position_score(sim, player_id)
         score += self._stack_two_ply_value(sim, player_id, score)
+        score += self._instant_value_reservation(state, move, player_id)
         return self._strategic_state_score(sim, player_id, depth, score)
 
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
@@ -1558,6 +1559,7 @@ class AIAgent:
                     _, gain = self._attachment_projection(state, move, player_id)
                     base += gain if gain > 0 else -10.0
                 base += self._cast_bias(state, move, player_id)
+                base += self._instant_value_reservation(state, move, player_id)
                 if "burn" in tags:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
                 if "counter" in tags:
@@ -1952,6 +1954,48 @@ class AIAgent:
                     mana_penalty += 3.5
         return profitable + lethal_pressure + arche_bonus - mana_penalty
 
+    def _instant_value_reservation(self, state: MatchState, move: dict, player_id: int) -> float:
+        """Price lost interaction before the opponent finishes their turn.
+
+        This is an opportunity-cost heuristic, not a restriction on legal casts.
+        Stack responses and possible emergency digs retain their existing paths.
+        """
+        if (move.get('type') != 'cast_spell' or getattr(state, 'active_player', player_id) == player_id
+                or _step_key(getattr(state, 'step', '')) in {'end_step', 'cleanup'}
+                or getattr(state, 'stack', [])):
+            return 0.0
+        card = _card_for_move(state, move)
+        if card is None or 'Instant' not in effective_types(state, card):
+            return 0.0
+        tags = self._spell_tags(card)
+        if 'draw' not in tags or tags & {'counter', 'removal', 'burn', 'sweeper'}:
+            return 0.0
+        opponent = state.players[3-player_id]
+        pressure = sum(max(0, effective_power(state, cid)) for cid in opponent.battlefield
+                       if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid]))
+        if pressure >= state.players[player_id].life:
+            return 0.0
+        responses = [state.cards[cid] for cid in state.players[player_id].hand
+                     if cid != card.id and cid in state.cards
+                     and 'Instant' in effective_types(state, state.cards[cid])
+                     and self._spell_tags(state.cards[cid]) & {'counter', 'removal'}
+                     and self._can_pay_card_cost(state, player_id, state.cards[cid])]
+        if not responses:
+            return 0.0
+        action = self._materialize_action(state, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return 0.0
+        from rules_engine.action_validation import ActionRejected
+        projected = planning_copy(state)
+        try:
+            self.engine.take_action(projected, player_id, action, reject_invalid=True)
+        except ActionRejected:
+            return 0.0
+        if any(self._can_pay_card_cost(projected, player_id, projected.cards[response.id])
+               for response in responses):
+            return 0.0
+        return -6.0
+
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -2076,7 +2120,7 @@ class AIAgent:
                 if "Instant" in effective_types(state, card):
                     on_opp_turn = getattr(state, "active_player", player_id) != player_id
                     in_end = _step_key(getattr(state, "step", "")) == "end_step"
-                    if on_opp_turn or in_end:
+                    if on_opp_turn and in_end:
                         bonus += 2.4
                 # Be proactive when opponent is tapped down and interaction risk is low.
                 if opp_untapped_lands <= 1 and own_main_sorcery_window:

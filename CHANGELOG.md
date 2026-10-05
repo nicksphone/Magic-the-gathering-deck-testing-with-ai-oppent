@@ -1,5 +1,15 @@
 # Changelog
 
+## Instant Value Windows (Candidate)
+
+- Correct the generic opponent-turn draw bonus to the opponent end step.
+- Price checked early-turn value payments that exhaust affordable interaction
+  in both ranked and strategic choices, independently of archetype/card name.
+- Both-seat canonical timing/choice tests pass; wider qualification remains open.
+- Resource-opportunity predecessor: verified 8,650 tests across 349 files and
+  685 source hashes in four initially DB-free copies; full browser passes.
+  Seeded unchanged-deck natural review is now running. Main/live are unchanged.
+
 ## AI Resource Opportunity (Candidate)
 
 - Compare actual legal payment outcomes for delve, convoke and improvise using
