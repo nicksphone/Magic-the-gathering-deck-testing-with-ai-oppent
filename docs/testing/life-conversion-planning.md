@@ -51,6 +51,13 @@ regression gate is running in four isolated shards with two workers; those copie
 start from a disposable fixture database, not the live database or a claimed
 empty-database clean installation.
 
+A subsequent HTTP supplement passes four cases in an empty disposable API
+database: both affected seats and both replacement orders, paid canonical casts,
+wrong-seat rejection with unchanged snapshots/database, SQLite restoration and
+actual spell completion. Its one new test file is outside the earlier frozen
+320-file full gate; runtime source is unchanged. Browser and fresh post-fix
+match acceptance remain separate.
+
 The baseline natural matrix uses verified 60-card Boros/Dimir capability decks,
 replacing four Grasp of Darkness with four canonical Tainted Remedy. Its frozen
 source predates the last suicidal-casting repair. Do not relabel these games as
