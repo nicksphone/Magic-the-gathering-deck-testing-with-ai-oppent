@@ -41,6 +41,10 @@ ordinary public responses do not expose raw private stack payloads.
   exposure. These flows are included in the default browser harness.
 - Frontend unit checks, lint and build pass. Full frozen qualification remains
   separate; this is not a released feature or arbitrary-card rules certification.
+- Runtime `ed61cd6` is frozen for the complete recursive backend gate in four
+  initially database-free copies (345 test files), plus the complete browser
+  harness. Those running gates are not reported as passed until terminal results
+  and source hashes are verified. Main/live remains `8eeecd1`.
 
 Initial tests caught an incorrect private helper invocation in the test driver;
 it was corrected to pass the existing cost-modifier arguments. Later actual-cast

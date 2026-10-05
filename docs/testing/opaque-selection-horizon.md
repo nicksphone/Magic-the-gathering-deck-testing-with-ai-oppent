@@ -30,7 +30,9 @@ are legally inspected still uses the existing visible-card choice policy.
   Collected Company exercise counter and filtered-selection boundaries.
 - Initial canonical matrix: 42 failures / two passes before repair. Adding
   full-mana Dig Through Time exposed a standalone casting-keyword parsing gap;
-  that line is not a resolving instruction. Delve payment is **not implemented**.
+  that line is not a resolving instruction. That selection-only revision does
+  **not implement delve payment**; the newer casting-resource candidate has a
+  separate qualification and remaining-fidelity contract.
 - Latest focused selection: 528 checks pass, including 112 new cases covering
   both seats, five strategic styles, actual Master casts, copies, counters, short
   libraries, draw restrictions, hidden-order invariance, opposing counts,
@@ -60,8 +62,9 @@ also follows the official
 
 - Retain strict natural replay/reconstruction and per-decision review before
   rolling into main. Sparse seeded games do not establish AI strength or balance.
-- Implement and audit casting-resource mechanics such as delve, convoke and
-  improvise. Fully paid resolution here must not be mistaken for those payments.
+- Qualify and extend the separate casting-resource candidate for delve, convoke
+  and improvise. Fully paid resolution here must not be mistaken for that
+  candidate's payment or event-fidelity acceptance.
 - Extend filtered/conditional acquisition and known-library planning using
   explicit uncertainty, not fabricated hit counts or unseen average card objects.
 
