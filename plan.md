@@ -9,6 +9,9 @@
   Angel and suicidal casting. Preserve frozen baseline games while the later
   repair runs independently; require latest-source full regressions, human choice
   integration and strictly reconstructed post-fix card use before publication.
+  Follow-up: retain lethal static sources through complete spell instructions
+  and human replacement pauses; 373 focused checks pass, but older full gates
+  and enchantment-only games do not qualify this later shared timing edit.
 
 - [x] Qualify supported complete fixed damage/caster-gain instructions and
   semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,

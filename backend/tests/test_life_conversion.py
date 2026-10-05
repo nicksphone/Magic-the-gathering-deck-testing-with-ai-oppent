@@ -130,3 +130,46 @@ def test_losing_printed_abilities_disables_static_conversion_or_loss_protection(
         state.players[1].life = 0
         apply_state_based_actions(state)
         assert state.winner == 2
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+@pytest.mark.parametrize('life', [3, 20])
+def test_lethal_damage_does_not_remove_converter_between_spell_instructions(seat, life):
+    from tests.test_ai_beneficial_alternatives import damage_gain_position
+    from rules_engine.stack_engine import resolve_top_of_stack
+    state, spell = damage_gain_position(seat, 'lightning-helix')
+    drone = permanent(state, 'plague-drone', 3-seat)
+    assert drone.toughness == 3
+    state.players[seat].life = life
+    state = checked_action(state, RulesEngine(), seat, {'type': 'cast_spell',
+                           'card_id': spell.id, 'targets': {'target_card_id': drone.id}})
+    assert resolve_top_of_stack(state)
+    # The converter remains active until the complete damage/gain spell finishes.
+    assert state.players[seat].life == life-3
+    assert state.cards[drone.id].zone == Zone.GRAVEYARD
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+@pytest.mark.parametrize('first', ['conversion', 'double'])
+def test_lethal_converter_and_pending_gain_order_survive_resolution_snapshot(seat, first):
+    from tests.test_ai_beneficial_alternatives import damage_gain_position
+    from rules_engine.stack_engine import resolve_top_of_stack
+    state, spell = damage_gain_position(seat, 'lightning-helix')
+    drone = permanent(state, 'plague-drone', 3-seat)
+    archive = permanent(state, 'alhammarrets-archive', seat)
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {seat}
+    state = checked_action(state, RulesEngine(), seat, {'type': 'cast_spell',
+                           'card_id': spell.id, 'targets': {'target_card_id': drone.id}})
+    assert not resolve_top_of_stack(state)  # Replacement choice pauses resolution.
+    assert state.pending_replacement_choice['resume_kind'] == 'gain_event'
+    assert state.cards[drone.id].zone == Zone.BATTLEFIELD
+    assert state.cards[drone.id].counters['__damage_marked'] == 3
+    assert state.trigger_staging
+    state = deserialize_match_snapshot(serialize_match_snapshot(state))
+    state = checked_action(state, RulesEngine(), seat, {'type': 'choose_replacement',
+                           'replacement_source_id': drone.id if first == 'conversion' else archive.id})
+    assert state.players[seat].life == (17 if first == 'conversion' else 14)
+    assert state.cards[drone.id].zone == Zone.GRAVEYARD
+    assert state.cards[spell.id].zone == Zone.GRAVEYARD
+    assert not state.pending_replacement_choice

@@ -235,8 +235,10 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
             emit_event(state, 'damage_dealt', {'source_card_id': source_card_id,
                        'target_card_id': target_card_id, 'amount': int(post)})
-            # Check for lethal damage — creatures die state-based, not just at combat cleanup.
-            if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
+            # A staged spell/ability finishes all instructions before its SBA check.
+            if (not state.trigger_staging and not state.pending_replacement_choice
+                    and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card)
+                    and _creature_is_lethally_damaged(state, target_card_id)):
                 _move_creature_to_graveyard(state, target_card_id)
             return int(post)
     if target_player is not None:

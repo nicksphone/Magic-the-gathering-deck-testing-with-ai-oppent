@@ -47,7 +47,7 @@ two suicidal casting failures. The subsequent shared action-selection repair
 passes a frozen 479-check overlapping gate. Its cases cover both seats, two
 canonical damage/gain spells, four styles and three difficulty settings.
 All 616 source/fixture files match the latest frozen candidate. The full 320-file
-regression gate is running in four isolated shards with two workers; those copies
+regression gate passes 7,930 tests in four isolated shards with two workers; those copies
 start from a disposable fixture database, not the live database or a claimed
 empty-database clean installation.
 
@@ -64,6 +64,10 @@ loss, immutability and the four HTTP cases. This changes one runtime file and on
 test file after the 320-file full gate was frozen; that gate cannot certify the
 later branch. Require a latest-source follow-up before promoting the candidate.
 
+The subsequent clean committed-source gate includes 321 files/617 source files
+and starts without an existing database or ignored developer cache. It is
+separate from the earlier 7,930-test fixture-database gate.
+
 The baseline natural matrix uses verified 60-card Boros/Dimir capability decks,
 replacing four Grasp of Darkness with four canonical Tainted Remedy. Its frozen
 source predates the last suicidal-casting repair. Do not relabel these games as
@@ -75,6 +79,36 @@ reported replay drift. A post-fix matrix runs with byte-identical manifests and
 the same seeds/seat schedule, using the later draw-score repair. Strict state
 reconstruction and full hand/board decision-context audits are separate checks,
 not inferred from a zero-drift counter.
+
+All eight baseline executions now strictly reconstruct, with 2,942 logical
+decisions, four actual Tainted Remedy casts and four converted life events.
+No gain-spell resolution ended in its controller losing in this small baseline
+sample: the suicidal-casting regression is established by canonical unit cases,
+not a claimed natural-game improvement.
+
+## Resolution Timing Follow-Up
+
+Four canonical cases expose premature lethal creature departure between the
+damage and gain instructions of Lightning Helix. Shared damage handling now
+retains a lethal creature during staged spell/ability resolution, using the
+existing durable resolution/trigger stage. The final state-based check performs
+its departure only after the complete instructions finish. No per-card exception
+or altered Oracle text is used.
+
+An overlapping frozen 373-check gate passes, including the four timing cases and
+four affected-seat replacement-order snapshot cases. Those snapshots preserve
+the lethally damaged converter on the battlefield through the pause, then apply
+the selected loss amount and finish both spell and creature departures. Initial
+fixture failures assumed the wrong printed toughness and the wrong return value
+for a paused resolver; corrected fixtures use the canonical three toughness and
+the actual pause contract. They are not engine fixes.
+
+This later edit changes the shared damage runtime and one regression file after
+the clean 321-file gate was frozen. That older clean gate and the Tainted-only
+natural matrix must not certify this timing repair. Require a new exact-source
+full gate and creature-source natural/integration acceptance before promotion.
+Low-level standalone damage helpers retain their existing completed-event
+behavior; shared staged stack resolution is the qualified timing boundary.
 
 ## Boundaries and Next Gates
 
