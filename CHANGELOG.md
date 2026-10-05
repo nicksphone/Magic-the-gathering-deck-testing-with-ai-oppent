@@ -1,5 +1,13 @@
 # Changelog
 
+## Mana Multiplier Query Prefilter (Candidate)
+
+- Parse supported multiplier instructions before expensive ability-suppression
+  checks, preserving controller scope and actual loss effects.
+- Canonical 293/495-check selections and recorded-position action/state parity
+  pass. Complete frozen backend/browser qualification remains pending; main is
+  unchanged. See `docs/testing/mana-multiplier-prefilter.md`.
+
 ## Strategic Draw Counts and Private Replay Views (Candidate)
 
 - Let the strategic horizon value guaranteed draws only in masked decision views;

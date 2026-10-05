@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab
 
+An isolated mana-query candidate skips ability-suppression checks for sources
+without supported multiplier instructions. Canonical contracts and local
+decision parity pass; complete qualification is running, not a released feature
+or a broad performance claim. See
+[scope and evidence](docs/testing/mana-multiplier-prefilter.md).
+
 The strategic draw-count/private replay candidate preserves unseen identities,
 reuses existing root scores and can export both hands/boards through the
 canonical card-view contract for offline analysis. Frozen `80062da` passes 8,384
