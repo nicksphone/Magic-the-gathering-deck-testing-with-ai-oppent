@@ -12,15 +12,16 @@
   each. Three actual creature casts, zero creature conversions: targeted tests
   establish conversion timing, not those natural games or expert-level AI.
 
-- [ ] Qualify effective printed life restrictions after ability suppression.
+- [x] Qualify effective printed life restrictions after ability suppression.
   The isolated runtime passes 7,964 tests in all 322 files/618 matching hashes.
   Expanded canonical tests reproduce 34 failures/four passes before repair;
   322 overlapping checks, two HTTP payment/recovery cases and four browser cases
   pass. The combined source passes 7,988 tests and the full browser harness,
   preserving published scenarios. A later query prefilter passes 207 overlapping
-  checks; qualify that exact optimized source before promotion. Relevant-source
-  ability suppression must remain intact. Broader conditional restrictions remain
-  open.
+  checks, then 7,991 tests across all 324 files/624 verified source hashes and
+  the complete browser gate, including all three BO3 controller modes.
+  Relevant-source suppression remains covered. Broader conditional restrictions
+  remain open.
 
 - [x] Qualify supported complete fixed damage/caster-gain instructions and
   semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,

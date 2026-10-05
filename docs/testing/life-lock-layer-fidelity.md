@@ -1,7 +1,6 @@
 # Printed Life Locks and Ability Suppression
 
-Status: unpublished integration candidate. Latest optimized-source qualification
-is running; the preceding combined source passed its full gate.
+Status: optimized-source qualification passed. Broader rules remain open.
 
 ## Shared Repair
 
@@ -58,13 +57,17 @@ recovery. A synthetic 32-permanent, 200-query measurement fell from 0.383 second
 to 0.00619 seconds (about 62 times faster for this query workload). This is not
 a whole-game speed or AI-strength measurement. Source records were unchanged.
 
-The latest optimized source is frozen independently for full backend/browser
-qualification. Promotion remains withheld until that source passes; do not
-substitute the preceding combined gate for current-source evidence.
+The independently frozen optimized runtime passes 7,991 tests in all 324 files,
+with 624 source/fixture hashes verified across four shards and a separate nested
+regression/release-agent supplement. Every test file is assigned exactly once.
+The complete Chromium harness passes, including natural AI-vs-AI, human-vs-AI
+and human-vs-human BO3. Frontend tests/lint/build pass on byte-identical frontend
+source in the later isolated cost candidate. All backend databases start empty.
+Source, logs, manifests and verification are archived on the verified NFS share.
 
 ## Remaining Acceptance
 
-- Run the full latest-source regression gate in isolated clean source copies.
+- Keep current-source qualification when extending these helpers.
 - Continue conditional prohibitions, characteristic-changing effects and
   context-specific payment prohibitions distinct from losing life.
 - Validate public views and human/AI decisions against effective restrictions.

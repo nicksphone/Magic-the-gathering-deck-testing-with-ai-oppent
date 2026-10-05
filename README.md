@@ -3,8 +3,9 @@
 An isolated integration candidate repairs printed life restrictions after their
 source loses its abilities. Control changes, expiry, real life payments and human
 recovery have targeted coverage; the combined source passes 7,988 backend tests
-and the full browser harness. A subsequent shared query optimization passes 207
-overlapping checks and awaits its own full qualification before publication. See
+and the full browser harness. The subsequent shared query optimization passes
+7,991 tests across all 324 files with 624 verified source/fixture hashes, plus
+the complete browser harness including all three BO3 controller modes. See
 [effective-restriction qualification](docs/testing/life-lock-layer-fidelity.md).
 
 Supported life-gain conversion, unconditional loss protection and public
