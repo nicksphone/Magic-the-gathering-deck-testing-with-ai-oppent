@@ -66,7 +66,8 @@ later branch. Require a latest-source follow-up before promoting the candidate.
 
 The subsequent clean committed-source gate includes 321 files/617 source files
 and starts without an existing database or ignored developer cache. It is
-separate from the earlier 7,930-test fixture-database gate.
+separate from the earlier 7,930-test fixture-database gate and passes 7,936 tests
+at `a9d96ac`, before the later damage timing repair.
 
 The baseline natural matrix uses verified 60-card Boros/Dimir capability decks,
 replacing four Grasp of Darkness with four canonical Tainted Remedy. Its frozen
@@ -85,6 +86,12 @@ decisions, four actual Tainted Remedy casts and four converted life events.
 No gain-spell resolution ended in its controller losing in this small baseline
 sample: the suicidal-casting regression is established by canonical unit cases,
 not a claimed natural-game improvement.
+
+The post-fix matrix also strictly reconstructs all eight executions and has
+2,942 logical decisions, four converter casts and four converted events. Every
+retained packet is byte-identical to its baseline counterpart. Thus these games
+establish repeatability and exercised conversion, not improved natural decision
+quality. The same small sample did not reach the suicidal-casting regressions.
 
 ## Resolution Timing Follow-Up
 
@@ -109,6 +116,17 @@ natural matrix must not certify this timing repair. Require a new exact-source
 full gate and creature-source natural/integration acceptance before promotion.
 Low-level standalone damage helpers retain their existing completed-event
 behavior; shared staged stack resolution is the qualified timing boundary.
+
+An eight-case HTTP supplement now covers both affected seats and both replacement
+orders for both an enchantment converter and a lethally damaged creature converter.
+Canonical Lightning Helix is paid and cast through HTTP, the damaged Plague Drone
+remains active during the choice, wrong-seat submissions leave memory/database
+unchanged, and SQLite restoration retains the damage and resolution stage. Choosing
+the replacement completes the spell and only then moves the creature to the
+graveyard. The first four added cases used a nonexistent damage attribute; the
+corrected assertions use the existing marked-damage counter. No runtime repair
+was needed for this supplement. These four additional HTTP cases are outside the
+frozen full gate at `865a9b4`, whose runtime is unchanged by the supplement.
 
 ## Boundaries and Next Gates
 

@@ -8,6 +8,10 @@
   clear protected failed-draw events after their state-based check.
 - Evaluate original/copy life recipients through bounded public replacement
   outcomes and filter proved suicidal life actions before proactive selection.
+- Retain lethal creature static sources through complete staged spell resolution
+  and durable replacement pauses; add paid HTTP/SQLite continuation regressions.
+- Strictly reconstruct eight post-fix executions; their unchanged baseline
+  trajectories demonstrate exercised correctness, not measured AI improvement.
 - Qualification remains pending. The published `927ca5d` milestone is unchanged.
 
 ## 2026-10-05 - Qualified land-entry, copy and beneficiary milestone
