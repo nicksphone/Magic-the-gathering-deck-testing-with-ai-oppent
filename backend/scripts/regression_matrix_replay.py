@@ -12,6 +12,7 @@ import time
 from collections import Counter
 from itertools import combinations
 from pathlib import Path
+from typing import Callable
 
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
@@ -68,6 +69,22 @@ def _append_replay_trace(path: Path | None, record: dict) -> None:
         # Close each record so a later failed repeat retains completed evidence.
         with path.open('a', encoding='utf-8') as handle:
             handle.write(json.dumps(record) + '\n')
+
+
+def _timed_stage(observer, context, stage, operation):
+    if observer is None:
+        return operation()
+    observer({**context, 'stage': stage, 'status': 'started'})
+    started = time.perf_counter()
+    try:
+        result = operation()
+    except Exception:
+        observer({**context, 'stage': stage, 'status': 'failed',
+                  'duration_seconds': time.perf_counter() - started})
+        raise
+    observer({**context, 'stage': stage, 'status': 'completed',
+              'duration_seconds': time.perf_counter() - started})
+    return result
 
 
 def _pair_schedule(left: dict, right: dict, count: int, seat_balanced: bool = True):
@@ -178,7 +195,8 @@ def _match_termination_status(match: dict) -> str:
     return classify_timeout_state(match.get("log", []), bool(match.get("timeout")))
 
 
-def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1) -> dict:
+def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1,
+             observer: Callable[[dict], None] | None = None) -> dict:
     if starting_player not in (1, 2):
         raise ValueError("Starting player must be 1 or 2")
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
@@ -191,12 +209,21 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
     ticks = 0
     while state.winner is None and ticks < max_ticks:
         pid = pregame_actor(state) if state.pregame_pending else state.priority_player
-        legal = engine_rules.legal_moves(state, pid)
+        context = ({'event': 'decision_stage', 'game_seed': seed, 'tick': ticks + 1,
+                    'pid': pid, 'turn': state.turn, 'step': str(state.step),
+                    'life': {str(seat): player.life for seat, player in state.players.items()},
+                    'mana_pool': dict(state.players[pid].mana_pool),
+                    'lands_played_this_turn': state.players[pid].lands_played_this_turn,
+                    'hand': [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                    'opponent_battlefield': [state.cards[cid].name for cid in state.players[3-pid].battlefield if cid in state.cards],
+                    'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards]}
+                   if observer is not None else {})
+        legal = _timed_stage(observer, context, 'legal_moves', lambda: engine_rules.legal_moves(state, pid))
         if not legal:
             action = {"type": "pass_priority"}
         else:
             agent = ai_a if pid == 1 else ai_b
-            action = agent.choose_action(state, legal, pid).action
+            action = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid)).action
             legal_types = {m["type"] for m in legal}
             if action.get("type") not in legal_types:
                 action = {"type": "pass_priority"}
@@ -226,7 +253,8 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
                 separators=(",", ":"),
             )
         )
-        engine_rules.take_action(state, pid, action)
+        _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                     lambda: engine_rules.take_action(state, pid, action))
         ticks += 1
 
     normalized_log = [normalize_log_line(line) for line in state.log]
@@ -242,7 +270,8 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
     }
 
 
-def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, best_of: int) -> dict:
+def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, best_of: int, *,
+              observer: Callable[[dict], None] | None = None) -> dict:
     """Run a seeded match while preserving each game's independent replay seed."""
     wins = {1: 0, 2: 0}
     games: list[dict] = []
@@ -252,7 +281,10 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
     chooser = 1
     for game_index in range(best_of * 2):
         current_seed = game_seed(seed, game_index + 1)
-        game = run_game(deck_a, deck_b, current_seed, difficulty, max_ticks, starting_player=chooser)
+        options = {'starting_player': chooser}
+        if observer is not None:
+            options['observer'] = lambda record: observer({**record, 'game_index': game_index + 1})
+        game = run_game(deck_a, deck_b, current_seed, difficulty, max_ticks, **options)
         game["seed"] = current_seed
         game["play_draw_chooser"] = chooser
         game["starting_player"] = chooser
@@ -296,20 +328,26 @@ def main() -> None:
     p.add_argument('--deck-manifest', help='Use hash-verified resolved decks without database bootstrap or hydration')
     p.add_argument('--write-deck-manifest', help='Export selected resolved inputs and provenance before running games')
     p.add_argument('--trace-output', help='New JSONL file retaining full decisions and results for both runs, including successful matches')
+    p.add_argument('--decision-metrics', help='New private JSONL file with live per-decision stage timings; excluded from determinism comparisons')
     args = p.parse_args()
 
     trace_path = Path(args.trace_output) if args.trace_output else None
-    if trace_path is not None:
-        protected_paths = [args.output, str(args.output) + '.progress.json',
-                           args.deck_manifest, args.write_deck_manifest]
-        if any(trace_path.resolve() == Path(value).resolve() for value in protected_paths if value):
-            p.error('Trace output must differ from summary, progress and deck manifest paths')
+    metrics_path = Path(args.decision_metrics) if args.decision_metrics else None
+    diagnostic_paths = [path for path in (trace_path, metrics_path) if path is not None]
+    protected_paths = [args.output, str(args.output) + '.progress.json',
+                       args.deck_manifest, args.write_deck_manifest]
+    if len({path.resolve() for path in diagnostic_paths}) != len(diagnostic_paths):
+        p.error('Trace and metrics outputs must differ')
+    for path in diagnostic_paths:
+        if any(path.resolve() == Path(value).resolve() for value in protected_paths if value):
+            p.error('Diagnostic outputs must differ from summary, progress and deck manifest paths')
+    for path in diagnostic_paths:
         try:
-            trace_path.parent.mkdir(parents=True, exist_ok=True)
-            with trace_path.open('x', encoding='utf-8'):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('x', encoding='utf-8'):
                 pass
         except OSError as exc:
-            p.error(f'Cannot create new trace output: {exc}')
+            p.error(f'Cannot create new diagnostic output: {exc}')
 
     if args.deck_manifest:
         try:
@@ -339,6 +377,11 @@ def main() -> None:
         'max_ticks_per_game': args.max_ticks, 'best_of': args.best_of,
         'repeatability_runs_per_sample': 2,
         'scope': 'Offline diagnostic: actor hand/board and chosen actions; contains hidden game information',
+    })
+    _append_replay_trace(metrics_path, {
+        'event': 'decision_metrics_manifest', 'schema_version': 1,
+        'input_provenance': input_provenance,
+        'scope': 'Private offline stage timings; wall clock is not replay state or evidence of optimal play',
     })
 
     summary = {
@@ -373,9 +416,19 @@ def main() -> None:
                 trace_context = {'event': 'replay_trace_run', 'seed': seed,
                                  'deck_a_seat': deck_a_seat, 'seat_one_deck': seat_one['name'],
                                  'seat_two_deck': seat_two['name']}
-                a = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+                def measured_match(run):
+                    options = {}
+                    if metrics_path is not None:
+                        options['observer'] = lambda record: _append_replay_trace(metrics_path, {
+                            **record, 'seed': seed, 'deck_a_seat': deck_a_seat,
+                            'seat_one_deck': seat_one['name'], 'seat_two_deck': seat_two['name'],
+                            'repeatability_run': run,
+                        })
+                    return run_match(seat_one['mainboard'], seat_two['mainboard'], seed,
+                                     args.difficulty, args.max_ticks, args.best_of, **options)
+                a = measured_match(1)
                 _append_replay_trace(trace_path, {**trace_context, 'repeatability_run': 1, 'result': a})
-                b = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+                b = measured_match(2)
                 _append_replay_trace(trace_path, {**trace_context, 'repeatability_run': 2, 'result': b})
             except Exception as exc:
                 if args.progress:

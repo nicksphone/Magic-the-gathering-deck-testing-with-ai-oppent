@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased Candidate - Strategic horizon and private decision timings
+
+- Share supported public settlement forecasting across strategic roots/replies,
+  rather than charging lost hand value while ignoring a pending permanent.
+  Retain real response branches, counter outcomes and conservative unknowns.
+- Preserve a canonical actual-game position after 236 validated decisions;
+  51 initial regressions fail before repair. Latest AI selection: 468 passed.
+  Update the independent actor-reference's superseded valuation, not its actor/
+  recurrence assertions; real counter and hidden-zone guards remain tested.
+- Add opt-in private per-decision start/completion/failure timings with identities,
+  life/mana and hand/board context. Timings are excluded from deterministic logs;
+  existing/colliding diagnostic paths reject. Metrics/replay selection: 73 passed.
+- Combined targeted selection passes 541 checks. Actual measured/unmeasured
+  baseline matches have identical full results across all four runs of one
+  paired seed; observation is not extra balance data. Complete qualification
+  and actual before/after gameplay remain pending. A
+  baseline profiled late Tribal decision matches the recorded action but costs
+  approximately 59 seconds under cProfile; normal stage timing was about 19s.
+  Strategic stack search dominates; profiling overhead is not a normal-game ETA.
+
 ## 2026-10-05 - Catalog identity and successful decision traces
 
 - Refresh the newest visible catalog records; preserve historical duplicate and

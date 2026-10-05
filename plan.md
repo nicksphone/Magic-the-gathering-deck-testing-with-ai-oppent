@@ -2,6 +2,14 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify [pending strategic announcements](docs/testing/strategic-pending-announcements.md)
+  together with private decision timings. Separate AI/metrics selections pass
+  468/73 checks, combined selection 541; run exact full gates, then compare actual
+  pinned decisions. Do not count wall-clock fields as replay state or samples.
+- [ ] Optimize measured strategic/query hotspots with unchanged legality and
+  decision-parity evidence. Baseline profiling finds many repeated ability-
+  suppression queries in deep stack search; no optimization is qualified yet.
+
 - [x] Qualify [catalog identity and successful trace export](docs/testing/catalog-and-replay-traces.md).
   Separate red/green catalog and runner candidates are combined without changing
   gameplay source. Exact runtime passes 8,219 tests across all 332 files with

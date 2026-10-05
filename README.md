@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+An isolated strategic/diagnostic candidate values supported pending announcements
+through public resolution forecasts, preserving real response branches and
+conservative unknown-choice/hidden-zone fallback. Optional `--decision-metrics`
+exports identify legal-move, AI-choice and action-application latency outside
+replay state. Full qualification and actual-game before/after review are pending;
+see [strategic scope](docs/testing/strategic-pending-announcements.md).
+
 Catalog refresh targets the newest visible built-in/expansion records, with
 stable ID ordering when timestamps tie, without deleting historical duplicates
 or user decks. Replay diagnostics can retain successful decisions using

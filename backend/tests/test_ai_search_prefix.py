@@ -13,14 +13,13 @@ from rules_engine.stack_engine import add_to_stack
 
 
 def actor_correct_reference(ai, state, move, perspective, depth, actor=None):
-    """Original replaying search with the recursive actor corrected, not optimized."""
+    """Unoptimized actor-correct search using the shared horizon valuation policy."""
     try:
         sim = planning_copy(state)
         ai.engine.take_action(sim, perspective if actor is None else actor, move, reject_invalid=True)
     except Exception:
         return -9999.0
-    score = agent_module.evaluate_board(sim, perspective)
-    score += ai._strategic_features(sim, perspective)
+    score = ai._strategic_position_score(sim, perspective)
     score += ai._stack_two_ply_value(sim, perspective)
     if depth <= 0 or sim.winner is not None:
         return score
@@ -34,8 +33,7 @@ def actor_correct_reference(ai, state, move, perspective, depth, actor=None):
                 continue
             child = planning_copy(sim)
             ai.engine.take_action(child, pid, action, reject_invalid=True)
-            value = (agent_module.evaluate_board(child, perspective)
-                     + ai._strategic_features(child, perspective)
+            value = (ai._strategic_position_score(child, perspective)
                      + ai._stack_two_ply_value(child, perspective))
             beam.append((value, action))
         except Exception:

@@ -896,14 +896,21 @@ class AIAgent:
         turn = int(getattr(state, "turn", 1) or 1)
         return my_bf + opp_bf >= 10 or both_hands >= 10 or stack_size >= 2 or turn >= 10
 
+    def _strategic_position_score(self, state: MatchState, player_id: int) -> float:
+        from ai.pending_effects import settled_public_position
+        # Value a pending announcement at the horizon without removing responses
+        # from the real search state or guessing unresolved/hidden-zone choices.
+        projected = settled_public_position(state, player_id)
+        position = projected if projected is not None else state
+        return evaluate_board(position, player_id) + self._strategic_features(position, player_id)
+
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
             sim = planning_copy(state)
             self.engine.take_action(sim, player_id, move, reject_invalid=True)
         except Exception:
             return -9999.0
-        score = evaluate_board(sim, player_id)
-        score += self._strategic_features(sim, player_id)
+        score = self._strategic_position_score(sim, player_id)
         score += self._stack_two_ply_value(sim, player_id)
         return self._strategic_state_score(sim, player_id, depth, score)
 
@@ -924,7 +931,7 @@ class AIAgent:
                     continue
                 nxt = planning_copy(sim)
                 self.engine.take_action(nxt, pid, materialized, reject_invalid=True)
-                val = evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id) + self._stack_two_ply_value(
+                val = self._strategic_position_score(nxt, player_id) + self._stack_two_ply_value(
                     nxt, player_id
                 )
                 beam.append((val, nxt))
@@ -958,7 +965,7 @@ class AIAgent:
                 self.engine.take_action(sim, pid, act, reject_invalid=True)
             except Exception:
                 continue
-            immediate = evaluate_board(sim, player_id) + self._strategic_features(sim, player_id)
+            immediate = self._strategic_position_score(sim, player_id)
             if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
                 val = immediate
             else:
@@ -973,7 +980,7 @@ class AIAgent:
                         try:
                             nxt = planning_copy(sim)
                             self.engine.take_action(nxt, reply_pid, rep, reject_invalid=True)
-                            reply_vals.append(evaluate_board(nxt, player_id) + self._strategic_features(nxt, player_id))
+                            reply_vals.append(self._strategic_position_score(nxt, player_id))
                         except Exception:
                             continue
                     if not reply_vals:

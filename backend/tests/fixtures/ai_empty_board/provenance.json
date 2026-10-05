@@ -1,0 +1,143 @@
+{
+  "kind": "Observed canonical built-in gameplay state",
+  "runtime": "14737b19bb3a01deee4ed3aa93473a0fa5ad7a7d",
+  "seed": 3490444193,
+  "validated_prior_decisions": 236,
+  "snapshot_sha256": "d83dca22dc01e73d470e319d36e49353e617679b079e350392342372e0f22f86",
+  "input_corpus_sha256": "95dedb24bc6bcaee359ed3ce5da5a118cf7467ff7e1da3618662c71a7d2ab65e",
+  "input_provenance": {
+    "input_source": "read_only_consistent_local_canonical_snapshot",
+    "captured_at": "2026-10-05T07:30:35.137901+00:00",
+    "decks": [
+      {
+        "source": "builtin_template_at_14737b19bb3a01deee4ed3aa93473a0fa5ad7a7d",
+        "template_sha256": "a04511a92081be5ab73e2a675c26858c85e4cf4aef98d6909fe6238eeb7ac00d",
+        "cards": [
+          {
+            "name": "Cauldron Familiar",
+            "scryfall_id": "32cf273e-b8f7-434b-9d5d-883dfd6f7423",
+            "payload_sha256": "6cb59334e18d5fa2f805ba2c0785cc2d08b27d8f0f04ce0b75ea2c8847494fc5"
+          },
+          {
+            "name": "Witch's Oven",
+            "scryfall_id": "04ef8493-d986-45f8-a718-617b028f7ad4",
+            "payload_sha256": "8689b06365fddef9b1d9d8196c9e5f03f4455464a5e7d3550439c4f569ab8b4c"
+          },
+          {
+            "name": "Blood Artist",
+            "scryfall_id": "b5275d76-2947-4219-be21-614c7421614a",
+            "payload_sha256": "8b5e784efc00c19439bfd4a1d98fcd2cf2b24bfafbc53811dc9508922f8005c2"
+          },
+          {
+            "name": "Zulaport Cutthroat",
+            "scryfall_id": "c43609fb-3cee-44e0-98d0-3ecaba1d5767",
+            "payload_sha256": "40b68ec8d79a336032d938c110f278c4d24fc9cd53fd3a8a9db7c7b83f88ff6f"
+          },
+          {
+            "name": "Deadly Dispute",
+            "scryfall_id": "d86fa72c-25c1-43ef-9cb0-fe76f7568ed3",
+            "payload_sha256": "33fda296d4cd7b824edc69b229bdc62c6d9d608e035dc9ce2222315df92fe6bb"
+          },
+          {
+            "name": "Village Rites",
+            "scryfall_id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+            "payload_sha256": "c4df062ae82dd9cc26bab3b187d945493d8e72bf46d0bfb66e1e747ed6ab3642"
+          },
+          {
+            "name": "Claim the Firstborn",
+            "scryfall_id": "feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec",
+            "payload_sha256": "b9c8ac8c360760578746bd9eba49adcdc83a438351b286265e84139caa565736"
+          },
+          {
+            "name": "Dreadhorde Butcher",
+            "scryfall_id": "457bc402-4c31-465c-95e1-694f686e257e",
+            "payload_sha256": "88b48e75a731b34b512157c8e3659fb5363f9a07a671eaaa04703212b042ba6f"
+          },
+          {
+            "name": "Priest of Forgotten Gods",
+            "scryfall_id": "363f8761-91a7-47e8-9e15-3b73d59bc020",
+            "payload_sha256": "15a89b975349e76d0b9fc2a0f104896113d4717c7932e643210e80579f136c80"
+          },
+          {
+            "name": "Swamp",
+            "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+            "payload_sha256": "874e5641f11908455a0e9924b8abc85d330db3524aa3166e183d7eb9ffbc1d70"
+          },
+          {
+            "name": "Mountain",
+            "scryfall_id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+            "payload_sha256": "02252691aab55f8d309dc66ce39d1381b1e8cda18c68a6ac2b4f695030ea816c"
+          },
+          {
+            "name": "Badlands",
+            "scryfall_id": "73403d04-fe97-4830-8b80-16dd1a1a6cc1",
+            "payload_sha256": "c5e2f07dbe73333b7d97767c8579cef6912964f20c04f59f2ea2438c5d665ea8"
+          }
+        ]
+      },
+      {
+        "source": "builtin_template_at_14737b19bb3a01deee4ed3aa93473a0fa5ad7a7d",
+        "template_sha256": "cf72093103638927146508cd6ae457948f12bb1c9a786cad2fcbdba88be0067a",
+        "cards": [
+          {
+            "name": "Elvish Mystic",
+            "scryfall_id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+            "payload_sha256": "a6020bf8a05f836eede64dc6a2dca033916dde0fd7762626ec31c37d64f2f71a"
+          },
+          {
+            "name": "Llanowar Elves",
+            "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+            "payload_sha256": "e8ea63177f8307ea47239b97a5a9e56f306d503bfa03439370db18b6505bfaa9"
+          },
+          {
+            "name": "Elvish Archdruid",
+            "scryfall_id": "006ff5a3-355b-4a7d-b402-bb3c8d32a585",
+            "payload_sha256": "b1b20c7cf762e5e782f03e2755fc65958a39bb6db4dcb56833832fbd47272d2e"
+          },
+          {
+            "name": "Elvish Warmaster",
+            "scryfall_id": "58da074a-a776-4e3f-be04-9e7f18320ae1",
+            "payload_sha256": "c37fd0f64ce3e3afc5f1f8159b3a089f0561180ebdfa2b0d542cea34b816dd87"
+          },
+          {
+            "name": "Elvish Clancaller",
+            "scryfall_id": "4da3b0bc-84da-4b85-992b-d0700c97157c",
+            "payload_sha256": "7010fd013f97b0bad4820741ec0c0b7ed458771b2b5b8c9ecbbe7d32c8aa037e"
+          },
+          {
+            "name": "Collected Company",
+            "scryfall_id": "cfa7b456-7e83-4587-a875-9b35fde318c2",
+            "payload_sha256": "2809237bf68d1577b7623d580d03c7ec888aa03fb8b5e7288130f1d369e07743"
+          },
+          {
+            "name": "Realmwalker",
+            "scryfall_id": "52733829-27b7-40ec-a897-cabab35b3729",
+            "payload_sha256": "400ef6c1aa9161a1e9ce33997b8fdabe2abc7621c4cc4eac015ec01db6532216"
+          },
+          {
+            "name": "Shaman of the Pack",
+            "scryfall_id": "da9705e2-40e5-4ec9-8aef-2eab28d5a66f",
+            "payload_sha256": "0018f29b7b881394eb06557280b6d6d6e1a286be0ec86c0a9f66dcebd58427ea"
+          },
+          {
+            "name": "Forest",
+            "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+            "payload_sha256": "4725c52c2d81cb23e6a4f969ff8653eb81e32cc49d988d4b76a3fb17bcb50c24"
+          },
+          {
+            "name": "Swamp",
+            "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+            "payload_sha256": "874e5641f11908455a0e9924b8abc85d330db3524aa3166e183d7eb9ffbc1d70"
+          },
+          {
+            "name": "Bayou",
+            "scryfall_id": "bd7567df-b4d8-41a8-8eac-c05afa784bfe",
+            "payload_sha256": "aef0d79baa4839e4e361744c549d528b06460476459258fb0602d07fa90a3556"
+          }
+        ]
+      }
+    ],
+    "scope": "two unchanged CURRENT built-in templates, not stale saved rows; no card/data/deck writes or online synchronization"
+  },
+  "scope": "Reconstructed using recorded checked actions; hand,board,turn,step compared at each tick. Canonical card metadata unchanged; not invented game cards or a balance sample."
+}

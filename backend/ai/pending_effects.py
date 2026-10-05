@@ -326,6 +326,22 @@ def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, o
     return None if outcome is None else outcome == "win"
 
 
+def settled_public_position(state: MatchState, player_id: int) -> MatchState | None:
+    """Forecast unanswered declared effects, without choosing or revealing unknown cards."""
+    if not state.stack:
+        return state
+    libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
+    opponent = 3 - player_id
+    opposing_hand = tuple(state.players[opponent].hand)
+    projected = _projection_copy(state)
+    if not _settle_announced_stack(projected, player_id=player_id):
+        return None
+    if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
+            or tuple(projected.players[opponent].hand) != opposing_hand):
+        return None
+    return projected
+
+
 def unanswered_action_loses(state: MatchState, player_id: int, action: dict) -> bool | None:
     """Unknown choices/hidden-zone changes never establish a certain loss."""
     outcome = _unanswered_action_outcome(state, player_id, action)
