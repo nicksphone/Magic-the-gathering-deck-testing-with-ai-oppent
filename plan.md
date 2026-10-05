@@ -2,6 +2,13 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify announced casting-method permissions and strategic source/type
+  selection. Prototype/bestow use chosen characteristics; AI preserves scarce
+  allowances for known own-graveyard follow-ups. 194 backend checks, four focused
+  browser flows and frontend unit/lint/build pass. Complete frozen full gates,
+  then broaden affordable multi-action plans and announcement ordering. See
+  [scope](docs/testing/graveyard-cast-methods.md).
+
 - [ ] Qualify shared graveyard casting/land permission and admission families:
   ordinary self/subtype grants, source/timing/cost limits, modal land faces,
   suppression, global prohibitions and real departure events. Both-seat unit and
@@ -10,7 +17,8 @@
 - [ ] Qualify durable limited graveyard permission ledgers and source/type choices.
   Shared Lurrus/Muldrotha/Gisa-style restrictions, actual X limits, land allowances,
   snapshot isolation and stale-choice rejection are implemented in a successor
-  candidate; six focused browser flows pass. Complete frozen full qualification,
+  candidate; six focused browser flows, 8,824 full backend tests and the complete
+  browser suite pass. Complete seeded review and integration qualification,
   then broaden duration, subtype layers and casting-announcement ordering. See
   [scope](docs/testing/limited-graveyard-permissions.md).
 

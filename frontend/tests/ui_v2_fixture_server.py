@@ -15,6 +15,25 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/graveyard-cast-method')
+def graveyard_cast_method(seat: int = 1, method: str = 'prototype'):
+    from fastapi import HTTPException
+    from tests.test_graveyard_cast_methods import RAW, BESTOW, ROWS, LIMITED, add, position
+    if seat not in (1, 2) or method not in {'prototype', 'bestow'}:
+        raise HTTPException(422, 'Expected a supported graveyard cast-method fixture')
+    state = position(seat)
+    state.mechanic_choice_players = {1, 2}
+    for player in state.players.values():
+        player.mana_pool = {color: 4 for color in 'WUBRGC'}
+    add(state, 'Lurrus of the Dream-Den' if method == 'prototype' else 'Muldrotha, the Gravetide', seat, cards=LIMITED)
+    host = add(state, 'Diregraf Ghoul', seat, cards=ROWS)
+    name, rows = (RAW['name'], {RAW['name']: RAW}) if method == 'prototype' else ('Leafcrown Dryad', BESTOW)
+    card = add(state, name, seat, Zone.GRAVEYARD, cards=rows)
+    state.log.append('Canonical graveyard cast-method fixture; not a competitive deck.')
+    return {'match': publish(state, [{'quantity': 60, 'card_name': 'Island'}]),
+            'card_id': card.id, 'host_id': host.id, 'name': name}
+
+
 @app.post('/fixture/limited-graveyard-permission')
 def limited_graveyard_permission(seat: int = 1, source: str = 'Lurrus of the Dream-Den'):
     from fastapi import HTTPException

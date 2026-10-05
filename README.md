@@ -1,12 +1,19 @@
 # MTG Deck Testing Lab
 
+An isolated successor checks graveyard permissions against announced prototype
+and bestow characteristics and preserves scarce source/type allowances for known
+AI follow-ups. Both-seat HTTP/restart and four focused browser flows pass;
+complete successor qualification and integration remain open. See
+[casting-method scope](docs/testing/graveyard-cast-methods.md).
+
 An isolated graveyard-permission candidate adds ordinary self/subtype casting
 and land plays, including modal land faces, with real costs, land limits,
 source flags and shared cast/entry prohibitions. A successor adds source-local
 once-per-turn and per-permanent-type usage, X/mana-value checks and deliberate
 source/type choices. See [ordinary scope](docs/testing/graveyard-play-permissions.md)
-and [limited scope](docs/testing/limited-graveyard-permissions.md). Successor full
-qualification and wider tactical review remain open; main/live are unchanged.
+and [limited scope](docs/testing/limited-graveyard-permissions.md). The limited
+runtime passes 8,824 full backend tests and the complete browser suite.
+Wider tactical review and integration remain open; main/live are unchanged.
 
 An isolated instant-timing candidate distinguishes opponent end-step value
 casting from early-turn tap-outs and prices actual payment that loses the last

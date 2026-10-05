@@ -51,6 +51,8 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
         "additional_cost_group": option.additional_cost_group,
         "kicked": option.kicked,
         "kicker_base_id": option.kicker_base_id,
+        "graveyard_permission_key": option.graveyard_permission_key,
+        "graveyard_permission_max_mana_value": option.graveyard_permission_max_mana_value,
     }
     if state is not None and (option.discard_cards or option.sacrifice_creatures or option.discard_x or option.discard_all or option.sacrifice_all):
         from rules_engine.costs import additional_cost_candidates
@@ -554,7 +556,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                           "from_graveyard": original.zone == Zone.GRAVEYARD,
                           "cost_options": [vars(option) for option in options], "target_hints": hints})
     from rules_engine.bestow import bestow_cost, bestow_cast_view
-    for cid in list(player.hand) + exile_candidates(state, player_id):
+    for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]
         if is_departed_token(original):
             continue
@@ -573,6 +575,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 moves.append({'type': 'cast_spell', 'card_id': cid, 'card_name': view.name,
                     'cast_variant': 'bestow', 'mana_cost': view.mana_cost,
                     'from_exile': original.zone == Zone.EXILE,
+                    'from_graveyard': original.zone == Zone.GRAVEYARD,
                     **({'selected_face_index': index} if original.card_faces else {}),
                     'cost_options': [_cost_option_view(option, state, player_id, cid) for option in options], 'target_hints': hints})
     return moves

@@ -15,6 +15,23 @@ from rules_engine.type_effects import effective_types
 from rules_engine.query_context import rule_query_scope, query_cache
 
 
+def graveyard_permission_opportunity(state, player_id, spell_id, option):
+    """Estimate scarce-slot loss using only other cards in our graveyard."""
+    key = option.get('graveyard_permission_key')
+    if not key:
+        return 0.0
+    from rules_engine.costs import collect_cost_options
+    loss = 0.0
+    for cid in state.players[player_id].graveyard:
+        if cid == spell_id or 'Land' in effective_types(state, state.cards[cid]):
+            continue
+        alternatives = collect_cost_options(state, player_id, state.cards[cid])
+        keys = {cost.graveyard_permission_key for cost in alternatives}
+        if key in keys and None not in keys:
+            loss += 1.0 / len(keys)
+    return loss
+
+
 def _graveyard_loss(agent, state, cid, player_id):
     from rules_engine.graveyard_permissions import ordinary_graveyard_cast, graveyard_land_permission, limited_graveyard_casts
     card = state.cards[cid]

@@ -214,6 +214,13 @@ for (const changed of [{graveyard_permission_key: ''}, {graveyard_permission_key
   assert.throws(() => parseLegalMoves(packet({...graveyardLand, ...changed})), /legal-moves/);
 }
 console.log('PASS limited graveyard permission source contracts');
+const permissionCost = {type:'cast_spell', cost_options:[{id:'base_graveyard:source',
+  discard_cards:0,sacrifice_creatures:0,graveyard_permission_key:'source',graveyard_permission_max_mana_value:2}]};
+assert.equal(parseLegalMoves(packet(permissionCost)).moves.length, 1);
+for (const change of [{graveyard_permission_key:4},{graveyard_permission_key:''},
+  {graveyard_permission_max_mana_value:-1},{graveyard_permission_max_mana_value:1.5}]) {
+  assert.throws(() => parseLegalMoves(packet({...permissionCost,cost_options:[{...permissionCost.cost_options[0],...change}]})), /legal-moves/);
+}
 
 const resources = {delve: ['grave'], improvise: ['artifact'], convoke: [{card_id: 'creature', pay_as: ['generic', 'G']}]};
 const resourcePacket = value => ({...legal, moves: [{type: 'cast_spell', cost_options: [{...castCosts, resource_payment_candidates: value}]}]});

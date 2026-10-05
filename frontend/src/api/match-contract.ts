@@ -217,6 +217,10 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
       && (move.payment_options === undefined || paymentOptions(move.payment_options))
       && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
         record(option) && typeof option.id === 'string'
+        && (option.graveyard_permission_key == null || (typeof option.graveyard_permission_key === 'string'
+          && option.graveyard_permission_key.length > 0 && option.graveyard_permission_key.length <= 100))
+        && (option.graveyard_permission_max_mana_value == null || (Number.isInteger(option.graveyard_permission_max_mana_value)
+          && (option.graveyard_permission_max_mana_value as number) >= 0))
         && (option.additional_cost_group == null || typeof option.additional_cost_group === 'string')
         && (option.kicked === undefined || typeof option.kicked === 'boolean')
         && ['discard_x', 'discard_all', 'sacrifice_all'].every(key => option[key] === undefined || typeof option[key] === 'boolean')

@@ -3075,6 +3075,17 @@ class AIAgent:
         cost_options = move.get("cost_options") or []
         if cost_options and not (move.get("cost_choice") or {}).get("id"):
             selected_cost = cost_options[0]
+            if selected_cost.get('graveyard_permission_key'):
+                from ai.casting_resources import graveyard_permission_opportunity
+                from rules_engine.costs import casting_method
+                fields = ('mana_cost', 'pay_life', 'pay_life_x', 'discard_cards', 'discard_x',
+                          'discard_all', 'sacrifice_creatures', 'sacrifice_kind', 'sacrifice_all',
+                          'exile_graveyard', 'kicked', 'additional_cost_group')
+                alternatives = [option for option in cost_options
+                    if casting_method(option['id']) == casting_method(selected_cost['id'])
+                    and all(option.get(field) == selected_cost.get(field) for field in fields)]
+                selected_cost = min(alternatives, key=lambda option: (
+                    graveyard_permission_opportunity(state, player_id, source.id, option), option['id']))
             if selected_cost.get('additional_cost_group'):
                 group = selected_cost['additional_cost_group']
                 alternatives = [option for option in cost_options if option.get('additional_cost_group') == group]

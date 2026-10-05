@@ -115,7 +115,11 @@ def _has_creature_subtype(state, card, subtype):
 
 @scoped_query
 def ordinary_graveyard_cast(state, player_id, card_id):
-    card = state.cards[card_id]
+    return ordinary_graveyard_cast_view(state, player_id, state.cards[card_id])
+
+
+def ordinary_graveyard_cast_view(state, player_id, card):
+    card_id = card.id
     if (card.zone != Zone.GRAVEYARD or card.owner != player_id
             or card_id not in state.players[player_id].graveyard or is_departed_token(card)):
         return False

@@ -1,13 +1,27 @@
 # Changelog
 
+## Graveyard Casting Methods And Permission Opportunity (Candidate)
+
+- Evaluate ordinary/limited permissions using announced prototype mana value
+  and bestow spell types. Preserve native escape/flashback/aftermath paths.
+- Correct prototype color and retain printed characteristics for stack departure;
+  offer prototype alongside free casting without combining alternative costs.
+- Compare equivalent AI permission options using own-graveyard follow-ups,
+  without hidden opponent identities or card-name strategy branches.
+- Typed public permission metadata, canonical raw provenance, 194 isolated
+  backend checks, four focused browser flows and frontend unit/lint/build pass.
+  Full frozen successor qualification and natural review remain open.
+
 ## Limited Graveyard Permissions (Candidate)
 
 - Shared once-per-turn mana-value/subtype permissions and per-permanent-type
   permissions, with durable source-local usage and explicit multi-type choices.
 - Real X/spell mana-value checks, land allowances and stale-source rejection;
   snapshot/tactical-copy independence and both-seat human/AI action coverage.
-- Six focused browser flows pass; broad/input selections pass. Exact-source
-  full backend/browser qualification and natural quality review remain open.
+- Six focused browser flows pass. Frozen runtime 359904ff passes 8,824 tests
+  across 355 recursive files with 710 source hashes verified in four initially
+  DB-free copies, plus the complete browser suite. Natural quality review and
+  integration remain open; these checks do not establish expert AI strength.
 - Canonical Walking Ballista and Exploration downloads retain full provenance.
 
 ## Graveyard Play Permissions (Candidate)

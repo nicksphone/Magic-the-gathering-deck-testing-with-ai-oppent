@@ -324,7 +324,7 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
-    from rules_engine.graveyard_permissions import ordinary_graveyard_cast, zone_cast_prohibited, graveyard_only_cast
+    from rules_engine.graveyard_permissions import zone_cast_prohibited, graveyard_only_cast
     if zone_cast_prohibited(state, player_id, card.zone) or (card.zone != Zone.GRAVEYARD and graveyard_only_cast(card)):
         return []
     from rules_engine.linked_discard import linked_discard_gaps
@@ -346,15 +346,32 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     flashback = flashback_cost(card) if card.zone == Zone.GRAVEYARD else None
     from rules_engine.flashback_grants import granted_cost
     granted_flashback = granted_cost(state, card, player_id)
+    from rules_engine.bestow import bestow_cost
+    prototype = prototype_characteristics(card)
+    alt = ALT_COST_RE.search(card.oracle_text or '')
+    ordinary_methods = [base] if card.mana_cost else []
+    if bestow_cost(card):
+        ordinary_methods.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))
+    if prototype:
+        ordinary_methods.append(CostOption(id='prototype', label='Prototype', mana_cost=prototype['mana_cost']))
+    if alt:
+        ordinary_methods.append(CostOption(id='alternate', label=f'Alternate {alt.group(1)}', mana_cost=alt.group(1)))
     if without_mana:
         options = [base]
+        # Prototype changes characteristics, unlike an alternative mana cost.
+        if prototype:
+            options.append(CostOption(id='prototype', label='Prototype', mana_cost=''))
     elif card.zone == Zone.GRAVEYARD:
-        options = [base] if card.mana_cost and ordinary_graveyard_cast(state, player_id, card.id) else []
-        from rules_engine.graveyard_permissions import limited_graveyard_casts
-        if card.mana_cost:
-            for grant in limited_graveyard_casts(state, player_id, card):
-                options.append(replace(base, id='base_graveyard:' + grant['key'],
-                    label='Graveyard cast - ' + grant['source_name'] + (' (' + grant['type'] + ')' if grant['type'] else ''),
+        options = []
+        from rules_engine.graveyard_permissions import limited_graveyard_casts, ordinary_graveyard_cast_view
+        from rules_engine.alternative_casts import spell_cast_view
+        for method in ordinary_methods:
+            view = spell_cast_view(card, casting_method(method.id))
+            if ordinary_graveyard_cast_view(state, player_id, view):
+                options.append(method)
+            for grant in limited_graveyard_casts(state, player_id, view):
+                options.append(replace(method, id=method.id + '_graveyard:' + grant['key'],
+                    label=('Graveyard cast' if method.id == 'base' else method.label) + ' - ' + grant['source_name'] + (' (' + grant['type'] + ')' if grant['type'] else ''),
                     graveyard_permission_key=grant['key'],
                     graveyard_permission_max_mana_value=grant['max_mana_value']))
         if has_aftermath(card):
@@ -372,21 +389,10 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
         options = []
     else:
         # An absent mana cost is unpayable, unlike an explicit {0} (CR 118.6).
-        options = [base] if card.mana_cost else []
-        from rules_engine.bestow import bestow_cost
-        if bestow_cost(card):
-            options.append(CostOption(id='bestow', label='Bestow (Aura)', mana_cost=bestow_cost(card)))
+        options = ordinary_methods
     if card.zone == Zone.EXILE and not without_mana:
         options.extend(CostOption(id=f'foretell_{index}', label='Foretell', mana_cost=cost)
                        for index, cost in enumerate(cast_costs(state, card, player_id)))
-    prototype = prototype_characteristics(card)
-    if prototype and card.zone != Zone.GRAVEYARD and not without_mana and not foretell_only:
-        options.append(CostOption(id="prototype", label="Prototype", mana_cost=prototype["mana_cost"]))
-
-    alt = ALT_COST_RE.search(card.oracle_text or "")
-    if alt and card.zone != Zone.GRAVEYARD and not without_mana and not foretell_only:
-        options.append(CostOption(id="alternate", label=f"Alternate {alt.group(1)}", mana_cost=alt.group(1)))
-
     from rules_engine.kicker import kicker_price, kicker_cost
     kicker = kicker_cost(card)
     if kicker:
@@ -432,13 +438,12 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
     from rules_engine.attachments import is_aura
+    from rules_engine.alternative_casts import spell_cast_view
+    card = spell_cast_view(card, casting_method(option.id))
     if option.graveyard_permission_max_mana_value is not None:
         from rules_engine.mana import mana_value
         if mana_value(card.mana_cost or '', x_value=x_value) > option.graveyard_permission_max_mana_value:
             return False
-    if casting_method(option.id) == 'bestow':
-        from rules_engine.bestow import bestow_cast_view
-        card = bestow_cast_view(card)
     player = state.players[player_id]
     if x_value < 0:
         return False

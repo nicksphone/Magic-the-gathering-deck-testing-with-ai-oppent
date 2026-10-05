@@ -915,7 +915,9 @@ class RulesEngine:
                 x_value = int(at_targets.get("x_value", 0) or 0)
                 if choice_id and chosen.graveyard_permission_max_mana_value is not None:
                     from rules_engine.mana import mana_value
-                    if mana_value(face_card.mana_cost or '', x_value=x_value) > chosen.graveyard_permission_max_mana_value:
+                    from rules_engine.alternative_casts import spell_cast_view
+                    permission_view = spell_cast_view(face_card, casting_method(chosen.id))
+                    if mana_value(permission_view.mana_cost or '', x_value=x_value) > chosen.graveyard_permission_max_mana_value:
                         reject('This spell exceeds the graveyard permission mana-value limit')
                         return
                 if effect_cast and '{x}' in (face_card.mana_cost or '').lower() and x_value != 0:

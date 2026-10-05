@@ -189,6 +189,8 @@ export type LegalMove = {
   block_costs?: Record<string, { mana_cost: string; hybrid_symbols: { symbol: string; choices: string[] }[] }>;
   x_value?: number;
   cost_options?: {
+    graveyard_permission_key?: string | null;
+    graveyard_permission_max_mana_value?: number | null;
     resource_payment_candidates?: ResourceCandidates;
     id: string;
     additional_cost_group?: string | null;

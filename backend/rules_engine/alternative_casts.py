@@ -35,6 +35,9 @@ def apply_prototype(card) -> None:
     if characteristics is None:
         return
     characteristics.update({f'printed_{field}': str(characteristics[field]) for field in ['power', 'toughness']})
+    symbols = re.findall(r'\{([^}]+)\}', characteristics['mana_cost'].upper())
+    colors = {part for symbol in symbols for part in symbol.split('/')}
+    characteristics['colors'] = [color for color in 'WUBRG' if color in colors]
     card.printed_characteristics = {key: getattr(card, key) for key in characteristics}
     for key, value in characteristics.items():
         setattr(card, key, value)
@@ -46,6 +49,19 @@ def restore_printed_characteristics(card) -> None:
     for key, value in card.printed_characteristics.items():
         setattr(card, key, value)
     card.printed_characteristics = {}
+
+
+def spell_cast_view(card, method):
+    """Announced characteristics for pure permission and cost checks."""
+    if method == 'bestow':
+        from rules_engine.bestow import bestow_cast_view
+        return bestow_cast_view(card)
+    if method == 'prototype':
+        from copy import copy
+        view = copy(card)
+        apply_prototype(view)
+        return view
+    return card
 
 
 def validate_escape_exiles(state, player_id: int, card_id: str, count: int, selected: list | None) -> list[str] | None:
