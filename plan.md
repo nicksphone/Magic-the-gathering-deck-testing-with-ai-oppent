@@ -17,6 +17,14 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Complete training-choice prompts and explicit payload validation: 172
+  composed checks pass for both-seat canonical modal/inspection/trigger/ward/
+  replacement cases. Resource/hybrid mana encoding and broader choice coverage
+  remain unfinished. See [scope](docs/testing/training-choice-coverage.md).
+- [x] Bounded offline corpus index application: 100 importer/recovery checks
+  pass. All 38,690 profiles qualify against a parent backup with nine other
+  tables and 1,264 snapshots preserved. Live import and nested metadata
+  materialization remain outstanding. See [scope](docs/testing/corpus-readiness.md).
 - [x] Immutable combat query batches: 799 composed tests pass; a retained Master
   decision preserves complete action/state/projection parity and all search work,
   reducing measured time from 116.0 to 92.5 seconds. Interactive latency remains

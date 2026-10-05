@@ -35,6 +35,26 @@ authorizes an owned field change.
 
 ## Recovery And Storage
 
+`apply-index` applies a complete digest-pinned artifact index in one transaction
+to an explicit independent **offline local copy**. Required arguments are
+`--database`, `--target`, `--target-sha256`, `--index`, `--index-sha256` and a new
+`--out` report. A separately verified canonical refresh also requires its packet
+and hash. Source and target must initially be exact byte copies. There is no
+default target, live-write flag or force/rebase override.
+
+The importer rejects live database names, NFS SQLite, symlinks, hardlinks,
+sidecars, changed source/target identities and incomplete/duplicate coverage.
+It freezes bounded validated artifacts before opening the target transaction,
+preserves nonprofile columns and legacy tags, and verifies every resulting row.
+If commit succeeds but report publication fails, preserve and audit the target;
+do not blindly retry. Installation into the running app is a separate step.
+
+Limits are enforced in code rather than trusted from the index: 256 artifacts,
+500 records per artifact, 2 MiB per JSONL line, 64 MiB expanded per artifact,
+1 GiB aggregate expansion and 2 GiB local staging. Index, receipt, compressed
+artifact, refresh and source-profile reads also have explicit byte limits.
+Oversized/truncated/compressed-bomb inputs fail before target mutation.
+
 Source connections are read-only. Active SQLite checkpoints/overlays must be
 local, never NFS. Completed archives, immutable receipts and reports belong on
 verified RCHFiles storage. Existing outputs, unfinished `.part` files, input/output
@@ -49,6 +69,14 @@ Final validation compares every complete profile, including unchanged/refused
 rows, in addition to numeric/tag/core-column preservation.
 
 ## Evidence And Limits
+
+Parent importer/recovery qualification passes **100 checks** on the current
+combat milestone. A separate isolated application of all 38,690 profiles from
+78 pinned artifacts to a parent backup passes integrity checks and preserves all
+nine nonknowledge tables, schema, nonprofile columns, tags and 1,264 saved match
+records. No live rows were imported. Private preservation evidence is archived
+under `knowledge-corpus/fresh-backup-qualification-d519d37/`; deploying that old
+full database later would lose newer writes and is not authorized by this test.
 
 The completed offline campaign contains 38,690 unique validated profile patches:
 18,609 dated-bulk verified empty ruling lists and 20,081 nonempty lists. The source

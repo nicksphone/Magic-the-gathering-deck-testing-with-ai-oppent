@@ -33,6 +33,8 @@ _PROMPT_FIELDS = frozenset({
     'target_card_id', 'target_player', 'trigger_order', 'replacement_source_id',
     'accept', 'cost_text', 'payment_options', 'activation_costs', 'hybrid_symbols',
     'ability_x_cost',
+    'inspected_cards', 'bottom_any_order', 'bottom_random', 'trigger_labels',
+    'replacement_name', 'event', 'ward_cost', 'mode_target_text',
 })
 _SIMPLE = frozenset({
     'pass_priority', 'keep_hand', 'mulligan', 'play_land', 'foretell',
@@ -180,6 +182,11 @@ class TrainingEnvironment:
         if seat is None:
             return []
         _, moves = self._view(seat)
+        return self._prompts(moves)
+
+    @staticmethod
+    def _prompts(moves):
+        """Allowlisted decision descriptions; never expose continuation packets."""
         result = []
         for move in moves:
             if move['type'].endswith('_restricted'):
@@ -196,12 +203,24 @@ class TrainingEnvironment:
                 'activate_loyalty': ['targets including X if applicable'],
                 'crew': ['crew_card_ids'], 'equip': ['target_card_id'],
             }.get(move['type'], [] if move['type'] in _SIMPLE else ['Complete action contract'])
+            if move['type'] == 'choose_mechanic':
+                field = ('damage_assignment' if move['kind'] == 'combat_damage' else
+                         'choice_id' if move['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+                choices = [field + ' (explicit selection; preserve order; count/range from hint)']
+            elif move['type'] == 'choose_trigger_order':
+                choices = ['trigger_order (complete permutation, bottom-to-top stack order)']
+            elif move['type'] == 'choose_trigger_target':
+                choices = ['stack_id', 'exactly one of target_card_id or target_player']
+            elif move['type'] == 'choose_replacement':
+                choices = ['replacement_source_id']
+            elif move['type'] == 'choose_optional_effect':
+                choices = ['stack_id', 'accept (explicit boolean)']
             result.append({'hint': hint, 'required_choices': choices})
         return result
 
     def observe(self, seat):
         """JSON allowlist over decision_view, with no private snapshot fields."""
-        view, _ = self._view(seat)
+        view, moves = self._view(seat)
         players = {}
         known = {}
         for pid, player in view.players.items():
@@ -217,7 +236,14 @@ class TrainingEnvironment:
         for cid, card in view.cards.items():
             if not is_unknown(card):
                 known[cid] = {**serialize_card_view(view, cid), 'zone': card.zone.value}
-        # Only a choice tag/owner crosses here; continuations stay in snapshots.
+        # Inspected nonselectable cards are also authorized by the actor's engine
+        # prompt (e.g. Officer misses). Never consult an opponent's legal moves.
+        for move in moves:
+            for card in move.get('inspected_cards', []):
+                cid = card['id']
+                if cid not in known:
+                    known[cid] = {**deepcopy(card), 'zone': view.cards[cid].zone.value}
+        # Only allowlisted owned decision prompts cross; continuations stay private.
         pending = (view.pending_mechanic_choice or view.pending_trigger_order
                    or view.pending_replacement_choice)
         return json.loads(_json({
@@ -231,6 +257,9 @@ class TrainingEnvironment:
                        'targets': list(item.targets)} for item in view.stack],
             'attackers': list(view.attackers), 'blocks': deepcopy(view.blocks),
             'pending_choice': {'kind': pending.get('kind', pending.get('phase', 'replacement')),
+                               'seat': self.acting_seat,
+                               'prompts': self._prompts(moves)} if pending and seat == self.acting_seat else
+                              {'kind': pending.get('kind', pending.get('phase', 'replacement')),
                                'seat': self.acting_seat} if pending else None,
             'winner': view.winner,
         }))
@@ -251,6 +280,12 @@ class TrainingEnvironment:
         """Close known legacy defaults, while leaving execution to checked_action."""
         from rules_engine.action_validation import require
         kind = action['type']
+        if kind == 'choose_mechanic':
+            pending = self._state.pending_mechanic_choice
+            require(bool(pending), 'No pending mechanic choice')
+            field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
+                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+            require(action.get(field) is not None, 'Missing required choice: ' + field)
         if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
             require(action.get('color') is not None, 'Missing required choice: color')
         if kind == 'attack':
@@ -328,6 +363,15 @@ class TrainingEnvironment:
             except ActionRejected:
                 mask.append(False)
         return mask
+
+    def lookup_intent(self, intent, seat=None):
+        """Consumer move-display intents use the shared contract, never infer choices.
+
+        Encoded actions and lookup/step remain strict. This explicit convenience
+        boundary strips presentation fields using the parent-owned model map.
+        """
+        from ai.action_contract import complete_action
+        return self.lookup(complete_action(intent), seat)
 
     def simple_actions(self):
         """Convenience subset; no target, payment, attack or choice guesses."""

@@ -19,11 +19,13 @@ from datetime import datetime, timezone
 import gzip
 import hashlib
 import importlib
+import io
 import json
 import os
 from pathlib import Path
 import sqlite3
 import time
+import tempfile
 from types import SimpleNamespace
 from urllib.parse import urlparse
 
@@ -41,6 +43,19 @@ VERSION = 1
 MECHANIC_SCHEMA = 1
 MECHANIC_EXTRACTOR = 'canonical-tactical-surface-v1'
 TAG_HASH = hashlib.sha256(Path(importlib.import_module('card_data.tactical').__file__).read_bytes()).hexdigest()
+
+# Application-only ceilings, not values supplied by an untrusted index.
+MAX_INDEX_BYTES = 2 * 1024 * 1024
+MAX_RECEIPT_BYTES = 64 * 1024
+MAX_COMPRESSED_ARTIFACT_BYTES = 16 * 1024 * 1024
+MAX_ARTIFACT_LINE_BYTES = 2 * 1024 * 1024
+MAX_ARTIFACT_EXPANDED_BYTES = 64 * 1024 * 1024
+MAX_TOTAL_EXPANDED_BYTES = 1024 * 1024 * 1024
+MAX_STAGE_BYTES = 2 * 1024 * 1024 * 1024
+MAX_REFRESH_BYTES = 2 * 1024 * 1024
+MAX_SOURCE_PROFILE_BYTES = 2 * 1024 * 1024
+MAX_SOURCE_ROWS = 100000
+MAX_INDEX_ENTRIES = 256
 
 
 def new_outputs(*paths):
@@ -190,21 +205,23 @@ def fetch_card(conn, out, row_id):
     return packet
 
 
-def checked_refresh(args):
+def checked_refresh(args, *, packet_bytes=None, response_bytes=None):
     path = getattr(args, 'card_refresh', None)
     if not path:
         return None
-    if file_hash(path) != args.card_refresh_sha256:
+    packet_sha = hashlib.sha256(packet_bytes).hexdigest() if packet_bytes is not None else file_hash(path)
+    if packet_sha != args.card_refresh_sha256:
         raise ValueError('Canonical refresh packet hash mismatch')
-    packet = json.loads(path.read_text())
+    packet = json.loads(packet_bytes if packet_bytes is not None else path.read_text())
     raw, prov = packet['card_data'], packet['provenance']
     parsed = urlparse(prov['download_uri'])
     if (prov.get('source') != 'scryfall' or prov.get('type') != 'card_api_refresh'
             or parsed.scheme != 'https' or parsed.netloc != 'api.scryfall.com' or parsed.path != f"/cards/{packet['scryfall_id']}"
             or raw.get('id') != packet['scryfall_id'] or raw.get('oracle_id') != packet['oracle_id']
-            or canonical_hash(raw) != prov['record_sha256'] or file_hash(packet['response_archive']) != prov['archive_sha256']):
+            or canonical_hash(raw) != prov['record_sha256']
+            or (hashlib.sha256(response_bytes).hexdigest() if response_bytes is not None else file_hash(packet['response_archive'])) != prov['archive_sha256']):
         raise ValueError('Canonical refresh evidence mismatch')
-    response = json.loads(Path(packet['response_archive']).read_text())
+    response = json.loads(response_bytes if response_bytes is not None else Path(packet['response_archive']).read_text())
     if response != raw:
         raise ValueError('Refresh response archive differs from packet')
     return packet
@@ -498,6 +515,53 @@ def prepare(conn, args, context=None):
         return {**counts, 'processed_this_run': processed, 'remaining': len(report['cards']) - counts['completed'], 'artifact_sha256': file_hash(args.out), 'errors_detail': [{'id': row[0], 'reason': row[1]} for row in state.execute('SELECT id,error FROM completed WHERE error IS NOT NULL')], 'provenance': config}
 
 
+def validate_profile_patch(original, patch, manifest):
+    """Shared source preconditions and owned-field/provenance checks, no writes."""
+    if (not original or original['name'] != patch['name'] or original['scryfall_id'] != patch['scryfall_id']
+            or canonical_hash(load_profile(original)) != patch['before_profile_sha256']):
+        raise ValueError('Import precondition failed')
+    profile = patch['profile']
+    if canonical_hash(profile) != patch['after_profile_sha256']:
+        raise ValueError('Import payload hash failed')
+    before = load_profile(original)
+    allowed = {'card_data_provenance', 'card_data_sha256', 'rulings', 'rulings_verified', 'rulings_provenance'}
+    refresh = manifest.get('card_refresh')
+    expected_prov = manifest['cards']
+    if refresh and patch['id'] == refresh['row_id']:
+        old_raw, new_raw = before['card_data'], profile['card_data']
+        if (canonical_hash(old_raw) != refresh['previous_card_sha256']
+                or canonical_hash(new_raw) != refresh['provenance']['record_sha256']
+                or old_raw['id'] != new_raw['id'] or new_raw['id'] != refresh['scryfall_id']
+                or old_raw['oracle_id'] != new_raw['oracle_id'] or new_raw['oracle_id'] != refresh['oracle_id']
+                or old_raw['name'] != new_raw['name']):
+            raise ValueError('Canonical refresh import identity/hash precondition failed')
+        allowed.update({'card_data', 'facts'})
+        expected_prov = refresh['provenance']
+    if manifest.get('tags') == TAG_HASH:
+        allowed.update({'tactical_tags', 'face_tactical_tags', 'tactical_provenance'})
+    if manifest.get('mechanics') == {'schema_version': MECHANIC_SCHEMA, 'extractor_version': MECHANIC_EXTRACTOR}:
+        allowed.add('mechanic_metadata')
+        if mechanic_status(profile, canonical_hash(profile['card_data'])) != 'current_input_version_not_semantics':
+            raise ValueError('Mechanic metadata input/version evidence mismatch')
+    if any(before.get(key) != profile.get(key) for key in before.keys() | profile.keys() if key not in allowed):
+        raise ValueError('Artifact changes non-owned canonical fields')
+    raw = profile['card_data']
+    cp = profile.get('card_data_provenance', {})
+    if (profile.get('card_data_sha256') != canonical_hash(raw)
+            or cp.get('record_sha256') != canonical_hash(raw)
+            or any(cp.get(key) != value for key, value in expected_prov.items())):
+        raise ValueError('Card source evidence does not match artifact manifest')
+    if manifest.get('rulings'):
+        rulings = profile.get('rulings')
+        validate_rulings_page({'object': 'list', 'data': rulings, 'has_more': False}, raw['oracle_id'])
+        rp = profile.get('rulings_provenance', {})
+        if (profile.get('rulings_verified') is not True or rp.get('complete') is not True
+                or rp.get('oracle_id') != raw['oracle_id'] or rp.get('sha256') != canonical_hash(rulings)
+                or any(rp.get(key) != value for key, value in manifest['rulings'].items())):
+            raise ValueError('Ruling source evidence does not match artifact manifest')
+    return profile
+
+
 def validate_artifact(conn, artifact, scratch, *, reuse=False, snapshot=None, full_audit=True, ownership=None):
     scratch = local_path(scratch)
     if not reuse and scratch.exists():
@@ -534,45 +598,7 @@ def validate_artifact(conn, artifact, scratch, *, reuse=False, snapshot=None, fu
                             or tuple(original[:2]) != row[:2] or canonical_hash(json.loads(original[2])) != patch['before_profile_sha256']
                             or canonical_hash(json.loads(row[2])) not in {patch['before_profile_sha256'], patch['after_profile_sha256']}):
                         raise ValueError('Import precondition failed')
-                    profile = patch['profile']
-                    if canonical_hash(profile) != patch['after_profile_sha256']:
-                        raise ValueError('Import payload hash failed')
-                    before = json.loads(original[2])
-                    allowed = {'card_data_provenance', 'card_data_sha256', 'rulings', 'rulings_verified', 'rulings_provenance'}
-                    refresh = manifest.get('card_refresh')
-                    expected_prov = manifest['cards']
-                    if refresh and patch['id'] == refresh['row_id']:
-                        old_raw, new_raw = before['card_data'], profile['card_data']
-                        if (canonical_hash(old_raw) != refresh['previous_card_sha256']
-                                or canonical_hash(new_raw) != refresh['provenance']['record_sha256']
-                                or old_raw['id'] != new_raw['id'] or new_raw['id'] != refresh['scryfall_id']
-                                or old_raw['oracle_id'] != new_raw['oracle_id'] or new_raw['oracle_id'] != refresh['oracle_id']
-                                or old_raw['name'] != new_raw['name']):
-                            raise ValueError('Canonical refresh import identity/hash precondition failed')
-                        allowed.update({'card_data', 'facts'})
-                        expected_prov = refresh['provenance']
-                    if manifest.get('tags') == TAG_HASH:
-                        allowed.update({'tactical_tags', 'face_tactical_tags', 'tactical_provenance'})
-                    if manifest.get('mechanics') == {'schema_version': MECHANIC_SCHEMA, 'extractor_version': MECHANIC_EXTRACTOR}:
-                        allowed.add('mechanic_metadata')
-                        if mechanic_status(profile, canonical_hash(profile['card_data'])) != 'current_input_version_not_semantics':
-                            raise ValueError('Mechanic metadata input/version evidence mismatch')
-                    if any(before.get(key) != profile.get(key) for key in before.keys() | profile.keys() if key not in allowed):
-                        raise ValueError('Artifact changes non-owned canonical fields')
-                    raw = profile['card_data']
-                    cp = profile.get('card_data_provenance', {})
-                    if (profile.get('card_data_sha256') != canonical_hash(raw)
-                            or cp.get('record_sha256') != canonical_hash(raw)
-                            or any(cp.get(key) != value for key, value in expected_prov.items())):
-                        raise ValueError('Card source evidence does not match artifact manifest')
-                    if manifest.get('rulings'):
-                        rulings = profile.get('rulings')
-                        validate_rulings_page({'object': 'list', 'data': rulings, 'has_more': False}, raw['oracle_id'])
-                        rp = profile.get('rulings_provenance', {})
-                        if (profile.get('rulings_verified') is not True or rp.get('complete') is not True
-                                or rp.get('oracle_id') != raw['oracle_id'] or rp.get('sha256') != canonical_hash(rulings)
-                                or any(rp.get(key) != value for key, value in manifest['rulings'].items())):
-                            raise ValueError('Ruling source evidence does not match artifact manifest')
+                    profile = validate_profile_patch(original, patch, manifest)
                     target.execute('UPDATE cardknowledge SET profiles_json=? WHERE id=?', (json.dumps(profile, sort_keys=True), patch['id']))
                     saved = target.execute('SELECT profiles_json FROM cardknowledge WHERE id=?', (patch['id'],)).fetchone()[0]
                     if canonical_hash(json.loads(saved)) != patch['after_profile_sha256']:
@@ -794,9 +820,219 @@ def campaign(conn, args):
     print(json.dumps({key: value for key, value in final.items() if key != 'after'}, sort_keys=True), flush=True)
 
 
+def pinned_bytes(path, expected, max_bytes):
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError(f'Pinned input must be a regular file: {path}')
+    with path.open('rb') as stream:
+        if os.fstat(stream.fileno()).st_size > max_bytes:
+            raise ValueError(f'Pinned input exceeds byte cap: {path}')
+        data = stream.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise ValueError(f'Pinned input exceeds byte cap: {path}')
+    if not expected or hashlib.sha256(data).hexdigest() != expected:
+        raise ValueError(f'Pinned file digest mismatch: {path}')
+    return data
+
+
+def bounded_artifact_lines(data, rows, budget):
+    if type(rows) is not int or not 0 < rows <= 500:
+        raise ValueError('Artifact row bound must be 1..500')
+    expanded = 0
+    with gzip.open(io.BytesIO(data), 'rb') as stream:
+        for _ in range(rows + 1):  # One manifest and exactly the indexed rows.
+            allowance = min(MAX_ARTIFACT_LINE_BYTES, MAX_ARTIFACT_EXPANDED_BYTES - expanded,
+                            MAX_TOTAL_EXPANDED_BYTES - budget['expanded'])
+            line = stream.readline(allowance + 1)
+            if len(line) > allowance:
+                raise ValueError('Artifact expanded line/total byte cap exceeded')
+            if not line:
+                raise ValueError('Truncated artifact: missing indexed rows/manifest')
+            expanded += len(line)
+            budget['expanded'] += len(line)
+            yield line
+        # Probe one byte, never allocate the unindexed next line. This also
+        # forces gzip EOF/trailer validation, including concatenated members.
+        if stream.read(1):
+            raise ValueError('Artifact exceeds indexed row/500-record bound')
+
+
+def checked_apply_refresh(args):
+    if not args.card_refresh:
+        return None
+    packet_data = pinned_bytes(args.card_refresh, args.card_refresh_sha256, MAX_REFRESH_BYTES)
+    packet = json.loads(packet_data)
+    response_data = pinned_bytes(packet['response_archive'], packet['provenance']['archive_sha256'], MAX_REFRESH_BYTES)
+    return checked_refresh(args, packet_bytes=packet_data, response_bytes=response_data)
+
+
+def offline_copy_path(path):
+    path = Path(path).absolute()
+    if any(item.is_symlink() for item in (path, *path.parents)):
+        raise ValueError('Offline SQLite paths cannot contain symlinks')
+    path = local_path(path)
+    if not path.is_file() or path.stat().st_nlink != 1:
+        raise ValueError('Offline SQLite must be an existing independent file, not a hardlink')
+    if path.name == 'mtg_lab.db':
+        raise ValueError('Refusing the application database name; supply a named offline copy')
+    if any(item.exists() or item.is_symlink() for item in (Path(str(path) + suffix) for suffix in ('-wal', '-shm', '-journal'))):
+        raise ValueError('Offline SQLite has active/recovery sidecars; preserve it for explicit audit')
+    return path
+
+
+def knowledge_snapshot(conn):
+    rows, profile_bytes = conn.execute('SELECT count(*),coalesce(max(length(CAST(profiles_json AS BLOB))),0) FROM cardknowledge').fetchone()
+    if rows > MAX_SOURCE_ROWS or profile_bytes > MAX_SOURCE_PROFILE_BYTES:
+        raise ValueError('Source knowledge row/profile resource cap exceeded')
+    digest = hashlib.sha256()
+    ids = set()
+    for row in conn.execute('SELECT * FROM cardknowledge ORDER BY id'):
+        ids.add(row['id'])
+        digest.update(f"{row['id']}:{canonical_hash(dict(row))}\n".encode())
+    return digest.hexdigest(), ids
+
+
+def knowledge_only_authorizer(action, table, column, database, trigger):
+    if action == sqlite3.SQLITE_UPDATE:
+        return sqlite3.SQLITE_OK if (table, column, database, trigger) == ('cardknowledge', 'profiles_json', 'main', None) else sqlite3.SQLITE_DENY
+    blocked = {sqlite3.SQLITE_INSERT, sqlite3.SQLITE_DELETE, sqlite3.SQLITE_ATTACH, sqlite3.SQLITE_DETACH,
+               sqlite3.SQLITE_CREATE_TABLE, sqlite3.SQLITE_DROP_TABLE, sqlite3.SQLITE_ALTER_TABLE,
+               sqlite3.SQLITE_CREATE_INDEX, sqlite3.SQLITE_DROP_INDEX, sqlite3.SQLITE_CREATE_TRIGGER,
+               sqlite3.SQLITE_DROP_TRIGGER, sqlite3.SQLITE_CREATE_VIEW, sqlite3.SQLITE_DROP_VIEW,
+               sqlite3.SQLITE_CREATE_VTABLE, sqlite3.SQLITE_DROP_VTABLE}
+    if action in blocked or (action == sqlite3.SQLITE_PRAGMA and column is not None):
+        return sqlite3.SQLITE_DENY
+    return sqlite3.SQLITE_OK
+
+
+def apply_index(conn, args):
+    """Explicit, non-resumable, all-or-nothing application to an offline copy."""
+    new_outputs(args.out, args.out.with_name(args.out.name + '.part'))
+    source = offline_copy_path(args.database)
+    target = offline_copy_path(args.target)
+    if os.path.samefile(source, target):
+        raise ValueError('Source and target must be distinct independent copies')
+    source_sha = file_hash(source)
+    if not args.target_sha256 or file_hash(target) != args.target_sha256 or source_sha != args.target_sha256:
+        raise ValueError('Target must be an exact digest-pinned byte copy of the supplied source')
+    identity = (target.stat().st_dev, target.stat().st_ino)
+    index = json.loads(pinned_bytes(args.index, args.index_sha256, MAX_INDEX_BYTES))
+    entries = index.get('artifacts')
+    if not isinstance(entries, list) or not 0 < len(entries) <= MAX_INDEX_ENTRIES:
+        raise ValueError('Index artifact entry cap exceeded/invalid')
+    snapshot, source_ids = knowledge_snapshot(conn)
+    if (index.get('duplicate_rows') != 0 or index.get('live_imported_rows') != 0
+            or index.get('validated_unique_rows') != len(source_ids) or not index.get('artifacts')):
+        raise ValueError('Index must describe complete, unique, offline-validated source coverage')
+    refresh = checked_apply_refresh(args)
+    if index.get('card_refresh_packet_sha256') != getattr(args, 'card_refresh_sha256', None):
+        raise ValueError('Index refresh packet pin differs from supplied verified evidence')
+    if index.get('card_refresh_response_sha256') != (refresh['provenance']['archive_sha256'] if refresh else None):
+        raise ValueError('Index refresh response pin differs from supplied verified evidence')
+    expected_refresh = {key: value for key, value in refresh.items() if key not in ('card_data', 'response_archive', 'differing_fields')} if refresh else None
+    seen, expected_rows, source_evidence = set(), {}, []
+    budget = {'expanded': 0, 'staged': 0}
+    # Freeze verified payload bytes locally before the target transaction. Each
+    # NFS artifact is read once into a bounded buffer, never reread for writes.
+    with tempfile.TemporaryFile(mode='w+t', encoding='utf-8', dir=target.parent) as staged:
+        for entry in entries:
+            if type(entry.get('rows')) is not int or not 0 < entry['rows'] <= 500 or entry.get('source_snapshot_sha256') != snapshot:
+                raise ValueError('Index batch bounds/source snapshot mismatch')
+            receipt = json.loads(pinned_bytes(entry['validation_receipt'], entry['receipt_sha256'], MAX_RECEIPT_BYTES))
+            if (receipt.get('artifact_sha256') != entry['sha256'] or receipt.get('source_snapshot_sha256') != snapshot
+                    or receipt.get('validated_import_rows') != entry['rows']
+                    or receipt.get('stored_row_hashes_verified') is not True or receipt.get('sqlite_transaction_committed') is not True):
+                raise ValueError('Index receipt evidence mismatch')
+            data = pinned_bytes(entry['artifact'], entry['sha256'], MAX_COMPRESSED_ARTIFACT_BYTES)
+            count = 0
+            with closing(bounded_artifact_lines(data, entry['rows'], budget)) as stream:
+                manifest = json.loads(next(stream))['manifest']
+                if manifest.get('version') != VERSION or manifest.get('snapshot') != snapshot or manifest.get('tags') != 'preserve_existing':
+                    raise ValueError('Application requires matching source and preservation-only tags')
+                if manifest.get('card_refresh') not in (None, expected_refresh):
+                    raise ValueError('Artifact refresh descriptor is not verified by the index evidence')
+                evidence = {'cards': manifest['cards'], 'rulings': manifest.get('rulings'), 'mechanics': manifest.get('mechanics')}
+                if source_evidence and evidence != source_evidence[0]:
+                    raise ValueError('Indexed artifacts have inconsistent source/metadata intent')
+                if not source_evidence:
+                    source_evidence.append(evidence)
+                for line in stream:
+                    patch = json.loads(line)
+                    if patch['id'] in seen or patch['id'] not in source_ids:
+                        raise ValueError('Duplicate or foreign index row')
+                    original = conn.execute('SELECT * FROM cardknowledge WHERE id=?', (patch['id'],)).fetchone()
+                    profile = validate_profile_patch(original, patch, manifest)
+                    if any(load_profile(original).get(key) != profile.get(key) for key in ('tactical_tags', 'face_tactical_tags', 'tactical_provenance')):
+                        raise ValueError('Application must preserve every legacy tag/version')
+                    encoded = json.dumps(profile, sort_keys=True)
+                    after = {**dict(original), 'profiles_json': encoded}
+                    expected_rows[patch['id']] = canonical_hash(after)
+                    staged_line = json.dumps({'id': patch['id'], 'before_row_sha256': canonical_hash(dict(original)),
+                                              'after_profile_sha256': patch['after_profile_sha256'], 'profiles_json': encoded}) + '\n'
+                    budget['staged'] += len(staged_line.encode('utf-8'))
+                    if budget['staged'] > MAX_STAGE_BYTES:
+                        raise ValueError('Application local staging byte cap exceeded')
+                    staged.write(staged_line)
+                    seen.add(patch['id'])
+                    count += 1
+            if count != entry['rows']:
+                raise ValueError('Artifact row count differs from pinned receipt/index')
+        if seen != source_ids:
+            raise ValueError('Index coverage is incomplete')
+        staged.flush()
+        with closing(sqlite3.connect(target.as_uri() + '?mode=rw', uri=True, timeout=0, isolation_level=None)) as writable:
+            writable.row_factory = sqlite3.Row
+            writable.set_authorizer(knowledge_only_authorizer)
+            writable.execute('BEGIN EXCLUSIVE')
+            try:
+                if (offline_copy_path(target) != target or (target.stat().st_dev, target.stat().st_ino) != identity
+                        or file_hash(target) != args.target_sha256 or knowledge_snapshot(writable)[0] != snapshot):
+                    raise ValueError('Target identity/content changed before exclusive transaction')
+                staged.seek(0)
+                for line in staged:
+                    patch = json.loads(line)
+                    current = writable.execute('SELECT * FROM cardknowledge WHERE id=?', (patch['id'],)).fetchone()
+                    if not current or canonical_hash(dict(current)) != patch['before_row_sha256']:
+                        raise ValueError('Target row precondition failed before any updates')
+                staged.seek(0)
+                for line in staged:
+                    patch = json.loads(line)
+                    writable.execute('UPDATE cardknowledge SET profiles_json=? WHERE id=?', (patch['profiles_json'], patch['id']))
+                for row in writable.execute('SELECT * FROM cardknowledge ORDER BY id'):
+                    if canonical_hash(dict(row)) != expected_rows.get(row['id']):
+                        raise ValueError('Target full-row equality failed; rollback required')
+                if writable.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                    raise ValueError('Target integrity check failed; rollback required')
+                if file_hash(source) != source_sha or file_hash(args.index) != args.index_sha256:
+                    raise ValueError('Source/index changed during application; rollback required')
+                after_snapshot = knowledge_snapshot(writable)[0]
+                writable.execute('COMMIT')
+            except BaseException:
+                if writable.in_transaction:
+                    writable.execute('ROLLBACK')
+                raise
+    return {'action': 'apply-index', 'source_database': str(source), 'source_database_sha256': source_sha,
+            'source_snapshot_sha256': snapshot, 'target_database': str(target), 'target_before_sha256': args.target_sha256,
+            'target_after_sha256': file_hash(target), 'target_after_snapshot_sha256': after_snapshot,
+            'index': str(args.index), 'index_sha256': args.index_sha256, 'applied_rows': len(seen), 'artifacts_verified': len(index['artifacts']),
+            'sqlite_transaction_committed': True, 'integrity_check': 'ok', 'complete_row_hashes_verified': True,
+            'nonprofile_columns_numeric_tags_preserved': True, 'cardcache_and_game_table_writes': 0, 'live_imported_rows': 0,
+            'source_provenance': source_evidence[0], 'card_refresh_packet_sha256': getattr(args, 'card_refresh_sha256', None),
+            'resource_usage': budget,
+            'resource_caps': {'index_bytes': MAX_INDEX_BYTES, 'receipt_bytes': MAX_RECEIPT_BYTES,
+                              'compressed_artifact_bytes': MAX_COMPRESSED_ARTIFACT_BYTES, 'line_bytes': MAX_ARTIFACT_LINE_BYTES,
+                              'artifact_expanded_bytes': MAX_ARTIFACT_EXPANDED_BYTES, 'total_expanded_bytes': MAX_TOTAL_EXPANDED_BYTES,
+                              'staged_bytes': MAX_STAGE_BYTES, 'refresh_bytes': MAX_REFRESH_BYTES, 'source_profile_bytes': MAX_SOURCE_PROFILE_BYTES,
+                              'source_rows': MAX_SOURCE_ROWS, 'index_entries': MAX_INDEX_ENTRIES, 'artifact_rows': 500},
+            'trained_competence': 'unknown', 'rules_support_certified': False,
+            'limitations': ['Digest/receipt checks establish pinned byte and precondition identity, not independent publisher authentication or upstream freshness.',
+                            'This action applies only to an explicit offline copy; deployment/backup/reload require separate parent approval.',
+                            'Do not retry a committed application if receipt publication fails; preserve target and audit its hashes.']}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['report', 'prepare', 'validate', 'fetch-rulings', 'fetch-card', 'campaign'])
+    parser.add_argument('action', choices=['report', 'prepare', 'validate', 'fetch-rulings', 'fetch-card', 'campaign', 'apply-index'])
     parser.add_argument('--database', type=Path)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--cards', type=Path)
@@ -811,6 +1047,10 @@ def main():
     parser.add_argument('--limit', type=int, default=500)
     parser.add_argument('--artifact', type=Path)
     parser.add_argument('--scratch', type=Path)
+    parser.add_argument('--target', type=Path, help='Existing independent offline byte copy; no default/live target')
+    parser.add_argument('--target-sha256', help='Required pin for the unmodified offline target and identical source file')
+    parser.add_argument('--index', type=Path)
+    parser.add_argument('--index-sha256')
     parser.add_argument('--row-id', type=int)
     parser.add_argument('--card-refresh', type=Path)
     parser.add_argument('--card-refresh-sha256')
@@ -836,7 +1076,12 @@ def main():
         parser.error('fetch-card requires row-id')
     if args.action == 'campaign' and (not args.scratch or args.limit > 500 or not args.seed_artifact or not args.seed_artifact_sha256):
         parser.error('campaign requires local scratch, limit <=500, seed artifact and pinned seed hash')
-    inputs = [args.database, args.cards, args.rulings, args.cards_manifest, args.rulings_manifest, args.artifact, args.card_refresh, args.seed_artifact]
+    if args.action == 'apply-index' and (not args.target or not args.target_sha256 or not args.index or not args.index_sha256):
+        parser.error('apply-index requires explicit target, target-sha256, index and index-sha256')
+    if args.action == 'apply-index':
+        offline_copy_path(args.database)
+        offline_copy_path(args.target)
+    inputs = [args.database, args.cards, args.rulings, args.cards_manifest, args.rulings_manifest, args.artifact, args.card_refresh, args.seed_artifact, args.index, args.target]
     outputs = [args.out, args.out.with_suffix(args.out.suffix + '.summary.json'), args.state, args.scratch]
     if any(left.resolve() == right.resolve() for left in inputs if left for right in outputs if right):
         parser.error('output/state/scratch paths must not overwrite inputs')
@@ -853,6 +1098,8 @@ def main():
             result = prepare(conn, args)
         elif args.action == 'validate':
             result = validate_artifact(conn, args.artifact, args.scratch)
+        elif args.action == 'apply-index':
+            result = apply_index(conn, args)
         elif args.action == 'fetch-card':
             result = fetch_card(conn, args.out, args.row_id)
             print(json.dumps({'row_id': args.row_id, 'packet_sha256': file_hash(args.out), 'differing_fields': result['differing_fields']}, sort_keys=True))
@@ -861,7 +1108,12 @@ def main():
             campaign(conn, args)
             return 0
     output = args.out.with_suffix(args.out.suffix + '.summary.json') if args.action == 'prepare' else args.out
-    publish_json(output, result)
+    try:
+        publish_json(output, result)
+    except Exception as exc:
+        if args.action == 'apply-index':
+            raise RuntimeError('Offline database transaction committed but report publication failed; preserve target, audit hashes, do not retry blindly') from exc
+        raise
     print(json.dumps({key: value for key, value in result.items() if key not in ('cards', 'decks', 'after', 'provenance', 'errors_detail')}, sort_keys=True))
     return 0
 

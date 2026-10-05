@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1791229901.5748594,
-    "seen": 1791232057.6682148,
-    "ast_hash": "02b81e56daf5bc8a3953d4a3aad38da3",
+    "mtime": 1791236390.543863,
+    "seen": 1791236489.8588526,
+    "ast_hash": "d5d0ae7ca97aa00fa4984e7133331f18",
     "semantic_hash": ""
   },
   "backend/scripts/oracle_corpus_report.py": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791236224.332461,
-    "seen": 1791236298.2402887,
-    "ast_hash": "c1e7f5861b7283e0dac661f56d96fdd5",
+    "mtime": 1791236446.45099,
+    "seen": 1791236489.8591528,
+    "ast_hash": "9d6f98aa7aef3f84c693edb00d7e0be0",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791236224.3334613,
-    "seen": 1791236298.2406569,
-    "ast_hash": "5225b2b76d7a997b6ee171643886e01e",
+    "mtime": 1791236415.453474,
+    "seen": 1791236489.8595223,
+    "ast_hash": "b33d3cc16b36a9174cd2026ba3ce8ba0",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791236224.3354611,
-    "seen": 1791236298.2402868,
-    "ast_hash": "91dded60a2e724ed3787ca7e4d7f390d",
+    "mtime": 1791236415.451474,
+    "seen": 1791236489.8591511,
+    "ast_hash": "7e10393f52fef63932d9c585e1c2a58c",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -6888,9 +6888,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/corpus_knowledge_readiness.py": {
-    "mtime": 1791233120.0459075,
-    "seen": 1791233751.5677233,
-    "ast_hash": "22a53651f8d09e969b8e6c8e5752baf3",
+    "mtime": 1791236390.550863,
+    "seen": 1791236489.8575003,
+    "ast_hash": "6e301f1123dffaf19a730bd93d3b1141",
     "semantic_hash": ""
   },
   "backend/scripts/export_training_trajectories.py": {
@@ -6924,9 +6924,9 @@
     "semantic_hash": ""
   },
   "docs/testing/corpus-readiness.md": {
-    "mtime": 1791233710.4330523,
-    "seen": 1791233751.5694463,
-    "ast_hash": "73f8737dd022c25b0291f028a8337bfb",
+    "mtime": 1791236415.449474,
+    "seen": 1791236489.859325,
+    "ast_hash": "0d389376e6c4455da3519d6eea3b5b90",
     "semantic_hash": ""
   },
   "docs/testing/training-dataset.md": {
@@ -6975,6 +6975,24 @@
     "mtime": 1791236224.3314612,
     "seen": 1791236298.2404559,
     "ast_hash": "c5de3d736c67932e5dd3d0d484e608dd",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_corpus_index_apply.py": {
+    "mtime": 1791236390.5538628,
+    "seen": 1791236489.8582742,
+    "ast_hash": "7d55141dda4f40d9a05afa935a7a2556",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_choice_coverage.py": {
+    "mtime": 1791236390.545863,
+    "seen": 1791236489.8588047,
+    "ast_hash": "90bb146ef1510d45d6a025c4441d04fd",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-choice-coverage.md": {
+    "mtime": 1791236415.4484742,
+    "seen": 1791236489.859492,
+    "ast_hash": "b83e76887cde2daf8ce1b73d22a9f93b",
     "semantic_hash": ""
   }
 }

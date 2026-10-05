@@ -1,5 +1,16 @@
 # Changelog
 
+## Complete Training Choices And Bounded Offline Import - 2026-10-05
+
+- Expose actor-private allowlisted pending prompts and inspected misses; require
+  explicit mechanic payloads and support checked conversion of teacher intents.
+  Modal, X/discard, inspection/order, trigger, ward and replacement fixtures
+  compose with current combat/action safety in a 172-check gate.
+- Add explicit offline-only all-index application with bounded input/decompression
+  and staging, atomic row preconditions and full preservation checks. Parent
+  importer/recovery gate passes 100 checks. All-card offline qualification
+  preserves 1,264 saved matches; no live corpus import or trained policy.
+
 ## Immutable Combat Query Batches - 2026-10-05
 
 - Reuse pure combat queries only while state is unchanged; end scopes before
