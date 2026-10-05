@@ -300,19 +300,40 @@ def _projection_copy(state: MatchState) -> MatchState:
     return projected
 
 
-def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None, own_choice_action=None) -> bool:
+def _opaque_selection_choice(projected):
+    from ai.information import is_unknown
+    choice = projected.pending_mechanic_choice or {}
+    if choice.get('kind') not in {'look_top_select_hand', 'topdeck_bottom_order'}:
+        return None
+    options = choice.get('options', [])
+    chooser = choice.get('player_id')
+    if chooser not in projected.players or any(
+            cid not in projected.players[chooser].library or not is_unknown(projected.cards.get(cid))
+            for cid in options):
+        return None
+    count = choice.get('count', 0)
+    if not isinstance(count, int) or not 0 <= count <= len(options):
+        return None
+    # Opaque alternatives have equal count value, never fabricated identities.
+    return {'type': 'choose_mechanic', 'card_ids': list(options[:count])}
+
+
+def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
+                           own_choice_action=None, opaque_hand_choices=False) -> bool:
     rules = RulesEngine()
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
         choice = projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order
         if choice:
             chooser = choice.get("player_id", choice.get("current_controller"))
-            if own_choice_action is None or chooser != player_id:
-                return False
-            action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+            action = _opaque_selection_choice(projected) if opaque_hand_choices else None
+            if action is None:
+                if own_choice_action is None or chooser != player_id:
+                    return False
+                action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
             if action.get("type") == "pass_priority":
                 return False
-            rules.take_action(projected, player_id, action, reject_invalid=True)
+            rules.take_action(projected, chooser, action, reject_invalid=True)
             continue
         if projected.winner is not None or not projected.stack:
             return True
@@ -330,15 +351,21 @@ def _opaque_draw_count_changes(state, projected, player_id):
     from ai.information import is_unknown
     if getattr(state, 'ai_information_player', None) != player_id:
         return False
-    # Only declared draw/counter instructions: no search, mill, reveal or selection.
-    if (not any(item.effect_key == 'draw_cards' for item in state.stack)
-            or any(item.effect_key not in {'draw_cards', 'counter_spell', 'counter_ability'}
+    # Only guaranteed unfiltered hand acquisition, not search or filtered reveals.
+    acquisitions = {'draw_cards', 'look_top_select_hand'}
+    if (not any(item.effect_key in acquisitions for item in state.stack)
+            or any(item.effect_key not in acquisitions | {'counter_spell', 'counter_ability'}
                    for item in state.stack)):
         return False
+    may_reorder = any(item.effect_key == 'look_top_select_hand' for item in state.stack)
     for pid, original in state.players.items():
         final = projected.players[pid]
         removed = set(original.library) - set(final.library)
-        if final.library != [cid for cid in original.library if cid not in removed]:
+        retained = [cid for cid in original.library if cid not in removed]
+        if (final.library != retained and (not may_reorder or len(final.library) != len(retained)
+                or set(final.library) != set(retained)
+                or any(not is_unknown(state.cards[cid]) or not is_unknown(projected.cards[cid])
+                       for cid in original.library))):
             return False
         if final.hand[:len(original.hand)] != original.hand:
             return False
@@ -351,14 +378,18 @@ def _opaque_draw_count_changes(state, projected, player_id):
 
 
 def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False) -> MatchState | None:
-    """Forecast unanswered declared effects, without choosing or revealing unknown cards."""
+    """Forecast declared effects; opt-in opaque hand counts never reveal identities."""
     if not state.stack:
         return state
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opponent = 3 - player_id
     opposing_hand = tuple(state.players[opponent].hand)
     projected = _projection_copy(state)
-    if not _settle_announced_stack(projected, player_id=player_id):
+    opaque_selection = (opaque_draw_counts and getattr(state, 'ai_information_player', None) == player_id
+                        and any(item.effect_key == 'look_top_select_hand' for item in state.stack)
+                        and all(item.effect_key in {'draw_cards', 'look_top_select_hand', 'counter_spell', 'counter_ability'}
+                                for item in state.stack))
+    if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection):
         return None
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[opponent].hand) != opposing_hand):

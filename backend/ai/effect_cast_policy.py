@@ -15,7 +15,9 @@ def usable_cast(state, controller, target):
                 and stack_object_kind(projected, item) == 'spell')
     surveil_payoff = any(trigger['controller'] == controller and trigger['effect_key'] == 'surveil'
                         for trigger in projected.staged_triggers)
-    if item.effect_key == 'look_top_select_hand' and not item.payload.get('mana_spent_to_cast') and not surveil_payoff:
+    if (item.effect_key == 'look_top_select_hand'
+            and not item.payload.get('top_n', item.payload.get('mana_spent_to_cast'))
+            and not surveil_payoff):
         return None
     return action
 

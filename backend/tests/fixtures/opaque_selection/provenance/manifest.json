@@ -1,0 +1,68 @@
+{
+  "retrieved_utc": "2026-10-05T11:23:35.457Z",
+  "source": "Scryfall live named-card API; exact response bytes retained",
+  "cards": [
+    {
+      "file": "anticipate.json",
+      "name": "Anticipate",
+      "scryfall_id": "46b6dfb2-ffe4-44fb-bfd9-df11bc3193df",
+      "oracle_id": "a97da5a9-17fc-4367-81e1-17ff81601a63",
+      "source": "https://api.scryfall.com/cards/named?exact=Anticipate",
+      "scryfall_uri": "https://scryfall.com/card/iko/40/anticipate?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/46b6dfb2-ffe4-44fb-bfd9-df11bc3193df/rulings",
+      "sha256": "8b47407684045bbeceac3a23d0a5322f6b8cfaa45fc9a4b0ce67d0e76e4bc182"
+    },
+    {
+      "file": "collected-company.json",
+      "name": "Collected Company",
+      "scryfall_id": "cfa7b456-7e83-4587-a875-9b35fde318c2",
+      "oracle_id": "0bbcb563-09b3-499d-a9cc-3a6d7501dd81",
+      "source": "https://api.scryfall.com/cards/named?exact=Collected%20Company",
+      "scryfall_uri": "https://scryfall.com/card/dtk/177/collected-company?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/cfa7b456-7e83-4587-a875-9b35fde318c2/rulings",
+      "sha256": "d49e92525153cc1e105dee353b26d5cf0c79408f7b0ead7adcf38353da097e1c"
+    },
+    {
+      "file": "counterspell.json",
+      "name": "Counterspell",
+      "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "source": "https://api.scryfall.com/cards/named?exact=Counterspell",
+      "scryfall_uri": "https://scryfall.com/card/dsc/114/counterspell?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8/rulings",
+      "sha256": "ec5a66be537961755633aa3a100712f9f5e33ac4bc57225eaa14002530fdfb33"
+    },
+    {
+      "file": "dig-through-time.json",
+      "name": "Dig Through Time",
+      "scryfall_id": "020939d6-72f0-4aa0-9ac2-d16cc896cd7f",
+      "oracle_id": "f8b17b89-26ce-4208-874a-9e1d66514640",
+      "source": "https://api.scryfall.com/cards/named?exact=Dig%20Through%20Time",
+      "scryfall_uri": "https://scryfall.com/card/soc/195/dig-through-time?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/020939d6-72f0-4aa0-9ac2-d16cc896cd7f/rulings",
+      "sha256": "2f76514c677e59a6b8b6e89be3d1732a31e54d778cce01e06be7f41ca0657156"
+    },
+    {
+      "file": "impulse.json",
+      "name": "Impulse",
+      "scryfall_id": "3ec50625-5e14-4fd0-9a96-86f195342695",
+      "oracle_id": "f6bd2902-7f8b-419e-bbc7-bcab0c1b7e01",
+      "source": "https://api.scryfall.com/cards/named?exact=Impulse",
+      "scryfall_uri": "https://scryfall.com/card/dmr/56/impulse?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/3ec50625-5e14-4fd0-9a96-86f195342695/rulings",
+      "sha256": "31409a5ca3fdbee3338d4e9684b25d15ac7c695226eac66ca24f1d4285f6463c"
+    },
+    {
+      "file": "memory-deluge.json",
+      "name": "Memory Deluge",
+      "scryfall_id": "edcd3802-ddb3-4eb6-9b6e-a26d76557662",
+      "oracle_id": "e6fd55f2-7e26-469c-a44a-ea2eb90e19a9",
+      "source": "https://api.scryfall.com/cards/named?exact=Memory%20Deluge",
+      "scryfall_uri": "https://scryfall.com/card/inr/75/memory-deluge?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/edcd3802-ddb3-4eb6-9b6e-a26d76557662/rulings",
+      "sha256": "ec81e9814b90f3af85faa605410922ec090bebe81bb363d21a8411d01e07c1e5"
+    }
+  ],
+  "scope": "Canonical fixtures, not new competitive decks. Delve payment remains open; full-mana Dig Through Time resolution tested.",
+  "official_release_notes": "https://media.wizards.com/2024/downloads/INR_Release_Notes_hzvmSd7KJG/EN_MTGINR_ReleaseNotes_20240903.pdf"
+}

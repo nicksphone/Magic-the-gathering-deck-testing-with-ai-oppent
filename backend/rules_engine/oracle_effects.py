@@ -91,7 +91,7 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
-        and without_reminder_text(line).strip().lower() != 'split second'
+        and without_reminder_text(line).strip().lower() not in {'split second', 'delve'}
     )
 CREW_RE = re.compile(r"\bcrew\s+(\d+)\b", re.IGNORECASE)
 LOOK_TOP_RE = re.compile(r"look at the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
@@ -104,6 +104,12 @@ LOOK_TOP_MANA_SPENT_HAND_RE = re.compile(
     r"look at the top x cards of your library, where x is the amount of mana spent to cast this spell\.\s*"
     r"put (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) of them into your hand "
     r"and the rest on the bottom of your library in a random order",
+    re.IGNORECASE,
+)
+LOOK_TOP_FIXED_HAND_RE = re.compile(
+    r"look at the top (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards? of your library\.\s*"
+    r"put (one|two|three|four|five|six|seven|eight|nine|ten|\d+) of them into your hand "
+    r"and the rest on the bottom of your library in (any|a random) order\.?",
     re.IGNORECASE,
 )
 LOOK_TOP_CHOICE_RE = re.compile(
@@ -480,6 +486,14 @@ def infer_effect_from_oracle(
             "hand_count": _parse_count_token(mana_spent_hand.group(1)),
             "top_n_source": "mana_spent_to_cast",
             "bottom_random": True,
+        }
+    fixed_hand = LOOK_TOP_FIXED_HAND_RE.fullmatch(oracle.strip())
+    if fixed_hand:
+        return "look_top_select_hand", {
+            "top_n": _parse_count_token(fixed_hand.group(1)),
+            "hand_count": _parse_count_token(fixed_hand.group(2)),
+            "bottom_random": fixed_hand.group(3).lower() == "a random",
+            "choose_bottom_order": fixed_hand.group(3).lower() == "any",
         }
     top_choice = LOOK_TOP_CHOICE_RE.search(oracle)
     if top_choice:

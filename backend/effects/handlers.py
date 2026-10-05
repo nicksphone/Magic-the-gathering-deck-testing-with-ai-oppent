@@ -1759,7 +1759,7 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
 
 def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> None:
     player = state.players[controller]
-    top_n = max(0, int(payload.get("mana_spent_to_cast", 0) or 0))
+    top_n = max(0, int(payload.get("top_n", payload.get("mana_spent_to_cast", 0)) or 0))
     top_slice = player.library[-top_n:] if top_n else []
     if not top_slice:
         return
@@ -1794,6 +1794,14 @@ def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> N
         state.rng.shuffle(rest)
     player.library[:0] = rest
     state.log.append(f"{player.name} looks at {len(top_slice)} cards and puts {len(chosen)} into hand.")
+    if payload.get("choose_bottom_order") and len(rest) > 1:
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_bottom_order", "player_id": controller,
+            "options": rest, "bottom_ids": rest, "count": len(rest),
+            "label": "Choose bottom order, bottommost first",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
 
 
 def look_top_distinct_types_to_hand(state: MatchState, controller: int, payload: dict) -> None:
