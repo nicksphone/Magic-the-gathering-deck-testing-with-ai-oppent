@@ -14,10 +14,12 @@ for (const seat of [1, 2]) {
     await command('Page.reload');
     await waitFor("[...document.querySelectorAll('h3')].some(node => node.textContent === 'Declare Blockers')");
     await evaluate(`(() => {
-      const panel = [...document.querySelectorAll('.block-panel')].find(node => node.querySelector('h3')?.textContent === 'Declare Blockers');
-      for (const select of panel.querySelectorAll('.row select')) {
-        for (const option of select.options) option.selected = option.text.trim() === 'Wall of Glare';
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+      const blocker = document.querySelector('.card[data-combat-role="blocker"][aria-label^="Wall of Glare;"]');
+      if (!blocker) throw new Error('Missing direct multi-block control');
+      for (const attacker of document.querySelectorAll('.card[data-combat-role="block-target"]')) {
+        const data = new DataTransfer();
+        blocker.dispatchEvent(new DragEvent('dragstart', {bubbles:true,cancelable:true,dataTransfer:data}));
+        attacker.dispatchEvent(new DragEvent('drop', {bubbles:true,cancelable:true,dataTransfer:data}));
       }
     })()`);
     await waitFor("document.body.textContent.includes('Block cost for Wall of Glare: {1}')");

@@ -146,7 +146,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           : role === "block-target" && blockMove ? assignBlocker(combatDraft, source, card.id, blockMove) : null;
         if (!result) return;
         setCombatError(result.error ?? "");
-        if (!result.error) onCombatDraftChange?.(() => result.draft);
+        if (!result.error) onCombatDraftChange?.(draft => role === "attacker" && attackMove
+          ? bandAttackers(draft, source, card.id, attackMove, `player:${opponentSeat}`).draft
+          : role === "block-target" && blockMove ? assignBlocker(draft, source, card.id, blockMove).draft : draft);
       },
     };
   }
