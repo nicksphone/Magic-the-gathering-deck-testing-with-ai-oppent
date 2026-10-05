@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased Candidate - Effective printed life restrictions
+
+- Use shared effective-ability queries for life-total locks and printed gain/loss
+  prohibitions. Initial full gate: 7,964 tests; expanded 322-check selection,
+  two HTTP recovery/payment cases and four human browser cases pass.
+- Preserve the previously published life-conversion browser scenarios during
+  integration. Latest combined qualification remains pending.
+
 ## 2026-10-05 - Life conversion and beneficiary planning
 
 - Add shared opponent-gain-to-loss static replacement support, including printed

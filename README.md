@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+An isolated integration candidate repairs printed life restrictions after their
+source loses its abilities. Control changes, expiry, real life payments and human
+recovery have targeted coverage; the combined gate is pending. See
+[effective-restriction qualification](docs/testing/life-lock-layer-fidelity.md).
+
 Supported life-gain conversion, unconditional loss protection and public
 replacement-aware original/copy planning share the rules engine. Lethal creature
 sources remain active through complete spell resolution and durable human choices.

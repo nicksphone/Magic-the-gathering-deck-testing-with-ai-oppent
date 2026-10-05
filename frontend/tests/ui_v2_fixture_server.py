@@ -11,6 +11,7 @@ if (Path(main.__file__).resolve().parents[1] / ".git").exists():
 
 from tests.ui_fixture_server import app, publish, fixture, add
 from game_state.state import Zone
+import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
 @app.post('/fixture/life-conversion')

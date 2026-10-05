@@ -549,24 +549,21 @@ def _die_exile_applies(text: str, target) -> bool:
 
 
 def player_life_total_cant_change(state, target_player: int) -> bool:
-    for pid in state.players:
-        for cid in state.players[pid].battlefield:
-            card = state.cards[cid]
-            text = (card.oracle_text or "").lower()
-            if any(clause in text for clause in (
-                "players' life totals can't change", "players' life totals cannot change",
-                "each player's life total can't change", "each player's life total cannot change",
-            )):
-                return True
-            if card.controller == target_player and any(clause in text for clause in (
-                "your life total can't change", "your life total cannot change",
-            )):
-                return True
-            if card.controller != target_player and any(clause in text for clause in (
-                "your opponents' life totals can't change", "your opponents' life totals cannot change",
-                "your opponent's life total can't change", "your opponent's life total cannot change",
-            )):
-                return True
+    for card, text in _battlefield_oracle_texts(state):
+        if any(clause in text for clause in (
+            "players' life totals can't change", "players' life totals cannot change",
+            "each player's life total can't change", "each player's life total cannot change",
+        )):
+            return True
+        if card.controller == target_player and any(clause in text for clause in (
+            "your life total can't change", "your life total cannot change",
+        )):
+            return True
+        if card.controller != target_player and any(clause in text for clause in (
+            "your opponents' life totals can't change", "your opponents' life totals cannot change",
+            "your opponent's life total can't change", "your opponent's life total cannot change",
+        )):
+            return True
     return False
 
 
@@ -591,40 +588,34 @@ def player_cant_gain_life(state, target_player: int) -> bool:
         return True
     if int(target_player) in set(getattr(state, "turn_cant_gain_life", set()) or set()):
         return True
-    for pid in state.players:
-        for cid in state.players[pid].battlefield:
-            card = state.cards[cid]
-            text = (card.oracle_text or "").lower()
-            if "players can't gain life" in text or "players cannot gain life" in text:
-                return True
-            if "you can't gain life" in text or "you cannot gain life" in text:
-                if card.controller == target_player:
-                    return True
+    for card, text in _battlefield_oracle_texts(state):
+        if "players can't gain life" in text or "players cannot gain life" in text:
+            return True
+        if "you can't gain life" in text or "you cannot gain life" in text:
             if card.controller == target_player:
-                continue
-            if "your opponents can't gain life" in text or "your opponents cannot gain life" in text:
                 return True
-            if "your opponent can't gain life" in text or "your opponent cannot gain life" in text:
-                return True
+        if card.controller == target_player:
+            continue
+        if "your opponents can't gain life" in text or "your opponents cannot gain life" in text:
+            return True
+        if "your opponent can't gain life" in text or "your opponent cannot gain life" in text:
+            return True
     return False
 
 
 def player_cant_lose_life(state, target_player: int) -> bool:
     if player_life_total_cant_change(state, target_player):
         return True
-    for pid in state.players:
-        for cid in state.players[pid].battlefield:
-            card = state.cards[cid]
-            text = (card.oracle_text or "").lower()
-            if "players can't lose life" in text or "players cannot lose life" in text:
-                return True
-            if card.controller == target_player and ("you can't lose life" in text or "you cannot lose life" in text):
-                return True
-            if card.controller != target_player and (
-                "your opponents can't lose life" in text
-                or "your opponents cannot lose life" in text
-                or "your opponent can't lose life" in text
-                or "your opponent cannot lose life" in text
-            ):
-                return True
+    for card, text in _battlefield_oracle_texts(state):
+        if "players can't lose life" in text or "players cannot lose life" in text:
+            return True
+        if card.controller == target_player and ("you can't lose life" in text or "you cannot lose life" in text):
+            return True
+        if card.controller != target_player and (
+            "your opponents can't lose life" in text
+            or "your opponents cannot lose life" in text
+            or "your opponent can't lose life" in text
+            or "your opponent cannot lose life" in text
+        ):
+            return True
     return False

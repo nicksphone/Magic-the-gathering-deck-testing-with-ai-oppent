@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Rampaging Ferocidon",
+    "url": "https://api.scryfall.com/cards/named?exact=Rampaging%20Ferocidon",
+    "retrieved_at": "2026-10-05T05:21:40.667Z",
+    "sha256": "9ec15833eddfc71fe5bc18defb027a4451a26b3eab6d1d978f00c1bb3fed2076"
+  },
+  {
+    "name": "Erebos, God of the Dead",
+    "url": "https://api.scryfall.com/cards/named?exact=Erebos%2C%20God%20of%20the%20Dead",
+    "retrieved_at": "2026-10-05T05:21:40.669Z",
+    "sha256": "5ab61eca8c5816813b2323d646c8c61675f9a892dc9c145c783c9bb3bcb8ac63"
+  }
+]
