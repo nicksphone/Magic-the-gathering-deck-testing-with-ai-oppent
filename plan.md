@@ -16,7 +16,11 @@
   The isolated runtime passes 7,964 tests in all 322 files/618 matching hashes.
   Expanded canonical tests reproduce 34 failures/four passes before repair;
   322 overlapping checks, two HTTP payment/recovery cases and four browser cases
-  pass. Require the combined-source gate with published browser scenarios intact.
+  pass. The combined source passes 7,988 tests and the full browser harness,
+  preserving published scenarios. A later query prefilter passes 207 overlapping
+  checks; qualify that exact optimized source before promotion. Relevant-source
+  ability suppression must remain intact. Broader conditional restrictions remain
+  open.
 
 - [x] Qualify supported complete fixed damage/caster-gain instructions and
   semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,

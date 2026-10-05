@@ -1,6 +1,7 @@
 # Printed Life Locks and Ability Suppression
 
-Status: separate unpublished backend candidate. Qualification remains open.
+Status: unpublished integration candidate. Latest optimized-source qualification
+is running; the preceding combined source passed its full gate.
 
 ## Shared Repair
 
@@ -38,6 +39,28 @@ damage replacement and HTTP continuations. No card metadata is altered.
   published `0000fe6` preserves both sets of browser scenarios and requires a
   fresh combined source gate before promotion. This is not complete Erebos or
   Ferocidon semantics, all conditional life restrictions or arbitrary Oracle support.
+
+## Integration and Query Performance
+
+The combined `38888f1` source preserves published life-conversion scenarios and
+passes 7,988 backend tests in all 323 test files with 623 source/fixture hashes
+verified per shard. Frontend tests, lint, build and the complete browser harness
+pass, including all three natural BO3 controller modes and four life-lock cases.
+This gate does not certify the subsequent performance edit.
+
+Review found unnecessary global ability-layer scans for battlefield cards whose
+printed text cannot impose the queried life restriction. The shared iterator now
+accepts an optional text prefilter; relevant sources still undergo the same
+suppression and ordering checks. Other callers retain the default behavior.
+Three structural regressions fail before this optimization and pass afterward;
+207 overlapping checks pass, including relevant-source suppression and HTTP
+recovery. A synthetic 32-permanent, 200-query measurement fell from 0.383 seconds
+to 0.00619 seconds (about 62 times faster for this query workload). This is not
+a whole-game speed or AI-strength measurement. Source records were unchanged.
+
+The latest optimized source is frozen independently for full backend/browser
+qualification. Promotion remains withheld until that source passes; do not
+substitute the preceding combined gate for current-source evidence.
 
 ## Remaining Acceptance
 

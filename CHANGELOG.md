@@ -6,7 +6,11 @@
   prohibitions. Initial full gate: 7,964 tests; expanded 322-check selection,
   two HTTP recovery/payment cases and four human browser cases pass.
 - Preserve the previously published life-conversion browser scenarios during
-  integration. Latest combined qualification remains pending.
+  integration. Combined source passes 7,988 backend tests and the full browser
+  harness; frontend tests, lint and build pass.
+- Reject irrelevant life-query text before costly ability-layer scans. Three
+  structural regressions and 207 overlapping checks pass. Latest optimized
+  source full qualification is running; publication remains pending.
 
 ## 2026-10-05 - Life conversion and beneficiary planning
 

@@ -7,12 +7,15 @@ from rules_engine.continuous import effect_timestamp, printed_abilities_suppress
 from rules_engine.card_types import is_token_card
 
 
-def _battlefield_oracle_texts(state, controller: int | None = None):
+def _battlefield_oracle_texts(state, controller: int | None = None, *, text_filter=None):
     ordered: list[tuple[tuple[int, int, int, str], object, str]] = []
     battlefield_index = _battlefield_position_map(state)
     for pid in state.players:
         for cid in state.players[pid].battlefield:
             card = state.cards[cid]
+            text = (card.oracle_text or '').lower()
+            if text_filter is not None and not text_filter(text):
+                continue
             if printed_abilities_suppressed(state, cid):
                 continue
             if controller is not None and card.controller != controller:
@@ -24,7 +27,7 @@ def _battlefield_oracle_texts(state, controller: int | None = None):
                 -int(getattr(card, "instance_order", 0) or 0),
                 str(cid),
             )
-            ordered.append((order_key, card, (card.oracle_text or "").lower()))
+            ordered.append((order_key, card, text))
     for _, card, text in sorted(ordered, key=lambda item: item[0]):
         yield card, text
 
@@ -549,7 +552,7 @@ def _die_exile_applies(text: str, target) -> bool:
 
 
 def player_life_total_cant_change(state, target_player: int) -> bool:
-    for card, text in _battlefield_oracle_texts(state):
+    for card, text in _battlefield_oracle_texts(state, text_filter=lambda text: 'life total' in text):
         if any(clause in text for clause in (
             "players' life totals can't change", "players' life totals cannot change",
             "each player's life total can't change", "each player's life total cannot change",
@@ -588,7 +591,7 @@ def player_cant_gain_life(state, target_player: int) -> bool:
         return True
     if int(target_player) in set(getattr(state, "turn_cant_gain_life", set()) or set()):
         return True
-    for card, text in _battlefield_oracle_texts(state):
+    for card, text in _battlefield_oracle_texts(state, text_filter=lambda text: 'gain life' in text):
         if "players can't gain life" in text or "players cannot gain life" in text:
             return True
         if "you can't gain life" in text or "you cannot gain life" in text:
@@ -606,7 +609,7 @@ def player_cant_gain_life(state, target_player: int) -> bool:
 def player_cant_lose_life(state, target_player: int) -> bool:
     if player_life_total_cant_change(state, target_player):
         return True
-    for card, text in _battlefield_oracle_texts(state):
+    for card, text in _battlefield_oracle_texts(state, text_filter=lambda text: 'lose life' in text):
         if "players can't lose life" in text or "players cannot lose life" in text:
             return True
         if card.controller == target_player and ("you can't lose life" in text or "you cannot lose life" in text):
