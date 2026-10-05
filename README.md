@@ -10,7 +10,10 @@ pass the full 7,760-test backend gate in 317 files, with all 602 backend
 source/fixture files equal to the tested candidate. The preceding full browser
 gate passed; eight additional paid conditional-copy browser cases now verify
 both seats, ordinary/enhanced effects, retargeting, reload and actual resolution.
-Fresh current-source copy capability games are running separately.
+Frozen copy capability games are running separately. Their decision audit exposed
+original beneficial spells targeting the opponent. A subsequent shared role and
+conditional-pump targeting repair passes 97 overlapping checks; its separate full
+backend gate is running. The 7,760-test result does not include this later repair.
 Departed-planeswalker dependency, broader protection corners, latest-source match
 acceptance and deeper AI planning remain open. See
 [landfall scope](docs/testing/land-entry-history.md) and

@@ -144,6 +144,25 @@ the previously validated 60-card control exercise. No other card metadata change
 no forced hands or target win rate, and no competitive-deck claim. Retained
 decisions and actual copy use require inspection before promotion.
 
+## Subsequent Original-Spell Beneficiary Repair
+
+The first current-copy natural game cast Twincast on Rest for the Weary and
+strictly reconstructs, including deliberate copy retargeting to its own player.
+The original life-gain spell, however, targeted the opponent. Inspection found
+the shared tactical classifier never emitted the `gain` role expected by action
+materialization. Conditional pump text also bypassed the ordinary full-text pump
+parser and therefore lacked the normal friendly-target filter.
+
+Thirty-six canonical original-spell cases produce 27 failures and nine passes
+before repair. Shared life-gain role detection and structurally parsed conditional
+pump branches fix recipient polarity without naming cards. Unknown history may
+supply only the common beneficial polarity, never a guessed pump amount. Both
+seats/four style labels, actual paid checked resolution, copy targeting, public
+forecasts and older pending interaction fixtures pass 97 overlapping checks.
+The new 318-file full gate runs in separate frozen checkouts; its result and
+post-fix natural games remain outstanding. Earlier 7,760-test and natural-copy
+evidence must not be relabeled as qualification of these subsequent edits.
+
 ## Evidence Sources
 
 Canonical Scryfall card responses and fixture provenance are retained verbatim.

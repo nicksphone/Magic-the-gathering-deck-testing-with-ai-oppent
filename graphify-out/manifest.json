@@ -72,8 +72,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-linked-landfall/backend/ai/agent.py": {
-    "mtime": 1791169895.602108,
-    "hash": "2c3247012380db1f1130e9b29d27be70"
+    "mtime": 1791171226.405387,
+    "hash": "8bcd6081f760bb75db795a0172b1f63f"
   },
   "/home/nick/mtg-linked-landfall/backend/ai/sideboarding.py": {
     "mtime": 1791165013.8223102,
@@ -220,8 +220,8 @@
     "hash": "d8bbc7756a05ef3e79fc37b66843ea74"
   },
   "/home/nick/mtg-linked-landfall/backend/card_data/tactical.py": {
-    "mtime": 1791165013.82431,
-    "hash": "6fb99244a3934f28cee093cf0b03cdfb"
+    "mtime": 1791171226.4033868,
+    "hash": "da4c9447356e109c1a9230d4f79abdb4"
   },
   "/home/nick/mtg-linked-landfall/backend/card_data/token_definitions.py": {
     "mtime": 1791165013.82431,
@@ -1216,8 +1216,8 @@
     "hash": "62b277d65fad8434d7ee102a312c52fc"
   },
   "/home/nick/mtg-linked-landfall/backend/tests/test_tactical_tags.py": {
-    "mtime": 1791165013.8713095,
-    "hash": "a05e8fd5105df246010c61270884bf8c"
+    "mtime": 1791171260.6700535,
+    "hash": "b6ddcfcdee7e657d1209f2a5ed0a523f"
   },
   "/home/nick/mtg-linked-landfall/backend/tests/test_replay_protocol.py": {
     "mtime": 1791165013.8693097,
@@ -1250,6 +1250,10 @@
   "/home/nick/mtg-linked-landfall/backend/tests/test_damage_trigger_targets.py": {
     "mtime": 1791165013.8593097,
     "hash": "f0696788b50c0ccf5cda6b66f7cdc5bd"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_beneficial_alternatives.py": {
+    "mtime": 1791171212.7095163,
+    "hash": "cb944177d49206edbf401ca3f7434e80"
   },
   "/home/nick/mtg-linked-landfall/backend/tests/test_new_rules_batch.py": {
     "mtime": 1791165013.8663096,
@@ -2328,16 +2332,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-linked-landfall/README.md": {
-    "mtime": 1791170990.7820997,
-    "hash": "edf24ccb3bf7c6b0328bfad3f15c1a03"
+    "mtime": 1791171342.27321,
+    "hash": "264cee08c197af01f26da075f456dfc8"
   },
   "/home/nick/mtg-linked-landfall/plan.md": {
-    "mtime": 1791170990.7840998,
-    "hash": "86ac17153e69b03cc3ab98652159f494"
+    "mtime": 1791171342.2752101,
+    "hash": "fd6304efde0902a4f44b9c8996c1d923"
   },
   "/home/nick/mtg-linked-landfall/CHANGELOG.md": {
-    "mtime": 1791170990.7870996,
-    "hash": "c90ac65ca3e96cab3263d104f9f89f5f"
+    "mtime": 1791171342.2782102,
+    "hash": "a9b63dd486d098a818a8c68ac188c12b"
   },
   "/home/nick/mtg-linked-landfall/backend/requirements.txt": {
     "mtime": 1791165013.82831,
@@ -2580,8 +2584,8 @@
     "hash": "4d49cb00ed182eb61f3f8f978eac875d"
   },
   "/home/nick/mtg-linked-landfall/docs/testing/linked-controller-targets.md": {
-    "mtime": 1791170990.7850997,
-    "hash": "4f24c08ac297f287fdefc72c9744a327"
+    "mtime": 1791171342.2752101,
+    "hash": "1019e64cf3e736a1d5a2a649dcc80185"
   },
   "/home/nick/mtg-linked-landfall/docs/testing/human-actions-browser.md": {
     "mtime": 1791165013.8813095,

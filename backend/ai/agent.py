@@ -3069,6 +3069,20 @@ class AIAgent:
                 targets['target_card_id'] = selected
         from rules_engine.oracle_effects import parse_temporary_target_buff
         pt_change = parse_temporary_target_buff(without_reminder_text(target_text).strip())
+        if pt_change is None and mtype == 'cast_spell':
+            from rules_engine.landfall import alternative_effect
+            from rules_engine.land_history import landfall_status
+            alternative = alternative_effect(target_text, targets)
+            if alternative:
+                branches = alternative[1]['branches']
+                if all(branch['effect_key'] == 'temporary_pt_buff' for branch in branches):
+                    status = landfall_status(state, player_id)
+                    if status is not None:
+                        pt_change = branches[int(status)]['payload']
+                    elif all(branch['payload']['power'] >= 0 and branch['payload']['toughness'] >= 0
+                             for branch in branches):
+                        # Common beneficiary only; unknown history supplies no pump amount.
+                        pt_change = {'power': 0, 'toughness': 0}
         from rules_engine.devotion import devotion_instruction, devotion_count
         devotion = devotion_instruction(target_text, getattr(card, 'name', '') or '')
         if pt_change or devotion and devotion['kind'] == 'pump':

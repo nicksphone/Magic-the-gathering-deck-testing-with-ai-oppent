@@ -2,6 +2,14 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify the beneficial original-spell targeting repair exposed by the fresh
+  copy matrix. Canonical pump/life cases reproduce 27 failures and nine passes
+  before correction. Shared life-gain tagging and structural conditional pump
+  polarity now pass 97 overlapping checks, including both seats/four style labels,
+  actual checked resolution and unknown-history immutability. A separate frozen
+  318-file full backend gate is running. Complete its exact-source verification
+  and fresh post-fix seeded games; the earlier copy matrix is pre-fix evidence.
+
 - [ ] Finish [linked conditional damage](docs/testing/linked-controller-targets.md).
   Complete-pair admission, exclusive damage amounts, captured recipients and
   bounded AI pair selection pass focused gates. Current frozen backend passes

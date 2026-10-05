@@ -2,6 +2,13 @@
 
 ## Unreleased Candidate - Land-entry history and conditional alternatives
 
+- Fix original beneficial spell recipient selection exposed by a retained natural
+  copy game: shared tactical roles now recognize life gain, and conditional pump
+  branches reuse friendly beneficiary filtering. Thirty-six canonical cases
+  yield 27 failures before repair; 97 overlapping checks pass afterward. Unknown
+  history does not invent an effect amount. Separate full and post-fix match
+  acceptance remain pending.
+
 - Verify the current conditional-copy backend: 7,760 tests in 317 recursive files,
   exactly once, and 602 source/fixture files identical to every shard. Eight new
   paid Chromium cases cover both seats, ordinary/enhanced pump and life branches,
