@@ -31,7 +31,8 @@ Completed bounded work:
 - [x] Composed acceptance: 595 delta checks and complete browser gate, exit 0,
   466 PASS lines including restart, sideboard and all three BO3 control modes.
   These are bounded correctness/flow checks, not expert strategic validation.
-  Follow-up inspection CI isolation and dedicated Cathar browser remain open.
+  Follow-up inspection CI isolation and dedicated Cathar browser now pass their
+  separate bounded gates; shared Cathar CI wiring remains in progress.
 - [x] Repair supported unknown-library deployment valuation. Exact retained
   Master Ramp-versus-Tokens configuration casts the payable spell without peeking
   at library order. Live-code and composed gates each pass 536 affected checks;
@@ -40,7 +41,7 @@ Completed bounded work:
 - [x] Repair shared day/night entry and incarnation-linked exile using canonical
   Cathar fixtures; both-seat rules and HTTP restoration pass. Night entry uses
   Moonrage Brute without the front face's trigger. Dedicated browser acceptance
-  and broader transformation semantics remain open. See
+  now passes; broader transformation semantics remain open. See
   [evidence](docs/testing/cathar-day-night.md).
 - [x] Provide server-gated, read-only AI hand debugging. Normal redaction and AI
   information inputs remain unchanged; real ended-match reveal/read/hide passes
@@ -53,7 +54,8 @@ Completed bounded work:
   private inspections and bounded resolution conditions: 9,464 backend tests
   across 374 modules; independent databases and explicit stale-test correction.
   Combined inspection HTTP/browser restart checks and frontend unit/lint/build
-  pass. Complete combined browser gate and live-game racing review remain open.
+  pass. The complete combined browser gate now passes; broader live-game racing
+  quality remains under review.
   See [evidence and limits](docs/testing/backend-rule-batch-2026-10-05.md).
 - [x] Human Attack All declares ordinary eligible attacks directly; separate
   Select all preserves selection-only behavior. Costs, alternate defenders and
