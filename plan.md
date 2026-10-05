@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Offline knowledge-to-engine report: 49 checks pass; a current-source
+  read-only run over all 38,690 qualified profiles is byte-identical to the
+  independent worker report. Known gaps, unknown surfaces and missing metadata
+  are separate; no affirmative support is inferred. See
+  [scope](docs/testing/knowledge-engine-coverage.md).
 - [x] Integrated paid-selection consumers and checked legacy batch/replay actions:
   1,055 composed tests pass, including actual production decisions, privacy and
   unknown-inventory regressions. Two seeded Burn/Aggro games finish in both seat
@@ -39,8 +44,9 @@ Completed bounded work:
 - [x] Checked live autoplay and complete heuristic intent conversion: 259 composed
   tests pass, including four seeded Strong match smoke cases and actual cast
   exports for both seats. Rejected requests preserve whole state and storage.
-  Legacy analytics/replay boundary parity, interactive support warnings and
-  strategic quality remain outstanding. See [scope](docs/testing/autoplay-action-safety.md).
+  Legacy analytics/replay checked action acceptance is now integrated above;
+  broader hydration/transition parity, interactive support warnings and strategic
+  quality remain outstanding. See [scope](docs/testing/autoplay-action-safety.md).
 - [x] Opt-in Cathar target-lifecycle browser sidecar: ten combined cases pass
   on parent-composed e645456 source, with 84 actual App HTTP actions and three
   backend restarts. The default six-case shared CI scope remains unchanged.

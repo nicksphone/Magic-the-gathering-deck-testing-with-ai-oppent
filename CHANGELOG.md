@@ -1,5 +1,14 @@
 # Changelog
 
+## Offline Knowledge-To-Engine Coverage - 2026-10-05
+
+- Add a bounded, digest-pinned, read-only report separating known engine gaps,
+  detected-but-unknown surfaces and missing metadata. Unflagged cards are not
+  declared supported, and no database writes or competence scores are generated.
+- Parent gate passes 49 checks. Current-source full-corpus output for 38,690
+  canonical profiles matches the independently qualified report byte-for-byte.
+  Reports retain source/module hashes and bounded canonical representatives.
+
 ## Paid Selection And Simulator Action Parity - 2026-10-05
 
 - Wire generic paid-selection priors into actual AI decisions while preserving

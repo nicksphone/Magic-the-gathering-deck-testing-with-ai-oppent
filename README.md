@@ -107,6 +107,10 @@ Implementation scopes and remaining limits:
   inputs and preserves unrelated data. Live import and nested metadata materialization
   remain separate work; [mechanic flags](docs/testing/corpus-mechanic-backlog.md)
   are not execution certification.
+- [Offline engine-gap report](docs/testing/knowledge-engine-coverage.md) compares
+  canonical profiles with existing known-gap classifiers and separately reports
+  metadata gaps and unknown mechanic surfaces. It never treats absent warnings
+  as affirmative rules support or trained competence.
 
 - [AI observation and utility boundary](docs/testing/ai-information.md): private
   decision copies exclude unseen opposing hands and uninspected library metadata;
