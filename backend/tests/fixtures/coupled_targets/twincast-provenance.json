@@ -1,0 +1,8 @@
+{
+  "source": "https://api.scryfall.com/cards/named?exact=Twincast",
+  "retrieved_utc": "2026-10-05T01:59:58.182Z",
+  "id": "f38eec33-a40e-4739-ad2c-2f57008cef4e",
+  "oracle_id": "8f878efc-850f-43d2-a6fe-5ea8d1dd5afb",
+  "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+  "policy": "Verbatim canonical response"
+}

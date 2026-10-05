@@ -1535,6 +1535,10 @@
     "mtime": 1791160751.5715878,
     "hash": "efb6fa798b75d2ca91ec8514fefeab9a"
   },
+  "/home/nick/mtg-coupled-targets/backend/tests/test_real_ordered_spell_copy.py": {
+    "mtime": 1791165965.539226,
+    "hash": "ae20cd9b37397d007a7444ee72ed6ef2"
+  },
   "/home/nick/mtg-coupled-targets/backend/tests/test_action_replay.py": {
     "mtime": 1791164907.5877519,
     "hash": "7de85e5b1897c137a94eab92564bb1fc"
@@ -1912,8 +1916,8 @@
     "hash": "1f67a0f2e560b2595f0d25b551fb1882"
   },
   "/home/nick/mtg-coupled-targets/backend/rules_engine/ward.py": {
-    "mtime": 1791160751.545588,
-    "hash": "9c12d90d84ab66ef3a5c9c4e115299e0"
+    "mtime": 1791165965.537226,
+    "hash": "4c38a617264d55e82a0af4341c6e04be"
   },
   "/home/nick/mtg-coupled-targets/frontend/vite.config.ts": {
     "mtime": 1791160751.5975873,
@@ -2708,8 +2712,8 @@
     "hash": "b45d0d55a63d932625a4fb66f5020bb1"
   },
   "/home/nick/mtg-coupled-targets/docs/testing/ordered-creature-modifiers.md": {
-    "mtime": 1791164882.294094,
-    "hash": "0123d17676a939858dc4aed5e9dab2dc"
+    "mtime": 1791166032.054306,
+    "hash": "3c6be25a818d481ffcbcbcf69c853db8"
   },
   "/home/nick/mtg-coupled-targets/docs/testing/rules-regression-agent-wave2.md": {
     "mtime": 1791160751.5875876,

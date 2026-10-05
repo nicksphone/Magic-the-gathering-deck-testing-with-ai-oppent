@@ -80,5 +80,23 @@ Focused Chromium checks pass sequential shared/different copy targets for both
 human seats, reload after each choice, unchanged original targets and actual
 copy-only resolution. These are canonical constructed effect positions, not
 evidence of a naturally cast copy spell or a complete competitive match.
-The running full suite was frozen before this copy increment; it does not certify
-these newer changes. A merged-source full gate and broader replay remain required.
+The earlier pre-copy full suite passes 7,428 checks. After integration with the
+published strategic AI, all 7,563 backend checks pass across 309 discovered test
+files, as do frontend tests/lint/build and the full Chromium gate, including
+naturally finished AI, human/AI and two-human BO3 sessions. These frozen-source
+results do not certify changes made afterward or broader replay quality.
+
+## Post-Gate Ward Reference Repair
+
+Additional canonical Twincast checks exercise actual payment and normal priority
+passing, choice suspension and reload, both copying seats and ownership, followed
+by copy and original resolution. A subsequent both-seat regression reproduces
+spurious Ward when a copy keeps an old target after that permanent leaves and
+returns. Ordered Ward capture now requires a surviving target-instance reference,
+not merely a matching current card ID. The original Ward trigger remains intact.
+This repair postdates the 7,563-check source. Its separately frozen final gate
+passes all 7,569 checks across 310 discovered test files, with no omitted or
+duplicated files; the full Chromium gate also passes, including natural AI,
+human/AI and two-human BO3 sessions. Fresh repeated capability matches remain
+required before publishing this milestone. None of these gates covers the
+independent land-entry/conditional-alternative workstream.
