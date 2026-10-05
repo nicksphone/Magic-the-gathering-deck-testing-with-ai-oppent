@@ -192,3 +192,17 @@ for (const can_auto_pass of [null, 1, 'true', {}]) {
 }
 assert.equal(parseLegalMoves({player_id: 1, revision: 0, moves: []}).can_auto_pass, undefined);
 console.log('PASS authoritative automatic-priority flag and conservative legacy-server compatibility');
+
+const combat = {type:'block', attackers:[{id:'a',name:'Attacker'}], blockers:[{id:'b',name:'Blocker'}],
+  legal_blocks:{b:['a']}, blocker_capacities:{b:1}};
+const packet = move => ({player_id:2,revision:0,moves:[move]});
+assert.equal(parseLegalMoves(packet(combat)).moves[0].blocker_capacities.b, 1);
+assert.equal(parseLegalMoves(packet({...combat,blocker_capacities:{b:null}})).moves[0].blocker_capacities.b, null);
+for (const value of [{...combat,legal_blocks:{b:['outsider']}}, {...combat,legal_blocks:{outsider:['a']}},
+  {...combat,legal_blocks:{b:['a','a']}}, {...combat,blocker_capacities:{b:0}},
+  {...combat,blocker_capacities:{b:'2'}}, {...combat,blocker_capacities:{b:1.5}},
+  {type:'attack',options:['hero'],banding_attackers:['outsider']}]) {
+  assert.throws(() => parseLegalMoves(packet(value)), /legal-moves/);
+}
+assert.deepEqual(parseLegalMoves(packet({type:'attack',options:['hero'],banding_attackers:['hero']})).moves[0].banding_attackers, ['hero']);
+console.log('PASS authoritative banding, blocker-target and finite/unlimited capacity contracts');

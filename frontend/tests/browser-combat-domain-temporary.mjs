@@ -15,6 +15,7 @@ for (const kind of ['domain', 'temporary']) for (const seat of [1, 2]) {
     await command('Page.reload');
     if (kind === 'domain') {
       await waitFor("Boolean(document.querySelector('[aria-label=\"Attack with Grizzly Bears\"]'))");
+      await click('Attack all eligible');
       assert.ok(await evaluate("document.body.textContent.includes('Attack cost: {3}')"));
       const before = await getState();
       await click('Submit Attackers');

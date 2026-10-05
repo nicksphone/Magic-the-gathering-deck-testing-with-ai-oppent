@@ -2,6 +2,11 @@
 
 ## Current Priority: Backend First
 
+- [x] Add direct battlefield attack/block drafts for both human seats, with
+  engine-supplied legal targets/capacity, legal drag-to-band and confirmation.
+  Detailed payment/defender controls remain. See
+  [scope and validation](docs/testing/direct-combat.md).
+
 - [x] Replace empty human-versus-AI phase clicks with authoritative automatic
   priority progression. Preserve actual plays, choices and end-step instant
   opportunities; keep hotseat/manual pause behavior. See

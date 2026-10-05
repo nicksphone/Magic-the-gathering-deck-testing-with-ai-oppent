@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type HTMLAttributes, type SetStateAction } from "react";
+import { assignBlocker, bandAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import { createPortal } from "react-dom";
 import { resolveCardMediaUrl } from "../api/client";
 import { cardStates, groupBattlefield, landPlayHint, phases, phaseIndex, type LandPile } from "./table-model";
@@ -12,6 +13,8 @@ type Props = {
   legalMoves: LegalMove[];
   actingPlayerId?: number;
   onCardAction: (playerId: number, action: Record<string, unknown>) => void;
+  combatDraft?: CombatDraft;
+  onCombatDraftChange?: Dispatch<SetStateAction<CombatDraft>>;
 };
 
 function restrictedMana(player: PlayerView) {
@@ -62,7 +65,7 @@ function manaPoolPips(pool: Record<string, number>, snowPool: Record<string, num
     .filter((entry) => entry.count > 0);
 }
 
-export function Battlefield({ match, legalMoves: authoritativeMoves, onCardAction, actingPlayerId = match.priority_player }: Props) {
+export function Battlefield({ match, legalMoves: authoritativeMoves, onCardAction, actingPlayerId = match.priority_player, combatDraft, onCombatDraftChange }: Props) {
   const humanActor = (match.controllers?.[String(actingPlayerId)] ?? "human") === "human";
   const viewerSeat = humanActor ? actingPlayerId : ([1, 2].find((seat) => match.controllers?.[String(seat)] === "human") ?? 1);
   const opponentSeat = viewerSeat === 1 ? 2 : 1;
@@ -84,6 +87,86 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const manaMoves = useMemo(() => legalMoves.filter((m) => m.type === 'activate_mana_ability'), [legalMoves]);
+  const attackMove = legalMoves.find(move => move.type === "attack");
+  const blockMove = legalMoves.find(move => move.type === "block");
+  const [combatError, setCombatError] = useState("");
+  useEffect(() => { setCombatError(""); }, [match.id, match.game_number, match.turn, match.step]);
+
+  function combatRole(id: string) {
+    if (!combatDraft || !onCombatDraftChange) return undefined;
+    if (attackMove?.options?.includes(id)) return "attacker";
+    if (blockMove?.blockers?.some(card => card.id === id) && blockMove.legal_blocks?.[id]?.length) return "blocker";
+    if (blockMove?.attackers?.some(card => card.id === id)) return "block-target";
+    return undefined;
+  }
+
+  function selectCombatCard(id: string) {
+    const role = combatRole(id);
+    setCombatError("");
+    if (role === "attacker") onCombatDraftChange?.(draft => toggleAttacker(draft, id));
+    if (role === "blocker") onCombatDraftChange?.(draft => ({ ...draft, selectedBlocker: draft.selectedBlocker === id ? null : id }));
+    if (role === "block-target" && combatDraft?.selectedBlocker && blockMove) {
+      const result = assignBlocker(combatDraft, combatDraft.selectedBlocker, id, blockMove);
+      if (result.error) setCombatError(result.error);
+      else onCombatDraftChange?.(draft => assignBlocker(draft, combatDraft.selectedBlocker!, id, blockMove).draft);
+    }
+  }
+
+  function combatEvents(card: typeof p1.battlefield[number]): HTMLAttributes<HTMLElement> {
+    const role = combatRole(card.id);
+    const canDrag = role === "attacker" || role === "blocker";
+    return {
+      draggable: canDrag,
+      onClick: event => {
+        if (event.currentTarget.closest("fieldset")?.disabled || (event.target instanceof Element && event.target.closest("button, input, select, a, summary"))) return;
+        selectCombatCard(card.id);
+      },
+      onKeyDown: event => {
+        if (event.target !== event.currentTarget) return;
+        if (role && !event.shiftKey && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          if (!event.currentTarget.closest("fieldset")?.disabled) selectCombatCard(card.id);
+        } else if (event.key === "Enter") {
+          previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card));
+        }
+      },
+      onDragStart: event => {
+        if (!canDrag || event.currentTarget.closest("fieldset")?.disabled) { event.preventDefault(); return; }
+        event.dataTransfer.setData("application/x-mtg-combat-card", card.id);
+        event.dataTransfer.effectAllowed = "move";
+        setHoverPreview(null);
+      },
+      onDragOver: event => { if (role && event.dataTransfer.types.includes("application/x-mtg-combat-card")) event.preventDefault(); },
+      onDrop: event => {
+        if (!combatDraft || event.currentTarget.closest("fieldset")?.disabled) return;
+        const source = event.dataTransfer.getData("application/x-mtg-combat-card");
+        if (!source) return;
+        event.preventDefault();
+        const result = role === "attacker" && attackMove ? bandAttackers(combatDraft, source, card.id, attackMove, `player:${opponentSeat}`)
+          : role === "block-target" && blockMove ? assignBlocker(combatDraft, source, card.id, blockMove) : null;
+        if (!result) return;
+        setCombatError(result.error ?? "");
+        if (!result.error) onCombatDraftChange?.(() => result.draft);
+      },
+    };
+  }
+
+  function combatBadge(card: typeof p1.battlefield[number]) {
+    if (!combatDraft) return null;
+    const role = combatRole(card.id);
+    const selected = combatDraft.attackers.includes(card.id) || combatDraft.selectedBlocker === card.id;
+    const assigned = Object.entries(combatDraft.blocks).filter(([, ids]) => ids.includes(card.id)).map(([id]) => p2.battlefield.find(card => card.id === id)?.name ?? id);
+    const band = (combatDraft.bands.length ? combatDraft.bands : match.attack_bands ?? []).findIndex(group => group.includes(card.id));
+    return <>
+      {role === "attacker" || role === "blocker" ? <button type="button" className="combat-card-toggle" aria-pressed={selected}
+        aria-label={`${role === "attacker" ? "Select attacker" : "Select blocker"} ${card.name}`} onClick={() => selectCombatCard(card.id)}>
+        {role === "attacker" ? selected ? "Selected attacker" : "Click to attack" : selected ? "Choose an attacker" : "Click to block"}
+      </button> : null}
+      {band >= 0 ? <span className="badge combat-band">Band {band + 1}</span> : null}
+      {assigned.length ? <span className="badge combat-assigned">Blocks {assigned.join(", ")}</span> : null}
+      {role ? <button type="button" className="combat-inspect" aria-label={`Inspect combat card ${card.name}`} onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}>Inspect</button> : null}
+    </>;
+  }
   const [targets, setTargets] = useState<Record<string, Record<string, unknown>>>({});
   const [costChoice, setCostChoice] = useState<Record<string, string>>({});
   const [costCards, setCostCards] = useState<Record<string, string[]>>({});
@@ -167,7 +250,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   }
 
   function statusBadges(card: typeof p1.battlefield[number]) {
-    const selected = Object.values(targets).some(choice => choice.target_card_id === card.id || (Array.isArray(choice.target_card_ids) && choice.target_card_ids.includes(card.id)));
+    const selected = combatDraft?.attackers.includes(card.id) || combatDraft?.selectedBlocker === card.id
+      || Object.values(combatDraft?.blocks ?? {}).some(ids => ids.includes(card.id))
+      || Object.values(targets).some(choice => choice.target_card_id === card.id || (Array.isArray(choice.target_card_ids) && choice.target_card_ids.includes(card.id)));
     const targetable = legalMoves.some(move => move.target_card_id === card.id || move.targets?.some(target => target.id === card.id) || Object.entries(move.target_hints ?? {}).some(([key, list]) => key.endsWith("_targets") && Array.isArray(list) && list.some(target => typeof target === "object" && target !== null && "id" in target && target.id === card.id)));
     return <div className="card-badges">
       {cardStates(card, match, targetable, selected).map(state => <span key={state} className={`badge badge-${state.toLowerCase().replaceAll(" ", "-")}`}>{state}</span>)}
@@ -253,6 +338,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       </header>
 
       <ol className="phase-track" aria-label="Turn progression">{phases.map((phase, index) => <li key={phase} aria-current={phaseIndex(match.step) === index ? "step" : undefined}>{phase}</li>)}</ol>
+      {combatDraft && (attackMove || blockMove) ? <div className="combat-toolbar" aria-label="Battlefield combat selection">
+        <p>{attackMove ? "Click creatures to attack. Drag one onto another to form a legal band." : "Click a blocker, then an attacker; or drag the blocker onto its attacker."}</p>
+        {attackMove ? <button type="submit" form="attack-declaration">Declare attackers ({combatDraft.attackers.filter(id => attackMove.options?.includes(id)).length})</button> : <button type="submit" form="block-declaration">Declare blockers ({new Set(Object.values(combatDraft.blocks).flat()).size})</button>}
+        {combatError ? <p role="status">{combatError}</p> : null}
+      </div> : null}
 
       <div className="player-row opponent">
         <div className="zone-meta">
@@ -290,8 +380,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               className={`card ${card.tapped ? "tapped" : ""}`}
               tabIndex={0}
               data-card-id={card.id}
-              aria-label={`Inspect ${card.name}; Enter to pin preview`}
-              onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); } }}
+              data-combat-role={combatRole(card.id)}
+              aria-label={combatRole(card.id) ? `${card.name}; Enter to select for combat; Shift Enter to inspect` : `Inspect ${card.name}; Enter to pin preview`}
+              {...combatEvents(card)}
               onFocus={() => setHoverPreview(previewFromCard(card))}
               onBlur={() => setHoverPreview(null)}
               title={card.name}
@@ -301,6 +392,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               <CardArt uri={card.image_uri} name={card.name} />
               <h4>{card.name}</h4>
               {statusBadges(card)}
+              {combatBadge(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small className="card-mana">{card.mana_cost}</small> : null}
               <p className="card-type">{card.types.join(" ")}</p>
@@ -372,8 +464,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               className={`card ${card.tapped ? "tapped" : ""}`}
               tabIndex={0}
               data-card-id={card.id}
-              aria-label={`Inspect ${card.name}; Enter to pin preview`}
-              onKeyDown={event => { if (event.key === "Enter" && event.target === event.currentTarget) { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); } }}
+              data-combat-role={combatRole(card.id)}
+              aria-label={combatRole(card.id) ? `${card.name}; Enter to select for combat; Shift Enter to inspect` : `Inspect ${card.name}; Enter to pin preview`}
+              {...combatEvents(card)}
               onFocus={() => setHoverPreview(previewFromCard(card))}
               onBlur={() => setHoverPreview(null)}
               title={card.name}
@@ -383,6 +476,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               <CardArt uri={card.image_uri} name={card.name} />
               <h4>{card.name}</h4>
               {statusBadges(card)}
+              {combatBadge(card)}
               {card.effect_warnings?.length ? <small role="status" title={card.effect_warnings.join("\n")}>Unsupported static effect</small> : null}
               {card.mana_cost ? <small className="card-mana">{card.mana_cost}</small> : null}
               <p className="card-type">{card.types.join(" ")}</p>

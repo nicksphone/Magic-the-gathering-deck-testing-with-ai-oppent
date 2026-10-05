@@ -13,6 +13,8 @@ for (const seat of [1, 2]) {
     await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await command('Page.reload');
+    await waitFor("Boolean(document.querySelector('[aria-label=\"Attack with Gorm the Great\"]'))");
+    await click('Attack all eligible');
     await waitFor("Boolean(document.querySelector('[aria-label=\"Attack payment 1 for Gorm the Great\"]'))");
     assert.equal(await evaluate("[...document.querySelectorAll('button')].find(node => node.textContent.trim() === 'Submit Attackers').disabled"), true);
     async function choose(branch) {

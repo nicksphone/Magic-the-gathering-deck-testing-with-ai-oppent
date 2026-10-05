@@ -198,6 +198,9 @@ export type LegalMove = {
   attackers?: { id: string; name: string }[];
   defenders?: { id: string; label: string; kind: string }[];
   blockers?: { id: string; name: string }[];
+  banding_attackers?: string[];
+  legal_blocks?: Record<string, string[]>;
+  blocker_capacities?: Record<string, number | null>;
   targets?: { id: string; name: string }[];
   ability_index?: number;
   ability_label?: string;

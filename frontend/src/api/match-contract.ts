@@ -184,6 +184,15 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
+      && (move.banding_attackers === undefined || (Array.isArray(move.banding_attackers)
+        && move.banding_attackers.every(id => typeof id === "string" && Array.isArray(move.options) && move.options.includes(id))))
+      && (move.legal_blocks === undefined || (record(move.legal_blocks) && Object.entries(move.legal_blocks).every(([id, targets]) =>
+        Array.isArray(move.blockers) && move.blockers.some(card => record(card) && card.id === id)
+        && Array.isArray(targets) && new Set(targets).size === targets.length && targets.every(target => typeof target === "string"
+          && Array.isArray(move.attackers) && move.attackers.some(card => record(card) && card.id === target)))))
+      && (move.blocker_capacities === undefined || (record(move.blocker_capacities) && Object.entries(move.blocker_capacities).every(([id, capacity]) =>
+        Array.isArray(move.blockers) && move.blockers.some(card => record(card) && card.id === id)
+        && (capacity === null || (Number.isInteger(capacity) && (capacity as number) >= 1)))))
       && (move.target_hints === undefined || targetHints(move.target_hints))
       && (move.type !== 'activate_mana_ability' || (Number.isInteger(move.ability_index)
         && (move.ability_index as number) >= 0 && typeof move.cost_text === 'string'

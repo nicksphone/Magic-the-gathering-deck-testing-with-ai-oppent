@@ -84,6 +84,7 @@ echo 'Browser CI: competitive table v2'
 (cd frontend && MTG_UI_EVIDENCE="$scratch/ui-v2-evidence" MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2.mjs)
 (cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2-costs.mjs)
 echo 'Browser CI: action scenarios'
+(cd frontend && timeout 180s node tests/browser-direct-combat.mjs)
 (cd frontend && timeout 120s node tests/browser-auto-progress.mjs)
 (cd frontend && timeout 180s node tests/browser-activation-payments.mjs)
 (cd frontend && timeout 120s node tests/browser-joint-activation-payments.mjs)

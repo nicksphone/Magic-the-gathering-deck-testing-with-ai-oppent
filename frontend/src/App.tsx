@@ -8,6 +8,7 @@ import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
+import { emptyCombatDraft } from "./components/combat-selection";
 
 const PENDING_START_KEY = "mtg.pendingStart";
 type PendingStart = { key: string; payload: StartMatchPayload };
@@ -44,6 +45,8 @@ export function App() {
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
   const [canAutoPass, setCanAutoPass] = useState(false);
+  const [combatDraft, setCombatDraft] = useState(emptyCombatDraft);
+  useEffect(() => { setCombatDraft(emptyCombatDraft()); }, [match?.id, match?.game_number, match?.turn, match?.step]);
   const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
   const [autoResponsePaused, setAutoResponsePaused] = useState(false);
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
@@ -477,6 +480,8 @@ export function App() {
           legalMoves={legalMoves}
           actingPlayerId={legalPlayerId}
           match={match}
+          combatDraft={combatDraft}
+          onCombatDraftChange={setCombatDraft}
         />
         </fieldset>
       </section>
@@ -485,7 +490,7 @@ export function App() {
         {match ? (
           <>
             <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-              <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} />
+              <Battlefield match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} onCardAction={reportAction(onCardAction)} combatDraft={combatDraft} onCombatDraftChange={setCombatDraft} />
             </fieldset>
           </>
         ) : (

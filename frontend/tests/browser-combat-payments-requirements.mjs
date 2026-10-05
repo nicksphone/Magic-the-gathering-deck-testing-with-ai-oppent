@@ -13,6 +13,7 @@ try {
   await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
   await command('Page.reload');
   await waitFor("Boolean(document.querySelector('[aria-label=\"Attack with Prized Unicorn\"]'))");
+  await click('Attack all eligible');
   const before = await getState();
   await click('Submit Attackers');
   await waitFor("[...document.querySelectorAll('[role=alert]')].some(node => node.textContent.includes('attack costs'))");

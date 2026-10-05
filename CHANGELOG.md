@@ -1,5 +1,18 @@
 # Changelog
 
+## Direct Battlefield Combat Selection
+
+- Shared battlefield/panel selections for both human seats; click attackers,
+  click blocker then attacker, or drag blockers onto attackers. Confirm once;
+  no automatic all-attack selection. Keyboard selection and inspection remain.
+- Expose existing effective banding, direct blocking edges and blocker capacity
+  in legal moves. Drag-to-band respects actual banding and a common defender;
+  ordinary creatures do not gain new abilities. Final declarations still use
+  checked engine actions, combat requirements and payment validation.
+- Collapse detailed selectors; automatically reveal required attack payments.
+- Add contract, selection, engine-view and both-seat browser regressions.
+  Browser drag tests dispatch HTML DragEvents, not OS-level pointer drags.
+
 ## Human-versus-AI Automatic Priority Flow
 
 - Automatically pass empty human priority windows, with a validated backend

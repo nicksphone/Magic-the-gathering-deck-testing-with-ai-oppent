@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 
 type Props = {
@@ -38,6 +39,8 @@ type Props = {
   onToggleAutoResponsePause: () => void;
   legalMoves: LegalMove[];
   match: MatchState | null;
+  combatDraft?: CombatDraft;
+  onCombatDraftChange?: Dispatch<SetStateAction<CombatDraft>>;
 };
 
 function parseDeckLines(text: string): DeckItem[] {
@@ -104,13 +107,26 @@ export function Controls(props: Props) {
     () => props.legalMoves.filter((m) => m.type === "choose_optional_effect"),
     [props.legalMoves],
   );
-  const [blockMap, setBlockMap] = useState<Record<string, string[]>>({});
+  const [localBlockMap, setBlockMap] = useState<Record<string, string[]>>({});
+  const blockMap = props.combatDraft?.blocks ?? localBlockMap;
   const [blockPaymentChoices, setBlockPaymentChoices] = useState<Record<string, string>>({});
   const selectedBlockers = [...new Set(Object.values(blockMap).flat())].sort();
-  const [attackTargets, setAttackTargets] = useState<Record<string, string>>({});
+  const [localAttackTargets, setAttackTargets] = useState<Record<string, string>>({});
+  const attackTargets = props.combatDraft?.attackTargets ?? localAttackTargets;
   const [attackPaymentChoices, setAttackPaymentChoices] = useState<Record<string, string>>({});
-  const [excludedAttackers, setExcludedAttackers] = useState<string[]>([]);
+  const [localExcludedAttackers, setExcludedAttackers] = useState<string[]>([]);
+  const excludedAttackers = props.combatDraft ? (attackMove?.options ?? []).filter(id => !props.combatDraft?.attackers.includes(id)) : localExcludedAttackers;
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
+  const selectedAttackers = (attackMove?.options ?? []).filter(id => !excludedAttackers.includes(id));
+  const attackNeedsPayment = selectedAttackers.some(id => {
+    const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
+    const cost = attackMove?.attack_costs?.[id]?.[defender];
+    return cost?.hybrid_symbols.some((_, index) => !attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]);
+  });
+  const blockNeedsPayment = selectedBlockers.some(id => {
+    const cost = blockMove?.block_costs?.[id];
+    return cost?.hybrid_symbols.some((_, index) => !blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]);
+  });
   useEffect(() => {
     setAttackTargets({});
     setBlockMap({});
@@ -464,20 +480,32 @@ export function Controls(props: Props) {
       ) : null}
 
       {blockMove ? (
-        <div className="block-panel">
+        <form id="block-declaration" className="block-panel" onSubmit={event => {
+          event.preventDefault();
+          if (blockNeedsPayment) return;
+          const choices = selectedBlockers.flatMap(id => {
+            const cost = blockMove.block_costs?.[id];
+            return cost?.hybrid_symbols.map((_, index) => blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]) ?? [];
+          });
+          props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, ids]) => ids.length > 0)), choices.length ? choices : undefined);
+        }}>
           <h3>Declare Blockers</h3>
+          {props.combatDraft ? <p>Click a blocker, then its attacker, or drag the blocker onto an attacker. Confirm the assignments together.</p> : null}
+          {props.onCombatDraftChange ? <button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, blocks: {}, selectedBlocker: null }))}>Clear blocks</button> : null}
+          <details open={props.combatDraft ? undefined : true}>
+          <summary>Advanced block assignments</summary>
           {blockMove.attackers?.map((atk) => (
             <div className="row" key={atk.id}>
               <span>{atk.name}</span>
               <select
                 multiple
                 value={blockMap[atk.id] ?? []}
-                onChange={(e) =>
-                  setBlockMap((prev) => ({
-                    ...prev,
-                    [atk.id]: Array.from(e.target.selectedOptions).map((o) => o.value),
-                  }))
-                }
+                aria-label={`Block assignments for ${atk.name}`}
+                onChange={e => {
+                  const ids = Array.from(e.target.selectedOptions).map(option => option.value);
+                  if (props.onCombatDraftChange) props.onCombatDraftChange(draft => ({ ...draft, blocks: { ...draft.blocks, [atk.id]: ids } }));
+                  else setBlockMap(previous => ({ ...previous, [atk.id]: ids }));
+                }}
               >
                 {blockMove.blockers?.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -487,6 +515,7 @@ export function Controls(props: Props) {
               </select>
             </div>
           ))}
+          </details>
           {selectedBlockers.map((id) => {
             const cost = blockMove.block_costs?.[id];
             const name = blockMove.blockers?.find((card) => card.id === id)?.name ?? id;
@@ -495,6 +524,7 @@ export function Controls(props: Props) {
                 const key = `${id}:${cost.mana_cost}:${index}`;
                 return <label key={key}>Pay {`{${symbol.symbol}}`} <select
                   aria-label={`Block payment ${index + 1} for ${name}`} value={blockPaymentChoices[key] ?? ""}
+                  required
                   onChange={(e) => setBlockPaymentChoices((prev) => ({ ...prev, [key]: e.target.value }))}>
                   <option value="">Choose payment</option>
                   {symbol.choices.map((branch) => <option key={branch} value={branch}>{branch === "P" ? "2 life" : `{${branch}} mana`}</option>)}
@@ -502,25 +532,36 @@ export function Controls(props: Props) {
               })}
             </div> : null;
           })}
-          <button disabled={selectedBlockers.some((id) => {
-            const cost = blockMove.block_costs?.[id];
-            return cost?.hybrid_symbols.some((_, index) => !blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]);
-          })} onClick={() => {
-            const choices = selectedBlockers.flatMap((id) => {
-              const cost = blockMove.block_costs?.[id];
-              return cost?.hybrid_symbols.map((_, index) => blockPaymentChoices[`${id}:${cost.mana_cost}:${index}`]) ?? [];
-            });
-            props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, v]) => v.length > 0)), choices.length ? choices : undefined);
-          }}>
+          <button type="submit" disabled={blockNeedsPayment}>
             Submit Blocks
           </button>
-        </div>
+        </form>
       ) : null}
 
       {attackMove ? (
-        <div className="block-panel">
+        <form id="attack-declaration" className="block-panel" onSubmit={event => {
+          event.preventDefault();
+          if (attackNeedsPayment) return;
+          const attackers = selectedAttackers;
+          const targets = Object.fromEntries(Object.entries(attackTargets).filter(([id, target]) => attackers.includes(id) && target));
+          const grouped = new Map<number, string[]>();
+          for (const id of attackers) {
+            const number = attackBandNumbers[id] ?? 0;
+            if (number > 0) grouped.set(number, [...(grouped.get(number) ?? []), id]);
+          }
+          const choices = attackers.flatMap(id => {
+            const defender = targets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
+            const cost = attackMove.attack_costs?.[id]?.[defender];
+            return cost?.hybrid_symbols.map((_, index) => attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]) ?? [];
+          });
+          const bands = props.combatDraft?.bands.map(band => band.filter(id => attackers.includes(id))).filter(band => band.length > 1) ?? [...grouped.values()];
+          props.onSubmitAttack(attackers, targets, bands, choices.length ? choices : undefined);
+        }}>
           <h3>Declare Attackers</h3>
-          <p>Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without.</p>
+          <p>{props.combatDraft ? "Click creatures on the battlefield to select them. Drag an eligible attacker onto another to form a legal band. Confirm when ready." : "Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without."}</p>
+          {props.onCombatDraftChange ? <div className="row"><button type="button" onClick={() => props.onCombatDraftChange?.(draft => selectAttackers(draft, attackMove.options ?? []))}>Attack all eligible</button><button type="button" onClick={() => props.onCombatDraftChange?.(draft => selectAttackers(draft, []))}>Clear attackers</button><button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, bands: [] }))}>Separate bands</button></div> : null}
+          <details open={!props.combatDraft || selectedAttackers.some(id => attackMove.attack_costs?.[id]?.[attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`]?.mana_cost) ? true : undefined}>
+          <summary>Advanced attackers, defenders and payments</summary>
           {(attackMove.options ?? []).map((attackerId) => {
             const defender = attackTargets[attackerId] || `player:${3 - (props.match?.active_player ?? 1)}`;
             const payment = attackMove.attack_costs?.[attackerId]?.[defender];
@@ -528,17 +569,23 @@ export function Controls(props: Props) {
               || props.match?.players?.["2"]?.battlefield?.find((c) => c.id === attackerId);
             return (
               <div className="row" key={`atk-${attackerId}`}>
-                <input type="checkbox" aria-label={`Attack with ${attacker?.name ?? attackerId}`} checked={!excludedAttackers.includes(attackerId)} onChange={(e) => setExcludedAttackers((prev) => e.target.checked ? prev.filter((id) => id !== attackerId) : [...prev, attackerId])} />
+                <input type="checkbox" aria-label={`Attack with ${attacker?.name ?? attackerId}`} checked={!excludedAttackers.includes(attackerId)} onChange={e => {
+                  if (props.onCombatDraftChange) props.onCombatDraftChange(draft => toggleAttacker(draft, attackerId));
+                  else setExcludedAttackers(previous => e.target.checked ? previous.filter(id => id !== attackerId) : [...previous, attackerId]);
+                }} />
                 <span>{attacker?.name ?? attackerId}</span>
-                <label>Band <input type="number" min="0" max="125" aria-label={`Band number for ${attacker?.name ?? attackerId}`} value={attackBandNumbers[attackerId] ?? 0} onChange={(e) => setAttackBandNumbers((prev) => ({ ...prev, [attackerId]: Number(e.target.value) || 0 }))} /></label>
+                {!props.combatDraft ? <label>Band <input type="number" min="0" max="125" aria-label={`Band number for ${attacker?.name ?? attackerId}`} value={attackBandNumbers[attackerId] ?? 0} onChange={(e) => setAttackBandNumbers((prev) => ({ ...prev, [attackerId]: Number(e.target.value) || 0 }))} /></label> : null}
                 <select
                   value={attackTargets[attackerId] ?? ""}
-                  onChange={(e) =>
-                    setAttackTargets((prev) => ({
-                      ...prev,
-                      [attackerId]: e.target.value,
-                    }))
-                  }
+                  aria-label={`Defender for ${attacker?.name ?? attackerId}`}
+                  onChange={e => {
+                    const target = e.target.value;
+                    if (props.onCombatDraftChange) props.onCombatDraftChange(draft => {
+                      const targets = { ...draft.attackTargets, [attackerId]: target };
+                      return { ...draft, attackTargets: targets, bands: draft.bands.filter(band => new Set(band.map(id => targets[id] || `player:${3 - (props.match?.active_player ?? 1)}`)).size === 1) };
+                    });
+                    else setAttackTargets(previous => ({ ...previous, [attackerId]: target }));
+                  }}
                 >
                   <option value="">Default Defender</option>
                   {attackMove.defenders?.map((d) => (
@@ -552,6 +599,7 @@ export function Controls(props: Props) {
                   const key = `${attackerId}:${defender}:${payment.mana_cost}:${index}`;
                   return <label key={key}>Pay {`{${symbol.symbol}}`} <select
                     aria-label={`Attack payment ${index + 1} for ${attacker?.name ?? attackerId}`}
+                    required
                     value={attackPaymentChoices[key] ?? ""}
                     onChange={(e) => setAttackPaymentChoices((prev) => ({ ...prev, [key]: e.target.value }))}>
                     <option value="">Choose payment</option>
@@ -561,28 +609,11 @@ export function Controls(props: Props) {
               </div>
             );
           })}
-          <button disabled={(attackMove.options ?? []).filter((id) => !excludedAttackers.includes(id)).some((id) => {
-            const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
-            const cost = attackMove.attack_costs?.[id]?.[defender];
-            return cost?.hybrid_symbols.some((_, index) => !attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]);
-          })} onClick={() => {
-            const attackers = (attackMove.options ?? []).filter((id) => !excludedAttackers.includes(id));
-            const targets = Object.fromEntries(Object.entries(attackTargets).filter(([id, target]) => attackers.includes(id) && target));
-            const grouped = new Map<number, string[]>();
-            for (const id of attackers) {
-              const number = attackBandNumbers[id] ?? 0;
-              if (number > 0) grouped.set(number, [...(grouped.get(number) ?? []), id]);
-            }
-            const choices = attackers.flatMap((id) => {
-              const defender = targets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
-              const cost = attackMove.attack_costs?.[id]?.[defender];
-              return cost?.hybrid_symbols.map((_, index) => attackPaymentChoices[`${id}:${defender}:${cost.mana_cost}:${index}`]) ?? [];
-            });
-            props.onSubmitAttack(attackers, targets, [...grouped.values()], choices.length ? choices : undefined);
-          }}>
+          </details>
+          <button type="submit" disabled={attackNeedsPayment}>
             Submit Attackers
           </button>
-        </div>
+        </form>
       ) : null}
       {attackRestrictions.length ? (
         <div className="block-panel">

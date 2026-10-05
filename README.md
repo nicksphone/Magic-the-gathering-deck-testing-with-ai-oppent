@@ -1,5 +1,13 @@
 # MTG Deck Testing Lab
 
+Combat can be declared directly on the battlefield: click eligible creatures
+to select attackers; click a blocker and then an attacker, or drag the blocker
+onto its target. Confirm the complete declaration once. Dragging attackers
+together creates a band only when the engine permits banding. Advanced
+defenders, payments and assignment controls remain available; selecting cards
+does not spend resources or mutate the authoritative game.
+See [combat controls and validation](docs/testing/direct-combat.md).
+
 The strategic/diagnostic evaluator values supported pending announcements
 through public resolution forecasts, preserving real response branches and
 conservative unknown-choice/hidden-zone fallback. Optional `--decision-metrics`

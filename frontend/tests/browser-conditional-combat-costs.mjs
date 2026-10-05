@@ -15,6 +15,7 @@ for (const kind of ['attack', 'block']) for (const seat of [1, 2]) {
     await command('Page.reload');
     if (kind === 'attack') {
       await waitFor("Boolean(document.querySelector('[aria-label=\"Attack with Grizzly Bears\"]'))");
+      await click('Attack all eligible');
       assert.ok(await evaluate("document.body.textContent.includes('Attack cost: {1}')"));
       const before = await state();
       await click('Submit Attackers');

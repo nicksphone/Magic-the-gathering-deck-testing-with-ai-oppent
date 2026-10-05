@@ -15,6 +15,23 @@ from tests.test_ai_recurring_engines import fixture, add
 from game_state.state import Zone
 
 
+@app.post("/fixture/direct-combat")
+def direct_combat(seat: int = 1):
+    from fastapi import HTTPException
+    from tests.test_attack_bands import _state
+    if seat not in (1, 2):
+        raise HTTPException(422, "Expected seat one or two")
+    state = _state()
+    if seat == 2:
+        state.players[1], state.players[2] = state.players[2], state.players[1]
+        for player_id, player in state.players.items():
+            player.id = player_id
+        for card in state.cards.values():
+            card.owner, card.controller = 3-card.owner, 3-card.controller
+        state.active_player = state.priority_player = 2
+    return publish(state, [{"quantity": 60, "card_name": "Island"}])
+
+
 @app.post("/fixture/auto-progress")
 def auto_progress(window: str = "empty"):
     from tests.test_human_auto_progress import match_at

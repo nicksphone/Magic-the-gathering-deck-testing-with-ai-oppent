@@ -185,6 +185,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             from rules_engine.declaration_limits import declaration_limit_view
             from rules_engine.combat_payments import attack_tax_sources, attack_payment_view
             moves.append({"type": "attack", "options": attackers, "defenders": defenders,
+                          'banding_attackers': [cid for cid in attackers if has_keyword(state, cid, 'banding')],
                           'attack_taxes': attack_tax_sources(state),
                           'attack_costs': {cid: {target['id']: attack_payment_view(state, [cid], {cid: target['id']})
                                                 for target in defenders} for cid in attackers},
@@ -206,7 +207,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         from rules_engine.declaration_limits import declaration_limit_view
         from rules_engine.combat_requirements import target_block_requirements
         from rules_engine.combat_payments import block_payment_view, block_tax_sources
+        from rules_engine.combat import _can_block_attacker, _max_attackers_blockable_by_creature
         moves.append({"type": "block", "attackers": attacker_opts, "blockers": blocker_opts,
+                      'legal_blocks': {bid: [aid for aid in state.attackers
+                                            if _can_block_attacker(state, state.cards[aid], state.cards[bid])]
+                                       for bid in blockers},
+                      'blocker_capacities': {bid: (None if _max_attackers_blockable_by_creature(state, state.cards[bid]) == float('inf')
+                                                 else int(_max_attackers_blockable_by_creature(state, state.cards[bid])))
+                                             for bid in blockers},
                       'target_requirements': target_block_requirements(state),
                       'block_taxes': block_tax_sources(state),
                       'block_costs': {bid: block_payment_view(state, [bid]) for bid in blockers},

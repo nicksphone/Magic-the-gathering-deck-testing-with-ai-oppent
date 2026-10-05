@@ -99,6 +99,7 @@ try {
       await click('Play Land Mountain');
       await syncAfter('land', revision);
     } else if (choose('attack')) {
+      await click('Attack all eligible');
       await click('Submit Attackers');
       await syncAfter('attack', revision);
     } else {

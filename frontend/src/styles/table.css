@@ -85,6 +85,15 @@ details[open] > summary { margin-bottom:8px; }
 .battlefield.battlefield-dense,.battlefield.battlefield-packed { --battlefield-card-width:104px; --battlefield-card-image-height:72px; --battlefield-max-row-height:280px; }
 .cards { display:flex; flex-wrap:nowrap; gap:8px; padding:4px 4px 10px; min-height:60px; max-height:none; overflow-x:auto; scrollbar-color:#758078 #142024; }
 .cards:empty::before { content:"No permanents"; font-size:.75rem; color:var(--muted); }
+.combat-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; margin:8px 0; border:1px solid var(--gold); border-radius:8px; background:var(--bg-2); position:sticky; top:8px; z-index:12; }
+.combat-toolbar p { flex:1 1 220px; margin:0; font-size:.8rem; }
+.combat-toolbar [role=status] { flex-basis:100%; color:var(--danger); }
+.card[data-combat-role=attacker], .card[data-combat-role=blocker] { cursor:pointer; }
+.card[data-combat-role=block-target] { outline:1px dashed var(--danger); outline-offset:2px; cursor:crosshair; }
+.combat-card-toggle { width:100%; min-height:24px; padding:2px; font-size:.68rem; margin:4px 0; }
+.combat-card-toggle[aria-pressed=true] { background:var(--gold); color:var(--bg-0); border-color:var(--gold); }
+.combat-band, .combat-assigned { display:block; margin:3px 0; background:#435938; }
+.combat-inspect { min-height:22px; padding:1px 5px; font-size:.65rem; }
 .card { flex:0 0 132px; width:132px; max-width:180px; padding:7px; border-color:#69716c; background:linear-gradient(145deg,#32413f,#202c30); min-height:138px; align-self:stretch; }
 .card:hover,.card.tapped { transform:none; }
 .card:hover,.card:focus-visible { border-color:var(--gold); }

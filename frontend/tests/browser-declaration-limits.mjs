@@ -12,6 +12,7 @@ try {
   await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(state.id)})`);
   await command('Page.reload');
   await waitFor("document.querySelectorAll('[aria-label=\"Attack with Llanowar Elves\"]').length === 2");
+  await click('Attack all eligible');
   const before = await (await fetch(`${backend}/matches/${state.id}`)).json();
   await click('Submit Attackers');
   await waitFor("[...document.querySelectorAll('[role=alert]')].some(node => node.textContent.includes('static combat limit'))");
