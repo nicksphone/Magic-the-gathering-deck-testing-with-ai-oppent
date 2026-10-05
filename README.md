@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+An isolated backend candidate adds shared life-gain conversion, unconditional
+loss protection and replacement-aware original/copy beneficiary planning.
+It is not part of the published build yet; see
+[scope and outstanding qualification](docs/testing/life-conversion-planning.md).
+
 Supported repeated temporary creature modifiers now preserve independent target
 instances, including shared recipients, partial resolution and object identity.
 Both human seats can choose ordered recipients and copied targets; AI uses checked

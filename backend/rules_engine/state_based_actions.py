@@ -180,8 +180,13 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
             restore_printed_characteristics(card)
     _cease_nonbattlefield_tokens(state)
     if state.winner is None:
+        from rules_engine.replacement import player_cant_lose_game
         losing_players = set()
         for pid, player in state.players.items():
+            if player_cant_lose_game(state, pid):
+                # Failed draws are checked once; life/poison remain current state.
+                state.failed_draw_players.discard(pid)
+                continue
             if pid in state.failed_draw_players:
                 losing_players.add(pid)
                 state.log.append(f"{player.name} loses after attempting to draw from empty library.")

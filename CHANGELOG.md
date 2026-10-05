@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased Candidate - Life conversion and beneficiary planning
+
+- Add shared opponent-gain-to-loss static replacement support, including printed
+  ability-word labels, affected-player ordering and snapshot continuations.
+- Apply supported unconditional loss protection to life, poison and draw checks;
+  clear protected failed-draw events after their state-based check.
+- Evaluate original/copy life recipients through bounded public replacement
+  outcomes and filter proved suicidal life actions before proactive selection.
+- Qualification remains pending. The published `927ca5d` milestone is unchanged.
+
 ## 2026-10-05 - Qualified land-entry, copy and beneficiary milestone
 
 - Publish integration `4b9903d`, preserve an integrity-checked live database backup

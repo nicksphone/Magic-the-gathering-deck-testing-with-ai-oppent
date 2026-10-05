@@ -213,6 +213,7 @@ class AIAgent:
                 and "Creature" not in (effective_types(state, state.cards.get(move.get("card_id"))) or []))
         ]
         legal_moves = [move for move in legal_moves if not self._burn_has_only_friendly_targets(state, move, player_id)]
+        legal_moves = self._without_losing_life_actions(state, legal_moves, player_id)
         if getattr(state, "pregame_pending", False) and not any(move.get("type") == "choose_mechanic" for move in legal_moves):
             return self.choose_mulligan_action(state, player_id)
         if (
@@ -324,6 +325,11 @@ class AIAgent:
                                     amount = int(effect.get("payload", {}).get("amount", 0) or 0)
                                     return 100.0 if int(value) == opponent and state.players[opponent].life <= amount else 3.0 if int(value) == opponent else -100.0
                                 if effect["effect_key"] == "gain_life":
+                                    from ai.life_targets import life_target_score
+                                    score = life_target_score(state, player_id, int(value),
+                                                             int(effect.get('payload', {}).get('amount', 0) or 0))
+                                    if score is not None:
+                                        return score
                                     return 5.0 if int(value) == player_id else -5.0
                                 return 5.0 if int(value) == opponent else -5.0
                             if key == "target_stack_id" and effect["effect_key"] in {"counter_spell", "counter_ability"}:
@@ -368,6 +374,21 @@ class AIAgent:
                     selected = f"target_player:{opponent}"
                 elif copied and copied.effect_key == "gain_life" and f"target_player:{player_id}" in options:
                     selected = f"target_player:{player_id}"
+                    from ai.life_targets import life_target_score
+                    scores = {}
+                    for option in options:
+                        if option == 'keep':
+                            target = copied.payload.get('__announced_targets', {}).get('target_player')
+                        elif option.startswith('target_player:'):
+                            target = int(option.split(':', 1)[1])
+                        else:
+                            continue
+                        if target is not None:
+                            score = life_target_score(state, player_id, target, int(copied.payload.get('amount', 0)))
+                            if score is not None:
+                                scores[option] = score
+                    if scores and len(scores) == len(options):
+                        selected = max(options, key=lambda option: (scores[option], option == selected))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]},
                                   reasoning="Choose a legal copy target")
             if choice["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:
@@ -2671,6 +2692,24 @@ class AIAgent:
             kept.append(move)
         return kept
 
+    def _without_losing_life_actions(self, state, moves, player_id):
+        """Do not force conversion into a checked public life-replacement loss."""
+        from rules_engine.replacement import replacement_options
+        if not isinstance(state, MatchState) or not replacement_options(state, 'life_gain', target_player=player_id):
+            return moves
+        from ai.pending_effects import unanswered_action_loses
+        kept = []
+        for move in moves:
+            card = _card_for_move(state, move)
+            if (move.get('type') in {'cast_spell', 'activate_ability', 'activate_loyalty'} and card
+                    and ('gain' in self._spell_tags(card)
+                         or re.search(r'\bgains?\b[^.\n]*\blife\b', str(move.get('ability_label') or ''), re.I))):
+                action = self._materialize_action(state, move, player_id)
+                if not action.get('_invalid_ai_choice') and unanswered_action_loses(state, player_id, action) is True:
+                    continue
+            kept.append(move)
+        return kept
+
     def _winning_self_removal_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if not isinstance(state, MatchState):
             return None
@@ -3051,6 +3090,21 @@ class AIAgent:
             allowed_players = {int(target["id"]) for target in player_targets}
             if re.search(r"\btarget player gains\b[^.\n]*\blife\b", target_text) and "drain" not in tags:
                 preferred = player_id
+                from rules_engine.landfall import alternative_effect
+                from rules_engine.land_history import landfall_status
+                alternative = alternative_effect(target_text, {})
+                status = landfall_status(state, player_id)
+                amount_match = re.search(r'\btarget player gains (\d+) life\.', target_text)
+                amount = int(amount_match[1]) if amount_match and alternative is None else 0
+                if alternative is not None and status is not None:
+                    amount = int(alternative[1]['branches'][int(status)]['payload'].get('amount', 0))
+                if amount > 0:
+                    from ai.life_targets import life_target_score
+                    scores = {target: life_target_score(state, player_id, target, amount)
+                              for target in allowed_players}
+                    if all(score is not None for score in scores.values()):
+                        preferred = max(sorted(allowed_players),
+                                        key=lambda target: (scores[target], target == player_id))
             else:
                 preferred = opponent
             targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)

@@ -64,6 +64,13 @@ _DRAW_DOUBLE_EXCEPT_FIRST_RE = re.compile(
     r"(?:^|\n)if you would draw a card except the first one you draw in each of your draw steps, draw two cards instead\."
 )
 _LIFE_DOUBLE_RE = re.compile(r"(?:^|\n)if you would gain life, you gain twice that much life instead\.")
+_OPPONENT_GAIN_LOSS_RE = re.compile(
+    r"(?:^|\n)(?:[a-z][a-z '\-]*\s+\u2014\s*)?"
+    r"if an opponent would gain life, that player loses that much life instead\."
+)
+_CANT_LOSE_GAME_RE = re.compile(
+    r"(?:^|\n)you can't lose the game(?:\.| and your opponents can't win the game\.)"
+)
 _GLOBAL_DAMAGE_DOUBLE_RE = re.compile(
     r'if a source would deal damage to a permanent or player, '
     r'it deals double that damage to that permanent or player instead\.')
@@ -83,6 +90,19 @@ def _draw_doubler_applies(state, target_player: int, text: str) -> bool:
         return False
     in_own_draw_step = getattr(state.step, "value", state.step) == "draw" and state.active_player == target_player
     return not (in_own_draw_step and state.draws_in_current_draw_step.get(target_player, 0) == 0)
+
+
+def _life_gain_candidates(state, target_player: int):
+    return [(card, text) for card, text in _battlefield_oracle_texts(state)
+            if (card.controller == target_player and (
+                "if you would gain life, draw that many cards instead" in text
+                or _LIFE_DOUBLE_RE.search(text)))
+            or (card.controller != target_player and _OPPONENT_GAIN_LOSS_RE.search(text))]
+
+
+def player_cant_lose_game(state, player_id: int) -> bool:
+    return any(_CANT_LOSE_GAME_RE.search(text)
+               for _, text in _battlefield_oracle_texts(state, controller=player_id))
 
 
 def replacement_source_used(used_source_ids, event: str, source_id: str) -> bool:
@@ -148,11 +168,7 @@ def replacement_options(
     elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
         candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
     elif event_key in {"life_gain", "gain_life"} and target_player in state.players:
-        candidates = [
-            (card, text)
-            for card, text in _battlefield_oracle_texts(state, controller=target_player)
-            if "if you would gain life, draw that many cards instead" in text or _LIFE_DOUBLE_RE.search(text)
-        ]
+        candidates = _life_gain_candidates(state, target_player)
     elif event_key in {"card_draw", "draw"} and target_player in state.players:
         candidates = [
             (card, text)
@@ -394,13 +410,16 @@ def replace_gain_life(
     used = {str(value) for value in (used_source_ids or [])}
     candidates = [
         (card, text)
-        for card, text in _battlefield_oracle_texts(state, controller=target_player)
+        for card, text in _life_gain_candidates(state, target_player)
         if not replacement_source_used(used, "life_gain", str(getattr(card, "id", "")))
-        and ("if you would gain life, draw that many cards instead" in text or _LIFE_DOUBLE_RE.search(text))
     ]
     card = _choose_replacement_candidate(state, candidates, replacement_source_id, "life gain")
     if card is not None:
         next_used = sorted(used | {f"life_gain:{card.id}"})
+        if _OPPONENT_GAIN_LOSS_RE.search((card.oracle_text or "").lower()):
+            return ("lose_life", {"target_player": target_player, "amount": int(amount),
+                                  "__replacement_source": card.name,
+                                  "__used_replacement_source_ids": next_used})
         if _LIFE_DOUBLE_RE.search((card.oracle_text or "").lower()):
             return (
                 "gain_life",

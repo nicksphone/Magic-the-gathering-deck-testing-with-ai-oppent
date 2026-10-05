@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Tainted Remedy",
+    "url": "https://api.scryfall.com/cards/named?exact=Tainted%20Remedy",
+    "retrieved_at": "2026-10-05T04:19:31.931Z",
+    "sha256": "ba19cae13904742391bd6976c6bd011680054dbae4617c802432d5a3b62717c1"
+  },
+  {
+    "name": "Plague Drone",
+    "url": "https://api.scryfall.com/cards/named?exact=Plague%20Drone",
+    "retrieved_at": "2026-10-05T04:19:32.469Z",
+    "sha256": "33e4f8a0effd1b4df7fc43e2f3182e543f73bc3ac69b13bbc827e8aa4d369b61"
+  },
+  {
+    "name": "Alhammarret's Archive",
+    "url": "https://api.scryfall.com/cards/named?exact=Alhammarret's%20Archive",
+    "retrieved_at": "2026-10-05T04:19:32.927Z",
+    "sha256": "498b8c1c97b465892cdef001231bf1b59c9b9a4f577988906088a920b5a7753a"
+  },
+  {
+    "name": "Platinum Emperion",
+    "url": "https://api.scryfall.com/cards/named?exact=Platinum%20Emperion",
+    "retrieved_at": "2026-10-05T04:19:33.207Z",
+    "sha256": "15977716fbc596d2b5b4631a15e91b9f37f6ada18d700439e6254745fa4962fc"
+  },
+  {
+    "name": "Platinum Angel",
+    "url": "https://api.scryfall.com/cards/named?exact=Platinum%20Angel",
+    "retrieved_at": "2026-10-05T04:23:32.975Z",
+    "sha256": "747ff3f591d24373448e75d0dca8512f0315b8b75b2155ff1a68716500d8980b"
+  },
+  {
+    "name": "Lich",
+    "url": "https://api.scryfall.com/cards/named?exact=Lich",
+    "retrieved_at": "2026-10-05T04:23:33.495Z",
+    "sha256": "a8a0547d1a1bd5c88f9fec7e199d9188a11bf078d8327541e20d76c611ece469"
+  }
+]

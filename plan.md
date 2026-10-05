@@ -2,6 +2,14 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify and integrate [life conversion and beneficiary planning](docs/testing/life-conversion-planning.md).
+  Batch shared static replacement admission/resolution, affected-player ordering,
+  durable continuations, loss-protection checks and original/copy AI decisions.
+  Canonical fixtures reproduce missed conversions, a false loss through Platinum
+  Angel and suicidal casting. Preserve frozen baseline games while the later
+  repair runs independently; require latest-source full regressions, human choice
+  integration and strictly reconstructed post-fix card use before publication.
+
 - [x] Qualify supported complete fixed damage/caster-gain instructions and
   semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,
   606 matching backend source/fixture files; full browser and integration frontend
