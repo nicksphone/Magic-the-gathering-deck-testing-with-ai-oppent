@@ -108,6 +108,23 @@ def _seat(seat):
         raise ActionRejected('Seat must be integer 1 or 2')
 
 
+def _unsupported_mana_choices(cost_text):
+    """Describe choices the current immediate mana contract cannot carry."""
+    from rules_engine.costs import parse_activated_cost
+    from rules_engine.mana import hybrid_payment_symbols
+    cost = parse_activated_cost(cost_text)
+    result = []
+    if cost.discard_cards:
+        result.append('payment_choices.discard_card_ids')
+    if cost.sacrifice_creatures and not cost.sacrifice_source:
+        result.append('payment_choices.sacrifice_card_ids')
+    if hybrid_payment_symbols(cost.mana_cost):
+        result.append('hybrid_choices')
+    if '{X}' in cost.mana_cost.upper():
+        result.append('targets.x_value')
+    return result
+
+
 class TrainingEnvironment:
     """Single-process adapter. Snapshots/provenance are private evaluator data."""
 
@@ -215,7 +232,13 @@ class TrainingEnvironment:
                 choices = ['replacement_source_id']
             elif move['type'] == 'choose_optional_effect':
                 choices = ['stack_id', 'accept (explicit boolean)']
-            result.append({'hint': hint, 'required_choices': choices})
+            prompt = {'hint': hint, 'required_choices': choices}
+            if move['type'] == 'activate_mana_ability':
+                missing = _unsupported_mana_choices(move.get('cost_text', ''))
+                prompt['encoding_supported'] = not missing
+                prompt['unsupported_choices'] = missing
+                choices.extend(missing)
+            result.append(prompt)
         return result
 
     def observe(self, seat):
@@ -280,6 +303,21 @@ class TrainingEnvironment:
         """Close known legacy defaults, while leaving execution to checked_action."""
         from rules_engine.action_validation import require
         kind = action['type']
+        if kind == 'tap_nonland_for_mana':
+            from rules_engine.mana_abilities import mana_ability_views
+            state = deepcopy(self._state)
+            card = state.cards.get(action['card_id'])
+            require(card is not None and card.id in state.players[seat].battlefield
+                    and card.controller == seat, 'Mana source must be a permanent you control')
+            views = mana_ability_views(state, card)
+            matching = [view for view in views if action['color'] in view['outputs'] and (
+                view['outputs'][action['color']] > 0
+                or sum(view.get('output_bundles', {}).get(action['color'], {}).values()) > 0)]
+            require(len(matching) <= 1,
+                    'Missing required choice: ability_index; use activate_mana_ability')
+            for view in matching:
+                require(not _unsupported_mana_choices(view['cost_text']),
+                        'Unsupported required choices: immediate mana resource/hybrid/X payments')
         if kind == 'choose_mechanic':
             pending = self._state.pending_mechanic_choice
             require(bool(pending), 'No pending mechanic choice')
@@ -299,14 +337,18 @@ class TrainingEnvironment:
                         and move.get('ability_index') == action['ability_index']]
             require(bool(matching), 'Ability is not in current engine hints')
             move = matching[0]
+            if kind == 'activate_ability':
+                from rules_engine.mana_abilities import mana_ability_specs
+                require(not any(spec[0] == action['ability_index']
+                                for spec in mana_ability_specs(state.cards[action['card_id']], state)),
+                        'Immediate mana abilities require activate_mana_ability; '
+                        'the generic stack route is not a payment encoding workaround')
             cost = parse_activated_cost(move.get('cost_text', move.get('mana_cost', '')))
             require(not move.get('ability_x_cost') or action.get('targets', {}).get('x_value') is not None,
                     'Missing required choice: targets.x_value')
             if kind == 'activate_mana_ability':
-                from rules_engine.mana import hybrid_payment_symbols
-                require(not (cost.discard_cards or cost.sacrifice_creatures and not cost.sacrifice_source
-                             or hybrid_payment_symbols(cost.mana_cost)),
-                        'Unsupported required choices: mana ability resource/hybrid payments '
+                require(not _unsupported_mana_choices(move.get('cost_text', move.get('mana_cost', ''))),
+                        'Unsupported required choices: mana ability resource/hybrid/X payments '
                         'are not representable in the existing action contract')
             else:
                 payments = action.get('payment_choices') or {}
@@ -371,6 +413,11 @@ class TrainingEnvironment:
         boundary strips presentation fields using the parent-owned model map.
         """
         from ai.action_contract import complete_action
+        if isinstance(intent, dict) and intent.get('type') in {
+                'activate_mana_ability', 'tap_nonland_for_mana', 'tap_land_for_mana', 'tap_lands_bulk'}:
+            if any(intent.get(field) is not None for field in ('payment_choices', 'hybrid_choices')) \
+                    or intent.get('targets'):
+                raise ActionRejected('Immediate mana contract cannot carry selected resource/hybrid/X payments')
         return self.lookup(complete_action(intent), seat)
 
     def simple_actions(self):

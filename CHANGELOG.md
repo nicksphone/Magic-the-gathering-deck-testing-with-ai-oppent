@@ -1,5 +1,14 @@
 # Changelog
 
+## Training Mana Choice Safeguards - 2026-10-05
+
+- Expose unsupported immediate-mana payment choices explicitly and reject
+  requested resource/hybrid/X fields before normalization can discard them.
+  Guard ambiguous legacy ability selection and generic stack-route bypasses.
+- Parent qualification passes 304 composed tests, including both-seat canonical
+  mana activation, restoration, privacy and rejection invariants. This does not
+  implement selected resource/hybrid payments; coordinated engine work remains open.
+
 ## Offline Knowledge-To-Engine Coverage - 2026-10-05
 
 - Add a bounded, digest-pinned, read-only report separating known engine gaps,

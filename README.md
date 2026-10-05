@@ -97,6 +97,10 @@ Implementation scopes and remaining limits:
 - [Complete training choices](docs/testing/training-choice-coverage.md) adds
   explicit actor-private prompts and checked modal, X/discard, inspection/order,
   trigger, ward and replacement choices; broader encoding remains unfinished.
+- [Training mana safeguards](docs/testing/training-mana-choice-coverage.md)
+  expose unsupported payment choices and reject silent selection loss or
+  ambiguous legacy activations. The 304-test composed gate passes; actual
+  selected resource/hybrid mana payments remain under implementation.
 - [Versioned trajectory export](docs/testing/training-dataset.md) records checked
   actor-private actions with encounter aliases, terminal/incomplete distinctions,
   immutable shards and grouped split diagnostics. Its baseline teacher is a

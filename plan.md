@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Training mana choice safeguards: 304 composed tests pass. Unsupported
+  resource/hybrid/X selections are reported and rejected rather than silently
+  dropped; ambiguous legacy ability selection and stack-route bypasses reject.
+  Actual chosen-payment execution remains unfinished. See
+  [scope](docs/testing/training-mana-choice-coverage.md).
 - [x] Offline knowledge-to-engine report: 49 checks pass; a current-source
   read-only run over all 38,690 qualified profiles is byte-identical to the
   independent worker report. Known gaps, unknown surfaces and missing metadata

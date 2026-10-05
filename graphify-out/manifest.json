@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1791236390.543863,
-    "seen": 1791236489.8588526,
-    "ast_hash": "d5d0ae7ca97aa00fa4984e7133331f18",
+    "mtime": 1791238605.0865002,
+    "seen": 1791238669.3287506,
+    "ast_hash": "0aa83e25e072d1b00bac1e09af43d441",
     "semantic_hash": ""
   },
   "backend/scripts/oracle_corpus_report.py": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791237769.8426893,
-    "seen": 1791237847.6307921,
-    "ast_hash": "7ffd2682972e09a30f7ac04eae0dbc9d",
+    "mtime": 1791238625.2411828,
+    "seen": 1791238669.329095,
+    "ast_hash": "9dc95dbfb98c9b71dac79925fe1068bb",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791237769.8446891,
-    "seen": 1791237847.6311686,
-    "ast_hash": "be40cd863b501773ab6fedbb54d4651c",
+    "mtime": 1791238618.2892923,
+    "seen": 1791238669.3294797,
+    "ast_hash": "e6a9c93cf5d5409d396bb64ca7e8594a",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791237769.8476892,
-    "seen": 1791237847.6307902,
-    "ast_hash": "151bc6928045acb8f36b7d27986c4a71",
+    "mtime": 1791238618.2872922,
+    "seen": 1791238669.329093,
+    "ast_hash": "967db06815ad1cfd5df32e6925559d25",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -7065,6 +7065,18 @@
     "mtime": 1791237769.841689,
     "seen": 1791237847.6310344,
     "ast_hash": "02a6a1597ce8272bd1069dd68311b84c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_mana_choice_coverage.py": {
+    "mtime": 1791238605.0865002,
+    "seen": 1791238669.3286955,
+    "ast_hash": "0eb29237d93685469d160b30ed77a694",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-mana-choice-coverage.md": {
+    "mtime": 1791238618.2892923,
+    "seen": 1791238669.3294528,
+    "ast_hash": "8b3c501dca8983bd0b32ce02abc27fe5",
     "semantic_hash": ""
   }
 }
