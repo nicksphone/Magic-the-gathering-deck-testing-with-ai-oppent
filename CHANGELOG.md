@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased Candidate - Deliberate activated payments
+## 2026-10-05 - Deliberate activated payments
 
 - Share activation resource candidates and selected-payment validation between
   legal moves, checked execution, typed HTTP actions, AI and both human seats.
@@ -8,7 +8,8 @@
   resource-consuming activations using existing retention/loss estimates.
 - Add canonical discard/artifact fixtures, six HTTP recovery cases and six
   focused browser scenarios. Latest boundary selection: 80 passed. Frontend
-  tests/lint/build pass. Full regression/browser qualification remains pending.
+  tests/lint/build pass. Exact runtime: 8,133 backend tests in all 328 files,
+  639 matching source hashes and the complete browser gate in all three BO3 modes.
 - This does not add deliberate mana-ability, cycling or ward payments, nor
   certify optimal joint mana/resource planning or expert AI.
 

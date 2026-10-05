@@ -1,6 +1,6 @@
 # Deliberate Nonmana Activated Payments
 
-## Implemented Candidate
+## Qualified Scope
 
 Ordinary `activate_ability` legal moves expose required discard/sacrifice counts,
 eligible actor resources and mandatory source IDs. Typed `payment_choices` may
@@ -27,7 +27,10 @@ not an optimal planning or seasoned-player claim.
 - Mandatory Mind Stone source costs, borrowed-permanent ownership and
   land-preserving discard materialization in ten archetype labels have direct
   tests. Crafted states are not competitive matchup evidence.
-- Full backend and complete browser qualification of this candidate is pending.
+- Exact runtime `7bfaaa6bdeb4b839569a25ab46b8d05e16bec45d`: 8,133 backend
+  tests pass across all 328 recursive files; 639 source/fixture hashes match
+  in every shard. Complete browser harness passes, including all three natural
+  BO3 controller modes. Initial test-copy databases were absent.
 
 Existing unchanged canonical fixtures supply Mind Stone, Viscera Seer, Dismember
 and Sacred Foundry. New Rummaging Goblin and Trading Post files are unchanged
@@ -38,7 +41,9 @@ Scryfall responses with retrieval URLs, timestamps and SHA-256 provenance.
 Deliberate payments for mana abilities, cycling, ward and other action families
 are not part of this batch. More complex compound cost syntax remains outside
 the supported parser. An explicit resource consumed by automatic mana planning
-is rejected atomically, but alternative joint mana/resource search remains open.
+is rejected atomically. Two Lotus Petals plus Trading Post reproduce a valid
+selected payment rejected when automatic mana consumes the selected artifact;
+alternative joint mana/resource search is being repaired in a separate candidate.
 Sacrifice/death rewards, impending losses and richer strategic resource value
 need deeper planning and actual-game evidence. This batch does not establish
 arbitrary-card rules fidelity, expert AI, accessibility or network release safety.
