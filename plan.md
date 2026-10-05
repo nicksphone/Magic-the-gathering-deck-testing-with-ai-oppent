@@ -9,7 +9,7 @@
   Actual seat-one trace now casts on turn 9 but still refuses a body later;
   this is not complete strategic play. Keep timing fields out of replay state.
 - [x] Qualify shared stack-response deltas: seven reproduced failures repaired;
-  129 selected checks and nine expanded contracts pass (overlapping). Complete
+  129 selected checks and nine expanded contracts pass (overlapping). The
   exact frozen full gate passes 8,303 tests across 335 files/656 matching hashes
   and the full browser harness in all three BO3 modes.
 - [ ] Finish paired-seat and cross-archetype natural trace review, keeping
