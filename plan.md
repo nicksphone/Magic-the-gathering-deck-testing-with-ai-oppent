@@ -1,6 +1,40 @@
 # MTG Deck Testing Lab Finish Plan
 
-## Current Priority: Backend First
+## Current Execution Order
+
+1. Complete the one frozen integration gate for runtime `0efefe8`: all recursive
+   backend tests exactly once in isolated source copies, full browser flows,
+   frontend tests/lint/build and unchanged source hashes. Do not rerun already
+   passing predecessors merely to produce new counts.
+2. Fix any integration failures with focused regressions, then recheck the
+   affected suites before the combined gate. Preserve failing evidence.
+3. Promote the consolidated runtime to main, update current feature status and
+   graph, preserve local user data and verify the live reload/recovery path.
+4. Review the existing retained AI mistakes across archetypes. Use targeted
+   reconstructed positions before scheduling another expensive matchup matrix;
+   repeats demonstrate determinism, not independent strength samples.
+5. Continue the original rules/AI/release gates below, including unsupported
+   conditional/compound clauses, affordable multi-action plans, restart behavior,
+   network posture and competitive-quality evidence. Do not label these complete
+   based on parser coverage or the integration milestone.
+
+Completed bounded work:
+- [x] Resource payments/events and AI opportunity milestone integrated into main;
+  full backend/browser gates and retained seeded reconstructions pass.
+- [x] Ordinary/limited graveyard and announced-method implementations have focused
+  both-seat HTTP/browser coverage. Frozen announced-method runtime `0424b7b`
+  passes 8,848 tests / 357 files / 714 hashes and the complete browser gate.
+- [x] Fixed unconditional color/type modifiers have real payment, controller,
+  multicolor, prototype, devoid, suppression and restart regressions. Final
+  focused rerun passes 84 checks; the broader selection passes 268 (overlapping).
+- [ ] Combined integration and main deployment acceptance remain outstanding.
+- [ ] Broader rules semantics, expert AI and original release requirements remain
+  unfinished. Consult the gates below rather than treating old patch notes as
+  new mandatory qualification cycles.
+
+See [engineering workflow](docs/engineering-workflow.md) for validation policy.
+
+## Earlier Backend Work And Remaining Family Limits
 
 - [ ] Consolidate implemented cost, graveyard and timing work into an integration
   milestone. Fixed color/type modifiers, actual prototype color, both-seat

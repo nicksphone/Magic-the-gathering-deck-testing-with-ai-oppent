@@ -1,270 +1,30 @@
 # MTG Deck Testing Lab
 
-Shared announced-spell cost handling adds fixed color/type taxes and discounts,
-controller scope, multicolor clause stacking, prototype and devoid color checks.
-Both-seat HTTP/restart and six browser scenarios pass; combined integration
-qualification remains open. See [scope](docs/testing/announced-spell-costs.md).
+A desktop-first React/TypeScript and Python/FastAPI application for two-player
+Magic deck testing, human play, AI matches and reproducible gameplay diagnostics.
+SQLite stores cards, decks, snapshots and results; gameplay rules live in code.
 
-An isolated successor checks graveyard permissions against announced prototype
-and bestow characteristics and preserves scarce source/type allowances for known
-AI follow-ups. Both-seat HTTP/restart and four focused browser flows pass;
-complete successor qualification and integration remain open. See
-[casting-method scope](docs/testing/graveyard-cast-methods.md).
+The engine implements an explicitly bounded set of mechanics. Imported card data
+and a successful match do not prove complete Oracle semantics or expert AI play.
+Preflight diagnostics identify known unsupported mechanics. See [plan](plan.md)
+for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 
-An isolated graveyard-permission candidate adds ordinary self/subtype casting
-and land plays, including modal land faces, with real costs, land limits,
-source flags and shared cast/entry prohibitions. A successor adds source-local
-once-per-turn and per-permanent-type usage, X/mana-value checks and deliberate
-source/type choices. See [ordinary scope](docs/testing/graveyard-play-permissions.md)
-and [limited scope](docs/testing/limited-graveyard-permissions.md). The limited
-runtime passes 8,824 full backend tests and the complete browser suite.
-Wider tactical review and integration remain open; main/live are unchanged.
+## Implementation Status
 
-An isolated instant-timing candidate distinguishes opponent end-step value
-casting from early-turn tap-outs and prices actual payment that loses the last
-affordable own-hand response. Both-seat canonical decision tests pass; wider
-acceptance remains open. Frozen timing qualification now passes 8,674 backend
-tests and the full browser suite; natural comparison is queued.
-See [scope](docs/testing/instant-value-window.md).
+Main includes qualified resource payments, event handling and bounded AI resource
+opportunity choices. The consolidated backend branch additionally includes
+instant-window reservation, ordinary/limited graveyard permissions, announced
+prototype/bestow checks and fixed color/type cost modifiers. Its combined full
+integration gate is running; these additions are not yet deployed to main.
 
-The AI resource-opportunity policy compares bounded legal payments rather
-than blindly accepting the first witness. It weighs blockers, repeatable mana,
-graveyard payoffs, actual self-tap token triggers and affordable own-hand
-follow-ups. Main includes the qualified runtime: 8,650 full backend tests and the
-complete browser suite pass. Twelve repeated seeded executions reconstruct
-correctly; broader strength and compound-payment coverage remain open. See
-[scope](docs/testing/ai-resource-opportunity.md).
-
-The resource-event follow-up connects real taps and graveyard departures to
-shared trigger staging and pre-move ability checks. Both-seat canonical cases,
-crew/attack ordering and HTTP/SQLite recovery pass. Frozen qualification passes
-8,627 backend tests and the complete browser suite; wider semantics and natural
-acceptance remain open. See [scope](docs/testing/resource-event-fidelity.md).
-
-An isolated casting-resource candidate connects ordinary delve, convoke and
-improvise payment to shared legality, strict inputs and deliberate both-seat
-human controls. The 439-check expanded selection and six new browser flows pass.
-Frozen qualification passes 8,603 backend tests and the complete browser gate.
-Event fidelity is being qualified separately; compound costs and tactical
-resource choices remain open. This is not yet live. See
-[scope and remaining acceptance](docs/testing/cast-resource-payments.md).
-
-An isolated diagnostic candidate adds an offline comparison of completed private
-decision exports, including first divergence for unequal-length streams. It does
-not alter gameplay or certify optimal play. See
-[comparison scope](docs/testing/decision-view-comparison.md).
-
-An isolated selection candidate resolves complete fixed-count look/hand/bottom
-instructions and values guaranteed masked hand counts without treating them as
-draws or inventing unseen cards. Its frozen backend passes 8,516 tests; the full
-existing browser suite and eight additional both-seat selection flows pass.
-Combined natural decision review remains open. That selection-only revision did
-not implement delve payment; the casting-resource candidate above is separate. See
-[scope and evidence](docs/testing/opaque-selection-horizon.md).
-
-An isolated mana-query candidate skips ability-suppression checks for sources
-without supported multiplier instructions. Complete backend/browser gates and
-local decision parity pass; fresh strategic review remains open. This is not yet
-a released feature or a broad performance claim. See
-[scope and evidence](docs/testing/mana-multiplier-prefilter.md).
-
-The strategic draw-count/private replay candidate preserves unseen identities,
-reuses existing root scores and can export both hands/boards through the
-canonical card-view contract for offline analysis. Frozen `80062da` passes 8,384
-backend tests and the full browser gate; fresh paired-seat decision review is
-still open, so this candidate is not yet rolled into main. See
-[scope and validation](docs/testing/strategic-draw-counts.md).
-
-Combat can be declared directly on the battlefield: click eligible creatures
-to select attackers; click a blocker and then an attacker, or drag the blocker
-onto its target. Confirm the complete declaration once. Dragging attackers
-together creates a band only when the engine permits banding. Advanced
-defenders, payments and assignment controls remain available; selecting cards
-does not spend resources or mutate the authoritative game.
-See [combat controls and validation](docs/testing/direct-combat.md).
-
-The strategic/diagnostic evaluator values supported pending announcements
-through public resolution forecasts, preserving real response branches and
-conservative unknown-choice/hidden-zone fallback. Optional `--decision-metrics`
-exports identify legal-move, AI-choice and action-application latency outside
-replay state. Frozen source `b8f59fb` passes 8,294 backend tests across 334
-recursive files with 653 matching hashes, plus the complete browser gate in all
-three BO3 modes. The shared response-delta repair in frozen `4aaf87a` then passes
-8,303 backend tests in all 335 files with 656 matching hashes and the complete
-browser gate. A completed forward match develops four creatures rather than
-one in the baseline, without invalid-cost/target diagnostics; longer paired-seat
-and cross-archetype review remains open. These checks do
-not establish expert AI or complete Magic semantics;
-see [strategic scope](docs/testing/strategic-pending-announcements.md).
-
-Catalog refresh targets the newest visible built-in/expansion records, with
-stable ID ordering when timestamps tie, without deleting historical duplicates
-or user decks. Replay diagnostics can retain successful decisions using
-`--trace-output <new-file.jsonl>`; exports contain private game information,
-preserve each completed repeat and never overwrite existing evidence.
-
-Shared payment planning reserves life across nested mana production and outer
-activation/Phyrexian costs, searches life-aware ordinary/snow payment paths,
-and rejects unpaid activation life costs. Latest targeted selection: 505 checks;
-six focused browser cases and four new HTTP recovery cases pass. Exact-source
-full qualification passes 8,209 tests in all 332 recursive files with 649 matching
-backend hashes, plus the complete browser gate in all three BO3 modes. See
-[nested life-budget scope](docs/testing/nested-mana-life-budget.md).
-
-Shared activation/mana planning preserves selected nonmana resources, allows
-legal tap-then-sacrifice sequences and searches jointly payable automatic
-choices. AI checks resource feasibility and ranks feasible losses. Exact runtime
-qualification: 8,159 backend tests across all 330 files with 644 matching source
-hashes and the complete browser gate in all three BO3 modes. Nested life budgets
-are repaired by the separately qualified follow-up above; see
-[joint payment scope](docs/testing/joint-activation-payment.md).
-
-The application exposes deliberate discard and sacrifice choices
-for supported nonmana activated abilities in both human seats. Shared cost
-validation rejects wrong resources before authoritative mutation; AI selects
-resources using retention/loss estimates and includes those costs in ranking.
-Eighty targeted checks and six focused browser payment/reload cases pass;
-frontend tests, lint and build pass. The exact runtime passes 8,133 backend
-tests across all 328 files with 639 verified source/fixture hashes and the
-complete browser gate in all three BO3 controller modes. Selected-resource
-ordering and nested life budgets are repaired by the qualified planners above;
-other action families and dynamic output alternatives remain open.
-See [activation payment scope](docs/testing/activation-payment-choices.md).
-
-The shared engine applies recognized casting/activation life and creature
-sacrifice prohibitions across payment paths, preserves other payment contexts,
-and fixes actual source sacrifice for generic creature costs. A full-gate
-selection regression was repaired; the latest source passes 292 selected checks,
-including six HTTP/SQLite cases and both source/fodder payment cases. Its exact
-runtime passes 8,053 tests in all 326 files with 634 verified source/fixture
-hashes, and the complete browser harness in all three BO3 controller modes. See
-[scope and evidence](docs/testing/contextual-cost-prohibitions.md).
-
-The shared rules engine repairs printed life restrictions after their
-source loses its abilities. Control changes, expiry, real life payments and human
-recovery have targeted coverage; the combined source passes 7,988 backend tests
-and the full browser harness. The subsequent shared query optimization passes
-7,991 tests across all 324 files with 624 verified source/fixture hashes, plus
-the complete browser harness including all three BO3 controller modes. See
-[effective-restriction qualification](docs/testing/life-lock-layer-fidelity.md).
-
-Supported life-gain conversion, unconditional loss protection and public
-replacement-aware original/copy planning share the rules engine. Lethal creature
-sources remain active through complete spell resolution and durable human choices.
-Qualification includes 7,944 backend tests, eight HTTP continuation cases, the
-full browser gate and four focused replacement-choice browser cases. See
-[verified scope and remaining limits](docs/testing/life-conversion-planning.md).
-This is supported-family correctness, not arbitrary-card or expert-AI certification.
-
-Supported repeated temporary creature modifiers now preserve independent target
-instances, including shared recipients, partial resolution and object identity.
-Both human seats can choose ordered recipients and copied targets; AI uses checked
-public outcomes. See [scope and verified acceptance](docs/testing/ordered-creature-modifiers.md).
-
-The qualified integration supports durable controller-specific land-entry history,
-complete conditional pump/life/draw alternatives, controller-linked damage targets
-and independent copy choices. Damage batches coalesce identical simultaneous
-recipient events before replacement and prevention. Shared AI targeting separates
-beneficial recipients from hostile damage targets and untargeted caster gain.
-Supported joined damage/life instructions retain both printed effects and their
-different recipients through casting, copied targets and reload.
-
-See [beneficiary semantics and current acceptance](docs/testing/beneficiary-polarity.md):
-7,829 backend tests, the full browser gate and eight matching replay executions
-qualify the supported families, not seasoned-player AI or arbitrary cards.
-The qualified milestone is published; the local reload-enabled services serve it
-on `0.0.0.0:9999` and `0.0.0.0:5173`. Local HTTP health and page checks pass;
-this is not a new cross-device or long-session browser acceptance claim.
-Departed-planeswalker dependency, broader protection corners and deeper AI
-planning remain open. See
-[landfall scope](docs/testing/land-entry-history.md) and
-[linked damage acceptance](docs/testing/linked-controller-targets.md).
-
-Supported sacrifice-linked damage, ordered distinct counter allocations,
-temporary graveyard flashback grants and self-return triggers now share checked
-payments, durable object references and restart behavior. Both human seats can
-deliberately assign ordered targets; AI uses the same legality/payment paths.
-See [casting and trigger scope and acceptance](docs/testing/casting-trigger-repairs.md)
-for the canonical regressions, full gates and remaining instruction boundaries.
-
-Decision-local reuse removes duplicate choice-free destruction and baseline
-projections while preserving policy callbacks, legality and hidden-information
-boundaries. Eight pinned states preserve checked decisions; two late-control
-positions are 67-78% faster, while several other decisions remain slow. See
-[implementation, benchmark and outstanding acceptance](docs/testing/ai-destruction-reuse.md)
-and the original [performance diagnostic](docs/testing/ai-planning-performance-agent.md).
-This is not an expert-player or whole-game speed claim.
-
-The live frontend uses a full-width two-sided competitive table, independently
-scrollable card rails, exact-ID grouped lands and keyboard/hover inspection.
-Decks, saved sessions and diagnostics live in a manually opened workbench;
-stack, actions and required choices have a separate command area. See
-[the current UI and acceptance evidence](docs/ui-redesign-v2.md). Large boards
-still require scrolling; this is not a long-session or accessibility certificate.
-
-Human Next Step now explicitly passes priority instead of invoking a potentially
-paused autoplay tick. Unavailable lands explain their timing, priority or exhausted
-allowance; legal land controls still come from the backend's legal moves. See
-[human land-play behavior and checks](docs/testing/human-land-progress.md).
-
-Human-versus-AI automatically passes empty priority windows, including untap
-and draw progression, but stops for playable cards, non-mana abilities, combat
-decisions and required choices. Bare mana taps and unavailable-action hints do
-not force clicks. A payable instant preserves the opponent's end-step, upkeep
-or draw opportunity; spend end-of-turn mana before the step ends, not in untap.
-Use **Pause automatic play** for manual inspection. Hotseat remains manual.
-[Automatic priority flow and checks](docs/testing/human-auto-progress.md).
-
-Offline operator tools can verify local SQLite backup/restore equality and plan
-terminal simulation-job retention with dry-run defaults. They require explicit
-isolated local paths, refuse the source-relative live database and never replace
-it. Retention is not connected to live job admission or retry history; do not
-use it as online maintenance. See [storage verification and commands](docs/testing/release-storage-agent.md).
-
-Backend combat declarations share unconditional numeric attack/block limits and
-recognized each-combat requirement maximization across checked actions and all
-AI difficulties. Limits, source provenance and remaining gaps are exposed through
-legal hints and live rules diagnostics. See [implemented scope and limitations](docs/testing/declaration-limits.md).
-
-MTG Deck Testing Lab is a desktop-first Magic: The Gathering deck testing application for rules-aware playtesting, AI-vs-AI validation, and long-run matchup analysis.
-
-Master AI uses bounded checked-engine combat forecasting before combat and after
-blockers, including live variable pumps and alternative legal recipients.
-[Tested scope and remaining response-planning gaps](docs/testing/ai-combat-responses.md)
-distinguish unanswered winning lines from expert or adversarial play.
-
-Bounded defensive and between-strike planning compares announced counter/removal
-lines, legal recipients, actual costs and retained resources. Temporary buffs
-are not priced as permanent threats; combined pump/keyword instructions share
-existing handlers. See [tested scope and limitations](docs/testing/ai-defensive-responses.md).
-
-Resource-defined creature stats share zone-aware layers, effective damage checks,
-printed-expression persistence and static AI entry valuation. See the
-[tested scope and remaining gaps](docs/testing/characteristic-stats.md); this is
-not arbitrary-card or expert-AI certification.
-
-Supported conditional resource buffs and keyword grants share live predicates
-across characteristics, combat and AI entry valuation. Ward costs follow the
-effective keyword layer, and request-scoped database sessions release connections
-on reads, successful writes and failures. See [scope and evidence](docs/testing/conditional-static.md).
-
-Supported opponent-graveyard and low-life conditions use live, controller-relative
-resources in continuous effects and AI entry valuation. Unrecognized conditional
-self/team clauses now appear in preflight, card completeness and public rules
-diagnostics with clause/face details, rather than only in battlefield layer traces.
-See [implemented scope and acceptance](docs/testing/static-admission.md).
-
-It is designed for serious deck work:
-- Human vs AI playtesting
-- AI vs AI simulation
-- Batch matchup analysis and replay diagnostics
-- Offline recorded-action reconstruction validates retained seeded games against
-  resolved deck manifests without AI search or live database writes. It rejects
-  illegal actions and reports the first divergence; private reports may contain
-  hand/log data. See [usage and current evidence](docs/testing/action-reconstruction.md).
-- Persisted diagnostic-run browsing with bounded anomaly/root-cause snapshots
-- Custom deck import and deck library management
-- Rules-engine-first gameplay logic with local persistence
+Implementation scopes and remaining limits:
+- [Casting resources and human choices](docs/testing/cast-resource-payments.md)
+- [AI resource opportunity](docs/testing/ai-resource-opportunity.md)
+- [Instant value windows](docs/testing/instant-value-window.md)
+- [Ordinary graveyard permissions](docs/testing/graveyard-play-permissions.md)
+- [Limited permission ledgers](docs/testing/limited-graveyard-permissions.md)
+- [Announced casting methods](docs/testing/graveyard-cast-methods.md)
+- [Color/type spell costs](docs/testing/announced-spell-costs.md)
 
 ## Current Features
 

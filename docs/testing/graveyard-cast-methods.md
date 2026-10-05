@@ -39,9 +39,11 @@ lists were invented or changed.
 - Frontend unit tests, lint and production build pass.
 - Initial restoration assertions failed because they bypassed the real stack
   departure handler. Corrected tests use that handler; failed logs are retained.
-- Parent runtime 359904ff passes 8,824 full backend tests and the complete browser
-  suite. That result is not qualification of this successor. Exact-source full
-  backend/browser gates and seeded decision comparisons remain required.
+- Frozen runtime 0424b7b passes 8,848 backend tests across all 357 recursive
+  files exactly once. Four initially DB-free copies match 714 source hashes.
+  The complete browser suite also passes. RCHFiles evidence:
+  `diagnostics/strategic-draw-counts/20261005T102232Z/graveyard-cast-methods/full-qualification`.
+  Combined integration and broader tactical acceptance remain open.
 
 ## Known Limitations And Next Upgrades
 
