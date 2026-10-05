@@ -24,14 +24,15 @@ does not fix every slow decision or establish expert-level play.
   52.50/52.78 seconds and 3,757,758 calls. All four choose the same action and
   leave authoritative state unchanged. Concurrent load and instrumentation make
   these local measurements, not a general throughput claim.
-- Frozen runtime `03c00b1` is under complete backend and browser qualification.
-  Neither a running job nor selected checks establish full acceptance. Main
-  remains unchanged until these gates and fresh strategic decision review pass.
+- Frozen runtime `03c00b1`: 8,396 backend tests pass across all 340 recursive
+  files assigned exactly once; 661 source/fixture hashes match in four initially
+  database-empty copies. The complete browser/restart gate passes in all three
+  natural BO3 controller modes. Frontend tests, lint and production build pass.
+- Main remains unchanged pending fresh strategic decision review. These runtime
+  gates are not evidence of broad AI strength, matchup balance or all MTG rules.
 
 ## Remaining Acceptance
 
-- Complete every recursive backend test on source-hash-verified, initially
-  database-empty copies and finish the actual browser/restart gate.
 - Retain frozen-input, paired-seat natural replay and strict reconstruction
   evidence for the strategic candidate beneath this optimization.
 - Inspect representative complex-board timings before claiming broad speedup;

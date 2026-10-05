@@ -3,8 +3,9 @@
 ## Current Priority: Backend First
 
 - [ ] Qualify the measured mana-multiplier query prefilter. Canonical selections
-  and one recorded decision's action/state parity pass; complete frozen gates
-  and representative natural decision review remain open. See
+  and one recorded decision's action/state parity pass. Complete frozen gates
+  pass (8,396 backend tests, full browser, frontend test/lint/build);
+  representative natural decision review remains open. See
   [candidate contract](docs/testing/mana-multiplier-prefilter.md).
 
 - [ ] Qualify the combined strategic draw-count/root-score reuse and private

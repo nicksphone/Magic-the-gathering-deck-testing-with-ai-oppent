@@ -1,9 +1,9 @@
 # MTG Deck Testing Lab
 
 An isolated mana-query candidate skips ability-suppression checks for sources
-without supported multiplier instructions. Canonical contracts and local
-decision parity pass; complete qualification is running, not a released feature
-or a broad performance claim. See
+without supported multiplier instructions. Complete backend/browser gates and
+local decision parity pass; fresh strategic review remains open. This is not yet
+a released feature or a broad performance claim. See
 [scope and evidence](docs/testing/mana-multiplier-prefilter.md).
 
 The strategic draw-count/private replay candidate preserves unseen identities,
