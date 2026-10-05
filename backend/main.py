@@ -775,7 +775,9 @@ def get_legal_moves(match_id: str, player_id: Annotated[int | None, Query(ge=1, 
         cid = move.get("card_id")
         if cid in match.state.cards:
             move["card_view"] = serialize_card_view(match.state, cid)
-    return {"player_id": pid, "moves": moves, "revision": match.revision}
+    return {"player_id": pid, "moves": moves, "revision": match.revision,
+            "can_auto_pass": not match.state.pregame_pending and match.state.winner is None
+            and pid == _default_player_for_state(match) and not _human_priority_pause(match, pid)}
 
 
 @app.get("/matches/{match_id}/replacement-options")
@@ -1618,18 +1620,16 @@ def _human_priority_pause(match: MatchController, player_id: int) -> bool:
     if state.pending_trigger_order and state.pending_trigger_order.get("current_controller") == player_id:
         return True
     legal = match.rules.legal_moves(state, player_id)
-    has_non_pass = any(m.get("type") != "pass_priority" for m in legal)
-    has_land_play = any(m.get("type") == "play_land" for m in legal)
-    step_stop = state.step in state.priority_stops.get(player_id, set())
-    # Always pause on a legal land drop for human players so autoplay cannot skip
-    # the primary main-phase development window.
-    if has_land_play:
-        return True
-    if state.stack and has_non_pass:
-        return True
-    if step_stop and has_non_pass:
-        return True
-    return False
+    # A mana source alone is not a decision requiring a stop. Spell payment
+    # already uses untapped sources; never skip an actual play or choice.
+    meaningful = any(m.get("type") not in {
+        "pass_priority", "activate_mana_ability", "attack_restricted", "cast_spell_restricted",
+    } and (m.get("type") != "block" or bool(m.get("blockers"))) for m in legal)
+    if match.mode == "player_vs_ai":
+        return meaningful
+    return any(m.get("type") == "play_land" for m in legal) or (
+        meaningful and (bool(state.stack) or state.step in state.priority_stops.get(player_id, set()))
+    )
 
 
 def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: list[dict]) -> dict | None:

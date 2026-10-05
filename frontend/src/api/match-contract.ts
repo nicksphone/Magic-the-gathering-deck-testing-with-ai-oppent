@@ -134,7 +134,7 @@ export function parseMatchState(value: unknown): MatchState {
   return value as MatchState;
 }
 
-export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revision: number };
+export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revision: number; can_auto_pass?: boolean };
 
 function targetHints(value: unknown): boolean {
   if (!record(value)) return false;
@@ -180,6 +180,7 @@ function paymentOptions(value: unknown): boolean {
 
 export function parseLegalMoves(value: unknown): LegalMovesResponse {
   if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
+    || (value.can_auto_pass !== undefined && typeof value.can_auto_pass !== "boolean")
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0

@@ -394,7 +394,8 @@ export function Controls(props: Props) {
           </button>
         </div>
       ) : null}
-      {props.match ? (
+      {props.match?.mode === "player_vs_ai" ? <p className="muted">Empty priority windows advance automatically. Playable cards, abilities and required choices stop play. Use Pause automatic play to inspect any step. Spend end-of-turn mana in the end step; untap has no response window.</p> : null}
+      {props.match && props.match.mode !== "player_vs_ai" ? (
         <details className="block-panel"><summary>Priority Stops</summary>
           <div className="row">
             <select aria-label="Priority stop player" value={stopPlayer} onChange={(e) => setStopPlayer(Number(e.target.value))}>

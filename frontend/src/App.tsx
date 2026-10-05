@@ -43,6 +43,7 @@ export function App() {
   const [match, setMatch] = useState<MatchState | null>(null);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
+  const [canAutoPass, setCanAutoPass] = useState(false);
   const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
   const [autoResponsePaused, setAutoResponsePaused] = useState(false);
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
@@ -72,6 +73,7 @@ export function App() {
     setMatch(data);
     setLegalPlayerId(legal.player_id);
     setLegalMoves(legal.moves);
+    setCanAutoPass(legal.can_auto_pass === true);
     setMode(data.mode ?? "player_vs_ai");
     try { localStorage.setItem("mtg.activeMatch", data.id); } catch { /* Storage may be disabled. */ }
   }, []);
@@ -82,6 +84,7 @@ export function App() {
       if (!state || restoring) return;
       setMutationPending(true);
       setLegalMoves([]);
+      setCanAutoPass(false);
       try {
         await applyMatch(await operation(state, { revision: state.revision ?? 0, key: newMutationKey() }));
       } catch (error) {
@@ -128,6 +131,7 @@ export function App() {
           currentMatch.current = data;
           setMatch(data); setMode(data.mode ?? "player_vs_ai");
           setLegalPlayerId(legal.player_id); setLegalMoves(legal.moves);
+          setCanAutoPass(legal.can_auto_pass === true);
           setAutoProgressPaused(true);
           if (pendingMatch) {
             try { localStorage.setItem("mtg.activeMatch", id); } catch { /* Optional persistence. */ }
@@ -311,10 +315,11 @@ export function App() {
     if (match.match_complete) return;
     const controllers = match.controllers ?? {};
     const uiAiVsAi = match.mode === "ai_vs_ai";
-    const actingPlayer = match.priority_player;
+    const actingPlayer = legalPlayerId;
     const actingController = controllers[String(actingPlayer)] ?? (uiAiVsAi ? "ai" : "human");
     const bothAi = ((controllers["1"] ?? "human") === "ai" && (controllers["2"] ?? "human") === "ai") || uiAiVsAi;
-    const shouldAutoRun = actingController === "ai" || (bothAi && match.winner !== null && !match.match_complete);
+    const emptyHumanWindow = match.mode === "player_vs_ai" && canAutoPass && match.winner === null;
+    const shouldAutoRun = actingController === "ai" || emptyHumanWindow || (bothAi && match.winner !== null && !match.match_complete);
     if (!shouldAutoRun) return;
 
     const timer = window.setTimeout(async () => {
@@ -331,10 +336,10 @@ export function App() {
         autoTickInFlight.current = false;
         setAutoLoopBeat((v) => v + 1);
       }
-    }, autoplayDelayMs);
+    }, emptyHumanWindow ? 150 : autoplayDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [match, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused, autoplayTick]);
+  }, [match, legalPlayerId, canAutoPass, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused, autoplayTick]);
 
   const humanResponseWindowActive =
     match?.mode === "player_vs_ai"
@@ -344,7 +349,8 @@ export function App() {
     && !match.match_complete
     && legalPlayerId === 1
     && (match.stack?.length ?? 0) > 0
-    && legalMoves.some((m) => m.type !== "pass_priority");
+    && legalMoves.some((move) => move.type === "pass_priority")
+    && !canAutoPass;
 
   useEffect(() => {
     if (!humanResponseWindowActive) {

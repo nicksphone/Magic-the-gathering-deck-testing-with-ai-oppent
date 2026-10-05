@@ -2,6 +2,11 @@
 
 ## Current Priority: Backend First
 
+- [x] Replace empty human-versus-AI phase clicks with authoritative automatic
+  priority progression. Preserve actual plays, choices and end-step instant
+  opportunities; keep hotseat/manual pause behavior. See
+  [scope and validation](docs/testing/human-auto-progress.md).
+
 - [x] Qualify [pending strategic announcements](docs/testing/strategic-pending-announcements.md)
   together with private decision timings. Separate AI/metrics selections pass
   468/73 checks, combined selection 541; frozen `b8f59fb` passes 8,294 backend

@@ -124,6 +124,14 @@ paused autoplay tick. Unavailable lands explain their timing, priority or exhaus
 allowance; legal land controls still come from the backend's legal moves. See
 [human land-play behavior and checks](docs/testing/human-land-progress.md).
 
+Human-versus-AI automatically passes empty priority windows, including untap
+and draw progression, but stops for playable cards, non-mana abilities, combat
+decisions and required choices. Bare mana taps and unavailable-action hints do
+not force clicks. A payable instant preserves the opponent's end-step, upkeep
+or draw opportunity; spend end-of-turn mana before the step ends, not in untap.
+Use **Pause automatic play** for manual inspection. Hotseat remains manual.
+[Automatic priority flow and checks](docs/testing/human-auto-progress.md).
+
 Offline operator tools can verify local SQLite backup/restore equality and plan
 terminal simulation-job retention with dry-run defaults. They require explicit
 isolated local paths, refuse the source-relative live database and never replace

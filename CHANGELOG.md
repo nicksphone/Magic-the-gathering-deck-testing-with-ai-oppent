@@ -1,5 +1,16 @@
 # Changelog
 
+## Human-versus-AI Automatic Priority Flow
+
+- Automatically pass empty human priority windows, with a validated backend
+  signal tied to the legal-move revision. Advance untap and draw without phase
+  clicks; retain stops for lands, spells, abilities, combat and required choices.
+- Do not stop solely for bare mana sources, restricted-action hints or an empty
+  blocking roster. Preserve payable instant opportunities in the opponent's
+  end step and draw step, existing response timer controls, pause and hotseat.
+- Add both-seat backend regressions and real-browser automatic-flow/recovery
+  checks. This changes pacing, not timing rules or supported-card coverage.
+
 ## 2026-10-05 - Strategic response delta candidate
 
 - Completed frozen `b8f59fb` qualification: 8,294 backend tests, all 334

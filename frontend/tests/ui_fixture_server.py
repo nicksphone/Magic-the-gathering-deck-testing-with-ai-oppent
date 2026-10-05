@@ -15,6 +15,35 @@ from tests.test_ai_recurring_engines import fixture, add
 from game_state.state import Zone
 
 
+@app.post("/fixture/auto-progress")
+def auto_progress(window: str = "empty"):
+    from tests.test_human_auto_progress import match_at
+    from game_state.state import CardInstance, Step
+    if window not in {"empty", "end_step", "draw"}:
+        from fastapi import HTTPException
+        raise HTTPException(422, "Unsupported test window")
+    state = match_at(Step.UNTAP if window == "empty" else Step(window)).state
+    land = CardInstance(id="blue-source", name="Island", owner=1, controller=1,
+                        zone=Zone.BATTLEFIELD, types=["Land"], type_line="Basic Land - Island")
+    state.cards[land.id] = land
+    state.players[1].battlefield.append(land.id)
+    if window != "empty":
+        state.active_player = 2
+        state.players[1].mana_pool["U"] = 2
+        spell = CardInstance(id="think", name="Think Twice", owner=1, controller=1,
+                             zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
+                             oracle_text="Draw a card.")
+        state.cards[spell.id] = spell
+        state.players[1].hand.append(spell.id)
+    publish(state, [{"quantity": 60, "card_name": "Island"}])
+    controller = ACTIVE_MATCHES[state.id]
+    controller.controllers = {1: "human", 2: "ai"}
+    controller.mode = "player_vs_ai"
+    with Session(engine) as session:
+        _persist_active_match(Repository(session), controller)
+    return get_match(state.id)
+
+
 @app.post("/fixture/table")
 def table(seat: int = 1, crowded: bool = True, ai_opponent: bool = False):
     if seat not in (1, 2):

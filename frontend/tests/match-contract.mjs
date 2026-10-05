@@ -183,3 +183,12 @@ for (const payment of [{...activationPayment, discard_cards: -1}, {...activation
   assert.throws(() => parseLegalMoves(paymentPacket(payment)), /legal-moves/);
 }
 console.log('PASS activated resource payment count, candidate and mandatory-source contracts');
+
+for (const can_auto_pass of [true, false]) {
+  assert.equal(parseLegalMoves({player_id: 1, revision: 0, moves: [], can_auto_pass}).can_auto_pass, can_auto_pass);
+}
+for (const can_auto_pass of [null, 1, 'true', {}]) {
+  assert.throws(() => parseLegalMoves({player_id: 1, revision: 0, moves: [], can_auto_pass}), /legal-moves/);
+}
+assert.equal(parseLegalMoves({player_id: 1, revision: 0, moves: []}).can_auto_pass, undefined);
+console.log('PASS authoritative automatic-priority flag and conservative legacy-server compatibility');
