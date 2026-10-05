@@ -62,6 +62,17 @@ def test_life_at_zero_is_not_a_win_when_public_effect_prevents_losing(seat):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
+def test_public_simultaneous_loss_is_a_draw_not_a_proved_loss(seat):
+    state, _, _, _ = position('rest-for-the-weary', seat)
+    permanent(state, 'tainted-remedy', 3-seat)
+    state.players[seat].life = 4
+    state.players[3-seat].life = 0  # Between instructions, before the next SBA check.
+    before = serialize_match_snapshot(state)
+    assert life_target_score(state, seat, seat, 4) == 0
+    assert serialize_match_snapshot(state) == before
+
+
+@pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('name', ['lightning-helix', 'essence-drain'])
 @pytest.mark.parametrize('style', ['Aggro', 'Control', 'Tempo', 'Midrange'])
 @pytest.mark.parametrize('difficulty', ['casual', 'strong', 'master'])

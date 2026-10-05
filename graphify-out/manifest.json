@@ -36,8 +36,8 @@
     "hash": "1ed16b208a4009e9c2d3d5ae896139ab"
   },
   "/home/nick/mtg-beneficiary-planning/backend/ai/life_targets.py": {
-    "mtime": 1791174323.91693,
-    "hash": "8fb8fc53f874bcc82fc7dc8d3dfbd514"
+    "mtime": 1791174839.8858557,
+    "hash": "c9547267e94edb7478758774896668ad"
   },
   "/home/nick/mtg-beneficiary-planning/backend/ai/ordered_targets.py": {
     "mtime": 1791173902.7715683,
@@ -992,8 +992,8 @@
     "hash": "53c87a7e19e9efca2d67730aaf7087a2"
   },
   "/home/nick/mtg-beneficiary-planning/backend/tests/test_ai_life_targets.py": {
-    "mtime": 1791174449.9839532,
-    "hash": "cc2405a32bfe3adf1928b66c9af91ae5"
+    "mtime": 1791174839.8858557,
+    "hash": "95c2f18198bbec0fad7cb57e6e5e0474"
   },
   "/home/nick/mtg-beneficiary-planning/backend/tests/test_ai_minimax.py": {
     "mtime": 1791173902.798568,
@@ -2704,8 +2704,8 @@
     "hash": "1aacd9b83c0d688c93b707401ba9a3ad"
   },
   "/home/nick/mtg-beneficiary-planning/docs/testing/life-conversion-planning.md": {
-    "mtime": 1791174778.9518075,
-    "hash": "3e0d7eb41da5651abb26c7ae71d3fe37"
+    "mtime": 1791174934.1283844,
+    "hash": "b6ccef0c2c708cc0af822be4b712dc69"
   },
   "/home/nick/mtg-beneficiary-planning/docs/testing/cast-payment-selections.md": {
     "mtime": 1791173902.8235676,

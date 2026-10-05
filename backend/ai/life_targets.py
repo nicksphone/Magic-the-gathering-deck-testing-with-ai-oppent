@@ -63,6 +63,8 @@ def life_target_score(state, controller, target_player, amount):
         apply_state_based_actions(position)
         own, enemy = position.players[controller].life, position.players[3-controller].life
         if position.winner is not None:
+            if position.winner == 0:
+                return 0.0
             return 1000.0 if position.winner == controller else -1000.0
         return float(own - enemy - before)
 

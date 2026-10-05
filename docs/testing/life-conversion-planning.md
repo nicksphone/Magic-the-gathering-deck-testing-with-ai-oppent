@@ -58,11 +58,23 @@ actual spell completion. Its one new test file is outside the earlier frozen
 320-file full gate; runtime source is unchanged. Browser and fresh post-fix
 match acceptance remain separate.
 
+Later forecast review corrects a draw-score branch that treated winner `0` as a
+loss. A separate 213-check frozen selection passes, including actual simultaneous
+loss, immutability and the four HTTP cases. This changes one runtime file and one
+test file after the 320-file full gate was frozen; that gate cannot certify the
+later branch. Require a latest-source follow-up before promoting the candidate.
+
 The baseline natural matrix uses verified 60-card Boros/Dimir capability decks,
 replacing four Grasp of Darkness with four canonical Tainted Remedy. Its frozen
 source predates the last suicidal-casting repair. Do not relabel these games as
 acceptance of that later edit. Full private traces are retained locally while
 running; completed evidence belongs on the verified NFS share.
+
+The baseline completes four logical games/eight repeat executions with zero
+reported replay drift. A post-fix matrix runs with byte-identical manifests and
+the same seeds/seat schedule, using the later draw-score repair. Strict state
+reconstruction and full hand/board decision-context audits are separate checks,
+not inferred from a zero-drift counter.
 
 ## Boundaries and Next Gates
 
