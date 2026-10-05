@@ -992,7 +992,10 @@ class AIAgent:
             best = max(best, val) if maximizing else min(best, val)
         if best in {-9999.0, 9999.0}:
             return 0.0
-        return 0.2 * best
+        # The caller already scores this position. Add response improvement only,
+        # not a second absolute score that rewards stacks while ahead and punishes
+        # them while behind.
+        return 0.2 * (best - self._strategic_position_score(state, player_id))
 
     def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int) -> list[dict]:
         ranked = self._rank_moves(state, legal_moves, player_id)

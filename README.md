@@ -1,10 +1,14 @@
 # MTG Deck Testing Lab
 
-An isolated strategic/diagnostic candidate values supported pending announcements
+The strategic/diagnostic evaluator values supported pending announcements
 through public resolution forecasts, preserving real response branches and
 conservative unknown-choice/hidden-zone fallback. Optional `--decision-metrics`
 exports identify legal-move, AI-choice and action-application latency outside
-replay state. Full qualification and actual-game before/after review are pending;
+replay state. Frozen source `b8f59fb` passes 8,294 backend tests across 334
+recursive files with 653 matching hashes, plus the complete browser gate in all
+three BO3 modes. Actual game traces expose a remaining absolute stack-score
+bias; a separate response-delta repair is under qualification. These checks do
+not establish expert AI or complete Magic semantics;
 see [strategic scope](docs/testing/strategic-pending-announcements.md).
 
 Catalog refresh targets the newest visible built-in/expansion records, with

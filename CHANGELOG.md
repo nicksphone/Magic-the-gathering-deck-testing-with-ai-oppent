@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-05 - Strategic response delta candidate
+
+- Completed frozen `b8f59fb` qualification: 8,294 backend tests, all 334
+  recursive files once, 653 source/fixture hashes match four isolated copies,
+  initial databases absent; full browser harness passes all three BO3 modes.
+- Actual current-template traces still expose repeated passes after the first
+  shared horizon repair. Reconstruct 289 checked decisions to turn 11 with
+  identical hand/battlefield/turn/step; save canonical snapshot/provenance.
+- Reproduce seven failures: stack search adds a second absolute board value,
+  penalizing pending plays when behind and rewarding them when ahead. Return
+  response improvement relative to the already valued position instead.
+- Selection passes 129 checks, then nine expanded focused contracts, including
+  both-seat no-response neutrality, score-offset invariance, harmful actual
+  Counterspell responses, observed paid creature deployment and state safety.
+  Selections overlap; whole repair qualification and new match traces pending.
+
 ## Unreleased Candidate - Strategic horizon and private decision timings
 
 - Share supported public settlement forecasting across strategic roots/replies,

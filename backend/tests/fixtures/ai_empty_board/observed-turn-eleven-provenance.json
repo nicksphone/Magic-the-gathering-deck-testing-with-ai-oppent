@@ -1,0 +1,11 @@
+{
+  "revision": "b8f59fb3896545c16067b0d18a0810c233f5d089",
+  "seed": 3490444193,
+  "seat": 1,
+  "turn": 11,
+  "step": "precombat_main",
+  "checked_prefix_decisions": 289,
+  "snapshot_sha256": "c4cdf984369f5658df501ea3206a21b931f2c7fa089c4982b43e9fcfb12fbc3e",
+  "input_manifest_sha256": "2eaee628c312d1409cd328752e191d7b6a799401196e54dd76520f2d1bba447b",
+  "scope": "Reconstructed canonical current-template paired-seat match; checked hands, boards, turn, step and actions. Not invented cards or an independent balance sample."
+}

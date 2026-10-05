@@ -2,10 +2,16 @@
 
 ## Current Priority: Backend First
 
-- [ ] Qualify [pending strategic announcements](docs/testing/strategic-pending-announcements.md)
+- [x] Qualify [pending strategic announcements](docs/testing/strategic-pending-announcements.md)
   together with private decision timings. Separate AI/metrics selections pass
-  468/73 checks, combined selection 541; run exact full gates, then compare actual
-  pinned decisions. Do not count wall-clock fields as replay state or samples.
+  468/73 checks, combined selection 541; frozen `b8f59fb` passes 8,294 backend
+  tests in all 334 files/653 matching hashes and the complete browser gate.
+  Actual seat-one trace now casts on turn 9 but still refuses a body later;
+  this is not complete strategic play. Keep timing fields out of replay state.
+- [ ] Qualify shared stack-response deltas: seven reproduced failures repaired;
+  129 selected checks and nine expanded contracts pass (overlapping). Complete
+  exact full gates and paired-seat natural traces, keeping unchanged canonical
+  inputs and sample accounting. Do not force a desired deck winner.
 - [ ] Optimize measured strategic/query hotspots with unchanged legality and
   decision-parity evidence. Baseline profiling finds many repeated ability-
   suppression queries in deep stack search; no optimization is qualified yet.

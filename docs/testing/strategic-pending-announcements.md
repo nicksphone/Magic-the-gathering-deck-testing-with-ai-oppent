@@ -30,8 +30,21 @@ prefix equivalence, real counter responses, hidden-zone guard and original-state
 immutability. The unoptimized actor-reference uses the same new valuation but
 retains its independent replaying recurrence; tests were not removed or loosened.
 
-Full exact-source qualification, broad AI quality and before/after natural-game
-traces are pending. Effects with unresolved choices or unknown future card
+Frozen `b8f59fb` passes 8,294 tests in all 334 recursive backend files with 653
+matching hashes and absent initial databases, plus the full browser harness in
+all three BO3 modes. This qualifies the bounded implementation, not AI strength.
+The first paired-seat sample casts on turn 9 instead of passing, but declines
+the payable body on later turns; wider trace review remains necessary.
+
+A separate turn-11 reconstruction validates 289 checked prefixes and exposes
+absolute stack-score double counting. Return a response delta relative to the
+current projected position; both-seat no-response/score-offset fixtures and
+real harmful counter responses cover the shared arithmetic. Seven initial
+failures are repaired, 129 selected checks pass, and nine expanded contracts
+pass (overlapping selections). Full delta qualification and new natural traces
+remain pending; no card-specific forcing or balance adjustment is used.
+
+Effects with unresolved choices or unknown future card
 contents remain conservative, not fully strategic. One observed Tribal upkeep
 decision takes roughly 19 seconds without profiling; a fresh-agent cProfile
 reconstruction matches the recorded action but incurs profiling overhead.
