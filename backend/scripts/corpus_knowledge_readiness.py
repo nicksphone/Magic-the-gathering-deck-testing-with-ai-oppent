@@ -543,6 +543,9 @@ def validate_profile_patch(original, patch, manifest):
         allowed.add('mechanic_metadata')
         if mechanic_status(profile, canonical_hash(profile['card_data'])) != 'current_input_version_not_semantics':
             raise ValueError('Mechanic metadata input/version evidence mismatch')
+        from knowledge.mechanic_metadata import mechanic_metadata
+        if profile['mechanic_metadata'] != mechanic_metadata(profile['card_data']):
+            raise ValueError('Mechanic metadata does not match the pinned extractor output')
     if any(before.get(key) != profile.get(key) for key in before.keys() | profile.keys() if key not in allowed):
         raise ValueError('Artifact changes non-owned canonical fields')
     raw = profile['card_data']

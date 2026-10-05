@@ -108,8 +108,11 @@ Implementation scopes and remaining limits:
 - [Offline corpus readiness](docs/testing/corpus-readiness.md) prepares and
   validates source-backed card/ruling artifacts with resumable ownership and
   full-profile checks. Explicit offline index application bounds compressed
-  inputs and preserves unrelated data. Live import and nested metadata materialization
-  remain separate work; [mechanic flags](docs/testing/corpus-mechanic-backlog.md)
+  inputs and preserves unrelated data. All 38,690 profiles now have staged offline
+  mechanic metadata; live import remains separate work. Import recomputes the
+  declared extractor output and rejects forged metadata bodies. See
+  [materialization scope](docs/testing/offline-nested-mechanic-materialization.md);
+  [mechanic flags](docs/testing/corpus-mechanic-backlog.md)
   are not execution certification.
 - [Offline engine-gap report](docs/testing/knowledge-engine-coverage.md) compares
   canonical profiles with existing known-gap classifiers and separately reports

@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Offline nested mechanic metadata for all 38,690 profiles, plus strict
+  extractor-body import validation: 132 composed checks pass and the full
+  78-artifact replay passes with schema, nonmetadata fields, nine other tables
+  and 1,264 snapshots preserved. Live import, rules semantics and learned AI
+  remain unfinished. See [scope](docs/testing/offline-nested-mechanic-materialization.md).
 - [x] Training mana choice safeguards: 304 composed tests pass. Unsupported
   resource/hybrid/X selections are reported and rejected rather than silently
   dropped; ambiguous legacy ability selection and stack-route bypasses reject.
@@ -39,8 +44,8 @@ Completed bounded work:
   remain unfinished. See [scope](docs/testing/training-choice-coverage.md).
 - [x] Bounded offline corpus index application: 100 importer/recovery checks
   pass. All 38,690 profiles qualify against a parent backup with nine other
-  tables and 1,264 snapshots preserved. Live import and nested metadata
-  materialization remain outstanding. See [scope](docs/testing/corpus-readiness.md).
+  tables and 1,264 snapshots preserved. Nested metadata now qualifies offline
+  above; live import remains outstanding. See [scope](docs/testing/corpus-readiness.md).
 - [x] Immutable combat query batches: 799 composed tests pass; a retained Master
   decision preserves complete action/state/projection parity and all search work,
   reducing measured time from 116.0 to 92.5 seconds. Interactive latency remains

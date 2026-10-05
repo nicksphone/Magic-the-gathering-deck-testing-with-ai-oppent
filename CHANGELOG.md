@@ -1,5 +1,14 @@
 # Changelog
 
+## Exact Metadata Import Validation - 2026-10-05
+
+- Recompute declared mechanic metadata from canonical card data during import;
+  matching versions and hashes alone can no longer admit forged coverage,
+  evidence or quality fields.
+- Qualify all 38,690 offline metadata rows across 78 artifacts with 132 composed
+  checks and independent full-field/table preservation checks. No live corpus
+  import, new rules support or learned competence is claimed.
+
 ## Training Mana Choice Safeguards - 2026-10-05
 
 - Expose unsupported immediate-mana payment choices explicitly and reject

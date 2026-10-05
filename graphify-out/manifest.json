@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791238625.2411828,
-    "seen": 1791238669.329095,
-    "ast_hash": "9dc95dbfb98c9b71dac79925fe1068bb",
+    "mtime": 1791239832.767821,
+    "seen": 1791239878.4399397,
+    "ast_hash": "4f7710f5a89d044377cf8edc22d5ddfa",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791238618.2892923,
-    "seen": 1791238669.3294797,
-    "ast_hash": "e6a9c93cf5d5409d396bb64ca7e8594a",
+    "mtime": 1791239832.769821,
+    "seen": 1791239878.4403389,
+    "ast_hash": "98e4140d40a9720fb7deb5058beb9346",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791238618.2872922,
-    "seen": 1791238669.329093,
-    "ast_hash": "967db06815ad1cfd5df32e6925559d25",
+    "mtime": 1791239832.772821,
+    "seen": 1791239878.4399376,
+    "ast_hash": "7d375ea808af74b48f5e97b7700c47bf",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -6888,9 +6888,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/corpus_knowledge_readiness.py": {
-    "mtime": 1791236390.550863,
-    "seen": 1791236489.8575003,
-    "ast_hash": "6e301f1123dffaf19a730bd93d3b1141",
+    "mtime": 1791239832.6928222,
+    "seen": 1791239878.43816,
+    "ast_hash": "a766e1300a8f7e6030a7233145398d1d",
     "semantic_hash": ""
   },
   "backend/scripts/export_training_trajectories.py": {
@@ -7077,6 +7077,18 @@
     "mtime": 1791238618.2892923,
     "seen": 1791238669.3294528,
     "ast_hash": "8b3c501dca8983bd0b32ce02abc27fe5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_nested_mechanic_materialization.py": {
+    "mtime": 1791239832.6958222,
+    "seen": 1791239878.4392507,
+    "ast_hash": "a564c5087e5ad7cc1166e2db5a943c0f",
+    "semantic_hash": ""
+  },
+  "docs/testing/offline-nested-mechanic-materialization.md": {
+    "mtime": 1791239832.772821,
+    "seen": 1791239878.4402432,
+    "ast_hash": "166ed5adc7bd8ce58a953fc6073d5eac",
     "semantic_hash": ""
   }
 }
