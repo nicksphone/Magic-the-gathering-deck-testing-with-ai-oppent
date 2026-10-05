@@ -9,7 +9,7 @@ from rules_engine.activation_modifiers import activation_cost_view, payable_crew
 from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action, available_cast_options_and_hints
 from rules_engine.card_types import is_land_card as _is_land_card
 from rules_engine.continuous import effective_power, has_keyword, printed_abilities_suppressed
-from rules_engine.costs import activated_cost_available, check_cost_option_available, collect_cost_options, parse_activated_cost, restricted_x_color
+from rules_engine.costs import activated_cost_available, activated_cost_candidates, check_cost_option_available, collect_cost_options, parse_activated_cost, restricted_x_color
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.entry import land_entry_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
@@ -428,6 +428,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     "ability_index": ability["index"],
                     "ability_label": ability["label"],
                     "mana_cost": cost,
+                    'payment_options': activated_cost_candidates(state, player_id, cid, parsed_cost),
                     'activation_costs': activation_cost_view(state, player_id, cid, parsed_cost.mana_cost, ability_index=ability['index']),
                     "hybrid_symbols": hybrid_payment_symbols(parsed_cost.mana_cost),
                     "target_hints": hints,

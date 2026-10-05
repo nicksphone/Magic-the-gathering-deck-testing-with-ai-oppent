@@ -5,6 +5,7 @@ art must be pre-cached as v2-<slug>.jpg; this fixture never downloads card data.
 """
 from pathlib import Path
 import main
+import tests.activation_payment_browser_fixture
 
 if (Path(main.__file__).resolve().parents[1] / ".git").exists():
     raise RuntimeError("UI fixtures require a disposable backend source copy")

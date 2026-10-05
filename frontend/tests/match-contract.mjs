@@ -170,3 +170,16 @@ for (const pair of [{...linkedPairs[0], primary_id: 3}, {...linkedPairs[0], targ
   }
 }
 console.log('PASS linked target pair shape, ordering, exclusivity and cost-specific contracts');
+
+const activationPayment = {pay_life: 0, discard_cards: 1, sacrifice_creatures: 0,
+  discard_card_ids: ['one', 'two'], sacrifice_card_ids: [], fixed_discard_card_ids: [], fixed_sacrifice_card_ids: []};
+const paymentPacket = payment => ({player_id: 2, revision: 3, moves: [{type: 'activate_ability', payment_options: payment}]});
+assert.equal(parseLegalMoves(paymentPacket(activationPayment)).moves[0].payment_options.discard_cards, 1);
+for (const payment of [{...activationPayment, discard_cards: -1}, {...activationPayment, discard_cards: '1'},
+  {...activationPayment, discard_card_ids: ['one', 'one']}, {...activationPayment, sacrifice_card_ids: null},
+  {...activationPayment, fixed_discard_card_ids: [1]}, {...activationPayment, fixed_sacrifice_card_ids: ['']},
+  {...activationPayment, fixed_discard_card_ids: ['foreign']}, {...activationPayment, discard_cards: 3},
+  {...activationPayment, fixed_discard_card_ids: ['one', 'two']}]) {
+  assert.throws(() => parseLegalMoves(paymentPacket(payment)), /legal-moves/);
+}
+console.log('PASS activated resource payment count, candidate and mandatory-source contracts');

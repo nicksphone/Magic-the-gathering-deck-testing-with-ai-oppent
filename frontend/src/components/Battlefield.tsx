@@ -1021,7 +1021,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         </CardRail>
       </div>
 
-      <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} onAction={onCardAction} />
+      <PermanentActions key={match.id} moves={legalMoves} playerId={viewerSeat} cards={[...p1.hand, ...p1.battlefield]} onAction={onCardAction} />
       {hoverPreview ? createPortal(
         <aside className="card-hover-preview" data-pinned={Boolean(pinnedPreview)} aria-label="Card inspection" tabIndex={0}>
           <button className="preview-close" onClick={() => { previewOrigin.current?.focus({preventScroll:true}); previewOrigin.current = null; setHoverPreview(null); setPinnedPreview(null); }}>Close inspection · Esc</button>

@@ -2,6 +2,13 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify [deliberate activated payments](docs/testing/activation-payment-choices.md).
+  Shared ordinary activation resource selection, strict HTTP validation, both
+  human seats, mandatory source costs, ownership and resource-aware AI pass
+  targeted checks. Freeze the candidate and run all recursive backend files
+  and the complete browser harness before publication. Joint mana/resource
+  planning and other cost-bearing action families remain separate work.
+
 - [x] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
   Batch casting/activation life and sacrifice prohibitions, effective-source
   suppression, Phyrexian payment branches, exhaustive/mixed costs and supported

@@ -1,5 +1,13 @@
 # MTG Deck Testing Lab
 
+The next isolated candidate exposes deliberate discard and sacrifice choices
+for supported nonmana activated abilities in both human seats. Shared cost
+validation rejects wrong resources before authoritative mutation; AI selects
+resources using retention/loss estimates and includes those costs in ranking.
+Eighty targeted checks and six focused browser payment/reload cases pass;
+frontend tests, lint and build pass. Full qualification is still outstanding.
+See [activation payment scope](docs/testing/activation-payment-choices.md).
+
 The shared engine applies recognized casting/activation life and creature
 sacrifice prohibitions across payment paths, preserves other payment contexts,
 and fixes actual source sacrifice for generic creature costs. A full-gate

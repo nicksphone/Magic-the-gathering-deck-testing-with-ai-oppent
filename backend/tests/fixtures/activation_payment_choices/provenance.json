@@ -1,0 +1,14 @@
+[
+  {
+    "file": "rummaging-goblin.json",
+    "url": "https://api.scryfall.com/cards/254391a3-c12a-4944-9da5-ae166094480f",
+    "retrieved_at": "2026-10-05T06:16:21.721Z",
+    "sha256": "b8ac2219db47d38e2364bd4da488fb996a6dc50300e27ea9f371c373b475d7a7"
+  },
+  {
+    "file": "trading-post.json",
+    "url": "https://api.scryfall.com/cards/03499a72-e865-46ff-bcb2-75e53e4b600e",
+    "retrieved_at": "2026-10-05T06:16:21.723Z",
+    "sha256": "c04ea5e753eabb9d3a59faff3ce84274a7d0d4946a4cf080b6af971cf0df5fe4"
+  }
+]

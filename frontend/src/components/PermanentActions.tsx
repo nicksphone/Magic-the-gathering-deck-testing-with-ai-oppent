@@ -1,13 +1,22 @@
 import { useState } from "react";
 import type { LegalMove } from "../types";
 
-type Props = { moves: LegalMove[]; playerId: number; onAction: (playerId: number, action: Record<string, unknown>) => void };
+type Props = { moves: LegalMove[]; playerId: number; cards?: {id: string; name: string}[]; onAction: (playerId: number, action: Record<string, unknown>) => void };
 const handled = new Set(["cast_spell", "cast_spell_restricted", "cycle_card", "play_land", "activate_loyalty", "equip", "activate_ability", "crew", "ninjutsu", "pass_priority", "attack", "attack_restricted", "block", "keep_hand", "mulligan", "choose_mechanic", "choose_replacement", "choose_trigger_order", "choose_trigger_target", "choose_optional_effect", "foretell", "activate_mana_ability"]);
 
-function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }) {
+function AbilityAction({ move, playerId, cards = [], onAction }: Props & { move: LegalMove }) {
   const [targets, setTargets] = useState<Record<string, unknown>>({});
   const [advanced, setAdvanced] = useState("");
   const [hybridChoices, setHybridChoices] = useState<Record<number, string>>({});
+  const [paymentCards, setPaymentCards] = useState<Record<string, string[]>>({});
+  const payment = move.payment_options;
+  const resourceGroups = [
+    {key: 'discard_card_ids' as const, count: payment?.discard_cards ?? 0, fixed: payment?.fixed_discard_card_ids ?? [], label: 'Discard'},
+    {key: 'sacrifice_card_ids' as const, count: payment?.sacrifice_creatures ?? 0, fixed: payment?.fixed_sacrifice_card_ids ?? [], label: 'Sacrifice'},
+  ];
+  const paymentChoices = Object.fromEntries(resourceGroups.map(group => [group.key,
+    [...group.fixed, ...(paymentCards[group.key] ?? []).filter(id => payment?.[group.key].includes(id) && !group.fixed.includes(id))]]));
+  const incompleteResources = resourceGroups.some(group => paymentChoices[group.key].length !== group.count);
   const branches = (move.hybrid_symbols ?? []).map((_, index) => hybridChoices[index] ?? "");
   const incompletePayment = branches.some(Boolean) && !branches.every(Boolean);
   let combined = targets;
@@ -25,9 +34,19 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
   const targetText = move.ability_label ?? "";
   const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
   const options = [...new Map([...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []), ...(hints?.permanent_targets ?? []), ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []), ...(hints?.land_targets ?? []), ...(hints?.artifact_targets ?? []), ...(hints?.enchantment_targets ?? []), ...(hints?.noncreature_permanent_targets ?? []), ...(hints?.aura_targets ?? []), ...(move.targets ?? [])].map((target) => [target.id, target])).values()];
-  return <article className="cast-card-box">
+  return <article className="cast-card-box" data-ability-source={move.card_id} data-ability-index={move.ability_index}>
     <strong>{move.card_name}: {move.ability_label}</strong>
     <small>{move.mana_cost}</small>
+    {resourceGroups.filter(group => group.count > 0).map(group => <fieldset key={group.key}>
+      <legend>{group.label} {group.count} for {move.card_name}</legend>
+      {(payment?.[group.key] ?? []).map(id => <label key={id}>
+        <input type="checkbox" aria-label={`${group.label} ${cards.find(card => card.id === id)?.name ?? id} (${id})`}
+          checked={paymentChoices[group.key].includes(id)} disabled={group.fixed.includes(id)}
+          onChange={event => setPaymentCards(prior => ({...prior, [group.key]: event.target.checked
+            ? [...(prior[group.key] ?? []), id] : (prior[group.key] ?? []).filter(selected => selected !== id)}))} />
+        {cards.find(card => card.id === id)?.name ?? id}{group.fixed.includes(id) ? ' (required source)' : ''}
+      </label>)}
+    </fieldset>)}
     {(move.hybrid_symbols ?? []).map((symbol, index) => <label key={`${symbol.symbol}-${index}`}>
       {`Pay {${symbol.symbol}}`}
       <select aria-label={`Ability hybrid symbol ${index + 1} {${symbol.symbol}}`} value={branches[index]}
@@ -52,7 +71,8 @@ function AbilityAction({ move, playerId, onAction }: Props & { move: LegalMove }
     <details><summary>Advanced choices</summary><p>Enter additional target/mode choices as JSON. The engine validates them before costs are paid.</p><pre>{JSON.stringify(hints?.choice_schema ?? {}, null, 2)}</pre><textarea aria-label="Advanced ability choices" value={advanced} onChange={(event) => setAdvanced(event.target.value)} /></details>
     {requiresX ? <label>Announced X <input aria-label={`X value for ${move.card_name} ability`} type="number" min={0} step={1} value={targets.x_value === undefined ? "" : String(targets.x_value)} onChange={(event) => setTargets((prior) => ({ ...prior, x_value: event.target.value === "" ? undefined : Number(event.target.value) }))} /></label> : null}
     {inputError ? <p role="alert">{inputError}</p> : null}
-    <button disabled={Boolean(inputError || incompleteX || incompletePayment)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined,
+    <button disabled={Boolean(inputError || incompleteX || incompletePayment || incompleteResources)} onClick={() => onAction(playerId, { type: "activate_ability", card_id: move.card_id, ability_index: move.ability_index, targets: combined,
+      payment_choices: resourceGroups.some(group => group.count > 0) ? paymentChoices : undefined,
       hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined })}>Activate {move.card_name}</button>
   </article>;
 }

@@ -161,6 +161,23 @@ function targetHints(value: unknown): boolean {
       && Array.isArray(modifier.keywords) && modifier.keywords.length === 0);
 }
 
+function paymentOptions(value: unknown): boolean {
+  if (!record(value)) return false;
+  const valid = ['pay_life', 'discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(value[key]) && (value[key] as number) >= 0)
+    && ['discard_card_ids', 'sacrifice_card_ids', 'fixed_discard_card_ids', 'fixed_sacrifice_card_ids'].every(key => {
+      const ids = value[key];
+      return Array.isArray(ids) && ids.every((id: unknown) => typeof id === 'string' && id.length > 0)
+        && new Set(ids).size === ids.length;
+    });
+  if (!valid) return false;
+  return [['discard_card_ids', 'discard_cards', 'fixed_discard_card_ids'],
+    ['sacrifice_card_ids', 'sacrifice_creatures', 'fixed_sacrifice_card_ids']].every(([key, countKey, fixedKey]) => {
+    const options = value[key] as string[], fixed = value[fixedKey] as string[];
+    return fixed.length <= (value[countKey] as number) && options.length >= (value[countKey] as number)
+      && fixed.every(id => options.includes(id));
+  });
+}
+
 export function parseLegalMoves(value: unknown): LegalMovesResponse {
   if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
@@ -172,6 +189,7 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && record(move.outputs) && Object.entries(move.outputs).every(([color, amount]) =>
           /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) >= 0)))
       && (move.card_view === undefined || card(move.card_view))
+      && (move.payment_options === undefined || paymentOptions(move.payment_options))
       && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
         record(option) && typeof option.id === 'string'
         && (option.additional_cost_group == null || typeof option.additional_cost_group === 'string')

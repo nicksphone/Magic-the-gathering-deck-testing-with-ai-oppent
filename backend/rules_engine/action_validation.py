@@ -268,6 +268,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             action.get("hybrid_choices"), int(targets.get("x_value") or 0),
             restricted_x_color(move.get("ability_label", "")),
             ability_index=move['ability_index'],
+            payment_choices=action.get('payment_choices'),
         ), "Cannot pay activation costs")
     elif kind == "activate_loyalty" and targets.get("x_value") is not None:
         from rules_engine.oracle_effects import extract_loyalty_abilities
@@ -325,7 +326,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(all(branch in symbol["choices"] for branch, symbol in zip(choices, symbols)), "Invalid hybrid payment branch")
         from rules_engine.costs import activated_cost_available
         require(activated_cost_available(state, player_id, action['card_id'], move['mana_cost'], choices,
-                int(targets.get('x_value') or 0), restricted_x_color(move.get('ability_label', '')), ability_index=move['ability_index']),
+                int(targets.get('x_value') or 0), restricted_x_color(move.get('ability_label', '')), ability_index=move['ability_index'], payment_choices=action.get('payment_choices')),
                 "Cannot pay the selected hybrid branches")
 
 

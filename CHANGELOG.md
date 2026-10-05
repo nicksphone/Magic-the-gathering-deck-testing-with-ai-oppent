@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased Candidate - Deliberate activated payments
+
+- Share activation resource candidates and selected-payment validation between
+  legal moves, checked execution, typed HTTP actions, AI and both human seats.
+- Preserve mandatory source sacrifice and ownership on zone changes; rank
+  resource-consuming activations using existing retention/loss estimates.
+- Add canonical discard/artifact fixtures, six HTTP recovery cases and six
+  focused browser scenarios. Latest boundary selection: 80 passed. Frontend
+  tests/lint/build pass. Full regression/browser qualification remains pending.
+- This does not add deliberate mana-ability, cycling or ward payments, nor
+  certify optimal joint mana/resource planning or expert AI.
+
 ## 2026-10-05 - Contextual costs and source sacrifice
 
 - Share recognized casting/activation life and creature-sacrifice prohibitions

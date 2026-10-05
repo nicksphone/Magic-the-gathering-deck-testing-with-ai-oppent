@@ -93,10 +93,13 @@ class ForetellAction(CardAction):
     type: Literal['foretell']
 
 
-class CostChoice(InputModel):
-    id: Annotated[str, Field(min_length=1, max_length=100)]
+class PaymentCards(InputModel):
     discard_card_ids: CardIDs | None = None
     sacrifice_card_ids: CardIDs | None = None
+
+
+class CostChoice(PaymentCards):
+    id: Annotated[str, Field(min_length=1, max_length=100)]
 
 
 HybridChoices = Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)]
@@ -124,6 +127,13 @@ class AbilityAction(CardAction):
     ability_index: Annotated[StrictInt, Field(ge=0, le=100)]
     targets: Targets = Field(default_factory=Targets)
     hybrid_choices: HybridChoices | None = None
+    payment_choices: PaymentCards | None = None
+
+    @model_validator(mode='after')
+    def payment_choices_only_for_activated_costs(self):
+        if self.type == 'activate_loyalty' and self.payment_choices is not None:
+            raise ValueError('Loyalty abilities do not accept resource payment choices')
+        return self
 
 
 class CrewAction(CardAction):

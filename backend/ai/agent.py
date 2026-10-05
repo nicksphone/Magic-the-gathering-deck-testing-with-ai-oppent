@@ -1581,6 +1581,8 @@ class AIAgent:
                 base += self._block_bias(state, move, player_id)
             elif mtype == "activate_ability":
                 base += 2.5
+                if move.get('payment_options'):
+                    base -= self._spell_payment_loss(state, player_id, move['payment_options'])
                 label = str(move.get("ability_label", "")).lower()
                 from ai.combat_tax_policy import combat_tax_plan
                 tax_plan = combat_tax_plan(state, move, player_id)
@@ -2805,10 +2807,13 @@ class AIAgent:
         ]:
             if option.get('discard_all' if key == 'discard_card_ids' else 'sacrifice_all'):
                 count = len(option.get(key, []))
-            values = sorted(rank(state, cid, player_id) for cid in option.get(key, []))
-            if len(values) < count:
+            fixed = option.get('fixed_' + key, [])
+            if len(fixed) > count or any(cid not in option.get(key, []) for cid in fixed):
                 return float('inf')
-            loss += sum(values[:count])
+            values = sorted(rank(state, cid, player_id) for cid in option.get(key, []) if cid not in fixed)
+            if len(values) < count-len(fixed):
+                return float('inf')
+            loss += sum(rank(state, cid, player_id) for cid in fixed) + sum(values[:count-len(fixed)])
         return loss
 
     def _kicker_draw_gain(self, state, player_id, base_count, kicked_count):
@@ -3492,6 +3497,19 @@ class AIAgent:
                     if unanswered_action_wins(state, player_id, out,
                         own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action) is False:
                         out['_invalid_ai_choice'] = True
+        if mtype == 'activate_ability' and move.get('payment_options'):
+            payment = move['payment_options']
+            choice = dict(out.get('payment_choices') or {})
+            for key, count_key, rank in (
+                ('discard_card_ids', 'discard_cards', self._hand_retention_value),
+                ('sacrifice_card_ids', 'sacrifice_creatures', self._sacrifice_loss),
+            ):
+                fixed = list(payment.get('fixed_' + key, []))
+                count = payment.get(count_key, 0)
+                if key not in choice:
+                    options = [cid for cid in payment.get(key, []) if cid not in fixed]
+                    choice[key] = fixed + sorted(options, key=lambda cid: (rank(state, cid, player_id), cid))[:max(0, count-len(fixed))]
+            out['payment_choices'] = choice
         return out
 
     def _choose_blocks(self, state: MatchState, attackers: list[dict], blockers: list[dict]) -> dict[str, str | list[str]]:

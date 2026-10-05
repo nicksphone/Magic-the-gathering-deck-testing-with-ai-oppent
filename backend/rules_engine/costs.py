@@ -138,7 +138,49 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
     )
 
 
-def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None) -> bool:
+def activated_cost_candidates(state, player_id, source_id, cost):
+    fixed_discard = [source_id] if cost.discard_source else []
+    fixed_sacrifice = [source_id] if cost.sacrifice_source else []
+    return {
+        'pay_life': cost.pay_life,
+        'discard_cards': cost.discard_cards + len(fixed_discard),
+        'sacrifice_creatures': cost.sacrifice_creatures,
+        'fixed_discard_card_ids': fixed_discard,
+        'fixed_sacrifice_card_ids': fixed_sacrifice,
+        'discard_card_ids': [cid for cid in state.players[player_id].hand
+                             if (cid != source_id or cost.discard_source) and not is_departed_token(state.cards[cid])]
+                            if cost.discard_cards or cost.discard_source else [],
+        'sacrifice_card_ids': sorted(
+            _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation'),
+            key=lambda cid: cid == source_id,
+        ) if cost.sacrifice_creatures else [],
+    }
+
+
+def activated_cost_selection(state, player_id, source_id, cost, choice=None):
+    if choice is not None and (not isinstance(choice, dict)
+                              or set(choice) - {'discard_card_ids', 'sacrifice_card_ids'}):
+        return None
+    candidates = activated_cost_candidates(state, player_id, source_id, cost)
+    selected = {}
+    for key, count_key, fixed_key in (
+        ('discard_card_ids', 'discard_cards', 'fixed_discard_card_ids'),
+        ('sacrifice_card_ids', 'sacrifice_creatures', 'fixed_sacrifice_card_ids'),
+    ):
+        count, fixed = candidates[count_key], candidates[fixed_key]
+        ids = (choice or {}).get(key)
+        if ids is None:
+            ids = fixed + [cid for cid in candidates[key] if cid not in fixed][:max(0, count-len(fixed))]
+        if (not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids)
+                or len(ids) != count or len(set(ids)) != count
+                or any(cid not in candidates[key] for cid in ids)
+                or any(cid not in ids for cid in fixed)):
+            return None
+        selected[key] = list(ids)
+    return selected
+
+
+def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None, payment_choices=None) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
         return False
@@ -148,14 +190,9 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     if cost.discard_source and (source_id not in player.hand or source.zone != Zone.HAND):
         return False
-    if not can_pay_life(state, player_id, cost.pay_life) or sum(cid != source_id and not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
+    if not can_pay_life(state, player_id, cost.pay_life):
         return False
-    creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
-    if cost.sacrifice_source:
-        if source_id not in creatures:
-            return False
-        creatures.remove(source_id)
-    if len(creatures) < max(0, cost.sacrifice_creatures - (1 if cost.sacrifice_source else 0)):
+    if activated_cost_selection(state, player_id, source_id, cost, payment_choices) is None:
         return False
     return can_pay_with_pool_and_lands(
         state, player_id, cost.mana_cost, card_name=source.name, reserved_life=cost.pay_life,
@@ -166,13 +203,16 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     )
 
 
-def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated', ability_index=None) -> bool:
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated', ability_index=None, payment_choices=None) -> bool:
     cost = parse_activated_cost(cost_text)
-    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind, ability_index=ability_index):
+    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind, ability_index=ability_index, payment_choices=payment_choices):
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
     if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source or cost.sacrifice_source else None, ability_index):
+        return False
+    selected = activated_cost_selection(state, player_id, source_id, cost, payment_choices)
+    if selected is None:
         return False
     if cost.tap_source:
         source.tapped = True
@@ -185,24 +225,14 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         from rules_engine.zone_actions import discard_selected
         if not discard_selected(state, player_id, [source_id]):
             return False
-    for _ in range(cost.discard_cards):
-        discard_id = _first_discardable_card(state, player_id, exclude={source_id})
-        if discard_id is None:
-            return False
+    for discard_id in selected['discard_card_ids']:
+        if cost.discard_source and discard_id == source_id:
+            continue
         player.hand.remove(discard_id)
         put_into_graveyard(state, discard_id)
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for {source.name}.")
         emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
-    sacrifice_ids: list[str] = []
-    if cost.sacrifice_source:
-        sacrifice_ids.append(source_id)
-    candidates = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
-    sacrifice_ids.extend(
-        cid for cid in sorted(candidates, key=lambda cid: cid == source_id)
-        if not cost.sacrifice_source or cid != source_id
-    )
-    needed = cost.sacrifice_creatures
-    sacrifice_ids = sacrifice_ids[:needed]
+    sacrifice_ids = selected['sacrifice_card_ids']
     destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids}
     events = [{"card_id": cid, "controller": player_id} for cid in sacrifice_ids]
     started_staging = bool(events) and not state.trigger_staging

@@ -201,6 +201,15 @@ export type LegalMove = {
   targets?: { id: string; name: string }[];
   ability_index?: number;
   ability_label?: string;
+  payment_options?: {
+    pay_life: number;
+    discard_cards: number;
+    sacrifice_creatures: number;
+    discard_card_ids: string[];
+    sacrifice_card_ids: string[];
+    fixed_discard_card_ids: string[];
+    fixed_sacrifice_card_ids: string[];
+  };
   ability_delta?: number;
   reason?: string;
   event?: string;
