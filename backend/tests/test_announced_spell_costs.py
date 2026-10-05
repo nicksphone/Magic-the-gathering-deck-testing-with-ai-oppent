@@ -41,6 +41,19 @@ def test_canonical_downloads_match_provenance():
         assert hashlib.sha256(file.read_bytes()).hexdigest() == provenance['sha256']
 
 
+def test_cost_queries_accept_lightweight_views_without_oracle_metadata():
+    from types import SimpleNamespace
+    from rules_engine.hooks import CostContext, apply_cost_modifiers
+    state = position(1)
+    source = SimpleNamespace(id='lightweight', name='Forest', controller=1,
+                             zone=Zone.BATTLEFIELD, types=['Land'])
+    state.cards[source.id] = source
+    state.players[1].battlefield.append(source.id)
+    context = apply_cost_modifiers(CostContext(player_id=1, card_name='Young Pyromancer',
+        mana_cost='{1}{R}', state=state, spell_types={'Creature'}))
+    assert context.generic_increase == context.generic_reduction == 0
+
+
 @pytest.mark.parametrize('seat', [1, 2])
 def test_white_tax_is_not_applied_to_red_spell(seat):
     state = position(seat)

@@ -212,7 +212,7 @@ def _apply_static_spell_taxes(context: CostContext) -> CostContext:
             if printed_abilities_suppressed(context.state, cid):
                 continue
             text = _static_oracle_text(source).lower()
-            taxes = turn_cost_taxes(source.oracle_text or '')
+            taxes = turn_cost_taxes(getattr(source, 'oracle_text', '') or '')
             if (taxes and source.zone == Zone.BATTLEFIELD
                     and context.state.active_player == source.controller and context.player_id != source.controller):
                 increase += taxes[0]
