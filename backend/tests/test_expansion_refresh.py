@@ -142,3 +142,72 @@ def test_catalog_import_prefers_newest_legacy_duplicate(tmp_path) -> None:
         assert updated.id == latest.id != first.id
         assert len(repo.list_decks()) == 2
         assert next(row for row in repo.list_decks() if row.id == first.id).name == "Old"
+
+
+def test_builtin_refresh_updates_visible_duplicate_and_preserves_history(tmp_path, monkeypatch) -> None:
+    from main import list_decks
+
+    ramp_entry = next(item for item in EXPANSION_TOP_DECKS if item["code"] == "USG")
+    monkeypatch.setattr(bootstrap, "BUILTIN_DECKS", {"Ramp": ramp_entry["deck_text"]})
+    db = create_engine(f"sqlite:///{tmp_path / 'builtin-duplicates.sqlite'}")
+    SQLModel.metadata.create_all(db)
+    old = [{"quantity": 60, "card_name": "Forest"}]
+    with SqlSession(db) as session:
+        repo = Repository(session)
+        historic = repo.save_deck("Ramp", "builtin", old, [], "Ramp")
+        visible = repo.save_deck("Ramp", "builtin", old, [], "Ramp")
+        user = repo.save_deck("Ramp", "user", old, [], "Ramp")
+        bootstrap.ensure_builtin_decks(repo)
+        assert json.loads(visible.mainboard_json) != old
+        assert json.loads(historic.mainboard_json) == old
+        assert json.loads(user.mainboard_json) == old
+        assert len(repo.list_decks()) == 3
+        displayed = list_decks(repo)
+        assert {row["id"] for row in displayed} == {visible.id, user.id}
+        assert next(row["mainboard"] for row in displayed if row["id"] == visible.id) == json.loads(visible.mainboard_json)
+        bootstrap.ensure_builtin_decks(repo)
+        assert len(repo.list_decks()) == 3
+
+
+def test_expansion_refresh_preserves_historic_duplicate(monkeypatch) -> None:
+    entry = next(item for item in EXPANSION_TOP_DECKS if item["code"] == "USG")
+    monkeypatch.setattr(bootstrap, "EXPANSION_TOP_DECKS", [entry])
+    historic = [{"quantity": 60, "card_name": "Forest"}]
+    current = [{"quantity": 60, "card_name": "Tropical Island"}]
+    latest = DeckRow(3, entry["deck_name"], "expansion_top:USG", json.dumps(historic))
+    previous = DeckRow(1, entry["deck_name"], "expansion_top:USG", json.dumps(historic))
+    reference = DeckRow(2, "Ramp", "builtin", json.dumps(current))
+    repo = Repo([latest, reference, previous])
+    bootstrap.ensure_expansion_top_decks(repo)  # type: ignore[arg-type]
+    assert json.loads(latest.mainboard_json) == current
+    assert json.loads(previous.mainboard_json) == historic
+    assert repo.session.added == [latest]
+
+
+def test_expansion_refresh_uses_visible_builtin_reference(monkeypatch) -> None:
+    entry = next(item for item in EXPANSION_TOP_DECKS if item["code"] == "USG")
+    monkeypatch.setattr(bootstrap, "EXPANSION_TOP_DECKS", [entry])
+    historic = [{"quantity": 60, "card_name": "Forest"}]
+    current = [{"quantity": 60, "card_name": "Tropical Island"}]
+    visible = DeckRow(3, "Ramp", "builtin", json.dumps(current))
+    previous = DeckRow(1, "Ramp", "builtin", json.dumps(historic))
+    expansion = DeckRow(2, entry["deck_name"], "expansion_top:USG", json.dumps(historic))
+    repo = Repo([visible, expansion, previous])
+    bootstrap.ensure_expansion_top_decks(repo)  # type: ignore[arg-type]
+    assert json.loads(expansion.mainboard_json) == current
+    assert json.loads(previous.mainboard_json) == historic
+    assert repo.session.added == [expansion]
+
+
+def test_deck_order_breaks_timestamp_ties_by_newest_id(tmp_path) -> None:
+    db = create_engine(f"sqlite:///{tmp_path / 'timestamp-ties.sqlite'}")
+    SQLModel.metadata.create_all(db)
+    with SqlSession(db) as session:
+        repo = Repository(session)
+        old = [{"quantity": 60, "card_name": "Forest"}]
+        first = repo.save_deck("Ramp", "builtin", old, [], "Ramp")
+        latest = repo.save_deck("Ramp", "builtin", old, [], "Ramp")
+        latest.created_at = first.created_at
+        session.add(latest)
+        session.commit()
+        assert [row.id for row in repo.list_decks()] == [latest.id, first.id]

@@ -1,18 +1,26 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS
 from decks.service import DeckService
+from persistence.models import DeckRecord
 from persistence.repository import Repository
 
 
+def _latest_decks_by_identity(rows: Iterable[DeckRecord]) -> dict[tuple[str, str], DeckRecord]:
+    # Repository order is newest first; preserve historical duplicates untouched.
+    existing = {}
+    for row in rows:
+        key = (row.name.strip().lower(), (row.source or "").strip().lower())
+        existing.setdefault(key, row)
+    return existing
+
+
 def ensure_builtin_decks(repo: Repository) -> None:
-    existing = {
-        (row.name.strip().lower(), (row.source or "").strip().lower()): row
-        for row in repo.list_decks()
-    }
+    existing = _latest_decks_by_identity(repo.list_decks())
     service = DeckService(repo)
     updated = False
     for name in sorted(BUILTIN_DECKS.keys()):
@@ -35,10 +43,7 @@ def ensure_builtin_decks(repo: Repository) -> None:
 
 def ensure_expansion_top_decks(repo: Repository) -> None:
     rows = repo.list_decks()
-    existing = {
-        (row.name.strip().lower(), (row.source or "").strip().lower()): row
-        for row in rows
-    }
+    existing = _latest_decks_by_identity(rows)
     by_source = {}
     for row in rows:
         source = (row.source or "").strip().lower()

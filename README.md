@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab
 
+Catalog refresh targets the newest visible built-in/expansion records, with
+stable ID ordering when timestamps tie, without deleting historical duplicates
+or user decks. Replay diagnostics can retain successful decisions using
+`--trace-output <new-file.jsonl>`; exports contain private game information,
+preserve each completed repeat and never overwrite existing evidence.
+
 Shared payment planning reserves life across nested mana production and outer
 activation/Phyrexian costs, searches life-aware ordinary/snow payment paths,
 and rejects unpaid activation life costs. Latest targeted selection: 505 checks;

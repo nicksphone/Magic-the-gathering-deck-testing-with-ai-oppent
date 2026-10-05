@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased Candidate - Catalog identity and successful decision traces
+
+- Refresh the newest visible catalog records; preserve historical duplicate and
+  user rows, and break timestamp ties by ID. Targeted selection: 26 passed.
+- Add opt-in full JSONL traces for resolved replay matches as well as anomalies.
+  Completed runs survive later repeat failure; existing/colliding outputs are
+  rejected. Runner/replay selection: 84 passed; default sample accounting stays
+  unchanged. Two earlier nonexistent test-path invocations collected no tests
+  and are not counted as validation.
+- Full combined gates and actual retained-trace match analysis remain pending.
+
 ## 2026-10-05 - Nested mana life budgets
 
 - Track life expenditure across ordinary and snow mana source selection;
