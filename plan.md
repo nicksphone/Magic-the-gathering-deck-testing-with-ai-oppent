@@ -10,7 +10,8 @@
 - [ ] Qualify durable limited graveyard permission ledgers and source/type choices.
   Shared Lurrus/Muldrotha/Gisa-style restrictions, actual X limits, land allowances,
   snapshot isolation and stale-choice rejection are implemented in a successor
-  candidate; six focused browser flows pass. Complete frozen full qualification,
+  candidate; six focused browser flows, 8,824 full backend tests and the complete
+  browser suite pass. Complete seeded review and integration qualification,
   then broaden duration, subtype layers and casting-announcement ordering. See
   [scope](docs/testing/limited-graveyard-permissions.md).
 

@@ -39,14 +39,18 @@ and the mana-value permission follows the official
 - All six focused browser scenarios passed for both seats: real permission
   selection, payment, resolution, reload and exhausted allowances, including
   successive Artifact/Creature allowances for a real multi-type spell.
-- Frontend tests, lint and build pass. The first full/backend/browser freeze for
-  this limited-permission runtime remains outstanding.
+- Frozen runtime `359904ff7c63833f549025a7890a98c40351b2a3` passes
+  8,824 backend tests across all 355 recursive test files. Four initially
+  DB-free copies match 710 source hashes; each test file runs exactly once.
+  The complete browser suite, including natural AI and both human BO3 flows,
+  passes. Evidence is archived under RCHFiles
+  `diagnostics/strategic-draw-counts/20261005T102232Z/limited-graveyard-permissions/full-qualification`.
 - The predecessor runtime passes 8,784 full backend tests across 353 files and
   the complete browser suite; this is not qualification of the successor.
 
 ## Known Limitations And Next Upgrades
 
-Finish frozen full/backend/browser gates and seeded decision review, then qualify
+Finish seeded decision review and integration qualification, then qualify
 duration, granted/replaced abilities, dynamic source/type layering and complete
 casting-announcement ordering. Source-incarnation ledgers do not claim complete
 ability-instance lifecycle handling. Alternate casting methods and source/type
