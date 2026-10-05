@@ -2,8 +2,8 @@
 
 ## Current Execution Order
 
-1. Finish dedicated Cathar browser acceptance and natural-game mana/selection
-   defects; retain the qualified rules batch and saved-match restoration evidence.
+1. Finish natural-game mana/selection defects and combat latency validation;
+   retain the qualified rules batch and saved-match restoration evidence.
 2. Analyze new natural-game deployment traces, integrate verified corpus readiness
    and mechanic metadata, then qualify the training-environment adapter. Preserve
    hidden-information boundaries and do not force matchup win rates.
@@ -17,6 +17,10 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Dedicated canonical Cathar actual-App browser acceptance: six cases across
+  both seats, source departure/blink, day/night transitions, pending choices,
+  reload and two real backend restarts. Parent composed run also passes all six;
+  broader transform families remain open. See [scope](docs/testing/cathar-browser.md).
 - [x] Wire self-isolating private-inspection restart/reload checks into browser
   CI. Normal-checkout run passes eight HTTP and four browser cases; five harness
   regression groups cover occupied ports, missing NFS and caller preservation.

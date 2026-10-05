@@ -31,8 +31,10 @@ facts; cache defaults/face aliases are checked explicitly.
 
 Evidence is retained on RCHFiles under `cathar-369726e-vIWuTz/` and the parent
 hotfix qualification directory. API checks use disposable local databases, not
-the live user's saved game. Dedicated Cathar browser acceptance remains open;
-these results are not universal transformation or Oracle certification.
+the live user's saved game. Dedicated [Cathar browser acceptance](cathar-browser.md)
+now passes six cases on both seats, including pending choices, two real backend
+restarts and 48 actual-App HTTP actions. Parent composed-source execution also
+passes all six. These results are not universal transformation or Oracle certification.
 
 ## Existing Games And Remaining Work
 

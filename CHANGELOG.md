@@ -1,5 +1,14 @@
 # Changelog
 
+## Canonical Cathar Browser Acceptance - 2026-10-05
+
+- Add a self-isolating actual-App browser gate covering both seats, day/night
+  entry and transformations, target choices, linked departure returns and stale
+  source incarnations. Six cases and two backend restarts pass in the composed
+  source, without modifying a user's saved match.
+- Broader transform clauses and linked-effect families still need qualification;
+  the dedicated gate is not universal rules certification.
+
 ## Knowledge Metadata And Training Boundary - 2026-10-05
 
 - Add versioned, source-linked mechanic evidence with explicit unknowns. Preserve

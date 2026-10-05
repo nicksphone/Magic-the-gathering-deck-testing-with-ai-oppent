@@ -25,6 +25,8 @@ outside trusted debugging. See [scope](docs/testing/ai-hand-debug.md).
 Supported day/night entry and self entry/transform triggers share canonical
 face handling, with incarnation-linked targeted exile and departure returns.
 See [evidence and limits](docs/testing/cathar-day-night.md).
+The dedicated [actual-App browser gate](docs/testing/cathar-browser.md) covers
+both seats, pending exile choices, day/night transitions and backend restart.
 
 Supported [private card inspections](docs/testing/private-card-inspections.md)
 show the looked-at cards even when none qualifies, and survive restart/reload.
