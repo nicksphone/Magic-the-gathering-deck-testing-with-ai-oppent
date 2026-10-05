@@ -29,3 +29,18 @@ taxes, capacity and band propagation. Two ordinary attackers cannot gain banding
 Review physical drag gestures, keyboard/touch ergonomics and crowded boards on
 the intended desktop browser. This change does not certify all Magic rules,
 expert AI or matchup balance.
+
+## Acceptance Evidence (2026-10-05)
+
+- Frozen backend `c8bf6ab`: 8,335 tests pass across all 337 recursive test files,
+  assigned exactly once to four isolated source copies with empty initial
+  databases; all 658 source/fixture hashes match. Backend is byte-identical to
+  the subsequent frontend-only draft repair `5bdbdfe`.
+- Frontend unit tests, ESLint and production TypeScript/Vite build pass.
+- Complete browser harness passes, including restart recovery and natural
+  AI/AI, human/AI and human/human BO3. The functional draft follow-up landed
+  during that run; final-source direct-combat, multi-block capacity/payment,
+  combat branch/payment and automatic-priority cases were rerun and pass.
+- Evidence is archived and verified under RCHFiles `diagnostics/direct-combat/`
+  in `20261005T100340Z`. No fresh dependency installation or universal rules/AI
+  certification is claimed.

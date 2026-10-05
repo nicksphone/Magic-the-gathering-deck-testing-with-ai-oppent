@@ -33,6 +33,9 @@ const block = {type: 'block', attackers: [{id:'a'}, {id:'b'}, {id:'flying'}],
 const first = assignBlocker(empty, 'ground', 'a', block);
 assert.equal(first.error, null);
 assert.deepEqual(first.draft.blocks.a, ['ground']);
+const team = assignBlocker(first.draft, 'wall', 'a', block);
+assert.equal(team.error, null);
+assert.deepEqual(team.draft.blocks.a, ['ground', 'wall'], 'several blockers may share one attacker');
 assert.equal(assignBlocker(empty, 'ground', 'flying', block).draft, empty);
 assert.ok(assignBlocker(empty, 'outsider', 'a', block).error);
 assert.ok(assignBlocker(empty, 'ground', 'outsider', block).error);

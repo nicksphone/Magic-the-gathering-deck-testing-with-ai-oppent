@@ -12,6 +12,9 @@
 - Collapse detailed selectors; automatically reveal required attack payments.
 - Add contract, selection, engine-view and both-seat browser regressions.
   Browser drag tests dispatch HTML DragEvents, not OS-level pointer drags.
+- Validation: 8,335 backend tests in all 337 recursive files with 658 verified
+  hashes; frontend tests/lint/build; complete browser harness/all three BO3 modes
+  and final-source reruns of the affected direct-combat/payment/automatic cases.
 
 ## Human-versus-AI Automatic Priority Flow
 
