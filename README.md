@@ -26,6 +26,9 @@ unnecessary indestructible queries without changing destruction rules.
 [Continuous source reuse](docs/testing/continuous-source-reuse.md) shares ordered
 sources and suppression flags only inside immutable queries; later mutations
 receive fresh views. Interactive AI latency remains unfinished.
+Autoplay requests have a [bounded extended deadline](docs/testing/autoplay-request-deadline.md)
+for long Master decisions; ordinary reads and manual writes retain shorter
+timeouts. This does not eliminate slow planning or cancel server-side mutations.
 
 Implementation scopes and remaining limits:
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)

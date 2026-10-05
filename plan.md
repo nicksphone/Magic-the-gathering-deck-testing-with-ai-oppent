@@ -11,6 +11,12 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Correct autoplay's thirty-second client deadline mismatch: ten-minute
+  bounded ceiling, unchanged ordinary deadlines/write coordination; actual-client
+  test, frontend unit/lint/build pass. Reject a more complex score-key encoder
+  after its full-decision gain proved marginal. Planning latency and background
+  job/cancellation acceptance remain open.
+  See [scope](docs/testing/autoplay-request-deadline.md).
 - [x] Continuous source ordering/activity reuse: 3,545 affected checks across 85
   files pass; source departure, timestamp/control changes and defensive views
   have explicit tests. Retained full action/state parity: 30.00 seconds versus

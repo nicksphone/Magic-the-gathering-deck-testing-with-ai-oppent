@@ -2272,8 +2272,8 @@
     "hash": "f56946159671c8fa02066c293021819b"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/client.ts": {
-    "mtime": 1791065823.4096084,
-    "hash": "7151edf26b6400397561312367ce3149"
+    "mtime": 1791219208.12938,
+    "hash": "721efda5d5d2f360518037a641d3d29c"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/src/api/routing.ts": {
     "mtime": 1790553436.275859,
@@ -2354,6 +2354,10 @@
   "/home/nick/mtg-deck-testing-lab/frontend/tests/browser-combat-domain-temporary.mjs": {
     "mtime": 1791195264.91508,
     "hash": "e6670319175e8cf244dc788e97bd5fcb"
+  },
+  "/home/nick/mtg-deck-testing-lab/frontend/tests/api-request-deadlines.mjs": {
+    "mtime": 1791219208.12938,
+    "hash": "03d9427563745d3d418af45897b7f18c"
   },
   "/home/nick/mtg-deck-testing-lab/frontend/tests/ui_v2_fixture_server.py": {
     "mtime": 1791213613.90469,
@@ -2632,16 +2636,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791218582.287314,
-    "hash": "7560078a9d76f054686aac2ea8a06960"
+    "mtime": 1791219278.1243477,
+    "hash": "9dfac95cd0a85c67ecdcbf9339f9d73a"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791218582.289314,
-    "hash": "fa6ca9168997df2504a65bb9a4a4b92f"
+    "mtime": 1791219278.1263475,
+    "hash": "e500c2c574f301b32a53e5bca7e39f45"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791218582.291314,
-    "hash": "e590acfae50aa9d41023907d1b3264cf"
+    "mtime": 1791219278.1283476,
+    "hash": "ad7bbc9a5ff31f4538d8fde83a88a6b5"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2870,6 +2874,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/linked-entry-counters.md": {
     "mtime": 1790887354.3331058,
     "hash": "03cb594e5566cc404332287739ccf465"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/autoplay-request-deadline.md": {
+    "mtime": 1791219278.1233478,
+    "hash": "aa161f67b2c67c7e5a7f27739f50e212"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/life-lock-layer-fidelity.md": {
     "mtime": 1791180083.6705685,

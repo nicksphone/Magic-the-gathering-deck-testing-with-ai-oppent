@@ -6,6 +6,7 @@ import { parseBatchJobStatus, parseSimulationCoverage } from "./simulation-contr
 
 const configuredApi = import.meta.env.VITE_API_BASE_URL;
 const API = apiBase(configuredApi);
+const LONG_REQUEST_TIMEOUT_MS = 600000;
 
 export const API_BASE = API;
 
@@ -256,7 +257,10 @@ export const api = {
     ).then(parseLegalMoves),
   act: (matchId: string, player_id: number, action: Record<string, unknown>, write?: MatchWrite) =>
     matchReq(`/matches/${matchId}/action`, { method: "POST", headers: writeHeaders(write), body: JSON.stringify({ player_id, action }) }),
-  autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => matchReq(`/matches/${matchId}/autoplay?ticks=${ticks}`, { method: "POST", headers: writeHeaders(write) }),
+  // Master planning can outlast the ordinary read/manual-action deadline.
+  autoplay: (matchId: string, ticks = 1, write?: MatchWrite) => matchReq(`/matches/${matchId}/autoplay?ticks=${ticks}`, {
+    method: "POST", headers: writeHeaders(write), signal: AbortSignal.timeout(LONG_REQUEST_TIMEOUT_MS),
+  }),
   sideboard: (matchId: string, player_id: number, cards_out: DeckItem[], cards_in: DeckItem[], write?: MatchWrite) =>
     matchReq(`/matches/${matchId}/sideboard`, {
       method: "POST",
@@ -274,7 +278,7 @@ export const api = {
   simulateBatch: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000) =>
     req("/simulate/batch", {
       method: "POST",
-      signal: AbortSignal.timeout(600000),
+      signal: AbortSignal.timeout(LONG_REQUEST_TIMEOUT_MS),
       body: JSON.stringify({ deck_a, deck_b, matches, difficulty, max_ticks }),
     }),
   startSimulateBatchJob: (deck_a: DeckItem[], deck_b: DeckItem[], matches: number, difficulty: string, max_ticks = 3000, startKey?: string) =>

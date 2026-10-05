@@ -1,5 +1,16 @@
 # Changelog
 
+## Autoplay Deadline And Rejected Key Prototype - 2026-10-05
+
+- Give autoplay the existing bounded long-request timeout rather than the
+  thirty-second read deadline; preserve write headers, validation and recovery.
+- Add an actual API-client deadline test; frontend unit tests, lint/build pass.
+- Reject a direct score-key encoder despite faster key creation: the retained
+  complete decision improved only marginally. Preserve failed/corrected checks
+  and evidence without adding prototype code to production.
+- AI planning remains slow; background progress/cancellation and uncertain-write
+  recovery under long network failures still need broader release validation.
+
 ## Continuous Source Query Batch - 2026-10-05
 
 - Share ordered battlefield sources, position maps and printed-ability activity
