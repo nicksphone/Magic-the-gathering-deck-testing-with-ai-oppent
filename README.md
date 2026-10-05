@@ -1,11 +1,12 @@
 # MTG Deck Testing Lab
 
-The next isolated backend candidate shares casting/activation life and creature
+The shared engine applies recognized casting/activation life and creature
 sacrifice prohibitions across payment paths, preserves other payment contexts,
 and fixes actual source sacrifice for generic creature costs. A full-gate
 selection regression was repaired; the latest source passes 292 selected checks,
-including six HTTP/SQLite cases and both source/fodder payment cases. A fresh
-complete gate is required; this candidate is not live. See
+including six HTTP/SQLite cases and both source/fodder payment cases. Its exact
+runtime passes 8,053 tests in all 326 files with 634 verified source/fixture
+hashes, and the complete browser harness in all three BO3 controller modes. See
 [scope and evidence](docs/testing/contextual-cost-prohibitions.md).
 
 The shared rules engine repairs printed life restrictions after their

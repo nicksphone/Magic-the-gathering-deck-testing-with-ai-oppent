@@ -1,7 +1,7 @@
 # Contextual Life and Sacrifice Costs
 
-Status: unpublished backend candidate. Full latest-source, browser and natural
-game qualification remain required before publication.
+Status: exact-source backend/browser qualification passed. Broader cost and
+strategic/human choice coverage remain open.
 
 ## Shared Rules
 
@@ -50,8 +50,6 @@ on those cards.
   query regressions. Full latest-source qualification remains open; earlier
   complete gates cannot certify this later runtime.
 
-## Remaining Acceptance
-
 ## Full-Gate Selection Follow-up
 
 The first full gate exposed an existing default-choice contract: when another
@@ -61,14 +59,19 @@ but changed that default. The corrected shared payment stably orders the source
 after other candidates, without forbidding self-sacrifice when necessary.
 Both-seat canonical Seer fixtures verify both choices. The unchanged existing
 legal-move regression and six paid HTTP/recovery cases also pass; the latest
-selection passes 292 checks across ten files. This newer source requires a fresh
-full gate; the prior 495 checks and failing full run do not certify it. Explicit
-strategic/human sacrifice selection remains outside this automatic-choice repair.
+selection passes 292 checks across ten files. A fresh complete gate then passes
+8,053 tests in all 326 files, each assigned exactly once, with all 634 source and
+fixture hashes verified across four initially empty-database copies. The complete
+Chromium harness passes all three natural BO3 controller modes. Frontend
+test/lint/build gates pass on unchanged frontend source. The earlier full run's
+8,050 passes and one failure are retained as failed evidence, not substituted for
+the repaired gate. Explicit strategic/human sacrifice selection remains outside
+this automatic-choice repair.
 
 ## Remaining Acceptance
 
-Run the complete latest-source backend gate and browser/action integration;
-retain deterministic game/decision evidence where these families are exercised.
+Keep exact-source backend/browser qualification for subsequent changes; retain
+deterministic game/decision evidence where these families are exercised.
 Conditional prohibitions, broader costs, granted/rewritten printed semantics and
 optimal sacrifice/life-resource strategy remain open. Land-entry, ward and combat
 payment contexts must not be accidentally treated as spell/activation costs.

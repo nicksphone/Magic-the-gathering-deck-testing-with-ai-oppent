@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased Candidate - Contextual costs and source sacrifice
+## 2026-10-05 - Contextual costs and source sacrifice
 
 - Share recognized casting/activation life and creature-sacrifice prohibitions
   across mana planning and payment; preserve other payment contexts, zero life
@@ -12,7 +12,9 @@
 - Repair the full-gate selection regression: default generic sacrifice prefers
   another eligible creature, while retaining legal self-sacrifice when needed.
   Latest source passes 292 selected checks, including both canonical choices
-  and the existing legal-move regression. Fresh full qualification is required.
+  and the existing legal-move regression. Exact repaired runtime passes 8,053
+  tests in all 326 files/634 verified source hashes and the full browser harness
+  with all three BO3 controller modes. Deliberate payment choices remain open.
 
 ## 2026-10-05 - Effective printed life restrictions and query performance
 

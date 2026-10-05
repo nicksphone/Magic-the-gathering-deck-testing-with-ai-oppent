@@ -2,15 +2,17 @@
 
 ## Current Priority: Backend First
 
-- [ ] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
+- [x] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
   Batch casting/activation life and sacrifice prohibitions, effective-source
   suppression, Phyrexian payment branches, exhaustive/mixed costs and supported
   symbol-free activations. Repair actual payment when a generic sacrifice can
   consume the ability source. Initial selection: 495 checks; the subsequent full
   gate exposes a default-selection regression. Preserve other-creature preference
   without forbidding legal self-sacrifice; latest source passes 292 selected
-  checks, including six HTTP/SQLite cases. Run a fresh exact-source full/browser
-  gate. Conditional cost rules and optimal resource strategy remain open.
+  checks, including six HTTP/SQLite cases. Exact-source qualification then passes
+  8,053 tests in all 326 files/634 verified hashes and the full browser gate in
+  all three BO3 controller modes. Conditional costs, deliberate activation
+  resource choices and optimal resource strategy remain open.
 
 - [x] Qualify [life conversion and beneficiary planning](docs/testing/life-conversion-planning.md).
   Batch shared static replacement admission/resolution, affected-player ordering,
