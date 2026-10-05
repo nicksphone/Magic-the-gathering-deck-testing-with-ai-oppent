@@ -20,7 +20,11 @@ Chromium flows covering both seats, zero-hit acknowledgement, qualifying reveal,
 backend restart and browser reload. Canonical records and provenance live in
 `backend/tests/fixtures/activated_top_selection/`.
 
-Run `frontend/tests/run-activated-top-selection.sh` from an isolated source copy,
-with `MTG_TEST_PYTHON` and `MTG_FRONTEND_DEPS` if dependencies are elsewhere.
-The wrapper uses local disposable SQLite, loopback test ports and verified NFS
-evidence storage; it does not run against the live match database.
+Run `bash frontend/tests/run-activated-top-selection.sh` from a normal checkout,
+with `MTG_TEST_PYTHON` and `MTG_FRONTEND_DEPS` if dependencies are elsewhere. The
+wrapper copies source without databases/dependency symlinks, uses local disposable
+SQLite and loopback ports, and verifies NFS evidence storage. It fails closed on
+occupied ports or unavailable NFS unless an explicit evidence root is supplied.
+Hosted CI supplies an ephemeral artifact root deliberately. The ordinary browser
+gate stops its owned services, then runs this independent restart/reload gate.
+No live match database is used.

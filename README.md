@@ -74,6 +74,15 @@ Implementation scopes and remaining limits:
 
 ## Current Features
 
+- [Canonical tactical metadata](docs/testing/mechanic-metadata.md) includes versioned clause/face evidence,
+  source spans, input hashes and explicit unknown semantics. Legacy tags are
+  unchanged; this does not certify execution support or assess card quality.
+  Existing knowledge rows are not automatically backfilled.
+- [Training environment groundwork](docs/testing/training-environment.md): a
+  deterministic in-memory adapter with private observations, checked complete
+  actions, explicit choice prompts, terminal rewards and versioned snapshots.
+  It currently uses supported built-in decks and is **not a trained neural AI**.
+
 - [AI observation and utility boundary](docs/testing/ai-information.md): private
   decision copies exclude unseen opposing hands and uninspected library metadata;
   owned inspection choices and privately persisted submitted deck composition

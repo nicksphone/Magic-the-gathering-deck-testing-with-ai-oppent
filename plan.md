@@ -2,8 +2,8 @@
 
 ## Current Execution Order
 
-1. Finish repeatable inspection CI and dedicated Cathar browser acceptance; retain
-   the qualified composed rules batch and saved-match restoration evidence.
+1. Finish dedicated Cathar browser acceptance and natural-game mana/selection
+   defects; retain the qualified rules batch and saved-match restoration evidence.
 2. Analyze new natural-game deployment traces, integrate verified corpus readiness
    and mechanic metadata, then qualify the training-environment adapter. Preserve
    hidden-information boundaries and do not force matchup win rates.
@@ -17,6 +17,13 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Wire self-isolating private-inspection restart/reload checks into browser
+  CI. Normal-checkout run passes eight HTTP and four browser cases; five harness
+  regression groups cover occupied ports, missing NFS and caller preservation.
+- [x] Add deterministic training-environment groundwork and versioned canonical
+  mechanic metadata. Composed gates pass 323 and 161 checks respectively. Complete
+  neural action encoding, datasets, learned policies, custom-deck training and
+  broad strategic acceptance remain open; this is not a trained model.
 - [x] Composed acceptance: 595 delta checks and complete browser gate, exit 0,
   466 PASS lines including restart, sideboard and all three BO3 control modes.
   These are bounded correctness/flow checks, not expert strategic validation.

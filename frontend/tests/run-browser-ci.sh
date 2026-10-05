@@ -9,6 +9,7 @@ if ! flock -n 9; then
 fi
 
 python_bin="${MTG_TEST_PYTHON:-$PWD/backend/.venv/bin/python}"
+if [[ ! -x "$python_bin" && -z "${MTG_TEST_PYTHON:-}" ]]; then python_bin=$(command -v python3); fi
 if [[ ! -x "$python_bin" ]]; then
   echo "Browser CI requires backend/.venv/bin/python or MTG_TEST_PYTHON" >&2
   exit 1
@@ -193,3 +194,16 @@ echo 'Browser CI: natural human BO3'
 (cd frontend && timeout 240s node tests/browser-human-bo3.mjs)
 echo 'Browser CI: natural human-vs-human BO3'
 (cd frontend && MTG_HUMAN_BO3_OPPONENT=human timeout 360s node tests/browser-human-bo3.mjs)
+
+echo 'Browser CI: stopping ordinary harness before independent Officer restart flows'
+for pid in "$backend_pid" "$frontend_pid" "$browser_pid"; do
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+done
+backend_pid='' frontend_pid='' browser_pid=''
+# Hosted CI explicitly opts into ephemeral evidence; local runs still require NFS.
+if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_OFFICER_EVIDENCE_ROOT:-}" ]]; then
+  export MTG_OFFICER_EVIDENCE_ROOT="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-officer-evidence"
+fi
+MTG_TEST_PYTHON="$python_bin" MTG_CHROME="$browser" \
+  MTG_FRONTEND_DEPS="$PWD/frontend" bash frontend/tests/run-activated-top-selection.sh

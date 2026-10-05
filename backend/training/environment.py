@@ -1,0 +1,401 @@
+"""Deterministic, in-memory consumer boundary around the authoritative engine."""
+from copy import deepcopy
+from hashlib import sha256
+import json
+from pathlib import Path
+
+from pydantic import TypeAdapter, ValidationError
+
+from ai.information import decision_view, is_unknown
+from api_contracts import Action
+from card_data.fallback_cards import fallback_card_payload
+from decks.builtin_decks import BUILTIN_DECKS
+from game_state.serializers import (
+    deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot,
+)
+from game_state.state import MatchFactory, pregame_actor
+from rules_engine.action_validation import ActionRejected, checked_action
+from rules_engine.engine import RulesEngine
+
+
+VERSION = 'mtg.training.v1'
+ACTION_PREFIX = 'mtg.action.v1:'
+_ACTION = TypeAdapter(Action)
+_INPUT_ERRORS = (ValidationError, ValueError, TypeError, KeyError, IndexError, AttributeError)
+# Prompts are intentionally a partial surface, never engine continuation payloads.
+_PROMPT_FIELDS = frozenset({
+    'type', 'card_id', 'card_name', 'ability_index', 'ability_label', 'mana_cost',
+    'from_exile', 'from_library', 'from_graveyard', 'selected_face_index',
+    'entry_choice', 'graveyard_permission_key', 'return_card_id', 'x_value',
+    'kind', 'options', 'count', 'min_count', 'label', 'option_labels',
+    'option_type_lines', 'defenders', 'attackers', 'blockers', 'legal_blocks',
+    'targets', 'target_hints', 'cost_options', 'outputs', 'stack_id',
+    'target_card_id', 'target_player', 'trigger_order', 'replacement_source_id',
+    'accept', 'cost_text', 'payment_options', 'activation_costs', 'hybrid_symbols',
+    'ability_x_cost',
+})
+_SIMPLE = frozenset({
+    'pass_priority', 'keep_hand', 'mulligan', 'play_land', 'foretell',
+    'choose_replacement', 'choose_trigger_order', 'choose_trigger_target',
+    'choose_optional_effect',
+})
+
+
+def _json(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+def _digest(value):
+    return sha256(_json(value).encode('utf-8')).hexdigest()
+
+
+def _action(value):
+    if not isinstance(value, dict):
+        raise ActionRejected('Action must be an object')
+    try:
+        return _ACTION.validate_python(value).model_dump(exclude_none=True)
+    except _INPUT_ERRORS as exc:
+        raise ActionRejected(str(exc)) from exc
+
+
+def encode_action(action):
+    """Reversible canonical JSON, including ordered variable-length selections."""
+    return ACTION_PREFIX + _json(_action(action))
+
+
+def decode_action(identifier):
+    if not isinstance(identifier, str) or not identifier.startswith(ACTION_PREFIX):
+        raise ActionRejected('Unknown action encoding version')
+    try:
+        action = _action(json.loads(identifier[len(ACTION_PREFIX):]))
+    except _INPUT_ERRORS as exc:
+        raise ActionRejected(str(exc)) from exc
+    if encode_action(action) != identifier:
+        raise ActionRejected('Action ID must use canonical encoding')
+    return action
+
+
+def _engine_hash():
+    root = Path(__file__).resolve().parents[1]
+    files = [root / 'api_contracts.py', root / 'decks/builtin_decks.py']
+    for directory in ('rules_engine', 'effects', 'game_state', 'ai', 'card_data', 'training'):
+        files.extend(path for path in (root / directory).rglob('*')
+                     if path.suffix in {'.py', '.json'})
+    digest = sha256()
+    for path in sorted(files):
+        digest.update(str(path.relative_to(root)).encode('ascii') + b'\0')
+        digest.update(path.read_bytes() + b'\0')
+    return digest.hexdigest()
+
+
+def _deck(name):
+    if name not in BUILTIN_DECKS:
+        raise ValueError('Use an existing built-in deck name; custom metadata is not accepted')
+    rows = []
+    for line in BUILTIN_DECKS[name].strip().splitlines():
+        quantity, card_name = line.strip().split(' ', 1)
+        metadata = fallback_card_payload(card_name)
+        if not metadata or not metadata.get('scryfall_id') or not metadata.get('type_line'):
+            raise ValueError(f'No canonical offline metadata for {card_name}')
+        rows.append({**deepcopy(metadata), 'card_name': card_name, 'quantity': int(quantity)})
+    return rows
+
+
+def _seat(seat):
+    if type(seat) is not int or seat not in (1, 2):
+        raise ActionRejected('Seat must be integer 1 or 2')
+
+
+class TrainingEnvironment:
+    """Single-process adapter. Snapshots/provenance are private evaluator data."""
+
+    def __init__(self):
+        self._rules = RulesEngine()
+        self._state = None
+        self._provenance = None
+        self._steps = 0
+
+    def _ready(self):
+        if self._state is None:
+            raise ValueError('Call reset or restore first')
+
+    def reset(self, deck_a='Mono Red Aggro', deck_b='Blue Control', *, seed):
+        if type(seed) is not int:
+            raise ValueError('An explicit integer seed is required')
+        decks = [_deck(deck_a), _deck(deck_b)]
+        provenance = {
+            'version': VERSION, 'action_version': ACTION_PREFIX,
+            'seed': seed, 'deck_names': [deck_a, deck_b],
+            'deck_hashes': [_digest(rows) for rows in decks],
+            'engine_hash': _engine_hash(),
+            'metadata_source': 'card_data/builtin_oracle_seed.json',
+        }
+        state = MatchFactory.from_decks(*decks, seed=seed)
+        state.id = _digest(provenance)
+        # Policies, not engine defaults, must resolve supported private choices.
+        state.mechanic_choice_players = {1, 2}
+        state.replacement_choice_required = True
+        state.replacement_choice_players = {1, 2}
+        state.trigger_order_choice_required = True
+        state.trigger_order_choice_players = {1, 2}
+        self._state, self._provenance, self._steps = state, provenance, 0
+        return self.observe(self.acting_seat)
+
+    @property
+    def acting_seat(self):
+        self._ready()
+        state = self._state
+        if state.winner is not None:
+            return None
+        if state.pending_mechanic_choice:
+            return state.pending_mechanic_choice['player_id']
+        if state.pending_trigger_order:
+            return int(state.pending_trigger_order['current_controller'])
+        if state.pending_replacement_choice:
+            return state.pending_replacement_choice['player_id']
+        return pregame_actor(state) if state.pregame_pending else state.priority_player
+
+    @property
+    def terminated(self):
+        self._ready()
+        return self._state.winner is not None
+
+    @property
+    def rewards(self):
+        self._ready()
+        winner = self._state.winner
+        return {seat: (0 if winner not in (1, 2) else 1 if seat == winner else -1)
+                for seat in (1, 2)}
+
+    def _view(self, seat):
+        self._ready()
+        _seat(seat)
+        state = deepcopy(self._state)
+        moves = self._rules.legal_moves(state, seat) if seat == self.acting_seat else []
+        return decision_view(state, seat, moves)
+
+    def prompts(self, seat=None):
+        """Partial legal source/choice descriptions, NOT a finite action space."""
+        seat = self.acting_seat if seat is None else seat
+        if seat is None:
+            return []
+        _, moves = self._view(seat)
+        result = []
+        for move in moves:
+            if move['type'].endswith('_restricted'):
+                continue
+            hint = {key: deepcopy(value) for key, value in move.items() if key in _PROMPT_FIELDS}
+            choices = {
+                'cast_spell': ['cost_choice.id', 'targets (including modes/X if applicable)',
+                               'hybrid/resource/additional payments if applicable'],
+                'choose_mechanic': ['exactly one of card_ids, choice_id, damage_assignment'],
+                'attack': ['attackers', 'attack_targets', 'hybrid_choices if applicable'],
+                'block': ['blocks', 'hybrid_choices if applicable'],
+                'activate_mana_ability': ['color'],
+                'activate_ability': ['targets and payment_choices if applicable'],
+                'activate_loyalty': ['targets including X if applicable'],
+                'crew': ['crew_card_ids'], 'equip': ['target_card_id'],
+            }.get(move['type'], [] if move['type'] in _SIMPLE else ['Complete action contract'])
+            result.append({'hint': hint, 'required_choices': choices})
+        return result
+
+    def observe(self, seat):
+        """JSON allowlist over decision_view, with no private snapshot fields."""
+        view, _ = self._view(seat)
+        players = {}
+        known = {}
+        for pid, player in view.players.items():
+            players[str(pid)] = {
+                'life': player.life, 'poison': player.poison, 'counters': dict(player.counters),
+                'hand_count': len(player.hand), 'library_count': len(player.library),
+                'mana_pool': dict(player.mana_pool),
+                'battlefield': list(player.battlefield), 'graveyard': list(player.graveyard),
+                'exile_count': len(player.exile),
+            }
+            if pid == seat:
+                players[str(pid)]['hand'] = list(player.hand)
+        for cid, card in view.cards.items():
+            if not is_unknown(card):
+                known[cid] = {**serialize_card_view(view, cid), 'zone': card.zone.value}
+        # Only a choice tag/owner crosses here; continuations stay in snapshots.
+        pending = (view.pending_mechanic_choice or view.pending_trigger_order
+                   or view.pending_replacement_choice)
+        return json.loads(_json({
+            'version': VERSION, 'seat': seat, 'acting_seat': self.acting_seat,
+            'turn': view.turn, 'step': view.step.value, 'active_seat': view.active_player,
+            'priority_seat': view.priority_player, 'pregame_pending': view.pregame_pending,
+            'mulligan_count': {str(pid): count for pid, count in view.mulligan_count.items()},
+            'players': players, 'known_cards': known,
+            'stack': [{'id': item.id, 'source_card_id': item.source_card_id,
+                       'controller': item.controller, 'label': item.label,
+                       'targets': list(item.targets)} for item in view.stack],
+            'attackers': list(view.attackers), 'blocks': deepcopy(view.blocks),
+            'pending_choice': {'kind': pending.get('kind', pending.get('phase', 'replacement')),
+                               'seat': self.acting_seat} if pending else None,
+            'winner': view.winner,
+        }))
+
+    def _checked(self, action, seat):
+        self._ready()
+        _seat(seat)
+        if seat != self.acting_seat:
+            raise ActionRejected('Not the acting seat, or episode is terminal')
+        action = decode_action(action) if isinstance(action, str) else _action(action)
+        try:
+            self._require_choices(action, seat)
+            return action, checked_action(self._state, self._rules, seat, action)
+        except _INPUT_ERRORS as exc:
+            raise ActionRejected(str(exc)) from exc
+
+    def _require_choices(self, action, seat):
+        """Close known legacy defaults, while leaving execution to checked_action."""
+        from rules_engine.action_validation import require
+        kind = action['type']
+        if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
+            require(action.get('color') is not None, 'Missing required choice: color')
+        if kind == 'attack':
+            require(set(action.get('attack_targets', {})) == set(action['attackers']),
+                    'Missing required choice: attack_targets for each attacker')
+        if kind in {'activate_ability', 'activate_loyalty', 'activate_mana_ability'}:
+            from rules_engine.costs import parse_activated_cost
+            state = deepcopy(self._state)
+            matching = [move for move in self._rules.legal_moves(state, seat)
+                        if move['type'] == kind and move.get('card_id') == action['card_id']
+                        and move.get('ability_index') == action['ability_index']]
+            require(bool(matching), 'Ability is not in current engine hints')
+            move = matching[0]
+            cost = parse_activated_cost(move.get('cost_text', move.get('mana_cost', '')))
+            require(not move.get('ability_x_cost') or action.get('targets', {}).get('x_value') is not None,
+                    'Missing required choice: targets.x_value')
+            if kind == 'activate_mana_ability':
+                from rules_engine.mana import hybrid_payment_symbols
+                require(not (cost.discard_cards or cost.sacrifice_creatures and not cost.sacrifice_source
+                             or hybrid_payment_symbols(cost.mana_cost)),
+                        'Unsupported required choices: mana ability resource/hybrid payments '
+                        'are not representable in the existing action contract')
+            else:
+                payments = action.get('payment_choices') or {}
+                require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
+                        'Missing required choice: payment_choices.discard_card_ids')
+                require(not cost.sacrifice_creatures or cost.sacrifice_source
+                        or payments.get('sacrifice_card_ids') is not None,
+                        'Missing required choice: payment_choices.sacrifice_card_ids')
+                require(not move.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
+                        'Missing required choice: hybrid_choices')
+        if kind != 'cast_spell':
+            return
+        choice = action.get('cost_choice') or {}
+        require(bool(choice.get('id')), 'Missing required choice: cost_choice.id')
+        state = deepcopy(self._state)
+        moves = self._rules.legal_moves(state, seat)
+        options = [option for move in moves if move['type'] == kind
+                   and move.get('card_id') == action['card_id']
+                   for option in move.get('cost_options', []) if option['id'] == choice['id']]
+        require(bool(options), 'Casting cost choice is not in current engine hints')
+        option = options[0]
+        require(not ('{X}' in option.get('mana_cost', '').upper() or option.get('pay_life_x')
+                     or option.get('discard_x')) or action.get('targets', {}).get('x_value') is not None,
+                'Missing required choice: targets.x_value')
+        require(not option.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
+                'Missing required choice: hybrid_choices')
+        require(not option.get('resource_payment_candidates') or action.get('resource_payment') is not None,
+                'Missing required choice: resource_payment')
+        require(not (option.get('discard_cards') or option.get('discard_x'))
+                or choice.get('discard_card_ids') is not None,
+                'Missing required choice: cost_choice.discard_card_ids')
+        require(not option.get('sacrifice_creatures') or choice.get('sacrifice_card_ids') is not None,
+                'Missing required choice: cost_choice.sacrifice_card_ids')
+        require(not option.get('exile_graveyard') or action.get('escape_exile_ids') is not None,
+                'Missing required choice: escape_exile_ids')
+        card = state.cards[action['card_id']]
+        require(card.layout not in {'modal_dfc', 'adventure', 'split'}
+                or action.get('selected_face_index', action.get('targets', {}).get('selected_face_index')) is not None,
+                'Missing required choice: selected_face_index')
+
+    def lookup(self, action, seat=None):
+        """Validate a complete proposal by trial execution on an engine copy."""
+        seat = self.acting_seat if seat is None else seat
+        action, _ = self._checked(action, seat)
+        return {'id': encode_action(action), 'action': deepcopy(action)}
+
+    def action_mask(self, actions, seat=None):
+        """Mask only the consumer's finite proposals; never claim exhaustive moves."""
+        mask = []
+        for action in actions:
+            try:
+                self.lookup(action, seat)
+                mask.append(True)
+            except ActionRejected:
+                mask.append(False)
+        return mask
+
+    def simple_actions(self):
+        """Convenience subset; no target, payment, attack or choice guesses."""
+        result = {}
+        for prompt in self.prompts():
+            hint = prompt['hint']
+            if hint['type'] not in _SIMPLE:
+                continue
+            # Descriptions are not action input, even for the simple subset.
+            fields = {'type', 'card_id', 'from_exile', 'from_graveyard',
+                      'graveyard_permission_key', 'selected_face_index', 'entry_choice',
+                      'replacement_source_id', 'trigger_order', 'stack_id',
+                      'target_card_id', 'target_player', 'accept'}
+            proposal = {key: value for key, value in hint.items() if key in fields}
+            try:
+                item = self.lookup(proposal)
+                result[item['id']] = item
+            except ActionRejected:
+                continue
+        return [result[key] for key in sorted(result)]
+
+    def step(self, action, seat=None):
+        seat = self.acting_seat if seat is None else seat
+        action, candidate = self._checked(action, seat)
+        # Construct the response before committing, including read-side helpers.
+        staged = TrainingEnvironment()
+        staged._state, staged._provenance = candidate, self._provenance
+        staged._steps = self._steps + 1
+        observer = staged.acting_seat or seat
+        result = {'observation': staged.observe(observer), 'rewards': staged.rewards,
+                  'terminated': staged.terminated, 'acting_seat': staged.acting_seat,
+                  'action_id': encode_action(action), 'steps': staged._steps}
+        self._state, self._steps = candidate, staged._steps
+        return result
+
+    def snapshot(self):
+        """Private JSON resume envelope, never a policy observation."""
+        self._ready()
+        state = json.loads(_json(serialize_match_snapshot(self._state)))
+        return {'version': VERSION, 'provenance': deepcopy(self._provenance),
+                'steps': self._steps, 'state': state, 'state_hash': _digest(state)}
+
+    def restore(self, snapshot):
+        """Trusted local snapshots only. Validate fully before replacing state."""
+        if not isinstance(snapshot, dict) or not {'version', 'provenance', 'steps', 'state', 'state_hash'} <= snapshot.keys():
+            raise ValueError('Incomplete training snapshot envelope')
+        data = deepcopy(snapshot)
+        if data['version'] != VERSION or data['provenance']['version'] != VERSION:
+            raise ValueError('Unsupported training snapshot version')
+        if data['provenance']['engine_hash'] != _engine_hash():
+            raise ValueError('Snapshot engine/adapter/metadata differs from this checkout')
+        if data['state_hash'] != _digest(data['state']):
+            raise ValueError('Snapshot state digest mismatch')
+        if type(data['steps']) is not int or data['steps'] < 0:
+            raise ValueError('Invalid episode step count')
+        expected = [_digest(_deck(name)) for name in data['provenance']['deck_names']]
+        actual = [_digest(data['state']['starting_decks'][str(pid)]) for pid in (1, 2)]
+        if expected != actual or actual != data['provenance']['deck_hashes']:
+            raise ValueError('Snapshot deck provenance mismatch')
+        if (len(expected) != 2 or type(data['provenance']['seed']) is not int
+                or data['provenance']['action_version'] != ACTION_PREFIX
+                or data['state']['id'] != _digest(data['provenance'])):
+            raise ValueError('Snapshot episode provenance mismatch')
+        candidate = deserialize_match_snapshot(data['state'])
+        if json.loads(_json(serialize_match_snapshot(candidate))) != data['state']:
+            raise ValueError('Snapshot does not round-trip on this engine')
+        staged = TrainingEnvironment()
+        staged._state, staged._provenance, staged._steps = candidate, data['provenance'], data['steps']
+        observation = staged.observe(staged.acting_seat or 1)
+        self._state, self._provenance, self._steps = candidate, data['provenance'], data['steps']
+        return observation

@@ -1,5 +1,19 @@
 # Changelog
 
+## Knowledge Metadata And Training Boundary - 2026-10-05
+
+- Add versioned, source-linked mechanic evidence with explicit unknowns. Preserve
+  legacy tactical tags across all 38,690 stored canonical payloads; no automated
+  gameplay-quality scores or live corpus migration.
+- Add a deterministic training environment around the actual engine, using
+  private observations, complete checked actions, explicit missing-choice errors,
+  atomic rejection, true terminal rewards and versioned snapshot provenance.
+- Composed gates: 161 metadata/consumer checks and 323 adapter/AI/input checks.
+  This is groundwork, not neural training or unrestricted card support.
+- Make the private-inspection browser harness self-isolating from a normal Git
+  checkout; reject occupied ports and require NFS or explicit hosted-CI evidence.
+  Run it after ordinary browser CI, preserving independent restart/reload coverage.
+
 ## Generic Unknown-Library Deployment Decisions - 2026-10-05
 
 - Value supported top-library deployment spells using the pilot's known submitted
