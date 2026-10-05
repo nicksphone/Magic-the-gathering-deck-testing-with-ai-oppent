@@ -1139,6 +1139,10 @@
     "mtime": 1791085212.7643213,
     "hash": "04b1964b52f1463b5837bfd0009c8ad9"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_continuous_source_queries.py": {
+    "mtime": 1791218582.2463145,
+    "hash": "0ac8cfd94866c51e703a266d04f56de0"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_combat_intents.py": {
     "mtime": 1790989911.2665408,
     "hash": "4f112cafd7538741dad932d3a8cd76b1"
@@ -2020,8 +2024,8 @@
     "hash": "058c3e648f6eb345cb0ce0ed2fae8363"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/continuous.py": {
-    "mtime": 1791216392.7532337,
-    "hash": "9dc9cca8e49ae1a32492cc3d09b00ce2"
+    "mtime": 1791218582.2453146,
+    "hash": "635ddfb451a8584b44efca3feca8193f"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/land_types.py": {
     "mtime": 1791125464.9499314,
@@ -2628,16 +2632,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791217936.6248493,
-    "hash": "a85957f401b7b13e8a96958fcaf4ca8d"
+    "mtime": 1791218582.287314,
+    "hash": "7560078a9d76f054686aac2ea8a06960"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791217936.6258492,
-    "hash": "9bd0a7c9c323fd2e6a5bbc4e2805066e"
+    "mtime": 1791218582.289314,
+    "hash": "fa6ca9168997df2504a65bb9a4a4b92f"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791217936.627849,
-    "hash": "a482804009b1016abf1a0327ffc879c0"
+    "mtime": 1791218582.291314,
+    "hash": "e590acfae50aa9d41023907d1b3264cf"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2742,6 +2746,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/combat-coverage-diagnostics.md": {
     "mtime": 1790985642.1360493,
     "hash": "6be3f1b108aaf7f5cec0d32bb51ef29e"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/continuous-source-reuse.md": {
+    "mtime": 1791218582.286314,
+    "hash": "8aa062b233eacca6dc1c12a0f4928daa"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/opaque-selection-horizon.md": {
     "mtime": 1791211202.3803916,

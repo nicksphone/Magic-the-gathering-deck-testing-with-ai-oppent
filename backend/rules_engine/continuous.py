@@ -495,20 +495,15 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     from rules_engine.land_types import printed_land_abilities_lost
     if printed_land_abilities_lost(state, card):
         out.clear()
-    ability_losses = _printed_ability_loss_sources(state)
     modifiers = _resolved_keyword_modifiers(card)
     modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
                      for stamp, keyword in counter_grants)
     modifiers.sort(key=lambda effect: effect['timestamp'])
     modifier_index = 0
-    for src_id in _all_battlefield_ids(state):
-        src = state.cards.get(src_id)
-        if not src:
-            continue
+    for src_id, src, source_active in _continuous_sources(state):
         while modifier_index < len(modifiers) and modifiers[modifier_index]['timestamp'] <= effect_timestamp(src):
             _apply_keyword_modifier(out,modifiers[modifier_index])
             modifier_index += 1
-        source_active = not printed_abilities_suppressed(state, src_id, losses=ability_losses)
         if source_active:
             out.update(_attached_effects(state, src, card)[2])
             out.update(_conditional_static_effects(state, src, card)[2])
@@ -534,11 +529,8 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         _apply_keyword_modifier(out,modifier)
     # "Can't have" is an override in the keyword layer, not a timestamped
     # ordinary removal. Apply it after all grants and normal removals.
-    for src_id in _all_battlefield_ids(state):
-        src = state.cards.get(src_id)
-        if not src:
-            continue
-        if printed_abilities_suppressed(state, src_id, losses=ability_losses):
+    for src_id, src, source_active in _continuous_sources(state):
+        if not source_active:
             continue
         for scope, other_only, subject, removed in _iter_keyword_cant_removals(src):
             if _scope_controller(src.controller, scope, card.controller):
@@ -657,11 +649,8 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         base_t = dynamic_t
     # Minimal layer support: base PT setters from static text.
     setters = []
-    for src_id in _all_battlefield_ids(state):
-        src = state.cards.get(src_id)
-        if not src:
-            continue
-        setter_source = _ability_layer_continuation_source(src) if printed_abilities_suppressed(state, src_id, losses=ability_losses) else src
+    for src_id, src, source_active in _continuous_sources(state):
+        setter_source = src if source_active else _ability_layer_continuation_source(src)
         if setter_source is None:
             continue
         for scope, other_only, subject, p_set, t_set in _iter_pt_setters(setter_source):
@@ -767,12 +756,8 @@ def _continuous_pt_delta(state, card_id: str) -> tuple[int, int]:
         return (0, 0)
     p_bonus = 0
     t_bonus = 0
-    ability_losses = _printed_ability_loss_sources(state)
-    for src_id in _all_battlefield_ids(state):
-        src = state.cards.get(src_id)
-        if not src:
-            continue
-        if printed_abilities_suppressed(state, src_id, losses=ability_losses):
+    for src_id, src, source_active in _continuous_sources(state):
+        if not source_active:
             continue
         attached_p, attached_t, _, _ = _attached_effects(state, src, card)
         p_bonus += attached_p
@@ -1112,6 +1097,16 @@ def _battlefield_card_matches_selector(card, selector: str, *, state=None) -> bo
     return _has_subtype(card, s, state=state)
 
 
+@scoped_query
+def _continuous_sources(state):
+    """Reuse ordered source activity only inside immutable rules queries."""
+    losses = _printed_ability_loss_sources(state)
+    return tuple((cid, source, not printed_abilities_suppressed(state, cid, losses=losses))
+                 for cid in _all_battlefield_ids(state)
+                 if (source := state.cards.get(cid)))
+
+
+@scoped_query
 def _all_battlefield_ids(state) -> list[str]:
     ids: list[str] = []
     battlefield_index = _battlefield_position_map(state)
@@ -1128,6 +1123,7 @@ def _all_battlefield_ids(state) -> list[str]:
     return ids
 
 
+@scoped_query
 def _battlefield_position_map(state) -> dict[str, int]:
     positions: dict[str, int] = {}
     position = 0

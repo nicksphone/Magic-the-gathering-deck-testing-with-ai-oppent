@@ -23,6 +23,9 @@ affected-suite and retained-decision validation; these are not new full-suite
 or expert-play certifications.
 The shared [lethal-check ordering](docs/testing/lethal-query-order.md) also avoids
 unnecessary indestructible queries without changing destruction rules.
+[Continuous source reuse](docs/testing/continuous-source-reuse.md) shares ordered
+sources and suppression flags only inside immutable queries; later mutations
+receive fresh views. Interactive AI latency remains unfinished.
 
 Implementation scopes and remaining limits:
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)

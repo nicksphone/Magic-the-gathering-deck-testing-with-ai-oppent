@@ -1,5 +1,15 @@
 # Changelog
 
+## Continuous Source Query Batch - 2026-10-05
+
+- Share ordered battlefield sources, position maps and printed-ability activity
+  within existing immutable queries. Preserve target conditions, timestamps,
+  ability-loss continuation and fresh results after mutations.
+- 3,545 affected checks across 85 files pass, including eight new source/view
+  boundary cases. No state-based actions or AI response branches are removed.
+- Retained complete action/state/17-move parity: 30.00 seconds versus archived
+  37.55 seconds. This is one comparison, not expert-play or latency certification.
+
 ## Lethal Query Ordering And Tactical Review - 2026-10-05
 
 - Evaluate indestructible only when positive-toughness creatures have lethal

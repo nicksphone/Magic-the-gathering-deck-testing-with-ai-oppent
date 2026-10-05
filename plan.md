@@ -11,6 +11,11 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Continuous source ordering/activity reuse: 3,545 affected checks across 85
+  files pass; source departure, timestamp/control changes and defensive views
+  have explicit tests. Retained full action/state parity: 30.00 seconds versus
+  archived 37.55; nested forecasting and interactive latency remain open.
+  See [scope](docs/testing/continuous-source-reuse.md).
 - [x] Lethal-check query ordering: 2,422 affected checks across 58 files pass;
   undamaged/nonlethally damaged creatures avoid indestructible queries, while
   zero toughness and deathtouch semantics remain covered. Retained full decision
