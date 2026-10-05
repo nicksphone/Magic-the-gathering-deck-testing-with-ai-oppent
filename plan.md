@@ -2,48 +2,37 @@
 
 ## Current Execution Order
 
-1. Complete the corrected frozen integration gate for runtime `91b5dff`: all recursive
-   backend tests exactly once in isolated source copies, full browser flows,
-   frontend tests/lint/build and unchanged source hashes. Do not rerun already
-   passing predecessors merely to produce new counts.
-   Initial runtime `0efefe8` finished with three lightweight-card-view failures;
-   the shared fix passes 159 affected checks. Its failed evidence is preserved,
-   not treated as a green gate. Corrected full/backend/browser checks are running.
-2. Fix any integration failures with focused regressions, then recheck the
-   affected suites before the combined gate. Preserve failing evidence.
-3. Promote the consolidated runtime to main, update current feature status and
-   graph, preserve local user data and verify the live reload/recovery path.
-4. Review the existing retained AI mistakes across archetypes. Use targeted
-   reconstructed positions before scheduling another expensive matchup matrix;
-   repeats demonstrate determinism, not independent strength samples.
-5. Continue the original rules/AI/release gates below, including unsupported
-   conditional/compound clauses, affordable multi-action plans, restart behavior,
-   network posture and competitive-quality evidence. Do not label these complete
-   based on parser coverage or the integration milestone.
+1. Optimize repeated read-only AI scoring using the existing query scope.
+   Validate score equality, mutation isolation and complete decisions from the
+   retained slow Tribal position before claiming a latency improvement.
+2. Reduce repeated nested stack forecasting/state-based work without pruning
+   legal responses, using retained positions and focused rules/AI regressions.
+3. Review the existing natural timing/graveyard runs when they finish. Do not
+   replace live runs or queue a new broad matrix for every supported clause.
+4. Continue the original rules/AI/release gates below: conditional/compound
+   semantics, affordable multi-action planning, restart behavior, network posture
+   and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
-- [x] Resource payments/events and AI opportunity milestone integrated into main;
-  full backend/browser gates and retained seeded reconstructions pass.
-- [x] Ordinary/limited graveyard and announced-method implementations have focused
-  both-seat HTTP/browser coverage. Frozen announced-method runtime `0424b7b`
-  passes 8,848 tests / 357 files / 714 hashes and the complete browser gate.
-- [x] Fixed unconditional color/type modifiers have real payment, controller,
-  multicolor, prototype, devoid, suppression and restart regressions. Final
-  focused rerun passes 84 checks; the broader selection passes 268 (overlapping).
-- [ ] Combined integration and main deployment acceptance remain outstanding.
-- [ ] Broader rules semantics, expert AI and original release requirements remain
-  unfinished. Consult the gates below rather than treating old patch notes as
-  new mandatory qualification cycles.
+- [x] Qualified resource payments/events and AI opportunity milestone on main.
+- [x] Consolidated timing/graveyard/announced-method/color-cost runtime on main.
+  Frozen `91b5dff`: 8,878 backend tests, 359 recursive files exactly once,
+  738 source hashes in four initially DB-free copies; complete browser suite and
+  frontend unit/lint/build pass. Initial failed gate is preserved, not counted.
+- [x] Copied-database recovery: eight matches restore, saved deck rows unchanged.
+  Live backend automatically reloads and health passes; user data is preserved.
+- [ ] Original broader rules, expert AI and release requirements remain open.
 
-See [engineering workflow](docs/engineering-workflow.md) for validation policy.
+See [integration evidence](docs/testing/backend-consolidation.md) and
+[engineering workflow](docs/engineering-workflow.md). Historical qualification
+notes below do not require repeating unchanged predecessor gates.
 
 ## Earlier Backend Work And Remaining Family Limits
 
-- [ ] Consolidate implemented cost, graveyard and timing work into an integration
-  milestone. Fixed color/type modifiers, actual prototype color, both-seat
-  HTTP/restart and browser flows are implemented. Finish the focused parser
-  rerun and one combined full gate; do not require a new small-sample natural
-  matrix for every independent clause. Broader unknown semantics stay explicit.
+- [x] Consolidate implemented cost, graveyard and timing work into an integration
+  milestone. The combined gate is complete and integrated into main. Fixed color/type modifiers, actual prototype color, both-seat
+  HTTP/restart and browser flows pass. Broader unknown semantics stay explicit;
+  do not require a new small-sample natural matrix for every independent clause.
   See [scope](docs/testing/announced-spell-costs.md).
 
 - [ ] Qualify announced casting-method permissions and strategic source/type

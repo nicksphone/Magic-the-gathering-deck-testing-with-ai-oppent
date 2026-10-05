@@ -1,4 +1,4 @@
-# Instant Value Windows (Candidate)
+# Instant Value Windows
 
 ## Observed defect
 
@@ -11,7 +11,7 @@ The shared control draw bias awarded the same 2.4 timing bonus during any
 opponent step as during their end step. A canonical both-seat regression
 reproduced identical upkeep and end-step biases of 7.6 before the repair.
 
-## Candidate behavior
+## Implemented Behavior
 
 - Award that timing bonus only during the opponent's end step, not their upkeep
   or the player's own end step before the opponent untaps.

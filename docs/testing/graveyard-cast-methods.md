@@ -1,4 +1,4 @@
-# Graveyard Casting Methods And Permission Opportunity (Candidate)
+# Graveyard Casting Methods And Permission Opportunity
 
 ## Implemented
 

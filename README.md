@@ -11,11 +11,11 @@ for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 
 ## Implementation Status
 
-Main includes qualified resource payments, event handling and bounded AI resource
-opportunity choices. The consolidated backend branch additionally includes
-instant-window reservation, ordinary/limited graveyard permissions, announced
-prototype/bestow checks and fixed color/type cost modifiers. Its combined full
-integration gate is running; these additions are not yet deployed to main.
+Main includes qualified resource payments/events, bounded AI resource opportunity
+and instant-window reservation, ordinary/limited graveyard permissions, announced
+prototype/bestow checks and fixed color/type cost modifiers. The consolidated
+runtime passed the full backend and browser gates and is deployed locally.
+See [integration evidence and limits](docs/testing/backend-consolidation.md).
 
 Implementation scopes and remaining limits:
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)

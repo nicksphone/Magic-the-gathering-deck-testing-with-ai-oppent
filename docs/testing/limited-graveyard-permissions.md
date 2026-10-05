@@ -1,4 +1,4 @@
-# Limited Graveyard Permissions (Candidate)
+# Limited Graveyard Permissions
 
 ## Implemented Families
 

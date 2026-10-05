@@ -1,4 +1,4 @@
-# Graveyard Play Permissions (Candidate)
+# Graveyard Play Permissions
 
 ## Implemented Families
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## Consolidated Backend Milestone - 2026-10-05
+
+- Integrate timing reservation, ordinary/limited graveyard permissions,
+  announced casting methods and fixed color/type spell costs into main.
+- Corrected runtime `91b5dff` passes 8,878 tests across all 359 recursive test
+  files, with 738 source hashes checked in four initially DB-free copies.
+- Complete browser suite passes, including natural AI, human-vs-AI and
+  human-vs-human BO3; frontend unit tests, lint and build pass.
+- Live backend auto-reloads successfully; original SQLite data and the
+  pre-existing untracked plan are preserved. No forced restart is required.
+- Retained-position read-only scoring experiment returns identical scores and
+  unchanged state with lower median scoring time. No performance patch or
+  expert-play claim follows from that microbenchmark.
+
 ## Integration Compatibility Repair
 
 - The initial combined backend gate found three failures from lightweight AI
