@@ -2,10 +2,13 @@
 
 ## Current Execution Order
 
-1. Complete the one frozen integration gate for runtime `0efefe8`: all recursive
+1. Complete the corrected frozen integration gate for runtime `91b5dff`: all recursive
    backend tests exactly once in isolated source copies, full browser flows,
    frontend tests/lint/build and unchanged source hashes. Do not rerun already
    passing predecessors merely to produce new counts.
+   Initial runtime `0efefe8` finished with three lightweight-card-view failures;
+   the shared fix passes 159 affected checks. Its failed evidence is preserved,
+   not treated as a green gate. Corrected full/backend/browser checks are running.
 2. Fix any integration failures with focused regressions, then recheck the
    affected suites before the combined gate. Preserve failing evidence.
 3. Promote the consolidated runtime to main, update current feature status and

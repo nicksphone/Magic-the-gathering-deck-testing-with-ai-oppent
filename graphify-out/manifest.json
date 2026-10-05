@@ -1304,8 +1304,8 @@
     "hash": "e1edd8baf64060df581bcf3360c0b6cd"
   },
   "/home/nick/mtg-announced-color-costs/backend/tests/test_announced_spell_costs.py": {
-    "mtime": 1791211699.2000575,
-    "hash": "e53c2fe8a79d16f39d2c7911d40bb388"
+    "mtime": 1791212719.0525842,
+    "hash": "f988d4da468bebf096248730bde66b74"
   },
   "/home/nick/mtg-announced-color-costs/backend/tests/test_deck_selection.py": {
     "mtime": 1791211406.0173945,
@@ -1880,8 +1880,8 @@
     "hash": "3b63ad83beaaeeec57b449bb23db54a2"
   },
   "/home/nick/mtg-announced-color-costs/backend/rules_engine/hooks.py": {
-    "mtime": 1791211884.3783095,
-    "hash": "caddf54b03a74f254f19a9e62093a01c"
+    "mtime": 1791212719.0515842,
+    "hash": "2d96c96a44b828903bf4993a5f36d3aa"
   },
   "/home/nick/mtg-announced-color-costs/backend/rules_engine/alternative_casts.py": {
     "mtime": 1791211405.978395,
@@ -2596,12 +2596,12 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-announced-color-costs/README.md": {
-    "mtime": 1791211939.2914937,
-    "hash": "ece3689fcb902073e29e11ce44d00801"
+    "mtime": 1791212040.792985,
+    "hash": "9ef9eb9e84467bdddb7e82bf75bb6933"
   },
   "/home/nick/mtg-announced-color-costs/plan.md": {
-    "mtime": 1791211939.3074934,
-    "hash": "1e1dbce1313398d4e67f45ccd7064061"
+    "mtime": 1791212040.7959847,
+    "hash": "357d942f7bba95ff014d2db677479504"
   },
   "/home/nick/mtg-announced-color-costs/CHANGELOG.md": {
     "mtime": 1791211939.3004935,
@@ -2618,6 +2618,10 @@
   "/home/nick/mtg-announced-color-costs/docs/ui-redesign-v2.md": {
     "mtime": 1791211406.047394,
     "hash": "2a912c281540dc80abcac61814b46900"
+  },
+  "/home/nick/mtg-announced-color-costs/docs/engineering-workflow.md": {
+    "mtime": 1791212040.8279843,
+    "hash": "e700de917aac96cad08b45a155874fab"
   },
   "/home/nick/mtg-announced-color-costs/docs/development/batch-workflow.md": {
     "mtime": 1791211406.0353942,
@@ -3148,8 +3152,8 @@
     "hash": "6f703de3cc02b20699a0544f5f3241a5"
   },
   "/home/nick/mtg-announced-color-costs/docs/testing/graveyard-cast-methods.md": {
-    "mtime": 1791211406.0413942,
-    "hash": "f1ddecb6037d18a1df91b4a73daea961"
+    "mtime": 1791212040.8289843,
+    "hash": "2ede6c57be17ab9298a46ce6de5bb714"
   },
   "/home/nick/mtg-announced-color-costs/docs/testing/foretell.md": {
     "mtime": 1791211406.0413942,

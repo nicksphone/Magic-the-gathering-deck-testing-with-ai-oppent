@@ -1,5 +1,18 @@
 # Changelog
 
+## Integration Compatibility Repair
+
+- The initial combined backend gate found three failures from lightweight AI
+  views without Oracle metadata. Shared spell-tax lookup now treats omitted
+  metadata as absent, with an explicit regression; 159 affected checks pass.
+- Eight existing matches restore against a copied live SQLite database and
+  saved deck rows remain unchanged. Original user data was not tested in place.
+- A retained Tribal upkeep position reproduces the recorded action. Profiling
+  attributes most search time to nested stack forecasting and repeated settled
+  position evaluation. This is a performance diagnosis, not a speedup claim.
+- Corrected frozen runtime `91b5dff` is undergoing full integration qualification;
+  initial failures, recovery evidence and the matching-action profile are archived.
+
 ## Qualified Resource Milestone Integrated Into Main
 
 - Fast-forwarded the qualified ff1210e runtime and its predecessors: shared
