@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+An isolated selection candidate resolves complete fixed-count look/hand/bottom
+instructions and values guaranteed masked hand counts without treating them as
+draws or inventing unseen cards. Its frozen backend passes 8,516 tests; the full
+existing browser suite and eight additional both-seat selection flows pass.
+Combined natural decision review remains open. Delve payment remains unsupported. See
+[scope and evidence](docs/testing/opaque-selection-horizon.md).
+
 An isolated mana-query candidate skips ability-suppression checks for sources
 without supported multiplier instructions. Complete backend/browser gates and
 local decision parity pass; fresh strategic review remains open. This is not yet

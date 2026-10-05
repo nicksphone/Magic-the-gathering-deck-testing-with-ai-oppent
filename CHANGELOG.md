@@ -1,5 +1,19 @@
 # Changelog
 
+## Selective Hand Acquisition (Candidate)
+
+- Shared fixed-count look/hand/bottom resolution, durable human bottom ordering
+  and masked strategic count projection; preserve non-draw semantics, counters,
+  copies, actual mana expenditure and hidden-information boundaries.
+- Repair fully paid resolution behind a standalone delve keyword; do not claim
+  delve payment support. Correct free-cast policy for fixed-count selection.
+- 528 overlapping focused checks and eight HTTP recovery cases pass. Frozen
+  runtime passes all 8,516 backend tests and the existing full browser gate;
+  eight additional both-seat selection/reload scenarios pass and join the
+  default harness. Combined natural decision review remains pending; main is
+  unchanged. Predecessor replay results are not this runtime's certification.
+  See `docs/testing/opaque-selection-horizon.md`.
+
 ## Mana Multiplier Query Prefilter (Candidate)
 
 - Parse supported multiplier instructions before expensive ability-suppression

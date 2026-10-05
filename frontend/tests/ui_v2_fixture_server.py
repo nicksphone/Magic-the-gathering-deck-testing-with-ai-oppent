@@ -15,6 +15,33 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/opaque-selection')
+def opaque_selection(seat: int = 1, name: str = 'Impulse'):
+    from fastapi import HTTPException
+    from tests.test_ai_opaque_selection_horizon import position, ROWS
+    from tests.test_ai_recurring_engines import add as canonical
+    if seat not in (1, 2) or name not in {'Impulse', 'Anticipate', 'Memory Deluge', 'Dig Through Time'}:
+        raise HTTPException(422, 'Expected a supported seat and selection fixture')
+    state, spell = position(seat, name)
+    state.mechanic_choice_players = {1, 2}
+    for inspected in ROWS:
+        if inspected != name:
+            canonical(state, inspected, seat, Zone.LIBRARY, cards=ROWS)
+    labels = {cid: card.name for cid, card in state.cards.items()}
+    state.log.append('Canonical selection UI fixture; not a competitive deck or played game.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'spell_id': spell.id, 'labels': labels}
+
+
+@app.get('/fixture/opaque-selection-library/{match_id}')
+def opaque_selection_library(match_id: str, seat: int = 1):
+    from fastapi import HTTPException
+    match = main.ACTIVE_MATCHES.get(match_id)
+    if seat not in (1, 2) or match is None:
+        raise HTTPException(422, 'Expected an active fixture and valid seat')
+    return {'library': match.state.players[seat].library}
+
+
 @app.post('/fixture/life-conversion')
 def life_conversion(seat: int = 1):
     if seat not in (1, 2):

@@ -2,6 +2,20 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify selective hand acquisition and masked count planning. Canonical
+  fixed-count/mana-spent families, durable bottom ordering, both seats and
+  guarded strategic projections pass 528 focused checks plus eight HTTP/SQLite
+  cases. Frozen qualification passes 8,516 backend tests across all 342 files
+  with 670 matching source hashes, the existing full browser suite, and eight
+  new both-seat selection/reload scenarios. Combined natural acceptance remains
+  open; the completed predecessor matrix is not this runtime's acceptance.
+  See [contract](docs/testing/opaque-selection-horizon.md).
+- [ ] Implement casting-resource mechanics (delve, convoke and improvise),
+  including deliberate human/AI resources, generic-only substitution, legal
+  combinations with other costs, no double-spend and durable atomic rejection.
+  Current source has no payment implementations for these keyword families;
+  fully paid Dig Through Time resolution is not evidence of delve payment.
+
 - [ ] Qualify the measured mana-multiplier query prefilter. Canonical selections
   and one recorded decision's action/state parity pass. Complete frozen gates
   pass (8,396 backend tests, full browser, frontend test/lint/build);
