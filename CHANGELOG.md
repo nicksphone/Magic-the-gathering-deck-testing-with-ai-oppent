@@ -1,5 +1,18 @@
 # Changelog
 
+## Qualified Resource Milestone Integrated Into Main
+
+- Fast-forwarded the qualified ff1210e runtime and its predecessors: shared
+  casting-resource payments, real resource events, selection handling and
+  bounded tactical payment choices. No canonical card/deck data was altered.
+- Frozen full qualification: 8,650 tests, all 349 recursive files exactly once,
+  685 source hashes in four initially DB-free copies; complete browser suite.
+- Twelve repeated executions/six unique seeded seat samples reconstruct
+  correctly across Drain/Tribal, Tokens/Ramp and Tempo/Control, with matching
+  repeat hashes, zero determinism failures and no reported anomaly/drift labels.
+  This is not a balance or expert-play certificate. Later timing/graveyard
+  candidates remain separate; running backend restart is still outstanding.
+
 ## AI Resource Opportunity (Candidate)
 
 - Compare actual legal payment outcomes for delve, convoke and improvise using

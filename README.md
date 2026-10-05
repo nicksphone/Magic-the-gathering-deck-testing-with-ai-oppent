@@ -1,10 +1,12 @@
 # MTG Deck Testing Lab
 
-The AI resource-opportunity candidate compares bounded legal payments rather
+The AI resource-opportunity policy compares bounded legal payments rather
 than blindly accepting the first witness. It weighs blockers, repeatable mana,
 graveyard payoffs, actual self-tap token triggers and affordable own-hand
-follow-ups. Twenty-three focused cases and 342 earlier overlapping checks pass; full/natural
-acceptance remains open. See [scope](docs/testing/ai-resource-opportunity.md).
+follow-ups. Main includes the qualified runtime: 8,650 full backend tests and the
+complete browser suite pass. Twelve repeated seeded executions reconstruct
+correctly; broader strength and compound-payment coverage remain open. See
+[scope](docs/testing/ai-resource-opportunity.md).
 
 The resource-event follow-up connects real taps and graveyard departures to
 shared trigger staging and pre-move ability checks. Both-seat canonical cases,
@@ -12,12 +14,13 @@ crew/attack ordering and HTTP/SQLite recovery pass. Frozen qualification passes
 8,627 backend tests and the complete browser suite; wider semantics and natural
 acceptance remain open. See [scope](docs/testing/resource-event-fidelity.md).
 
-An isolated casting-resource candidate connects ordinary delve, convoke and
+Casting-resource support connects ordinary delve, convoke and
 improvise payment to shared legality, strict inputs and deliberate both-seat
 human controls. The 439-check expanded selection and six new browser flows pass.
 Frozen qualification passes 8,603 backend tests and the complete browser gate.
-Event fidelity is being qualified separately; compound costs and tactical
-resource choices remain open. This is not yet live. See
+The shared event and bounded tactical follow-ups are now included in main;
+compound costs and broader tactical resource choices remain open. A running
+backend must be restarted to use newly integrated code. See
 [scope and remaining acceptance](docs/testing/cast-resource-payments.md).
 
 An isolated diagnostic candidate adds an offline comparison of completed private
