@@ -52,6 +52,29 @@ def apply_transform_face(card, index):
     rebase_type_effects(card)
 
 
+def day_night_entry_face(state, card):
+    """Project entry characteristics without transforming a spell on the stack."""
+    import re
+    from rules_engine.oracle_text import without_reminder_text
+    if card.layout != 'transform' or len(card.card_faces) < 2:
+        return card
+    front, back = card.card_faces[:2]
+    if not (re.search(r'\bdaybound\b', without_reminder_text(front.get('oracle_text') or ''), re.I)
+            and re.search(r'\bnightbound\b', without_reminder_text(back.get('oracle_text') or ''), re.I)):
+        return card
+    return select_cast_face(card, 1 if state.day_night == 'night' else 0)
+
+
+def apply_day_night_entry(state, card):
+    face = day_night_entry_face(state, card)
+    if face is card:
+        return
+    apply_transform_face(card, face.selected_face_index)
+    if state.day_night == 'none':
+        state.day_night = 'day'
+        state.log.append('The game becomes day.')
+
+
 def exile_permission(state, player_id, card_id, face_index=0):
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.EXILE or is_token_card(card):

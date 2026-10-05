@@ -96,6 +96,8 @@ def commit_entry_counters(state, card, payload):
 
 
 def prepare_entry_counters(state, controller, data, card, resume_effect):
+    from rules_engine.card_faces import day_night_entry_face
+    card = day_night_entry_face(state, card)
     entry = data['entry_payload']
     chapters = extract_saga_chapters(card.oracle_text) if 'Saga' in card.type_line else []
     if (chapters and re.search(r'^read ahead\s*$', without_reminder_text(card.oracle_text), re.I | re.M)

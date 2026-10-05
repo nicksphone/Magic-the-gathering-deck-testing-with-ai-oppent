@@ -1,0 +1,26 @@
+{
+  "adapter": "Cache root values fall back to front face when absent; missing face loyalty is null and image_uri aliases image_uris.normal.",
+  "cards": [
+    {
+      "name": "Brutal Cathar // Moonrage Brute",
+      "url": "https://api.scryfall.com/cards/0dbac7ce-a6fa-466e-b6ba-173cf2dec98e",
+      "file": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e.json",
+      "downloaded_at": "2026-10-05T18:50:16.494Z",
+      "sha256": "94233236a6701e7dc6ee9320241b56c40a5dcc9c0351d08bc6f41776df909faa"
+    },
+    {
+      "name": "Recruitment Officer",
+      "url": "https://api.scryfall.com/cards/c226656b-68d5-4df2-b313-a323a728c520",
+      "file": "c226656b-68d5-4df2-b313-a323a728c520.json",
+      "downloaded_at": "2026-10-05T18:50:16.952Z",
+      "sha256": "c9272d2e1926cf0700a77b2fe32a388c507789092b635eee4a5cedce3766611e"
+    },
+    {
+      "name": "Plains",
+      "url": "https://api.scryfall.com/cards/24dc369c-020a-4115-a4bb-d60a44de64e3",
+      "file": "24dc369c-020a-4115-a4bb-d60a44de64e3.json",
+      "downloaded_at": "2026-10-05T18:50:17.114Z",
+      "sha256": "4a3700b3808b8eb85cb316c50d6727914aef82154a1f055eb06ec2af78ff3346"
+    }
+  ]
+}

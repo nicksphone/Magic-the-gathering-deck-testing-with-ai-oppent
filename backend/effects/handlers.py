@@ -643,6 +643,18 @@ def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> in
     return moved
 
 
+def exile_until_source_leaves(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_types import is_token_card
+    from rules_engine.linked_exile import record_linked_exile, source_still_present
+    source_id, timestamp = payload['source_card_id'], int(payload['source_timestamp'])
+    target = state.cards.get(payload.get('target_card_id'))
+    if not source_still_present(state, source_id, timestamp) or target is None or target.zone != Zone.BATTLEFIELD:
+        return
+    exile_permanent(state, controller, payload)
+    if target.zone == Zone.EXILE and not is_token_card(target):
+        record_linked_exile(state, source_id, timestamp, [target.id])
+
+
 def exile_nonland_until_source_leaves(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.card_types import is_land_card, is_token_card
     from rules_engine.linked_exile import record_linked_exile, source_still_present

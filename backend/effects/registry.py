@@ -37,6 +37,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "destroy_all_creatures": handlers.destroy_all_creatures,
     "exile_all_creatures": handlers.exile_all_creatures,
     "exile_nonland_until_source_leaves": handlers.exile_nonland_until_source_leaves,
+    "exile_until_source_leaves": handlers.exile_until_source_leaves,
     "copy_linked_exiled_card": handlers.copy_linked_exiled_card,
     "exile_all_creatures_incubate": handlers.exile_all_creatures_incubate,
     "exile_colored_permanents_mana_value_at_most": handlers.exile_colored_permanents_mana_value_at_most,

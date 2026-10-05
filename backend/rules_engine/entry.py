@@ -33,6 +33,8 @@ def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_k
     choices = payload.get("__entry_choices") or {}
     for card_id in card_ids:
         card = (projections or {}).get(card_id, state.cards[card_id])
+        from rules_engine.card_faces import day_night_entry_face
+        card = day_night_entry_face(state, card)
         recipient = (controllers or {}).get(card_id, controller)
         if not has_two_life_land_entry(card, state, recipient) or card_id in choices:
             continue
@@ -55,6 +57,8 @@ def pause_for_land_entries(state, controller: int, card_ids: list[str], effect_k
 
 
 def apply_entry_choice(state, controller: int, card, *, choice: str = "tapped", effect_tapped: bool = False) -> None:
+    from rules_engine.card_faces import apply_day_night_entry
+    apply_day_night_entry(state, card)
     if has_two_life_land_entry(card, state, controller):
         if choice not in land_entry_options(state, controller, card):
             raise ValueError("Unavailable land-entry payment choice")

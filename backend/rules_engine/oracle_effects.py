@@ -320,6 +320,15 @@ def infer_effect_from_oracle(
             "allowed_types": ["Creature"], "destination": "exile",
             "linked_source_id": card.id, "linked_source_timestamp": object_incarnation(card),
         }
+    linked_target = re.fullmatch(
+        r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
+        r'(?: an opponent controls| you control)? until (?:this (?:creature|permanent|artifact|enchantment)|'
+        + re.escape(card.name.lower()) + r') leaves the battlefield\.?', oracle.strip())
+    if linked_target:
+        return 'exile_until_source_leaves', {
+            'target_card_id': action_targets.get('target_card_id'), 'source_card_id': card.id,
+            'source_timestamp': action_targets.get('source_timestamp', object_incarnation(card)),
+        }
     linked_exile = re.search(
         r"exile each nonland permanent with mana value (\d+) or less until this (?:enchantment|permanent|creature|artifact) leaves the battlefield",
         oracle,

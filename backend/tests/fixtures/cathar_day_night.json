@@ -1,0 +1,69 @@
+{
+  "Brutal Cathar // Moonrage Brute": {
+    "scryfall_id": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e",
+    "name": "Brutal Cathar // Moonrage Brute",
+    "oracle_text": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "mana_cost": "{2}{W}",
+    "type_line": "Creature \u2014 Human Soldier Werewolf // Creature \u2014 Werewolf",
+    "power": "2",
+    "toughness": "2",
+    "layout": "transform",
+    "card_faces": [
+      {
+        "name": "Brutal Cathar",
+        "mana_cost": "{2}{W}",
+        "type_line": "Creature \u2014 Human Soldier Werewolf",
+        "oracle_text": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+        "power": "2",
+        "toughness": "2",
+        "loyalty": null,
+        "colors": [
+          "W"
+        ],
+        "image_uri": "https://cards.scryfall.io/normal/front/0/d/0dbac7ce-a6fa-466e-b6ba-173cf2dec98e.jpg?1783925670"
+      },
+      {
+        "name": "Moonrage Brute",
+        "mana_cost": "",
+        "type_line": "Creature \u2014 Werewolf",
+        "oracle_text": "First strike\nWard\u2014Pay 3 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "power": "3",
+        "toughness": "3",
+        "loyalty": null,
+        "colors": [
+          "R"
+        ],
+        "image_uri": "https://cards.scryfall.io/normal/back/0/d/0dbac7ce-a6fa-466e-b6ba-173cf2dec98e.jpg?1783925670"
+      }
+    ],
+    "colors": [
+      "W"
+    ]
+  },
+  "Recruitment Officer": {
+    "scryfall_id": "c226656b-68d5-4df2-b313-a323a728c520",
+    "name": "Recruitment Officer",
+    "oracle_text": "{3}{W}: Look at the top four cards of your library. You may reveal a creature card with mana value 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "mana_cost": "{W}",
+    "type_line": "Creature \u2014 Human Soldier",
+    "power": "2",
+    "toughness": "1",
+    "layout": "",
+    "card_faces": [],
+    "colors": [
+      "W"
+    ]
+  },
+  "Plains": {
+    "scryfall_id": "24dc369c-020a-4115-a4bb-d60a44de64e3",
+    "name": "Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "mana_cost": "",
+    "type_line": "Basic Land \u2014 Plains",
+    "power": null,
+    "toughness": null,
+    "layout": "",
+    "card_faces": [],
+    "colors": []
+  }
+}

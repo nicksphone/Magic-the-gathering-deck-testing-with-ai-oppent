@@ -11,6 +11,12 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Repair shared day/night entry, supported self entry/transform triggers and
+  targeted incarnation-linked exile. Canonical fixtures, both-seat human/AI
+  choices and HTTP/SQLite restoration pass; dedicated Cathar browser and wider
+  transformation semantics remain open. Existing missed triggers are not
+  retrospectively inserted into user games. See
+  [scope and evidence](docs/testing/cathar-day-night.md).
 - [x] Stop human-game automatic ticks and stale actions after an authoritative
   winner, with a visible result/series banner. Preserve manual between-game
   choices and AI-series continuation; mocked actual-App browser, lint/build and

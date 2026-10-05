@@ -389,6 +389,8 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card = state.cards.get(card_id)
     if not card:
         return
+    from rules_engine.card_faces import apply_day_night_entry
+    apply_day_night_entry(state, card)
     card.last_known_battlefield.clear()
     # Printed counter-persistence text is the exception; damage and temporary
     # modifiers still belong to the old object, not the entering permanent.

@@ -285,8 +285,7 @@ def _append_trigger_groups(
                 item.payload["__trigger_target_choice"] = True
         state.stack.append(item)
         if item.payload.get("__trigger_target_choice"):
-            from rules_engine.flashback_grants import remember_target
-            remember_target(state, item)
+            _remember_trigger_target(state, item)
             targeted_items.append(item)
     if targeted_items:
         from rules_engine.ward import mark_stack_targets
@@ -358,6 +357,7 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         return None
     patterns = {
         "enters_battlefield": r"^(?:when|whenever)\b.*\benters\b",
+        "transformed": r"^(?:when|whenever)\b.*\btransforms into\b",
         "spell_cast": r"^when you cast this spell\b",
         "sacrifice": r"^(?:when|whenever)\b.*\bsacrific(?:e|es|ed)\b",
         "creature_dies": r"^(?:when|whenever)\b.*\bdies\b",
@@ -380,7 +380,7 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
             return clause
         if item.payload.get("__targeted_life_loss") and re.search(r"\btarget (?:player|opponent) loses \d+ life\b", clause, re.I):
             return clause
-        if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
+        if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "exile_until_source_leaves", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
             return clause
     return None
 
@@ -474,8 +474,7 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     item.payload.pop("target_player", None)
     item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
-    from rules_engine.flashback_grants import remember_target
-    remember_target(state, item)
+    _remember_trigger_target(state, item)
     from rules_engine.ward import mark_stack_targets
     if not state.trigger_staging:
         state.trigger_staging = True
@@ -711,6 +710,10 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
             elif event == "transformed" and payload.get("card_id") in state.cards:
+                for clause, _ in _self_entry_transform_clauses(card, oracle):
+                    if payload['card_id'] == cid:
+                        out.append(_trigger_from_oracle(state, cid, card.controller, clause,
+                                   default_label=f'{card.name} transform trigger', event=event, payload=payload))
                 transformed = state.cards[payload["card_id"]]
                 counter_trigger = re.search(
                     r"whenever a permanent you control transforms into an? ([a-z-]+), put a \+1/\+1 counter on it",
@@ -1030,7 +1033,26 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
     return "becomes night" in oracle or "becomes night" in oracle.replace("the game ", "")
 
 
+def _remember_trigger_target(state, item):
+    from rules_engine.flashback_grants import remember_target
+    remember_target(state, item)
+    if item.effect_key == 'exile_until_source_leaves':
+        target = state.cards[item.payload['target_card_id']]
+        item.payload['__trigger_target_reference'] = [object_incarnation(target), target.zone_change_sequence]
+
+
+def _self_entry_transform_clauses(card, oracle):
+    reference = r'this (?:creature|permanent|artifact|enchantment)|' + re.escape(card.name.lower())
+    for line in oracle.splitlines():
+        match = re.fullmatch(r'(?:when|whenever) (?:' + reference
+            + r') enters(?: the battlefield)? or transforms into (.+?),\s*(.+)', line.strip(), re.I)
+        if match and match[1].casefold() == card.name.casefold():
+            yield line.strip(), match[2]
+
+
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if payload.get('card_id') == card.id and any(_self_entry_transform_clauses(card, oracle)):
+        return True
     # Granted token abilities are not entry abilities of their creator. Keep
     # original text for effect parsing; only the match surface excludes quotes.
     oracle = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '', oracle)
@@ -1347,6 +1369,17 @@ def _trigger_from_oracle(
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    if source is not None and event in {'enters_battlefield', 'transformed'}:
+        for clause, instruction in _self_entry_transform_clauses(source, oracle):
+            if payload.get('card_id') != source_card_id:
+                continue
+            from rules_engine.oracle_effects import infer_effect_from_oracle
+            proxy = copy(source)
+            proxy.oracle_text, proxy.card_faces, proxy.types = instruction, [], []
+            key, data = infer_effect_from_oracle(state, proxy, controller)
+            data.update(__trigger_resolution_text=instruction, __trigger_full_clause=clause)
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     if event == 'enters_battlefield' and source is not None:
         from rules_engine.flashback_grants import grant_instruction
         for line in oracle.splitlines():

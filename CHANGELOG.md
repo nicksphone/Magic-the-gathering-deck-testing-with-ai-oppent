@@ -1,5 +1,16 @@
 # Changelog
 
+## Day/Night Entry And Linked Exile - 2026-10-05
+
+- Select daybound/nightbound entry characteristics before entry preparation and
+  commit, including non-cast and linked-return routes; night entry uses the back
+  face without firing the front face's ability.
+- Recognize supported self entry/transform triggers and targeted exile-until-
+  departure instructions. Preserve linked exiles across transformation, return
+  them on source departure, and reject stale source/target incarnations.
+- Add canonical card provenance, both-seat HTTP targeting and SQLite restoration
+  checks. Preserve saved games without retroactively inventing missed effects.
+
 ## Stopped Human Games - 2026-10-05
 
 - Show a prominent game result and series score when the engine declares a
