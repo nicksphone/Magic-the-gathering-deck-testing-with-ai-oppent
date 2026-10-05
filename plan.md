@@ -2,6 +2,15 @@
 
 ## Current Priority: Backend First
 
+- [x] Qualify [catalog identity and successful trace export](docs/testing/catalog-and-replay-traces.md).
+  Separate red/green catalog and runner candidates are combined without changing
+  gameplay source. Exact runtime passes 8,219 tests across all 332 files with
+  649 matching hashes and the full browser gate in all three BO3 modes.
+- [ ] Continue actual-game trace review and strategic horizon repair. Corrected
+  template traces reproduce legal creature deployment being declined by the
+  complex-board planner. An independent shared valuation repair and decision
+  timing candidate are under targeted validation; no expert-play claim is made.
+
 - [x] Qualify [joint mana/resource activation planning](docs/testing/joint-activation-payment.md).
   Exact runtime passes 8,159 tests in all 330 files with 644 matching backend
   hashes and the complete browser gate in all three BO3 modes. Preserve selected

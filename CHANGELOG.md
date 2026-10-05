@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-05 - Catalog identity and successful decision traces
+
+- Refresh the newest visible catalog records; preserve historical duplicate and
+  user rows, and break timestamp ties by ID. Targeted selection: 26 passed.
+- Add opt-in full JSONL traces for resolved replay matches as well as anomalies.
+  Completed runs survive later repeat failure; existing/colliding outputs are
+  rejected. Runner/replay selection: 84 passed; default sample accounting stays
+  unchanged. Two earlier nonexistent test-path invocations collected no tests
+  and are not counted as validation.
+- Exact runtime `14737b1` passes 8,219 tests across all 332 recursive backend
+  files with 649 matching hashes, plus the full browser gate in all three BO3
+  modes. Later qualification changes are metadata only.
+- Successful retained traces reproduce a completed actual paired-seat forward
+  sample. Broader decision-quality analysis remains open; legacy saved decks
+  lacked splash-color lands despite corrected current templates. A separate
+  current-template run is in progress and is not pooled with stale inputs.
+
 ## 2026-10-05 - Nested mana life budgets
 
 - Track life expenditure across ordinary and snow mana source selection;

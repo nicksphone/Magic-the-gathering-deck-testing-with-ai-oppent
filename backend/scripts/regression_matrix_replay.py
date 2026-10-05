@@ -63,6 +63,13 @@ def _stable_seed(left_name: str, right_name: str, index: int) -> int:
     return int(digest[:8], 16)
 
 
+def _append_replay_trace(path: Path | None, record: dict) -> None:
+    if path is not None:
+        # Close each record so a later failed repeat retains completed evidence.
+        with path.open('a', encoding='utf-8') as handle:
+            handle.write(json.dumps(record) + '\n')
+
+
 def _pair_schedule(left: dict, right: dict, count: int, seat_balanced: bool = True):
     """Pair each seed with both seat orders; repeats are not new samples."""
     for index in range(count):
@@ -288,7 +295,21 @@ def main() -> None:
     p.add_argument('--progress', action='store_true', help='Emit JSON progress and atomically update <output>.progress.json; not a resumable snapshot')
     p.add_argument('--deck-manifest', help='Use hash-verified resolved decks without database bootstrap or hydration')
     p.add_argument('--write-deck-manifest', help='Export selected resolved inputs and provenance before running games')
+    p.add_argument('--trace-output', help='New JSONL file retaining full decisions and results for both runs, including successful matches')
     args = p.parse_args()
+
+    trace_path = Path(args.trace_output) if args.trace_output else None
+    if trace_path is not None:
+        protected_paths = [args.output, str(args.output) + '.progress.json',
+                           args.deck_manifest, args.write_deck_manifest]
+        if any(trace_path.resolve() == Path(value).resolve() for value in protected_paths if value):
+            p.error('Trace output must differ from summary, progress and deck manifest paths')
+        try:
+            trace_path.parent.mkdir(parents=True, exist_ok=True)
+            with trace_path.open('x', encoding='utf-8'):
+                pass
+        except OSError as exc:
+            p.error(f'Cannot create new trace output: {exc}')
 
     if args.deck_manifest:
         try:
@@ -311,6 +332,14 @@ def main() -> None:
                             'cache_policy': 'resolved from this isolated repository database; export to pin subsequent runs'}
     if args.write_deck_manifest:
         _write_deck_manifest(args.write_deck_manifest, decks, input_provenance)
+
+    _append_replay_trace(trace_path, {
+        'event': 'replay_trace_manifest', 'schema_version': 1,
+        'input_provenance': input_provenance, 'difficulty': args.difficulty,
+        'max_ticks_per_game': args.max_ticks, 'best_of': args.best_of,
+        'repeatability_runs_per_sample': 2,
+        'scope': 'Offline diagnostic: actor hand/board and chosen actions; contains hidden game information',
+    })
 
     summary = {
         "decks": len(decks),
@@ -341,8 +370,13 @@ def main() -> None:
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
         for seed, seat_one, seat_two, deck_a_seat in _pair_schedule(left, right, args.matches_per_pair, not args.single_seat):
             try:
+                trace_context = {'event': 'replay_trace_run', 'seed': seed,
+                                 'deck_a_seat': deck_a_seat, 'seat_one_deck': seat_one['name'],
+                                 'seat_two_deck': seat_two['name']}
                 a = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+                _append_replay_trace(trace_path, {**trace_context, 'repeatability_run': 1, 'result': a})
                 b = run_match(seat_one["mainboard"], seat_two["mainboard"], seed, args.difficulty, args.max_ticks, args.best_of)
+                _append_replay_trace(trace_path, {**trace_context, 'repeatability_run': 2, 'result': b})
             except Exception as exc:
                 if args.progress:
                     summary['anomaly_counts'] = dict(anomaly_counts)

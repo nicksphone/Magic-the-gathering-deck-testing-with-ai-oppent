@@ -181,7 +181,7 @@ class Repository:
         return record
 
     def list_decks(self) -> list[DeckRecord]:
-        return list(self.session.exec(select(DeckRecord).order_by(DeckRecord.created_at.desc())).all())
+        return list(self.session.exec(select(DeckRecord).order_by(DeckRecord.created_at.desc(), DeckRecord.id.desc())).all())
 
     def save_match(self, deck_a_id: int, deck_b_id: int, winner: str, mode: str, turns: int, log: Iterable[str]) -> MatchRecord:
         record = MatchRecord(

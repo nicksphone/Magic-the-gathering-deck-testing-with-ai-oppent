@@ -98,3 +98,65 @@ def test_default_mode_remains_quiet_except_final_summary(tmp_path, monkeypatch, 
     rows = capsys.readouterr().out.splitlines()
     assert len(rows) == 1 and json.loads(rows[0])['matches'] == 2
     assert not list(tmp_path.glob('*.progress.json'))
+
+
+def test_successful_matches_export_both_full_traces_without_changing_summary(tmp_path, monkeypatch):
+    output = mock_runner(monkeypatch, tmp_path, progress=False)
+    trace = tmp_path / 'decisions.jsonl'
+    monkeypatch.setattr('sys.argv', ['replay', '--matches-per-pair', '1', '--output', str(output),
+                                   '--trace-output', str(trace)])
+    replay.main()
+    records = [json.loads(line) for line in trace.read_text().splitlines()]
+    assert records[0]['event'] == 'replay_trace_manifest'
+    runs = records[1:]
+    assert len(runs) == 4
+    assert [(row['deck_a_seat'], row['repeatability_run']) for row in runs] == [(1, 1), (1, 2), (2, 1), (2, 2)]
+    assert all(row['result']['log'] == ['fixture only'] for row in runs)
+    report = json.loads(output.read_text())
+    assert report['matches'] == 2 and report['games'] == 2
+    assert all(row['anomaly_trace'] is None for row in report['pair_results'][0]['games'])
+
+
+def test_trace_export_refuses_existing_files(tmp_path, monkeypatch):
+    output = mock_runner(monkeypatch, tmp_path)
+    trace = tmp_path / 'existing.jsonl'
+    trace.write_text('preserve this evidence')
+    monkeypatch.setattr('sys.argv', ['replay', '--output', str(output), '--trace-output', str(trace)])
+    with pytest.raises(SystemExit):
+        replay.main()
+    assert trace.read_text() == 'preserve this evidence'
+    assert not output.exists()
+
+
+def test_trace_keeps_first_run_when_repeat_fails(tmp_path, monkeypatch):
+    output = mock_runner(monkeypatch, tmp_path)
+    original = replay.run_match
+    calls = 0
+    def match(*args):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise ValueError('repeat failure')
+        return original(*args)
+    monkeypatch.setattr(replay, 'run_match', match)
+    trace = tmp_path / 'partial.jsonl'
+    monkeypatch.setattr('sys.argv', ['replay', '--output', str(output), '--progress', '--trace-output', str(trace)])
+    with pytest.raises(ValueError, match='repeat failure'):
+        replay.main()
+    records = [json.loads(line) for line in trace.read_text().splitlines()]
+    assert len(records) == 2 and records[1]['repeatability_run'] == 1
+    assert json.loads((tmp_path / 'matrix.json.progress.json').read_text())['status'] == 'failed'
+    assert not output.exists()
+
+
+@pytest.mark.parametrize('collision', ['summary', 'progress', 'manifest'])
+def test_trace_rejects_output_and_input_path_collisions(tmp_path, monkeypatch, collision):
+    output = mock_runner(monkeypatch, tmp_path)
+    trace = output if collision == 'summary' else tmp_path / ('matrix.json.progress.json' if collision == 'progress' else 'decks.json')
+    args = ['replay', '--output', str(output), '--trace-output', str(trace)]
+    if collision == 'manifest':
+        args += ['--deck-manifest', str(trace)]
+    monkeypatch.setattr('sys.argv', args)
+    with pytest.raises(SystemExit):
+        replay.main()
+    assert not trace.exists()
