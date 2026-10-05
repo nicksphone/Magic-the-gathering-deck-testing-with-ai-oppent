@@ -11,7 +11,17 @@
    semantics, affordable multi-action planning, restart behavior, network posture
    and competitive-quality evidence remain unfinished.
 
+Parallel knowledge work audits all-card metadata/provenance and conservative
+mechanic descriptors in isolated copies. Strategic learning prerequisites are
+tracked in [learned-policy groundwork](docs/plans/learned-policy-groundwork.md).
+No neural policy is trained or deployed; regression runs are not training.
+
 Completed bounded work:
+- [x] Repair supported unknown-library deployment valuation without reading
+  unseen cards. Exact saved decision now casts the payable spell; live-code gate
+  passes 536 checks and the canonical mana-value correction passes 188. Broader
+  natural-game quality remains under evaluation. See
+  [evidence and limits](docs/testing/ai-topdeck-deployment.md).
 - [x] Provide an opt-in, read-only AI hand viewer for local debugging. Backend
   flag checks, normal-redaction invariants and the ended-match browser check pass;
   no live gameplay actions were sent. See [scope](docs/testing/ai-hand-debug.md).

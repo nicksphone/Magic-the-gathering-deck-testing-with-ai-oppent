@@ -1,0 +1,59 @@
+# Learned Policy Groundwork
+
+## Status
+
+Proposed next strategic workstream, not an implemented or trained neural policy.
+Existing simulations are regression/evaluation runs. Canonical card metadata,
+rulings ingestion and tactical tags are knowledge inputs, not learned gameplay.
+Knowledge agents are preparing independently tested corpus/metadata increments.
+
+## Step-By-Step Gates
+
+1. Verify canonical metadata and complete mechanics for a declared initial corpus.
+   Record card/face/Oracle/rulings provenance separately from execution coverage.
+   Preserve explicit unsupported and ambiguous effect clauses. Expand the corpus
+   as validated mechanics land; do not wait for every Magic card to start learning.
+2. Expose a deterministic training environment around the authoritative engine.
+   Observations use the existing private AI boundary; only permitted information
+   reaches the policy. Legal actions, pending choices and terminal rewards remain
+   engine-generated. Illegal policy outputs cannot mutate gameplay state.
+3. Export versioned observation/action/choice trajectories and engine/deck hashes.
+   Keep private replay evidence out of public fixtures. Split evaluation by seed,
+   deck family and retained tactical position; prevent duplicated games or future
+   observations from leaking into training examples.
+4. Establish a move-ranking/value baseline, initially using verified decision
+   examples and suitable expert trajectories. Separate provenance-backed expert
+   decisions from current heuristic demonstrations; weak self-play is not expert
+   supervision. Specify action encoding, legal masking and uncertainty handling.
+5. Train offline with reproducible checkpoints and bounded resource budgets.
+   Begin with a small supported corpus; measure sample efficiency and inference
+   latency before choosing a larger network or committing expensive compute.
+6. Add self-play against a varied opponent population. Preserve engine legality,
+   hidden-information limits and loss/draw rules. Validate reward accounting; do
+   not force win-rate targets, fabricate cards or rebalance canonical decks.
+7. Compare frozen policies against the existing baseline on held-out, seat-balanced
+   games and tactical fixtures. Measure missed deployment/land/lethal opportunities,
+   resource/counter timing, blocks, illegal outputs, stalls and latency. Report
+   sample sizes and uncertainty; matchup win rate alone is insufficient.
+8. Integrate behind an explicit policy version/feature switch with deterministic
+   inference where configured, fallback and rollback. Persist policy and engine
+   provenance in snapshots/results. Keep learning out of live match mutation.
+
+## Acceptance Still Needed
+
+- A concrete observation/action schema and tested adapter for all supported
+  pending choices; no opponent-hand or unseen-library access.
+- Train/evaluate commands, reproducible dependency/compute requirements, dataset
+  manifests, checkpoint loading and offline behavior.
+- Before/after evidence on unseen decks and seeds, not just successful training
+  or a fixed scripted position. No current seasoned-player guarantee.
+- Human review of expert-data availability/licensing and any paid compute budget
+  before collecting proprietary data or launching paid training infrastructure.
+
+## References
+
+AlphaZero combines learned policy/value evaluation with search and self-play:
+https://deepmind.google/research/alphazero-and-muzero/
+AlphaStar combines imitation and reinforcement learning in an imperfect-information
+game: https://deepmind.google/blog/alphastar-grandmaster-level-in-starcraft-ii-using-multi-agent-reinforcement-learning/
+These are architecture precedents, not claims of equivalent resources or outcomes.

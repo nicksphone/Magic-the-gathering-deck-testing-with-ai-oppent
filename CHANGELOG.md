@@ -1,5 +1,18 @@
 # Changelog
 
+## Generic Unknown-Library Deployment Decisions - 2026-10-05
+
+- Value supported top-library deployment spells using the pilot's known submitted
+  list minus observed inventory, without inspecting hidden card identities/order.
+- Preserve supported type/mana-value limits, public entry prohibitions, whiffs
+  and instant interaction reservation. Use canonical mana value, not payment
+  estimates, including two-or-color hybrid costs.
+- The exact saved Master Ramp-versus-Tokens turn-19 position now chooses the
+  payable Storm cast; Ugin remains correctly unpayable. This does not prove the
+  cast would win or that broader AI play is expert-level.
+- Live-code isolated gate: 536 checks, then 188 affected checks after mana-value
+  correction. Track neural-learning prerequisites separately from regression runs.
+
 ## Read-Only AI Hand Debugging - 2026-10-05
 
 - Add a server-gated, off-by-default AI hand viewer with card art, mana costs and

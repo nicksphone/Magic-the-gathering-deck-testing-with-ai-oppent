@@ -903,13 +903,15 @@ class AIAgent:
 
     def _uncached_strategic_position_score(self, state: MatchState, player_id: int) -> float:
         from ai.pending_effects import settled_public_position
+        from ai.information import topdeck_deployment_value
         from rules_engine.query_context import rule_query_scope
         # Value a pending announcement at the horizon without removing responses
         # from the real search state or guessing unresolved/hidden-zone choices.
         projected = settled_public_position(state, player_id, opaque_draw_counts=True)
         position = projected if projected is not None else state
         with rule_query_scope(position):
-            return evaluate_board(position, player_id) + self._strategic_features(position, player_id)
+            expectation = (topdeck_deployment_value(state, player_id) if projected is None else 0.0)
+            return evaluate_board(position, player_id) + self._strategic_features(position, player_id) + expectation
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
@@ -1974,7 +1976,10 @@ class AIAgent:
         if card is None or 'Instant' not in effective_types(state, card):
             return 0.0
         tags = self._spell_tags(card)
-        if 'draw' not in tags or tags & {'counter', 'removal', 'burn', 'sweeper'}:
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        deployment = infer_effect_from_oracle(state, card, player_id)[0] in {
+            'topdeck_put_creatures_battlefield', 'topdeck_put_permanents_battlefield'}
+        if not ('draw' in tags or deployment) or tags & {'counter', 'removal', 'burn', 'sweeper'}:
             return 0.0
         opponent = state.players[3-player_id]
         pressure = sum(max(0, effective_power(state, cid)) for cid in opponent.battlefield

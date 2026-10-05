@@ -32,8 +32,8 @@
     "hash": "c5eabc3afa58b16be3c89012e1e68f24"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/information.py": {
-    "mtime": 1791146468.9820437,
-    "hash": "1ed16b208a4009e9c2d3d5ae896139ab"
+    "mtime": 1791228595.9172957,
+    "hash": "f516353db49c33ba8f4e8b0fa19b0998"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/life_targets.py": {
     "mtime": 1791177542.14486,
@@ -80,8 +80,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/agent.py": {
-    "mtime": 1791217573.7277064,
-    "hash": "3a632bf80813556c13cb7cee22d50f05"
+    "mtime": 1791228595.9172957,
+    "hash": "5c28a739eb323545710cd078d4bc0217"
   },
   "/home/nick/mtg-deck-testing-lab/backend/ai/sideboarding.py": {
     "mtime": 1790682060.6018717,
@@ -1407,6 +1407,10 @@
     "mtime": 1791153355.7256932,
     "hash": "fdd731320a2f043118284a57ff77d832"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_ai_topdeck_deployment.py": {
+    "mtime": 1791228595.9182956,
+    "hash": "7a24adfd5a783c6b81fea71cffa7c325"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_placeholders.py": {
     "mtime": 1784156194.4364996,
     "hash": "0c88347a6c9e0878364241928e9a734d"
@@ -2676,16 +2680,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791228163.9580274,
-    "hash": "757c4f8768ddfc20b786af8f8b1d73ee"
+    "mtime": 1791228595.9712949,
+    "hash": "3a0e50dddee4c261f318cf2e38877dca"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791228163.9620273,
-    "hash": "a4b236fc2a21f368562ec19cb26c73f0"
+    "mtime": 1791228595.9762948,
+    "hash": "9e0ef32d2371683112c96e27e4a9f237"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791228163.9600275,
-    "hash": "8d3f2ad8ce032568cc61cf4eeb47a45a"
+    "mtime": 1791228595.974295,
+    "hash": "9a1bfa7d82a49547a3aabbb028630976"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2718,6 +2722,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/plans/2026-09-09-ai-knowledge-base-coder-plan.md": {
     "mtime": 1789060358.0171993,
     "hash": "7a17a40e47547ebceba110448145736e"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/plans/learned-policy-groundwork.md": {
+    "mtime": 1791228554.5939434,
+    "hash": "940199c77018e7baaff32148ce41f77c"
   },
   "/home/nick/mtg-deck-testing-lab/docs/plans/2026-09-09-ai-knowledge-base.md": {
     "mtime": 1790532757.789285,
@@ -2822,6 +2830,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/split-card-boundary.md": {
     "mtime": 1790747336.5562985,
     "hash": "f400bbe961e1bf4ff6906369f78a51ef"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/ai-topdeck-deployment.md": {
+    "mtime": 1791228595.9752948,
+    "hash": "6fe751cccaa88cbb073cdab64024c2fa"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-hand-debug.md": {
     "mtime": 1791228163.9620273,

@@ -137,7 +137,8 @@ def draw_resource_forecast(state, player_id, draws):
         remaining[name] += row['quantity']
         descriptor = {'mana_cost': metadata.get('mana_cost', ''),
                       'type_line': metadata['type_line'],
-                      'oracle_text': metadata.get('oracle_text', '')}
+                      'oracle_text': metadata.get('oracle_text', ''),
+                      'power': metadata.get('power'), 'toughness': metadata.get('toughness')}
         if name in descriptors and descriptors[name] != descriptor:
             return None
         descriptors[name] = descriptor
@@ -165,5 +166,72 @@ def draw_resource_forecast(state, player_id, draws):
     return {'population': population, 'remaining_lands': lands,
             'expected_lands': expected, 'expected_nonlands': draws-expected,
             'probability_land': probability,
+            'inventory': [{'count': count, **descriptors[name]}
+                          for name, count in remaining.items() if count],
             'nonland_inventory': [{'count': count, **descriptors[name]}
                                   for name, count in remaining.items() if count and name not in land_names]}
+
+
+def topdeck_deployment_value(state, player_id):
+    """Exchangeable own-list expectation, never hypothetical blockers or ETBs."""
+    from ai.heuristics import _noncreature_value
+    from rules_engine.mana import mana_value
+    from rules_engine.graveyard_permissions import _clauses
+    from rules_engine.continuous import printed_abilities_suppressed
+    effects = {'topdeck_put_creatures_battlefield', 'topdeck_put_permanents_battlefield'}
+    items = [item for item in state.stack if item.controller == player_id and item.effect_key in effects]
+    # Multiple library-changing effects need a conditioned joint prior.
+    if len(items) != 1 or any(item.effect_key not in effects | {'counter_spell', 'counter_ability'}
+                              for item in state.stack):
+        return 0.0
+    prior = draw_resource_forecast(state, player_id, 0)
+    if prior is None or not prior['population']:
+        return 0.0
+    item = items[0]
+    payload = item.payload
+    n = prior['population']
+    draws = min(n, max(0, int(payload.get('top_n', 0))))
+    cap = max(0, int(payload.get('max_creatures', payload.get('max_permanents', 0))))
+    if not draws or not cap:
+        return 0.0
+    clauses = {clause for player in state.players.values() for cid in player.battlefield
+               if not printed_abilities_suppressed(state, cid) for clause in _clauses(state.cards[cid])}
+    values = Counter()
+    for row in prior['inventory']:
+        types = set(row['type_line'].split('//', 1)[0].split('\u2014', 1)[0].split())
+        if not types & {'Creature', 'Artifact', 'Enchantment', 'Land', 'Planeswalker'}:
+            continue
+        if item.effect_key == 'topdeck_put_creatures_battlefield' and 'Creature' not in types:
+            continue
+        if payload.get('allowed_type') and payload['allowed_type'] not in types:
+            continue
+        mv = mana_value(row['mana_cost'] or '', is_land='Land' in types)
+        if payload.get('mv_max') is not None and mv > payload['mv_max']:
+            continue
+        if any(f"{kind} cards in graveyards and libraries {verb} enter the battlefield." in clauses
+               for kind in (['nonland permanent'] if 'Land' not in types else [])
+               + (['creature'] if 'Creature' in types else []) for verb in ("can't", 'cannot')):
+            continue
+        if 'Creature' in types:
+            try:
+                value = max(0, int(row['power'])) * 1.35 + max(0, int(row['toughness'])) * .55 + .25
+            except (TypeError, ValueError):
+                continue
+        elif 'Land' in types:
+            lands = sum('Land' in state.cards[cid].types for cid in state.players[player_id].battlefield)
+            value = 1.0 if lands < 4 else .12
+        else:
+            value = _noncreature_value(SimpleNamespace(types=list(types), **row))
+        values[max(0, value)] += row['count']
+    # Integrate survival counts: exact expected sum of the best capped hits,
+    # including whiffs, without enumerating hands or consulting library order.
+    result = 0.0
+    hits = 0
+    levels = sorted(values, reverse=True) + [0.0]
+    denominator = comb(n, draws)
+    for index, value in enumerate(levels[:-1]):
+        hits += values[value]
+        expected = sum(min(cap, k) * comb(hits, k) * comb(n-hits, draws-k) / denominator
+                       for k in range(max(0, draws-(n-hits)), min(draws, hits)+1))
+        result += (value-levels[index+1]) * expected
+    return .95 * result

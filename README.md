@@ -45,6 +45,7 @@ for long Master decisions; ordinary reads and manual writes retain shorter
 timeouts. This does not eliminate slow planning or cancel server-side mutations.
 
 Implementation scopes and remaining limits:
+- [Unknown-library deployment estimates](docs/testing/ai-topdeck-deployment.md)
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)
 - [AI resource opportunity](docs/testing/ai-resource-opportunity.md)
 - [Instant value windows](docs/testing/instant-value-window.md)
