@@ -1,9 +1,16 @@
 # MTG Deck Testing Lab
 
+An isolated graveyard-permission candidate adds ordinary self/subtype casting
+and land plays, including modal land faces, with real costs, land limits,
+source flags and shared cast/entry prohibitions. Limited per-turn permissions
+remain explicit coverage gaps. See [scope](docs/testing/graveyard-play-permissions.md).
+
 An isolated instant-timing candidate distinguishes opponent end-step value
 casting from early-turn tap-outs and prices actual payment that loses the last
 affordable own-hand response. Both-seat canonical decision tests pass; wider
-acceptance remains open. See [scope](docs/testing/instant-value-window.md).
+acceptance remains open. Frozen timing qualification now passes 8,674 backend
+tests and the full browser suite; natural comparison is queued.
+See [scope](docs/testing/instant-value-window.md).
 
 The AI resource-opportunity candidate compares bounded legal payments rather
 than blindly accepting the first witness. It weighs blockers, repeatable mana,

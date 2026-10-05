@@ -2,6 +2,16 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify shared graveyard casting/land permission and admission families:
+  ordinary self/subtype grants, source/timing/cost limits, modal land faces,
+  suppression, global prohibitions and real departure events. Both-seat unit and
+  HTTP checks pass; complete exact-source full/browser/natural gates. See
+  [scope](docs/testing/graveyard-play-permissions.md).
+- [ ] Add durable limited graveyard permission ledgers and permission-source
+  choice for Lurrus/Muldrotha/Gisa-style restrictions. These canonical shapes
+  now report explicit unsupported-permission diagnostics; do not grant unlimited
+  casts. Broaden duration, subtype-layer and casting-announcement ordering fidelity.
+
 - [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
   overlapping checks pass. Preserve engine fallback, bounded legal projections,
   blocker/mana/graveyard opportunity costs and hidden-information invariants.
@@ -16,6 +26,8 @@
   two counters, instead of waiting for an appropriate later window. Scope the
   fix to general interaction reservation/instant timing, not a card-name rule.
   The selection370 replay is deterministic; its outcome alone is not optimality.
+  Frozen timing gates now pass 8,674 backend tests and the full browser suite;
+  natural comparison remains queued behind the predecessor review.
 
 - [ ] Qualify resource-event follow-up: real-tap paths, pre-move graveyard watcher
   capture, batch/APNAP semantics and original-action stack ordering. 175

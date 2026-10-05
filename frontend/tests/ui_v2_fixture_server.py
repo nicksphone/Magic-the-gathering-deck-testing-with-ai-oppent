@@ -15,6 +15,21 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/graveyard-permission')
+def graveyard_permission(seat: int = 1, name: str = 'Forest'):
+    from fastapi import HTTPException
+    from tests.test_graveyard_play_permissions import position, ROWS, modal_land
+    from tests.test_ai_recurring_engines import add as canonical
+    if seat not in (1, 2) or name not in {'Forest', 'Bala Ged Recovery', 'Gravecrawler'}:
+        raise HTTPException(422, 'Expected a supported graveyard fixture')
+    state = position(seat)
+    state.mechanic_choice_players = {1, 2}
+    card = modal_land(state, seat) if name == 'Bala Ged Recovery' else canonical(state, name, seat, Zone.GRAVEYARD, cards=ROWS)
+    canonical(state, 'Diregraf Ghoul' if name == 'Gravecrawler' else 'Crucible of Worlds', seat, cards=ROWS)
+    state.log.append('Canonical graveyard-permission fixture; not a competitive deck.')
+    return {'match': publish(state, [{'quantity': 60, 'card_name': 'Island'}]), 'card_id': card.id}
+
+
 @app.post('/fixture/cast-resources')
 def cast_resources(seat: int = 1, name: str = 'Dig Through Time'):
     from fastapi import HTTPException

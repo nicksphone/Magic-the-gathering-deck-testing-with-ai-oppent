@@ -1,5 +1,17 @@
 # Changelog
 
+## Graveyard Play Permissions (Candidate)
+
+- Shared ordinary self/subtype spell and land-from-graveyard permissions, with
+  costs, timing, ownership, suppression, land limits and modal land faces intact.
+- Shared graveyard/library cast and entry prohibitions; blocked placements do
+  not emit false departure/entry events or redirect split-search destinations.
+- Both-seat HTTP persistence/rejection checks, UI source flag and six new browser
+  flows; AI action use and reusable-card retention checks.
+- Canonical limited permissions are reported as unsupported, not unlimited.
+- Instant-timing predecessor: verified 8,674 full backend tests and complete
+  browser suite. New runtime qualification and natural acceptance remain open.
+
 ## Instant Value Windows (Candidate)
 
 - Correct the generic opponent-turn draw bonus to the opponent end step.

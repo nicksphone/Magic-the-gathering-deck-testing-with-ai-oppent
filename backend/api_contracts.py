@@ -85,6 +85,7 @@ class CardAction(InputModel):
 class LandAction(CardAction):
     type: Literal["play_land"]
     from_exile: StrictBool = False
+    from_graveyard: StrictBool = False
     selected_face_index: Annotated[StrictInt, Field(ge=0, le=20)] | None = None
     entry_choice: Literal["tapped", "pay_two_life"] | None = None
 

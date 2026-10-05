@@ -691,7 +691,14 @@ class RulesEngine:
                 return
             face = select_cast_face(card, face_index)
             from_exile = bool(action.get("from_exile"))
-            allowed_source = exile_permission(state, player_id, cid, face_index) if from_exile else cid in player.hand
+            from_graveyard = bool(action.get('from_graveyard'))
+            from rules_engine.graveyard_permissions import graveyard_land_permission, battlefield_entry_prohibited
+            allowed_source = (exile_permission(state, player_id, cid, face_index) if from_exile
+                              else graveyard_land_permission(state, player_id, cid) if from_graveyard
+                              else cid in player.hand)
+            if battlefield_entry_prohibited(state, cid, face_index):
+                reject('A battlefield ability prohibits this land entering from its source zone')
+                return
             if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
                 apply_state_based_actions(state)
                 return
@@ -714,8 +721,14 @@ class RulesEngine:
                     return
                 if from_exile:
                     leave_exile(state, cid)
+                    departures = []
+                elif from_graveyard:
+                    from rules_engine.resource_events import capture_graveyard_departures
+                    departures = capture_graveyard_departures(state, [cid])
+                    player.graveyard.remove(cid)
                 else:
                     player.hand.remove(cid)
+                    departures = []
                 if not state.trigger_staging:
                     state.trigger_staging = True
                     state.trigger_staging_event = "land_play"
@@ -729,6 +742,9 @@ class RulesEngine:
                 state.cards[cid].summoning_sick = True
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
+                if departures:
+                    from rules_engine.resource_events import emit_graveyard_departures
+                    emit_graveyard_departures(state, departures)
                 emit_event(state, "enters_battlefield", {"card_id": cid, "controller": player_id})
 
         elif kind == 'activate_mana_ability':

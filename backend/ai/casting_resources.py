@@ -16,10 +16,15 @@ from rules_engine.query_context import rule_query_scope, query_cache
 
 
 def _graveyard_loss(agent, state, cid, player_id):
+    from rules_engine.graveyard_permissions import ordinary_graveyard_cast, graveyard_land_permission
     card = state.cards[cid]
     text = without_reminder_text(card.oracle_text or '').lower()
     loss = 0.1
-    if re.search(r'\b(flashback|escape|disturb|aftermath|jump-start|retrace|dredge)\b', text):
+    land_face = ('Land' in effective_types(state, card) or (getattr(card, 'layout', '') == 'modal_dfc'
+                 and any('Land' in face.get('type_line', '') for face in getattr(card, 'card_faces', []))))
+    if (re.search(r'\b(flashback|escape|disturb|aftermath|jump-start|retrace|dredge)\b', text)
+            or ordinary_graveyard_cast(state, player_id, cid)
+            or (land_face and graveyard_land_permission(state, player_id, cid))):
         loss += 3 + max(0, agent._hand_retention_value(state, cid, player_id)) * 0.3
     engines = [without_reminder_text(state.cards[other].oracle_text or '').lower() for other in
                state.players[player_id].hand + state.players[player_id].battlefield]

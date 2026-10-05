@@ -13,6 +13,7 @@ from rules_engine.costs import activated_cost_available, activated_cost_candidat
 from rules_engine.cycling import cycling_cost, cycling_is_variable, cycling_variant
 from rules_engine.entry import land_entry_options
 from rules_engine.land_rules import compute_max_land_plays_this_turn
+from rules_engine.graveyard_permissions import graveyard_land_permission, battlefield_entry_prohibited
 from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
@@ -261,13 +262,15 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             used_land_plays = 0
         if (
             _is_land_card(card)
-            and cid in player.hand
+            and (cid in player.hand or graveyard_land_permission(state, player_id, cid))
+            and not battlefield_entry_prohibited(state, cid)
             and used_land_plays < max_land_plays
             and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}
             and state.active_player == player_id
             and not state.stack
         ):
-            moves.extend(_land_moves(state, player_id, card, {"type": "play_land", "card_id": cid}))
+            moves.extend(_land_moves(state, player_id, card, {"type": "play_land", "card_id": cid,
+                         **({'from_graveyard': True} if card.zone == Zone.GRAVEYARD else {})}))
         elif (
             card.zone in {Zone.HAND, Zone.GRAVEYARD}
             and not _is_land_card(card)
@@ -525,11 +528,13 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 continue
             face = select_cast_face(original, index)
             if "Land" in effective_types(state, face):
-                if original.layout == "modal_dfc" and original.zone in {Zone.HAND, Zone.EXILE} and state.active_player == player_id and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack:
+                allowed_land_zone = original.zone in {Zone.HAND, Zone.EXILE} or graveyard_land_permission(state, player_id, cid)
+                if original.layout == "modal_dfc" and allowed_land_zone and not battlefield_entry_prohibited(state, cid, index) and state.active_player == player_id and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack:
                     used = max(player.lands_played_this_turn, player.land_plays_recorded_on_turn) if player.last_land_play_turn == state.turn else 0
                     if used < compute_max_land_plays_this_turn(state, player_id):
                         moves.extend(_land_moves(state, player_id, face, {"type": "play_land", "card_id": cid, "card_name": face.name,
-                                      "selected_face_index": index, "from_exile": original.zone == Zone.EXILE}))
+                                      "selected_face_index": index, "from_exile": original.zone == Zone.EXILE,
+                                      "from_graveyard": original.zone == Zone.GRAVEYARD}))
                 continue
             if not can_cast_in_current_timing(state, face, player_id)[0]:
                 continue

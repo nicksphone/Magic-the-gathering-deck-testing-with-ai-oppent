@@ -105,6 +105,11 @@ def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> 
 
 
 def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution: bool = False) -> tuple[bool, str]:
+    from rules_engine.graveyard_permissions import zone_cast_prohibited, graveyard_only_cast
+    if zone_cast_prohibited(state, player_id, getattr(card, 'zone', None)):
+        return False, 'A battlefield ability prohibits casting from this zone.'
+    if getattr(card, 'zone', None) != Zone.GRAVEYARD and graveyard_only_cast(card):
+        return False, 'This card may be cast only from its graveyard.'
     if split_second_active(state):
         return False, 'Split second prevents casting spells.'
     from rules_engine.alternative_casts import has_aftermath

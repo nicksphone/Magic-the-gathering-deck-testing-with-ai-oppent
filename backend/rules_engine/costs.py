@@ -322,6 +322,9 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
 
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
+    from rules_engine.graveyard_permissions import ordinary_graveyard_cast, zone_cast_prohibited, graveyard_only_cast
+    if zone_cast_prohibited(state, player_id, card.zone) or (card.zone != Zone.GRAVEYARD and graveyard_only_cast(card)):
+        return []
     from rules_engine.linked_discard import linked_discard_gaps
     if linked_discard_gaps(card.oracle_text or ''):
         return []
@@ -344,7 +347,7 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if without_mana:
         options = [base]
     elif card.zone == Zone.GRAVEYARD:
-        options = []
+        options = [base] if card.mana_cost and ordinary_graveyard_cast(state, player_id, card.id) else []
         if has_aftermath(card):
             options.append(CostOption(id="aftermath", label="Aftermath", mana_cost=card.mana_cost or ""))
         if escape:

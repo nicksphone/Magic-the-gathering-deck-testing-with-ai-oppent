@@ -199,6 +199,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
         out.extend(reason for reason in row['reasons'] if reason not in out)
     for row in static_coverage_details(oracle_text, card_faces, card_name=card_name):
         out.extend(reason for reason in row['reasons'] if reason not in out)
+    from rules_engine.graveyard_permissions import permission_gaps
+    for name, text in variants:
+        out.extend(permission_gaps(text, name))
     return list(dict.fromkeys(out))
 
 

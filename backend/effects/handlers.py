@@ -10,6 +10,7 @@ from rules_engine.continuous import effective_keywords, effective_toughness, eff
 from rules_engine.counter_placement import put_counters
 from rules_engine.counter_replacements import counter_effect_amount
 from rules_engine.entry import apply_entry_choice, pause_for_land_entries
+from rules_engine.graveyard_permissions import battlefield_entry_prohibited
 from rules_engine.colors import card_color_names
 from rules_engine.hooks import apply_replacement_effects
 from rules_engine.events import capture_last_known_battlefield, emit_event, emit_event_batch, was_creature_on_battlefield
@@ -1419,7 +1420,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card):
+    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
         return
     # Lock the graveyard characteristics before any resumable entry choice.
     if payload.get('lose_life_equal_to_mana_value'):
@@ -1456,7 +1457,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card):
+    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
         return
     if pause_for_land_entries(state, controller, [target], "return_permanent_from_graveyard_to_battlefield", payload):
         return
@@ -1532,6 +1533,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             if limit and len(chosen) >= limit:
                 break
     entering = chosen[:1] if destination == "split_battlefield_hand" else chosen if destination == "battlefield" else []
+    entering = [cid for cid in entering if not battlefield_entry_prohibited(state, cid)]
     if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
         return
     if entering and prepare_counter_entries(state, controller, [state.cards[cid] for cid in entering],
@@ -1539,8 +1541,11 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         return
     found: list[str] = []
     entry_events = []
-    for cid in chosen:
-        zone = ("battlefield" if not found else "hand") if destination == "split_battlefield_hand" else destination
+    placed = []
+    for index, cid in enumerate(chosen):
+        zone = ("battlefield" if index == 0 else "hand") if destination == "split_battlefield_hand" else destination
+        if zone == 'battlefield' and battlefield_entry_prohibited(state, cid):
+            continue
         choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
         player.library.remove(cid)
         _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")),
@@ -1548,13 +1553,17 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
         if destination == "battlefield":
             entry_events.append({"card_id": cid, "controller": controller})
         found.append(state.cards[cid].name)
+        placed.append(cid)
     if entry_events:
         emit_event_batch(state, "enters_battlefield", entry_events)
+    if chosen and payload.get('reveal'):
+        from game_state.observations import observe_cards
+        observe_cards(state, chosen)
     if found:
         public_names = bool(payload.get("reveal")) or destination in {"battlefield", "graveyard", "exile"}
         if public_names:
             from game_state.observations import observe_cards
-            observe_cards(state, chosen)
+            observe_cards(state, placed)
         detail = f": {', '.join(found)}" if public_names else ""
         state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s){detail}.")
     if payload.get("shuffle"):
@@ -2608,7 +2617,7 @@ def topdeck_put_creatures_battlefield(state: MatchState, controller: int, payloa
 
     def is_eligible(cid: str) -> bool:
         card = state.cards[cid]
-        if "Creature" not in effective_types(state, card):
+        if "Creature" not in effective_types(state, card) or battlefield_entry_prohibited(state, cid):
             return False
         return mana_value(card.mana_cost or "") <= mv_max
 
@@ -2690,6 +2699,7 @@ def topdeck_put_permanents_battlefield(state: MatchState, controller: int, paylo
     eligible = [
         cid for cid in top_slice
         if set(effective_types(state, state.cards[cid])).intersection(permanent_types)
+        and not battlefield_entry_prohibited(state, cid)
         and (not payload.get("allowed_type") or payload["allowed_type"] in effective_types(state, state.cards[cid]))
         and (mv_max is None or mana_value_for(cid) <= max(0, int(mv_max)))
     ]

@@ -1,0 +1,10 @@
+{
+  "source": "https://api.scryfall.com/cards/collection",
+  "retrieved_at": "2026-10-05T13:53:36.358Z",
+  "names": [
+    "Muldrotha, the Gravetide",
+    "Lurrus of the Dream-Den",
+    "Gisa and Geralf"
+  ],
+  "sha256": "a4fe424d53bf1254653c140fa5ac12e002cea13465f6ceaece89b4529bfd11ab"
+}

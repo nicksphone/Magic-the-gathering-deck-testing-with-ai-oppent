@@ -1,0 +1,20 @@
+{
+  "source": "https://api.scryfall.com/cards/collection",
+  "retrieved_at": "2026-10-05T13:28:58.441Z",
+  "names": [
+    "Hogaak, Arisen Necropolis",
+    "Gravecrawler",
+    "Crucible of Worlds",
+    "Ramunap Excavator",
+    "Ancient Greenwarden",
+    "Grafdigger's Cage",
+    "Diregraf Ghoul",
+    "Changeling Outcast",
+    "Forest",
+    "Swamp",
+    "Sol Ring",
+    "Tormod, the Desecrator",
+    "Humility"
+  ],
+  "sha256": "ce130c9c6031960900108584c163e4113948f2050cb185424285ef2f8c900e76"
+}
