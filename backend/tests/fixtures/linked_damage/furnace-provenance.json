@@ -1,0 +1,8 @@
+{
+  "source": "https://api.scryfall.com/cards/named?exact=Furnace%20of%20Rath",
+  "retrieved_at": "2026-10-05T03:04:46.335Z",
+  "name": "Furnace of Rath",
+  "id": "d7f0e720-3c32-4040-b663-7f99ad5bc810",
+  "sha256": "4a2feca3b6b9bb2da4e59bc5172b94c84505d74ffcb64598f697b9570143252a",
+  "policy": "Verbatim response, no printed edits"
+}

@@ -77,6 +77,9 @@ def was_creature_on_battlefield(card) -> bool:
 
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
+    if event == 'enters_battlefield':
+        from rules_engine.land_history import record_land_entry
+        record_land_entry(state, payload)
     if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id')])
@@ -93,6 +96,10 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
     """Collect simultaneous events before putting their triggers on the stack."""
+    if event == 'enters_battlefield':
+        from rules_engine.land_history import record_land_entry
+        for payload in payloads:
+            record_land_entry(state, payload)
     if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id') for payload in payloads])

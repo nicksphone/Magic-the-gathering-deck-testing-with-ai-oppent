@@ -30,6 +30,8 @@ def _has_target_options(hints: dict[str, Any]) -> bool:
 
 
 def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
+    if 'linked_target_pairs' in hints:
+        return bool(hints['linked_target_pairs'])
     if hints.get('required_target_instance_count') and not hints.get('creature_targets'):
         return False
     required = hints.get('required_distinct_target_count')

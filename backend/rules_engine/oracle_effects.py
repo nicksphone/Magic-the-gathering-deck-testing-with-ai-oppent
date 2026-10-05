@@ -220,6 +220,16 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.linked_targets import linked_damage_instruction, linked_damage_effect
+    if linked_damage_instruction(oracle, card.name):
+        from copy import copy
+        proxy = copy(card)
+        proxy.oracle_text = oracle
+        return linked_damage_effect(state, proxy, action_targets)
+    from rules_engine.landfall import alternative_effect
+    landfall = alternative_effect(oracle, action_targets)
+    if landfall:
+        return landfall
     from rules_engine.ordered_targets import ordered_counter_allocations, ordered_creature_modifiers
     modifiers = ordered_creature_modifiers(oracle)
     if modifiers:
@@ -792,6 +802,9 @@ def inspect_target_hints(
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
+    from rules_engine.linked_targets import linked_damage_instruction, linked_target_hints
+    if linked_damage_instruction(oracle, card.name):
+        return linked_target_hints(state, card, controller)
     from rules_engine.ordered_targets import ordered_counter_allocations, ordered_creature_modifiers
     modifiers = ordered_creature_modifiers(oracle)
     if modifiers:

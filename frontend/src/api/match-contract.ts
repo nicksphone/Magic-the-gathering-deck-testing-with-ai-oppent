@@ -138,6 +138,17 @@ export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revisi
 
 function targetHints(value: unknown): boolean {
   if (!record(value)) return false;
+  if (value.linked_target_pairs !== undefined && (!Array.isArray(value.linked_target_pairs)
+    || !value.linked_target_pairs.every(pair => record(pair) && typeof pair.primary_name === 'string'
+      && typeof pair.creature_id === 'string' && typeof pair.creature_name === 'string'
+      && record(pair.targets) && Object.keys(pair.targets).every(key => ['target_player', 'target_card_id', 'target_card_ids'].includes(key))
+      && (pair.primary_kind === 'player'
+        ? (pair.primary_id === 1 || pair.primary_id === 2) && pair.targets.target_player === pair.primary_id
+          && pair.targets.target_card_id === pair.creature_id && pair.targets.target_card_ids === undefined
+        : pair.primary_kind === 'planeswalker' && typeof pair.primary_id === 'string'
+          && pair.targets.target_player === undefined && pair.targets.target_card_id === undefined
+          && Array.isArray(pair.targets.target_card_ids) && pair.targets.target_card_ids.length === 2
+          && pair.targets.target_card_ids[0] === pair.primary_id && pair.targets.target_card_ids[1] === pair.creature_id)))) return false;
   if (value.required_target_instance_count === undefined && value.ordered_creature_modifiers === undefined) return true;
   return value.required_distinct_target_count === undefined
     && Number.isInteger(value.required_target_instance_count)

@@ -148,3 +148,25 @@ for (const fields of [{required_target_instance_count: 0}, {required_target_inst
   }
 }
 console.log('PASS ordered modifier target-instance and cost-specific contracts');
+
+const linkedPairs = [
+  {primary_kind: 'player', primary_id: 2, primary_name: 'Player B', creature_id: 'creature', creature_name: 'Torrential Gearhulk',
+    targets: {target_player: 2, target_card_id: 'creature'}},
+  {primary_kind: 'planeswalker', primary_id: 'walker', primary_name: 'Ugin, the Spirit Dragon', creature_id: 'creature', creature_name: 'Torrential Gearhulk',
+    targets: {target_card_ids: ['walker', 'creature']}},
+];
+const linkedMove = {type: 'cast_spell', target_hints: {linked_target_pairs: linkedPairs}};
+assert.equal(parseLegalMoves({player_id: 1, revision: 1, moves: [linkedMove]}).moves[0], linkedMove);
+for (const pair of [{...linkedPairs[0], primary_id: 3}, {...linkedPairs[0], targets: {target_player: 1, target_card_id: 'creature'}},
+  {...linkedPairs[0], targets: {target_player: 2}}, {...linkedPairs[1], targets: {target_card_ids: ['creature', 'walker']}},
+  {...linkedPairs[1], targets: {target_player: 2, target_card_ids: ['walker', 'creature']}},
+  {...linkedPairs[1], targets: {target_card_ids: ['walker', 'creature', 'third']}},
+  {...linkedPairs[0], targets: {...linkedPairs[0].targets, amount: 99}}]) {
+  for (const costSpecific of [false, true]) {
+    const badHints = {linked_target_pairs: [pair]};
+    const move = costSpecific ? {type: 'cast_spell', cost_options: [{id: 'base', discard_cards: 0, sacrifice_creatures: 0, target_hints: badHints}]}
+      : {type: 'cast_spell', target_hints: badHints};
+    assert.throws(() => parseLegalMoves({player_id: 1, revision: 1, moves: [move]}), /legal-moves/);
+  }
+}
+console.log('PASS linked target pair shape, ordering, exclusivity and cost-specific contracts');

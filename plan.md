@@ -2,6 +2,48 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify the beneficial original-spell targeting repair exposed by the fresh
+  copy matrix. Canonical pump/life cases reproduce 27 failures and nine passes
+  before correction. Shared life-gain tagging and structural conditional pump
+  polarity now pass 97 overlapping checks, including both seats/four style labels,
+  actual checked resolution and unknown-history immutability. A separate frozen
+  318-file full backend gate is running. Complete its exact-source verification
+  and fresh post-fix seeded games; the earlier copy matrix is pre-fix evidence.
+
+- [ ] Finish [linked conditional damage](docs/testing/linked-controller-targets.md).
+  Complete-pair admission, exclusive damage amounts, captured recipients and
+  bounded AI pair selection pass focused gates. Current frozen backend passes
+  7,688 tests in 313 discovered files, with 594 source/fixture files equal to the
+  candidate. Typed human controls pass eight Chromium cases for both seats and
+  primary types, including paid casting, wrong-controller rejection and reload.
+  The pre-copy full browser gate also passes natural BO3 in all three controller
+  modes. Paired-copy choices and simultaneous same-object damage are now
+  implemented: 306 overlapping backend checks and twelve focused browser cases
+  pass. The frozen full backend gate passes 7,736 tests in all 316 recursive files;
+  its full browser gate passed. Departed planeswalker
+  LKI, broader protection corners and latest-source match acceptance remain open.
+
+- [ ] Complete conditional-copy acceptance after repairing stale branch recipients
+  and branch-aware AI targeting. Twenty-four new canonical cases fail before and
+  an overlapping 188-check selection passes after correction. Latest conditional
+  edits pass a subsequent 7,760-test full gate in all 317 recursive files, with
+  602 backend source/fixture files identical across candidate and four shards.
+  Eight paid human browser cases pass both seats and ordinary/enhanced branches,
+  including deliberate retarget, reload, untouched original and copy resolution.
+  Current-source retained natural copy games are running; their actual card use
+  and strict reconstruction still require review.
+  The earlier four-game matrix has 2,217 logical decisions, eight matching strict
+  reconstructions and actual casts of all four landfall families; it is not
+  evidence of these subsequent copy repairs or competitive balance.
+
+- [ ] Validate and integrate the independent [land-entry history and alternatives](docs/testing/land-entry-history.md)
+  candidate. Shared events record real entries independently of land-play limits;
+  complete pump/life/draw landfall forms choose one branch at resolution. The
+  isolated 354-check selection and latest 7,688-test full backend gate pass;
+  broader HTTP/browser and fresh-match acceptance remain outstanding. Remaining
+  linked damage semantics, AI forecasts and unknown-legacy
+  recovery are not closed by this increment. The live root remains unchanged.
+
 - [ ] Complete [coupled and independent target fidelity](docs/plans/coupled-target-fidelity.md)
   after the current AI acceptance gates. Ordered modifier selection and copied
   target continuations are published after 7,569 tests, full browser acceptance

@@ -172,6 +172,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal_distribution:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    elif item.effect_key == 'linked_landfall_damage':
+        from rules_engine.linked_targets import legal_linked_recipients
+        legal_recipients = legal_linked_recipients(state, item)
+        if not legal_recipients:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
     elif card and card.zone == Zone.STACK and (
             item.payload.get('__ordered_distinct_targets') or item.payload.get('__ordered_target_instances')):
         from game_state.state import object_incarnation
@@ -253,6 +259,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
+    if item.effect_key in {'landfall_alternative', 'linked_landfall_damage'}:
+        from rules_engine.landfall import require_known_history
+        require_known_history(state, item.controller)
     if (item.payload or {}).get("__may"):
         is_trigger = bool(item.payload.get("__trigger_event"))
         choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
@@ -310,6 +319,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    if item.effect_key == 'linked_landfall_damage':
+        payload['legal_recipients'] = legal_recipients
     if legal_effects is not None:
         payload["effects"] = legal_effects
     if legal_distribution is not None:

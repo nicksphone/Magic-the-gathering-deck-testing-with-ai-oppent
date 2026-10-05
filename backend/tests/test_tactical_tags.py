@@ -3,7 +3,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from ai.agent import AIAgent
-from card_data.tactical import canonical_tactical_tags
+from card_data.tactical import canonical_tactical_tags, tactical_tags
 
 
 SEED = json.loads((Path(__file__).resolve().parents[1] / "card_data" / "builtin_oracle_seed.json").read_text())["cards"]
@@ -50,3 +50,10 @@ def test_seed_corpus_tactical_tags_are_deterministic_and_face_aware():
     assert "sweeper" in canonical_tactical_tags(SEED["Supreme Verdict"])["tactical_tags"]
     assert "burn" not in canonical_tactical_tags(SEED["Forest"])["tactical_tags"]
     assert "removal" in canonical_tactical_tags(SEED["Brutal Cathar"])["face_tactical_tags"][0]
+
+
+def test_life_gain_role_uses_canonical_instruction_not_keyword_grant():
+    raw = json.loads((Path(__file__).parent / 'fixtures/landfall/rest-for-the-weary.json').read_text())
+    assert 'gain' in canonical_tactical_tags(raw)['tactical_tags']
+    assert 'gain' not in tactical_tags('Target creature gains trample until end of turn.')
+    assert {'gain', 'drain'} <= tactical_tags('Target player loses 3 life and you gain 3 life.')

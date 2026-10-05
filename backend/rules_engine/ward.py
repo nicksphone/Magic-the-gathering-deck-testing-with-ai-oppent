@@ -115,8 +115,10 @@ def capture_ward_triggers(state, controller, payload):
         card = state.cards.get(cid)
         if card is None or card.zone != Zone.BATTLEFIELD or card.controller == controller:
             continue
-        if payload.get('__ordered_target_instances') or payload.get('__ordered_distinct_targets'):
-            references = [effect.get('payload') or {} for effect in payload.get('effects', [])]
+        if (payload.get('__ordered_target_instances') or payload.get('__ordered_distinct_targets')
+                or payload.get('__linked_target_instances')):
+            references = (payload.get('target_instances', []) if payload.get('__linked_target_instances') else
+                          [effect.get('payload') or {} for effect in payload.get('effects', [])])
             if not any(reference.get('target_card_id') == cid
                        and reference.get('__target_incarnation') == object_incarnation(card)
                        and reference.get('__target_zone_sequence') == card.zone_change_sequence

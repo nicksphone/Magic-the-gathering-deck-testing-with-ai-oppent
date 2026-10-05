@@ -93,6 +93,9 @@ def single_player_permanent_alternative(text: str) -> str | None:
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
     action_targets = action_targets or {}
+    if 'linked_target_pairs' in target_hints:
+        from rules_engine.linked_targets import validate_linked_choice
+        return validate_linked_choice(target_hints, action_targets)
     modes = target_hints.get("modes") or []
     choose_two = bool(target_hints.get("choose_two_modes"))
 

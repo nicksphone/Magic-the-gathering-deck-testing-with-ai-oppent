@@ -13,6 +13,76 @@ from tests.ui_fixture_server import app, publish, fixture, add
 from game_state.state import Zone
 
 
+@app.post('/fixture/linked-damage')
+def linked_damage(seat: int = 1, primary: str = 'player', enhanced: bool = False):
+    if seat not in (1, 2) or primary not in ('player', 'planeswalker'):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected a valid seat and primary target kind')
+    from tests.test_linked_damage_targets import position
+    state, spell, creature, walker, targets = position(seat, primary)
+    state.players[seat].mana_pool = {color: 2 if color == 'R' else 0 for color in 'WUBRGC'}
+    if enhanced:
+        state.land_entries_this_turn[seat] = 1
+    before = state.players[3-seat].life if walker is None else walker.loyalty
+    state.log.append('Canonical linked-damage UI fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Mountain'}])
+    return {'match': result, 'spell_id': spell.id, 'creature_id': creature.id,
+            'walker_id': walker.id if walker else None, 'targets': targets,
+            'primary_name': walker.name if walker else state.players[3-seat].name,
+            'primary_before': before, 'amount': 3 if enhanced else 1}
+
+
+@app.post('/fixture/linked-copy')
+def linked_copy(seat: int = 1, primary: str = 'player'):
+    if seat not in (1, 2) or primary not in ('player', 'planeswalker'):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected a valid seat and primary target kind')
+    from tests.test_linked_copy_targets import copied_position
+    state, original, first, second, walker = copied_position(seat, primary, paid=True)
+    for player in state.players.values():
+        player.mana_pool = {color: player.mana_pool.get(color, 0) for color in 'WUBRGC'}
+    state.log.append('Canonical paid linked-copy UI fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Mountain'}])
+    return {'match': result, 'original_id': original, 'first_id': first,
+            'second_id': second, 'walker_id': walker, 'primary_name': state.players[seat].name}
+
+
+@app.post('/fixture/conditional-copy')
+def conditional_copy(seat: int = 1, name: str = 'groundswell', enhanced: bool = False):
+    if seat not in (1, 2) or name not in ('groundswell', 'rest-for-the-weary'):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected a valid seat and supported alternative')
+    import json
+    from tests.test_landfall_alternatives import position
+    from tests.test_linked_damage_targets import raw_card
+    from tests.test_ai_recurring_engines import add
+    from tests.test_real_ordered_spell_copy import pass_twice
+    from rules_engine.action_validation import checked_action
+    from rules_engine.engine import RulesEngine
+    state, spell, old, targets = position(name, seat)
+    copier = 3-seat
+    new = add(state, 'Torrential Gearhulk', copier)
+    state = checked_action(state, RulesEngine(), seat,
+                           {'type': 'cast_spell', 'card_id': spell.id, 'targets': targets})
+    original = state.stack[-1].id
+    raw = json.loads((Path(__file__).parent / 'fixtures/coupled_targets/twincast.json').read_text())
+    twincast = raw_card(state, raw, copier, Zone.HAND)
+    state.players[copier].mana_pool = {'U': 2}
+    state.land_entries_this_turn[copier] = int(enhanced)
+    state = checked_action(state, RulesEngine(), seat, {'type': 'pass_priority'})
+    state = checked_action(state, RulesEngine(), copier,
+                           {'type': 'cast_spell', 'card_id': twincast.id,
+                            'targets': {'target_stack_id': original}})
+    state = pass_twice(state)
+    assert state.pending_mechanic_choice is not None
+    for player in state.players.values():
+        player.mana_pool = {color: player.mana_pool.get(color, 0) for color in 'WUBRGC'}
+    state.log.append('Canonical paid conditional-copy UI fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'original_id': original, 'old_id': old.id, 'new_id': new.id,
+            'spell_name': spell.name, 'recipient_name': new.name if name == 'groundswell' else state.players[seat].name}
+
+
 @app.post('/fixture/ordered-modifiers')
 def ordered_modifiers(seat: int = 1):
     if seat not in (1, 2):

@@ -6,6 +6,25 @@ Both human seats can choose ordered recipients and copied targets; AI uses check
 public outcomes. See [scope and verified acceptance](docs/testing/ordered-creature-modifiers.md).
 Controller-linked damage and conditional landfall remain a separate candidate.
 
+This independent landfall candidate adds durable controller-specific land-entry
+history and complete conditional pump, life and draw alternatives selected at
+resolution. It is not deployed to the live root. Focused replacement, snapshot
+and copy checks pass. The pre-copy backend passes 7,688 tests; linked damage has
+typed human controls verified for both seats in eight focused browser cases.
+Independent paired-copy choices and single-source simultaneous damage aggregation
+pass the full 7,760-test backend gate in 317 files, with all 602 backend
+source/fixture files equal to the tested candidate. The preceding full browser
+gate passed; eight additional paid conditional-copy browser cases now verify
+both seats, ordinary/enhanced effects, retargeting, reload and actual resolution.
+Frozen copy capability games are running separately. Their decision audit exposed
+original beneficial spells targeting the opponent. A subsequent shared role and
+conditional-pump targeting repair passes 97 overlapping checks; its separate full
+backend gate is running. The 7,760-test result does not include this later repair.
+Departed-planeswalker dependency, broader protection corners, latest-source match
+acceptance and deeper AI planning remain open. See
+[landfall scope](docs/testing/land-entry-history.md) and
+[linked damage acceptance](docs/testing/linked-controller-targets.md).
+
 Supported sacrifice-linked damage, ordered distinct counter allocations,
 temporary graveyard flashback grants and self-return triggers now share checked
 payments, durable object references and restart behavior. Both human seats can

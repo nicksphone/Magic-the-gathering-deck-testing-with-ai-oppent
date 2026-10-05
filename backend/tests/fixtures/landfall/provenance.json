@@ -1,0 +1,30 @@
+{
+  "retrieved_utc": "2026-10-05T01:58:19.651Z",
+  "policy": "Verbatim canonical API responses, no printed-data edits",
+  "cards": [
+    {
+      "file": "groundswell.json",
+      "name": "Groundswell",
+      "id": "821e9cb9-f78e-4d11-9c36-42e8b84b49cd",
+      "oracle_id": "ddbacb74-1f98-4607-a92e-d14973b9d0ef",
+      "source": "https://api.scryfall.com/cards/named?exact=Groundswell",
+      "sha256": "42b91344aa2dfceadb715bb398c2979a608397e81f6f4f58a5e5070277096840"
+    },
+    {
+      "file": "rest-for-the-weary.json",
+      "name": "Rest for the Weary",
+      "id": "75eb8537-42c9-41d5-be0a-1186bc8dee0b",
+      "oracle_id": "c7f08962-6c54-4fd5-a55e-7513e758af32",
+      "source": "https://api.scryfall.com/cards/named?exact=Rest%20for%20the%20Weary",
+      "sha256": "4c1d528f27b9d578cc5d8c2b9ca2d0db75af2f43c687ce9dd4898e5493fbe957"
+    },
+    {
+      "file": "mysteries-of-the-deep.json",
+      "name": "Mysteries of the Deep",
+      "id": "1907b1e9-ae1e-43fb-9033-3c4322277fff",
+      "oracle_id": "3708eaae-9306-46b2-ae41-7ce6c50be3c7",
+      "source": "https://api.scryfall.com/cards/named?exact=Mysteries%20of%20the%20Deep",
+      "sha256": "d3a3a1a44096484c65979d4e78794197feb0d7f20dffc5a7d2c973d524fadcbd"
+    }
+  ]
+}

@@ -912,6 +912,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         for key in ("target_player", "target_card_id", "target_stack_id")
         if copied_payload.get(key) is not None
     }
+    if is_spell and copied_payload.get('__linked_target_instances'):
+        from rules_engine.linked_targets import offer_linked_copy_target_choice
+        offer_linked_copy_target_choice(state, copied_item)
+        return
     if is_spell and (copied_payload.get('__ordered_target_instances')
                      or copied_payload.get('__ordered_distinct_targets')):
         from rules_engine.ordered_targets import offer_ordered_copy_target_choice
@@ -2240,7 +2244,24 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
     source_id = payload.get("__source_card_id")
     source_lki = payload.get("__source_lki")
     lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
-    recipients = list(payload.get("recipients") or [])
+    recipients = []
+    grouped = {}
+    # One source deals a simultaneous total to each recipient before prevention.
+    # Only packets with identical metadata share replacement/prevention semantics.
+    for raw in payload.get('recipients') or []:
+        recipient = dict(raw)
+        target_keys = [key for key in ('target_player', 'target_card_id') if recipient.get(key) is not None]
+        if len(target_keys) == 1:
+            key = (target_keys[0], recipient[target_keys[0]])
+            signature = {name: value for name, value in recipient.items() if name != 'amount'}
+            variants = grouped.setdefault(key, [])
+            existing = next((packet for metadata, packet in variants if metadata == signature), None)
+            if existing is not None:
+                existing['amount'] += int(recipient['amount'])
+                continue
+            recipient['amount'] = int(recipient['amount'])
+            variants.append((signature, recipient))
+        recipients.append(recipient)
     for index, recipient in enumerate(recipients):
         recipient = {**recipient, "__source_card_id": source_id, "__source_lki": source_lki,
                      "__defer_lethal": True, "__batch_damage": True}

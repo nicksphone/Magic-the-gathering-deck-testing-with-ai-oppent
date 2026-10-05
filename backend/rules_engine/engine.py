@@ -74,6 +74,8 @@ class RulesEngine:
             state.draws_this_turn = {1: 0, 2: 0}
             state.surveils_this_turn = {1: 0, 2: 0}
             state.discards_this_turn = {1: 0, 2: 0}
+            state.land_entries_this_turn = {1: 0, 2: 0}
+            state.land_entry_history_known = True
             state.players_with_permanent_departure = set()
             state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()

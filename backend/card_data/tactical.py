@@ -17,6 +17,8 @@ def tactical_tags(oracle_text: str, type_line: str = "", types: list[str] | None
         tags.add("sweeper")
     if "draw" in text or ("look at the top" in text and "into your hand" in text):
         tags.add("draw")
+    if re.search(r"\bgains?\b[^.\n]{0,80}\blife\b", text):
+        tags.add("gain")
     if "destroy target" in text or "exile target" in text or re.search(r"\bdeals?\b.*\bdamage\b", text):
         tags.add("removal")
     if re.search(r"\bdeals?\s+(?:\d+|x|that much)\s+damage to\s+(?:any target|target (?:player|opponent)|each (?:player|opponent))", text):

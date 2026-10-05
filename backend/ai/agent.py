@@ -284,10 +284,16 @@ class AIAgent:
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Select least useful cards for required pregame instruction")
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
+                if copied and choice.get('linked_target_index') is not None:
+                    from ai.linked_targets import choose_linked_copy_option
+                    selected = choose_linked_copy_option(self, state, player_id, choice)
+                    return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
+                                      reasoning='Choose a legal linked copy continuation from bounded public outcomes')
                 opponent = 3 - player_id
                 selected = "keep" if "keep" in options else options[0]
                 if copied and (choice.get("mode_target_text") or choice.get("clause_effect_index") is not None
-                               or choice.get('ordered_target_index') is not None):
+                               or choice.get('ordered_target_index') is not None
+                               or copied.effect_key == 'landfall_alternative'):
                     if choice.get("mode_target_text"):
                         mode = choice["mode_target_text"]
                         effects = [effect for effect in copied.payload.get("effects", []) if effect.get("mode_text") == mode]
@@ -296,6 +302,12 @@ class AIAgent:
                         index = int(choice['ordered_target_index'])
                         effects = (copied.payload.get('effects') or [])[index:index + 1]
                         original = {'target_card_id': copied.payload['__announced_targets']['target_card_ids'][index]}
+                    elif copied.effect_key == 'landfall_alternative':
+                        from rules_engine.land_history import landfall_status
+                        status = landfall_status(state, copied.controller)
+                        effects = [] if status is None else [copied.payload['branches'][int(status)]]
+                        original = {key: value for key, value in copied.payload.get('__announced_targets', {}).items()
+                                    if key in ('target_player', 'target_card_id', 'target_stack_id')}
                     else:
                         index = int(choice["clause_effect_index"])
                         effects = (copied.payload.get("effects") or [])[index:index + 1]
@@ -3023,6 +3035,16 @@ class AIAgent:
                 # Default to top-of-stack for most non-counter interactions.
                 targets["target_stack_id"] = stack_targets[-1]["id"]
 
+        if 'linked_target_pairs' in hints:
+            from ai.linked_targets import choose_linked_pair
+            from rules_engine.linked_targets import validate_linked_choice
+            selected = targets if validate_linked_choice(hints, targets)[0] else choose_linked_pair(
+                self, state, player_id, out, hints)
+            if selected is None:
+                out['_invalid_ai_choice'] = True
+            else:
+                out['targets'] = selected
+            return out
         player_targets = hints.get("player_targets") or []
         if player_targets and targets.get("target_player") is None and not targets.get("target_card_id"):
             allowed_players = {int(target["id"]) for target in player_targets}
@@ -3047,6 +3069,20 @@ class AIAgent:
                 targets['target_card_id'] = selected
         from rules_engine.oracle_effects import parse_temporary_target_buff
         pt_change = parse_temporary_target_buff(without_reminder_text(target_text).strip())
+        if pt_change is None and mtype == 'cast_spell':
+            from rules_engine.landfall import alternative_effect
+            from rules_engine.land_history import landfall_status
+            alternative = alternative_effect(target_text, targets)
+            if alternative:
+                branches = alternative[1]['branches']
+                if all(branch['effect_key'] == 'temporary_pt_buff' for branch in branches):
+                    status = landfall_status(state, player_id)
+                    if status is not None:
+                        pt_change = branches[int(status)]['payload']
+                    elif all(branch['payload']['power'] >= 0 and branch['payload']['toughness'] >= 0
+                             for branch in branches):
+                        # Common beneficiary only; unknown history supplies no pump amount.
+                        pt_change = {'power': 0, 'toughness': 0}
         from rules_engine.devotion import devotion_instruction, devotion_count
         devotion = devotion_instruction(target_text, getattr(card, 'name', '') or '')
         if pt_change or devotion and devotion['kind'] == 'pump':
