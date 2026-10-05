@@ -1,9 +1,16 @@
 # MTG Deck Testing Lab
 
+The AI resource-opportunity candidate compares bounded legal payments rather
+than blindly accepting the first witness. It weighs blockers, repeatable mana,
+graveyard payoffs, actual self-tap token triggers and affordable own-hand
+follow-ups. Twenty-three focused cases and 342 earlier overlapping checks pass; full/natural
+acceptance remains open. See [scope](docs/testing/ai-resource-opportunity.md).
+
 The resource-event follow-up connects real taps and graveyard departures to
 shared trigger staging and pre-move ability checks. Both-seat canonical cases,
-crew/attack ordering and HTTP/SQLite recovery pass; full follow-up qualification
-remains open. See [scope](docs/testing/resource-event-fidelity.md).
+crew/attack ordering and HTTP/SQLite recovery pass. Frozen qualification passes
+8,627 backend tests and the complete browser suite; wider semantics and natural
+acceptance remain open. See [scope](docs/testing/resource-event-fidelity.md).
 
 An isolated casting-resource candidate connects ordinary delve, convoke and
 improvise payment to shared legality, strict inputs and deliberate both-seat

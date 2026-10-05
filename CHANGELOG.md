@@ -1,5 +1,23 @@
 # Changelog
 
+## AI Resource Opportunity (Candidate)
+
+- Compare actual legal payment outcomes for delve, convoke and improvise using
+  a bounded set of explicit alternatives, retaining the engine fallback.
+- Value retained blockers/mana, graveyard recursion, real self-tap token rewards
+  and affordable follow-ups without reading hidden opponent identities.
+- Twenty-three focused cases and 342 earlier overlapping checks pass. Full/natural tactical
+  acceptance remains open; main/live are unchanged.
+
+## Completed Candidate Gates
+
+- Frozen resource-event runtime 16da9fa: 8,627 tests across all 348 recursive
+  files; all 683 source hashes verified in each DB-free copy. Full browser passes.
+- Selection370 natural replay completed all 12 executions (six unique paired-seat
+  samples), with no determinism failure or unresolved result. Semantic comparison
+  finds three changed unique traces; one early Deluge timing decision needs
+  follow-up. Repeatability is not optimal-play or balance certification.
+
 ## Resource Events (Candidate)
 
 - Shared real-tap transitions across costs, crew, combat and effects; preserve

@@ -18,7 +18,7 @@ COLORS = 'WUBRG'
 
 def resource_keywords(card):
     printed = {str(keyword).lower() for keyword in getattr(card, 'keywords', [])}
-    text = card.oracle_text or ''
+    text = getattr(card, 'oracle_text', '') or ''
     if not KEYWORDS.intersection(printed) and not any(keyword in text.lower() for keyword in KEYWORDS):
         return frozenset()
     lines = set()

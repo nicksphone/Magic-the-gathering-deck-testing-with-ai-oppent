@@ -25,6 +25,10 @@ lifelink Soldier. Card data and decks are unchanged.
 
 ## Evidence
 
+- Frozen runtime 16da9fa passes 8,627 backend tests across all 348 recursive files.
+  All 683 source hashes match in each of four initially database-free copies;
+  the complete browser harness passes, including all three natural BO3 modes.
+
 - Twenty both-seat canonical tap/departure cases cover convoke, effects, attack,
   crew, duplicate taps, batch/separate departures, wrong-owner graveyards,
   pre-move Humility checks, real casts, stack order and snapshot reconstruction.
@@ -40,7 +44,7 @@ lifelink Soldier. Card data and decks are unchanged.
 
 ## Remaining Acceptance
 
-- Exact frozen-source full backend and browser/recovery parity for this follow-up.
+- Retain completed frozen backend/browser evidence and evaluate natural decisions.
 - Wider tap subjects, conditional/once-per-turn clauses, granted abilities,
   optional/targeted choices and more creature-filtered departure cards.
   Supported textual families are not complete Oracle interpretation.

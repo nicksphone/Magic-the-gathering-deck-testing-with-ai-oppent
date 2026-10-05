@@ -1904,6 +1904,7 @@ class AIAgent:
                 state, player_id, getattr(card, "mana_cost", ""),
                 card_name=getattr(card, "name", ""), spell_types=set(effective_types(state, card) or []),
                 oracle_text=getattr(card, "oracle_text", "") or "",
+                source_card_id=getattr(card, 'id', None), cast_resource_card=card,
             ))
         except Exception:
             return False
@@ -2971,6 +2972,12 @@ class AIAgent:
         return score
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
+        from ai.casting_resources import choose_resource_payment
+        action = self._materialize_action_without_resources(state, move, player_id,
+            allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
+        return choose_resource_payment(self, state, action, player_id)
+
+    def _materialize_action_without_resources(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
         mtype = move.get("type")
         from rules_engine.attachments import is_aura
         source = state.cards.get(move.get("card_id"))

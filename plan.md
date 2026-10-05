@@ -2,9 +2,21 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
+  overlapping checks pass. Preserve engine fallback, bounded legal projections,
+  blocker/mana/graveyard opportunity costs and hidden-information invariants.
+  Complete exact-source full/natural gates and broaden colored/compound payment
+  alternatives. See [scope](docs/testing/ai-resource-opportunity.md).
+- [ ] Investigate natural Tempo/Control seat-two decision 524: control cashes
+  a seven-mana graveyard card-selection spell in opponent upkeep while holding
+  two counters, instead of waiting for an appropriate later window. Scope the
+  fix to general interaction reservation/instant timing, not a card-name rule.
+  The selection370 replay is deterministic; its outcome alone is not optimality.
+
 - [ ] Qualify resource-event follow-up: real-tap paths, pre-move graveyard watcher
   capture, batch/APNAP semantics and original-action stack ordering. 175
-  overlapping checks and eight HTTP/SQLite cases pass; full frozen gate, wider
+  overlapping checks and eight HTTP/SQLite cases pass. Frozen full backend
+  (8,627 tests/348 files) and complete browser gates pass; wider
   trigger semantics and natural tactical evaluation remain open. See
   [acceptance](docs/testing/resource-event-fidelity.md).
 
