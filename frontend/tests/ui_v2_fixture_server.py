@@ -15,6 +15,27 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/announced-color-cost')
+def announced_color_cost(seat: int = 1, scenario: str = 'discount'):
+    from fastapi import HTTPException
+    from tests.test_announced_spell_costs import add, ROWS, RAW, position
+    if seat not in (1, 2) or scenario not in {'discount', 'unrelated-tax', 'prototype'}:
+        raise HTTPException(422, 'Expected a supported color-cost fixture')
+    state = position(seat)
+    state.mechanic_choice_players = {1, 2}
+    for player in state.players.values():
+        player.mana_pool = {color: 0 for color in 'WUBRGC'}
+    source = {'discount': 'Ruby Medallion', 'unrelated-tax': 'Gloom', 'prototype': 'Ugin, the Ineffable'}[scenario]
+    add(state, source, 3-seat if scenario == 'unrelated-tax' else seat)
+    name = RAW['name'] if scenario == 'prototype' else 'Young Pyromancer'
+    card = add(state, name, seat, Zone.HAND, cards={name: RAW} if scenario == 'prototype' else ROWS)
+    state.players[seat].mana_pool.update({'R': 1} if scenario == 'discount' else
+                                        {'R': 1, 'C': 1} if scenario == 'unrelated-tax' else {'B': 2})
+    state.log.append('Canonical announced-color-cost fixture; not a competitive deck.')
+    return {'match': publish(state, [{'quantity': 60, 'card_name': 'Island'}]),
+            'card_id': card.id, 'name': name, 'mana_spent': 1 if scenario == 'discount' else 2}
+
+
 @app.post('/fixture/graveyard-cast-method')
 def graveyard_cast_method(seat: int = 1, method: str = 'prototype'):
     from fastapi import HTTPException

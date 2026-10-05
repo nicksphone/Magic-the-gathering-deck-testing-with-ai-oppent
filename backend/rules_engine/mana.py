@@ -14,6 +14,13 @@ from rules_engine.mana_restrictions import UNFILTERED, _parse_rule, available_po
 
 MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
 MANA_COLORS = ("C", "W", "U", "B", "R", "G")
+
+
+def _cast_colors(card):
+    from rules_engine.colors import card_color_symbols
+    return card_color_symbols(card) if card is not None else None
+
+
 DUAL_LAND_NAME_COLORS: dict[str, set[str]] = {
     "hallowed fountain": {"W", "U"},
     "sacred foundry": {"R", "W"},
@@ -144,6 +151,7 @@ def can_pay_with_pool_and_lands(
         oracle_text=oracle_text,
         is_spell=payment_kind == "spell", ability_kind=ability_kind, ability_index=ability_index,
         source_card_id=source_card_id, target_card_id=target_card_id,
+        spell_colors=_cast_colors(cast_resource_card),
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
@@ -545,6 +553,7 @@ def auto_pay_cost(
         oracle_text=oracle_text,
         is_spell=payment_kind == "spell", ability_kind=ability_kind, ability_index=ability_index,
         source_card_id=source_card_id, target_card_id=target_card_id,
+        spell_colors=_cast_colors(cast_resource_card),
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)

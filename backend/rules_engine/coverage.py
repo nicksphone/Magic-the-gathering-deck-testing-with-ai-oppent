@@ -110,6 +110,12 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
         if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None for text in kicker_texts):
             out.remove('kicker')
     from rules_engine.activation_modifiers import activation_modifier_gaps
+    from rules_engine.combat_constraints import static_clauses
+    from rules_engine.hooks import spell_cost_modifier
+    if any(re.search(r'\b(?:white|blue|black|red|green|colorless)\b.*spells?.*cost.*to cast', clause)
+           and spell_cost_modifier(clause) is None
+           for text in texts for clause in static_clauses(text)):
+        out.append('unsupported color-qualified spell cost')
     variants = [(card_name, oracle_text or ''),
                 *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
                   for face in card_faces or [] if isinstance(face, dict))]

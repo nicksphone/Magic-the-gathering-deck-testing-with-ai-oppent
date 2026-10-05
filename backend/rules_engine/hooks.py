@@ -16,6 +16,7 @@ class CostContext:
     generic_increase: int = 0
     state: Any = None
     spell_types: set[str] | None = None
+    spell_colors: set[str] | None = None
     spell_is_aura: bool = False
     spell_kicked: bool = False
     oracle_text: str = ""
@@ -159,24 +160,50 @@ def _apply_domain_self_discount(context: CostContext) -> CostContext:
     return context
 
 
-_SPELL_TAX_RE = re.compile(
-    r"(?P<scope>your opponents'|your|all)?\s*"
-    r"(?P<kind>noncreature|creature|artifact|enchantment|instant or sorcery|)\s*"
-    r"spells? cost \{(?P<amount>\d+)\} more to cast"
-)
+def spell_cost_modifier(clause):
+    """Recognize a whole unconditional clause; never silently drop a qualifier."""
+    match = re.fullmatch(r"(?:(.+?) )?spells?((?: you| your opponents) cast)? cost \{(\d+)\} (more|less) to cast",
+                         clause.strip().lower().rstrip('.'))
+    if not match:
+        return None
+    head, tail, amount, direction = match.groups()
+    head = head or ''
+    scope = 'controller' if tail == ' you cast' else 'opponent' if tail else 'all'
+    for prefix, legacy_scope in [("your opponents'", 'opponent'), ('your', 'controller'), ('all', 'all')]:
+        if head == prefix or head.startswith(prefix+' '):
+            if tail:
+                return None
+            scope, head = legacy_scope, head[len(prefix):].strip()
+            break
+    colors = {'white': 'W', 'blue': 'U', 'black': 'B', 'red': 'R', 'green': 'G', 'colorless': 'colorless'}
+    subjects = head.split(' spells and ')
+    if all(subject in colors for subject in subjects):
+        return {'scope': scope, 'colors': {colors[subject] for subject in subjects},
+                'amount': int(amount), 'increase': direction == 'more'}
+    if head not in {'', 'noncreature', 'creature', 'artifact', 'enchantment', 'instant or sorcery', 'instant and sorcery'}:
+        return None
+    return {'scope': scope, 'kind': head, 'amount': int(amount), 'increase': direction == 'more'}
 
 
 def _apply_static_spell_taxes(context: CostContext) -> CostContext:
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.activation_modifiers import turn_cost_taxes
     from game_state.state import Zone
-    """Apply generic spell taxes from supported battlefield Oracle text."""
+    """Apply supported generic changes using the announced spell's properties."""
     if context.state is None or not context.is_spell or not context.spell_types:
         return context
     if "Land" in context.spell_types:
         return context
     increase = int(context.generic_increase)
     target_types = {str(value).lower() for value in context.spell_types}
+    from rules_engine.colors import card_color_symbols
+    from rules_engine.combat_constraints import static_clauses
+    from rules_engine.continuous import _static_oracle_text
+    from types import SimpleNamespace
+    colors = context.spell_colors
+    if colors is None:
+        source_card = context.state.cards.get(context.source_card_id)
+        colors = card_color_symbols(source_card or SimpleNamespace(mana_cost=context.mana_cost, oracle_text=context.oracle_text))
     for pid in context.state.players:
         for cid in context.state.players[pid].battlefield:
             source = context.state.cards.get(cid)
@@ -184,18 +211,22 @@ def _apply_static_spell_taxes(context: CostContext) -> CostContext:
                 continue
             if printed_abilities_suppressed(context.state, cid):
                 continue
-            text = (getattr(source, "oracle_text", "") or "").lower()
-            taxes = turn_cost_taxes(text)
+            text = _static_oracle_text(source).lower()
+            taxes = turn_cost_taxes(source.oracle_text or '')
             if (taxes and source.zone == Zone.BATTLEFIELD
                     and context.state.active_player == source.controller and context.player_id != source.controller):
                 increase += taxes[0]
-            for match in _SPELL_TAX_RE.finditer(text):
-                scope = (match.group("scope") or "").strip()
-                if scope == "your" and source.controller != context.player_id:
+            for clause in static_clauses(text):
+                spec = spell_cost_modifier(clause)
+                if spec is None:
                     continue
-                if scope == "your opponents'" and source.controller == context.player_id:
+                if spec['scope'] == 'controller' and source.controller != context.player_id:
                     continue
-                kind = (match.group("kind") or "").strip()
+                if spec['scope'] == 'opponent' and source.controller == context.player_id:
+                    continue
+                if 'colors' in spec and not (colors.intersection(spec['colors']) or not colors and 'colorless' in spec['colors']):
+                    continue
+                kind = spec.get('kind', '')
                 if kind == "noncreature" and "creature" in target_types:
                     continue
                 if kind == "creature" and "creature" not in target_types:
@@ -204,9 +235,12 @@ def _apply_static_spell_taxes(context: CostContext) -> CostContext:
                     continue
                 if kind == "enchantment" and "enchantment" not in target_types:
                     continue
-                if kind == "instant or sorcery" and not target_types.intersection({"instant", "sorcery"}):
+                if kind in {"instant or sorcery", "instant and sorcery"} and not target_types.intersection({"instant", "sorcery"}):
                     continue
-                increase += int(match.group("amount"))
+                if spec['increase']:
+                    increase += spec['amount']
+                else:
+                    context.generic_reduction += spec['amount']
     context.generic_increase = increase
     return context
 

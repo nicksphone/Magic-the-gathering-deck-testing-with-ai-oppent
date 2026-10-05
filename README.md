@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+Shared announced-spell cost handling adds fixed color/type taxes and discounts,
+controller scope, multicolor clause stacking, prototype and devoid color checks.
+Both-seat HTTP/restart and six browser scenarios pass; combined integration
+qualification remains open. See [scope](docs/testing/announced-spell-costs.md).
+
 An isolated successor checks graveyard permissions against announced prototype
 and bestow characteristics and preserves scarce source/type allowances for known
 AI follow-ups. Both-seat HTTP/restart and four focused browser flows pass;

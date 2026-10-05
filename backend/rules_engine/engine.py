@@ -947,6 +947,8 @@ class RulesEngine:
                     face_card = bestow_cast_view(face_card)
                 from rules_engine.kicker import spell_kicker_view
                 printed_face_card = face_card
+                from rules_engine.alternative_casts import spell_cast_view
+                face_card = spell_cast_view(face_card, casting_method(chosen.id))
                 face_card = spell_kicker_view(face_card, chosen.kicked)
                 action_targets = enrich_divide_total(face_card, at_targets)
                 if face_card is not card:

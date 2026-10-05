@@ -2,6 +2,13 @@
 
 ## Current Priority: Backend First
 
+- [ ] Consolidate implemented cost, graveyard and timing work into an integration
+  milestone. Fixed color/type modifiers, actual prototype color, both-seat
+  HTTP/restart and browser flows are implemented. Finish the focused parser
+  rerun and one combined full gate; do not require a new small-sample natural
+  matrix for every independent clause. Broader unknown semantics stay explicit.
+  See [scope](docs/testing/announced-spell-costs.md).
+
 - [ ] Qualify announced casting-method permissions and strategic source/type
   selection. Prototype/bestow use chosen characteristics; AI preserves scarce
   allowances for known own-graveyard follow-ups. 194 backend checks, four focused

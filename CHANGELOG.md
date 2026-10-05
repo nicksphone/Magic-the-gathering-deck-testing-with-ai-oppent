@@ -1,5 +1,17 @@
 # Changelog
 
+## Announced Spell Cost Modifiers
+
+- Stop reading qualified color taxes as global suffix matches. Share exact
+  fixed generic tax/discount clauses, controller scope and color/type checks.
+- Pass actual chosen spell colors through affordability and payment; distinguish
+  one color-union clause from separate stacking clauses. Preserve paired turn
+  spell/ability taxes, suppression and generic-only reduction.
+- Eleven complete canonical downloads with provenance; 268 focused backend
+  checks, 33 isolated HTTP/rules checks and six both-seat browser flows pass.
+  Counts overlap; final parser rerun passes 84 checks. Combined integration
+  qualification remains pending.
+
 ## Graveyard Casting Methods And Permission Opportunity (Candidate)
 
 - Evaluate ordinary/limited permissions using announced prototype mana value
