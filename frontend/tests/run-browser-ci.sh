@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
+root=$(cd "$(dirname "$0")/../.." && pwd -P)
+cd "$root"
+test "$(realpath "$(git rev-parse --show-toplevel)")" = "$root"
 
 # The harness owns fixed loopback ports; concurrent runs must not share them.
 exec 9>"${TMPDIR:-/tmp}/mtg-browser-ci.lock"
 if ! flock -n 9; then
   echo "Another browser CI run owns the test ports; wait for it to finish." >&2
+  exit 1
+fi
+if [[ -n "$(ss -H -ltn '( sport = :10199 or sport = :15173 or sport = :19222 )')" ]]; then
+  echo 'Browser CI ports 10199, 15173 and 19222 must be unused; no foreign service will be stopped.' >&2
   exit 1
 fi
 
@@ -14,23 +21,36 @@ if [[ ! -x "$python_bin" ]]; then
   echo "Browser CI requires backend/.venv/bin/python or MTG_TEST_PYTHON" >&2
   exit 1
 fi
+python_bin=$(realpath -s "$python_bin")
+frontend_deps=$(realpath "${MTG_FRONTEND_DEPS:-$root/frontend/node_modules}")
+if [[ -f "$frontend_deps/node_modules/vite/bin/vite.js" ]]; then frontend_deps="$frontend_deps/node_modules"; fi
+test -f "$frontend_deps/vite/bin/vite.js"
+test "$(basename "$frontend_deps")" = node_modules
 
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/mtg-browser-ci-XXXXXX")
 profile=$(mktemp -d "${TMPDIR:-/tmp}/mtg-browser-profile-XXXXXX")
-git ls-files backend | tar -cf - -T - | tar -xf - -C "$scratch"
-{ git diff --name-only -- backend; git ls-files --others --exclude-standard backend; } | sort -u | while IFS= read -r path; do
-  if [[ -f "$path" ]]; then install -D "$path" "$scratch/$path"; fi
-done
-
-cp frontend/tests/ui_fixture_server.py frontend/tests/ui_v2_fixture_server.py "$scratch/backend/tests/"
-
 backend_pid=''
 frontend_pid=''
 browser_pid=''
+stop_owned() {
+  local pid=${1:-}
+  [[ -n "$pid" ]] || return 0
+  # All service groups were created by setsid, never discovered from a port.
+  kill -TERM -- "-$pid" 2>/dev/null || true
+  for _ in $(seq 1 50); do
+    if ! kill -0 -- "-$pid" 2>/dev/null; then break; fi
+    sleep 0.1
+  done
+  if kill -0 -- "-$pid" 2>/dev/null; then kill -KILL -- "-$pid" 2>/dev/null || true; fi
+  wait "$pid" 2>/dev/null || true
+}
+stop_owned_services() {
+  for pid in "$backend_pid" "$frontend_pid" "$browser_pid"; do stop_owned "$pid"; done
+  backend_pid='' frontend_pid='' browser_pid=''
+}
 cleanup() {
   status=$?
-  kill "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
-  wait "$backend_pid" "$frontend_pid" "$browser_pid" 2>/dev/null || true
+  stop_owned_services
   if [[ "$status" -eq 0 && "${MTG_KEEP_TEST_ARTIFACTS:-0}" != 1 ]]; then
     rm -r -- "$scratch" "$profile"
   else
@@ -38,20 +58,53 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# Freeze regular source only; never import a caller DB or follow source symlinks.
+[[ "$(stat -f -c %T "$scratch")" != nfs* ]]
+git rev-parse HEAD > "$scratch/source-revision.txt"
+while IFS= read -r -d '' path; do
+  case "/$path/" in
+    */node_modules/*|*/.venv/*|*/venv/*|*/__pycache__/*|*/.pytest_cache/*|*/.cache/*|*/cache/*|*/image_cache/*|*/diagnostics/*|*/training_runs/*|*/dist/*|*/logs/*|*/backend/knowledge/data/*|*/backend/backend/*) continue ;;
+  esac
+  case "$path" in *.db|*.db-*|*.sqlite|*.sqlite-*|*.sqlite3|*.sqlite3-*) continue ;; esac
+  [[ -f "$path" && ! -L "$path" ]] || continue
+  # A symlinked parent directory must not escape the checkout either.
+  [[ "$(realpath "$path")" = "$root/$path" ]] || continue
+  install -D "$path" "$scratch/$path"
+done < <(git ls-files -z --cached --others --exclude-standard -- backend frontend)
+cp "$scratch/frontend/tests/ui_fixture_server.py" "$scratch/frontend/tests/ui_v2_fixture_server.py" "$scratch/backend/tests/"
+# Private Git inventory outside the test root lets independent gates recopy the
+# same frozen source, without making guarded fixture imports look like live Git.
+env -u GIT_DIR -u GIT_WORK_TREE git init --bare -q "$profile/source.git"
+export GIT_DIR="$profile/source.git" GIT_WORK_TREE="$scratch"
+cd "$scratch"
+git add -- backend frontend
+git -c user.name='Browser CI fixture' -c user.email=fixture@localhost commit -qm 'Frozen browser CI source'
+mkdir "$scratch/frontend/node_modules"
+for dependency in "$frontend_deps"/*; do
+  ln -s "$dependency" "$scratch/frontend/node_modules/$(basename "$dependency")"
+done
+cat > "$scratch/frontend/vite.ci.config.ts" <<'VITE'
+import base from './vite.config';
+export default {...base, cacheDir: '../vite-cache'};
+VITE
+cd "$scratch"
 
 start_backend() {
-  (cd "$scratch/backend" && exec "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec setsid "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
 start_backend
-(cd frontend && exec env VITE_API_BASE_URL=http://127.0.0.1:10199 ./node_modules/.bin/vite --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
+(cd frontend && exec setsid env VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
 browser=$(command -v google-chrome || command -v chromium)
 browser_flags=()
 if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
-"$browser" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
+setsid "$browser" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
   --user-data-dir="$profile" --remote-debugging-port=19222 about:blank >"$scratch/browser.log" 2>&1 &
 browser_pid=$!
 
@@ -173,13 +226,8 @@ echo 'Browser CI: canonical conditional static buffs and keyword grants'
 echo 'Browser CI: App recovery scenarios'
 (cd frontend && timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'
-kill "$backend_pid"
-for _ in $(seq 1 50); do
-  if ! kill -0 "$backend_pid" 2>/dev/null; then break; fi
-  sleep 0.1
-done
-kill -KILL "$backend_pid" 2>/dev/null || true
-wait "$backend_pid" 2>/dev/null || true
+stop_owned "$backend_pid"
+backend_pid=''
 start_backend
 wait_for_services
 echo 'Browser CI: verifying process restart'
@@ -196,14 +244,16 @@ echo 'Browser CI: natural human-vs-human BO3'
 (cd frontend && MTG_HUMAN_BO3_OPPONENT=human timeout 360s node tests/browser-human-bo3.mjs)
 
 echo 'Browser CI: stopping ordinary harness before independent Officer restart flows'
-for pid in "$backend_pid" "$frontend_pid" "$browser_pid"; do
-  kill "$pid" 2>/dev/null || true
-  wait "$pid" 2>/dev/null || true
-done
-backend_pid='' frontend_pid='' browser_pid=''
+stop_owned_services
 # Hosted CI explicitly opts into ephemeral evidence; local runs still require NFS.
 if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_OFFICER_EVIDENCE_ROOT:-}" ]]; then
   export MTG_OFFICER_EVIDENCE_ROOT="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-officer-evidence"
 fi
 MTG_TEST_PYTHON="$python_bin" MTG_CHROME="$browser" \
-  MTG_FRONTEND_DEPS="$PWD/frontend" bash frontend/tests/run-activated-top-selection.sh
+  MTG_FRONTEND_DEPS="$(dirname "$frontend_deps")" bash frontend/tests/run-activated-top-selection.sh
+echo 'Browser CI: canonical Cathar (six controlled cases, both seats; not full transform support)'
+if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_CATHAR_ARCHIVE:-}" ]]; then
+  export MTG_CATHAR_ARCHIVE="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-cathar-evidence"
+fi
+MTG_TEST_PYTHON="$python_bin" MTG_CHROMIUM="$browser" \
+  MTG_FRONTEND_DEPS="$frontend_deps" node frontend/tests/browser-cathar.mjs

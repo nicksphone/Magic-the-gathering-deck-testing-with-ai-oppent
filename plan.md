@@ -32,7 +32,9 @@ Completed bounded work:
   466 PASS lines including restart, sideboard and all three BO3 control modes.
   These are bounded correctness/flow checks, not expert strategic validation.
   Follow-up inspection CI isolation and dedicated Cathar browser now pass their
-  separate bounded gates; shared Cathar CI wiring remains in progress.
+  separate bounded gates. Shared Cathar CI wiring now passes six lightweight
+  isolation/ordering checks plus the existing Officer wrapper checks; an actual
+  hosted GitHub full-gate execution remains separate acceptance.
 - [x] Repair supported unknown-library deployment valuation. Exact retained
   Master Ramp-versus-Tokens configuration casts the payable spell without peeking
   at library order. Live-code and composed gates each pass 536 affected checks;

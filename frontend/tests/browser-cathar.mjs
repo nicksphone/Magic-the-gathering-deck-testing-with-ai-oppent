@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createServer } from 'node:net';
-import { mkdtemp, mkdir, readFile, writeFile, copyFile, symlink, realpath, stat, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, copyFile, symlink, realpath, stat, readdir, rm } from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -17,8 +17,18 @@ const chrome = process.env.MTG_CHROMIUM || execFileSync('bash', ['-c', 'command 
 const archiveBase = process.env.MTG_CATHAR_ARCHIVE || '/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/cathar-browser';
 let existing = path.resolve(archiveBase);
 while (true) { try { await stat(existing); break; } catch (error) { if (error.code !== 'ENOENT') throw error; existing = path.dirname(existing); } }
-assert.match(execFileSync('findmnt', ['-n', '-T', existing, '-o', 'FSTYPE'], { encoding: 'utf8' }).trim().split(/\r?\n/).at(-1), /^nfs4?$/);
+if (process.env.GITHUB_ACTIONS === 'true') {
+  assert.ok(process.env.RUNNER_TEMP && process.env.MTG_CATHAR_ARCHIVE, 'Hosted CI requires explicit RUNNER_TEMP evidence');
+  const runnerTemp = await realpath(process.env.RUNNER_TEMP);
+  const resolvedArchive = path.join(await realpath(existing), path.relative(existing, path.resolve(archiveBase)));
+  const relative = path.relative(runnerTemp, resolvedArchive);
+  assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative), 'Hosted evidence must stay inside RUNNER_TEMP');
+} else {
+  assert.match(execFileSync('findmnt', ['-n', '-T', existing, '-o', 'FSTYPE'], { encoding: 'utf8' }).trim().split(/\r?\n/).at(-1), /^nfs4?$/, 'Local Cathar evidence requires mounted NFS');
+}
+assert.equal(await realpath(execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: source, encoding: 'utf8' }).trim()), await realpath(source), 'Source root must match the Git inventory');
 const runtime = await mkdtemp(path.join(tmpdir(), 'mtg-cathar-browser-run-'));
+assert.ok(!execFileSync('stat', ['-f', '-c', '%T', runtime], { encoding: 'utf8' }).trim().startsWith('nfs'), 'SQLite runtime must be local');
 const archive = path.join(archiveBase, path.basename(runtime));
 await mkdir(path.join(archive, 'private'), { recursive: true, mode: 0o700 });
 const token = randomUUID();
@@ -98,6 +108,7 @@ try {
   const manifest = [];
   for (const file of files) {
     assert.ok(!path.isAbsolute(file) && !file.split('/').includes('..'));
+    assert.equal(await realpath(path.join(source, file)), path.join(source, file), `Source symlink is not a frozen regular file: ${file}`);
     const content = await readFile(path.join(source, file));
     await mkdir(path.dirname(path.join(runtime, file)), { recursive: true });
     await writeFile(path.join(runtime, file), content);
@@ -106,7 +117,11 @@ try {
   await writeFile(path.join(runtime, '.cathar-browser-owned'), token);
   await copyFile(path.join(runtime, 'frontend/tests/cathar_fixture_server.py'), path.join(runtime, 'backend/tests/cathar_fixture_server.py'));
   await writeFile(path.join(runtime, 'source-manifest.json'), JSON.stringify({ revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), files: manifest }, null, 2));
-  await symlink(deps, path.join(runtime, 'frontend/node_modules'), 'dir');
+  // Keep Vite's .vite-temp/config caches local, not in external node_modules.
+  await mkdir(path.join(runtime, 'frontend/node_modules'));
+  for (const entry of await readdir(deps)) {
+    if (!entry.startsWith('.')) await symlink(path.join(deps, entry), path.join(runtime, 'frontend/node_modules', entry));
+  }
   await writeFile(path.join(runtime, 'frontend/vite.cathar.config.mjs'), `import {defineConfig} from 'vite';import react from '@vitejs/plugin-react';export default defineConfig({plugins:[react()],cacheDir:${JSON.stringify(path.join(runtime, 'vite-cache'))},server:{proxy:{'/card-images':{target:${JSON.stringify(api)}}}}});`);
   await startBackend();
   const vite = start('frontend', process.execPath, [path.join(deps, 'vite/bin/vite.js'), '--config', 'vite.cathar.config.mjs', '--host', '127.0.0.1', '--port', String(ports.frontend), '--strictPort'], path.join(runtime, 'frontend'), { VITE_API_BASE_URL: api });

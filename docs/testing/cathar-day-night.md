@@ -34,7 +34,10 @@ hotfix qualification directory. API checks use disposable local databases, not
 the live user's saved game. Dedicated [Cathar browser acceptance](cathar-browser.md)
 now passes six cases on both seats, including pending choices, two real backend
 restarts and 48 actual-App HTTP actions. Parent composed-source execution also
-passes all six. These results are not universal transformation or Oracle certification.
+passes all six. Shared browser CI runs the dedicated gate after Officer, once
+ordinary owned services stop. Lightweight ordering and isolation checks pass;
+an actual hosted full-gate execution remains unverified. These results are not
+universal transformation or Oracle certification.
 
 ## Existing Games And Remaining Work
 

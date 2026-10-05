@@ -59,7 +59,7 @@ test -f "$scratch/repo/backend/foreign.sqlite"
 test -L "$scratch/repo/backend/foreign.py"
 test -d "$scratch/repo/.git"
 echo 'PASS normal-repo copy isolation and unchanged caller artifacts'
-mkdir -p "$scratch/ci/frontend/tests"
+mkdir -p "$scratch/ci/frontend/tests" "$scratch/ci/frontend/node_modules" "$scratch/ci-runner" "$scratch/ci/bin"
 cat > "$scratch/ci/frontend/tests/run-activated-top-selection.sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -69,15 +69,30 @@ test "$MTG_TEST_PYTHON" = "$EXPECTED_PYTHON"
 test "$MTG_CHROME" = /bin/true
 for pid in $MTG_CHECK_PIDS; do ! kill -0 "$pid" 2>/dev/null; done
 SH
+cat > "$scratch/ci/bin/node" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+test "$1" = frontend/tests/browser-cathar.mjs
+test "$MTG_CATHAR_ARCHIVE" = "$RUNNER_TEMP/mtg-cathar-evidence"
+test "$MTG_FRONTEND_DEPS" = "$PWD/frontend/node_modules"
+for pid in $MTG_CHECK_PIDS; do ! kill -0 "$pid" 2>/dev/null; done
+SH
+chmod +x "$scratch/ci/bin/node"
 (
   cd "$scratch/ci"
   export GITHUB_ACTIONS=true RUNNER_TEMP="$scratch/ci-runner" EXPECTED_PYTHON="$MTG_TEST_PYTHON"
-  unset MTG_OFFICER_EVIDENCE_ROOT
+  unset MTG_OFFICER_EVIDENCE_ROOT MTG_CATHAR_ARCHIVE
+  export PATH="$scratch/ci/bin:$PATH"
   python_bin="$MTG_TEST_PYTHON" browser=/bin/true
+  frontend_deps="$PWD/frontend/node_modules"
   sleep 60 & backend_pid=$!
   sleep 60 & frontend_pid=$!
   sleep 60 & browser_pid=$!
   export MTG_CHECK_PIDS="$backend_pid $frontend_pid $browser_pid"
+  stop_owned_services() {
+    for pid in "$backend_pid" "$frontend_pid" "$browser_pid"; do kill "$pid"; wait "$pid" || true; done
+    backend_pid='' frontend_pid='' browser_pid=''
+  }
   trap 'for pid in "$backend_pid" "$frontend_pid" "$browser_pid"; do if [[ -n "$pid" ]]; then kill "$pid" 2>/dev/null || true; fi; done' EXIT
   eval "$(sed -n '/^echo '\''Browser CI: stopping ordinary harness/,$p' "$tests/run-browser-ci.sh")"
 )

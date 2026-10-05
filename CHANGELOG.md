@@ -6,6 +6,9 @@
   entry and transformations, target choices, linked departure returns and stale
   source incarnations. Six cases and two backend restarts pass in the composed
   source, without modifying a user's saved match.
+- Wire Cathar after Officer in shared browser CI, with owned-process shutdown,
+  frozen source, local NFS evidence and explicitly confined hosted artifacts.
+  Lightweight common-harness and Officer isolation checks pass.
 - Broader transform clauses and linked-effect families still need qualification;
   the dedicated gate is not universal rules certification.
 

@@ -19,7 +19,10 @@ installation or network card lookup is performed by the gate.
 `MTG_CHROMIUM` can select an installed browser. Only use
 `MTG_BROWSER_NO_SANDBOX=1` when the environment requires it; sandboxing remains the
 default. `MTG_CATHAR_ARCHIVE` can select another directory on mounted NFS, never a
-local fallback. Browser card artwork may use the normal App's remote image URLs;
+local fallback. Hosted GitHub Actions is the sole exception: an explicit archive
+directory must resolve inside `RUNNER_TEMP`; the shared harness declares
+`$RUNNER_TEMP/mtg-cathar-evidence`. Local runs fail closed without NFS even when
+an explicit local archive path is provided. Browser card artwork may use the normal App's remote image URLs;
 artwork availability is not a rules acceptance claim.
 
 ## Isolation
@@ -30,6 +33,10 @@ runtime caches, reuses external dependencies, gives Vite a disposable cache,
 and creates a fresh source-local SQLite database. No live database is borrowed.
 Three separate ephemeral ports bind to `127.0.0.1`: real FastAPI, Vite serving the
 unmodified App, and Chromium CDP. Owned PIDs and ports are printed immediately.
+The runtime dependency directory contains individual package symlinks, not a
+symlink to the external dependency root: Vite config caches stay local too.
+Source symlinks are rejected before any service starts, and the Git inventory
+must match the source root. SQLite scratch must be local storage.
 
 `cathar_fixture_server.py` refuses direct import in a normal checkout before
 importing `main`. It requires a runner-created ownership marker, matching source
@@ -111,3 +118,30 @@ Successful output contains six `PASS` lines and `success=true`. Exit status is
 nonzero on a missing control, rule mismatch, restoration failure, service failure,
 or inability to preserve and verify NFS evidence. This is a focused browser gate,
 not the whole browser CI suite.
+
+## CI Integration
+
+The default `bash frontend/tests/run-browser-ci.sh` runs this dedicated gate
+after the independent Officer harness. The shared harness freezes regular
+backend/frontend source, excludes caller databases/caches/source symlinks, and
+keeps its private Git inventory outside the guarded test source root. Its three
+ordinary service groups stop before Officer, which stops its own services before
+Cathar starts. The ordinary fixed ports are checked without killing listeners;
+the singleton lock remains held through both independent gates. Failed ordinary
+logs/frozen source are retained, including a later Cathar failure.
+
+`MTG_FRONTEND_DEPS` accepts a frontend directory or its `node_modules` directory
+at the shared entry point. It forwards the former to Officer and the latter to
+Cathar. Individual Cathar invocation still expects `node_modules`.
+
+```bash
+bash frontend/tests/test-cathar-ci-harness.sh
+bash frontend/tests/test-activated-top-selection-harness.sh
+```
+
+The lightweight integration check executes the actual shared preamble and
+epilogue, substitutes owned test listeners for the long middle scenarios, and
+observes ordered Officer/Cathar invocation, stop/port closure, declared bounded
+scope, failure-log retention, singleton/foreign-port rejection, source/database
+isolation, hosted artifact-root confinement and local absent-NFS rejection. It
+is not a substitute for the six real browser cases or a full browser CI run.
