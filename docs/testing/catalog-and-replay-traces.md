@@ -33,6 +33,22 @@ Runner/replay selection passes 84 tests. Mocked runner tests prove export and
 failure contracts, not game quality. Frozen combined full qualification and
 actual pinned-deck retained-trace review are pending.
 
+## Observed Saved-Input Drift
+
+The first retained actual run resolved in 20 turns/556 decisions with no matched
+cost/target error logs and no passes while a land play was legal. Its inputs
+were pinned legacy saved rows: Drain contained 24 Swamps instead of the current
+template's 16 Swamps/4 Mountains/4 Badlands, while Tribal contained 28 Forests
+instead of 20 Forests/4 Swamps/4 Bayou. Missing printed-color land support is a
+confounder; Treasure or Collected Company can still provide alternative routes.
+This is not proof that those cards are never playable or that AI played well.
+
+Existing runs continue unchanged for reproducibility. A separate read-only
+export pins the unchanged current templates, with all 23 card entries checked
+against canonical local profiles; a new paired-seat retained-trace run is active.
+No live decks/card records were modified to construct those inputs. Full review,
+repeat comparison, timing diagnosis and statistical AI-strength claims remain open.
+
 These offline files contain hidden hands and are not safe live opponent views.
 Archive completed evidence on verified NFS; keep running source and SQLite local.
 Trace retention does not prove optimal decisions, broad balance or expert AI.
