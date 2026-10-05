@@ -3,12 +3,14 @@
 ## Current Priority: Backend First
 
 - [ ] Complete [coupled and independent target fidelity](docs/plans/coupled-target-fidelity.md)
-  after the current AI acceptance gates. Strict traces and canonical probes expose
-  linked damage/landfall and independent modifier-selection gaps. Share target
+  after the current AI acceptance gates. Ordered modifier selection and copied
+  target continuations are published after 7,569 tests, full browser acceptance
+  and four capability games/eight strictly reconstructed executions. Linked
+  damage/landfall remains an independent candidate, not a live repair. Share target
   instances, controller dependencies and partial-resolution validation across
   rules, API, AI and human actions; do not add card-name-only exceptions.
 
-- [ ] Complete [strategic waiting and public stack threat](docs/testing/ai-strategic-wait.md)
+- [x] Complete bounded [strategic waiting and public stack threat](docs/testing/ai-strategic-wait.md)
   acceptance. Preserve best-scoring passes, include legal waits in the bounded
   root and descendant shortlists, and value counterable threats from their actual
   public outcomes. Candidate two passes 7,425 backend tests but fails the natural
@@ -24,8 +26,8 @@
   Candidate two's complete 30-sample/60-execution matrix remains separate evidence.
   Do not force deck win rates.
 
-- [ ] Publish [offline action reconstruction](docs/testing/action-reconstruction.md)
-  after investigating its retained thirty-sample gate. Twenty-one unit/CLI checks
+- [x] Publish [offline action reconstruction](docs/testing/action-reconstruction.md)
+  while retaining its failures as rules evidence. Twenty-one unit/CLI checks
   and a complete retained game pass; strict reconstruction matches 26 samples
   and rejects four illegal target announcements. Repair single-alternative and
   controller-linked multi-target casting without weakening rejection. Keep

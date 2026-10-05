@@ -97,6 +97,23 @@ not merely a matching current card ID. The original Ward trigger remains intact.
 This repair postdates the 7,563-check source. Its separately frozen final gate
 passes all 7,569 checks across 310 discovered test files, with no omitted or
 duplicated files; the full Chromium gate also passes, including natural AI,
-human/AI and two-human BO3 sessions. Fresh repeated capability matches remain
-required before publishing this milestone. None of these gates covers the
+human/AI and two-human BO3 sessions. Fresh repeated capability matches were still
+required at that gate; the next section records their completion. None covers the
 independent land-entry/conditional-alternative workstream.
+
+## Fresh Capability Match Acceptance
+
+The targeting milestone is published after two seeds in both seat orders, with
+natural shuffles and unchanged printed card data in two 60-card exercise decks.
+Four logical games were each repeated: all complete packets match, no reported
+timeout/anomaly occurs, and strict checked action reconstruction verifies all
+eight executions (5,084 decisions). The logical games exercise twelve Agony Warp
+and three Twincast casts. Full private hand/log/decision evidence is archived on
+RCHFiles, not checked into the public repository.
+
+The initial matrix invocation discarded successful logs; it is only summary
+repeatability evidence. The retained rerun supplies the assertions above. These
+are capability exercise decks, not tournament recommendations or a win-rate
+target; the sample cannot establish competitive balance or expert AI. Broader
+linked targeting, conditional damage and arbitrary continuation fidelity remain
+open even though this bounded target/copy increment is now live.

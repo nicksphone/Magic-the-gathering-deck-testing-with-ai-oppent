@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-05 - Ordered creature modifiers and copy continuations
+
+- Support independent repeated creature P/T target instances, shared recipients,
+  partial legality, durable identity references and effective battlefield views.
+- Add both-seat ordered controls, sequential copy retargeting and bounded public
+  AI selection. Preserve explicitly distinct counter assignments and Ward identity.
+- Pass 7,569 isolated backend tests, frontend tests/lint/build and the full browser
+  gate. Four naturally shuffled capability samples, repeated eight executions,
+  exercise twelve Agony Warp and three Twincast casts; complete packets match and
+  strict action reconstruction verifies all 5,084 repeated decisions. This is
+  capability/repeatability evidence, not competitive balance or expert AI.
+- Keep linked damage/conditional landfall and broader instruction coverage open.
+
 ## 2026-10-05 - Strategic priority and offline action validation
 
 - Preserve best-scoring legal passes at the root and include priority passing in

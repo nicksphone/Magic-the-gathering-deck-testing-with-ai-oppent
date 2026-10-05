@@ -1,5 +1,11 @@
 # MTG Deck Testing Lab
 
+Supported repeated temporary creature modifiers now preserve independent target
+instances, including shared recipients, partial resolution and object identity.
+Both human seats can choose ordered recipients and copied targets; AI uses checked
+public outcomes. See [scope and verified acceptance](docs/testing/ordered-creature-modifiers.md).
+Controller-linked damage and conditional landfall remain a separate candidate.
+
 Supported sacrifice-linked damage, ordered distinct counter allocations,
 temporary graveyard flashback grants and self-return triggers now share checked
 payments, durable object references and restart behavior. Both human seats can

@@ -1,6 +1,7 @@
 # Coupled and Independent Target Fidelity
 
-Status: reproduced gaps; implementation and acceptance remain open.
+Status: ordered modifier/copy milestone published; linked damage/landfall and
+broader target dependencies remain in an independent candidate.
 
 ## Evidence and boundary
 
@@ -58,7 +59,7 @@ Retained probe setup errors are not engine failures.
   effect-entry, departed-land, next-turn and snapshot-resume cases pass.
 - [ ] Player and planeswalker alternatives are exclusive within their instance,
   but do not exclude the second required creature instance.
-- [ ] Canonical Agony Warp supports shared, different and reversed recipients;
+- [x] Canonical Agony Warp supports shared, different and reversed recipients;
   actual stats, combat, cleanup expiration and restart agree.
 - [ ] Each family handles one/all illegal targets, controller changes, return
   incarnations, copies and replacement/trigger continuations through the stack.
