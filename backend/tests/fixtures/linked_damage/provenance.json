@@ -1,0 +1,8 @@
+{
+  "source": "https://api.scryfall.com/cards/named?exact=Urza%27s%20Armor",
+  "retrieved_at": "2026-10-05T03:03:04.609Z",
+  "name": "Urza's Armor",
+  "id": "e40375cf-8649-4f06-9e08-f0577f35d1bf",
+  "sha256": "d1916b5e138f208e1f3e3ef9361f0c5b94d17c3f738deff3bb1cd37ae9165fdf",
+  "policy": "Verbatim response, no printed card edits"
+}

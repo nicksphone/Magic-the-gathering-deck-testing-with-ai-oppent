@@ -114,6 +114,14 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key == 'landfall_alternative':
+        from rules_engine.landfall import resolve_alternative
+        resolve_alternative(state, controller, payload)
+        return
+    if effect_key == 'linked_landfall_damage':
+        from rules_engine.linked_targets import resolve_linked_damage
+        resolve_linked_damage(state, controller, payload)
+        return
     if effect_key in {'foretell_from_hand', 'foretell_self'}:
         from rules_engine.foretell import resolve_hand, resolve_self
         (resolve_hand if effect_key == 'foretell_from_hand' else resolve_self)(state, controller, payload)

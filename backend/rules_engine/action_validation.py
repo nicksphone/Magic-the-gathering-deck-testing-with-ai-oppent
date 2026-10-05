@@ -24,6 +24,11 @@ def unique_ids(ids: list[str], allowed, count: int | None = None) -> None:
 
 def require_declared_targets(card, hints: dict, targets: dict, controller: int, *, spell: bool = False) -> None:
     """External actions must declare choices, not rely on legacy auto-targets."""
+    if 'linked_target_pairs' in hints:
+        from rules_engine.linked_targets import validate_linked_choice
+        valid, message = validate_linked_choice(hints, targets)
+        require(valid, message)
+        return
     if spell and not set(getattr(card, "types", [])).intersection({"Instant", "Sorcery"}):
         from rules_engine.costs import casting_method
         from rules_engine.attachments import is_aura

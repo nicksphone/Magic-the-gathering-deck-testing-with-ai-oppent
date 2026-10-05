@@ -214,6 +214,14 @@ export type LegalMove = {
   target_name?: string;
   accept?: boolean;
   target_hints?: {
+    linked_target_pairs?: {
+      primary_kind: 'player' | 'planeswalker';
+      primary_id: number | string;
+      primary_name: string;
+      creature_id: string;
+      creature_name: string;
+      targets: { target_player?: number; target_card_id?: string; target_card_ids?: string[] };
+    }[];
     single_target_alternative?: boolean;
     choice_schema?: Record<string, unknown>;
     player_targets?: { id: number; name: string }[];

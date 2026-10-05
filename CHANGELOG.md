@@ -1,5 +1,43 @@
 # Changelog
 
+## Unreleased Candidate - Land-entry history and conditional alternatives
+
+- Repair conditional spell copies whose announcement changed but effect branches
+  retained old targets. AI values the current known branch instead of retaining
+  harmful copied pumps/life gain. Twenty-four new regression cases fail before;
+  an overlapping 188-test selection passes after. Current-source full/browser
+  acceptance remains separate from the older frozen copy/damage gate.
+
+- Add independent paired-copy choices, correct paid-copy suspension/resume and a
+  bounded 4x4 public AI continuation beam. Verify both seats and four AI style
+  labels, snapshot choices, illegal kept targets, copy-only Ward and countered
+  original sources. Four paid-copy Chromium cases and eight damage cases pass.
+- Aggregate identical same-recipient packets in single-source damage batches
+  before prevention. Canonical Urza's Armor/Furnace of Rath verify one event,
+  chosen replacement order and restart continuation. An overlapping 306-test
+  selection passes; the new full gates are separate from the predecessor's 7,688.
+
+- Add complete controller-linked damage pairs, partial target validation and
+  bounded public AI pair evaluation. Human controls require a complete legal pair;
+  both seats pass eight paid Chromium casting/reload cases and wrong-controller
+  HTTP rejection checks. Frontend tests, lint and build pass.
+- Verify the latest frozen backend: 7,688 tests, all 313 discovered files exactly
+  once, and 594 source/fixture files equal to the current candidate. Full browser
+  and fresh match acceptance remain separate. Departed-planeswalker dependency
+  LKI, paired copy retargeting and same-object recipient edges remain unresolved.
+- Add six public landfall forecast regressions: current-history lethal damage
+  valuation, immutable snapshots and unknown conditional draw outcomes. They pass
+  in a separate overlapping 105-test selection, not part of the frozen full gate.
+
+- Record controller-specific real land entries through shared battlefield events,
+  independently of land plays, with durable history and explicit legacy unknowns.
+- Interpret complete conditional pump, life gain and draw forms as alternatives
+  chosen at resolution. Copies use their own controller's history; draw doubling
+  and dredge retain existing replacement and continuation paths.
+- Pass a 354-check isolated selection, then a separate 111-check illegal-target
+  repair selection. Full-suite and capability-game acceptance remain open; this
+  branch is not deployed. Linked damage and AI forecast integration remain open.
+
 ## 2026-10-05 - Strategic priority and offline action validation
 
 - Preserve best-scoring legal passes at the root and include priority passing in

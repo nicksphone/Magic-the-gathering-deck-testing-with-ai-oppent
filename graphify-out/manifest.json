@@ -1,2822 +1,2886 @@
 {
-  "/home/nick/mtg-coupled-targets/backend/api_contracts.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/api_contracts.py": {
+    "mtime": 1791165013.8233101,
     "hash": "71a7232c94075e784e7c7a964576ca35"
   },
-  "/home/nick/mtg-coupled-targets/backend/main.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/main.py": {
+    "mtime": 1791165013.8263102,
     "hash": "dcf5ac78f5c9a5b248791aa5fa21d123"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/counter_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/counter_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "b61e84cba9e8fe77eb76435a6e08efd5"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/trigger_targets.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/trigger_targets.py": {
+    "mtime": 1791165013.8223102,
     "hash": "275e20970c69f9cb1799f75e3d394ff5"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/combat_tax_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/combat_tax_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "98cf853f783047270e3080b10f36ab42"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/__init__.py": {
-    "mtime": 1791160751.5285883,
+  "/home/nick/mtg-linked-landfall/backend/ai/__init__.py": {
+    "mtime": 1791165013.8173103,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/deck_analysis.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/linked_targets.py": {
+    "mtime": 1791169004.2924535,
+    "hash": "e7fb225455b44c7e5a41d5626f338b0c"
+  },
+  "/home/nick/mtg-linked-landfall/backend/ai/deck_analysis.py": {
+    "mtime": 1791165013.8213103,
     "hash": "c5eabc3afa58b16be3c89012e1e68f24"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/information.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/information.py": {
+    "mtime": 1791165013.8213103,
     "hash": "1ed16b208a4009e9c2d3d5ae896139ab"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/ordered_targets.py": {
-    "mtime": 1791164017.490301,
+  "/home/nick/mtg-linked-landfall/backend/ai/ordered_targets.py": {
+    "mtime": 1791165013.8223102,
     "hash": "41816d534ce8f238a1f19f7510ef4974"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/heuristics.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/heuristics.py": {
+    "mtime": 1791165013.8213103,
     "hash": "90b45efb4d3e779b3aab9ee01e2e56df"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/mana_resource_policy.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/mana_resource_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "be10a51c6c1ea682acdbd286ead887f0"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/effect_cast_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/effect_cast_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "1b707a21655e19103e98feb177716322"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/foretell_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/foretell_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "14302bdedaf335847214794431302f8f"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/endgame_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/endgame_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "08af1f72f3ac27148635b6341ea54e8f"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/block_search.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/block_search.py": {
+    "mtime": 1791165013.8213103,
     "hash": "a2482cfff6002cd8f80c255a6594ff19"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/pending_effects.py": {
-    "mtime": 1791164907.5877519,
+  "/home/nick/mtg-linked-landfall/backend/ai/pending_effects.py": {
+    "mtime": 1791165013.8223102,
     "hash": "eb853c4a0e9fdb31625c7db1dc602177"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/matchup_profiles.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/matchup_profiles.py": {
+    "mtime": 1791165013.8223102,
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/agent.py": {
-    "mtime": 1791164907.586752,
-    "hash": "17085b15c238f7e9d2f2cea25f559448"
+  "/home/nick/mtg-linked-landfall/backend/ai/agent.py": {
+    "mtime": 1791169895.602108,
+    "hash": "2c3247012380db1f1130e9b29d27be70"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/sideboarding.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/sideboarding.py": {
+    "mtime": 1791165013.8223102,
     "hash": "9ded73b467c45bb70a10fa0988009dc9"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/trigger_policy.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/trigger_policy.py": {
+    "mtime": 1791165013.8223102,
     "hash": "629db7a2f59c567d9153a42813820e23"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/declaration_policy.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/declaration_policy.py": {
+    "mtime": 1791165013.8213103,
     "hash": "f9790a9b3db99479142ac4e83ceddb25"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/log_priors.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/log_priors.py": {
+    "mtime": 1791165013.8213103,
     "hash": "750c117c347a2a717384ee64106fa572"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/combat_response.py": {
-    "mtime": 1791160751.5305884,
+  "/home/nick/mtg-linked-landfall/backend/ai/combat_response.py": {
+    "mtime": 1791165013.8213103,
     "hash": "0bd424aaf88eb7e11fcca3603b2853be"
   },
-  "/home/nick/mtg-coupled-targets/backend/ai/proliferation_policy.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/ai/proliferation_policy.py": {
+    "mtime": 1791165013.8223102,
     "hash": "d2d137f54caff477a2ec288b08124466"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/oracle_corpus_report.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/oracle_corpus_report.py": {
+    "mtime": 1791165013.83731,
     "hash": "09210da3282a21812f0920d6c5d2eb79"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/card_mechanics_inventory.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/card_mechanics_inventory.py": {
+    "mtime": 1791165013.83631,
     "hash": "7a5ca343621c2f73501a4ee1bf2e4882"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/anomaly_cluster_report.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/anomaly_cluster_report.py": {
+    "mtime": 1791165013.83631,
     "hash": "b8ca58cd3abf520cb92afbbfb868ebce"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/_bootstrap.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/_bootstrap.py": {
+    "mtime": 1791165013.83631,
     "hash": "6207c9b706172134cfc5d61264ab9f77"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/export_builtin_oracle_seed.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/export_builtin_oracle_seed.py": {
+    "mtime": 1791165013.83731,
     "hash": "beb9557b13115e1d0a87b66c0ff821bd"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/benchmark_ai_decisions.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/benchmark_ai_decisions.py": {
+    "mtime": 1791165013.83631,
     "hash": "1604735f9c81150dc6b75e97e529f4da"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/sync_all_card_knowledge.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/sync_all_card_knowledge.py": {
+    "mtime": 1791165013.83831,
     "hash": "0e53d3697824583e710b0d2a0f57051c"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/sync_corpus_cards.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/sync_corpus_cards.py": {
+    "mtime": 1791165013.83831,
     "hash": "0270ea5382700d5668cfdecde7976373"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/profile_ai_match.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/profile_ai_match.py": {
+    "mtime": 1791165013.83731,
     "hash": "98e88dca0b92e292e42eb8c19513ca2c"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/card_play_analytics.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/card_play_analytics.py": {
+    "mtime": 1791165013.83631,
     "hash": "33e48b33007d446a3f25f40549e62894"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/knowledge_gap_report.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/knowledge_gap_report.py": {
+    "mtime": 1791165013.83731,
     "hash": "e11cfe3f258c33ccb7a591da1f6e7724"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/debug_head_to_head.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/debug_head_to_head.py": {
+    "mtime": 1791165013.83731,
     "hash": "d612c1ed0540743228cd8d9c4cc32528"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/prune_simulation_jobs.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/prune_simulation_jobs.py": {
+    "mtime": 1791165013.83731,
     "hash": "b917790a5a1ba1dc942818a4b234b8a0"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/regression_matrix_replay.py": {
+    "mtime": 1791165013.83731,
     "hash": "3df21855adb4dbd9becee77d5c53556b"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/build_ai_log_priors.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/build_ai_log_priors.py": {
+    "mtime": 1791165013.83631,
     "hash": "04edb9eddfa577a6e957ee9cbec4cf1a"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/import_tournament_json.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/import_tournament_json.py": {
+    "mtime": 1791165013.83731,
     "hash": "81c5a95c8d484988e6a75a4ccd566fb5"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/reconstruct_action_replay.py": {
-    "mtime": 1791164907.5877519,
+  "/home/nick/mtg-linked-landfall/backend/scripts/reconstruct_action_replay.py": {
+    "mtime": 1791165013.83731,
     "hash": "5fc201c9ace69afa9b7d130dddb074ad"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/ai_planning_performance_agent.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/ai_planning_performance_agent.py": {
+    "mtime": 1791165013.83631,
     "hash": "2a7f513992195d5dd3f63dd9b84bf630"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/baseline_report.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/baseline_report.py": {
+    "mtime": 1791165013.83631,
     "hash": "d5ff91159d0f6de654b2211cde7c8cf8"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/extract_training_examples.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/extract_training_examples.py": {
+    "mtime": 1791165013.83731,
     "hash": "cde9f61e37cd2654ce6b2520d19274b5"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/verify_storage_restore.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/scripts/verify_storage_restore.py": {
+    "mtime": 1791165013.83831,
     "hash": "502b92d4b14fb9b58aa3da2a1bc5ebd6"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/ci_regression_gate.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/ci_regression_gate.py": {
+    "mtime": 1791165013.83631,
     "hash": "694b2763a7a1605ba82549a6cd24dc0e"
   },
-  "/home/nick/mtg-coupled-targets/backend/scripts/overnight_verbose_round_robin.py": {
-    "mtime": 1791160751.5465882,
+  "/home/nick/mtg-linked-landfall/backend/scripts/overnight_verbose_round_robin.py": {
+    "mtime": 1791165013.83731,
     "hash": "ee639b5510d0c68d4fc8ca2b30849712"
   },
-  "/home/nick/mtg-coupled-targets/backend/data_ingest/__init__.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/data_ingest/__init__.py": {
+    "mtime": 1791165013.82431,
     "hash": "2aa4d1eb45fc4226b295bfd056abbc4f"
   },
-  "/home/nick/mtg-coupled-targets/backend/data_ingest/service.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/data_ingest/service.py": {
+    "mtime": 1791165013.82431,
     "hash": "d7fc6e6e04d587a412c29afeb9dcadcd"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/fallback_cards.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/fallback_cards.py": {
+    "mtime": 1791165013.8233101,
     "hash": "765d9a894ee4d440536bd2107e9c5042"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/sync.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/sync.py": {
+    "mtime": 1791165013.8233101,
     "hash": "c643aaf14e1c6f9fe1cd4be96f58edb0"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/__init__.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/__init__.py": {
+    "mtime": 1791165013.8233101,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/service.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/service.py": {
+    "mtime": 1791165013.8233101,
     "hash": "d986c998451380ee7b547b40c9455db7"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/token_images.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/token_images.py": {
+    "mtime": 1791165013.82431,
     "hash": "d8bbc7756a05ef3e79fc37b66843ea74"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/tactical.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/tactical.py": {
+    "mtime": 1791165013.82431,
     "hash": "6fb99244a3934f28cee093cf0b03cdfb"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/token_definitions.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/token_definitions.py": {
+    "mtime": 1791165013.82431,
     "hash": "a358759b369dd9e91c4a196f84752346"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/http_utils.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/http_utils.py": {
+    "mtime": 1791165013.8233101,
     "hash": "11634f3e571cb3d9776beaa249c7373b"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/search.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/search.py": {
+    "mtime": 1791165013.8233101,
     "hash": "02790465ecdfa91c9d45234368efb961"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/hydration.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/hydration.py": {
+    "mtime": 1791165013.8233101,
     "hash": "4c93447264b67ff699a5528f5400293b"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/models.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/models.py": {
+    "mtime": 1791165013.8233101,
     "hash": "e053f940eed95b536ee1e8918e98f5a4"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/placeholders.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/placeholders.py": {
+    "mtime": 1791165013.8233101,
     "hash": "8dd08328fd7ab8a603ed9ca3e162e261"
   },
-  "/home/nick/mtg-coupled-targets/backend/card_data/display.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/card_data/display.py": {
+    "mtime": 1791165013.8233101,
     "hash": "4312d279145bb4846d7e55cc1ba3408b"
   },
-  "/home/nick/mtg-coupled-targets/backend/persistence/__init__.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/persistence/__init__.py": {
+    "mtime": 1791165013.8263102,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/persistence/job_retention.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/persistence/job_retention.py": {
+    "mtime": 1791165013.82831,
     "hash": "5000b6b9d907f706531efd1e23469769"
   },
-  "/home/nick/mtg-coupled-targets/backend/persistence/models.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/persistence/models.py": {
+    "mtime": 1791165013.82831,
     "hash": "93ff934b985174b630005fab5dcf56bb"
   },
-  "/home/nick/mtg-coupled-targets/backend/persistence/repository.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/persistence/repository.py": {
+    "mtime": 1791165013.82831,
     "hash": "0bf3b92f56d422ad4a3ced6a723e074b"
   },
-  "/home/nick/mtg-coupled-targets/backend/persistence/db.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/persistence/db.py": {
+    "mtime": 1791165013.8263102,
     "hash": "1c10ff69e332317b889215f0014e74b0"
   },
-  "/home/nick/mtg-coupled-targets/backend/knowledge/__init__.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/knowledge/__init__.py": {
+    "mtime": 1791165013.8263102,
     "hash": "a6d9f7ad761508ad1937ac69c5f19511"
   },
-  "/home/nick/mtg-coupled-targets/backend/knowledge/models.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/knowledge/models.py": {
+    "mtime": 1791165013.8263102,
     "hash": "0c54202a22e685ca03f4d82b935441d9"
   },
-  "/home/nick/mtg-coupled-targets/backend/knowledge/ingest.py": {
-    "mtime": 1791160751.5365882,
+  "/home/nick/mtg-linked-landfall/backend/knowledge/ingest.py": {
+    "mtime": 1791165013.8263102,
     "hash": "6a0ead40b32259a5bcfbffaa9e25ec34"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/expansion_top_decks.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/expansion_top_decks.py": {
+    "mtime": 1791165013.82431,
     "hash": "664524ae7a212a5b39e119b46699b896"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/parser.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/parser.py": {
+    "mtime": 1791165013.82431,
     "hash": "a4e57803584a1f9af8d4c6d2f1943974"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/__init__.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/decks/__init__.py": {
+    "mtime": 1791165013.82431,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/service.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/service.py": {
+    "mtime": 1791165013.82431,
     "hash": "b8809b6e702e8f66739fc2033ec7b838"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/bootstrap.py": {
-    "mtime": 1791160751.5335882,
+  "/home/nick/mtg-linked-landfall/backend/decks/bootstrap.py": {
+    "mtime": 1791165013.82431,
     "hash": "6b84580903f683689733f95d4ed0ce60"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/sideboard.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/sideboard.py": {
+    "mtime": 1791165013.82431,
     "hash": "4fc740af8d86e5ae6850c99e9c14d0d4"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/selection.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/selection.py": {
+    "mtime": 1791165013.82431,
     "hash": "2c736c120c7c2cf0d9bf8fe5f1cefa4a"
   },
-  "/home/nick/mtg-coupled-targets/backend/decks/builtin_decks.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/decks/builtin_decks.py": {
+    "mtime": 1791165013.82431,
     "hash": "8479681b7d7dbe0a3c74fd8e2c4f825a"
   },
-  "/home/nick/mtg-coupled-targets/backend/effects/__init__.py": {
-    "mtime": 1791160751.5345883,
+  "/home/nick/mtg-linked-landfall/backend/effects/__init__.py": {
+    "mtime": 1791165013.82431,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/effects/handlers.py": {
-    "mtime": 1791164482.9214227,
-    "hash": "672ab038e9bdacb1ddd1bd3659fc7912"
+  "/home/nick/mtg-linked-landfall/backend/effects/handlers.py": {
+    "mtime": 1791169541.187142,
+    "hash": "2cacc1c9ab78c66a7588ad96312044e6"
   },
-  "/home/nick/mtg-coupled-targets/backend/effects/registry.py": {
-    "mtime": 1791160751.5355883,
-    "hash": "cc9524a19878d6ed07086ff812ac573f"
+  "/home/nick/mtg-linked-landfall/backend/effects/registry.py": {
+    "mtime": 1791167219.6094685,
+    "hash": "167ed0b95f3ffad6d5649ccf16e46df4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_aura_costs.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_aura_costs.py": {
+    "mtime": 1791165013.8553097,
     "hash": "b381b253986c355c0f5e032239b8ff27"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_coverage_diagnostics.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_landfall_copy_targets.py": {
+    "mtime": 1791169950.9471812,
+    "hash": "2f931264cb4d8499579d6e2296b64503"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_coverage_diagnostics.py": {
+    "mtime": 1791165013.8573098,
     "hash": "7bed466efa77c45093b1e4c3eb219d65"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_split_card_casts.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_split_card_casts.py": {
+    "mtime": 1791165013.8713095,
     "hash": "1678ff5ecd5130897f9a68aac0cabc1a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_trigger_target_choices.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_trigger_target_choices.py": {
+    "mtime": 1791165013.8733096,
     "hash": "ebbcd0e1237a43ad793a09febb1dde29"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_expanded_keyword_mechanics.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_expanded_keyword_mechanics.py": {
+    "mtime": 1791165013.8613098,
     "hash": "418f2fe490bd8ef6b98b2916b6c20d21"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_discard_history.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_discard_history.py": {
+    "mtime": 1791165013.8603096,
     "hash": "15cb0a4f73fd6144ae0ddea2d185e287"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_priority_stops.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_priority_stops.py": {
+    "mtime": 1791165013.8683095,
     "hash": "b5cb81332e35b70ea09a5e2a4a1386be"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_simulation_admission.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_simulation_admission.py": {
+    "mtime": 1791165013.8703096,
     "hash": "ef50b5a8aa42c267448c1799948b1fde"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_each_player_draw.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_each_player_draw.py": {
+    "mtime": 1791165013.8613098,
     "hash": "f16829d3090471ac9ffdbfd9e969de05"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mulligan_rounds.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mulligan_rounds.py": {
+    "mtime": 1791165013.8653097,
     "hash": "9e84911a0dbb10d46fcc50782a3bc0fb"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ability_model.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ability_model.py": {
+    "mtime": 1791165013.8513098,
     "hash": "b3215686a3199f96b342a2320177e848"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_effect_cast_admission.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_effect_cast_admission.py": {
+    "mtime": 1791165013.8613098,
     "hash": "c4896d3085988f3222ec213bbbea469d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cant_prevent_scopes.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cant_prevent_scopes.py": {
+    "mtime": 1791165013.8553097,
     "hash": "f1000bfc4100c612fcd418539b0ebaef"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_keyword_triggers.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_keyword_triggers.py": {
+    "mtime": 1791165013.8573098,
     "hash": "965969aa1a1ae31c8458ab99298d35f6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_training_example_export.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_training_example_export.py": {
+    "mtime": 1791165013.8723094,
     "hash": "ac8d535342fc7b80d9b09f149353fd57"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_defensive_responses.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_defensive_responses.py": {
+    "mtime": 1791165013.8523097,
     "hash": "b967043a0bb384e9b7870053a8a7268b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_regression_matrix_sampling.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_regression_matrix_sampling.py": {
+    "mtime": 1791165013.8683095,
     "hash": "b6d924bef08ba35e08caa3eaafc24760"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_trigger_options.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_trigger_options.py": {
+    "mtime": 1791165013.8543098,
     "hash": "9881d7afeb63a88bf388612b98b7fed8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_copy_stack_characteristics.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_copy_stack_characteristics.py": {
+    "mtime": 1791165013.8583097,
     "hash": "85323fd5e4389d8e5b05c9c405facba8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_entry_routes.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_entry_routes.py": {
+    "mtime": 1791165013.8613098,
     "hash": "a74ea3042fb87bceefa8a094103b415a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_decision_reason_codes.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_landfall_forecast.py": {
+    "mtime": 1791168482.404954,
+    "hash": "d66540c51c3a8beaa1b086e25b0506cf"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_decision_reason_codes.py": {
+    "mtime": 1791165013.8593097,
     "hash": "5928a2caf33434ecd1ab61cd1919ca82"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_destruction_reuse.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_destruction_reuse.py": {
+    "mtime": 1791165013.8523097,
     "hash": "9f9e319d7b9553ca730b826be3119d87"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_vehicles.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_vehicles.py": {
+    "mtime": 1791165013.8733096,
     "hash": "3f3a4ebe90b555d6fe24e113a3c99d15"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_foretell_effects.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_foretell_effects.py": {
+    "mtime": 1791165013.8623097,
     "hash": "5e7095132e1558e62ff4fd19582e5e59"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_card_observation_memory.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_card_observation_memory.py": {
+    "mtime": 1791165013.8563097,
     "hash": "a185dc1b91823590e636d7795de106bc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_deck_service_metadata.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_deck_service_metadata.py": {
+    "mtime": 1791165013.8593097,
     "hash": "83081fad6e65f55b8794423f23c6c6d5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_repository_face_aliases.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_repository_face_aliases.py": {
+    "mtime": 1791165013.8693097,
     "hash": "fa69167fd4d6b5f32e5ff1c63763e452"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_death_replacement_http.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_death_replacement_http.py": {
+    "mtime": 1791165013.8593097,
     "hash": "eb9567c097adeac26af293d017302a6c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ability_cost_discounts_integration.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ability_cost_discounts_integration.py": {
+    "mtime": 1791165013.8513098,
     "hash": "bb8fb7c254a4d25a932eb476cf6c1f5b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_sagas.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_sagas.py": {
+    "mtime": 1791165013.8693097,
     "hash": "35577d7b1b4b5c20eb8cdd3d547e5b73"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cast_validation.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cast_validation.py": {
+    "mtime": 1791165013.8563097,
     "hash": "f66b5748b0991c93d2e8796a5dd9beb3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_linked_discard.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_discard.py": {
+    "mtime": 1791165013.8643095,
     "hash": "f652e7f0f07e190d6c84f8fd95e4b3f1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_data_ingest.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_data_ingest.py": {
+    "mtime": 1791165013.8593097,
     "hash": "38109110b0aaf674ad272353e5dd109b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_pregame_priority.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_pregame_priority.py": {
+    "mtime": 1791165013.8683095,
     "hash": "a09378eda3ab8a38af406070c8b66be0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_release_card_contracts.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_release_card_contracts.py": {
+    "mtime": 1791165013.8693097,
     "hash": "120c3a8a37444a741b7f400fb8d86b56"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_multi_target_adventure.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_multi_target_adventure.py": {
+    "mtime": 1791165013.8663096,
     "hash": "72a557d505506ce466d9b0684c08e495"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_incubate_rules.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_incubate_rules.py": {
+    "mtime": 1791165013.8623097,
     "hash": "acbf59fe3c922202ddd2101ba5172e73"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_static_ability_suppression.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_static_ability_suppression.py": {
+    "mtime": 1791165013.8713095,
     "hash": "90139a5fba21b20104f217ac5ce657f5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_proliferation.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_proliferation.py": {
+    "mtime": 1791165013.8683095,
     "hash": "897eecb64839fcb6dafb4657aed18596"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_legendary_channels.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_legendary_channels.py": {
+    "mtime": 1791165013.8643095,
     "hash": "0e5c3de4280007a7d4fe2aed12e256b4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_named_death_triggers.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_named_death_triggers.py": {
+    "mtime": 1791165013.8663096,
     "hash": "c49635fb2b71a899cd3b25e9506c8a8a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_counter_replacements.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_counter_replacements.py": {
+    "mtime": 1791165013.8583097,
     "hash": "644477649c9c77d26b4461f2745bd3e4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_regression_repair_edges.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_regression_repair_edges.py": {
+    "mtime": 1791165013.8683095,
     "hash": "05e344749e7a1f1eb8ef010429c379d8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_series_policy.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_series_policy.py": {
+    "mtime": 1791165013.8703096,
     "hash": "3c9114ba3565d4f1a8141cccee8089f3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_variable_mana.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_variable_mana.py": {
+    "mtime": 1791165013.8733096,
     "hash": "5c743579d4c24c6c7a3878e13b2db46d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_temporary_ability_loss.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_temporary_ability_loss.py": {
+    "mtime": 1791165013.8723094,
     "hash": "d92d4705528f051df94de0e7917a500e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_combat.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_combat.py": {
+    "mtime": 1791165013.8573098,
     "hash": "256a9ebf8f47aa4795f204ffc893be84"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_ability_provenance.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_ability_provenance.py": {
+    "mtime": 1791165013.8563097,
     "hash": "cb2667dbeea703907782ee1e17a5261a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_death_replacement_canonical.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_death_replacement_canonical.py": {
+    "mtime": 1791165013.8593097,
     "hash": "761d4f9c86865001ab9f57378708a6fc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_offline_match_hydration.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_offline_match_hydration.py": {
+    "mtime": 1791165013.8663096,
     "hash": "4a109b6cccb754899014c078f37a9d30"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_database_path.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_database_path.py": {
+    "mtime": 1791165013.8593097,
     "hash": "9965f9f6581113764501bbd884537e60"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/conftest.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_entry_history.py": {
+    "mtime": 1791165239.7782254,
+    "hash": "2ad0f2b29a8af9f04135c0a34bf941d2"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/conftest.py": {
+    "mtime": 1791165013.83931,
     "hash": "39bed28bdc36abc66da20d7f22047eee"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_end_step_attack_reward.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_end_step_attack_reward.py": {
+    "mtime": 1791165013.8613098,
     "hash": "90bc91a04f6520d93b46ef2a50edda48"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_same_kind_modal_targets.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_same_kind_modal_targets.py": {
+    "mtime": 1791165013.8703096,
     "hash": "aa14f6d5a1a5b862f52888219e7b5ca0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_attack_group_tokens.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_attack_group_tokens.py": {
+    "mtime": 1791165013.8553097,
     "hash": "ea20aebbc854d298c5eee331ce0af80e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_mana_resources.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_mana_resources.py": {
+    "mtime": 1791165013.8533099,
     "hash": "fa1060d95477c463cbfd10a790e2c80d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_qualified_spell_costs.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_qualified_spell_costs.py": {
+    "mtime": 1791165013.8683095,
     "hash": "12e8fd20ce72e10fcb458f230e1d9fb6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ward_resolution.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ward_resolution.py": {
+    "mtime": 1791165013.8733096,
     "hash": "ac89c66abd6b687a53c0f2e517341580"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_nonplayable_deck_cards.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_nonplayable_deck_cards.py": {
+    "mtime": 1791165013.8663096,
     "hash": "2d491883ad232e100034015d4d71d65e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_transform_triggers.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_transform_triggers.py": {
+    "mtime": 1791165013.8733096,
     "hash": "c3ed01ae4375d8b7763b7caddd86cd96"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_nonmana_kicker.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_nonmana_kicker.py": {
+    "mtime": 1791165013.8663096,
     "hash": "12740b5ff908acdc121eef1ae22c61d9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mana_abilities.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mana_abilities.py": {
+    "mtime": 1791165013.8653097,
     "hash": "3db9c95e1cf0fc9edf070d83386e5971"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_sacrifice_lookback.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_sacrifice_lookback.py": {
+    "mtime": 1791165013.8693097,
     "hash": "fddc90c11ddf7bbf6322f937c22f4fe9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ineffective_destruction.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ineffective_destruction.py": {
+    "mtime": 1791165013.8623097,
     "hash": "a9e4bc54457c0d4153fe6ade4858360e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_foretell_created.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_foretell_created.py": {
+    "mtime": 1791165013.8623097,
     "hash": "8c74c9f4ef888a302738c00bac3b95e9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_decision_taxonomy.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_decision_taxonomy.py": {
+    "mtime": 1791165013.8593097,
     "hash": "f176e6099bdc8846aebb2547baeda44a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_casting_trigger_repair_edges.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_casting_trigger_repair_edges.py": {
+    "mtime": 1791165013.8563097,
     "hash": "5341789af036880d25cf33b67e99cfda"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_control_changes.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_control_changes.py": {
+    "mtime": 1791165013.8583097,
     "hash": "c570960f3d16b9a5f45ad5a309f1d742"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_replay_progress.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_replay_progress.py": {
+    "mtime": 1791165013.8693097,
     "hash": "884c8b861753eee0656ba7344f044e19"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_type_effect_lifecycle.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_type_effect_lifecycle.py": {
+    "mtime": 1791165013.8733096,
     "hash": "17121a22bd7bbc65ce01432910cc4608"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_knowledge_models.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_knowledge_models.py": {
+    "mtime": 1791165013.8633096,
     "hash": "13294d46ccec521e5d370fe6b255fa16"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_domain_costs.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_domain_costs.py": {
+    "mtime": 1791165013.8603096,
     "hash": "bb5af284adb0279cfb78100fc1032494"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_additional_costs.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_additional_costs.py": {
+    "mtime": 1791165013.8513098,
     "hash": "40b4b852124742bcc736f021deedb36a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cast_payment_choices.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cast_payment_choices.py": {
+    "mtime": 1791165013.8563097,
     "hash": "304ef1a439a82ade487f11cd2bbc8e21"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_classification.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_classification.py": {
+    "mtime": 1791165013.8633096,
     "hash": "559369435795f8b1467ec7a9f4500aee"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_known_deck.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_known_deck.py": {
+    "mtime": 1791165013.8533099,
     "hash": "03e47f4fd2b0b7634a6c9e76a7284989"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_tribal_entry_trigger.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_tribal_entry_trigger.py": {
+    "mtime": 1791165013.8733096,
     "hash": "c57df2e819014749b5752422016579f4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_selective_copy.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_selective_copy.py": {
+    "mtime": 1791165013.8543098,
     "hash": "bdf34a105826c513191d0e1efd93e5ef"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_death_last_known.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_death_last_known.py": {
+    "mtime": 1791165013.8593097,
     "hash": "9e61c6fbcfb48b5d9deac0fdc8290a2a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_kicker_goldens.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_kicker_goldens.py": {
+    "mtime": 1791165013.8633096,
     "hash": "2ed26f7e8d16d14d520145a0e89de6d0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_top_card_choices.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_top_card_choices.py": {
+    "mtime": 1791165013.8723094,
     "hash": "92cec26e6081841e9decf04faaecb7ee"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_game_object_ids.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_game_object_ids.py": {
+    "mtime": 1791165013.8623097,
     "hash": "9c4de4a363941c4a5862503c06ed02d7"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_simultaneous_entry_batch.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_simultaneous_entry_batch.py": {
+    "mtime": 1791165013.8703096,
     "hash": "292d435a7bb636ef05d6e06c9ee1365c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_permanent_kicker.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_permanent_kicker.py": {
+    "mtime": 1791165013.8673096,
     "hash": "18868e670d72c082e09467c531f904bb"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_colored_mass_exile.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_colored_mass_exile.py": {
+    "mtime": 1791165013.8563097,
     "hash": "03fa88ee9f5172fcc05775e11ae86123"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_artifact_graveyard_triggers.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_artifact_graveyard_triggers.py": {
+    "mtime": 1791165013.8553097,
     "hash": "8e47d3e53bf07e451734e519add97430"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_entry_choice.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_entry_choice.py": {
+    "mtime": 1791165013.8633096,
     "hash": "a7242ad2bc661819c69dfb49f07defc1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cost_modifiers.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cost_modifiers.py": {
+    "mtime": 1791165013.8583097,
     "hash": "583d843d7c72e856285bafc5be64affe"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_search_budget.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_search_budget.py": {
+    "mtime": 1791165013.8543098,
     "hash": "af3fb0032dd8d0f7c48bb3ff95c8e0e3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_human_action_safety.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_human_action_safety.py": {
+    "mtime": 1791165013.8623097,
     "hash": "f2934edbcaaa6e2f183ced288a1eec3e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_transform_numeric_ai.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_transform_numeric_ai.py": {
+    "mtime": 1791165013.8733096,
     "hash": "77de865b92e5f77fdb405485a8d6cb59"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/browser_fixture_server.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/tests/browser_fixture_server.py": {
+    "mtime": 1791165013.83931,
     "hash": "fed388a69eb0e17ded2ec249b2fee224"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_view_scope.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_view_scope.py": {
+    "mtime": 1791165013.8633096,
     "hash": "43f43c5e271be4a0ead184c023052f1c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_combat_setup.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_combat_setup.py": {
+    "mtime": 1791165013.8523097,
     "hash": "5a181292cc0717719f7d2a41a95ad010"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_entry_replacement_order.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_entry_replacement_order.py": {
+    "mtime": 1791165013.8613098,
     "hash": "7fff731b1c3b50ce058f01b0f4961c7c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_stack_target_kinds.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_stack_target_kinds.py": {
+    "mtime": 1791165013.8713095,
     "hash": "507776cfd5877a720d55f4dc6eb1fa20"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_multi_target_modal.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_multi_target_modal.py": {
+    "mtime": 1791165013.8663096,
     "hash": "039d50f5fb4436f6f73088d8e04fc484"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_damage_counter_replacements.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_damage_counter_replacements.py": {
+    "mtime": 1791165013.8593097,
     "hash": "c31fc8b73410a8f2fd57e290ad138d81"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_expansion_top_decks_catalog.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_expansion_top_decks_catalog.py": {
+    "mtime": 1791165013.8623097,
     "hash": "c6cf854d396c3d4760ee93364cfc30dd"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_effect_cast_choices.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_effect_cast_choices.py": {
+    "mtime": 1791165013.8613098,
     "hash": "9ba4500bf3623bbcbaa5c9cf2e745308"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_pending_removal.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_pending_removal.py": {
+    "mtime": 1791165013.8673096,
     "hash": "5b73a6f111e2e60e451bd2f04f5cc9f4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_creature_types.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_creature_types.py": {
+    "mtime": 1791165013.8583097,
     "hash": "31774c85e10db11b93c8fc78412c3af6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_attachments.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_attachments.py": {
+    "mtime": 1791165013.8553097,
     "hash": "e44ac9945a17e6ee87213f012521d02f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_surveil_mill.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_surveil_mill.py": {
+    "mtime": 1791165013.8713095,
     "hash": "f54cea31e90471909f69f91961b08f02"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_allocation_contracts.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_allocation_contracts.py": {
+    "mtime": 1791165013.8513098,
     "hash": "6efd73fba8bce1d94fcfd3898c59fdc3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_library_search_rules.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_library_search_rules.py": {
+    "mtime": 1791165013.8643095,
     "hash": "22c148af76bc5b732564f7142c0d83d4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cast_choice_modes.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cast_choice_modes.py": {
+    "mtime": 1791165013.8563097,
     "hash": "74f690dd6a6bb181942eec131ea4cbad"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_symmetric_draw.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_symmetric_draw.py": {
+    "mtime": 1791165013.8543098,
     "hash": "ecc57adb0a53260f458d2fdfdfbd8424"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_public_mana_changes.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_public_mana_changes.py": {
+    "mtime": 1791165013.8543098,
     "hash": "a98b30048a4ce6314c69162bf9ab28d0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_restrictions.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_restrictions.py": {
+    "mtime": 1791165013.8693097,
     "hash": "2bace3aec2f706fc9f62afd4d3523796"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_day_night.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_day_night.py": {
+    "mtime": 1791165013.8593097,
     "hash": "cac8bbb42d60dbcde97459c0171360fa"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ward_forms.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ward_forms.py": {
+    "mtime": 1791165013.8733096,
     "hash": "bfdc5012a9e2ab836f69856fffb779f7"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_progression.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_progression.py": {
+    "mtime": 1791165013.8573098,
     "hash": "b6737500647eee04222faffd170d18d1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_pending_counter_gain.py": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_pending_counter_gain.py": {
+    "mtime": 1791165013.8533099,
     "hash": "310d95322cf39b5490c1b0eb10d00262"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_meathook_etb.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_meathook_etb.py": {
+    "mtime": 1791165013.8653097,
     "hash": "302764c5748d74e4fc86c4a8e21e5c8a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_player_or_planeswalker_targets.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_player_or_planeswalker_targets.py": {
+    "mtime": 1791165013.8673096,
     "hash": "d8f669100ff84034b1f402b50ef011b0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_target_restrictions.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_target_restrictions.py": {
+    "mtime": 1791165013.8713095,
     "hash": "1a98b6b0d109dc0b73fa35df4c261010"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_counterability_scope.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_counterability_scope.py": {
+    "mtime": 1791165013.8583097,
     "hash": "a552f3d14a93cd109336a5c102b0ddae"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_baseline_report.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_baseline_report.py": {
+    "mtime": 1791165013.8553097,
     "hash": "ad7ccb554ad72493f1b2961cb5b970ef"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_hexproof_variants.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_hexproof_variants.py": {
+    "mtime": 1791165013.8623097,
     "hash": "f42213770aab5c5bf8d981f9b614c37c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_live_bo3_policy.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_live_bo3_policy.py": {
+    "mtime": 1791165013.8643095,
     "hash": "879249222c55a5b5fced70bdaebb6fa5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_zone_change_events.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_zone_change_events.py": {
+    "mtime": 1791165013.8743095,
     "hash": "660f921a64dbc06e00f3ddfc5b239dcf"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_optional_removal.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_optional_removal.py": {
+    "mtime": 1791165013.8533099,
     "hash": "287392f30f3bd11b800c43fb5b5929f0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_recurring_engines.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_recurring_engines.py": {
+    "mtime": 1791165013.8543098,
     "hash": "6f522e0216eb8089ae384a49dcce1f5b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_characteristic_stats.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_characteristic_stats.py": {
+    "mtime": 1791165013.8563097,
     "hash": "25988cd0aa70e7a692cf35d48f3d2f99"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_latency_profile.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_latency_profile.py": {
+    "mtime": 1791165013.8533099,
     "hash": "9dd87750eb1e221f875482c365958f34"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_permanent_spell_context.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_permanent_spell_context.py": {
+    "mtime": 1791165013.8673096,
     "hash": "eb93de142a03f697cd8a62ce75e7e540"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_spell_cost_clauses.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_spell_cost_clauses.py": {
+    "mtime": 1791165013.8703096,
     "hash": "ad497789ab997693f7f11ae2a4dca9e4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_card_hydration.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_card_hydration.py": {
+    "mtime": 1791165013.8553097,
     "hash": "229ff021c13a09c0f9a319c653514a4c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_spell_damage_assignment.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_spell_damage_assignment.py": {
+    "mtime": 1791165013.8713095,
     "hash": "fe460f8f492863c25bc748449fb179f2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_deck_analysis.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_deck_analysis.py": {
+    "mtime": 1791165013.8593097,
     "hash": "72e273183d0d8b8d18935c540e8df399"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_draw_triggers_no_recursive_draw.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_draw_triggers_no_recursive_draw.py": {
+    "mtime": 1791165013.8603096,
     "hash": "9004b0bd7f8dfd97f818ea361c85db1a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_domain_tokens.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_domain_tokens.py": {
+    "mtime": 1791165013.8603096,
     "hash": "8b3f492727cfd44f92cc6f8d487bcba0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_restricted_mana.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_restricted_mana.py": {
+    "mtime": 1791165013.8693097,
     "hash": "f44ac631836fba90bf8df8d2b67a26b3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_each_player_discard.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_each_player_discard.py": {
+    "mtime": 1791165013.8613098,
     "hash": "a1c74218a40c74f4723bdf0a884b8d71"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_linked_entry_counters.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_entry_counters.py": {
+    "mtime": 1791165013.8643095,
     "hash": "a2e05c8c0d8364d2c7c937ee6e8b60a9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_deck_bootstrap.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_deck_bootstrap.py": {
+    "mtime": 1791165013.8593097,
     "hash": "da6bd41373d57d494529317122b108ea"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_draw_restrictions.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_draw_restrictions.py": {
+    "mtime": 1791165013.8603096,
     "hash": "7cf72b8278c1e52ed5e19439acd12a07"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_projection_scope.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_projection_scope.py": {
+    "mtime": 1791165013.8533099,
     "hash": "68111303223a4bd83188e915886906b5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_priority_stack.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_priority_stack.py": {
+    "mtime": 1791165013.8683095,
     "hash": "223a9cbb5e16d6afbcd4188367c6c6ef"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_legendary_and_types_regression.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_legendary_and_types_regression.py": {
+    "mtime": 1791165013.8633096,
     "hash": "49915f66911ea89e8726a28f83e78657"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_information_boundary.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_information_boundary.py": {
+    "mtime": 1791165013.8533099,
     "hash": "d232317686afca077d5ba1ef561e12e1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_damage_windows.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_damage_windows.py": {
+    "mtime": 1791165013.8573098,
     "hash": "72437b365aabe4e52279ef08add5df91"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_and_adventure_faces.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_and_adventure_faces.py": {
+    "mtime": 1791165013.8633096,
     "hash": "23883c9ace52b0e57f42ade066306211"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_opening_hand.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_opening_hand.py": {
+    "mtime": 1791165013.8583097,
     "hash": "f0eaddc859dbc7d121e9eb3fa6a1110e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_log_priors.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_log_priors.py": {
+    "mtime": 1791165013.8643095,
     "hash": "5dbba4db3caac95c1769aa4bf9a976b2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_linked_exile.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_exile.py": {
+    "mtime": 1791165013.8643095,
     "hash": "ffb782ddf00ede5c46ff0b60926a494b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_topdeck_reveal_creature.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_landfall_alternatives.py": {
+    "mtime": 1791166594.668515,
+    "hash": "ed4ecfd8c33040cc9a8a422eb7fd5dac"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_topdeck_reveal_creature.py": {
+    "mtime": 1791165013.8723094,
     "hash": "4cb586c22a8a328787e5ef764fb83981"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_player_counters.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_player_counters.py": {
+    "mtime": 1791165013.8673096,
     "hash": "ce4080f92a9cc8915985746adbed8793"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_named_counters.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_named_counters.py": {
+    "mtime": 1791165013.8663096,
     "hash": "d0ac0ab27b70dc11a56c6fcefd8691d1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_rules_coverage.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_rules_coverage.py": {
+    "mtime": 1791165013.8693097,
     "hash": "c55db97cfcf9dd01ff5b52ebc6391db0"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_trigger_power_damage.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_trigger_power_damage.py": {
+    "mtime": 1791165013.8733096,
     "hash": "018f4c66c4c90a6a38b065cf8fe6ebcd"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_state_inference.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_state_inference.py": {
+    "mtime": 1791165013.8713095,
     "hash": "e4807cdc463061b32ebd5c08e3bd85c3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cleanup_choices.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cleanup_choices.py": {
+    "mtime": 1791165013.8563097,
     "hash": "e9a51df6ade91bf4b69d849f2cf19c8c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_static_parser_cache.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_static_parser_cache.py": {
+    "mtime": 1791165013.8713095,
     "hash": "7be2f6ed257c1f976d5fd7c92f33400f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_analytics_batch.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_analytics_batch.py": {
+    "mtime": 1791165013.8543098,
     "hash": "aa4f00f7f3af675609cdb87bd85fcc55"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_variable_spell_costs.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_variable_spell_costs.py": {
+    "mtime": 1791165013.8733096,
     "hash": "eed6e3ddec1e2d1f4d6b6b9ccef8324b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_pending_removal_traces.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_pending_removal_traces.py": {
+    "mtime": 1791165013.8673096,
     "hash": "a1f0f95ff0eaa4947ace715c944cca07"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_oracle_reminder_boundaries.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_oracle_reminder_boundaries.py": {
+    "mtime": 1791165013.8673096,
     "hash": "278ced00c769b93f26711e9d1f19f0d1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_aftermath_casts.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_aftermath_casts.py": {
+    "mtime": 1791165013.8513098,
     "hash": "798b6f1642dee4672bbe3faca48d620e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_manual_mana_tap.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_manual_mana_tap.py": {
+    "mtime": 1791165013.8653097,
     "hash": "53c87a7e19e9efca2d67730aaf7087a2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_minimax.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_minimax.py": {
+    "mtime": 1791165013.8533099,
     "hash": "c93771b3c595d419c7c324594a0f03fb"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_hand_activations.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_hand_activations.py": {
+    "mtime": 1791165013.8623097,
     "hash": "7262e5fc6423c3394b344fcd11f93ae8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_shield_counters.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_shield_counters.py": {
+    "mtime": 1791165013.8703096,
     "hash": "d3de82f034b04726f098ed3c26253a2e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_static_admission.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_static_admission.py": {
+    "mtime": 1791165013.8713095,
     "hash": "04b1964b52f1463b5837bfd0009c8ad9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_combat_intents.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_combat_intents.py": {
+    "mtime": 1791165013.8513098,
     "hash": "4f112cafd7538741dad932d3a8cd76b1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ability_cost_discounts.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ability_cost_discounts.py": {
+    "mtime": 1791165013.8513098,
     "hash": "2aec4e2ebc534c324dfb90b1a338465d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_look_top_select_hand.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_look_top_select_hand.py": {
+    "mtime": 1791165013.8653097,
     "hash": "aa9b14dbac44491b3d67b7ffad9dbfbd"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_loyalty_counter_costs.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_loyalty_counter_costs.py": {
+    "mtime": 1791165013.8653097,
     "hash": "18b6d29edbf9f22e0880dca32df8d6f6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_divided_damage_resolution.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_divided_damage_resolution.py": {
+    "mtime": 1791165013.8603096,
     "hash": "d9e909213ad505240919fde3580e61df"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_revealed_hand_discard.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_revealed_hand_discard.py": {
+    "mtime": 1791165013.8693097,
     "hash": "e5606d841f295a475774ec0f6dc7de19"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_builtin_mana_sources.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_builtin_mana_sources.py": {
+    "mtime": 1791165013.8553097,
     "hash": "c13174ad8f64d2beea1d739682f88f6d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_type_layers.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_type_layers.py": {
+    "mtime": 1791165013.8633096,
     "hash": "f395a71e9db171c7f395fb632857132c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_replacement_and_layers.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_replacement_and_layers.py": {
+    "mtime": 1791165013.8693097,
     "hash": "cc3cf5def8a95d27db80641f004ebad7"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_sacrifice_team_counters.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_sacrifice_team_counters.py": {
+    "mtime": 1791165013.8693097,
     "hash": "0f0e459a534b98cd6b0ef421b22803b6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_saga_live.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_saga_live.py": {
+    "mtime": 1791165013.8693097,
     "hash": "8f99bde8c35c777885aef1d25424605d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cast_trigger_targets.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cast_trigger_targets.py": {
+    "mtime": 1791165013.8563097,
     "hash": "72f5354dad8ec37323d2ea3329ca5ba1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_qualified_continuous.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_qualified_continuous.py": {
+    "mtime": 1791165013.8683095,
     "hash": "cf020877e66c814c199b34dc5be0041f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_recipient_combat.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_recipient_combat.py": {
+    "mtime": 1791165013.8683095,
     "hash": "de50099b8b55a1d0e74826fc01dbc181"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_legend_rule.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_legend_rule.py": {
+    "mtime": 1791165013.8633096,
     "hash": "30aad32b93085b3ba216819b1dfc2a01"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_token_images.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_token_images.py": {
+    "mtime": 1791165013.8723094,
     "hash": "574bcc5eaa602228abf5380852e7c454"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cycling.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cycling.py": {
+    "mtime": 1791165013.8583097,
     "hash": "ba472a602a6f88a4c8a6fab2abc2752a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_transform_draw.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_transform_draw.py": {
+    "mtime": 1791165013.8733096,
     "hash": "411930bb9b108e359bb2e5da9f08179f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_continuous_static_order.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_continuous_static_order.py": {
+    "mtime": 1791165013.8583097,
     "hash": "7bd8162f9271d7aef37ed8f9cc5e6a6e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_prevention_replacement_edges.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_prevention_replacement_edges.py": {
+    "mtime": 1791165013.8683095,
     "hash": "3c6c266348afe7b16db2ddbd76af490a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mana_system.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mana_system.py": {
+    "mtime": 1791165013.8653097,
     "hash": "c282962ef52aa441d5ab8c520a070435"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_damage_assignment.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_damage_assignment.py": {
+    "mtime": 1791165013.8573098,
     "hash": "311efec8544370de69ef11b310eb366a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_self_removal.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_self_removal.py": {
+    "mtime": 1791165013.8703096,
     "hash": "05a7db2bcc2909348b51d3c79c37a411"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_live_bo3_series.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_live_bo3_series.py": {
+    "mtime": 1791165013.8643095,
     "hash": "ded2312594af496f901fd02f91c477a3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_attack_bands.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_attack_bands.py": {
+    "mtime": 1791165013.8553097,
     "hash": "9a3371a631885c3a9f2f0b9c1f16d71e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_session_lifecycle.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_session_lifecycle.py": {
+    "mtime": 1791165013.8703096,
     "hash": "59f0da432309d99d8667997c919e0a0c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_equip_context.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_equip_context.py": {
+    "mtime": 1791165013.8613098,
     "hash": "a951065979f28e48c420c15c6d7898f7"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_phase_progression.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_phase_progression.py": {
+    "mtime": 1791165013.8673096,
     "hash": "f2ef59b204490331f0a6de550365c4a8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_advanced.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_advanced.py": {
+    "mtime": 1791165013.8563097,
     "hash": "06853640a81a24774a5d46f69fff97c2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_priority_shortlists.py": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_priority_shortlists.py": {
+    "mtime": 1791165013.8533099,
     "hash": "360592e97bac77157711a002ec95246e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_expansion_refresh.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_expansion_refresh.py": {
+    "mtime": 1791165013.8623097,
     "hash": "f64c1555ec647c60155f92b8fa108271"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_planeswalkers.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_planeswalkers.py": {
+    "mtime": 1791165013.8673096,
     "hash": "30d0352d2b0388c670b33b83b66ba6d1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_strategic_pass.py": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_strategic_pass.py": {
+    "mtime": 1791165013.8543098,
     "hash": "7ec93bdaa78df0da73b2379217a13282"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_transformed_entry.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_transformed_entry.py": {
+    "mtime": 1791165013.8733096,
     "hash": "aca776fd20b6cb9b65ea1c2b90f3c17f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_opening_entry_counters.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_opening_entry_counters.py": {
+    "mtime": 1791165013.8663096,
     "hash": "2c1caefd5c8c5062f2fa4dd06a86214a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_match_recovery.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_match_recovery.py": {
+    "mtime": 1791165013.8653097,
     "hash": "68fc3762bbafc826654aefb8ec9e30ed"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_heuristics.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_heuristics.py": {
+    "mtime": 1791165013.8533099,
     "hash": "2f223c45386d93a6048be91f4236b90a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_payments_requirements.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_payments_requirements.py": {
+    "mtime": 1791165013.8573098,
     "hash": "366b604e9cc199154c18594bb4fefc11"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ci_regression_gate.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ci_regression_gate.py": {
+    "mtime": 1791165013.8563097,
     "hash": "95b443a942e59118106417b1e44cff43"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_interactions_expanded.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_interactions_expanded.py": {
+    "mtime": 1791165013.8623097,
     "hash": "f3142d235b7b87a833d51c722e13effe"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_spell_entry_counters.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_spell_entry_counters.py": {
+    "mtime": 1791165013.8713095,
     "hash": "0b1592470e16e30144c68956c2110a14"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_triggers.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_triggers.py": {
+    "mtime": 1791165013.8733096,
     "hash": "e1edd8baf64060df581bcf3360c0b6cd"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_deck_selection.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_deck_selection.py": {
+    "mtime": 1791165013.8593097,
     "hash": "2ad0db4ff7e7daf4cd317729a5f22226"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_combat_costs.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_combat_costs.py": {
+    "mtime": 1791165013.8573098,
     "hash": "0a8924aee6678fe460e06d884aac1c3c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_match_persistence.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_match_persistence.py": {
+    "mtime": 1791165013.8653097,
     "hash": "0ddd60fd94fc82f47d008cbaff05f412"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_anomaly_cluster_report.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_anomaly_cluster_report.py": {
+    "mtime": 1791165013.8543098,
     "hash": "e65fa68a6f22a6fce117608e41fac356"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_activated_sacrifice_events.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_copy_targets.py": {
+    "mtime": 1791169145.51219,
+    "hash": "5495e1ad8b91a49f0643da7917dc28af"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_activated_sacrifice_events.py": {
+    "mtime": 1791165013.8513098,
     "hash": "9df18b0618f18c5561ed7e5f8c57c2a2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_bestow.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_bestow.py": {
+    "mtime": 1791165013.8553097,
     "hash": "2fa35f9a747062081592dbcbbadd1faf"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_public_exile_views.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_public_exile_views.py": {
+    "mtime": 1791165013.8683095,
     "hash": "a250dfe8beebcbbac4b4dbbba0cc0003"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_named_artifact_tokens.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_named_artifact_tokens.py": {
+    "mtime": 1791165013.8663096,
     "hash": "b4a6bc9520ecd4f4d108240010d863d3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_snow_spend.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_snow_spend.py": {
+    "mtime": 1791165013.8703096,
     "hash": "ac0ca4d75151495f9733f59630953a18"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_oracle_semantics.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_oracle_semantics.py": {
+    "mtime": 1791165013.8533099,
     "hash": "62b277d65fad8434d7ee102a312c52fc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_tactical_tags.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_tactical_tags.py": {
+    "mtime": 1791165013.8713095,
     "hash": "a05e8fd5105df246010c61270884bf8c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_replay_protocol.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_replay_protocol.py": {
+    "mtime": 1791165013.8693097,
     "hash": "9b5d8292afabaa9e56985de25dd386f7"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_oracle_effects.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_oracle_effects.py": {
+    "mtime": 1791165013.8673096,
     "hash": "6664fd33b9aaad64e5a73f497abd1fab"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_postcombat_mana.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_postcombat_mana.py": {
+    "mtime": 1791165013.8533099,
     "hash": "dae9e202b52dae7b148220b9a2acd93e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_attached_scaling.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_attached_scaling.py": {
+    "mtime": 1791165013.8553097,
     "hash": "84da7737c680087eaa35c21809c4a15b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/casting_trigger_browser_fixture.py": {
-    "mtime": 1791160751.547588,
+  "/home/nick/mtg-linked-landfall/backend/tests/casting_trigger_browser_fixture.py": {
+    "mtime": 1791165013.83931,
     "hash": "fdd731320a2f043118284a57ff77d832"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_placeholders.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_placeholders.py": {
+    "mtime": 1791165013.8673096,
     "hash": "0c88347a6c9e0878364241928e9a734d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_continuous_static_effects.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_continuous_static_effects.py": {
+    "mtime": 1791165013.8583097,
     "hash": "7629b1573b3fbbd63d5e8209ca2f57a1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_damage_trigger_targets.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_damage_trigger_targets.py": {
+    "mtime": 1791165013.8593097,
     "hash": "f0696788b50c0ccf5cda6b66f7cdc5bd"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_new_rules_batch.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_new_rules_batch.py": {
+    "mtime": 1791165013.8663096,
     "hash": "15dc605312a8a8859176ca454ebf7b82"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_departed_damage_sources.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_departed_damage_sources.py": {
+    "mtime": 1791165013.8593097,
     "hash": "db67e8cac4688d861e136c86a8dbbe33"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_sacrifice_drain.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_sacrifice_drain.py": {
+    "mtime": 1791165013.8693097,
     "hash": "233adcd4ab4e020847cc6309ba929b62"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_sideboard.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_sideboard.py": {
+    "mtime": 1791165013.8703096,
     "hash": "9782742a3f4d5093a0edfc76abe41eb8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_activated_ability_timing.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_activated_ability_timing.py": {
+    "mtime": 1791165013.8513098,
     "hash": "19e00c3f424896f12190ae685a22cc90"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_counter_prohibitions.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_counter_prohibitions.py": {
+    "mtime": 1791165013.8583097,
     "hash": "33cc092ca9b83759cd36e45113dac794"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_modal_spell_faces.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_modal_spell_faces.py": {
+    "mtime": 1791165013.8653097,
     "hash": "3564a789cfa81e2d9db77cf162688027"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_counter_rules.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_counter_rules.py": {
+    "mtime": 1791165013.8573098,
     "hash": "429354dffc693ee7a1832b95cd5ab03d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cost_choice_fallback.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cost_choice_fallback.py": {
+    "mtime": 1791165013.8583097,
     "hash": "eb82cb90799c82446da2538e26f5d354"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_lifelink_gain_events.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_lifelink_gain_events.py": {
+    "mtime": 1791165013.8643095,
     "hash": "8567f92cac2f52a0fc484edf55f104cc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_library_permissions.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_library_permissions.py": {
+    "mtime": 1791165013.8643095,
     "hash": "b5f2282c5e9ddb97e8c3f492552cd5bb"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_events_apnap.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_events_apnap.py": {
+    "mtime": 1791165013.8613098,
     "hash": "82049f78849c4a57808782b882d27b9c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_fable_goblin_treasure.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_fable_goblin_treasure.py": {
+    "mtime": 1791165013.8623097,
     "hash": "d3795ba7a734689d2656dff8ee06097f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_combat_search.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_combat_search.py": {
+    "mtime": 1791165013.8523097,
     "hash": "838ff34346c6767c05cc6a0d2049752d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_distinct_card_type_reveal.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_distinct_card_type_reveal.py": {
+    "mtime": 1791165013.8603096,
     "hash": "a321f43680bf69f4a9ee6a2a8aeb1d8a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ordered_copy_targets.py": {
-    "mtime": 1791164775.4115353,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ordered_copy_targets.py": {
+    "mtime": 1791165013.8673096,
     "hash": "a944704c4c0f1f5bde6fdce8415cb4be"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_dynamic_activation_modifiers.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_dynamic_activation_modifiers.py": {
+    "mtime": 1791165013.8613098,
     "hash": "bce0271d71fbc3a160ddd16c77a036cc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_devotion.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_devotion.py": {
+    "mtime": 1791165013.8603096,
     "hash": "adf1f7e9833697d2c61ec0184465ab38"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_minimums_payments.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_minimums_payments.py": {
+    "mtime": 1791165013.8573098,
     "hash": "b1022c7e9e8ad0be2f61647feb86f5d1"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_targeting_advanced.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_targeting_advanced.py": {
+    "mtime": 1791165013.8723094,
     "hash": "391ecd9e774635c835ccc97e3bade717"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_deck_parser.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_deck_parser.py": {
+    "mtime": 1791165013.8593097,
     "hash": "c2ef7b2e1567d80aa3f9be3847a74850"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_search_prefix.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_search_prefix.py": {
+    "mtime": 1791165013.8543098,
     "hash": "eec358e76bd0ab1d1ed63ebcc51dc177"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_life_total_lock.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_life_total_lock.py": {
+    "mtime": 1791165013.8643095,
     "hash": "c7476c8f4a388e7c8c12ea4cab67ca14"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_builtin_refresh.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_builtin_refresh.py": {
+    "mtime": 1791165013.8553097,
     "hash": "04f93967965e51be7db46e108cc29256"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_keyword_effect_timestamps.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_keyword_effect_timestamps.py": {
+    "mtime": 1791165013.8633096,
     "hash": "49610a678a7ebf538b0a8b1fd5604ae3"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_draw_forecast.py": {
-    "mtime": 1791160751.5665877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_draw_forecast.py": {
+    "mtime": 1791165013.8603096,
     "hash": "12245ebe7fe55639cd7a16347ebc2eb4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_fallback_hydration.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_damage_targets.py": {
+    "mtime": 1791167647.3298738,
+    "hash": "8388351c052039b6f12631d55b5ab7cc"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_fallback_hydration.py": {
+    "mtime": 1791165013.8623097,
     "hash": "2e07e3e51ad2da62af979b93058fe5bb"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ability_suppression.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ability_suppression.py": {
+    "mtime": 1791165013.8513098,
     "hash": "e8dfb8f89879f08677c175e61f792daa"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_cleanup_hand_size.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_cleanup_hand_size.py": {
+    "mtime": 1791165013.8563097,
     "hash": "e2158a2b6f3c3a9742558d1c5e450ddc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_opening_hand.py": {
-    "mtime": 1791160751.5725877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_opening_hand.py": {
+    "mtime": 1791165013.8663096,
     "hash": "98e9eb6f6008d522deb12d425aa3e2fa"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_token_zone_lifecycle.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_token_zone_lifecycle.py": {
+    "mtime": 1791165013.8723094,
     "hash": "79f390da47b40e464d0f69c695b6a71f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_diagnostics.py": {
-    "mtime": 1791160751.559588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_diagnostics.py": {
+    "mtime": 1791165013.8533099,
     "hash": "19ddb80a670d4c4c5b9d184fe3f6bdef"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_kicker.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_kicker.py": {
+    "mtime": 1791165013.8633096,
     "hash": "7f427b634eff8d09a8ea959ea72447cc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_activation_modifiers.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_activation_modifiers.py": {
+    "mtime": 1791165013.8513098,
     "hash": "f6e854953f624e854446eb62270ad235"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_training_keyword.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_training_keyword.py": {
+    "mtime": 1791165013.8733096,
     "hash": "d4b00745c921775f15a66f94c3a42830"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mass_exile_rules.py": {
-    "mtime": 1791160751.5705876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mass_exile_rules.py": {
+    "mtime": 1791165013.8653097,
     "hash": "e927b5e4b9554abb574688d08666525c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_attached_predicates.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_linked_damage_same_object.py": {
+    "mtime": 1791169541.187142,
+    "hash": "7230b292a790500f1d485b31b33f119e"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_attached_predicates.py": {
+    "mtime": 1791165013.8553097,
     "hash": "994ae584ee7d044ebf083ad2934ac01c"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_variable_life_cost_audit.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_variable_life_cost_audit.py": {
+    "mtime": 1791165013.8733096,
     "hash": "a665d1d2fadf7477bf5fb7baeba93a21"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_counterability.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_counterability.py": {
+    "mtime": 1791165013.8523097,
     "hash": "27261dec7b3bc6ac3d5abfc128626556"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_api_input_contracts.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_api_input_contracts.py": {
+    "mtime": 1791165013.8543098,
     "hash": "dfeba29a6f0fb94ef03ef6d62d245bec"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_card_image_sync.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_card_image_sync.py": {
+    "mtime": 1791165013.8553097,
     "hash": "3d283748780f567cdb45c63c49d59466"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_scry.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_scry.py": {
+    "mtime": 1791165013.8703096,
     "hash": "64dcfa247d9c3cea2e56618f28c38a25"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_simulation_job_cache.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_simulation_job_cache.py": {
+    "mtime": 1791165013.8703096,
     "hash": "64436569295be8a9b4433132d4b91e34"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat_domain_temporary_costs.py": {
-    "mtime": 1791160751.563588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat_domain_temporary_costs.py": {
+    "mtime": 1791165013.8573098,
     "hash": "c6cdba068da2ef874760144e1d389d4f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_kicked_cast_triggers.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_kicked_cast_triggers.py": {
+    "mtime": 1791165013.8633096,
     "hash": "f5ae7fb9599ea1ec004ac0d1085a118b"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_combat_responses.py": {
-    "mtime": 1791160751.558588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_combat_responses.py": {
+    "mtime": 1791165013.8523097,
     "hash": "428a54054fd3c084125ad270f9c02c9e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_coupled_target_coverage.py": {
-    "mtime": 1791162607.4836857,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_coupled_target_coverage.py": {
+    "mtime": 1791165013.8583097,
     "hash": "a49a179969ad570c3d95d4c9bd623ab5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_saga_counter_events.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_saga_counter_events.py": {
+    "mtime": 1791165013.8693097,
     "hash": "ef140cc6bf06ea8a25b3d026a5db8ff4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_damage_replacements.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_damage_replacements.py": {
+    "mtime": 1791165013.8593097,
     "hash": "5df5b9fa8d05326355abdce3c77c3ada"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_creature_copy_tokens.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_creature_copy_tokens.py": {
+    "mtime": 1791165013.8583097,
     "hash": "a3291e25906c7c0f8f74b7cd4f4d5f85"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_public_hidden_hands.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_public_hidden_hands.py": {
+    "mtime": 1791165013.8683095,
     "hash": "948266780323c77833117a2f73780c6e"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_temporary_team_buff.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_temporary_team_buff.py": {
+    "mtime": 1791165013.8723094,
     "hash": "dc3d42aafbad064e413a299613870b83"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_card_play_analytics.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_card_play_analytics.py": {
+    "mtime": 1791165013.8563097,
     "hash": "6c1ffc5c17811ac7c0a54f580e196723"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_knowledge_ingest.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_knowledge_ingest.py": {
+    "mtime": 1791165013.8633096,
     "hash": "234d02ae83af8f1045bfad340608a010"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_declaration_limits.py": {
-    "mtime": 1791160751.5655878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_declaration_limits.py": {
+    "mtime": 1791165013.8593097,
     "hash": "3f99c5af03d077b469d8ec184b95be9a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_sideboarding.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_sideboarding.py": {
+    "mtime": 1791165013.8543098,
     "hash": "c8f231c3a109bbaf71c83103599341b9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_api_smoke.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_api_smoke.py": {
+    "mtime": 1791165013.8543098,
     "hash": "12babb3b6f8d3e0cdf416b6bf65b85b8"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_next_turn_draw.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_next_turn_draw.py": {
+    "mtime": 1791165013.8663096,
     "hash": "1c78d89f5619b90b9e1fbf176ba2f900"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_foretell.py": {
-    "mtime": 1791160751.5675879,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_foretell.py": {
+    "mtime": 1791165013.8623097,
     "hash": "9a533aeea7726004b076e30aed0b4891"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_public_land_allowance.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_public_land_allowance.py": {
+    "mtime": 1791165013.8683095,
     "hash": "d5fe28aaf21a89688aef6256b548d4d9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_bounce_rules.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_bounce_rules.py": {
+    "mtime": 1791165013.8553097,
     "hash": "6e5f749f39f5f7333688dbdee439e360"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_http_utils.py": {
-    "mtime": 1791160751.5685878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_http_utils.py": {
+    "mtime": 1791165013.8623097,
     "hash": "61fba70188cfc64527f53c69fa1c3273"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_autoplay_progression.py": {
-    "mtime": 1791160751.5615878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_autoplay_progression.py": {
+    "mtime": 1791165013.8553097,
     "hash": "0001739ebd624beda1712b83166ed185"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_stack_copies.py": {
-    "mtime": 1791160751.5765877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_stack_copies.py": {
+    "mtime": 1791165013.8713095,
     "hash": "40934833dd4a2fcd30edd9576e31afb5"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_topdeck_lands.py": {
-    "mtime": 1791160751.5775876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_topdeck_lands.py": {
+    "mtime": 1791165013.8723094,
     "hash": "637b2fed255b9e7cac130bc3d35fe6c9"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ordered_creature_modifiers.py": {
-    "mtime": 1791164267.5562062,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ordered_creature_modifiers.py": {
+    "mtime": 1791165013.8673096,
     "hash": "cce59f4bc3bfa97ea201cf99c7da4472"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_replay_manifest.py": {
-    "mtime": 1791160751.5745876,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_replay_manifest.py": {
+    "mtime": 1791165013.8693097,
     "hash": "d52bcf01d01de947b00726a9dec22536"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_resource_forecast.py": {
-    "mtime": 1791160751.560588,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_resource_forecast.py": {
+    "mtime": 1791165013.8543098,
     "hash": "fdcad3d37e87d598ccb146da943d1d46"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_land_threshold_combat_restrictions.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_land_threshold_combat_restrictions.py": {
+    "mtime": 1791165013.8633096,
     "hash": "73cb7631a9593e8f17bc7ef97165d72f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_conditional_static.py": {
-    "mtime": 1791160751.5645878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_conditional_static.py": {
+    "mtime": 1791165013.8583097,
     "hash": "be2f6ffddc6c2b54d5bd0b256f06699f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_player_target_immunity.py": {
-    "mtime": 1791160751.5735877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_player_target_immunity.py": {
+    "mtime": 1791165013.8673096,
     "hash": "bca8581dc5e604332bdb5f36e4af1cac"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_combat.py": {
-    "mtime": 1791160751.5625877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_combat.py": {
+    "mtime": 1791165013.8563097,
     "hash": "739b1a216d6d2d82456d47b27166be11"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_zone_object_reset.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_zone_object_reset.py": {
+    "mtime": 1791165013.8743095,
     "hash": "c85a7b9a32f42587d5844eac62544d26"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_wheel_draw.py": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_wheel_draw.py": {
+    "mtime": 1791165013.8743095,
     "hash": "2c85b08754a60c6c9ff6a8b1446db2f6"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mulligan_bottom_choices.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mulligan_bottom_choices.py": {
+    "mtime": 1791165013.8653097,
     "hash": "34b88779e14dd625c816348521c47d95"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_legal_moves.py": {
-    "mtime": 1791160751.5695877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_legal_moves.py": {
+    "mtime": 1791165013.8633096,
     "hash": "489863cf330d378fe083e3fd49f7c68a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_mulligan_and_timing.py": {
-    "mtime": 1791160751.5715878,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_mulligan_and_timing.py": {
+    "mtime": 1791165013.8653097,
     "hash": "efb6fa798b75d2ca91ec8514fefeab9a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_action_replay.py": {
-    "mtime": 1791164907.5877519,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_real_ordered_spell_copy.py": {
+    "mtime": 1791165914.8619266,
+    "hash": "ae20cd9b37397d007a7444ee72ed6ef2"
+  },
+  "/home/nick/mtg-linked-landfall/backend/tests/test_action_replay.py": {
+    "mtime": 1791165013.8513098,
     "hash": "7de85e5b1897c137a94eab92564bb1fc"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_ai_decisions.py": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_ai_decisions.py": {
+    "mtime": 1791165013.8523097,
     "hash": "fdb5b965c201d5e870d73f0e5aaa812d"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/test_seed_and_replay.py": {
-    "mtime": 1791160751.5755877,
+  "/home/nick/mtg-linked-landfall/backend/tests/test_seed_and_replay.py": {
+    "mtime": 1791165013.8703096,
     "hash": "b0dec96a90996a1d02a195f499e44720"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/regression_agent_wave2/test_restart_and_additional.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/regression_agent_wave2/test_restart_and_additional.py": {
+    "mtime": 1791165013.8503098,
     "hash": "a52ca7535616f93cab97bcbe858ff7a4"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/regression_agent_wave2/conftest.py": {
-    "mtime": 1791160751.556588,
+  "/home/nick/mtg-linked-landfall/backend/tests/regression_agent_wave2/conftest.py": {
+    "mtime": 1791165013.8503098,
     "hash": "5846137c47e2f518968454b2a5f44b6f"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/regression_agent_wave2/test_casting_contracts.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/regression_agent_wave2/test_casting_contracts.py": {
+    "mtime": 1791165013.8503098,
     "hash": "664d757d0b37b5ee888842fe10fd7b41"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/regression_agent_wave2/support.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/regression_agent_wave2/support.py": {
+    "mtime": 1791165013.8503098,
     "hash": "67bfe059e1cb083c43e050b32c4fb01a"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/regression_agent/test_interactions.py": {
-    "mtime": 1791160751.556588,
+  "/home/nick/mtg-linked-landfall/backend/tests/regression_agent/test_interactions.py": {
+    "mtime": 1791165013.8503098,
     "hash": "32c75c01e53349d9d0ed903641ffd0ed"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/release_agent/test_safety.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/release_agent/test_safety.py": {
+    "mtime": 1791165013.8513098,
     "hash": "7da9a9615cd2baa7b35494d584b08f42"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/release_agent/test_restore.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/release_agent/test_restore.py": {
+    "mtime": 1791165013.8513098,
     "hash": "8698ecf0655f3490cdee5ba7b7af2a24"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/release_agent/offline_probe.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/release_agent/offline_probe.py": {
+    "mtime": 1791165013.8503098,
     "hash": "e654f7b20d69a96e173da6c3b266c3b2"
   },
-  "/home/nick/mtg-coupled-targets/backend/tests/release_agent/test_retention.py": {
-    "mtime": 1791160751.5575879,
+  "/home/nick/mtg-linked-landfall/backend/tests/release_agent/test_retention.py": {
+    "mtime": 1791165013.8513098,
     "hash": "cdf727905f0753e8e66f3cd9c0d6a9ae"
   },
-  "/home/nick/mtg-coupled-targets/backend/game_state/__init__.py": {
-    "mtime": 1791160751.5355883,
+  "/home/nick/mtg-linked-landfall/backend/game_state/__init__.py": {
+    "mtime": 1791165013.8253102,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/game_state/serializers.py": {
-    "mtime": 1791164047.4249406,
-    "hash": "f5203a0fce699630f7e5c4f71413df2b"
+  "/home/nick/mtg-linked-landfall/backend/game_state/serializers.py": {
+    "mtime": 1791165239.7782254,
+    "hash": "d3bc9d47d8a13e6f94af3df972f726eb"
   },
-  "/home/nick/mtg-coupled-targets/backend/game_state/series_policy.py": {
-    "mtime": 1791160751.5355883,
+  "/home/nick/mtg-linked-landfall/backend/game_state/series_policy.py": {
+    "mtime": 1791165013.8253102,
     "hash": "5cbf2ff1f3cbe084cf9516fbf5476f1e"
   },
-  "/home/nick/mtg-coupled-targets/backend/game_state/observations.py": {
-    "mtime": 1791160751.5355883,
+  "/home/nick/mtg-linked-landfall/backend/game_state/observations.py": {
+    "mtime": 1791165013.8253102,
     "hash": "8d40136bff0e741faf0587dc2b147395"
   },
-  "/home/nick/mtg-coupled-targets/backend/game_state/state.py": {
-    "mtime": 1791160751.5365882,
-    "hash": "8ac7fd34b240a18d7cab36b76ffbbe14"
+  "/home/nick/mtg-linked-landfall/backend/game_state/state.py": {
+    "mtime": 1791165142.94255,
+    "hash": "aa343ca82f6e0842fc766486b56f9d08"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/__init__.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/analytics/__init__.py": {
+    "mtime": 1791165013.8223102,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/service.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/analytics/service.py": {
+    "mtime": 1791165013.8233101,
     "hash": "563e85f30552c2034ce0641ef2368898"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/schemas.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/analytics/schemas.py": {
+    "mtime": 1791165013.8223102,
     "hash": "38a4776f76ba5a41b4099e48d1b24e30"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/replay_tools.py": {
-    "mtime": 1791160751.5325882,
+  "/home/nick/mtg-linked-landfall/backend/analytics/replay_tools.py": {
+    "mtime": 1791165013.8223102,
     "hash": "d924c89ee4bb94b06159a9b7fb741bbb"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/decision_taxonomy.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/analytics/decision_taxonomy.py": {
+    "mtime": 1791165013.8223102,
     "hash": "79769fe19c2922c3f1dedb740f2f117b"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/decision_quality.py": {
-    "mtime": 1791160751.5315883,
+  "/home/nick/mtg-linked-landfall/backend/analytics/decision_quality.py": {
+    "mtime": 1791165013.8223102,
     "hash": "47825a63e66044c3a72a5cba4a24308b"
   },
-  "/home/nick/mtg-coupled-targets/backend/analytics/action_replay.py": {
-    "mtime": 1791164907.5877519,
+  "/home/nick/mtg-linked-landfall/backend/analytics/action_replay.py": {
+    "mtime": 1791165013.8223102,
     "hash": "7b3e807f6353b45846a1b59ea66b1a78"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/scry.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/scry.py": {
+    "mtime": 1791165013.83431,
     "hash": "251bd3e174e0d07235ebcda6dd805975"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/keyword_actions.py": {
-    "mtime": 1791164482.9224226,
-    "hash": "5bc33b90a2cbd3060d41a68a13887553"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/keyword_actions.py": {
+    "mtime": 1791169895.600108,
+    "hash": "79b4b1709ffe5be45f0bd65666f39e1a"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/keyword_triggers.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/keyword_triggers.py": {
+    "mtime": 1791165013.83231,
     "hash": "7aa8527882c885d04ce41dae3f866f42"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/type_effects.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/type_effects.py": {
+    "mtime": 1791165013.83531,
     "hash": "c212a42dc62d197fb0fd7748e8f635b2"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/query_context.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/query_context.py": {
+    "mtime": 1791165013.83431,
     "hash": "3b63ad83beaaeeec57b449bb23db54a2"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/hooks.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/hooks.py": {
+    "mtime": 1791165013.83231,
     "hash": "363c75aaa13d366bcd15e6a4c038bdc1"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/alternative_casts.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/alternative_casts.py": {
+    "mtime": 1791165013.8293102,
     "hash": "c94c490e842d34fb28bcda47872c0921"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/proliferation.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/proliferation.py": {
+    "mtime": 1791165013.83431,
     "hash": "04e5f1f43268e746363955cecdb199ea"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/restrictions.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/restrictions.py": {
+    "mtime": 1791165013.83431,
     "hash": "6840c5b52be59cd5fd405a9b8e2a167d"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/card_faces.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/card_faces.py": {
+    "mtime": 1791165013.8293102,
     "hash": "0704e3833db47e162aabf4bc4f8cf5ab"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/declaration_limits.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/declaration_limits.py": {
+    "mtime": 1791165013.83031,
     "hash": "48c1dfe336a0b04fca086325635126fa"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/cycling.py": {
-    "mtime": 1791160751.5395882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/cycling.py": {
+    "mtime": 1791165013.83031,
     "hash": "5bef63ad21f5b5395c7cfbd058b0dde6"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/action_validation.py": {
-    "mtime": 1791160751.5375881,
-    "hash": "2830f9b7e5d46bff297c1a2f066d3999"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/action_validation.py": {
+    "mtime": 1791167219.6084685,
+    "hash": "033a9e5526428dd54f607f7852e3c486"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/prevention.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/prevention.py": {
+    "mtime": 1791165013.83431,
     "hash": "9bffc4e7eef0c6ac281f4acd0debf62f"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/foretell.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/foretell.py": {
+    "mtime": 1791165013.83231,
     "hash": "cbe1d43df8571a901fc2e00b99b0227f"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/entry.py": {
-    "mtime": 1791160751.541588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/entry.py": {
+    "mtime": 1791165013.83131,
     "hash": "f0c1d6cb2b2e43ed6d328cd3eee80bdd"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/replacement.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/replacement.py": {
+    "mtime": 1791165013.83431,
     "hash": "14e177092688c62740d7711a96f5a99e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/priority.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/priority.py": {
+    "mtime": 1791165013.83431,
     "hash": "07dc3a93610af0345ba65545ed642a9e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/costs.py": {
-    "mtime": 1791160751.5395882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/costs.py": {
+    "mtime": 1791165013.83031,
     "hash": "5a7f1d4d507869981440235b9d188d26"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/combat_requirements.py": {
-    "mtime": 1791160751.5385883,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/combat_requirements.py": {
+    "mtime": 1791165013.8293102,
     "hash": "5496bfa8b43c5d8b89a8eb05e2271791"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/__init__.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/__init__.py": {
+    "mtime": 1791165013.82831,
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/effect_casts.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/linked_targets.py": {
+    "mtime": 1791168935.5195599,
+    "hash": "7098a3b8bf137d8a387afc5cb7aa371e"
+  },
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/effect_casts.py": {
+    "mtime": 1791165013.83131,
     "hash": "2b15850d27a8be1f379b6a961423d3b2"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/activation_modifiers.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/activation_modifiers.py": {
+    "mtime": 1791165013.8293102,
     "hash": "9e4d54ab663bfaec78cc85b5a0fa750b"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/ability_model.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/ability_model.py": {
+    "mtime": 1791165013.82831,
     "hash": "7c59c1392fb83f42222b070ae5c9fdde"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/player_counters.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/player_counters.py": {
+    "mtime": 1791165013.83431,
     "hash": "f9064c584a13dc2c11451c06f5f369f4"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/events.py": {
-    "mtime": 1791160751.5425882,
-    "hash": "5bb3d42944ed252b1c4f384de17dd8f6"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/events.py": {
+    "mtime": 1791165142.94555,
+    "hash": "3cf9135f1211438cff939b9ac1f3e50f"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/damage_results.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/damage_results.py": {
+    "mtime": 1791165013.83031,
     "hash": "341054e0ebf83c1a50ce2e0467987c60"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/opening_hand.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/opening_hand.py": {
+    "mtime": 1791165013.8333101,
     "hash": "3a2614a49aab59148864a0487f3b16b9"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/mana.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/mana.py": {
+    "mtime": 1791165013.8333101,
     "hash": "8ba4f3ab55a8de8b4eae8095346b5e77"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/library_permissions.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/library_permissions.py": {
+    "mtime": 1791165013.83231,
     "hash": "76daf47f568c3a46ca05c3dd5d45f68e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/kicker.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/kicker.py": {
+    "mtime": 1791165013.83231,
     "hash": "9ddfc82174c28aa0062dd9cd7bc4b62e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/entry_counters.py": {
-    "mtime": 1791160751.541588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/entry_counters.py": {
+    "mtime": 1791165013.83131,
     "hash": "058c3e648f6eb345cb0ce0ed2fae8363"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/continuous.py": {
-    "mtime": 1791160751.5395882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/continuous.py": {
+    "mtime": 1791165013.83031,
     "hash": "c23c16db25fea6a971b35e6233b3510b"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/land_types.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/land_types.py": {
+    "mtime": 1791165013.83231,
     "hash": "db1490cc9b05a1e46d53bd1a984dad35"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/protection.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/landfall.py": {
+    "mtime": 1791166489.9699657,
+    "hash": "d64260919f652be42b94bfa637151fe7"
+  },
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/protection.py": {
+    "mtime": 1791165013.83431,
     "hash": "a6b987ed7009a948116efa7af6781c8e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/combat.py": {
-    "mtime": 1791160751.5385883,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/combat.py": {
+    "mtime": 1791165013.8293102,
     "hash": "ddb79c463317993c0104f3d2880e61bf"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/ordered_targets.py": {
-    "mtime": 1791164482.9204228,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/ordered_targets.py": {
+    "mtime": 1791165013.83431,
     "hash": "0c2c8c902958a065eed679341bc11f86"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/targeting.py": {
-    "mtime": 1791163352.7279422,
-    "hash": "90a73aebe8a98f875b7f12d72ffdc025"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/targeting.py": {
+    "mtime": 1791167219.6074686,
+    "hash": "e14525730d088e04f0e7682f94f5b1f4"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/devotion.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/devotion.py": {
+    "mtime": 1791165013.83131,
     "hash": "a7204844965820fda084dbe915fe638e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/domain.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/land_history.py": {
+    "mtime": 1791165142.94155,
+    "hash": "85c591f99cc5b36c70e6d3c1c7a588cb"
+  },
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/domain.py": {
+    "mtime": 1791165013.83131,
     "hash": "5489ae1574afdf60d1bba66d0ff345bb"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/bestow.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/bestow.py": {
+    "mtime": 1791165013.8293102,
     "hash": "dc207ec2c768518173a8f4d4fd37ea3a"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/combat_constraints.py": {
-    "mtime": 1791160751.5385883,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/combat_constraints.py": {
+    "mtime": 1791165013.8293102,
     "hash": "18f080d51c304b2c340adf85b88b0d01"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/counter_replacements.py": {
-    "mtime": 1791160751.5395882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/counter_replacements.py": {
+    "mtime": 1791165013.83031,
     "hash": "558ea432747ebd652ecec58e87d356ae"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/engine.py": {
-    "mtime": 1791160751.541588,
-    "hash": "65405568dac0e9d0ce31f7a25104070a"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/engine.py": {
+    "mtime": 1791165142.94655,
+    "hash": "3fef3b45370d09b24c19b6e937fae1f7"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/linked_discard.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/linked_discard.py": {
+    "mtime": 1791165013.8333101,
     "hash": "f605868647108ba089d394d44d099f59"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/dredge.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/dredge.py": {
+    "mtime": 1791165013.83131,
     "hash": "9c9a0e5aadb259d22d1b7918d108e3dd"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/mana_abilities.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/mana_abilities.py": {
+    "mtime": 1791165013.8333101,
     "hash": "9f075d496dffeb41ddaa28d2ae859ee6"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/card_types.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/card_types.py": {
+    "mtime": 1791165013.8293102,
     "hash": "2a345db3ade78cf7b7cd2c52ce53a22c"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/attachments.py": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/attachments.py": {
+    "mtime": 1791165013.8293102,
     "hash": "6a9711ffe9630e8dabbf7c4201c7def3"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/static_conditions.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/static_conditions.py": {
+    "mtime": 1791165013.83531,
     "hash": "dabde8069ceb8a7bf002570ff7180a70"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/state_based_actions.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/state_based_actions.py": {
+    "mtime": 1791165013.83531,
     "hash": "ae22ba3231ad3827ede48a8cc6abf097"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/cast_choice.py": {
-    "mtime": 1791163266.2134888,
-    "hash": "3c4869fe6fc1b08949bfbf9ba0527128"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/cast_choice.py": {
+    "mtime": 1791167219.6084685,
+    "hash": "4abc9389a1c7935a9abb742e9b9aeed0"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/spell_cost_clauses.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/spell_cost_clauses.py": {
+    "mtime": 1791165013.83431,
     "hash": "2fe8a780345ed05209fc0557d5a621ce"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/zone_actions.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/zone_actions.py": {
+    "mtime": 1791165013.83631,
     "hash": "8b8f1c6b0c8d04d473d1a2911b5bd9d8"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/draw_restrictions.py": {
-    "mtime": 1791160751.5405881,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/draw_restrictions.py": {
+    "mtime": 1791165013.83131,
     "hash": "657fe6a7d9e2fcba166ddb26de155067"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/move_generator.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/move_generator.py": {
+    "mtime": 1791165013.8333101,
     "hash": "70a4c932592f5b2f3dc26190d476d407"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/linked_exile.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/linked_exile.py": {
+    "mtime": 1791165013.8333101,
     "hash": "6821970a48269362bb268d2e497b37a2"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/land_rules.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/land_rules.py": {
+    "mtime": 1791165013.83231,
     "hash": "6b4218f0260e639c58dd1a6811cff988"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/coverage.py": {
-    "mtime": 1791163404.967562,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/coverage.py": {
+    "mtime": 1791165013.83031,
     "hash": "2233446b90af564eb56f25aa0cd2d17e"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/named_counters.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/named_counters.py": {
+    "mtime": 1791165013.8333101,
     "hash": "99d811b7434040f9059a6ba1c1f584e8"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/stack_engine.py": {
-    "mtime": 1791163020.2423077,
-    "hash": "f56e2f708514525a086befce32909419"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/stack_engine.py": {
+    "mtime": 1791167219.6094685,
+    "hash": "cfa867ccdc84309b4c7b7fe55e10af55"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791163020.2383077,
-    "hash": "92e0f670e7643b8f7d4bd9adeae3db94"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/oracle_effects.py": {
+    "mtime": 1791167219.6074686,
+    "hash": "63cd45e797e195ca3ef1e92190664ff5"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/keyword_effects.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/keyword_effects.py": {
+    "mtime": 1791165013.83231,
     "hash": "bf2000233df968d634bd6e997c80a5a8"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/combat_payments.py": {
-    "mtime": 1791160751.5385883,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/combat_payments.py": {
+    "mtime": 1791165013.8293102,
     "hash": "6928d91d7337edba505a97c326e6fad7"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/mana_restrictions.py": {
-    "mtime": 1791160751.5435882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/mana_restrictions.py": {
+    "mtime": 1791165013.8333101,
     "hash": "5ba19b13d903dda1d5b9ac4f8e35abf6"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/token_replacements.py": {
-    "mtime": 1791160751.545588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/token_replacements.py": {
+    "mtime": 1791165013.83531,
     "hash": "c56ca0cd16fc984efbf26a4a554c7b47"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/counter_placement.py": {
-    "mtime": 1791160751.5395882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/counter_placement.py": {
+    "mtime": 1791165013.83031,
     "hash": "83ec08f16f2600711bb466d56dcb1672"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/flashback_grants.py": {
-    "mtime": 1791160751.5425882,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/flashback_grants.py": {
+    "mtime": 1791165013.83231,
     "hash": "630ad2a669605800af3395d6f1c4ef09"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/colors.py": {
-    "mtime": 1791160751.5385883,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/colors.py": {
+    "mtime": 1791165013.8293102,
     "hash": "e2c4799c196dec9dd910986fd8645aa4"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/oracle_text.py": {
-    "mtime": 1791160751.544588,
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/oracle_text.py": {
+    "mtime": 1791165013.83431,
     "hash": "1f67a0f2e560b2595f0d25b551fb1882"
   },
-  "/home/nick/mtg-coupled-targets/backend/rules_engine/ward.py": {
-    "mtime": 1791160751.545588,
-    "hash": "9c12d90d84ab66ef3a5c9c4e115299e0"
+  "/home/nick/mtg-linked-landfall/backend/rules_engine/ward.py": {
+    "mtime": 1791167647.3298738,
+    "hash": "0a0d6c5d47644ce3227d0d2b38c9b656"
   },
-  "/home/nick/mtg-coupled-targets/frontend/vite.config.ts": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/vite.config.ts": {
+    "mtime": 1791165013.9063091,
     "hash": "67a4a460d36fa9cf5b973abc13b82ab3"
   },
-  "/home/nick/mtg-coupled-targets/frontend/eslint.config.mjs": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/frontend/eslint.config.mjs": {
+    "mtime": 1791165013.8933094,
     "hash": "a623851420a65d1e196a9b68d6fed0e1"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/vite-env.d.ts": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/src/vite-env.d.ts": {
+    "mtime": 1791165013.8993092,
     "hash": "0352474ba2918efe13895edbc3780d94"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/App.tsx": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/App.tsx": {
+    "mtime": 1791165013.8943093,
     "hash": "2ba4f949e7e65c12506a8cb0b30b35e2"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/main.tsx": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/src/main.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "68b42ff0047815f665bd5c1a0b8c68b7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791163266.214489,
-    "hash": "10037a5659bdef424582e8aebac6b462"
+  "/home/nick/mtg-linked-landfall/frontend/src/components/Battlefield.tsx": {
+    "mtime": 1791167950.008128,
+    "hash": "ab27729bcfab63284ec4f70b7f742e98"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/DeckPanel.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/DeckPanel.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "cd6e1549750960d6596c03e80d1f5767"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/Controls.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/Controls.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "d3f2c76a04acb56fe8cea836d2fae4f0"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/PermanentActions.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/PermanentActions.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "1bad91fc556d0a156a2141e44129779b"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/StackLog.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/StackLog.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "d24c51fbfbd6a0ec5342cdaef42c89fb"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/AnalyticsPanel.tsx": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/AnalyticsPanel.tsx": {
+    "mtime": 1791165013.8943093,
     "hash": "543d938325636daca06dab5ce70df4f3"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/CardRail.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/CardRail.tsx": {
+    "mtime": 1791165013.8953092,
     "hash": "82d5836fd1817748c77e5d9671e71e3b"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/CardArt.tsx": {
-    "mtime": 1791160751.5915873,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/CardArt.tsx": {
+    "mtime": 1791165013.8943093,
     "hash": "63f83ea3f766a93963cfdf7e09087e03"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/components/table-model.ts": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/src/components/table-model.ts": {
+    "mtime": 1791165013.8953092,
     "hash": "f9c703f8a1bfec7b3a0d74fc7fce541b"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/types/index.ts": {
-    "mtime": 1791163266.214489,
-    "hash": "4173cc1621d5df27b5715748ed1c5699"
+  "/home/nick/mtg-linked-landfall/frontend/src/types/index.ts": {
+    "mtime": 1791167950.006128,
+    "hash": "21580040ab43938fc59cd101fede657e"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/simulation-contract.ts": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/api/simulation-contract.ts": {
+    "mtime": 1791165013.8943093,
     "hash": "0010d14d6f325481aca8c82a53ec8fa7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/mutation-gate.ts": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/api/mutation-gate.ts": {
+    "mtime": 1791165013.8943093,
     "hash": "f56946159671c8fa02066c293021819b"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/client.ts": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/api/client.ts": {
+    "mtime": 1791165013.8943093,
     "hash": "7151edf26b6400397561312367ce3149"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/routing.ts": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/api/routing.ts": {
+    "mtime": 1791165013.8943093,
     "hash": "104a7b6822ab21f8522ae993863b17e9"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/errors.ts": {
-    "mtime": 1791160751.5905874,
+  "/home/nick/mtg-linked-landfall/frontend/src/api/errors.ts": {
+    "mtime": 1791165013.8943093,
     "hash": "ba8652ced9ca78afa3cdc67c0af3fbc7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/src/api/match-contract.ts": {
-    "mtime": 1791163352.7289424,
-    "hash": "4b179a0ed1552a2c3f3e743b8c88f3cd"
+  "/home/nick/mtg-linked-landfall/frontend/src/api/match-contract.ts": {
+    "mtime": 1791167950.007128,
+    "hash": "db180dc8898d351abb96d45ded1d1f78"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/production_proxy_smoke.py": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/production_proxy_smoke.py": {
+    "mtime": 1791165013.905309,
     "hash": "d9c85dacfb43279482976f980d3dda7a"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ordered-copy.mjs": {
-    "mtime": 1791164833.4967532,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ordered-copy.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "3caf00c2eb01279846336bce21f874ac"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-conditional-combat-costs.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-conditional-combat-costs.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "084164435c39245baf13747ae1abd265"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-live-bo3.mjs": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-live-bo3.mjs": {
+    "mtime": 1791165013.903309,
     "hash": "862c55d1b50d28938dae92a2354955de"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/api-routing.mjs": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/tests/api-routing.mjs": {
+    "mtime": 1791165013.8993092,
     "hash": "88d9a7a8911419d4bbb8e19113838751"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-conditional-static.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-conditional-static.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "c380aa3c3eedcbe8ec67237eba61a662"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/simulation-preflight.tsx": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/simulation-preflight.tsx": {
+    "mtime": 1791165013.9063091,
     "hash": "6356c7d1a30f7e18814a6a6adb248e93"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-qualified-costs.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-qualified-costs.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "01e3fac7f39290394ad2f29372ac40d5"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-driver-async.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-driver-async.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "0ac958822707915e12ae149db978912f"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-nonmana-kicker.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-nonmana-kicker.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "bcbe81c7567dd2bfccbf8254a7e1a976"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-wheel-draw.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-wheel-draw.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "a4834e50a0c32e02d96eb92686f2a909"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ui-lab.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-lab.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "1c8502926e5140fcae0d1f3fec79a5e5"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/mutation-gate.mjs": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/mutation-gate.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "01163d01005ca59d44e582e77250abd4"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-combat-domain-temporary.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-domain-temporary.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "c3698d8ae5e66c5641d9450ea5736df8"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/ui_v2_fixture_server.py": {
-    "mtime": 1791164833.4967532,
-    "hash": "61ad0f95bda74540aaf2048204050dcb"
+  "/home/nick/mtg-linked-landfall/frontend/tests/ui_v2_fixture_server.py": {
+    "mtime": 1791169145.51219,
+    "hash": "90372e6e721733ff9100f194f0f2e018"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-combat-coverage.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-coverage.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "90fb19b31d214ab5ae9e91ff6de9d12e"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ordered-modifiers.mjs": {
-    "mtime": 1791164017.490301,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ordered-modifiers.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "c85ac2d0abce503afb20c1021da6e7bf"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-discard-history.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-discard-history.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "87bad923c3d5caa45537723d72b2d8f1"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ui-redesign.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-redesign.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "a2a34ddccb8dfb97c87869e1a823883c"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/human-actions.tsx": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/human-actions.tsx": {
+    "mtime": 1791165013.905309,
     "hash": "b4cebdc62e5575d54f45d0e8b96116cd"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-land-types.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-land-types.mjs": {
+    "mtime": 1791165013.903309,
     "hash": "455830be69b2648244b9b873dd3e2a4a"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-human-bo3.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-human-bo3.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "1148b472fb051a3e842d55f11d718a49"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-defensive-responses.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-defensive-responses.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "789733802d87fb2da6a696e4ff964d03"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-linked-discard.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-linked-discard.mjs": {
+    "mtime": 1791165013.903309,
     "hash": "56bfc6b8cf8538711bc28cc2413448bf"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-combat-payments-requirements.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-payments-requirements.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "17ed577460c725cec5f47309035d7abc"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/table-model.mjs": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/table-model.mjs": {
+    "mtime": 1791165013.9063091,
     "hash": "ed41e44750ad79079283151a9b6a53c5"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-driver.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-linked-damage.mjs": {
+    "mtime": 1791168202.4816775,
+    "hash": "a446d9f4feb8e033e186bda384db31af"
+  },
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-driver.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "b97107bfd369fffb690132defa54f372"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-foretell-created.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-foretell-created.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "e017412972304f6945a656d8fb2a2d54"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-bestow.mjs": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-bestow.mjs": {
+    "mtime": 1791165013.8993092,
     "hash": "43c90bd0f79d5a465738eb5cd39166eb"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-kicked-cast.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-kicked-cast.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "75a4611670900e2fbcb973cb858e1bf6"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-recovery.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-recovery.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "537cf9431ed4200a0c7be9ad53c16c32"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-characteristic-stats.mjs": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-characteristic-stats.mjs": {
+    "mtime": 1791165013.8993092,
     "hash": "39664e28fcd1257d9d1041192b3ae3de"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-recipient-combat.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-recipient-combat.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "9cd98d0e82c861328127769a9c1cf023"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-combat-branches.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-branches.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "e4a86c6b89f5e12654b6485fb7e293b3"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-kicker.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-kicker.mjs": {
+    "mtime": 1791165013.903309,
     "hash": "0c0f3a3dd77a3979ea0789134f302a5d"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-conditional-creature-types.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-conditional-creature-types.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "5fa207d19c4e6fb245b8bd25f3f42e94"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-start-recovery.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-start-recovery.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "09ff5260e619552288cd0fefd700bf0f"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-effect-casts.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-effect-casts.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "b3e7641e69564ad15a9988ece1cd42d7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-human-actions.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-human-actions.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "b6ad2976dc0e921c688e8afdc3857dc5"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-foretell.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-foretell.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "9f7822aea1eda95335b634b71633cc96"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/simulation-contract.mjs": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/simulation-contract.mjs": {
+    "mtime": 1791165013.9063091,
     "hash": "6e5c108504477752b6986a037c325309"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ordered-targets.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ordered-targets.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "7bbfd3c61f6ecde3acc58cc6ea381d8d"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/ui_fixture_server.py": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/ui_fixture_server.py": {
+    "mtime": 1791165013.9063091,
     "hash": "a38f46e43c3343164f51790a9939ed5c"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-declaration-limits.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-declaration-limits.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "2a7b5387862823200e39808c89362a91"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-cast-payments.mjs": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-cast-payments.mjs": {
+    "mtime": 1791165013.8993092,
     "hash": "31d44fabd460befbb299e8890a8fabdb"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/api-errors.mjs": {
-    "mtime": 1791160751.5925875,
+  "/home/nick/mtg-linked-landfall/frontend/tests/api-errors.mjs": {
+    "mtime": 1791165013.8993092,
     "hash": "a2ad4a342f76188846bf38545820e10e"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-foretell-effects.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-foretell-effects.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "9de1b0def074eb146e9028308157f998"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-legendary-channels.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-legendary-channels.mjs": {
+    "mtime": 1791165013.903309,
     "hash": "40eb0d5fbed8e7f5f3e853a8c9f47a95"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-surveil.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-surveil.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "fc0654533f5ef6c3261e7d6fa1bb5d65"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-mana-abilities.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-mana-abilities.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "924618bb2501c1f01ef6b2a619516f34"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-kicker-goldens.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-kicker-goldens.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "f3c28960caebe9e429ae1898946c4afb"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-hand-activations.mjs": {
-    "mtime": 1791160751.5945873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-linked-copy.mjs": {
+    "mtime": 1791169145.51219,
+    "hash": "c87d07c024c6c07d5e247b34927e7fa1"
+  },
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-hand-activations.mjs": {
+    "mtime": 1791165013.901309,
     "hash": "41f5293a2a5d2f7aa50e0895d9ee5684"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-sideboard.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-sideboard.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "c828a0e063c9e96d02663a7892e97756"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ui-v2-costs.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-v2-costs.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "eb201fa0552ec6827adfc960ce97c26a"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-devotion.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-devotion.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "a9dcd8cb85102a1465efa269ef876ef7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/match-contract.mjs": {
-    "mtime": 1791163404.966562,
-    "hash": "94c14198b1192fb0c5ca7f17a467ac5b"
+  "/home/nick/mtg-linked-landfall/frontend/tests/match-contract.mjs": {
+    "mtime": 1791167950.008128,
+    "hash": "490b424174325dcbd840e960d4eba401"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-permanent-kicker.mjs": {
-    "mtime": 1791160751.5955873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-permanent-kicker.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "a848807dc0134eff012073c07a9856c3"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-v2.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "7a24cbb1d9b74fc155907f69c5ae62d7"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-variable-costs.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-variable-costs.mjs": {
+    "mtime": 1791165013.905309,
     "hash": "b9e46a0e9982a4f9fb115d0a57582c1b"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-combat-capacity.mjs": {
-    "mtime": 1791160751.5935874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-capacity.mjs": {
+    "mtime": 1791165013.900309,
     "hash": "69af93bc5a0857f70a027d6502046ea0"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/browser-simulation-preflight.mjs": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/browser-simulation-preflight.mjs": {
+    "mtime": 1791165013.904309,
     "hash": "b752ea1d3a62b8ebf422c8ba34e17a3f"
   },
-  "/home/nick/mtg-coupled-targets/uiplan-v2.md": {
-    "mtime": 1791160751.6635864,
+  "/home/nick/mtg-linked-landfall/uiplan-v2.md": {
+    "mtime": 1791165013.988308,
     "hash": "67c82809bce61e8ad55ee84fb95161bb"
   },
-  "/home/nick/mtg-coupled-targets/ai-performance-plan.md": {
-    "mtime": 1791160751.5275884,
+  "/home/nick/mtg-linked-landfall/ai-performance-plan.md": {
+    "mtime": 1791165013.8173103,
     "hash": "11b33b44c7b2b024b965119c373f09e9"
   },
-  "/home/nick/mtg-coupled-targets/rules-regression-plan.md": {
-    "mtime": 1791160751.6635864,
+  "/home/nick/mtg-linked-landfall/rules-regression-plan.md": {
+    "mtime": 1791165013.987308,
     "hash": "6a06d1eb64444fe6c1a72afc72ca7e84"
   },
-  "/home/nick/mtg-coupled-targets/release-agent-plan.md": {
-    "mtime": 1791160751.6625865,
+  "/home/nick/mtg-linked-landfall/release-agent-plan.md": {
+    "mtime": 1791165013.987308,
     "hash": "9e42be140d855a04b26c19c74601ce00"
   },
-  "/home/nick/mtg-coupled-targets/ui-integration-plan.md": {
-    "mtime": 1791160751.6635864,
+  "/home/nick/mtg-linked-landfall/ui-integration-plan.md": {
+    "mtime": 1791165013.987308,
     "hash": "0f0bc2357c4003e818c439ae91e2dac7"
   },
-  "/home/nick/mtg-coupled-targets/rules-regression-next-plan.md": {
-    "mtime": 1791160751.6625865,
+  "/home/nick/mtg-linked-landfall/rules-regression-next-plan.md": {
+    "mtime": 1791165013.987308,
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
-  "/home/nick/mtg-coupled-targets/README.md": {
-    "mtime": 1791164907.585752,
-    "hash": "bd408d6e2c4f337f09ae9d69746dddd3"
+  "/home/nick/mtg-linked-landfall/README.md": {
+    "mtime": 1791169729.8859048,
+    "hash": "42b8d36e429360340db7bc6d8bba2fb7"
   },
-  "/home/nick/mtg-coupled-targets/plan.md": {
-    "mtime": 1791164907.6837506,
-    "hash": "4faf579cb68ef8154cfcf73a59c483e8"
+  "/home/nick/mtg-linked-landfall/plan.md": {
+    "mtime": 1791170078.3080595,
+    "hash": "f1c61914bd6e713e2267607dfc14d5bd"
   },
-  "/home/nick/mtg-coupled-targets/CHANGELOG.md": {
-    "mtime": 1791164907.5847518,
-    "hash": "3c89e85ac1985a127803c0f23af64a6d"
+  "/home/nick/mtg-linked-landfall/CHANGELOG.md": {
+    "mtime": 1791170078.3090594,
+    "hash": "2943ca1ceb292c48a60d3d3a2e0f3678"
   },
-  "/home/nick/mtg-coupled-targets/backend/requirements.txt": {
-    "mtime": 1791160751.5375881,
+  "/home/nick/mtg-linked-landfall/backend/requirements.txt": {
+    "mtime": 1791165013.82831,
     "hash": "ed880779d634e2b4340ed87a258e357b"
   },
-  "/home/nick/mtg-coupled-targets/docs/ui-redesign.md": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/docs/ui-redesign.md": {
+    "mtime": 1791165013.8933094,
     "hash": "901abda5a48f1d80007629549f5a54c0"
   },
-  "/home/nick/mtg-coupled-targets/docs/ui-redesign-v2.md": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/docs/ui-redesign-v2.md": {
+    "mtime": 1791165013.8893094,
     "hash": "2a912c281540dc80abcac61814b46900"
   },
-  "/home/nick/mtg-coupled-targets/docs/development/batch-workflow.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/development/batch-workflow.md": {
+    "mtime": 1791165013.8753095,
     "hash": "2c8dee83daaa2cb957f661a76468b77f"
   },
-  "/home/nick/mtg-coupled-targets/docs/superpowers/plans/2026-06-07-modal-face-selection.md": {
-    "mtime": 1791160751.5805876,
+  "/home/nick/mtg-linked-landfall/docs/superpowers/plans/2026-06-07-modal-face-selection.md": {
+    "mtime": 1791165013.8763094,
     "hash": "6c7e1d7bad93c376a2938d7664de34b1"
   },
-  "/home/nick/mtg-coupled-targets/docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791160751.5805876,
+  "/home/nick/mtg-linked-landfall/docs/plans/2026-09-09-ai-knowledge-base.md": {
+    "mtime": 1791165013.8753095,
     "hash": "1ed232216aeef7419453df84a44cf236"
   },
-  "/home/nick/mtg-coupled-targets/docs/plans/casting-trigger-repair-batch.md": {
-    "mtime": 1791160751.5805876,
+  "/home/nick/mtg-linked-landfall/docs/plans/casting-trigger-repair-batch.md": {
+    "mtime": 1791165013.8763094,
     "hash": "00261119f891a438d9cfd585c42f1d33"
   },
-  "/home/nick/mtg-coupled-targets/docs/plans/coupled-target-fidelity.md": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/docs/plans/coupled-target-fidelity.md": {
+    "mtime": 1791165013.8763094,
     "hash": "a803b2f733f44d116782d52bf17e7ef0"
   },
-  "/home/nick/mtg-coupled-targets/docs/rules/expanded-keywords.md": {
-    "mtime": 1791160751.5805876,
+  "/home/nick/mtg-linked-landfall/docs/rules/expanded-keywords.md": {
+    "mtime": 1791165013.8763094,
     "hash": "1021a8552722ffaab2a2fceabdd67c60"
   },
-  "/home/nick/mtg-coupled-targets/docs/rules/combat-damage-assignment-audit.md": {
-    "mtime": 1791160751.5805876,
+  "/home/nick/mtg-linked-landfall/docs/rules/combat-damage-assignment-audit.md": {
+    "mtime": 1791165013.8763094,
     "hash": "03de5a4dd8c3a9df64c85291cfd5bcc7"
   },
-  "/home/nick/mtg-coupled-targets/docs/api/input-contracts.md": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/docs/api/input-contracts.md": {
+    "mtime": 1791165013.8743095,
     "hash": "48aaef935152075a4adf5cc9e08ee8ef"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-combat-trigger-timing.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-combat-trigger-timing.md": {
+    "mtime": 1791165013.8743095,
     "hash": "7077d1f2bd12d92d6b742f0e78afe690"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-death-replacement-boundary.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-death-replacement-boundary.md": {
+    "mtime": 1791165013.8743095,
     "hash": "b75f8d57e1dfce99ea36b3fe728d24db"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-27-jev-two-stage-review.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-27-jev-two-stage-review.md": {
+    "mtime": 1791165013.8743095,
     "hash": "81be7581a483bf4a2755beda09e66f32"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md": {
+    "mtime": 1791165013.8753095,
     "hash": "a96b398832745e431eaddf31d1d92a9e"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-27-api-validation-jev.md": {
-    "mtime": 1791160751.5785875,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-27-api-validation-jev.md": {
+    "mtime": 1791165013.8743095,
     "hash": "ed2906024869424314fc0fa1373c2d59"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-lifelink-events.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-lifelink-events.md": {
+    "mtime": 1791165013.8753095,
     "hash": "f3def400b202c22ae3418e2d1f492d4e"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-battlefield-entry-choice.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-battlefield-entry-choice.md": {
+    "mtime": 1791165013.8743095,
     "hash": "6d078bed270fb83fefb701f924dd0e31"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-life-payment-triggers.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-life-payment-triggers.md": {
+    "mtime": 1791165013.8753095,
     "hash": "c454789789802c346f88e993652ba575"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-28-life-total-lock.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-28-life-total-lock.md": {
+    "mtime": 1791165013.8753095,
     "hash": "ab53c641f40f6c114535b346d39790db"
   },
-  "/home/nick/mtg-coupled-targets/docs/audits/2026-09-27-app-audit.md": {
-    "mtime": 1791160751.5795877,
+  "/home/nick/mtg-linked-landfall/docs/audits/2026-09-27-app-audit.md": {
+    "mtime": 1791165013.8743095,
     "hash": "6eef3ecfe940916b38b201a0258c17c4"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/temporary-ability-loss.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/temporary-ability-loss.md": {
+    "mtime": 1791165013.8843093,
     "hash": "47242adc14531cf2a23e8364cc931268"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-coverage-diagnostics.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-coverage-diagnostics.md": {
+    "mtime": 1791165013.8793094,
     "hash": "6be3f1b108aaf7f5cec0d32bb51ef29e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/offline-match-hydration.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/offline-match-hydration.md": {
+    "mtime": 1791165013.8823094,
     "hash": "af3b3485a0b2817591bbf00d4090b413"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ward-forms.md": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ward-forms.md": {
+    "mtime": 1791165013.8893094,
     "hash": "c6f39b1436d362fb0df6d4ceb20118c5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/attached-scaling.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/attached-scaling.md": {
+    "mtime": 1791165013.8793094,
     "hash": "9d50d9116d1f1fe1f1d7fc39c19fcbf5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-payments-requirements.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-payments-requirements.md": {
+    "mtime": 1791165013.8793094,
     "hash": "d7fd4aec5ba872066f12b36207ee035d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/conditional-static.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/conditional-static.md": {
+    "mtime": 1791165013.8803093,
     "hash": "fdbb9d0279d10b82083442d8a9b85569"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/split-card-boundary.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/split-card-boundary.md": {
+    "mtime": 1791165013.8843093,
     "hash": "f400bbe961e1bf4ff6906369f78a51ef"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/named-counters.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/named-counters.md": {
+    "mtime": 1791165013.8823094,
     "hash": "94318a1a8f3e16c38e38050f8c9a437e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/recipient-combat.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/recipient-combat.md": {
+    "mtime": 1791165013.8833094,
     "hash": "04cb8d5e7a2bbbf9ffa60ea23756f27b"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/land-type-layers.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/land-type-layers.md": {
+    "mtime": 1791165013.8823094,
     "hash": "b3a072e08ed2a4471df2a4fe0a051daf"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/mana-abilities.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/mana-abilities.md": {
+    "mtime": 1791165013.8823094,
     "hash": "93d006583010096e6962a5f2e73ac88f"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-search-prefix.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-search-prefix.md": {
+    "mtime": 1791165013.8783095,
     "hash": "db6f2eed84f0fb1914c6f3bcfbde894b"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-defensive-responses.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-defensive-responses.md": {
+    "mtime": 1791165013.8773096,
     "hash": "c6bfa7a5324a62671cf2b37bec2484b6"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/conditional-combat.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/conditional-combat.md": {
+    "mtime": 1791165013.8803093,
     "hash": "e9cce0e5db81aacfcf9f667adf4f9743"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/mulligan-declarations.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/mulligan-declarations.md": {
+    "mtime": 1791165013.8823094,
     "hash": "3bf299b03aa5b477a658d172334cf698"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/kicker-goldens.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/kicker-goldens.md": {
+    "mtime": 1791165013.8813095,
     "hash": "7274d6c52561646f607366cd29b2e472"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/static-ability-suppression.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/static-ability-suppression.md": {
+    "mtime": 1791165013.8843093,
     "hash": "f0507fa95bae8b0fdbac488e3fead4d7"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-mana-resources.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-mana-resources.md": {
+    "mtime": 1791165013.8773096,
     "hash": "3d8903f6d641a6339181148d20daa944"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/equip-context.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/equip-context.md": {
+    "mtime": 1791165013.8813095,
     "hash": "c570992ebe1b8e5cb8ed114c22c1348c"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/aura-costs.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/aura-costs.md": {
+    "mtime": 1791165013.8793094,
     "hash": "a021d321a33d6359a7900ac2ca2564f5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/effect-cast-choices.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/effect-cast-choices.md": {
+    "mtime": 1791165013.8813095,
     "hash": "8b41701ca4234f59d6b9559e8d810142"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/hexproof-variants.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/hexproof-variants.md": {
+    "mtime": 1791165013.8813095,
     "hash": "c6f4d17f70793064e95f833e51090e10"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/release-storage-agent.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/release-storage-agent.md": {
+    "mtime": 1791165013.8833094,
     "hash": "206ed3a650189e3d595430a4398ef9a6"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/entry-routes.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/land-entry-history.md": {
+    "mtime": 1791167761.8576307,
+    "hash": "6d6ecbe252e2e5c0dac4b3917dbc45b8"
+  },
+  "/home/nick/mtg-linked-landfall/docs/testing/entry-routes.md": {
+    "mtime": 1791165013.8813095,
     "hash": "fcf508c391e608bfa53e43c69a8b2f36"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/aftermath-boundary.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/aftermath-boundary.md": {
+    "mtime": 1791165013.8763094,
     "hash": "511f514d2d7e7bd8cdf22c21f1728482"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/linked-entry-counters.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/linked-entry-counters.md": {
+    "mtime": 1791165013.8823094,
     "hash": "03cb594e5566cc404332287739ccf465"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/activation-modifiers.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/activation-modifiers.md": {
+    "mtime": 1791165013.8763094,
     "hash": "3f99848cc551723f74a305b570d12c92"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/conditional-creature-types.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/conditional-creature-types.md": {
+    "mtime": 1791165013.8803093,
     "hash": "e96d98c4617e3fd0f6655343a225f0d4"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-setup.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-setup.md": {
+    "mtime": 1791165013.8793094,
     "hash": "e2f2e0003dbb3c8b1749e4ec2156dbcf"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/type-effect-lifecycle.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/type-effect-lifecycle.md": {
+    "mtime": 1791165013.8853095,
     "hash": "29ffcec8fc83050ee5328a1644a16611"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/player-counters.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/player-counters.md": {
+    "mtime": 1791165013.8833094,
     "hash": "fae2dfc8e7b4060c04436ee384122725"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/attached-predicates.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/attached-predicates.md": {
+    "mtime": 1791165013.8783095,
     "hash": "99a277a2136ab7ff24ff4513bc59677b"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/proliferation.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/proliferation.md": {
+    "mtime": 1791165013.8833094,
     "hash": "944540e3243eef21f34e29b97b99f9b2"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/permanent-spell-entry.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/permanent-spell-entry.md": {
+    "mtime": 1791165013.8833094,
     "hash": "b651905d8483c51a2f09e9700e77fd80"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/discard-history.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/discard-history.md": {
+    "mtime": 1791165013.8813095,
     "hash": "cf0a24e647661791aef676ae78cb4b05"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-counterability.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-counterability.md": {
+    "mtime": 1791165013.8773096,
     "hash": "e7709d39bba429b0ee977c6c7e01ba25"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/legendary-channels.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/legendary-channels.md": {
+    "mtime": 1791165013.8823094,
     "hash": "4d49cb00ed182eb61f3f8f978eac875d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/human-actions-browser.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/linked-controller-targets.md": {
+    "mtime": 1791170078.3070595,
+    "hash": "e2a81c4a3284ad774d4a3e24da72432e"
+  },
+  "/home/nick/mtg-linked-landfall/docs/testing/human-actions-browser.md": {
+    "mtime": 1791165013.8813095,
     "hash": "4a3715749ae8f6f5f449003e00c1fa9e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-public-mana-changes.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-public-mana-changes.md": {
+    "mtime": 1791165013.8783095,
     "hash": "867dbf239959d866f0307b9a0a82003c"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/targeted-trigger-choices.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/targeted-trigger-choices.md": {
+    "mtime": 1791165013.8843093,
     "hash": "e3409b33b5d25cbf25263d40c6b43e78"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/kicked-cast-payoffs.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/kicked-cast-payoffs.md": {
+    "mtime": 1791165013.8813095,
     "hash": "b16233775bc50b1d3b581d433711fb71"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/linked-discard.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/linked-discard.md": {
+    "mtime": 1791165013.8823094,
     "hash": "70810c162ec0234a612402192053a981"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/keyword-effect-timestamps.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/keyword-effect-timestamps.md": {
+    "mtime": 1791165013.8813095,
     "hash": "7a8e0e7fd750915bee27ba68c87a68b6"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-planning-performance-agent.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-planning-performance-agent.md": {
+    "mtime": 1791165013.8783095,
     "hash": "82008e4614c0bcd00801bc4601f387dd"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/seat-balanced-replay.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/seat-balanced-replay.md": {
+    "mtime": 1791165013.8843093,
     "hash": "79b1813b10860943582a02e1fe678984"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/loyalty-counter-costs.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/loyalty-counter-costs.md": {
+    "mtime": 1791165013.8823094,
     "hash": "8e14f80904650bcdf295e630af9ea8b4"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/damage-counter-replacements.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/damage-counter-replacements.md": {
+    "mtime": 1791165013.8803093,
     "hash": "21abe41ee61051dbee5a885a49d8e379"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/spell-cost-clauses.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/spell-cost-clauses.md": {
+    "mtime": 1791165013.8843093,
     "hash": "6d5e4c8b6bdb281c6808caec931fd8ff"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/bestow.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/bestow.md": {
+    "mtime": 1791165013.8793094,
     "hash": "d785aafd9a8c91727ddc11bcfe4f73f3"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/transformed-entry.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/transformed-entry.md": {
+    "mtime": 1791165013.8853095,
     "hash": "25c0adca9a076ed216be085c3eee8edd"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/restricted-mana-equipment.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/restricted-mana-equipment.md": {
+    "mtime": 1791165013.8833094,
     "hash": "49880d2fc67958302daf3f9c4603ac2d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/shield-counters.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/shield-counters.md": {
+    "mtime": 1791165013.8843093,
     "hash": "e491219812826dd80179833cd3ff0f7e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/rules-regression-repairs.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/rules-regression-repairs.md": {
+    "mtime": 1791165013.8843093,
     "hash": "5b7c4b2d58eb3963400b15258da75313"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/counter-replacements.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/counter-replacements.md": {
+    "mtime": 1791165013.8803093,
     "hash": "98eaff022d2965d91d8bc441573564e0"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/nonmana-kicker.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/nonmana-kicker.md": {
+    "mtime": 1791165013.8823094,
     "hash": "cacfe073ac9b6b5a360ce143e82c9f67"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-destruction-targets.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-destruction-targets.md": {
+    "mtime": 1791165013.8773096,
     "hash": "0852845cce416cd7e02e41accc0fdc20"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/declaration-limits.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/declaration-limits.md": {
+    "mtime": 1791165013.8803093,
     "hash": "1a29ba260963bb87e18df3f9eec7c94a"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/saga-counter-events.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/saga-counter-events.md": {
+    "mtime": 1791165013.8843093,
     "hash": "83e1dc61db47c47cd52a81bb06363d31"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-draw-forecast.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-draw-forecast.md": {
+    "mtime": 1791165013.8773096,
     "hash": "cb9c10933334b1b40013baa2070f4970"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-query-latency.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-query-latency.md": {
+    "mtime": 1791165013.8783095,
     "hash": "0da6d1b0b221c040de8890909630dab9"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-recurring-payoffs.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-recurring-payoffs.md": {
+    "mtime": 1791165013.8783095,
     "hash": "1aacd9b83c0d688c93b707401ba9a3ad"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/cast-payment-selections.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/cast-payment-selections.md": {
+    "mtime": 1791165013.8793094,
     "hash": "a2dbfa86d218dda91042cdc1201058dd"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/counterability-scope.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/counterability-scope.md": {
+    "mtime": 1791165013.8803093,
     "hash": "de83e136d8adee4f4b31275aad8306e7"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/printed-ability-suppression.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/printed-ability-suppression.md": {
+    "mtime": 1791165013.8833094,
     "hash": "51a7e361f1b74ac1661c8ad5288e46d4"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/crew-stack-timing.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/crew-stack-timing.md": {
+    "mtime": 1791165013.8803093,
     "hash": "6741e088ac8041315ea85f366ad917b9"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-card-copy-latency.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-card-copy-latency.md": {
+    "mtime": 1791165013.8763094,
     "hash": "b5a8702918bc50ab943ec0f080348b0e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-ability-provenance.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-ability-provenance.md": {
+    "mtime": 1791165013.8793094,
     "hash": "8e2564c00457b8a89a602c38dfc218b2"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-memory.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-memory.md": {
+    "mtime": 1791165013.8773096,
     "hash": "7563c2d78bea0208cdf5bd2c0de85957"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/variable-spell-costs.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/variable-spell-costs.md": {
+    "mtime": 1791165013.8893094,
     "hash": "1e17289962ab7b712ba64e2d4e5f3ad5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/conditional-combat-costs.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/conditional-combat-costs.md": {
+    "mtime": 1791165013.8803093,
     "hash": "c2648b4f2f2965f960b541a3b746fa6b"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/stack-copy-characteristics.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/stack-copy-characteristics.md": {
+    "mtime": 1791165013.8843093,
     "hash": "67d9367c49a9601d0d4f4b44d78f5a05"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-branches-minimums.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-branches-minimums.md": {
+    "mtime": 1791165013.8793094,
     "hash": "016fdb8124a3d34de8b108f812e19a8c"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-information.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-information.md": {
+    "mtime": 1791165013.8773096,
     "hash": "9ccca01442108a05478554f0c7fb1501"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/match-recovery.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/match-recovery.md": {
+    "mtime": 1791165013.8823094,
     "hash": "144ace1081f2389a4889a16b5fb4ee25"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/entry-replacement-order.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/entry-replacement-order.md": {
+    "mtime": 1791165013.8813095,
     "hash": "e89e8ac660466c75313936a3afabc183"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/human-land-progress.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/human-land-progress.md": {
+    "mtime": 1791165013.8813095,
     "hash": "2a1368491b14ca4d2a2adae17d6847cb"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/land-adventure-boundary.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/land-adventure-boundary.md": {
+    "mtime": 1791165013.8823094,
     "hash": "07f0c15acf13aca1beea869c96f03414"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ward-resolution.md": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ward-resolution.md": {
+    "mtime": 1791165013.8893094,
     "hash": "a4fe72ac7f17b4e0a1a940b63396fd7f"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/qualified-spell-costs.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/qualified-spell-costs.md": {
+    "mtime": 1791165013.8833094,
     "hash": "bb5b434d657c20a7db0ff772a3bff829"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-pending-removal.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-pending-removal.md": {
+    "mtime": 1791165013.8773096,
     "hash": "8c3232ee8c62685a10cae7e22139b939"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-strategic-wait.md": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-strategic-wait.md": {
+    "mtime": 1791165013.8783095,
     "hash": "82ad8d5529eecb34df9c0c5e3c2ae1e1"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/static-admission.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/static-admission.md": {
+    "mtime": 1791165013.8843093,
     "hash": "38d4d67e09f0ba22fe8d586ea08f35dd"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-oracle-semantics.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-oracle-semantics.md": {
+    "mtime": 1791165013.8773096,
     "hash": "f3adca11131eaa7355cea58744e9c852"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/counter-prohibitions.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/counter-prohibitions.md": {
+    "mtime": 1791165013.8803093,
     "hash": "4721bb17a4b43046c70485d2d3ba387f"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/kicker.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/kicker.md": {
+    "mtime": 1791165013.8813095,
     "hash": "b45d0d55a63d932625a4fb66f5020bb1"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ordered-creature-modifiers.md": {
-    "mtime": 1791164882.294094,
+  "/home/nick/mtg-linked-landfall/docs/testing/ordered-creature-modifiers.md": {
+    "mtime": 1791165013.8823094,
     "hash": "0123d17676a939858dc4aed5e9dab2dc"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/rules-regression-agent-wave2.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/rules-regression-agent-wave2.md": {
+    "mtime": 1791165013.8843093,
     "hash": "0b4b8fcf86ce25b8cb30b4c6fdd0197d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/opening-hand-actions.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/opening-hand-actions.md": {
+    "mtime": 1791165013.8823094,
     "hash": "5c2137692425468526819e89a8c65f19"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-self-removal.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-self-removal.md": {
+    "mtime": 1791165013.8783095,
     "hash": "ab1b855a6948a06c92a78f19a954c8ee"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/action-reconstruction.md": {
-    "mtime": 1791164907.5887518,
+  "/home/nick/mtg-linked-landfall/docs/testing/action-reconstruction.md": {
+    "mtime": 1791165013.8763094,
     "hash": "90028c6fd2c4e240cc0fa1118c3a2b95"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/modal-spell-faces.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/modal-spell-faces.md": {
+    "mtime": 1791165013.8823094,
     "hash": "458712f9f0983eff3f039ef316be9888"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/characteristic-stats.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/characteristic-stats.md": {
+    "mtime": 1791165013.8793094,
     "hash": "6f703de3cc02b20699a0544f5f3241a5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/foretell.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/foretell.md": {
+    "mtime": 1791165013.8813095,
     "hash": "717a538aa3b90d4ef8ddacd96a931684"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-postcombat-mana.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-postcombat-mana.md": {
+    "mtime": 1791165013.8783095,
     "hash": "a6e3a05fb40411afa208a0d7f491321d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-hotpaths.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-hotpaths.md": {
+    "mtime": 1791165013.8773096,
     "hash": "16a3c9006e52587d764f05dd06cec37e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-destruction-reuse.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-destruction-reuse.md": {
+    "mtime": 1791165013.8773096,
     "hash": "360884a093dd2027ad2a94a4742e9192"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/wheel-draw.md": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/docs/testing/wheel-draw.md": {
+    "mtime": 1791165013.8893094,
     "hash": "38090cf6b50b6c9dbaf5ff8fdd8c8659"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-intents.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-intents.md": {
+    "mtime": 1791165013.8793094,
     "hash": "a7e01572cd3b4c041b50248297ca691d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-combat-responses.md": {
-    "mtime": 1791160751.5815876,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-combat-responses.md": {
+    "mtime": 1791165013.8773096,
     "hash": "dff4f734c9ef1a2b7eae0ec6ffce07dd"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/hand-activations.md": {
-    "mtime": 1791160751.5855875,
+  "/home/nick/mtg-linked-landfall/docs/testing/hand-activations.md": {
+    "mtime": 1791165013.8813095,
     "hash": "b2016eaacec5d76d6792a85376b1a17e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/surveil-mill.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/surveil-mill.md": {
+    "mtime": 1791165013.8843093,
     "hash": "7696432b5d6d76aad56c9376ef4fa1f1"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-domain-temporary-costs.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-domain-temporary-costs.md": {
+    "mtime": 1791165013.8793094,
     "hash": "72d3c64cdf6f5ab0838b0b1b9e5a5f0c"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-resource-priors.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-resource-priors.md": {
+    "mtime": 1791165013.8783095,
     "hash": "0df3c4c1b00ddf1ea96244ea96368c54"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/rules-regression-agent.md": {
-    "mtime": 1791160751.5875876,
+  "/home/nick/mtg-linked-landfall/docs/testing/rules-regression-agent.md": {
+    "mtime": 1791165013.8843093,
     "hash": "8706676cb5d060f60a724f1e4c3fbaf6"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/combat-keyword-triggers.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/combat-keyword-triggers.md": {
+    "mtime": 1791165013.8793094,
     "hash": "04706bed88e13e3f55c5abfbfcfc738d"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/ai-projection-performance.md": {
-    "mtime": 1791160751.5825875,
+  "/home/nick/mtg-linked-landfall/docs/testing/ai-projection-performance.md": {
+    "mtime": 1791165013.8783095,
     "hash": "438099b776e1c9a80d50c3161a70783e"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/variable-mana.md": {
-    "mtime": 1791160751.5885875,
+  "/home/nick/mtg-linked-landfall/docs/testing/variable-mana.md": {
+    "mtime": 1791165013.8893094,
     "hash": "c6a7d7b5a171ac8c76ae0441d04795c5"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/devotion.md": {
-    "mtime": 1791160751.5845876,
+  "/home/nick/mtg-linked-landfall/docs/testing/devotion.md": {
+    "mtime": 1791165013.8803093,
     "hash": "831460d9364d683b396ea14b363fa11b"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/casting-trigger-repairs.md": {
-    "mtime": 1791160751.5835876,
+  "/home/nick/mtg-linked-landfall/docs/testing/casting-trigger-repairs.md": {
+    "mtime": 1791165013.8793094,
     "hash": "ee389aad67f41cd6a2838d39fe6dd3cb"
   },
-  "/home/nick/mtg-coupled-targets/docs/testing/permanent-kicker.md": {
-    "mtime": 1791160751.5865874,
+  "/home/nick/mtg-linked-landfall/docs/testing/permanent-kicker.md": {
+    "mtime": 1791165013.8833094,
     "hash": "89503f0193b47ac48bf48cfed68fdc21"
   },
-  "/home/nick/mtg-coupled-targets/frontend/index.html": {
-    "mtime": 1791160751.5895875,
+  "/home/nick/mtg-linked-landfall/frontend/index.html": {
+    "mtime": 1791165013.8933094,
     "hash": "1250802d02c62a61931a320dbaf1d1b1"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/human-actions.html": {
-    "mtime": 1791160751.5965874,
+  "/home/nick/mtg-linked-landfall/frontend/tests/human-actions.html": {
+    "mtime": 1791165013.905309,
     "hash": "da78007328445bd37f81427d0a301b4d"
   },
-  "/home/nick/mtg-coupled-targets/frontend/tests/simulation-preflight.html": {
-    "mtime": 1791160751.5975873,
+  "/home/nick/mtg-linked-landfall/frontend/tests/simulation-preflight.html": {
+    "mtime": 1791165013.9063091,
     "hash": "df4117038a192238948109a95a868f09"
   }
 }

@@ -123,6 +123,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "draws_this_turn": {str(key): value for key, value in state.draws_this_turn.items()},
         "surveils_this_turn": {str(key): value for key, value in state.surveils_this_turn.items()},
         "discards_this_turn": {str(key): value for key, value in state.discards_this_turn.items()},
+        "land_entries_this_turn": {str(key): value for key, value in state.land_entries_this_turn.items()},
+        "land_entry_history_known": state.land_entry_history_known,
         "players_with_permanent_departure": sorted(state.players_with_permanent_departure),
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
@@ -364,6 +366,11 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.discards_this_turn = {
         int(key): int(value) for key, value in payload.get("discards_this_turn", {"1": 0, "2": 0}).items()
     }
+    state.land_entries_this_turn = {
+        int(key): int(value) for key, value in payload.get('land_entries_this_turn', {'1': 0, '2': 0}).items()
+    }
+    state.land_entry_history_known = ('land_entries_this_turn' in payload
+                                     and payload.get('land_entry_history_known', True) is True)
     state.temporary_control_changes = {
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()

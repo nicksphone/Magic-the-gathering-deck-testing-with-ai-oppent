@@ -637,6 +637,12 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
             const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const hints = selectedCost?.target_hints ?? move.target_hints;
+            const linkedPairs = hints?.linked_target_pairs;
+            const linkedPairIndex = linkedPairs?.findIndex(pair =>
+              pair.targets.target_player === targets[card.id]?.target_player
+              && pair.targets.target_card_id === targets[card.id]?.target_card_id
+              && JSON.stringify(pair.targets.target_card_ids ?? []) === JSON.stringify(targets[card.id]?.target_card_ids ?? [])) ?? -1;
+            const incompleteLinkedPair = Boolean(linkedPairs && linkedPairIndex < 0);
             const distinctTargets = Boolean(hints?.required_distinct_target_count);
             const orderedCount = hints?.required_distinct_target_count ?? hints?.required_target_instance_count ?? 0;
             const orderedTargets = Array.isArray(targets[card.id]?.target_card_ids)
@@ -689,7 +695,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {landControls}
                 {foretellControl}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets}
+                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
@@ -779,7 +785,20 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     {alternativeTargets.map((target) => <option key={`card-${target.id}`} value={`card:${target.id}`}>{target.name}</option>)}
                   </select>
                 ) : null}
-                {!perModeSelected && !showAlternativeSelect && hints?.player_targets?.length ? (
+                {linkedPairs ? <label>
+                  Choose both linked targets
+                  <select aria-label={`Linked targets for ${card.name}`} value={linkedPairIndex < 0 ? '' : linkedPairIndex}
+                    onChange={event => {
+                      const pair = event.target.value === '' ? undefined : linkedPairs[Number(event.target.value)];
+                      setTargets(previous => ({ ...previous, [card.id]: pair ? { ...pair.targets } : {} }));
+                    }}>
+                    <option value="">Choose player or planeswalker and its controller's creature</option>
+                    {linkedPairs.map((pair, index) => <option key={`${pair.primary_kind}:${pair.primary_id}:${pair.creature_id}`} value={index}>
+                      {pair.primary_name} + {pair.creature_name} ({pair.creature_id.slice(-6)})
+                    </option>)}
+                  </select>
+                </label> : null}
+                {!linkedPairs && !perModeSelected && !showAlternativeSelect && hints?.player_targets?.length ? (
                   <select
                     aria-label="Player target"
                     onChange={(e) =>
@@ -914,7 +933,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </select>
                   </label>)}
                 </fieldset> : null}
-                {!orderedCount && !perModeSelected && !showAlternativeSelect && alternativeTargets.length ? (
+                {!linkedPairs && !orderedCount && !perModeSelected && !showAlternativeSelect && alternativeTargets.length ? (
                   hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple

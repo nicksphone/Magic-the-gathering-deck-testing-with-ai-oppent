@@ -1,5 +1,17 @@
 # MTG Deck Testing Lab
 
+This independent landfall candidate adds durable controller-specific land-entry
+history and complete conditional pump, life and draw alternatives selected at
+resolution. It is not deployed to the live root. Focused replacement, snapshot
+and copy checks pass. The pre-copy backend passes 7,688 tests; linked damage has
+typed human controls verified for both seats in eight focused browser cases.
+Independent paired-copy choices and single-source simultaneous damage aggregation
+now pass focused backend/browser gates; their full gates are running separately.
+Departed-planeswalker dependency, broader protection corners, latest-source match
+acceptance and deeper AI planning remain open. See
+[landfall scope](docs/testing/land-entry-history.md) and
+[linked damage acceptance](docs/testing/linked-controller-targets.md).
+
 Supported sacrifice-linked damage, ordered distinct counter allocations,
 temporary graveyard flashback grants and self-return triggers now share checked
 payments, durable object references and restart behavior. Both human seats can

@@ -159,6 +159,15 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if copied is None:
             return False
         chosen = ids[0]
+        if pending.get('linked_target_index') is not None:
+            from rules_engine.linked_targets import choose_linked_copy_target
+            if not choose_linked_copy_target(state, copied, pending, chosen):
+                return False
+            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
+                from rules_engine.ward import mark_stack_targets
+                mark_stack_targets(state, copied)
+            resume_paused_resolution(state, pending)
+            return True
         if pending.get('ordered_target_index') is not None:
             from rules_engine.ordered_targets import choose_ordered_copy_target
             if not choose_ordered_copy_target(state, copied, pending, chosen):
@@ -260,6 +269,11 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 copied.payload.pop(old_key, None)
             announced[key] = value
             copied.payload[key] = value
+            if copied.effect_key == 'landfall_alternative':
+                for branch in copied.payload['branches']:
+                    for old_key in ('target_player', 'target_card_id', 'target_stack_id'):
+                        branch['payload'].pop(old_key, None)
+                    branch['payload'][key] = value
             if key == 'target_card_id' and (copied.payload.get('__copied_card') or {}).get('bestow_characteristics'):
                 from game_state.state import object_incarnation
                 target = state.cards[value]

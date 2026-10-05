@@ -1,0 +1,8 @@
+{
+  "source": "https://api.scryfall.com/cards/named?exact=Ugin%2C%20the%20Spirit%20Dragon",
+  "retrieved_utc": "2026-10-05T02:28:35.174Z",
+  "id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+  "oracle_id": "eecb3047-a563-441a-9175-200421981ac3",
+  "sha256": "ab27ec97fa60300aa899ff103a7ad39079b2e58e626c48e087214f89500d11f6",
+  "policy": "Verbatim canonical API response, no printed-data edits"
+}
