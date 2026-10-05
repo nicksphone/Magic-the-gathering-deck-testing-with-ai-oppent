@@ -912,6 +912,11 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         for key in ("target_player", "target_card_id", "target_stack_id")
         if copied_payload.get(key) is not None
     }
+    if is_spell and (copied_payload.get('__ordered_target_instances')
+                     or copied_payload.get('__ordered_distinct_targets')):
+        from rules_engine.ordered_targets import offer_ordered_copy_target_choice
+        offer_ordered_copy_target_choice(state, copied_item)
+        return
     if is_spell and copied_item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
         _offer_divided_copy_target_choice(state, controller, copied_item)
         return

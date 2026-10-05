@@ -4,6 +4,16 @@ import re
 
 
 _UNSUPPORTED_PATTERNS = (
+    ('controller-linked damage targets', re.compile(
+        r'damage to target (?:player(?: or planeswalker)?|planeswalker)[^.]*'
+        r"target creature that (?:player|planeswalker|player or that planeswalker's controller) controls",
+        re.IGNORECASE)),
+    ('conditional land-entry damage', re.compile(
+        r'landfall\s*[^\w\s]*\s*if you had a land enter the battlefield under your control this turn,'
+        r'[^.]*damage[^.]*instead', re.IGNORECASE)),
+    ('independent target-instance fidelity', re.compile(
+        r'target creature gets [+-]\d+/[+-]\d+ until end of turn\.'
+        r'\s*target creature gets [+-]\d+/[+-]\d+ until end of turn', re.IGNORECASE)),
     ('bestow', re.compile(r'\bbestow\b', re.IGNORECASE)),
     ('blocking assignment controller fidelity', re.compile(r'(?:attacking|defending) player chooses how .*blocks', re.IGNORECASE)),
     ('tap/untap choice fidelity', re.compile(r'\btap or untap\b',re.IGNORECASE)),

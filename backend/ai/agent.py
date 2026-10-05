@@ -276,12 +276,17 @@ class AIAgent:
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 opponent = 3 - player_id
-                selected = "keep"
-                if copied and (choice.get("mode_target_text") or choice.get("clause_effect_index") is not None):
+                selected = "keep" if "keep" in options else options[0]
+                if copied and (choice.get("mode_target_text") or choice.get("clause_effect_index") is not None
+                               or choice.get('ordered_target_index') is not None):
                     if choice.get("mode_target_text"):
                         mode = choice["mode_target_text"]
                         effects = [effect for effect in copied.payload.get("effects", []) if effect.get("mode_text") == mode]
                         original = (copied.payload.get("__announced_targets", {}).get("mode_targets", {}).get(mode) or {})
+                    elif choice.get('ordered_target_index') is not None:
+                        index = int(choice['ordered_target_index'])
+                        effects = (copied.payload.get('effects') or [])[index:index + 1]
+                        original = {'target_card_id': copied.payload['__announced_targets']['target_card_ids'][index]}
                     else:
                         index = int(choice["clause_effect_index"])
                         effects = (copied.payload.get("effects") or [])[index:index + 1]
@@ -324,6 +329,17 @@ class AIAgent:
                                 if counter in {"+1/+1", "-1/-1"}:
                                     helps_creature = counter == "+1/+1"
                                     return 5.0 if (card.controller == player_id) == helps_creature else -5.0
+                            if effect['effect_key'] == 'temporary_pt_buff':
+                                packet = effect.get('payload') or {}
+                                power, toughness = packet.get('power', 0), packet.get('toughness', 0)
+                                threat = self._creature_threat_score(state, value, player_id)
+                                if power <= 0 and toughness <= 0:
+                                    if card.controller == player_id:
+                                        return -100.0
+                                    from ai.pending_effects import negative_pt_would_be_lethal
+                                    return threat + (20.0 if negative_pt_would_be_lethal(state, value, power, toughness) else 0.0)
+                                if power >= 0 and toughness >= 0:
+                                    return threat if card.controller == player_id else -100.0
                             return 0.0
 
                         selected = max(options, key=score_target)
@@ -3052,6 +3068,15 @@ class AIAgent:
                         and not has_keyword(state, target["id"], "indestructible")
                     ]
         required = hints.get('required_distinct_target_count')
+        instances = hints.get('required_target_instance_count')
+        if instances and not targets.get('target_card_ids'):
+            from ai.ordered_targets import choose_modifier_targets
+            assignments = choose_modifier_targets(self, state, player_id, out, targets, creature_targets, instances)
+            if assignments is None:
+                out['_invalid_ai_choice'] = True
+                return out
+            targets.pop('target_card_id', None)
+            targets['target_card_ids'] = assignments
         if required and not targets.get('target_card_ids'):
             beneficiary = player_id if hints.get('ordered_counter_type', '').startswith('+') else opponent
             candidates = [target for target in creature_targets if state.cards[target['id']].controller == beneficiary]

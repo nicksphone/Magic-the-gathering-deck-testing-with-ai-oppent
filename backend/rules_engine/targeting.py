@@ -121,6 +121,12 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
 
     up_to = int(target_hints.get("up_to_target_count", 0) or 0)
     required = target_hints.get('required_distinct_target_count')
+    instances = target_hints.get('required_target_instance_count')
+    if instances is not None:
+        ids = action_targets.get('target_card_ids') or []
+        if len(ids) != instances or any(action_targets.get(key) is not None for key in (
+                'target_card_id', 'target_player', 'target_stack_id', 'target_distribution')):
+            return False, f'Exactly {instances} ordered creature target instances are required.'
     if required is not None:
         ids = action_targets.get('target_card_ids') or []
         if (len(ids) != required or len(set(ids)) != required

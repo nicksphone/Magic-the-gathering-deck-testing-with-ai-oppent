@@ -159,6 +159,15 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if copied is None:
             return False
         chosen = ids[0]
+        if pending.get('ordered_target_index') is not None:
+            from rules_engine.ordered_targets import choose_ordered_copy_target
+            if not choose_ordered_copy_target(state, copied, pending, chosen):
+                return False
+            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
+                from rules_engine.ward import mark_stack_targets
+                mark_stack_targets(state, copied)
+            resume_paused_resolution(state, pending)
+            return True
         if pending.get("clause_effect_index") is not None:
             from effects.handlers import _offer_clause_copy_target_choice
 

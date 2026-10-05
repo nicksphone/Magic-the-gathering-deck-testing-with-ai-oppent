@@ -467,7 +467,9 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
                 "label": item.label,
                 "controller": item.controller,
                 "effect_key": item.effect_key,
-                "targets": item.targets,
+                "targets": ((item.payload.get('__announced_targets') or {}).get('target_card_ids', [])
+                            if item.payload.get('__ordered_target_instances')
+                            or item.payload.get('__ordered_distinct_targets') else item.targets),
             }
             for item in state.stack
         ],

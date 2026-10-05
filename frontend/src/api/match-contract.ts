@@ -136,11 +136,26 @@ export function parseMatchState(value: unknown): MatchState {
 
 export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revision: number };
 
+function targetHints(value: unknown): boolean {
+  if (!record(value)) return false;
+  if (value.required_target_instance_count === undefined && value.ordered_creature_modifiers === undefined) return true;
+  return value.required_distinct_target_count === undefined
+    && Number.isInteger(value.required_target_instance_count)
+    && (value.required_target_instance_count as number) >= 2
+    && (value.required_target_instance_count as number) <= 250
+    && Array.isArray(value.ordered_creature_modifiers)
+    && value.ordered_creature_modifiers.length === value.required_target_instance_count
+    && value.ordered_creature_modifiers.every(modifier => record(modifier)
+      && Number.isInteger(modifier.power) && Number.isInteger(modifier.toughness)
+      && Array.isArray(modifier.keywords) && modifier.keywords.length === 0);
+}
+
 export function parseLegalMoves(value: unknown): LegalMovesResponse {
   if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
+      && (move.target_hints === undefined || targetHints(move.target_hints))
       && (move.type !== 'activate_mana_ability' || (Number.isInteger(move.ability_index)
         && (move.ability_index as number) >= 0 && typeof move.cost_text === 'string'
         && record(move.outputs) && Object.entries(move.outputs).every(([color, amount]) =>
@@ -152,7 +167,7 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && (option.kicked === undefined || typeof option.kicked === 'boolean')
         && ['discard_x', 'discard_all', 'sacrifice_all'].every(key => option[key] === undefined || typeof option[key] === 'boolean')
         && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
-        && (option.target_hints === undefined || record(option.target_hints))
+        && (option.target_hints === undefined || targetHints(option.target_hints))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
         && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
           (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')

@@ -129,3 +129,22 @@ for (const invalid of [{...manaMove, ability_index: -1}, {...manaMove, cost_text
   assert.throws(() => parseLegalMoves({player_id: 2, revision: 1, moves: [invalid]}), /legal-moves/);
 }
 console.log('PASS indexed mana ability contracts, zero output and invalid costs/colors/counts');
+
+const modifierHints = {required_target_instance_count: 2,
+  ordered_creature_modifiers: [{power: -3, toughness: 0, keywords: []}, {power: 0, toughness: -3, keywords: []}]};
+const modifierMove = {type: 'cast_spell', target_hints: modifierHints};
+assert.equal(parseLegalMoves({player_id: 1, revision: 1, moves: [modifierMove]}).moves[0], modifierMove);
+for (const fields of [{required_target_instance_count: 0}, {required_target_instance_count: 1},
+  {required_target_instance_count: 2.5}, {required_target_instance_count: '2'},
+  {required_target_instance_count: 251}, {required_distinct_target_count: 2},
+  {ordered_creature_modifiers: []}, {ordered_creature_modifiers: [{power: -3, toughness: 0, keywords: []}]},
+  {ordered_creature_modifiers: [{power: -3, toughness: 0}, {power: 0, toughness: -3, keywords: []}]},
+  {ordered_creature_modifiers: [{power: '-3', toughness: 0, keywords: []}, {power: 0, toughness: -3, keywords: []}]}]) {
+  for (const costSpecific of [false, true]) {
+    const badHints = {...modifierHints, ...fields};
+    const move = costSpecific ? {type: 'cast_spell', cost_options: [{id: 'base', discard_cards: 0,
+      sacrifice_creatures: 0, target_hints: badHints}]} : {type: 'cast_spell', target_hints: badHints};
+    assert.throws(() => parseLegalMoves({player_id: 1, revision: 1, moves: [move]}), /legal-moves/);
+  }
+}
+console.log('PASS ordered modifier target-instance and cost-specific contracts');

@@ -220,7 +220,20 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
-    from rules_engine.ordered_targets import ordered_counter_allocations
+    from rules_engine.ordered_targets import ordered_counter_allocations, ordered_creature_modifiers
+    modifiers = ordered_creature_modifiers(oracle)
+    if modifiers:
+        ids = action_targets.get('target_card_ids') or []
+        if len(ids) != len(modifiers) or any(cid not in state.cards for cid in ids):
+            return 'noop', {}
+        effects = []
+        for target_id, modifier in zip(ids, modifiers):
+            target = state.cards[target_id]
+            effects.append({'effect_key': 'temporary_pt_buff', 'payload': {
+                'target_card_id': target_id, 'power': modifier['power'], 'toughness': modifier['toughness'],
+                '__target_incarnation': object_incarnation(target),
+                '__target_zone_sequence': target.zone_change_sequence}})
+        return 'effect_sequence', {'effects': effects, '__ordered_target_instances': True}
     allocation = ordered_counter_allocations(oracle)
     if allocation:
         effects = []
@@ -779,7 +792,11 @@ def inspect_target_hints(
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
-    from rules_engine.ordered_targets import ordered_counter_allocations
+    from rules_engine.ordered_targets import ordered_counter_allocations, ordered_creature_modifiers
+    modifiers = ordered_creature_modifiers(oracle)
+    if modifiers:
+        hints['required_target_instance_count'] = len(modifiers)
+        hints['ordered_creature_modifiers'] = modifiers
     allocation = ordered_counter_allocations(oracle)
     if allocation:
         hints['required_distinct_target_count'] = len(allocation['amounts'])

@@ -13,6 +13,30 @@ from tests.ui_fixture_server import app, publish, fixture, add
 from game_state.state import Zone
 
 
+@app.post('/fixture/ordered-modifiers')
+def ordered_modifiers(seat: int = 1):
+    if seat not in (1, 2):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected seat one or two')
+    from tests.test_ordered_creature_modifiers import position
+    state, spell, first, second = position(seat)
+    state.log.append('Canonical ordered-modifier casting fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'spell_id': spell, 'creature_ids': [first, second]}
+
+
+@app.post('/fixture/ordered-copy')
+def ordered_copy(seat: int = 1, shared: bool = False):
+    if seat not in (1, 2):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected seat one or two')
+    from tests.test_ordered_copy_targets import copied_position
+    state, original, first, second = copied_position(seat, shared)
+    state.log.append('Canonical copy-effect choice fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'original_id': original, 'creature_ids': [first, second]}
+
+
 @app.post("/fixture/table-v2")
 def table_v2(seat: int = 1, crowded: bool = True, artwork: bool = True):
     if seat not in (1, 2):

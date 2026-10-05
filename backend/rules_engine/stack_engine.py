@@ -172,12 +172,14 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if not legal_distribution:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
-    elif card and card.zone == Zone.STACK and item.payload.get('__ordered_distinct_targets'):
+    elif card and card.zone == Zone.STACK and (
+            item.payload.get('__ordered_distinct_targets') or item.payload.get('__ordered_target_instances')):
         from game_state.state import object_incarnation
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
         hints = inspect_target_hints(state, card, item.controller, announced)
         hints.pop('required_distinct_target_count', None)
+        hints.pop('required_target_instance_count', None)
         legal_effects = []
         for effect in item.payload.get('effects', []):
             packet = effect['payload']

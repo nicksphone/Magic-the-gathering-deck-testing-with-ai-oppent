@@ -67,6 +67,17 @@ wait_for_services() {
 }
 
 wait_for_services
+if (($#)); then
+  echo 'Focused browser scenarios, not the full browser gate'
+  for scenario in "$@"; do
+    if [[ ! "$scenario" =~ ^browser-[a-z0-9-]+\.mjs$ || ! -f "frontend/tests/$scenario" ]]; then
+      echo "Invalid browser scenario: $scenario" >&2
+      exit 2
+    fi
+    (cd frontend && timeout 300s node "tests/$scenario")
+  done
+  exit 0
+fi
 echo 'Browser CI: async readiness helper'
 (cd frontend && timeout 30s node tests/browser-driver-async.mjs)
 echo 'Browser CI: competitive table v2'
@@ -76,6 +87,8 @@ echo 'Browser CI: action scenarios'
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-targets.mjs)
+(cd frontend && timeout 120s node tests/browser-ordered-modifiers.mjs)
+(cd frontend && timeout 120s node tests/browser-ordered-copy.mjs)
 echo 'Browser CI: simulation preflight'
 (cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: canonical combat coverage preflight'

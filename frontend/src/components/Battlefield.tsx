@@ -637,12 +637,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const selectedCostId = costChoice[card.id] || move.cost_options?.[0]?.id;
             const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const hints = selectedCost?.target_hints ?? move.target_hints;
-            const orderedCount = hints?.required_distinct_target_count ?? 0;
+            const distinctTargets = Boolean(hints?.required_distinct_target_count);
+            const orderedCount = hints?.required_distinct_target_count ?? hints?.required_target_instance_count ?? 0;
             const orderedTargets = Array.isArray(targets[card.id]?.target_card_ids)
               ? targets[card.id].target_card_ids as string[] : [];
             const incompleteOrderedTargets = orderedCount > 0 && (
               orderedTargets.length !== orderedCount || !orderedTargets.every(Boolean)
-              || new Set(orderedTargets).size !== orderedCount
+              || (distinctTargets && new Set(orderedTargets).size !== orderedCount)
               || orderedTargets.some(id => !hints?.creature_targets?.some(target => target.id === id))
             );
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
@@ -891,9 +892,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   />
                 ) : null}
                 {orderedCount > 0 ? <fieldset>
-                  <legend>Choose {orderedCount} different creatures</legend>
+                  <legend>{distinctTargets ? `Choose ${orderedCount} different creatures` : `Choose ${orderedCount} targets; the same creature may be chosen again`}</legend>
                   {Array.from({ length: orderedCount }, (_, index) => <label key={index}>
-                    Target {index + 1}: {hints?.ordered_counter_amounts?.[index]} {hints?.ordered_counter_type} counters
+                    Target {index + 1}: {distinctTargets
+                      ? `${hints?.ordered_counter_amounts?.[index]} ${hints?.ordered_counter_type} counters`
+                      : `${hints?.ordered_creature_modifiers?.[index]?.power}/${hints?.ordered_creature_modifiers?.[index]?.toughness} until end of turn`}
                     <select aria-label={`Target ${index + 1} for ${card.name}`}
                       value={orderedTargets[index] ?? ""}
                       onChange={event => {
@@ -907,7 +910,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       }}>
                       <option value="">Choose creature</option>
                       {(hints?.creature_targets ?? []).map(target => <option key={target.id} value={target.id}
-                        disabled={orderedTargets.some((id, slot) => slot !== index && id === target.id)}>{target.name} ({target.id.slice(-6)})</option>)}
+                        disabled={distinctTargets && orderedTargets.some((id, slot) => slot !== index && id === target.id)}>{target.name} ({target.id.slice(-6)})</option>)}
                     </select>
                   </label>)}
                 </fieldset> : null}

@@ -251,6 +251,8 @@ export type LegalMove = {
     x_value_max?: number;
     up_to_target_count?: number;
     required_distinct_target_count?: number;
+    required_target_instance_count?: number;
+    ordered_creature_modifiers?: { power: number; toughness: number; keywords: string[] }[];
     ordered_counter_amounts?: number[];
     ordered_counter_type?: string;
     supports_divide?: boolean;

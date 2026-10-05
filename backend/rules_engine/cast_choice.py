@@ -30,6 +30,8 @@ def _has_target_options(hints: dict[str, Any]) -> bool:
 
 
 def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
+    if hints.get('required_target_instance_count') and not hints.get('creature_targets'):
+        return False
     required = hints.get('required_distinct_target_count')
     if required and len({target['id'] for target in hints.get('creature_targets', [])}) < required:
         return False
@@ -151,11 +153,11 @@ def build_cast_hints(
     }
     if hints.get("up_to_target_count"):
         hints["choice_schema"]["target_card_ids"] = {"type": "array", "required": False, "max_items": hints["up_to_target_count"]}
-    required = hints.get('required_distinct_target_count')
+    required = hints.get('required_distinct_target_count') or hints.get('required_target_instance_count')
     if required:
         hints['choice_schema']['target_card_ids'] = {
             'type': 'array', 'required': True, 'min_items': required,
-            'max_items': required, 'unique_items': True,
+            'max_items': required, 'unique_items': bool(hints.get('required_distinct_target_count')),
         }
     return hints
 
