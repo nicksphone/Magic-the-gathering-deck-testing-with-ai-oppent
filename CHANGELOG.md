@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased Candidate - Joint activation mana/resource planning
+
+- Carry selected-resource reservations through free/paid mana planning, snow
+  payment, ability selection and execution; disallow consuming reserved cards
+  while retaining legal tap-only use before sacrifice.
+- Try alternate automatic resource selections when the default cannot fund
+  the mana cost. AI checks resource/mana feasibility and ranks feasible losses.
+- Reproduce two selection-order failures with unchanged Lotus Petal/Trading
+  Post data; repair passes 276 initial and 483 overlapping AI checks. Latest
+  HTTP/rules selection passes 228 tests, including four new recovery cases and
+  Phyrexian Tower reservations. Eight focused browser cases pass.
+- Full exact-source qualification remains pending; resource search performance,
+  richer sacrifice value and other cost-bearing action families remain open.
+
 ## Unreleased Candidate - Deliberate activated payments
 
 - Share activation resource candidates and selected-payment validation between

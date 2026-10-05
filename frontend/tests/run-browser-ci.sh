@@ -85,6 +85,7 @@ echo 'Browser CI: competitive table v2'
 (cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2-costs.mjs)
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 180s node tests/browser-activation-payments.mjs)
+(cd frontend && timeout 120s node tests/browser-joint-activation-payments.mjs)
 (cd frontend && timeout 120s node tests/browser-life-lock.mjs)
 (cd frontend && timeout 120s node tests/browser-life-conversion.mjs)
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)

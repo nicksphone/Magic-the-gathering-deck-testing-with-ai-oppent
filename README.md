@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+An isolated follow-up candidate reserves nonmana payment resources throughout
+mana planning and execution, preserves legal tap-then-sacrifice sequences, and
+tries jointly payable automatic resource choices. AI selection checks joint
+feasibility before committing a low-value resource. Targeted engine/AI and
+HTTP/recovery checks plus eight focused browser cases pass; full qualification
+is outstanding. See [joint payment scope](docs/testing/joint-activation-payment.md).
+
 The next isolated candidate exposes deliberate discard and sacrifice choices
 for supported nonmana activated abilities in both human seats. Shared cost
 validation rejects wrong resources before authoritative mutation; AI selects

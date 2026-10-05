@@ -2,6 +2,12 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify [joint mana/resource activation planning](docs/testing/joint-activation-payment.md).
+  Repair selected-resource consumption during mana production, preserve tap-only
+  use and choose feasible automatic/AI resources. Direct, HTTP/SQLite and focused
+  browser evidence pass; run a fresh exact-source full backend/browser gate.
+  Extend strategic value and search-performance evidence beyond crafted states.
+
 - [ ] Qualify [deliberate activated payments](docs/testing/activation-payment-choices.md).
   Shared ordinary activation resource selection, strict HTTP validation, both
   human seats, mandatory source costs, ownership and resource-aware AI pass

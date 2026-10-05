@@ -1,0 +1,16 @@
+[
+  {
+    "file": "lotus-petal.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Lotus%20Petal",
+    "resolved_uri": "https://api.scryfall.com/cards/f85ab5f9-508e-45de-8fa1-ce1f16552ffc",
+    "retrieved_at": "2026-10-05T06:38:14.181Z",
+    "sha256": "5a263910e73c38133d731e018e2e4ac40213aee4e94e3a1170b5daf8c45d6c87"
+  },
+  {
+    "file": "phyrexian-tower.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Phyrexian%20Tower",
+    "resolved_uri": "https://api.scryfall.com/cards/0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+    "retrieved_at": "2026-10-05T06:45:39.524Z",
+    "sha256": "805fee8193731c881ac6d8246d1b3c10b926ba4e8578efe8d6e100e148d00eaf"
+  }
+]
