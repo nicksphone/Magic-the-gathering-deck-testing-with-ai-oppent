@@ -7,6 +7,7 @@ from game_state.state import MatchState, Step, Zone
 from rules_engine.colors import card_color_names
 from rules_engine.continuous import KNOWN_KEYWORDS, effective_power, effective_toughness, has_keyword
 from rules_engine.events import emit_event, emit_event_batch
+from rules_engine.query_context import rule_query_scope
 from rules_engine.prevention import consume_card_prevention_shield, consume_player_prevention_shield
 from rules_engine.protection import protected_from_source
 from rules_engine.replacement import damage_cant_be_prevented, replace_die_zone, apply_permanent_damage_replacements, apply_damage_replacements
@@ -150,40 +151,41 @@ def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybr
     defender = 1 if state.active_player == 2 else 2
     legal: dict[str, list[str]] = {}
     blocker_assignments: dict[str, int] = {}
-    for attacker, blockers in blocks.items():
-        if attacker not in state.attackers:
-            continue
-        blocker_list = list(dict.fromkeys(blockers)) if isinstance(blockers, list) else [blockers]
-        picked: list[str] = []
-        for blocker in blocker_list:
-            if blocker not in state.cards:
+    with rule_query_scope(state):
+        for attacker, blockers in blocks.items():
+            if attacker not in state.attackers:
                 continue
-            block_card = state.cards[blocker]
-            assigned = int(blocker_assignments.get(blocker, 0))
-            block_cap = _max_attackers_blockable_by_creature(state, block_card)
-            if assigned >= block_cap:
-                continue
-            if block_card.zone != Zone.BATTLEFIELD or block_card.controller != defender:
-                continue
-            if block_card.tapped:
-                continue
-            if "Creature" not in effective_types(state, block_card):
-                continue
-            if card_cant_block(state, blocker):
-                continue
-            atk_card = state.cards[attacker]
-            if not _can_block_attacker(state, atk_card, block_card):
-                continue
-            picked.append(blocker)
-            blocker_assignments[blocker] = assigned + 1
-        if picked:
-            legal[attacker] = picked
-    # Menace: must be blocked by two or more creatures.
-    for attacker in list(legal.keys()):
-        atk_card = state.cards.get(attacker)
-        min_blockers = _minimum_blockers_required(state, attacker) if atk_card else 1
-        if atk_card and len(legal[attacker]) < min_blockers:
-            legal.pop(attacker, None)
+            blocker_list = list(dict.fromkeys(blockers)) if isinstance(blockers, list) else [blockers]
+            picked: list[str] = []
+            for blocker in blocker_list:
+                if blocker not in state.cards:
+                    continue
+                block_card = state.cards[blocker]
+                assigned = int(blocker_assignments.get(blocker, 0))
+                block_cap = _max_attackers_blockable_by_creature(state, block_card)
+                if assigned >= block_cap:
+                    continue
+                if block_card.zone != Zone.BATTLEFIELD or block_card.controller != defender:
+                    continue
+                if block_card.tapped:
+                    continue
+                if "Creature" not in effective_types(state, block_card):
+                    continue
+                if card_cant_block(state, blocker):
+                    continue
+                atk_card = state.cards[attacker]
+                if not _can_block_attacker(state, atk_card, block_card):
+                    continue
+                picked.append(blocker)
+                blocker_assignments[blocker] = assigned + 1
+            if picked:
+                legal[attacker] = picked
+        # Menace: must be blocked by two or more creatures.
+        for attacker in list(legal.keys()):
+            atk_card = state.cards.get(attacker)
+            min_blockers = _minimum_blockers_required(state, attacker) if atk_card else 1
+            if atk_card and len(legal[attacker]) < min_blockers:
+                legal.pop(attacker, None)
 
     from rules_engine.declaration_limits import blockers_within_limits
     from rules_engine.combat_requirements import best_required_blocks, block_requirement_score
@@ -289,17 +291,19 @@ def _assignment_controller(state: MatchState, cid: str) -> int:
 def _offer_damage_assignment(state: MatchState) -> None:
     source = state.combat_assignment_queue[0]
     card = state.cards[source]
-    chooser = _assignment_controller(state, source)
-    options = _assignment_options(state, source, state.combat_damage_stage == "first")
-    labels = {cid: state.cards[cid].name if cid in state.cards else _defender_label(state, cid) for cid in options}
-    state.pending_mechanic_choice = {
-        "kind": "combat_damage", "player_id": chooser, "source_id": source,
-        "source_name": card.name, "stage": state.combat_damage_stage,
-        "options": options, "option_labels": labels,
-        "count": max(0, effective_power(state, source)),
-        "can_restart": any(_assignment_controller(state, cid) == chooser for cid in state.combat_damage_assignments),
-        "label": f"Assign {card.name}'s combat damage",
-    }
+    with rule_query_scope(state):
+        chooser = _assignment_controller(state, source)
+        options = _assignment_options(state, source, state.combat_damage_stage == "first")
+        labels = {cid: state.cards[cid].name if cid in state.cards else _defender_label(state, cid) for cid in options}
+        pending = {
+            "kind": "combat_damage", "player_id": chooser, "source_id": source,
+            "source_name": card.name, "stage": state.combat_damage_stage,
+            "options": options, "option_labels": labels,
+            "count": max(0, effective_power(state, source)),
+            "can_restart": any(_assignment_controller(state, cid) == chooser for cid in state.combat_damage_assignments),
+            "label": f"Assign {card.name}'s combat damage",
+        }
+    state.pending_mechanic_choice = pending
     state.priority_player = state.pending_mechanic_choice["player_id"]
     state.passed_priority = set()
 
@@ -326,11 +330,14 @@ def _prepare_damage_step(state: MatchState) -> None:
     first_only = state.combat_damage_stage == "first"
     blockers = list(dict.fromkeys(bid for bids in state.blocks.values() for bid in bids))
     sources = list(state.attackers) + blockers
-    state.combat_assignment_queue = [
-        cid for cid in sources
-        if cid in state.cards and _assignment_controller(state, cid) in state.mechanic_choice_players
-        and effective_power(state, cid) > 0 and _assignment_options(state, cid, first_only)
-    ]
+    # Reuse board queries only while constructing the immutable assignment list.
+    with rule_query_scope(state):
+        queue = [
+            cid for cid in sources
+            if cid in state.cards and _assignment_controller(state, cid) in state.mechanic_choice_players
+            and effective_power(state, cid) > 0 and _assignment_options(state, cid, first_only)
+        ]
+    state.combat_assignment_queue = queue
     if state.combat_assignment_queue:
         _offer_damage_assignment(state)
     else:
@@ -430,11 +437,12 @@ def begin_combat_damage(state: MatchState) -> None:
         return
     combatants = set(state.attackers)
     combatants.update(blocker for blockers in state.blocks.values() for blocker in blockers)
-    first_ids = {
-        cid for cid in combatants
-        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
-        and (has_keyword(state, cid, "first strike") or has_keyword(state, cid, "double strike"))
-    }
+    with rule_query_scope(state):
+        first_ids = {
+            cid for cid in combatants
+            if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+            and (has_keyword(state, cid, "first strike") or has_keyword(state, cid, "double strike"))
+        }
     state.first_strike_damage_ids = first_ids
     if first_ids:
         state.combat_damage_stage = "first"
@@ -483,16 +491,17 @@ def _combat_damage_results(state: MatchState, default_defender: int, first_ids: 
         previous = lifelink_gains.get(source_id, (controller, 0))[1]
         lifelink_gains[source_id] = (controller, previous + amount)
     # All sources assign damage from the same pre-damage game state.
-    attacker_power = {
-        cid: max(0, effective_power(state, cid))
-        for cid in state.attackers
-        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
-    }
-    blocker_damage_remaining = {
-        cid: max(0, effective_power(state, cid))
-        for blockers in state.blocks.values() for cid in blockers
-        if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
-    }
+    with rule_query_scope(state):
+        attacker_power = {
+            cid: max(0, effective_power(state, cid))
+            for cid in state.attackers
+            if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+        }
+        blocker_damage_remaining = {
+            cid: max(0, effective_power(state, cid))
+            for blockers in state.blocks.values() for cid in blockers
+            if cid in state.cards and state.cards[cid].zone == Zone.BATTLEFIELD
+        }
     for attacker in list(state.attackers):
         if attacker not in state.cards:
             continue

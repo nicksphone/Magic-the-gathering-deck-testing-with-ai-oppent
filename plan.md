@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Immutable combat query batches: 799 composed tests pass; a retained Master
+  decision preserves complete action/state/projection parity and all search work,
+  reducing measured time from 116.0 to 92.5 seconds. Interactive latency remains
+  unfinished; this one-position result is not a general performance bound. See
+  [scope](docs/testing/combat-query-batches.md).
 - [x] Checked live autoplay and complete heuristic intent conversion: 259 composed
   tests pass, including four seeded Strong match smoke cases and actual cast
   exports for both seats. Rejected requests preserve whole state and storage.

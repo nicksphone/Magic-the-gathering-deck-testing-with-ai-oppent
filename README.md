@@ -472,6 +472,10 @@ Implementation scopes and remaining limits:
   Simulated branches, later actions and concurrent queries stay isolated;
   search horizons and candidate limits are not reduced. See
   [query latency scope and acceptance](docs/testing/ai-query-latency.md).
+- Immutable combat query batches end before payments, damage and trigger/state
+  changes. A retained current-source Master decision is 20.3% faster with identical
+  actions and search work, backed by 799 composed tests; its 92.5-second latency
+  remains too slow for interactive use. See [bounded evidence](docs/testing/combat-query-batches.md).
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 - Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).

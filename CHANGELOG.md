@@ -1,5 +1,14 @@
 # Changelog
 
+## Immutable Combat Query Batches - 2026-10-05
+
+- Reuse pure combat queries only while state is unchanged; end scopes before
+  payment, damage, replacements, triggers and mutation. Search work is preserved.
+- Current-source composed gate passes 799 tests. One retained Master decision
+  improves from 116.0 to 92.5 seconds with exact action/projection/state parity.
+  This is bounded performance evidence, not acceptable interactive latency or
+  expert-play certification.
+
 ## Checked Live AI Actions - 2026-10-05
 
 - Normalize AI move hints into typed complete action parameters, then use the
