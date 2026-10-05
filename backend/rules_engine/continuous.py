@@ -4,7 +4,7 @@ from rules_engine.type_effects import effective_types
 import re
 from collections import Counter
 from functools import lru_cache, wraps
-from rules_engine.query_context import scoped_query
+from rules_engine.query_context import scoped_query, query_cache
 from typing import Any
 
 from game_state.state import Zone
@@ -605,6 +605,21 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_la
     card = state.cards.get(card_id)
     if card is None or not _is_battlefield(card):
         return False
+    cache = query_cache(state)
+    if cache is None:
+        return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+    if losses is not None and type(losses) not in (list, tuple):
+        return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+    loss_key = None if losses is None else tuple(
+        (source.id if other_only else None, source.controller, scope, other_only, subject)
+        for source, scope, other_only, subject in losses)
+    key = (_printed_suppression_result, card_id, loss_key, include_land_types)
+    if key not in cache:
+        cache[key] = _printed_suppression_result(state, card_id, card, losses, include_land_types)
+    return cache[key]
+
+
+def _printed_suppression_result(state, card_id, card, losses, include_land_types):
     if include_land_types:
         from rules_engine.land_types import printed_land_abilities_lost
         if printed_land_abilities_lost(state, card):
@@ -990,6 +1005,16 @@ def _scope_controller(source_controller: int, scope: str, target_controller: int
 
 
 def _subject_matches(state, card_id: str, subject: str) -> bool:
+    cache = query_cache(state)
+    if cache is None:
+        return _subject_match_result(state, card_id, subject)
+    key = (_subject_match_result, card_id, subject)
+    if key not in cache:
+        cache[key] = _subject_match_result(state, card_id, subject)
+    return cache[key]
+
+
+def _subject_match_result(state, card_id: str, subject: str) -> bool:
     card = state.cards[card_id]
     s = (subject or "").strip().lower()
     type_nouns = _STATIC_TYPE_NOUNS

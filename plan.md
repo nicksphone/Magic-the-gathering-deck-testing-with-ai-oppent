@@ -11,6 +11,10 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Shared suppression/static-subject query reuse: 3,436 affected checks across
+  82 files pass; retained complete action/state parity, 66.62 to 55.64 seconds
+  for one position. Remaining nested forecasting/latency stays the priority.
+  See [scope](docs/testing/layer-query-reuse.md).
 - [x] Decision-local exact score reuse and read-only scan scopes: 1,087 affected
   AI checks pass; retained full action/state parity, 80.95 to 65.77 seconds for
   one position. This is not a general latency or professional-play guarantee.

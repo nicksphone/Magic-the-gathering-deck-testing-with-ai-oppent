@@ -1,5 +1,15 @@
 # Changelog
 
+## Read-Only Layer Query Reuse - 2026-10-05
+
+- Reuse printed suppression and static-subject scalar queries within immutable
+  scopes, preserving qualifier/controller values, land-type flags and lazy
+  iterator behavior. Departures and subsequent waves get fresh queries.
+- 3,436 affected checks pass across 82 files; focused selections overlap.
+- Same retained action and 17 legal moves, unchanged original state: 66.62 to
+  55.64 seconds in one comparison. This is not a general latency guarantee;
+  interactive speed and professional AI remain unfinished.
+
 ## Bounded Strategic Score Reuse - 2026-10-05
 
 - Reuse exact strategic score inputs within one decision, capped at 256 entries

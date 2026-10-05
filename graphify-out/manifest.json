@@ -339,6 +339,10 @@
     "mtime": 1791173739.7941601,
     "hash": "167ed0b95f3ffad6d5649ccf16e46df4"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_printed_suppression_query_reuse.py": {
+    "mtime": 1791216394.753189,
+    "hash": "21c2b508666c7b630af8e9070e778863"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_aura_costs.py": {
     "mtime": 1790807082.7316978,
     "hash": "b381b253986c355c0f5e032239b8ff27"
@@ -2004,8 +2008,8 @@
     "hash": "058c3e648f6eb345cb0ce0ed2fae8363"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/continuous.py": {
-    "mtime": 1791148092.763035,
-    "hash": "c23c16db25fea6a971b35e6233b3510b"
+    "mtime": 1791216392.7532337,
+    "hash": "9dc9cca8e49ae1a32492cc3d09b00ce2"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/land_types.py": {
     "mtime": 1791125464.9499314,
@@ -2612,16 +2616,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791214941.8034468,
-    "hash": "93d40cca4af08a65eb1a6d517492a23f"
+    "mtime": 1791216275.1849418,
+    "hash": "55d7ea45d3d766b69e4be86212a9974e"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791214941.808447,
-    "hash": "802f31564e36553529c5ac84f63492a4"
+    "mtime": 1791216275.1879418,
+    "hash": "f4a13fba38a849014d6ca26229cdec71"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791214941.8064468,
-    "hash": "8f7f9bba1f5b989a30fc74da9afe4bab"
+    "mtime": 1791216275.185942,
+    "hash": "3630c0c08713b18308837dc562981d0a"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -3022,6 +3026,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/beneficiary-polarity.md": {
     "mtime": 1791173856.9392955,
     "hash": "943988ee0afab6b7aa16ad4f5a58dc98"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/layer-query-reuse.md": {
+    "mtime": 1791216495.6390107,
+    "hash": "d54dfa521ad2a83d75573decac810567"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-draw-forecast.md": {
     "mtime": 1791030434.395581,
