@@ -2,6 +2,11 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify the offline private decision comparator and integrate it into
+  natural replay review. Twenty targeted cases pass; preserve unequal-length
+  prefix analysis, strict provenance, private output and explicit exceptions.
+  See [scope](docs/testing/decision-view-comparison.md).
+
 - [ ] Qualify selective hand acquisition and masked count planning. Canonical
   fixed-count/mana-spent families, durable bottom ordering, both seats and
   guarded strategic projections pass 528 focused checks plus eight HTTP/SQLite

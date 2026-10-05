@@ -1,5 +1,16 @@
 # Changelog
 
+## Private Decision Comparison (Candidate)
+
+- Add an offline first-divergence CLI for completed reconstruction views.
+  Unequal-length streams still compare their shared prefix; reject incomplete
+  evidence and preserve explicit declarations and private-state differences.
+- Optional new combat-metadata exceptions are recorded, not silently discarded.
+  Reports use exclusive private output. Twenty focused regression cases pass;
+  the combined reconstruction selection passes 50 and six retained real-game
+  comparisons verify expected first differences, including unequal lengths.
+  see `docs/testing/decision-view-comparison.md`. No gameplay changes.
+
 ## Selective Hand Acquisition (Candidate)
 
 - Shared fixed-count look/hand/bottom resolution, durable human bottom ordering

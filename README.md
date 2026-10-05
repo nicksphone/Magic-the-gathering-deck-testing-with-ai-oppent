@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+An isolated diagnostic candidate adds an offline comparison of completed private
+decision exports, including first divergence for unequal-length streams. It does
+not alter gameplay or certify optimal play. See
+[comparison scope](docs/testing/decision-view-comparison.md).
+
 An isolated selection candidate resolves complete fixed-count look/hand/bottom
 instructions and values guaranteed masked hand counts without treating them as
 draws or inventing unseen cards. Its frozen backend passes 8,516 tests; the full
