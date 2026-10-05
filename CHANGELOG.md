@@ -10,6 +10,8 @@
   end step and draw step, existing response timer controls, pause and hotseat.
 - Add both-seat backend regressions and real-browser automatic-flow/recovery
   checks. This changes pacing, not timing rules or supported-card coverage.
+- Validation: 126 isolated backend checks; frontend tests, lint and build; full
+  browser harness including all three natural BO3 modes and restart recovery.
 
 ## 2026-10-05 - Strategic response delta candidate
 

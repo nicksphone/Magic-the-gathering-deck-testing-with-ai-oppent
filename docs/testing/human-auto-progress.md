@@ -47,6 +47,9 @@ end-step instants using either pooled mana or two untapped Islands, both seats,
 existing priority-stop behavior, opening hands, cleanup and draw restrictions.
 Frontend unit/contracts, hooks lint and the production build pass. The focused
 automatic-flow and recovery browser scenarios pass.
+The complete browser harness also passes, including restart/ambiguous-write
+recovery, sideboarding and natural BO3 in AI/AI, human/AI and human/human modes.
+The 126-check backend selection is not a new full backend-suite qualification.
 
 The full browser harness includes this scenario. It additionally exercises
 both-seat action/choice flows, recovery, writes and natural BO3. This is not
