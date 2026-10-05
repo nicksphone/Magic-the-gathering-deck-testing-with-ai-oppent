@@ -9,6 +9,8 @@
 - Both-seat HTTP persistence/rejection checks, UI source flag and six new browser
   flows; AI action use and reusable-card retention checks.
 - Canonical limited permissions are reported as unsupported, not unlimited.
+- Frozen qualification: 8,784 backend tests across 353 files, 704 source hashes
+  verified in four initially database-free copies; corrected full browser passes.
 - Instant-timing predecessor: verified 8,674 full backend tests and complete
   browser suite. New runtime qualification and natural acceptance remain open.
 

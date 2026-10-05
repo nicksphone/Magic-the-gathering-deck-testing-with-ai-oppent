@@ -7,6 +7,8 @@
   suppression, global prohibitions and real departure events. Both-seat unit and
   HTTP checks pass; complete exact-source full/browser/natural gates. See
   [scope](docs/testing/graveyard-play-permissions.md).
+  Frozen backend gate passes 8,784 tests and all 353 files; corrected complete
+  browser suite passes. Unchanged-deck natural review remains outstanding.
 - [ ] Add durable limited graveyard permission ledgers and permission-source
   choice for Lurrus/Muldrotha/Gisa-style restrictions. These canonical shapes
   now report explicit unsupported-permission diagnostics; do not grant unlimited

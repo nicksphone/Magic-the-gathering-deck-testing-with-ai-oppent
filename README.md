@@ -4,6 +4,8 @@ An isolated graveyard-permission candidate adds ordinary self/subtype casting
 and land plays, including modal land faces, with real costs, land limits,
 source flags and shared cast/entry prohibitions. Limited per-turn permissions
 remain explicit coverage gaps. See [scope](docs/testing/graveyard-play-permissions.md).
+Frozen qualification passes 8,784 backend tests and the corrected full browser
+suite. Natural decision review remains outstanding; main/live are unchanged.
 
 An isolated instant-timing candidate distinguishes opponent end-step value
 casting from early-turn tap-outs and prices actual payment that loses the last

@@ -43,15 +43,20 @@ stats and natural test decks were not modified.
   seats, including real source flags, exhausted land allowance and reload.
   The first runs exposed a malformed fixture mana pool and an assertion against
   a private rather than public field; both test defects were corrected without
-  weakening the runtime contract. Full browser qualification remains outstanding.
+  weakening the runtime contract. The corrected full browser suite also passes,
+  including natural AI, human-vs-AI and human-vs-human BO3 flows.
+- Frozen backend runtime `a7d9d7d` passes 8,784 tests across every one of the 353
+  recursive test files; 704 backend source hashes match in all four initially
+  database-free copies. Browser fixture corrections do not change those backend
+  files. Qualified browser revision is `75602ea`.
 - The inherited instant-timing runtime 40302dc passes all 8,674 backend tests
   (350 files, 686 source hashes verified in four DB-free copies) and the full
   browser suite. This does not qualify the new permission/placement runtime.
 
 ## Known Limitations And Next Upgrades
 
-Complete exact-source full/browser qualification and unchanged-deck natural
-decision review. Empty gap lists are not whole-card rules certification.
+Complete unchanged-deck natural decision review. Full/backend/browser gates
+pass, but empty gap lists are not whole-card rules certification.
 
 The parser deliberately rejects unsupported permission shapes rather than
 turning them into unlimited access. Lurrus, Muldrotha and Gisa and Geralf report
