@@ -39,9 +39,11 @@ stats and natural test decks were not modified.
 - After the final lightweight-view compatibility edit, 195 focused permission,
   admission, coverage and AI checks pass. Full qualification is recorded only
   after all frozen-source shards and browser scenarios terminate successfully.
-- Frontend tests, lint and build pass; six new browser flows are included in the
-  full harness for both seats. Their execution and the frozen full gate remain
-  outstanding until recorded terminal results.
+- Frontend tests, lint and build pass. All six new browser flows pass for both
+  seats, including real source flags, exhausted land allowance and reload.
+  The first runs exposed a malformed fixture mana pool and an assertion against
+  a private rather than public field; both test defects were corrected without
+  weakening the runtime contract. Full browser qualification remains outstanding.
 - The inherited instant-timing runtime 40302dc passes all 8,674 backend tests
   (350 files, 686 source hashes verified in four DB-free copies) and the full
   browser suite. This does not qualify the new permission/placement runtime.

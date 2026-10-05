@@ -19,7 +19,7 @@ for (const seat of [1, 2]) for (const name of ['Forest', 'Bala Ged Recovery', 'G
       : state.players[String(seat)].battlefield.some(card => card.id === fixture.card_id));
     assert.ok(!state.players[String(seat)].graveyard.some(card => card.id === fixture.card_id));
     if (name !== 'Gravecrawler') {
-      assert.equal(state.players[String(seat)].lands_played_this_turn, 1);
+      assert.equal(state.players[String(seat)].land_plays_remaining, 0);
       const land = state.players[String(seat)].battlefield.find(card => card.id === fixture.card_id);
       if (name === 'Bala Ged Recovery') assert.equal(land.tapped, true);
     }

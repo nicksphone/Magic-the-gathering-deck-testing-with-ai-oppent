@@ -24,6 +24,8 @@ def graveyard_permission(seat: int = 1, name: str = 'Forest'):
         raise HTTPException(422, 'Expected a supported graveyard fixture')
     state = position(seat)
     state.mechanic_choice_players = {1, 2}
+    for player in state.players.values():
+        player.mana_pool = {color: player.mana_pool.get(color, 0) for color in 'WUBRGC'}
     card = modal_land(state, seat) if name == 'Bala Ged Recovery' else canonical(state, name, seat, Zone.GRAVEYARD, cards=ROWS)
     canonical(state, 'Diregraf Ghoul' if name == 'Gravecrawler' else 'Crucible of Worlds', seat, cards=ROWS)
     state.log.append('Canonical graveyard-permission fixture; not a competitive deck.')
