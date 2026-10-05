@@ -2,6 +2,35 @@
 
 ## Current Priority: Backend First
 
+- [ ] Complete [coupled and independent target fidelity](docs/plans/coupled-target-fidelity.md)
+  after the current AI acceptance gates. Strict traces and canonical probes expose
+  linked damage/landfall and independent modifier-selection gaps. Share target
+  instances, controller dependencies and partial-resolution validation across
+  rules, API, AI and human actions; do not add card-name-only exceptions.
+
+- [ ] Complete [strategic waiting and public stack threat](docs/testing/ai-strategic-wait.md)
+  acceptance. Preserve best-scoring passes, include legal waits in the bounded
+  root and descendant shortlists, and value counterable threats from their actual
+  public outcomes. Candidate two passes 7,425 backend tests but fails the natural
+  AI BO3 browser budget. Candidate three repairs the exposed planning/targeting
+  defects and passes 256 focused checks. Its browser state then finishes legally
+  seven actions beyond the original total BO3 budget. Candidate four also fixes
+  ability-counter forecast dispatch/protection, passing 121 focused checks; its
+  complete 7,467-test backend suite, frontend checks and adjusted-budget full
+  browser gate pass. Its six-style matrix completes 30 games/60 repetitions with
+  identical full packets and no reported drift or timeouts. Strict review matches
+  29 games and rejects one Searing Blaze cast; coupled-target admission remains
+  an explicit rules blocker, not a balanced-win-rate tuning task.
+  Candidate two's complete 30-sample/60-execution matrix remains separate evidence.
+  Do not force deck win rates.
+
+- [ ] Publish [offline action reconstruction](docs/testing/action-reconstruction.md)
+  after investigating its retained thirty-sample gate. Twenty-one unit/CLI checks
+  and a complete retained game pass; strict reconstruction matches 26 samples
+  and rejects four illegal target announcements. Repair single-alternative and
+  controller-linked multi-target casting without weakening rejection. Keep
+  reports with hand/log data private.
+
 - [x] Complete the supported [casting/trigger repair batch](docs/testing/casting-trigger-repairs.md).
   All six reproduced failures are repaired. The final isolated 7,310-test
   backend gate, complete rules-only browser harness and eight repeated

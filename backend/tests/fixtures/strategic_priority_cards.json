@@ -1,0 +1,157 @@
+{
+  "provenance": {
+    "source": "Verbatim canonical card rows from the verified original six-style manifests; fixture quantities are not competitive deck claims",
+    "source_corpus_sha256": [
+      "da32a3af2b3a3e81748c6db689936f8e601ecc43679780f61c3c32ce1d0c32e7",
+      "c8ad54e1c75e62e6d9886d8bfe16b4bcd75197ea4233b2a8b25885176920c26b",
+      "0d245b230e02c51121d1caf6267852d89c4a1f542ba4466efa879ee58d765499",
+      "1000b84d949f1fc4716e8a1b59e00f3ce41ee8a49cd3fe716cb0bea0a9b92dfc",
+      "603953740b63511526705a1a5f602f578da168ab35c051c89fe32c8df4c15ca3",
+      "88ede162f1316e51e90827ae66038d837d92509887a489f45289cc8bf321a719",
+      "83f10427410905d6c4d94079ea4e3ce1760f9c4b70bb58a838adcd05a9e02f90",
+      "a1a16fbe41d9749cee54100ecdc64bde4c79fc8839856136d2a61e378f0846d3",
+      "bb36f551a9b7e95a79058f8a08877742b34489795f2054106783f88ed520b2e7",
+      "4b142b52f578bc86602288f7a6c6a932847fdeef0730dfbf9101474a9d22d987",
+      "0c3d75df3f8021effa76483d636a08cae9dd7b4ad1c3336933e5fe8d2c6f5b69",
+      "2b76e1e0b0d649b429f6b559801b48b214dc47a4a30c9f675a1746a928b3d2ba",
+      "da0240d87d140a45675be25b79f2c5768b0eb522ca650af3aff8ed1e12673755",
+      "aab6c8e96f93076caee008ab62205845e5be3507605106fa74281520e40376e6",
+      "311533b53bdbf15420082b9f643e166fd38241b90dd01a8a90fd09735d025dd8"
+    ]
+  },
+  "cards": [
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Nissa, Who Shakes the World",
+      "colors": [
+        "G"
+      ],
+      "image_uri": "/card-images/placeholder-planeswalker-nissa-who-shakes-the-world-legendary-planeswalker-nissa.svg",
+      "layout": "",
+      "loyalty": "5",
+      "mana_cost": "{3}{G}{G}",
+      "name": "Nissa, Who Shakes the World",
+      "oracle_text": "Whenever you tap a Forest for mana, add an additional {G}.\n+1: Put three +1/+1 counters on up to one target noncreature land you control. Untap it. It becomes a 0/0 Elemental creature with vigilance and haste that's still a land.\n−8: You get an emblem with \"Lands you control have indestructible.\" Search your library for any number of Forest cards, put them onto the battlefield tapped, then shuffle.",
+      "quantity": 2,
+      "scryfall_id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3",
+      "type_line": "Legendary Planeswalker — Nissa"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Mountain",
+      "image_uri": "/card-images/placeholder-land-mountain-basic-land-mountain.svg",
+      "layout": "",
+      "mana_cost": "",
+      "name": "Mountain",
+      "oracle_text": "({T}: Add {R}.)",
+      "quantity": 20,
+      "scryfall_id": "a642c7b1-d4d1-4125-a66d-560438e5ee51",
+      "type_line": "Basic Land — Mountain"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Plains",
+      "image_uri": "/card-images/placeholder-land-plains-basic-land-plains.svg",
+      "layout": "",
+      "mana_cost": "",
+      "name": "Plains",
+      "oracle_text": "({T}: Add {W}.)",
+      "quantity": 20,
+      "scryfall_id": "24dc369c-020a-4115-a4bb-d60a44de64e3",
+      "type_line": "Basic Land — Plains"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Soul-Scar Mage",
+      "colors": [
+        "R"
+      ],
+      "image_uri": "/card-images/placeholder-creature-soul-scar-mage-creature-human-wizard.svg",
+      "layout": "",
+      "mana_cost": "{R}",
+      "name": "Soul-Scar Mage",
+      "oracle_text": "Prowess\nIf a source you control would deal noncombat damage to a creature an opponent controls, put that many -1/-1 counters on that creature instead.",
+      "power": "1",
+      "quantity": 4,
+      "scryfall_id": "a8003786-6e2a-4e2d-a915-f23293c7273a",
+      "toughness": "2",
+      "type_line": "Creature — Human Wizard"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Lava Spike",
+      "colors": [
+        "R"
+      ],
+      "image_uri": "/card-images/placeholder-spell-lava-spike-sorcery-arcane.svg",
+      "layout": "",
+      "mana_cost": "{R}",
+      "name": "Lava Spike",
+      "oracle_text": "Lava Spike deals 3 damage to target player or planeswalker.",
+      "quantity": 4,
+      "scryfall_id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+      "type_line": "Sorcery — Arcane"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Rift Bolt",
+      "colors": [
+        "R"
+      ],
+      "image_uri": "/card-images/placeholder-spell-rift-bolt-sorcery.svg",
+      "layout": "",
+      "mana_cost": "{2}{R}",
+      "name": "Rift Bolt",
+      "oracle_text": "Rift Bolt deals 3 damage to any target.\nSuspend 1—{R} (Rather than cast this card from your hand, you may pay {R} and exile it with a time counter on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost.)",
+      "quantity": 4,
+      "scryfall_id": "4ccd0ada-92b2-48f3-b5ae-96346fc138b6",
+      "type_line": "Sorcery"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Light Up the Stage",
+      "colors": [
+        "R"
+      ],
+      "image_uri": "/card-images/placeholder-spell-light-up-the-stage-sorcery.svg",
+      "layout": "",
+      "mana_cost": "{2}{R}",
+      "name": "Light Up the Stage",
+      "oracle_text": "Spectacle {R} (You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.)\nExile the top two cards of your library. Until the end of your next turn, you may play those cards.",
+      "quantity": 4,
+      "scryfall_id": "912b94c9-7200-452d-940f-df0a7cceb377",
+      "type_line": "Sorcery"
+    },
+    {
+      "card_data_sources": [
+        "offline_seed"
+      ],
+      "card_name": "Skullcrack",
+      "colors": [
+        "R"
+      ],
+      "image_uri": "/card-images/placeholder-spell-skullcrack-instant.svg",
+      "layout": "",
+      "mana_cost": "{1}{R}",
+      "name": "Skullcrack",
+      "oracle_text": "Players can't gain life this turn. Damage can't be prevented this turn. Skullcrack deals 3 damage to target player or planeswalker.",
+      "quantity": 4,
+      "scryfall_id": "7f399983-d70a-4cf3-b76e-bb0c472e7c69",
+      "type_line": "Instant"
+    }
+  ]
+}

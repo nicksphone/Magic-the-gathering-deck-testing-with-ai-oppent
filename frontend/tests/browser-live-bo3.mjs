@@ -29,7 +29,11 @@ try {
   await command('Page.reload');
   await waitFor("document.querySelector('.battlefield') && [...document.querySelectorAll('button')].some(b => b.textContent === 'Resume automatic play')");
   const observed = new Set([1]);
-  for (let batch = 0; batch < 50 && !state.match_complete; batch++) {
+  // Budget priority actions across up to three games, not fifty game turns.
+  // The retained seed-73 game three finished seven actions beyond the old 1500.
+  const maxActionTicks = 3000;
+  const ticksPerBatch = 30;
+  for (let batch = 0; batch < maxActionTicks / ticksPerBatch && !state.match_complete; batch++) {
     const revision = state.revision;
     await click('AI Step x30');
     const deadline = Date.now() + 15000;
@@ -40,6 +44,11 @@ try {
     assert.ok(state.revision > revision, `AI Step x30 did not advance revision ${revision}`);
     await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision === '${state.revision}' && [...document.querySelectorAll('button')].some(b => b.textContent === 'AI Step x30' && !b.disabled) && !document.querySelector('[role=alert]')`);
     observed.add(state.game_number);
+    if ((batch + 1) % 10 === 0 || state.match_complete) {
+      console.log(JSON.stringify({ event: 'browser_bo3_progress', batches: batch + 1,
+        action_budget: maxActionTicks, game: state.game_number, turn: state.turn,
+        score: state.score, complete: state.match_complete }));
+    }
   }
   assert.equal(state.match_complete, true, `BO3 did not finish: game ${state.game_number}, turn ${state.turn}`);
   assert.equal(Math.max(...Object.values(state.score)), 2);

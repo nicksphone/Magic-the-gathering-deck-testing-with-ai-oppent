@@ -90,6 +90,15 @@ class AIDecision:
     reasoning: str
 
 
+def _shortlist_with_priority_pass(ranked: list[dict], legal: list[dict], limit: int) -> list[dict]:
+    shortlist = ranked[:limit]
+    if not any(move.get('type') == 'pass_priority' for move in shortlist):
+        wait = next((move for move in legal if move.get('type') == 'pass_priority'), None)
+        if wait is not None:
+            shortlist.append(wait)
+    return shortlist
+
+
 class AIAgent:
     _log_priors_cache: dict | None = None
 
@@ -787,7 +796,9 @@ class AIAgent:
         candidates = []
         search_depth = self._strategic_search_depth(state, player_id)
         beam_limit = 4 if search_depth > 2 else (6 if search_depth > 1 else 8)
-        for mv in self._rank_moves(state, legal_moves, player_id)[:beam_limit]:
+        shortlist = _shortlist_with_priority_pass(self._rank_moves(state, legal_moves, player_id),
+                                                 legal_moves, beam_limit)
+        for mv in shortlist:
             mat = self._materialize_action(state, mv, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
@@ -801,13 +812,7 @@ class AIAgent:
             score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
             scored.append((score, mv))
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
-        top = scored[0][1]
-        if top.get("type") == "pass_priority":
-            for _, mv in scored:
-                if mv.get("type") in {"cast_spell", "activate_loyalty", "attack"}:
-                    return mv
-            return None
-        return top
+        return scored[0][1]
 
     def _strategic_search_depth(self, state: MatchState, player_id: int) -> int:
         """Choose a bounded tactical horizon without making every turn expensive."""
@@ -858,11 +863,12 @@ class AIAgent:
         if depth <= 0 or sim.winner is not None:
             return score
         pid = sim.priority_player
-        legal = self._rank_moves(sim, self.engine.legal_moves(sim, pid), pid, shallow=True)
+        available = self.engine.legal_moves(sim, pid)
+        legal = self._rank_moves(sim, available, pid, shallow=True)
         if not legal:
             return score
         beam: list[tuple[float, MatchState]] = []
-        for cand in legal[:6]:
+        for cand in _shortlist_with_priority_pass(legal, available, 6):
             try:
                 materialized = self._materialize_action(sim, cand, pid)
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
@@ -944,7 +950,7 @@ class AIAgent:
             picked.append(mat)
             if len(picked) >= limit:
                 break
-        return picked
+        return _shortlist_with_priority_pass(picked, legal_moves, limit)
 
     def _move_sort_key(self, move: dict) -> tuple:
         def _ids(values: object) -> str:
@@ -3149,7 +3155,8 @@ class AIAgent:
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if any_damage_target:
             planeswalker_targets = [target for target in planeswalker_targets if state.cards[target["id"]].controller != player_id]
-        if planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
+        if (planeswalker_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or [])
+                and not (hints.get('single_target_alternative') and targets.get('target_player') is not None)):
             targets["target_card_id"] = planeswalker_targets[0]["id"]
 
         noncreature_permanent_targets = (
@@ -5222,6 +5229,14 @@ class AIAgent:
         if any(k in text for k in ["at the beginning of", "whenever", "draw"]):
             score += 1.4
         controller = getattr(item, "controller", None)
+        if (isinstance(state, MatchState) and controller != player_id
+                and not (getattr(item, 'payload', None) or {}).get('uncounterable')
+                and not (stack_object_kind(state, item) == 'spell' and spell_cant_be_countered(state, item))):
+            from ai.pending_effects import pending_counter_gain
+            gain = pending_counter_gain(state, player_id, stack_item_id)
+            if gain is not None:
+                # Threat depends on the resolved target/board, not just spell cost.
+                score = max(0.0, gain)
         if controller == player_id:
             score -= 10.0
         return score

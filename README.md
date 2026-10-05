@@ -70,6 +70,10 @@ It is designed for serious deck work:
 - Human vs AI playtesting
 - AI vs AI simulation
 - Batch matchup analysis and replay diagnostics
+- Offline recorded-action reconstruction validates retained seeded games against
+  resolved deck manifests without AI search or live database writes. It rejects
+  illegal actions and reports the first divergence; private reports may contain
+  hand/log data. See [usage and current evidence](docs/testing/action-reconstruction.md).
 - Persisted diagnostic-run browsing with bounded anomaly/root-cause snapshots
 - Custom deck import and deck library management
 - Rules-engine-first gameplay logic with local persistence
@@ -398,6 +402,13 @@ It is designed for serious deck work:
 - Diagnostic replay scripts hydrate cards from the local cache before simulation; unknown cards retain unknown characteristics instead of being silently treated as generic 2/2s
 
 ### AI
+
+- [Strategic priority and public stack threats](docs/testing/ai-strategic-wait.md)
+  retain better-scoring waits through root and reply search, distinguish spell
+  and ability prevention, and avoid duplicate single-alternative targets.
+  Full backend/frontend/browser gates pass and thirty games repeat identically;
+  strict action replay still rejects one missing-creature Searing Blaze cast.
+  Linked targeting remains open; this is not expert-AI certification.
 
 - [Public mana-change planning](docs/testing/ai-public-mana-changes.md) values supported fixing and disruption through paid engine projections, known own-hand costs and public resources. It retains unhelpful pure fixing, revisits it as needs change, compares type-changing lands with ordinary alternatives, and excludes hidden cards. Resource weights and broader strategic play remain heuristic; focused decisions and the six-archetype repeated replay gate pass, not expert-AI certification.
 - [Bounded combat setup planning](docs/testing/combat-setup.md): Master evaluates real precombat casting/equipment/activation effects followed by legal public-board blocks and damage before choosing cheap creature development. Known gaps, hidden draws and unresolved choices prevent a claimed win; already-winning boards preserve cards. Canonical probes improve across all fourteen archetype labels and thirty repeated seat-balanced samples pass; wider boards, adversarial responses and expert-AI certification remain open.

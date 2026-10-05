@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-05 - Strategic priority and offline action validation
+
+- Preserve best-scoring legal passes at the root and include priority passing in
+  recursive and stack-reply shortlists. Estimate counterable public stack threats
+  from actual checked-engine outcomes without flattening protected spells or
+  abilities; dispatch spell and ability prevention to their correct handlers.
+- Avoid announcing both a player and a planeswalker for a single-alternative
+  spell. Add canonical paid-hand, both-seat and projection-purity regressions.
+- Add a strict offline action-reconstruction CLI with twenty-one unit/CLI checks.
+  Its retained thirty-sample review matches twenty-six and rejects four illegal
+  target announcements; coupled targeting remains open rather than hidden.
+- Pass the 256-check strategic gate and subsequent 121-check ability/counterability
+  gate. Extend the natural BO3 browser budget to 3,000 total priority actions after
+  the retained game finishes legally seven actions beyond the old 1,500 limit;
+  emit bounded progress. All 7,467 isolated backend tests, frontend tests/lint/build
+  and the full browser gate pass on candidate four. The six-style matrix completes
+  30 logical games/60 repetitions, with identical complete packets, 41,070 decision
+  traces and no reported drift, timeout or anomaly. Strict action replay matches
+  29 games and rejects one Searing Blaze cast missing a creature; linked targeting
+  remains open. Neither repeatability nor this sample establishes optimal AI.
+
 ## 2026-10-05 - Decision-local AI projection reuse
 
 - Reuse choice-free destruction forecasts and one public baseline per exact
