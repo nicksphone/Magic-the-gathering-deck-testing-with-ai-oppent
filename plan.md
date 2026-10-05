@@ -32,19 +32,15 @@
 - [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
   overlapping checks pass. Preserve engine fallback, bounded legal projections,
   blocker/mana/graveyard opportunity costs and hidden-information invariants.
-  Complete exact-source full/natural gates and broaden colored/compound payment
-  alternatives. See [scope](docs/testing/ai-resource-opportunity.md).
-- [ ] Qualify the instant-timing candidate for Tempo/Control seat-two decision 524:
-  generic end-step bonus and actual lost-interaction payment costs are implemented
-  in ranking and strategic choices; both-seat canonical checks pass. Finish wider
-  exact-source/natural comparison and refine opportunity/emergency estimates.
-  See [scope](docs/testing/instant-value-window.md). Original observation: control cashes
+  The 8,650-test full gate, complete browser gate and twelve repeated seeded
+  reconstructions pass; this milestone is integrated into main. Broaden
+  colored/compound payment alternatives and decision-quality samples. See
+  [scope](docs/testing/ai-resource-opportunity.md).
+- [ ] Investigate natural Tempo/Control seat-two decision 524: control cashes
   a seven-mana graveyard card-selection spell in opponent upkeep while holding
   two counters, instead of waiting for an appropriate later window. Scope the
   fix to general interaction reservation/instant timing, not a card-name rule.
   The selection370 replay is deterministic; its outcome alone is not optimality.
-  Frozen timing gates now pass 8,674 backend tests and the full browser suite;
-  natural comparison remains queued behind the predecessor review.
 
 - [ ] Qualify resource-event follow-up: real-tap paths, pre-move graveyard watcher
   capture, batch/APNAP semantics and original-action stack ordering. 175

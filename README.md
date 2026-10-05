@@ -27,13 +27,13 @@ acceptance remains open. Frozen timing qualification now passes 8,674 backend
 tests and the full browser suite; natural comparison is queued.
 See [scope](docs/testing/instant-value-window.md).
 
-The AI resource-opportunity candidate compares bounded legal payments rather
+The AI resource-opportunity policy compares bounded legal payments rather
 than blindly accepting the first witness. It weighs blockers, repeatable mana,
 graveyard payoffs, actual self-tap token triggers and affordable own-hand
-follow-ups. Twenty-three focused cases and 342 earlier overlapping checks pass; full/natural
-acceptance remains open. Frozen resource-opportunity qualification now passes
-8,650 backend tests and the full browser suite; natural review is running.
-See [scope](docs/testing/ai-resource-opportunity.md).
+follow-ups. Main includes the qualified runtime: 8,650 full backend tests and the
+complete browser suite pass. Twelve repeated seeded executions reconstruct
+correctly; broader strength and compound-payment coverage remain open. See
+[scope](docs/testing/ai-resource-opportunity.md).
 
 The resource-event follow-up connects real taps and graveyard departures to
 shared trigger staging and pre-move ability checks. Both-seat canonical cases,

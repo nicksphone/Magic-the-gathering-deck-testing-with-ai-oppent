@@ -40,11 +40,16 @@ shared mana/resource legality.
 
 ## Limits And Next Gates
 
-- Frozen runtime ff1210e passes 8,650 tests across all 349 recursive files, with
-  all 685 source hashes verified in four initially DB-free copies. The complete
-  browser suite passes. Completed owned test copies were verified and archived
-  to RCHFiles before removal; natural replay/reconstruction is running.
-- Finish exact-source natural replay qualification and inspect changed decisions.
+- Runtime ff1210e is integrated into main. Frozen full qualification passes
+  8,650 tests across all 349 recursive files exactly once, with 685 source hashes
+  verified in four initially DB-free copies. Complete browser qualification
+  passes. The published documentation/graph successor changes no runtime files.
+- Natural qualification completes twelve executions/six unique seeded seat
+  samples across Drain/Tribal, Tokens/Ramp and Tempo/Control. Reconstructions
+  match; repeated private-view hashes agree; determinism failures are zero and
+  reported anomaly/drift labels empty. Evidence is archived on RCHFiles at
+  `diagnostics/strategic-draw-counts/20261005T102232Z/ai-resource-reconstruction/completed-qualification-summary.json`.
+  This is a small repeatability/regression sample, not optimal-play proof.
 - The search is bounded (ordinary fallback plus at most 16 explicit alternatives),
   not exhaustive optimization. Broaden swap/color/compound-cost alternatives and
   measure marginal runtime against decision quality on actual retained positions.
