@@ -17,6 +17,11 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Shared fixed additional triggered mana: complete colored output bundles,
+  distinct snow/restriction provenance and actual activation/payment parity.
+  Composed gates pass 1,865 affected checks plus a separate 300-check integration
+  gate; retained Ramp position can legally pay for Ugin in both seats. Choice-
+  dependent and produced-type variants remain open. See [scope](docs/testing/additive-triggered-mana.md).
 - [x] Dedicated canonical Cathar actual-App browser acceptance: six cases across
   both seats, source departure/blink, day/night transitions, pending choices,
   reload and two real backend restarts. Parent composed run also passes all six;

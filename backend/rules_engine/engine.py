@@ -770,7 +770,6 @@ class RulesEngine:
                 return
 
         elif kind == "tap_land_for_mana":
-            from rules_engine.mana import add_mana_to_pool
             cid = action["card_id"]
             if cid in player.battlefield and land_can_produce_mana(state, cid, free_only=False):
                 from rules_engine.mana_abilities import tap_only_outputs
@@ -780,28 +779,26 @@ class RulesEngine:
                     return
                 color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                 amount = land_mana_amount(state, player_id, cid, color)
-                from rules_engine.mana_abilities import preferred_free_spec, ability_outputs
+                from rules_engine.mana_abilities import preferred_free_spec
                 spec = preferred_free_spec(state, state.cards[cid], color, amount, tap_only=True)
                 if spec is None:
                     reject('Cannot select mana ability')
                     return
-                if not apply_activated_costs(state, player_id, cid, spec[1], ability_kind='mana', ability_index=spec[0]):
+                from rules_engine.mana_abilities import activate_mana_ability
+                if not activate_mana_ability(state, player_id, cid, spec[0], color):
                     reject('Cannot pay mana ability costs')
                     return
-                amount = ability_outputs(state, state.cards[cid], spec).get(color, 0)
-                add_mana_to_pool(state, player_id, color, amount, source_id=cid, ability_effect=spec[2])
                 state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color}.")
 
         elif kind == "tap_nonland_for_mana":
-            from rules_engine.mana import nonland_mana_outputs
-
             cid = action["card_id"]
             color = action["color"]
-            outputs = nonland_mana_outputs(state, cid, state.cards[cid], free_only=False) if cid in player.battlefield else {}
-            if color in outputs:
-                from rules_engine.mana_abilities import mana_ability_views, activate_mana_ability
-                spec = next(view for view in mana_ability_views(state, state.cards[cid])
-                            if view['outputs'].get(color) == outputs[color])
+            from rules_engine.mana_abilities import mana_ability_views, activate_mana_ability
+            views = mana_ability_views(state, state.cards[cid]) if cid in player.battlefield else []
+            choices = [view for view in views if color in view['outputs'] and (
+                view['outputs'][color] > 0 or sum(view.get('output_bundles', {}).get(color, {}).values()) > 0)]
+            if choices:
+                spec = max(choices, key=lambda view: view['outputs'][color])
                 if not activate_mana_ability(state, player_id, cid, spec['ability_index'], color):
                     reject('Cannot activate mana source')
                     return
@@ -813,7 +810,6 @@ class RulesEngine:
             except ActionRejected as error:
                 reject(str(error))
                 return
-            from rules_engine.mana import add_mana_to_pool
             land_name = str(action.get("land_name", "")).strip().lower()
             count = max(0, int(action.get("count", 0)))
             if land_name and count > 0:
@@ -833,16 +829,15 @@ class RulesEngine:
                         continue
                     color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
                     amount = land_mana_amount(state, player_id, cid, color)
-                    from rules_engine.mana_abilities import preferred_free_spec, ability_outputs
+                    from rules_engine.mana_abilities import preferred_free_spec
                     spec = preferred_free_spec(state, card, color, amount, tap_only=True)
                     if spec is None:
                         reject('Cannot select mana ability')
                         return
-                    if not apply_activated_costs(state, player_id, cid, spec[1], ability_kind='mana', ability_index=spec[0]):
+                    from rules_engine.mana_abilities import activate_mana_ability
+                    if not activate_mana_ability(state, player_id, cid, spec[0], color):
                         reject('Cannot pay mana ability costs')
                         return
-                    amount = ability_outputs(state, card, spec).get(color, 0)
-                    add_mana_to_pool(state, player_id, color, amount, source_id=cid, ability_effect=spec[2])
                     produced = color
                     produced_total += amount
                     tapped += 1

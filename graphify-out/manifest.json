@@ -3126,9 +3126,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana.py": {
-    "mtime": 1791229229.9683652,
-    "seen": 1791232057.6670709,
-    "ast_hash": "2e363f59d1c7942b9811c124fb9d8884",
+    "mtime": 1791232434.038084,
+    "seen": 1791232492.4134462,
+    "ast_hash": "5a96a06dd0ae44a42f95269bb5f6c8d1",
     "semantic_hash": ""
   },
   "backend/rules_engine/library_permissions.py": {
@@ -3222,9 +3222,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/resource_events.py": {
-    "mtime": 1791211202.3753915,
-    "seen": 1791232057.6670992,
-    "ast_hash": "9876608159bcce2a09a027c635ffd3cb",
+    "mtime": 1791232434.038084,
+    "seen": 1791232492.4134953,
+    "ast_hash": "247109e39e2ff3d5cd3423067f2b7b3e",
     "semantic_hash": ""
   },
   "backend/rules_engine/bestow.py": {
@@ -3246,9 +3246,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791213613.89469,
-    "seen": 1791232057.667021,
-    "ast_hash": "2f3cecaf92f23218d502ba461a691587",
+    "mtime": 1791232434.038084,
+    "seen": 1791232492.4133873,
+    "ast_hash": "6be576ed54eaa41fa230b52c8d18baba",
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_discard.py": {
@@ -3264,9 +3264,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_abilities.py": {
-    "mtime": 1791229229.970365,
-    "seen": 1791232057.6670728,
-    "ast_hash": "0cf28e6c556836934e5eceda3367604a",
+    "mtime": 1791232434.038084,
+    "seen": 1791232492.4134488,
+    "ast_hash": "24f452cd4544e5dd74ba245bd14da4db",
     "semantic_hash": ""
   },
   "backend/rules_engine/card_types.py": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791231043.0378835,
-    "seen": 1791232057.6684823,
-    "ast_hash": "7fc9935dcc767fcaba69781d33f15f3f",
+    "mtime": 1791232446.896888,
+    "seen": 1791232492.4161255,
+    "ast_hash": "ee80bd00ecee96be3bdd2a3ee6269c0a",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791232012.319499,
-    "seen": 1791232057.6688366,
-    "ast_hash": "f3f96a88a76b19f0f932be91fa130b7c",
+    "mtime": 1791232446.900888,
+    "seen": 1791232492.4166439,
+    "ast_hash": "735566376b96729706cecdc3928c5c41",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791232012.321499,
-    "seen": 1791232057.6684802,
-    "ast_hash": "365f18e0e0fc0d049033ffb5d31e6d01",
+    "mtime": 1791232446.8998878,
+    "seen": 1791232492.4161215,
+    "ast_hash": "e4182dad4cf9607b0562e5670588c90e",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -6855,6 +6855,36 @@
     "mtime": 1790537389.8781264,
     "seen": 1791232057.6688473,
     "ast_hash": "896df0b2805ca7844cc048acc730c6bc",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/mana_triggers.py": {
+    "mtime": 1791232434.038084,
+    "seen": 1791232492.4134562,
+    "ast_hash": "965ad1f4a03e5fb574f422a956609ce5",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/additive_mana.json": {
+    "mtime": 1791232434.0400841,
+    "seen": 1791232492.4136658,
+    "ast_hash": "f2900af33a4736958c3a5a3f418ae70c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/additive_mana_tick512.json": {
+    "mtime": 1791232434.0400841,
+    "seen": 1791232492.4136684,
+    "ast_hash": "2ce788baacf9b2153e50d4fcf148f31c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_additive_mana.py": {
+    "mtime": 1791232434.0400841,
+    "seen": 1791232492.4143658,
+    "ast_hash": "8ceb4daf3291f07d72424afdc6e24302",
+    "semantic_hash": ""
+  },
+  "docs/testing/additive-triggered-mana.md": {
+    "mtime": 1791232446.8958879,
+    "seen": 1791232492.416204,
+    "ast_hash": "b58f005386723b1dc65a872e423257b1",
     "semantic_hash": ""
   }
 }

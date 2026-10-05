@@ -25,6 +25,9 @@ outside trusted debugging. See [scope](docs/testing/ai-hand-debug.md).
 Supported day/night entry and self entry/transform triggers share canonical
 face handling, with incarnation-linked targeted exile and departure returns.
 See [evidence and limits](docs/testing/cathar-day-night.md).
+Supported [fixed additional mana triggers](docs/testing/additive-triggered-mana.md)
+share whole-vector payment and activation logic, preserving snow and spending
+restrictions. Choice-dependent and produced-type variants remain unfinished.
 The dedicated [actual-App browser gate](docs/testing/cathar-browser.md) covers
 both seats, pending exile choices, day/night transitions and backend restart.
 

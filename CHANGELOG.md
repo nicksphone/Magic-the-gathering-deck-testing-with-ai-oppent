@@ -1,5 +1,14 @@
 # Changelog
 
+## Fixed Additional Mana - 2026-10-05
+
+- Share supported fixed triggered mana across manual activation, automatic
+  payment, affordability and legal moves, with distinct base/bonus provenance.
+- Parent composed qualification passes 1,865 checks across 48 affected modules
+  plus a separate 300-check integration gate. The retained Ramp position now
+  successfully pays for Ugin in both seats without card-name exceptions.
+- Choice-dependent/produced-type bonuses and Cavern-style provenance remain open.
+
 ## Canonical Cathar Browser Acceptance - 2026-10-05
 
 - Add a self-isolating actual-App browser gate covering both seats, day/night

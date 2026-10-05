@@ -12,6 +12,8 @@ def tap_permanents(state, card_ids):
     for cid in dict.fromkeys(card_ids):
         card = state.cards.get(cid)
         if card is not None and card.zone == Zone.BATTLEFIELD and not card.tapped:
+            from rules_engine.mana_triggers import record_mana_tap
+            record_mana_tap(state, card)
             card.tapped = True
             changed.append({'card_id': cid, 'controller': card.controller})
     if changed:

@@ -95,7 +95,17 @@ def multiplied_outputs(state, card, outputs):
             source_multiplier *= mana_multiplier_clause(line) or 1
         if source_multiplier != 1 and not printed_abilities_suppressed(state, cid):
             multiplier *= source_multiplier
-    return {color: amount * multiplier for color, amount in outputs.items()}
+    outputs = {color: amount * multiplier for color, amount in outputs.items()}
+    # Replacement applies to the land's production, never to another source's trigger.
+    if outputs and max(outputs.values()) >= 2 and 'Land' in effective_types(state, card):
+        clause = 'if a land is tapped for two or more mana, it produces {c} instead of any other type and amount.'
+        for player in state.players.values():
+            for cid in player.battlefield:
+                source = state.cards[cid]
+                if (clause in (source.oracle_text or '').lower().splitlines()
+                        and not printed_abilities_suppressed(state, cid)):
+                    return {'C': 1}
+    return outputs
 
 
 def source_ready(state, card, spec=None):
@@ -110,6 +120,15 @@ def source_ready(state, card, spec=None):
 
 
 def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTERED, reserved_card_ids=(), protected_life=0):
+    from rules_engine.mana_triggers import has_fixed_mana_triggers
+    if has_fixed_mana_triggers(state):
+        outputs = {}
+        for _, _, bundle, _, _ in free_mana_options(state, card,
+                ignore_readiness=ignore_readiness, payment_context=payment_context,
+                reserved_card_ids=reserved_card_ids, protected_life=protected_life):
+            for color, amount in bundle.items():
+                outputs[color] = max(outputs.get(color, 0), amount)
+        return outputs
     from rules_engine.mana import mana_activation_is_free
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     outputs = {}
@@ -137,7 +156,8 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
     outputs = {}
     for spec in mana_ability_specs(card, state):
         if parse_activated_cost(spec[1]) == ActivatedCost(tap_source=True):
-            for color, amount in ability_outputs(state, card, spec).items():
+            for color, bundle, _ in _output_options(state, card, spec, UNFILTERED):
+                amount = bundle.get(color, 0)
                 if amount > 0:
                     outputs[color] = max(outputs.get(color, 0), amount)
     return outputs
@@ -146,12 +166,15 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
 def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.mana import mana_activation_is_free
+    from rules_engine.mana_triggers import has_fixed_mana_triggers
+    bundled = has_fixed_mana_triggers(state)
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
         if cid in excluded_sources:
             continue
         for spec in mana_ability_specs(card, state):
-            if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
+            if (payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context)
+                    and not has_additional_output(state, card, spec)):
                 continue
             cost = parse_activated_cost(spec[1])
             if not source_ready(state, card, spec):
@@ -160,14 +183,28 @@ def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UN
             self_sacrifice = cost.supported and cost.sacrifice_source
             if not (tap_only or self_sacrifice):
                 continue
-            if mana_activation_is_free(state, cid, cost.mana_cost):
+            changing_cost = cost.sacrifice_creatures or cost.discard_cards or cost.discard_source
+            if mana_activation_is_free(state, cid, cost.mana_cost) and not (bundled and changing_cost):
                 continue
-            for color, amount in ability_outputs(state, card, spec).items():
-                if amount > 0:
+            for color, bundle, _ in _output_options(state, card, spec, payment_context):
+                if sum(bundle.values()) > 0:
                     yield cid, spec, color
 
 
 def activate_mana_ability(state, player_id, source_id, ability_index, color, *, excluded_sources=(), reserved_card_ids=(), protected_life=0):
+    from rules_engine.mana_triggers import mana_tap_scope, resolve_mana_triggers
+    card = state.cards.get(source_id)
+    if card is None:
+        return False
+    with mana_tap_scope(state, card) as captured:
+        result = _activate_mana_ability(state, player_id, source_id, ability_index, color,
+            excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+    if result:
+        resolve_mana_triggers(state, captured)
+    return result
+
+
+def _activate_mana_ability(state, player_id, source_id, ability_index, color, *, excluded_sources=(), reserved_card_ids=(), protected_life=0):
     from rules_engine.costs import ActivatedCost, parse_activated_cost, apply_activated_costs
     from rules_engine.mana import auto_pay_cost, add_mana_to_pool
     card = state.cards.get(source_id)
@@ -198,10 +235,64 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
 def mana_ability_views(state, card):
     from rules_engine.costs import activated_cost_available
     return [{'ability_index': spec[0], 'cost_text': spec[1], 'outputs': outputs,
+             **({'output_bundles': output_bundles(state, card, spec)}
+                if has_additional_output(state, card, spec) else {}),
              'label': f'{spec[1]}: {spec[2]}'}
             for spec in mana_ability_specs(card, state)
             if source_ready(state, card, spec) and (outputs := ability_outputs(state, card, spec))
             and activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0])]
+
+
+def has_additional_output(state, card, spec):
+    from rules_engine.costs import parse_activated_cost
+    from rules_engine.mana_triggers import fixed_mana_triggers
+    return parse_activated_cost(spec[1]).tap_source and bool(fixed_mana_triggers(state, card))
+
+
+def output_bundles(state, card, spec, *, payment_context=UNFILTERED):
+    return {color: bundle for color, bundle, _ in _output_options(state, card, spec, payment_context)}
+
+
+def _output_options(state, card, spec, payment_context):
+    from rules_engine.costs import parse_activated_cost
+    from rules_engine.mana_triggers import fixed_mana_triggers
+    from rules_engine.mana import is_snow_source
+    bonuses = fixed_mana_triggers(state, card) if parse_activated_cost(spec[1]).tap_source else []
+    base_usable = payment_context is UNFILTERED or eligible(ability_spending_rule(spec), payment_context)
+    result = []
+    for color, amount in ability_outputs(state, card, spec).items():
+        bundle = {color: amount} if base_usable else {}
+        snow = {color: amount} if base_usable and is_snow_source(card) else {}
+        for pid, _, _, source_snow, outputs in bonuses:
+            if pid != card.controller:
+                continue
+            for extra_color, extra in outputs.items():
+                bundle[extra_color] = bundle.get(extra_color, 0) + extra
+                if source_snow:
+                    snow[extra_color] = snow.get(extra_color, 0) + extra
+        result.append((color, bundle, snow))
+    return result
+
+
+def free_mana_options(state, card, *, ignore_readiness=False, payment_context=UNFILTERED,
+                      reserved_card_ids=(), protected_life=0):
+    from rules_engine.costs import activated_cost_available, parse_activated_cost
+    from rules_engine.mana import mana_activation_is_free
+    options = []
+    for spec in mana_ability_specs(card, state):
+        cost = parse_activated_cost(spec[1])
+        if not ignore_readiness and not source_ready(state, card, spec):
+            continue
+        if not cost.supported or not mana_activation_is_free(state, card.id, cost.mana_cost):
+            continue
+        if (not ignore_readiness or reserved_card_ids or protected_life) and not activated_cost_available(
+                state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0],
+                unavailable_resources=reserved_card_ids, protected_life=protected_life):
+            continue
+        for color, bundle, snow in _output_options(state, card, spec, payment_context):
+            if sum(bundle.values()) > 0:
+                options.append((spec, color, bundle, snow, cost.pay_life))
+    return options
 
 
 def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERED, tap_only=False, reserved_card_ids=(), protected_life=0):
@@ -223,7 +314,7 @@ def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERE
         if not activated_cost_available(state, card.controller, card.id, spec[1],
                 ability_kind='mana', ability_index=spec[0], unavailable_resources=reserved_card_ids, protected_life=protected_life):
             continue
-        if ability_outputs(state, card, spec).get(color) == amount:
+        if output_bundles(state, card, spec).get(color, {}).get(color) == amount:
             candidates.append(spec)
     return min(candidates, key=lambda spec: (parse_activated_cost(spec[1]).pay_life, ability_spending_rule(spec) is not None, spec[0]), default=None)
 

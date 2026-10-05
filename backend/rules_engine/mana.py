@@ -72,7 +72,7 @@ def count_untapped_lands_by_color(state: MatchState, player_id: int) -> Counter:
             outputs = mana_source_outputs(state, player_id, cid)
             for color, amount in outputs.items():
                 out[color] += amount
-            out["ANY"] += max(outputs.values(), default=0)
+            out["ANY"] += mana_source_capacity(state, cid)
     return out
 
 
@@ -94,7 +94,14 @@ def land_mana_amount(state: MatchState, player_id: int, card_id: str, color: str
     """Return how much mana one untapped land produces for this controller."""
     from rules_engine.mana_abilities import tap_only_outputs
     outputs = tap_only_outputs(state, state.cards[card_id], ignore_readiness=True)
-    return outputs.get(color, 0) if color else max(outputs.values(), default=0)
+    if color:
+        return outputs.get(color, 0)
+    from rules_engine.mana_abilities import mana_ability_specs, output_bundles
+    from rules_engine.costs import ActivatedCost, parse_activated_cost
+    card = state.cards[card_id]
+    return max((sum(bundle.values()) for spec in mana_ability_specs(card, state)
+                if parse_activated_cost(spec[1]) == ActivatedCost(tap_source=True)
+                for bundle in output_bundles(state, card, spec).values()), default=0) if outputs else 0
 
 
 def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: int) -> Counter:
@@ -106,7 +113,7 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
             continue
         for color, amount in outputs.items():
             out[color] += amount
-        out["ANY"] += max(outputs.values())
+        out["ANY"] += mana_source_capacity(state, cid)
     return out
 
 
@@ -115,6 +122,15 @@ def mana_source_outputs(state: MatchState, player_id: int, card_id: str, *, paym
     card = state.cards[card_id]
     from rules_engine.mana_abilities import free_outputs
     return free_outputs(state, card, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+
+
+def mana_source_capacity(state, card_id):
+    from rules_engine.mana_triggers import has_fixed_mana_triggers
+    if not has_fixed_mana_triggers(state):
+        return max(mana_source_outputs(state, state.cards[card_id].controller, card_id).values(), default=0)
+    from rules_engine.mana_abilities import free_mana_options
+    return max((sum(bundle.values()) for _, _, bundle, _, _ in
+                free_mana_options(state, state.cards[card_id])), default=0)
 
 
 def can_pay_with_pool_and_lands(
@@ -426,6 +442,10 @@ def _produce_planned_mana(state, player_id, steps, *, payment_context=None, rese
 
 
 def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, reserved_card_ids=(), protected_life=0):
+    from rules_engine.mana_triggers import has_fixed_mana_triggers
+    if has_fixed_mana_triggers(state):
+        return _plan_bundled_payment(state, player_id, req, payment_context=payment_context,
+            excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
     snow_needed = req.get("S", 0)
     if not snow_needed:
         plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
@@ -489,6 +509,85 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
         return None
 
     return solve(snow_needed, pool, snow, [], {}, 0)
+
+
+def _plan_bundled_payment(state, player_id, req, *, payment_context, excluded_sources,
+                          reserved_card_ids, protected_life):
+    """One activation yields an indivisible colored/snow bundle, not alternatives."""
+    from rules_engine.mana_abilities import free_mana_options, PaidManaStep
+    from rules_engine.costs import parse_activated_cost
+    colors = MANA_COLORS
+    pool, snow = available_pool(state.players[player_id], payment_context)
+    sources = []
+    for cid in state.players[player_id].battlefield:
+        if cid not in (excluded_sources or ()):
+            options = free_mana_options(state, state.cards[cid], payment_context=payment_context,
+                reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+            # Resource departures use the existing cloned activation/tail planner,
+            # so later outputs are measured after costs, not from this static bundle.
+            options = [option for option in options if not (
+                (cost := parse_activated_cost(option[0][1])).sacrifice_creatures
+                or cost.discard_cards or cost.discard_source)]
+            if options:
+                sources.append((cid, options))
+    required = tuple(req[color] for color in colors)
+    cap = sum(required) + req['generic'] + req.get('S', 0)
+
+    def snow_payment(totals, snow_totals):
+        if any(total < need for total, need in zip(totals, required)):
+            return None
+        if sum(totals) - sum(required) < req['generic'] + req.get('S', 0):
+            return None
+        remaining = req.get('S', 0)
+        spent = {}
+        for color, total, snowy, need in zip(colors, totals, snow_totals, required):
+            used = min(remaining, snowy, total - need)
+            if used:
+                spent[color] = used
+                remaining -= used
+        return spent if remaining == 0 else None
+
+    @lru_cache(maxsize=None)
+    def solve(totals, snow_totals, used, life_left):
+        spent = snow_payment(totals, snow_totals)
+        if spent is not None:
+            return (), tuple(spent.items())
+        wanted = next((color for color, total, need in zip(colors, totals, required) if total < need), None)
+        want_snow = wanted is None and sum(min(s, max(0, t-n)) for s, t, n in
+                     zip(snow_totals, totals, required)) < req.get('S', 0)
+        options = []
+        for index, (_, choices) in enumerate(sources):
+            if used & (1 << index):
+                continue
+            for spec, color, bundle, snowy, life in choices:
+                if life > life_left or (wanted is not None and not bundle.get(wanted)):
+                    continue
+                if want_snow and not sum(snowy.values()):
+                    continue
+                options.append((index, spec, color, bundle, snowy, life))
+        options.sort(key=lambda option: (option[5], -sum(option[3].values()), option[0], option[2]))
+        tried = set()
+        for index, spec, color, bundle, snowy, life in options:
+            signature = (tuple(sorted(bundle.items())), tuple(sorted(snowy.items())), life)
+            if signature in tried:
+                continue
+            tried.add(signature)
+            next_totals = tuple(min(cap, total + bundle.get(c, 0)) for c, total in zip(colors, totals))
+            next_snow = tuple(min(total, snowy_total + snowy.get(c, 0)) for c, total, snowy_total
+                              in zip(colors, next_totals, snow_totals))
+            found = solve(next_totals, next_snow, used | (1 << index), life_left - life)
+            if found is not None:
+                tail, spent = found
+                return ((index, spec[0], color),) + tail, spent
+        return None
+
+    found = solve(tuple(pool[c] for c in colors), tuple(snow[c] for c in colors), 0,
+                  max(0, state.players[player_id].life - protected_life))
+    if found is None:
+        return None
+    steps, spent = found
+    return ([PaidManaStep(sources[i][0], index, color, frozenset(excluded_sources or ()))
+             for i, index, color in steps], dict(spent))
 
 
 def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='',
@@ -771,7 +870,10 @@ def choose_mana_color_for_player(state: MatchState, player_id: int, preferred: l
 
 
 def _nonland_mana_source_colors(state: MatchState, card_id: str, card) -> Set[str]:
-    return set(nonland_mana_outputs(state, card_id, card, free_only=False))
+    from rules_engine.mana_abilities import mana_ability_views
+    return {color for view in mana_ability_views(state, card)
+            for color, amount in view['outputs'].items()
+            if amount > 0 or sum(view.get('output_bundles', {}).get(color, {}).values()) > 0}
 
 
 def mana_activation_is_free(state, card_id, cost):
