@@ -2,8 +2,9 @@
 
 The strategic draw-count/private replay candidate preserves unseen identities,
 reuses existing root scores and can export both hands/boards through the
-canonical card-view contract for offline analysis. It is under full qualification;
-targeted checks are not expert-play evidence. See
+canonical card-view contract for offline analysis. Frozen `80062da` passes 8,384
+backend tests and the full browser gate; fresh paired-seat decision review is
+still open, so this candidate is not yet rolled into main. See
 [scope and validation](docs/testing/strategic-draw-counts.md).
 
 Combat can be declared directly on the battlefield: click eligible creatures

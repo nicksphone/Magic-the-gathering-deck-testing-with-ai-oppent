@@ -55,8 +55,15 @@ prove misplay or optimality.
 - Final replay CLI/observer selection: 30 checks pass, including two-game seed
   attribution, existing-file/symlink protection, private modes, effective/base
   stats and mutation isolation for real modal-card face metadata.
-- Initial retained three-pair reconstruction: 12 executions, 8,344 accepted
-  decisions, matching logs/outcomes. Final canonical-card-view export verification
-  and full exact-source qualification remain pending at this commit.
+- Final canonical retained reconstruction: 12 executions, 8,344 accepted
+  decisions, matching logs/outcomes; six unique paired-seat samples contain
+  4,172 decisions. Rich exports are byte-identical between repeats and private
+  file permissions are verified. Repeated runs are not independent samples.
+- Frozen `80062da`: 8,384 backend tests pass in all 339 recursive files once,
+  with all 660 hashes matching four initially DB-empty source copies. Frontend
+  tests/lint/build and the full browser harness/all three natural BO3 modes pass.
+- Fresh candidate comparisons are running against the unchanged pinned inputs
+  for Drain/Tribal, Tokens/Ramp and Tempo/Control. The release stays isolated until
+  those new decisions and outcomes have been reviewed; main remains `8eeecd1`.
 - Fresh candidate AI decisions and before/after decision quality remain open;
   repeated reconstruction is not a new independent game or balance sample.

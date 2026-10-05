@@ -8,8 +8,10 @@
 - Add optional offline `--decision-output` with both hands/boards, canonical card
   views, announced stack, combat and mana provenance. Deeply detach nested faces;
   exclusively create owner-only files, reject overwrites and record completion.
-- Targeted qualification is complete; full qualification and fresh AI decision
-  comparisons remain open. See `docs/testing/strategic-draw-counts.md`.
+- Frozen full qualification passes 8,384 backend tests/all 339 files/660 matching
+  hashes and the complete browser gate/all three BO3 modes. Retained rich views
+  reconstruct 8,344 checked decisions and repeat byte-identically. Fresh AI
+  decision comparisons remain open before rollout.
 
 ## Direct Battlefield Combat Selection
 

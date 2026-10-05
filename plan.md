@@ -3,9 +3,9 @@
 ## Current Priority: Backend First
 
 - [ ] Qualify the combined strategic draw-count/root-score reuse and private
-  replay-view candidate. Focused selections pass; retain strict hidden-information
-  boundaries, complete final canonical exports, frozen full gates and fresh
-  paired-seat comparisons before publication. See
+  replay-view candidate. Frozen full gates and final canonical exports pass;
+  retain strict hidden-information boundaries and finish the fresh paired-seat
+  comparisons before rollout. See
   [candidate contract](docs/testing/strategic-draw-counts.md).
 
 - [x] Add direct battlefield attack/block drafts for both human seats, with
