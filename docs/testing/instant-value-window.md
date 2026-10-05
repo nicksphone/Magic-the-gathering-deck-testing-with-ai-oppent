@@ -45,9 +45,15 @@ Tempo/Control seat two changes consistently in both repeats, with first decision
 divergence at index 524, 634 decisions and a player-one win at turn 23.
 Reconstruction establishes reproducibility, not optimality or improved win rate.
 
+The bounded tactical review confirms the intended repair: decision 524 passes
+with two Counterspells held, rather than spending seven lands on graveyard card
+selection in upkeep. At decision 528 Tempo casts Expressive Iteration; decision
+530 uses the reserved mana to counter it. This verifies this observed interaction
+sequence, not that every draw/counter decision or the final result is optimal.
+
 This is a bounded heuristic, not an optimal-timing proof. It does not estimate
 the opponent's unseen spells, distinguish every removal target, handle all
 variable-cost answers, or prove emergency combat outcomes. The six-point
-reservation price still requires tactical evaluation of the changed decision;
-broader timing, counter-risk estimation and competitive-strength evidence remain
+reservation price needs broader decision-quality evaluation beyond this one
+sequence; timing, counter-risk estimation and competitive-strength evidence remain
 open. No canonical Oracle text, card stats or natural decklists were changed.

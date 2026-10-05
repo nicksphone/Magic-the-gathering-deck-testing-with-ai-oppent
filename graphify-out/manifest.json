@@ -1483,6 +1483,10 @@
     "mtime": 1790714533.4034598,
     "hash": "a321f43680bf69f4a9ee6a2a8aeb1d8a"
   },
+  "/home/nick/mtg-deck-testing-lab/backend/tests/test_lethal_keyword_query.py": {
+    "mtime": 1791217936.58185,
+    "hash": "89b7dfef168186c2aab6b46fb745a7cc"
+  },
   "/home/nick/mtg-deck-testing-lab/backend/tests/test_ordered_copy_targets.py": {
     "mtime": 1791167518.6405265,
     "hash": "a944704c4c0f1f5bde6fdce8415cb4be"
@@ -2104,8 +2108,8 @@
     "hash": "dabde8069ceb8a7bf002570ff7180a70"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/state_based_actions.py": {
-    "mtime": 1791214941.7614474,
-    "hash": "2cdeb0868c737290511208cf7ac1c1ef"
+    "mtime": 1791217936.57985,
+    "hash": "00868db37f744ef55ef9fbc26f69a7ff"
   },
   "/home/nick/mtg-deck-testing-lab/backend/rules_engine/cast_choice.py": {
     "mtime": 1791173739.79516,
@@ -2624,16 +2628,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-deck-testing-lab/README.md": {
-    "mtime": 1791217573.7717059,
-    "hash": "c086ff6d9826d481f11514bc9ad59b27"
+    "mtime": 1791217936.6248493,
+    "hash": "a85957f401b7b13e8a96958fcaf4ca8d"
   },
   "/home/nick/mtg-deck-testing-lab/plan.md": {
-    "mtime": 1791217573.7727058,
-    "hash": "00966f63d248b86d476d6ac005d53014"
+    "mtime": 1791217936.6258492,
+    "hash": "9bd0a7c9c323fd2e6a5bbc4e2805066e"
   },
   "/home/nick/mtg-deck-testing-lab/CHANGELOG.md": {
-    "mtime": 1791217573.7757056,
-    "hash": "a03305182f4f4b7afd9c9739184de672"
+    "mtime": 1791217936.627849,
+    "hash": "a482804009b1016abf1a0327ffc879c0"
   },
   "/home/nick/mtg-deck-testing-lab/backend/requirements.txt": {
     "mtime": 1777063134.7060611,
@@ -2876,8 +2880,8 @@
     "hash": "e2f2e0003dbb3c8b1749e4ec2156dbcf"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/instant-value-window.md": {
-    "mtime": 1791217501.9818811,
-    "hash": "f4b9a23762eeb8899e33845129b08ac9"
+    "mtime": 1791217786.5072582,
+    "hash": "e5a3131dbebb5fc468bf4d81e54bc16e"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/type-effect-lifecycle.md": {
     "mtime": 1791071130.2463694,
@@ -3214,6 +3218,10 @@
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-hotpaths.md": {
     "mtime": 1790813087.034884,
     "hash": "16a3c9006e52587d764f05dd06cec37e"
+  },
+  "/home/nick/mtg-deck-testing-lab/docs/testing/lethal-query-order.md": {
+    "mtime": 1791217936.6238494,
+    "hash": "1fd084b3728e324f978cf69dfb0dbfd5"
   },
   "/home/nick/mtg-deck-testing-lab/docs/testing/ai-destruction-reuse.md": {
     "mtime": 1791159043.6273837,

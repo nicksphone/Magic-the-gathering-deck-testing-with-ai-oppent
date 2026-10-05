@@ -1,5 +1,16 @@
 # Changelog
 
+## Lethal Query Ordering And Tactical Review - 2026-10-05
+
+- Evaluate indestructible only when positive-toughness creatures have lethal
+  marked damage or a deathtouch mark; zero toughness remains lethal regardless.
+- 2,422 affected checks across 58 files pass, including 80 new both-seat query
+  and result cases. Retained action/state/17-move parity: 37.55 seconds versus
+  archived 51.48 seconds; interactive latency and expert AI remain unfinished.
+- Review the timing trace: Control passes instead of spending seven lands in
+  upkeep, then uses reserved mana to counter Expressive Iteration. This closes
+  the observed sequence, not all timing decisions or competitive strength.
+
 ## Deferred Forecast Scores And Natural Review - 2026-10-05
 
 - Skip intermediate stack scores discarded by valid reply evaluations, retaining

@@ -21,6 +21,8 @@ and [read-only layer query reuse](docs/testing/layer-query-reuse.md), plus
 [deferred forecast scores](docs/testing/deferred-forecast-scores.md), have
 affected-suite and retained-decision validation; these are not new full-suite
 or expert-play certifications.
+The shared [lethal-check ordering](docs/testing/lethal-query-order.md) also avoids
+unnecessary indestructible queries without changing destruction rules.
 
 Implementation scopes and remaining limits:
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)

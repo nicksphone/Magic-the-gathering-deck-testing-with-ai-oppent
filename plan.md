@@ -11,6 +11,11 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Lethal-check query ordering: 2,422 affected checks across 58 files pass;
+  undamaged/nonlethally damaged creatures avoid indestructible queries, while
+  zero toughness and deathtouch semantics remain covered. Retained full decision
+  parity: 37.55 seconds versus archived 51.48; latency remains unfinished.
+  See [scope](docs/testing/lethal-query-order.md).
 - [x] Deferred unused forecast scores: 1,107 affected checks across 18 files;
   eager-reference, both-seat and snapshot parity. Retained decision 51.48 seconds
   versus archived 55.64 seconds; interactive latency remains unfinished.
@@ -76,11 +81,13 @@ notes below do not require repeating unchanged predecessor gates.
   reconstructions pass; this milestone is integrated into main. Broaden
   colored/compound payment alternatives and decision-quality samples. See
   [scope](docs/testing/ai-resource-opportunity.md).
-- [ ] Investigate natural Tempo/Control seat-two decision 524: control cashes
+- [x] Investigate natural Tempo/Control seat-two decision 524: control cashes
   a seven-mana graveyard card-selection spell in opponent upkeep while holding
   two counters, instead of waiting for an appropriate later window. Scope the
   fix to general interaction reservation/instant timing, not a card-name rule.
-  The selection370 replay is deterministic; its outcome alone is not optimality.
+  The corrected natural trace passes at 524 and counters Expressive Iteration
+  at 530 using reserved mana. Both repeats reconstruct; this verifies the
+  observed sequence, not all counter timing or broader competitive strength.
 
 - [ ] Qualify resource-event follow-up: real-tap paths, pre-move graveyard watcher
   capture, batch/APNAP semantics and original-action stack ordering. 175

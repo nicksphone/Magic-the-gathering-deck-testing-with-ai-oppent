@@ -21,9 +21,11 @@ def creature_has_lethal_state(state: MatchState, card_id: str) -> bool:
     toughness = effective_combat_stats(state, card_id)[1]
     if toughness is None:
         return False
-    return toughness <= 0 or (not has_keyword(state, card_id, "indestructible") and (
-        int(card.counters.get(DMG_MARK_KEY, 0)) >= toughness
-        or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0))
+    if toughness <= 0:
+        return True
+    lethal_damage = (int(card.counters.get(DMG_MARK_KEY, 0)) >= toughness
+                     or int(card.counters.get(DEATHTOUCH_MARK_KEY, 0)) > 0)
+    return lethal_damage and not has_keyword(state, card_id, "indestructible")
 
 
 def _human_die_choice_required(state: MatchState, card_id: str) -> bool:
