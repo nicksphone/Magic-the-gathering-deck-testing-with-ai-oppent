@@ -604,6 +604,8 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
 
 def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [cid for player in state.players.values() for cid in player.graveyard])
     for player in state.players.values():
         for cid in list(player.graveyard):
             if is_departed_token(state.cards[cid]):
@@ -612,6 +614,7 @@ def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> N
             state.players[state.cards[cid].owner].exile.append(cid)
             state.cards[cid].move_to_zone(Zone.EXILE)
     state.log.append("All graveyards are exiled.")
+    emit_graveyard_departures(state, departures)
 
 
 def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> int:
@@ -1227,10 +1230,13 @@ def exile_from_graveyard(state: MatchState, controller: int, payload: dict) -> N
     owner = state.players[card.owner]
     if target not in owner.graveyard:
         return
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [target])
     owner.graveyard.remove(target)
     owner.exile.append(target)
     card.move_to_zone(Zone.EXILE)
     state.log.append(f'{card.name} is exiled from the graveyard.')
+    emit_graveyard_departures(state, departures)
 
 
 def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
@@ -1328,11 +1334,14 @@ def return_from_graveyard(state: MatchState, controller: int, payload: dict) -> 
                       or object_incarnation(card) != reference['incarnation']
                       or card.zone_change_sequence != reference['zone_sequence']):
         return
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [card_id])
     player.graveyard.remove(card_id)
     player.hand.append(card_id)
     card.move_to_zone(Zone.HAND)
     card.controller = card.owner
     state.log.append(f"{state.cards[card_id].name} returns from graveyard to hand.")
+    emit_graveyard_departures(state, departures)
 
 
 def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> None:
@@ -1417,6 +1426,8 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
         payload.setdefault('__return_life_loss', mana_value(card.mana_cost or ''))
     if prepare_counter_entries(state, controller, [card], 'return_creature_from_graveyard_to_battlefield', payload):
         return
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [target])
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
@@ -1428,6 +1439,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
     assign_static_order_on_battlefield_entry(state, target)
     commit_entry_counters(state, card, payload)
+    emit_graveyard_departures(state, departures)
     emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': controller})
     if payload.get('lose_life_equal_to_mana_value'):
         lose_life(state, controller, {'target_player': controller, 'amount': payload['__return_life_loss']})
@@ -1450,6 +1462,8 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
         return
     if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload):
         return
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [target])
     apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"))
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
@@ -1461,6 +1475,7 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
     commit_entry_counters(state, card, payload)
     card.summoning_sick = True
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
+    emit_graveyard_departures(state, departures)
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
 
 
@@ -1670,6 +1685,8 @@ def create_token(state: MatchState, controller: int, payload: dict) -> None:
         assign_static_order_on_battlefield_entry(state, cid)
     for index, token in enumerate(candidates):
         cid = token.id
+        if payload.get('tapped'):
+            token.tapped = True
         if tapped_and_attacking:
             token.tapped = True
             state.attackers.append(cid)
@@ -2324,16 +2341,14 @@ def emit_combat_damage_events(state: MatchState, controller: int, payload: dict)
 
 def tap_card(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
-    if target in state.cards:
-        state.cards[target].tapped = True
+    from rules_engine.resource_events import tap_permanents
+    tap_permanents(state, [target])
 
 
 def tap_all_opponent_creatures(state: MatchState, controller: int, payload: dict) -> None:
-    for player_id, player in state.players.items():
-        if player_id != controller:
-            for cid in player.battlefield:
-                if "Creature" in effective_types(state, state.cards[cid]):
-                    state.cards[cid].tapped = True
+    from rules_engine.resource_events import tap_permanents
+    tap_permanents(state, [cid for pid, player in state.players.items() if pid != controller
+                          for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])])
 
 
 def untap_card(state: MatchState, controller: int, payload: dict) -> None:

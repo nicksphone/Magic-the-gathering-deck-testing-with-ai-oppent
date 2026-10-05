@@ -155,10 +155,12 @@ def attack_payment_state(state, ids, targets=None, hybrid_choices=None, payment_
     from rules_engine.continuous import has_keyword
     from rules_engine.mana import auto_pay_cost
     paid = deepcopy(state)
+    if not paid.trigger_staging:
+        paid.trigger_staging = True
+        paid.trigger_staging_event = 'declare_attackers'
     # Non-vigilant attackers tap before costs/mana abilities (CR 508.1f-i).
-    for cid in ids:
-        if not has_keyword(paid, cid, 'vigilance'):
-            paid.cards[cid].tapped = True
+    from rules_engine.resource_events import tap_permanents
+    tap_permanents(paid, [cid for cid in ids if not has_keyword(paid, cid, 'vigilance')])
     if not auto_pay_cost(paid, paid.active_player, view['mana_cost'],
                          payment_kind='combat', payment_types=set(), hybrid_choices=hybrid_choices,
                          payment_details=payment_details):

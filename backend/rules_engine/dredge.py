@@ -30,10 +30,13 @@ def resolve_dredge(state, controller: int, payload: dict) -> None:
         cid = player.library.pop()
         put_into_graveyard(state, cid)
         emit_event(state, "mill", {"card_id": cid, "controller": player_id})
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, [card_id])
     player.graveyard.remove(card_id)
     player.hand.append(card_id)
     state.cards[card_id].move_to_zone(Zone.HAND)
     state.log.append(f"{player.name} dredges {state.cards[card_id].name}, milling {option['count']} instead of drawing.")
+    emit_graveyard_departures(state, departures)
 
 
 def offer_dredge_choice(state, controller: int, payload: dict) -> bool:

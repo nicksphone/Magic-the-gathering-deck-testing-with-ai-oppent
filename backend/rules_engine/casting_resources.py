@@ -118,17 +118,20 @@ def apply_resource_payment(state, player_id, card, plan):
     if current != plan:
         return False
     player = state.players[player_id]
+    from rules_engine.resource_events import tap_permanents
+    tap_permanents(state, [cid for cid, _ in plan.convoke] + list(plan.improvise))
     for cid, _ in plan.convoke:
-        state.cards[cid].tapped = True
         state.log.append(f'{player.name} convokes with {state.cards[cid].name}.')
     for cid in plan.improvise:
-        state.cards[cid].tapped = True
         state.log.append(f'{player.name} improvises with {state.cards[cid].name}.')
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, plan.delve)
     for cid in plan.delve:
         player.graveyard.remove(cid)
         player.exile.append(cid)
         state.cards[cid].move_to_zone(Zone.EXILE)
         state.log.append(f'{player.name} delves {state.cards[cid].name}.')
+    emit_graveyard_departures(state, departures)
     return True
 
 

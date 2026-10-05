@@ -36,7 +36,7 @@ NAMED_ARTIFACT_TOKEN_RE = re.compile(r"create\s+(a|an|one|two|three|four|five|si
 TOKEN_REMINDER_ABILITY_RE = re.compile(r"\b(?:it's|they're|it is|they are)\s+(?:an?\s+)?artifacts?\s+with\s+[\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
 SAC_TOUGHNESS_TOKEN_RE = re.compile(r"if the sacrificed creature's toughness was (\d+) or greater, create (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) ([a-z]+) tokens? instead", re.IGNORECASE)
 TOKEN_NAME_RE = re.compile(
-    r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|x|\d+)\s+\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
+    r"create\s+(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|x|\d+)\s+(?:tapped\s+)?\d+/\d+\s+([a-z ]+?)\s+creature\s+tokens?",
     re.IGNORECASE,
 )
 TOKEN_CREATURE_ABILITY_RE = re.compile(r"creature tokens? with [\"\u201c]([^\"\u201d]+)[\"\u201d]", re.IGNORECASE)
@@ -1872,6 +1872,8 @@ def _infer_clause_effect(
             out["type_line"] = f"Token Creature — {token_name}"
         if "tapped and attacking" in oracle:
             out["tapped_and_attacking"] = True
+        if re.search(r'\bcreate\s+\S+\s+tapped\s+\d+/\d+\b', oracle):
+            out['tapped'] = True
         if re.search(r"\bfor each basic land type among lands you control\b", oracle):
             out["per_basic_land_type"] = True
         followup = re.search(r'(?:^|\.\s+)' + re.escape(oracle.rstrip(' .'))

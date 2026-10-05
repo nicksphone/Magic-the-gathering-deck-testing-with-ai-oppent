@@ -102,15 +102,18 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
     paid = attack_payment_state(state, legal, legal_targets, hybrid_choices)
     if paid is None:
         raise ValueError('Cannot pay the declared attack costs')
+    staged_here = not state.trigger_staging
     if paid is not state:
         state.__dict__.update(paid.__dict__)
+    if staged_here:
+        state.trigger_staging = True
+        state.trigger_staging_event = 'declare_attackers'
     # Chosen creatures sacrificed during mana activation never become attackers.
     legal = [cid for cid in legal if state.cards[cid].zone == Zone.BATTLEFIELD
              and state.cards[cid].controller == state.active_player and 'Creature' in effective_types(state, state.cards[cid])]
     legal_targets = {cid: target for cid, target in legal_targets.items() if cid in legal}
-    for cid in legal:
-        if not has_keyword(state, cid, "vigilance"):
-            state.cards[cid].tapped = True
+    from rules_engine.resource_events import tap_permanents
+    tap_permanents(state, [cid for cid in legal if not has_keyword(state, cid, 'vigilance')])
     state.attackers = legal
     state.declared_attackers_this_turn[state.active_player] += len(legal)
     state.attack_bands = [list(band) for band in bands if all(cid in legal for cid in band)]
@@ -135,6 +138,11 @@ def declare_attackers(state: MatchState, attacker_ids: list[str], attack_targets
                     "attack_group_first": index == 0,
                 },
             )
+
+
+    if staged_here:
+        from rules_engine.events import flush_staged_triggers
+        flush_staged_triggers(state)
 
 
 def declare_blockers(state: MatchState, blocks: dict[str, str | list[str]], hybrid_choices: list[str] | None = None,

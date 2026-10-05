@@ -262,7 +262,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     if selected is None:
         return False
     if cost.tap_source:
-        source.tapped = True
+        from rules_engine.resource_events import tap_permanents
+        tap_permanents(state, [source_id])
     if cost.pay_life:
         from rules_engine.replacement import pay_life
         if not pay_life(state, player_id, cost.pay_life):

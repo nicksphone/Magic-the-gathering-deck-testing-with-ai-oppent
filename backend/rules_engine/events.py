@@ -487,6 +487,9 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if event == 'becomes_tapped':
+        from rules_engine.resource_events import collect_tap_triggers
+        return collect_tap_triggers(state, payload)
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)

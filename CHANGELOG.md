@@ -1,13 +1,22 @@
 # Changelog
 
+## Resource Events (Candidate)
+
+- Shared real-tap transitions across costs, crew, combat and effects; preserve
+  entering-tapped semantics and stage triggers above original activations.
+- Pre-move graveyard watcher capture, batch/APNAP semantics and tapped tokens.
+- 175 overlapping regressions and eight HTTP/SQLite checks pass; full follow-up
+  qualification remains open. See [scope](docs/testing/resource-event-fidelity.md).
+  Main/live are unchanged.
+
 ## Casting Resources (Candidate)
 
 - Add shared explicit and automatic payment witnesses for delve, convoke and
   improvise, without producing mana or double-using selected mana sources.
 - Add strict resource input models, candidate response validation and deliberate
   both-seat hand controls. Retain actual mana-spent/resource receipts in snapshots.
-- 439 expanded checks and six new browser scenarios pass. Full qualification and
-  trigger/compound-cost/strategic fidelity remain open; main is unchanged.
+- Frozen ed61cd6: 8,603 backend tests across 345 files and complete browser
+  qualification pass. Trigger/compound-cost/strategic fidelity remains separate.
   See `docs/testing/cast-resource-payments.md`.
 
 ## Private Decision Comparison (Candidate)

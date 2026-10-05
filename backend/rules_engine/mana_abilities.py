@@ -172,7 +172,8 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
                 source_card_id=source_id, ability_kind='mana', ability_index=ability_index,
                 excluded_sources=set(excluded_sources) | {source_id}, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
             return False
-        card.tapped = True
+        from rules_engine.resource_events import tap_permanents
+        tap_permanents(state, [source_id])
     elif not apply_activated_costs(state, player_id, source_id, spec[1], ability_kind='mana', ability_index=ability_index, unavailable_resources=reserved_card_ids, protected_life=protected_life):
         return False
     # Amounts are determined after costs, including any resource departures.

@@ -39,12 +39,13 @@ ordinary public responses do not expose raw private stack payloads.
   and Reverse Engineer payment, selected resources, actual mana spent and reload.
   Receipt inspection uses disposable fixture endpoints, not public payload
   exposure. These flows are included in the default browser harness.
-- Frontend unit checks, lint and build pass. Full frozen qualification remains
-  separate; this is not a released feature or arbitrary-card rules certification.
+- Frontend unit checks, lint and build pass. Frozen ed61cd6 passes 8,603 backend
+  tests across 345 recursive files and the complete browser harness. This is not
+  a released feature or arbitrary-card rules certification.
 - Runtime `ed61cd6` is frozen for the complete recursive backend gate in four
   initially database-free copies (345 test files), plus the complete browser
-  harness. Those running gates are not reported as passed until terminal results
-  and source hashes are verified. Main/live remains `8eeecd1`.
+  harness. Terminal results and all 679 source hashes in each copy are verified.
+  Main/live remains `8eeecd1`.
 
 Initial tests caught an incorrect private helper invocation in the test driver;
 it was corrected to pass the existing cost-modifier arguments. Later actual-cast
@@ -56,7 +57,8 @@ visibility. No rules checks were weakened to make these tests pass.
 
 ## Remaining Acceptance
 
-- Complete the exact-source full backend and complete browser gates.
+- Retain completed exact-source backend/browser evidence; separately qualify
+  the [resource-event follow-up](resource-event-fidelity.md).
 - Connect resource tapping/graveyard departure to shared event-aware operations,
   with cost trigger staging, APNAP ordering and recovery. Canonical Emmara and
   Tormod data is retained for this next stage but is not evidence of working

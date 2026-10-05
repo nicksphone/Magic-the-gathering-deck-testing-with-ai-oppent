@@ -2,9 +2,16 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify resource-event follow-up: real-tap paths, pre-move graveyard watcher
+  capture, batch/APNAP semantics and original-action stack ordering. 175
+  overlapping checks and eight HTTP/SQLite cases pass; full frozen gate, wider
+  trigger semantics and natural tactical evaluation remain open. See
+  [acceptance](docs/testing/resource-event-fidelity.md).
+
 - [ ] Qualify the casting-resource candidate: shared ordinary delve/convoke/
   improvise witnesses, strict API, deliberate both-seat UI, 439 expanded checks
-  and six new browser flows pass. Complete frozen gates, event-aware tapping and
+  and six new browser flows pass. Frozen full backend (8,603 tests/345 files)
+  and complete browser gates pass. Event-aware tapping and
   graveyard departure, ordered compound costs, granted keyword/color fidelity
   and tactical AI choices remain open. See
   [acceptance](docs/testing/cast-resource-payments.md).

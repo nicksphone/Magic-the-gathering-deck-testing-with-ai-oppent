@@ -1003,10 +1003,13 @@ class RulesEngine:
                 if x_value > 0:
                     payload.setdefault("x_value", x_value)
 
+                from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+                departures = capture_graveyard_departures(state, escape_ids)
                 for exile_id in escape_ids:
                     player.graveyard.remove(exile_id)
                     player.exile.append(exile_id)
                     state.cards[exile_id].move_to_zone(Zone.EXILE)
+                emit_graveyard_departures(state, departures)
                 if casting_method(chosen.id) == "prototype":
                     from rules_engine.alternative_casts import apply_prototype
                     apply_prototype(card)
@@ -1030,9 +1033,12 @@ class RulesEngine:
                 if from_exile:
                     leave_exile(state, cid)
                 else:
+                    departures = capture_graveyard_departures(state, [cid]) if from_graveyard else []
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                if not from_exile:
+                    emit_graveyard_departures(state, departures)
                 if from_exile and was_foretold:
                     card.was_foretold = True
                     payload['__was_foretold'] = True
@@ -1324,12 +1330,19 @@ class RulesEngine:
                 and sum(max(0, effective_power(state, cid)) for cid in selected) >= required
             )
             if valid:
+                crew_staging = not state.trigger_staging
+                if crew_staging:
+                    state.trigger_staging = True
+                    state.trigger_staging_event = 'crew_activation'
                 if not auto_pay_cost(state, player_id, '', payment_kind='activation', payment_types=set(effective_types(state, vehicle)),
                         source_card_id=vehicle_id, ability_kind='crew', excluded_sources=set(selected)):
+                    if crew_staging:
+                        state.staged_triggers.clear()
+                        state.trigger_staging = False
                     reject('Cannot pay crew activation mana costs')
                     return
-                for cid in selected:
-                    state.cards[cid].tapped = True
+                from rules_engine.resource_events import tap_permanents
+                tap_permanents(state, selected)
                 add_to_stack(
                     state, source_card_id=vehicle_id, controller=player_id,
                     label=f"{vehicle.name} crew", effect_key="crew_vehicle",
@@ -1337,6 +1350,9 @@ class RulesEngine:
                              "crew_card_ids": selected}, is_spell=False,
                 )
                 state.log.append(f"{player.name} taps {len(selected)} creature(s) to crew {vehicle.name}.")
+                if crew_staging:
+                    from rules_engine.events import flush_staged_triggers
+                    flush_staged_triggers(state)
             else:
                 reject("Crew selection does not satisfy the activation cost")
 
