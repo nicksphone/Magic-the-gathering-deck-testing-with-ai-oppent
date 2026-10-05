@@ -22,6 +22,32 @@ SECONDARY_EFFECT_RE = re.compile(
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
 _immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
+POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
+POSITION_SCORE_CACHE_ENTRIES = 256
+
+
+def reuse_position_score(state, player_id, owner, compute):
+    """Reuse exact states only within one synchronous, fixed-profile decision."""
+    scope = _decision_projection.get()
+    if scope is None:
+        return compute()
+    cache = scope[2].setdefault('position_scores', {'values': {}, 'bytes': 0, 'owners': {}})
+    try:
+        # Include every gameplay/AI field, including RNG and opaque information.
+        # planning_copy excludes only diagnostic history unused by search.
+        encoded = pickle.dumps(planning_copy(state), protocol=5)
+    except (pickle.PicklingError, TypeError, AttributeError):
+        return compute()
+    key = (id(owner), player_id, encoded)
+    if key in cache['values']:
+        return cache['values'][key]
+    result = compute()
+    if (len(cache['values']) < POSITION_SCORE_CACHE_ENTRIES
+            and cache['bytes'] + len(encoded) <= POSITION_SCORE_CACHE_BYTES):
+        cache['values'][key] = result
+        cache['bytes'] += len(encoded)
+        cache['owners'][id(owner)] = owner
+    return result
 
 
 @contextmanager

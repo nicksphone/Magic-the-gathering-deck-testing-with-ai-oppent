@@ -16,6 +16,9 @@ and instant-window reservation, ordinary/limited graveyard permissions, announce
 prototype/bestow checks and fixed color/type cost modifiers. The consolidated
 runtime passed the full backend and browser gates and is deployed locally.
 See [integration evidence and limits](docs/testing/backend-consolidation.md).
+Subsequent [exact strategic score reuse](docs/testing/ai-exact-score-reuse.md)
+has affected-suite and retained-decision validation; it is not a new full-suite
+or expert-play certification.
 
 Implementation scopes and remaining limits:
 - [Casting resources and human choices](docs/testing/cast-resource-payments.md)

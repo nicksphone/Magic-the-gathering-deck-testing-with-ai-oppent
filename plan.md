@@ -2,18 +2,19 @@
 
 ## Current Execution Order
 
-1. Optimize repeated read-only AI scoring using the existing query scope.
-   Validate score equality, mutation isolation and complete decisions from the
-   retained slow Tribal position before claiming a latency improvement.
-2. Reduce repeated nested stack forecasting/state-based work without pruning
+1. Reduce repeated nested stack forecasting/state-based work without pruning
    legal responses, using retained positions and focused rules/AI regressions.
-3. Review the existing natural timing/graveyard runs when they finish. Do not
+2. Review the existing natural timing/graveyard runs when they finish. Do not
    replace live runs or queue a new broad matrix for every supported clause.
-4. Continue the original rules/AI/release gates below: conditional/compound
+3. Continue the original rules/AI/release gates below: conditional/compound
    semantics, affordable multi-action planning, restart behavior, network posture
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Decision-local exact score reuse and read-only scan scopes: 1,087 affected
+  AI checks pass; retained full action/state parity, 80.95 to 65.77 seconds for
+  one position. This is not a general latency or professional-play guarantee.
+  See [scope](docs/testing/ai-exact-score-reuse.md).
 - [x] Qualified resource payments/events and AI opportunity milestone on main.
 - [x] Consolidated timing/graveyard/announced-method/color-cost runtime on main.
   Frozen `91b5dff`: 8,878 backend tests, 359 recursive files exactly once,

@@ -1,5 +1,16 @@
 # Changelog
 
+## Bounded Strategic Score Reuse - 2026-10-05
+
+- Reuse exact strategic score inputs within one decision, capped at 256 entries
+  and 16 MiB; ordinary scoring remains the fallback. Preserve RNG, priority,
+  opaque information and agent/actor separation.
+- Share queries only across immutable scoring/scan sections, not departures.
+- 1,087 affected AI checks pass. The scan increment passes 1,332 direct-caller
+  checks; selections overlap and do not claim a new full regression total.
+- One retained complete decision falls from 80.95 to 65.77 seconds with the
+  same action and unchanged state. Interactive latency remains unfinished.
+
 ## Consolidated Backend Milestone - 2026-10-05
 
 - Integrate timing reservation, ordinary/limited graveyard permissions,

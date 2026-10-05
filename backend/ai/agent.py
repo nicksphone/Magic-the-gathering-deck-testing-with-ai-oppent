@@ -897,12 +897,19 @@ class AIAgent:
         return my_bf + opp_bf >= 10 or both_hands >= 10 or stack_size >= 2 or turn >= 10
 
     def _strategic_position_score(self, state: MatchState, player_id: int) -> float:
+        from ai.pending_effects import reuse_position_score
+        return reuse_position_score(state, player_id, self,
+                                   lambda: self._uncached_strategic_position_score(state, player_id))
+
+    def _uncached_strategic_position_score(self, state: MatchState, player_id: int) -> float:
         from ai.pending_effects import settled_public_position
+        from rules_engine.query_context import rule_query_scope
         # Value a pending announcement at the horizon without removing responses
         # from the real search state or guessing unresolved/hidden-zone choices.
         projected = settled_public_position(state, player_id, opaque_draw_counts=True)
         position = projected if projected is not None else state
-        return evaluate_board(position, player_id) + self._strategic_features(position, player_id)
+        with rule_query_scope(position):
+            return evaluate_board(position, player_id) + self._strategic_features(position, player_id)
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:

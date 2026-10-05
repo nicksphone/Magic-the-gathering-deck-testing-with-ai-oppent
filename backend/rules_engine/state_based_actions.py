@@ -8,6 +8,7 @@ from rules_engine.events import emit_event, emit_event_batch, was_creature_on_ba
 from rules_engine.continuous import effective_toughness, effective_combat_stats, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
 from rules_engine.zone_actions import put_into_graveyard
+from rules_engine.query_context import rule_query_scope
 
 DMG_MARK_KEY = "__damage_marked"
 DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
@@ -15,7 +16,7 @@ DEATHTOUCH_MARK_KEY = "__deathtouch_damaged"
 
 def creature_has_lethal_state(state: MatchState, card_id: str) -> bool:
     card = state.cards[card_id]
-    if "Creature" not in effective_types(state, card) or card.zone != Zone.BATTLEFIELD:
+    if card.zone != Zone.BATTLEFIELD or "Creature" not in effective_types(state, card):
         return False
     toughness = effective_combat_stats(state, card_id)[1]
     if toughness is None:
@@ -153,12 +154,14 @@ def apply_state_based_actions(state: MatchState) -> None:
     # A source leaving the battlefield can make another permanent illegal or
     # lethal. No trigger gets a stack position until those waves stabilize.
     for _ in range(len(state.cards) + 1):
-        before = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        with rule_query_scope(state):
+            before = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
         if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
-        after = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        with rule_query_scope(state):
+            after = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         if after == before:
             break
     from rules_engine.events import flush_staged_triggers
@@ -201,26 +204,28 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
             if state.winner == 0:
                 state.log.append("Both players lose simultaneously; the game is a draw.")
 
+    # Reuse only this immutable scan; discard queries before any departures.
+    with rule_query_scope(state):
+        lethal_candidates = [cid for cid in state.cards if creature_has_lethal_state(state, cid)]
     lethal_ids: list[str] = []
-    for cid, card in list(state.cards.items()):
-        if "Creature" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD:
-            if creature_has_lethal_state(state, cid):
-                options = replacement_options(state, "die_zone", target_card_id=cid)
-                if _human_die_choice_required(state, cid) and len(options) > 1:
-                    state.pending_replacement_choice = {
-                        "resume_kind": "state_based_die",
-                        "player_id": card.controller,
-                        "event": "die_zone",
-                        "target_card_id": cid,
-                        "options": options,
-                    }
-                    state.priority_player = card.controller
-                    state.passed_priority = set()
-                    state.log.append(
-                        f"Replacement choice required for lethal state-based action; {state.players[card.controller].name} must choose one of {len(options)} effects."
-                    )
-                    return
-                lethal_ids.append(cid)
+    for cid in lethal_candidates:
+        card = state.cards[cid]
+        options = replacement_options(state, "die_zone", target_card_id=cid)
+        if _human_die_choice_required(state, cid) and len(options) > 1:
+            state.pending_replacement_choice = {
+                "resume_kind": "state_based_die",
+                "player_id": card.controller,
+                "event": "die_zone",
+                "target_card_id": cid,
+                "options": options,
+            }
+            state.priority_player = card.controller
+            state.passed_priority = set()
+            state.log.append(
+                f"Replacement choice required for lethal state-based action; {state.players[card.controller].name} must choose one of {len(options)} effects."
+            )
+            return
+        lethal_ids.append(cid)
     if lethal_ids:
         _resolve_lethal_creature_batch(state, lethal_ids)
 
