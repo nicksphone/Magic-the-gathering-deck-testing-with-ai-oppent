@@ -43,8 +43,8 @@ are not part of this batch. More complex compound cost syntax remains outside
 the supported parser. An explicit resource consumed by automatic mana planning
 is rejected atomically. The separately qualified
 [joint planner](joint-activation-payment.md) repairs the reproduced Lotus Petal/
-Trading Post selected-resource ordering gap. Nested mana life budgets remain
-under isolated repair.
+Trading Post selected-resource ordering gap. The separately qualified
+[life-budget planner](nested-mana-life-budget.md) repairs nested life reservations.
 Sacrifice/death rewards, impending losses and richer strategic resource value
 need deeper planning and actual-game evidence. This batch does not establish
 arbitrary-card rules fidelity, expert AI, accessibility or network release safety.

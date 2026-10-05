@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased Candidate - Nested mana life budgets
+## 2026-10-05 - Nested mana life budgets
 
 - Track life expenditure across ordinary and snow mana source selection;
   protect outer life costs while funding nested paid mana abilities.
@@ -10,7 +10,10 @@
   engine/AI/HTTP coverage: 505 passed, including four new HTTP recovery cases,
   paid Cabal Coffers funding, alternative painless sources and both-seat AI
   materialization in ten style labels. Six focused browser cases pass.
-- Full backend/browser qualification is pending; broader output alternatives,
+- Exact runtime `e02adbe`: 8,209 passed across all 332 recursive backend files,
+  649 matching source hashes, and the full browser suite in all three BO3 modes.
+  The later `c56c50f` changes file modes only, not tested content.
+- Broader output alternatives,
   dynamic cost-changing mana effects and strategic life valuation remain open.
 
 ## 2026-10-05 - Joint activation mana/resource planning
@@ -21,8 +24,8 @@
 - Exact runtime `1d8fa7a`: 8,159 tests pass across all 330 recursive files with
   644 matching source/fixture hashes, plus the complete browser gate in all
   three natural BO3 modes. Eight focused browser and four new HTTP cases pass.
-- Nested mana life budgets remain a known separate gap, not hidden by this
-  qualification. Richer resource strategy and wider cost grammar remain open.
+- Nested mana life budgets are repaired by the separately qualified follow-up
+  above. Richer resource strategy and wider cost grammar remain open.
 
 ## 2026-10-05 - Deliberate activated payments
 

@@ -38,7 +38,8 @@ This is heuristic resource planning, not expert strategy or a complete cost solv
   pass across all 330 recursive files; 644 backend source/fixture hashes match
   every shard. Complete browser gate passes, including all three natural BO3
   controller modes. Initial databases were absent; frontend matches the tested
-  frozen source. Qualification does not close the nested-life gap below.
+  frozen source. Nested life budgets are repaired by the separately qualified
+  [life-budget follow-up](nested-mana-life-budget.md), not this earlier runtime.
 
 New Lotus Petal and Phyrexian Tower fixtures retain raw Scryfall responses with
 URLs, retrieval times and SHA-256 provenance. Trading Post and Mind Stone use
@@ -47,7 +48,7 @@ existing canonical fixtures. Crafted positions are not natural-match evidence.
 ## Remaining Limits
 
 Compound cost grammar, deliberate mana-ability/cycling/ward payment controls,
-joint life budgets across nested mana production, arbitrary instructions and
+dynamic mana-production changes, arbitrary instructions and
 richer sacrifice-trigger/impending-loss strategy remain open. Combination search
 is lazy but may be expensive in resource-heavy boards; full regression and
 real-game timing/decision traces must measure that risk. Independent source

@@ -1,18 +1,19 @@
 # MTG Deck Testing Lab
 
-An isolated follow-up reserves life across nested mana production and outer
+Shared payment planning reserves life across nested mana production and outer
 activation/Phyrexian costs, searches life-aware ordinary/snow payment paths,
 and rejects unpaid activation life costs. Latest targeted selection: 505 checks;
 six focused browser cases and four new HTTP recovery cases pass. Exact-source
-full qualification remains pending; see
+full qualification passes 8,209 tests in all 332 recursive files with 649 matching
+backend hashes, plus the complete browser gate in all three BO3 modes. See
 [nested life-budget scope](docs/testing/nested-mana-life-budget.md).
 
 Shared activation/mana planning preserves selected nonmana resources, allows
 legal tap-then-sacrifice sequences and searches jointly payable automatic
 choices. AI checks resource feasibility and ranks feasible losses. Exact runtime
 qualification: 8,159 backend tests across all 330 files with 644 matching source
-hashes and the complete browser gate in all three BO3 modes. Nested life costs
-remain a reproduced gap under isolated repair; see
+hashes and the complete browser gate in all three BO3 modes. Nested life budgets
+are repaired by the separately qualified follow-up above; see
 [joint payment scope](docs/testing/joint-activation-payment.md).
 
 The application exposes deliberate discard and sacrifice choices
@@ -23,8 +24,8 @@ Eighty targeted checks and six focused browser payment/reload cases pass;
 frontend tests, lint and build pass. The exact runtime passes 8,133 backend
 tests across all 328 files with 639 verified source/fixture hashes and the
 complete browser gate in all three BO3 controller modes. Selected-resource
-ordering is repaired by the qualified planner above; nested life budgets remain
-under isolated repair.
+ordering and nested life budgets are repaired by the qualified planners above;
+other action families and dynamic output alternatives remain open.
 See [activation payment scope](docs/testing/activation-payment-choices.md).
 
 The shared engine applies recognized casting/activation life and creature

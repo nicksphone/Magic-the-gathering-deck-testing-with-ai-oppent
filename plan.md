@@ -6,11 +6,15 @@
   Exact runtime passes 8,159 tests in all 330 files with 644 matching backend
   hashes and the complete browser gate in all three BO3 modes. Preserve selected
   resources, allow tap-only use and choose feasible automatic/AI alternatives.
-- [ ] Qualify [nested mana life budgets](docs/testing/nested-mana-life-budget.md).
+- [x] Qualify [nested mana life budgets](docs/testing/nested-mana-life-budget.md).
   Canonical four-failure reproduction is repaired by shared source-selection
   budgets and protected outer life. Latest selection passes 505 checks, four
-  new HTTP recovery cases and six focused browser cases. Freeze and run exact
-  full backend/browser gates; extend real-game timing and decision evidence.
+  new HTTP recovery cases and six focused browser cases. Exact runtime passes
+  8,209 tests in all 332 files with 649 matching hashes and the full browser
+  harness in all three BO3 modes.
+- [ ] Extend real-game timing and decision evidence. A paired-seed Drain/Tribal
+  replay is running on pinned canonical inputs; successful decision-trace export
+  and stable catalog refresh are separate candidates under targeted validation.
 
 - [x] Qualify [deliberate activated payments](docs/testing/activation-payment-choices.md).
   Shared ordinary activation resource selection, strict HTTP validation, both
@@ -18,7 +22,7 @@
   targeted checks. Exact source passes 8,133 tests in all 328 recursive files
   with 639 verified source/fixture hashes and the full browser harness across
   all three BO3 modes. Selected-resource ordering is repaired by the separately
-  qualified joint planner; nested life budgets and other action families remain open.
+  qualified joint and life-budget planners; other action families remain open.
 
 - [x] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
   Batch casting/activation life and sacrifice prohibitions, effective-source

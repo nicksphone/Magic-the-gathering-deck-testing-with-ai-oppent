@@ -36,7 +36,14 @@ this is not a new rule that life must stay above zero.
   actual funded payment, and exact paid-stack restore.
 - Six focused browser cases pass: four new low/funded life cases in both seats
   and the two preceding deliberate joint-resource scenarios.
-- Full exact-source backend and complete browser qualification is pending.
+- Exact frozen runtime `e02adbe765037e2956549a566123212c215f55a0` passes
+  8,209 tests across all 332 recursive files. Each file ran once; all four
+  isolated sources match 649 backend/fixture hashes and started without a DB.
+- Complete browser qualification passes, including natural AI, human-vs-AI
+  and human-vs-human BO3. Frontend test/lint/build gates pass. `c56c50f` only
+  removes executable file modes; runtime/test bytes remain unchanged.
+- A paired-seed Drain/Tribal replay is still running; it is not evidence of
+  completed broader decision-quality analysis or expert-level play.
 
 Mana Confluence and Snow-Covered Swamp fixtures retain unchanged raw Scryfall
 responses, URLs, retrieval times and SHA-256 provenance. Erebos, Dismember,
