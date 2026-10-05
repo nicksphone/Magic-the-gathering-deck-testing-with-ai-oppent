@@ -196,8 +196,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     sacrifice_ids: list[str] = []
     if cost.sacrifice_source:
         sacrifice_ids.append(source_id)
+    candidates = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
     sacrifice_ids.extend(
-        cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
+        cid for cid in sorted(candidates, key=lambda cid: cid == source_id)
         if not cost.sacrifice_source or cid != source_id
     )
     needed = cost.sacrifice_creatures

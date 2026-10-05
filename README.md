@@ -2,9 +2,10 @@
 
 The next isolated backend candidate shares casting/activation life and creature
 sacrifice prohibitions across payment paths, preserves other payment contexts,
-and fixes actual source sacrifice for generic creature costs. Its 495 selected
-checks include six HTTP/SQLite recovery cases. Full source/browser qualification
-is running; this candidate is not live. See
+and fixes actual source sacrifice for generic creature costs. A full-gate
+selection regression was repaired; the latest source passes 292 selected checks,
+including six HTTP/SQLite cases and both source/fodder payment cases. A fresh
+complete gate is required; this candidate is not live. See
 [scope and evidence](docs/testing/contextual-cost-prohibitions.md).
 
 The shared rules engine repairs printed life restrictions after their

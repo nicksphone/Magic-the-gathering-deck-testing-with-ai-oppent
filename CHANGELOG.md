@@ -8,9 +8,11 @@
 - Admit supported symbol-free activation costs and repair actual generic
   sacrifice payment so the ability source can be sacrificed when eligible.
 - Preserve exhaustive sacrifice requirements and noncreature artifact choices.
-  Latest selection: 495 checks, six HTTP/SQLite cases and five query regressions.
-  All 634 integrated backend source/fixture files match the frozen candidate.
-  Full/backend browser qualification remains running; no release claim yet.
+  Initial selection: 495 checks, six HTTP/SQLite cases and five query regressions.
+- Repair the full-gate selection regression: default generic sacrifice prefers
+  another eligible creature, while retaining legal self-sacrifice when needed.
+  Latest source passes 292 selected checks, including both canonical choices
+  and the existing legal-move regression. Fresh full qualification is required.
 
 ## 2026-10-05 - Effective printed life restrictions and query performance
 

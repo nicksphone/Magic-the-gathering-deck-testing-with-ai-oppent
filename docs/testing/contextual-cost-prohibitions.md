@@ -52,6 +52,21 @@ on those cards.
 
 ## Remaining Acceptance
 
+## Full-Gate Selection Follow-up
+
+The first full gate exposed an existing default-choice contract: when another
+eligible creature is available, generic sacrifice payment should not immediately
+consume its own ability source. The original repair made self-sacrifice legal
+but changed that default. The corrected shared payment stably orders the source
+after other candidates, without forbidding self-sacrifice when necessary.
+Both-seat canonical Seer fixtures verify both choices. The unchanged existing
+legal-move regression and six paid HTTP/recovery cases also pass; the latest
+selection passes 292 checks across ten files. This newer source requires a fresh
+full gate; the prior 495 checks and failing full run do not certify it. Explicit
+strategic/human sacrifice selection remains outside this automatic-choice repair.
+
+## Remaining Acceptance
+
 Run the complete latest-source backend gate and browser/action integration;
 retain deterministic game/decision evidence where these families are exercised.
 Conditional prohibitions, broader costs, granted/rewritten printed semantics and

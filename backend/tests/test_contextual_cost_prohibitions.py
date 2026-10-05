@@ -85,6 +85,19 @@ def test_generic_creature_sacrifice_cost_can_consume_the_ability_source(seat):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
+def test_automatic_generic_sacrifice_preserves_source_when_other_creature_exists(seat):
+    state, angel, payer = position(seat, 3-seat, 'sacrifice_activation')
+    fodder = canonical(state, 'viscera-seer', seat)
+    add_keyword_effect(state, angel.id, ['all abilities'], operation='remove', until_end_of_turn=True)
+    state = checked_action(state, RulesEngine(), seat,
+                           {'type': 'activate_ability', 'card_id': payer.id, 'ability_index': 0})
+    assert len(state.stack) == 1
+    assert payer.id in state.players[seat].battlefield
+    assert fodder.id in state.players[seat].graveyard
+    assert fodder.id not in state.players[seat].battlefield
+
+
+@pytest.mark.parametrize('seat', [1, 2])
 def test_phyrexian_spell_can_use_mana_instead_of_forbidden_life_payment(seat):
     state, _, payer = position(seat, 3-seat, 'phyrexian_spell')
     state.players[seat].mana_pool['B'] = 2

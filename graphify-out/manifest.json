@@ -592,8 +592,8 @@
     "hash": "3db9c95e1cf0fc9edf070d83386e5971"
   },
   "/home/nick/mtg-context-payment-integration/backend/tests/test_contextual_cost_prohibitions.py": {
-    "mtime": 1791180184.4670353,
-    "hash": "28674e8bc453960e97688208830cfa02"
+    "mtime": 1791180339.5966623,
+    "hash": "1042e54ed7c12f6df361499219f3ed34"
   },
   "/home/nick/mtg-context-payment-integration/backend/tests/test_sacrifice_lookback.py": {
     "mtime": 1791180184.3710368,
@@ -1784,8 +1784,8 @@
     "hash": "07dc3a93610af0345ba65545ed642a9e"
   },
   "/home/nick/mtg-context-payment-integration/backend/rules_engine/costs.py": {
-    "mtime": 1791180184.4660354,
-    "hash": "7020f0f1a101ade580ee072b02e4f7a8"
+    "mtime": 1791180339.5956624,
+    "hash": "1db45f4bb95d635609051c71c3d2b63d"
   },
   "/home/nick/mtg-context-payment-integration/backend/rules_engine/combat_requirements.py": {
     "mtime": 1791180184.3270376,
@@ -2380,16 +2380,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-context-payment-integration/README.md": {
-    "mtime": 1791180199.0908122,
-    "hash": "abfd18aedf4d1714f2256f62fb7642db"
+    "mtime": 1791180398.8447526,
+    "hash": "2622340581f1b1ca256ea6ffaf37e630"
   },
   "/home/nick/mtg-context-payment-integration/plan.md": {
-    "mtime": 1791180199.0938122,
-    "hash": "d62748a5a5648cf777e2cbb1d1c08f5c"
+    "mtime": 1791180398.8477526,
+    "hash": "bc859ab7bf4ce0762886ee5cc1ff655d"
   },
   "/home/nick/mtg-context-payment-integration/CHANGELOG.md": {
-    "mtime": 1791180199.0928123,
-    "hash": "ae015f063b9808e654ee47c903a48c8a"
+    "mtime": 1791180398.8457525,
+    "hash": "360f68ee128bd0fb678cb221d2cd2564"
   },
   "/home/nick/mtg-context-payment-integration/backend/requirements.txt": {
     "mtime": 1791180184.3260374,
@@ -2636,8 +2636,8 @@
     "hash": "4d49cb00ed182eb61f3f8f978eac875d"
   },
   "/home/nick/mtg-context-payment-integration/docs/testing/contextual-cost-prohibitions.md": {
-    "mtime": 1791180185.1890242,
-    "hash": "1539e03c6af5e5505f6d3c0e4b929fa2"
+    "mtime": 1791180398.8477526,
+    "hash": "189e3c77892f712cb65b8eb70136c40d"
   },
   "/home/nick/mtg-context-payment-integration/docs/testing/linked-controller-targets.md": {
     "mtime": 1791180184.3830366,
