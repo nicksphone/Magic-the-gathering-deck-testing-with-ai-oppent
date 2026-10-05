@@ -138,11 +138,11 @@ Twincast is in the graveyard, and only the copied spell resolves to the expected
 effective stats or life total. The test harness includes these cases by default.
 This is focused browser acceptance, not another complete browser run.
 
-A fresh seed/seat-balanced capability matrix is running against this latest
-frozen backend. It replaces four Memory Deluge with four canonical Twincast in
+The retained seed/seat-balanced capability matrix completed against its frozen
+backend; before/after recipient evidence is recorded in the beneficiary report. It replaces four Memory Deluge with four canonical Twincast in
 the previously validated 60-card control exercise. No other card metadata changes,
 no forced hands or target win rate, and no competitive-deck claim. Retained
-decisions and actual copy use require inspection before promotion.
+actions were inspected and all before/after executions strictly reconstruct.
 
 ## Subsequent Original-Spell Beneficiary Repair
 
@@ -159,9 +159,12 @@ pump branches fix recipient polarity without naming cards. Unknown history may
 supply only the common beneficial polarity, never a guessed pump amount. Both
 seats/four style labels, actual paid checked resolution, copy targeting, public
 forecasts and older pending interaction fixtures pass 97 overlapping checks.
-The new 318-file full gate runs in separate frozen checkouts; its result and
-post-fix natural games remain outstanding. Earlier 7,760-test and natural-copy
-evidence must not be relabeled as qualification of these subsequent edits.
+The original-recipient 318-file gate passes 7,797 tests. Its post-fix natural
+games reduce wrong beneficial originals from eight to zero. The subsequent
+damage/caster-gain repair passes a separate 7,829-test exact-source gate, full
+browser acceptance and fresh strictly reconstructed capability games. See
+[latest scope and evidence](beneficiary-polarity.md); earlier results are not
+relabeled as proof of subsequent edits.
 
 ## Evidence Sources
 

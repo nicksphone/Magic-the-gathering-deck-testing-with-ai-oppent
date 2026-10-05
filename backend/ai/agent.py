@@ -3045,17 +3045,17 @@ class AIAgent:
             else:
                 out['targets'] = selected
             return out
+        target_text = str(targets.get("mode_text") or move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
         player_targets = hints.get("player_targets") or []
         if player_targets and targets.get("target_player") is None and not targets.get("target_card_id"):
             allowed_players = {int(target["id"]) for target in player_targets}
-            if "gain" in tags and "drain" not in tags:
+            if re.search(r"\btarget player gains\b[^.\n]*\blife\b", target_text) and "drain" not in tags:
                 preferred = player_id
             else:
                 preferred = opponent
             targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)
 
         creature_targets = hints.get("creature_targets") or []
-        target_text = str(targets.get("mode_text") or move.get("ability_label") or getattr(card, "oracle_text", "") or "").lower()
         if (re.search(r"return target[^.\n]+to its owner's hand", target_text)
                 and not targets.get('target_card_id') and not targets.get('target_card_ids')):
             bounce_targets = {target['id']: target for key in ('creature_targets', 'planeswalker_targets',

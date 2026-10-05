@@ -1,0 +1,19 @@
+{
+  "source": "Canonical Scryfall responses retained verbatim; no Oracle edits",
+  "cards": [
+    {
+      "name": "Lightning Helix",
+      "filename": "lightning-helix.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Lightning%20Helix",
+      "fetched_at": "2026-10-05T03:43:19.400Z",
+      "sha256": "2c642e23711a222966bb3ef640a669c453cb8efab38aa51ef100dbfaea95ff4b"
+    },
+    {
+      "name": "Essence Drain",
+      "filename": "essence-drain.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Essence%20Drain",
+      "fetched_at": "2026-10-05T03:43:19.829Z",
+      "sha256": "18e388d0d71c944bcb174f4b637ed1b58ca939e11ac3996e2d0a24707bb52882"
+    }
+  ]
+}

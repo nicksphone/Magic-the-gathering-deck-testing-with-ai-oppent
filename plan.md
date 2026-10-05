@@ -2,13 +2,22 @@
 
 ## Current Priority: Backend First
 
-- [ ] Qualify the beneficial original-spell targeting repair exposed by the fresh
-  copy matrix. Canonical pump/life cases reproduce 27 failures and nine passes
-  before correction. Shared life-gain tagging and structural conditional pump
-  polarity now pass 97 overlapping checks, including both seats/four style labels,
-  actual checked resolution and unknown-history immutability. A separate frozen
-  318-file full backend gate is running. Complete its exact-source verification
-  and fresh post-fix seeded games; the earlier copy matrix is pre-fix evidence.
+- [x] Qualify supported complete fixed damage/caster-gain instructions and
+  semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,
+  606 matching backend source/fixture files; full browser and integration frontend
+  test/lint/build pass. Four fresh Boros/Dimir capability games have 3,414 logical
+  decisions, eight matching repeats/strict reconstructions and 22 checked caster
+  gain resolutions. Complex qualified/variable clauses remain unsupported.
+  [Scope and evidence](docs/testing/beneficiary-polarity.md).
+
+- [x] Verify beneficial original-spell targeting with identical seed/seat inputs.
+  Four logical games per stage reduce harmful beneficiary choices from eight to
+  zero; all sixteen before/after executions strictly reconstruct. The subsequent
+  latest full gate includes these repairs. This is not expert-player evidence.
+
+- [ ] Publish the qualified landfall/copy/beneficiary integration, verify live
+  startup and archive completed evidence on the mounted NFS share. Do not confuse
+  candidate qualification with live deployment or universal rules completion.
 
 - [ ] Finish [linked conditional damage](docs/testing/linked-controller-targets.md).
   Complete-pair admission, exclusive damage amounts, captured recipients and
@@ -30,8 +39,9 @@
   602 backend source/fixture files identical across candidate and four shards.
   Eight paid human browser cases pass both seats and ordinary/enhanced branches,
   including deliberate retarget, reload, untouched original and copy resolution.
-  Current-source retained natural copy games are running; their actual card use
-  and strict reconstruction still require review.
+  Retained natural copy games now complete with matching strict reconstruction;
+  before/after beneficiary analysis is linked above. Latest exact-source gates
+  include these repairs; broader copy strategy remains open.
   The earlier four-game matrix has 2,217 logical decisions, eight matching strict
   reconstructions and actual casts of all four landfall families; it is not
   evidence of these subsequent copy repairs or competitive balance.
@@ -48,7 +58,8 @@
   after the current AI acceptance gates. Ordered modifier selection and copied
   target continuations are published after 7,569 tests, full browser acceptance
   and four capability games/eight strictly reconstructed executions. Linked
-  damage/landfall remains an independent candidate, not a live repair. Share target
+  damage/landfall is qualified for the documented bounded families; publication
+  and live deployment remain separate steps. Share target
   instances, controller dependencies and partial-resolution validation across
   rules, API, AI and human actions; do not add card-name-only exceptions.
 
