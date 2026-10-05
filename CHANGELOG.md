@@ -1,5 +1,18 @@
 # Changelog
 
+## Deferred Forecast Scores And Natural Review - 2026-10-05
+
+- Skip intermediate stack scores discarded by valid reply evaluations, retaining
+  every existing reply branch and fallback. 1,107 affected checks across 18 files
+  pass, including twenty new eager-reference/both-seat/snapshot checks.
+- Retained decision preserves action and 17 legal moves: 51.48 seconds versus
+  archived 55.64 seconds. No general latency or stronger-play claim.
+- Reject an exact forecast cache after observing zero hits in 42 calls.
+- Finish timing and ordinary-graveyard natural reconstruction review, with six
+  unique seeded games each repeated twice. No reported determinism failures or
+  anomalies; one timing matchup changes consistently and needs tactical review.
+- Reconcile stale qualification notes; preserve active limited-graveyard jobs.
+
 ## Read-Only Layer Query Reuse - 2026-10-05
 
 - Reuse printed suppression and static-subject scalar queries within immutable

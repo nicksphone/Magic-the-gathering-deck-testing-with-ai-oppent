@@ -11,6 +11,15 @@
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Deferred unused forecast scores: 1,107 affected checks across 18 files;
+  eager-reference, both-seat and snapshot parity. Retained decision 51.48 seconds
+  versus archived 55.64 seconds; interactive latency remains unfinished.
+  See [scope](docs/testing/deferred-forecast-scores.md).
+- [x] Review completed timing and ordinary-graveyard natural runs: six unique
+  seeded games per increment, repeated twice; all twelve reconstructions match
+  and no reported determinism failures/anomalies. Timing changes Tempo/Control
+  seat two at decision 524; tactical optimality remains unverified. Limited
+  graveyard natural runs are still in progress; do not restart live jobs.
 - [x] Shared suppression/static-subject query reuse: 3,436 affected checks across
   82 files pass; retained complete action/state parity, 66.62 to 55.64 seconds
   for one position. Remaining nested forecasting/latency stays the priority.

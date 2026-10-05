@@ -17,7 +17,8 @@ prototype/bestow checks and fixed color/type cost modifiers. The consolidated
 runtime passed the full backend and browser gates and is deployed locally.
 See [integration evidence and limits](docs/testing/backend-consolidation.md).
 Subsequent [exact strategic score reuse](docs/testing/ai-exact-score-reuse.md)
-and [read-only layer query reuse](docs/testing/layer-query-reuse.md) have
+and [read-only layer query reuse](docs/testing/layer-query-reuse.md), plus
+[deferred forecast scores](docs/testing/deferred-forecast-scores.md), have
 affected-suite and retained-decision validation; these are not new full-suite
 or expert-play certifications.
 

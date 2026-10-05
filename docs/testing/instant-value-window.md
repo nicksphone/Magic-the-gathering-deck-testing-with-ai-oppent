@@ -33,12 +33,21 @@ canonical Deluge flashback plus Impulse/Anticipate, snapshot purity, stack and
 hidden-hand invariants, and actual Master upkeep pass/end-step cast decisions.
 The focused 24 cases pass; the final combined decision/search/pass/resource
 selection passes all 260 tests after preserving the existing lightweight-state
-contract. Exact-source full and natural qualification remain pending.
+contract. Runtime `40302dc` subsequently passed 8,674 backend tests and the full
+browser suite. It is now part of the consolidated main runtime; see
+[integration evidence](backend-consolidation.md).
+
+The completed natural review covers Drain/Tribal, Tokens/Ramp and Tempo/Control:
+six unique seeded, seat-balanced games, each repeated twice. All twelve private
+decision reconstructions match; the runner reports no determinism failures,
+drift labels or anomalies. Ten executions retain the predecessor result/log.
+Tempo/Control seat two changes consistently in both repeats, with first decision
+divergence at index 524, 634 decisions and a player-one win at turn 23.
+Reconstruction establishes reproducibility, not optimality or improved win rate.
 
 This is a bounded heuristic, not an optimal-timing proof. It does not estimate
 the opponent's unseen spells, distinguish every removal target, handle all
 variable-cost answers, or prove emergency combat outcomes. The six-point
-reservation price requires natural before/after review; broader timing,
-counter-risk estimation, forced-choice parity, exact-source full qualification
-and deterministic seat-balanced matches remain open. No canonical Oracle text,
-card stats, natural decklists or win rates were changed. Main/live are unchanged.
+reservation price still requires tactical evaluation of the changed decision;
+broader timing, counter-risk estimation and competitive-strength evidence remain
+open. No canonical Oracle text, card stats or natural decklists were changed.

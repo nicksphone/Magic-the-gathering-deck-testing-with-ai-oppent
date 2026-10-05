@@ -30,6 +30,18 @@ stats and natural test decks were not modified.
 
 ## Qualification
 
+Current qualification supersedes the historical focused-stage notes below.
+Runtime `a7d9d7d` passed 8,784 backend tests across 353 files (704 source hashes)
+and the complete browser gate, and is integrated into main through the
+[consolidated runtime](backend-consolidation.md).
+Drain/Tribal, Tokens/Ramp and Tempo/Control natural runs cover six unique seeded,
+seat-balanced games repeated twice: all twelve decision reconstructions match,
+all retain predecessor results/logs, and the runner reports zero determinism
+failures, drift labels or anomalies. This is narrow compatibility evidence,
+not arbitrary-card semantics or professional AI certification.
+
+Historical development checks:
+
 - Canonical both-seat checks cover actual graveyard hybrid convoke/delve casts,
   controlled Zombie/changeling conditions, suppression, source-control changes,
   subtype grants, modal land entry, casts already on the stack and real triggers.
@@ -50,14 +62,16 @@ stats and natural test decks were not modified.
 
 ## Known Limitations And Next Upgrades
 
-Complete exact-source full/browser qualification and unchanged-deck natural
-decision review. Empty gap lists are not whole-card rules certification.
+Empty gap lists are not whole-card rules certification. Full/browser and the
+bounded natural compatibility review above are complete; wider semantics and
+tactical-quality evaluation remain open.
 
 The parser deliberately rejects unsupported permission shapes rather than
 turning them into unlimited access. Lurrus, Muldrotha and Gisa and Geralf report
-`unsupported graveyard play permission`; their per-turn/type/mana-value ledgers
-are not implemented here. Add durable permission-source/usage choices before
-claiming those advanced decks work correctly.
+`unsupported graveyard play permission` at this historical increment. Subsequent
+[limited permission ledgers](limited-graveyard-permissions.md) implement bounded
+families on main; their separate limits still apply. Neither increment certifies
+those decks in full.
 
 Expand conditions, duration/source-incarnation fidelity, granted permissions,
 dynamic subtype/layer interactions, full casting-announcement/source-departure

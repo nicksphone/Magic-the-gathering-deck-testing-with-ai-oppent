@@ -972,15 +972,14 @@ class AIAgent:
                 self.engine.take_action(sim, pid, act, reject_invalid=True)
             except Exception:
                 continue
-            immediate = self._strategic_position_score(sim, player_id)
             if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
-                val = immediate
+                val = self._strategic_position_score(sim, player_id)
             else:
                 reply_pid = getattr(sim, "priority_player", pid)
                 reply_legal = self.engine.legal_moves(sim, reply_pid)
                 replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2)
                 if not replies:
-                    val = immediate
+                    val = self._strategic_position_score(sim, player_id)
                 else:
                     reply_vals: list[float] = []
                     for rep in replies:
@@ -991,7 +990,7 @@ class AIAgent:
                         except Exception:
                             continue
                     if not reply_vals:
-                        val = immediate
+                        val = self._strategic_position_score(sim, player_id)
                     elif reply_pid == player_id:
                         val = max(reply_vals)
                     else:
