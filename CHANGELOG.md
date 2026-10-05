@@ -13,6 +13,17 @@
 - Corrected frozen runtime `91b5dff` is undergoing full integration qualification;
   initial failures, recovery evidence and the matching-action profile are archived.
 
+## Workflow And Documentation Consolidation
+
+- Replace the README's patch-history preamble with current capabilities, honest
+  scope and explicit staged-versus-main status; detailed history stays here.
+- Record focused development checks and full integration-milestone validation,
+  retained-position AI evaluation and preservation of the original finish scope.
+- Timing, graveyard, announcement and qualified cost fixes are consolidated on
+  `codex/announced-color-costs`; their combined gate is running, not yet released.
+- Live development backend automatically reloaded after the resource integration;
+  no forced server stop or user-data replacement was required.
+
 ## Qualified Resource Milestone Integrated Into Main
 
 - Fast-forwarded the qualified ff1210e runtime and its predecessors: shared
@@ -24,7 +35,7 @@
   correctly across Drain/Tribal, Tokens/Ramp and Tempo/Control, with matching
   repeat hashes, zero determinism failures and no reported anomaly/drift labels.
   This is not a balance or expert-play certificate. Later timing/graveyard
-  candidates remain separate; running backend restart is still outstanding.
+  candidates remain separate; the development backend subsequently auto-reloaded.
 
 ## Announced Spell Cost Modifiers
 
