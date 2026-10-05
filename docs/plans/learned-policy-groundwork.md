@@ -2,10 +2,17 @@
 
 ## Status
 
-Proposed next strategic workstream, not an implemented or trained neural policy.
-Existing simulations are regression/evaluation runs. Canonical card metadata,
-rulings ingestion and tactical tags are knowledge inputs, not learned gameplay.
-Knowledge agents are preparing independently tested corpus/metadata increments.
+The deterministic [training environment](../testing/training-environment.md)
+is implemented for built-in decks, private observations, accepted complete
+actions, terminal rewards and snapshot restoration. Its action encoding is
+partial; some pending choices still require explicit encoding work. The composed
+adapter/AI/input/metadata gate passed 323 checks; this is not a trained policy.
+
+Dataset export, complete choice encoding and learned-policy evaluation remain
+under development. Existing simulations are regression/evaluation runs.
+Canonical metadata, rulings evidence and tactical tags are knowledge inputs,
+not learned gameplay or proof of effect execution. No neural policy is trained
+or deployed, and no expert supervision is claimed from heuristic self-play.
 
 ## Step-By-Step Gates
 
