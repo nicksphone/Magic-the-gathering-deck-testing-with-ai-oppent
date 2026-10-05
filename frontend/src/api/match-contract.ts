@@ -1,4 +1,4 @@
-import type { LegalMove, MatchState } from "../types";
+import type { CardView, LegalMove, MatchState } from "../types";
 import type { SavedMatch } from "./client";
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -39,6 +39,23 @@ function card(value: unknown): boolean {
     && (value.mana_source_colors === undefined || (Array.isArray(value.mana_source_colors) && value.mana_source_colors.every((color) => typeof color === "string" && /^[WUBRGC]$/.test(color))))
     && (value.mana_source_amounts === undefined || (record(value.mana_source_amounts) && Object.entries(value.mana_source_amounts).every(([color, amount]) => /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) > 0)))
     && (value.card_faces === undefined || (Array.isArray(value.card_faces) && value.card_faces.every(record)));
+}
+
+export type AiDebugHands = {
+  debug_only: true; match_id: string; revision: number; game_number: number;
+  turn: number; hands: Record<string, CardView[]>;
+};
+
+export function parseAiDebugHands(value: unknown): AiDebugHands {
+  if (!record(value) || value.debug_only !== true || typeof value.match_id !== 'string'
+    || !Number.isInteger(value.revision) || (value.revision as number) < 0
+    || !Number.isInteger(value.game_number) || (value.game_number as number) < 1
+    || !Number.isInteger(value.turn) || (value.turn as number) < 1
+    || !record(value.hands) || !Object.entries(value.hands).every(([seat, cards]) =>
+      ['1', '2'].includes(seat) && Array.isArray(cards) && cards.every(card))) {
+    throw new Error('Invalid AI hand debug response');
+  }
+  return value as AiDebugHands;
 }
 
 export function parseMatchState(value: unknown): MatchState {

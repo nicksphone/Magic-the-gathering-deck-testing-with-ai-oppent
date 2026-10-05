@@ -7,6 +7,7 @@ import time
 import uuid
 import inspect
 import secrets
+import os
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -778,6 +779,18 @@ def get_legal_moves(match_id: str, player_id: Annotated[int | None, Query(ge=1, 
     return {"player_id": pid, "moves": moves, "revision": match.revision,
             "can_auto_pass": not match.state.pregame_pending and match.state.winner is None
             and pid == _default_player_for_state(match) and not _human_priority_pause(match, pid)}
+
+
+@app.get('/matches/{match_id}/debug/ai-hands')
+@coordinated_match
+def get_ai_debug_hands(match_id: str) -> dict:
+    if os.environ.get('MTG_DEBUG_HANDS') != '1':
+        raise HTTPException(status_code=403, detail='AI hand inspection is disabled. Enable MTG_DEBUG_HANDS=1 for private debugging.')
+    match = ACTIVE_MATCHES[match_id]
+    return {'debug_only': True, 'match_id': match_id, 'revision': match.revision,
+            'game_number': match.game_number, 'turn': match.state.turn,
+            'hands': {str(pid): [serialize_card_view(match.state, cid) for cid in match.state.players[pid].hand]
+                      for pid, control in match.controllers.items() if control == 'ai'}}
 
 
 @app.get("/matches/{match_id}/replacement-options")

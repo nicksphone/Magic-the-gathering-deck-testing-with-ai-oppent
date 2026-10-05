@@ -158,6 +158,10 @@ export function Controls(props: Props) {
   const interruptWindowLive = props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
+  const aiSeries = props.match?.mode === 'ai_vs_ai'
+    || (props.match?.controllers?.['1'] === 'ai' && props.match?.controllers?.['2'] === 'ai');
+  const aiTickDisabled = !props.match || matchComplete || (props.match.winner != null && !aiSeries)
+    || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending);
   const interruptWindowLabel = interruptWindowLive
     ? "Response window open"
     : props.autoResponsePaused
@@ -453,10 +457,10 @@ export function Controls(props: Props) {
           disabled={!props.match || props.match.winner !== null || replacementPaused || triggerOrderPaused || mechanicPaused || (currentController === "human" && !props.legalMoves.some(move => move.type === "pass_priority"))}>
           Next Step
         </button>
-        <button onClick={() => props.onAutoplayTick(1)} disabled={!props.match || props.match.winner != null || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
+        <button onClick={() => props.onAutoplayTick(1)} disabled={aiTickDisabled}>
           Auto-pass Until Response
         </button>
-        <button onClick={() => props.onAutoplayTick(30)} disabled={!props.match || props.match.winner != null || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending)}>
+        <button onClick={() => props.onAutoplayTick(30)} disabled={aiTickDisabled}>
           AI Step x30
         </button>
       </div>

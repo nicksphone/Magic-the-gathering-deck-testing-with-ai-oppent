@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
-import { parseLegalMoves, parseMatchState, parseSavedMatches } from "../src/api/match-contract.ts";
+import { parseAiDebugHands, parseLegalMoves, parseMatchState, parseSavedMatches } from "../src/api/match-contract.ts";
 
 const mountain = { id: "mountain-1", name: "Mountain", tapped: false, types: ["Land"], power: null, toughness: null, card_faces: [] };
+const debugHands = {debug_only: true, match_id: 'match-1', revision: 4, game_number: 2, turn: 8, hands: {'2': [mountain]}};
+assert.equal(parseAiDebugHands(debugHands), debugHands);
+for (const invalid of [{...debugHands, debug_only: false}, {...debugHands, revision: -1},
+  {...debugHands, game_number: 0}, {...debugHands, hands: {'3': [mountain]}},
+  {...debugHands, hands: {'2': [{name: 'Invalid'}]}}]) {
+  assert.throws(() => parseAiDebugHands(invalid), /AI hand debug response/);
+}
+console.log('PASS opt-in AI hand debug response contracts');
 const state = {
   id: "match-1", step: "precombat_main", turn: 1, active_player: 1, priority_player: 1,
   score: { 1: 0, 2: 0 }, stack: [], log: [], blocks: { attacker: ["blocker-a", "blocker-b"] },

@@ -3,6 +3,7 @@ import { api, type MatchWrite, type SavedMatch, type StartMatchPayload } from ".
 import { HttpResponseError } from "./api/errors";
 import { createMutationGate, newMutationKey } from "./api/mutation-gate";
 import { AnalyticsPanel } from "./components/AnalyticsPanel";
+import { AiHandDebug } from "./components/AiHandDebug";
 import { Battlefield } from "./components/Battlefield";
 import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
@@ -494,6 +495,7 @@ export function App() {
       </section>
 
       <section className="right-column" id="table" aria-label="Card table">
+        {match ? <AiHandDebug match={match} /> : null}
         {match ? (
           <>
             {match.winner != null ? <section className="game-result" role="status" aria-label="Game result">

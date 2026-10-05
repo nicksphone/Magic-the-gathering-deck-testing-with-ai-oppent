@@ -2,15 +2,19 @@
 
 ## Current Execution Order
 
-1. Reduce repeated nested stack forecasting/state-based work without pruning
-   legal responses, using retained positions and focused rules/AI regressions.
-2. Review the existing natural timing/graveyard runs when they finish. Do not
-   replace live runs or queue a new broad matrix for every supported clause.
+1. Finish composed rules, AI and browser qualification before integrating the
+   pending backend batch. Preserve saved games and publish bounded evidence.
+2. Qualify the generic held-deployment planner repair against the retained turn-19
+   position, hidden-information boundaries and instant interaction reservations.
+   Continue latency work without pruning legal responses or forcing deck balance.
 3. Continue the original rules/AI/release gates below: conditional/compound
    semantics, affordable multi-action planning, restart behavior, network posture
    and competitive-quality evidence remain unfinished.
 
 Completed bounded work:
+- [x] Provide an opt-in, read-only AI hand viewer for local debugging. Backend
+  flag checks, normal-redaction invariants and the ended-match browser check pass;
+  no live gameplay actions were sent. See [scope](docs/testing/ai-hand-debug.md).
 - [x] Repair shared day/night entry, supported self entry/transform triggers and
   targeted incarnation-linked exile. Canonical fixtures, both-seat human/AI
   choices and HTTP/SQLite restoration pass; dedicated Cathar browser and wider

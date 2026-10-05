@@ -16,6 +16,14 @@ attack costs, alternate defenders and bands require review and Submit Attackers.
 Blocking, responses and damage still follow the normal combat windows.
 An engine-declared game result stops human gameplay and displays the winner and
 series score; between-game sideboarding and next-game choices remain available.
+Paused AI-versus-AI series can advance between games manually; completed series
+disable further gameplay controls.
+
+For local bug testing, start the backend with `MTG_DEBUG_HANDS=1` and select
+**Reveal AI hands (debug)** above the battlefield. It is off by default, read-only,
+and exposes only AI hands through a separate opt-in endpoint. Normal match views
+and AI information boundaries are unchanged. Disable the flag outside trusted
+local testing. See [debugging scope](docs/testing/ai-hand-debug.md).
 
 Main includes qualified resource payments/events, bounded AI resource opportunity
 and instant-window reservation, ordinary/limited graveyard permissions, announced

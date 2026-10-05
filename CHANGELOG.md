@@ -1,5 +1,17 @@
 # Changelog
 
+## Read-Only AI Hand Debugging - 2026-10-05
+
+- Add a server-gated, off-by-default AI hand viewer with card art, mana costs and
+  Oracle text. Keep normal hidden-hand responses and AI decision inputs unchanged.
+- Preserve manual advancement between games for paused AI series, while disabling
+  gameplay after the complete series. Keep human between-game choices deliberate.
+- Synchronize browser-test reloads across transient navigation contexts; retry
+  read-only polling within its existing deadline, never gameplay mutations.
+- Reproduce a missed payable Storm the Festival at turn 19 from an exact saved
+  log prefix. Ugin in the same hand was unaffordable. The generic planner repair
+  is under isolated qualification, not claimed deployed by this entry.
+
 ## Day/Night Entry And Linked Exile - 2026-10-05
 
 - Select daybound/nightbound entry characteristics before entry preparation and

@@ -18,6 +18,10 @@ const fixture = (winner = 2, mode = 'player_vs_ai', complete = false) => ({
 });
 const browser = await openBrowser('about:blank');
 const frontend = process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173';
+const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
+const corsHeaders = [{name: 'Access-Control-Allow-Origin', value: frontend},
+  {name: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS'},
+  {name: 'Access-Control-Allow-Headers', value: '*'}];
 const {command, evaluate, waitFor, click, close} = browser;
 let state = fixture();
 let moves = [];
@@ -25,6 +29,10 @@ let writes = [];
 let unexpected = [];
 let onAutoplay;
 browser.onIntercept(async ({requestId, request}) => {
+  if (request.method === 'OPTIONS') {
+    await command('Fetch.fulfillRequest', {requestId, responseCode: 204, responseHeaders: corsHeaders});
+    return;
+  }
   const path = new URL(request.url).pathname.replace(/^\/api/, '');
   let body;
   if (request.method !== 'GET') {
@@ -43,7 +51,7 @@ browser.onIntercept(async ({requestId, request}) => {
   else if (path === `/matches/${state.id}`) body = state;
   else {unexpected.push(path); body = [];}
   await command('Fetch.fulfillRequest', {requestId, responseCode: 200,
-    responseHeaders: [{name: 'Content-Type', value: 'application/json'}],
+    responseHeaders: [{name: 'Content-Type', value: 'application/json'}, ...corsHeaders],
     body: Buffer.from(JSON.stringify(body)).toString('base64')});
 });
 const enabled = text => `[...document.querySelectorAll('button')].some(b => b.textContent.trim() === ${JSON.stringify(text)} && !b.matches(':disabled'))`;
@@ -56,7 +64,7 @@ async function load(next, legal = []) {
 }
 try {
   await command('Page.enable');
-  await command('Fetch.enable', {patterns: [{urlPattern: `${frontend}/api/*`}]});
+  await command('Fetch.enable', {patterns: [{urlPattern: `${frontend}/api/*`}, {urlPattern: `${backend}/*`}]});
   await command('Page.addScriptToEvaluateOnNewDocument', {source: "window.testErrors = []; window.addEventListener('error', event => window.testErrors.push(event.error?.stack || event.message)); localStorage.setItem('mtg.activeMatch', 'game-over-fixture'); localStorage.removeItem('mtg.pendingStart');"});
   for (const winner of [1, 2, 0]) {
     // Even stale legal moves cannot reactivate a finished game.
@@ -106,6 +114,14 @@ try {
   await load(fixture(2, 'human_vs_human'));
   await settle();
   assert.equal(writes.length, 0);
+  await load(fixture(2, 'ai_vs_ai'));
+  onAutoplay = () => fixture(2, 'ai_vs_ai', true);
+  assert.equal(await evaluate(enabled('AI Step x30')), true);
+  await click('AI Step x30');
+  await waitFor("document.querySelector('.game-result')?.textContent.includes('Series complete')");
+  assert.equal(writes.length, 1);
+  assert.equal(await evaluate(enabled('AI Step x30')), false);
+  console.log('PASS paused AI series steps between games and disables steps at series completion');
   await load(fixture(2, 'ai_vs_ai'));
   onAutoplay = () => fixture(2, 'ai_vs_ai', true);
   await click('Resume automatic play');

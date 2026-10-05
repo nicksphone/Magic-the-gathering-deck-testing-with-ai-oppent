@@ -42,7 +42,7 @@ try {
       state = await (await fetch(`${backend}/matches/${state.id}`)).json();
     } while (state.revision <= revision && Date.now() < deadline);
     assert.ok(state.revision > revision, `AI Step x30 did not advance revision ${revision}`);
-    await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision === '${state.revision}' && [...document.querySelectorAll('button')].some(b => b.textContent === 'AI Step x30' && !b.disabled) && !document.querySelector('[role=alert]')`);
+    await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision === '${state.revision}' && [...document.querySelectorAll('button')].some(b => b.textContent === 'AI Step x30' && b.disabled === ${state.match_complete}) && !document.querySelector('[role=alert]')`);
     observed.add(state.game_number);
     if ((batch + 1) % 10 === 0 || state.match_complete) {
       console.log(JSON.stringify({ event: 'browser_bo3_progress', batches: batch + 1,

@@ -1,7 +1,7 @@
 import type { DeckItem, DeckRecord, MatchState } from "../types";
 import { HttpResponseError, httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
-import { parseLegalMoves, parseMatchState, parseSavedMatches } from "./match-contract";
+import { parseAiDebugHands, parseLegalMoves, parseMatchState, parseSavedMatches } from "./match-contract";
 import { parseBatchJobStatus, parseSimulationCoverage } from "./simulation-contract";
 
 const configuredApi = import.meta.env.VITE_API_BASE_URL;
@@ -250,6 +250,7 @@ export const api = {
     body: JSON.stringify(payload),
   }),
   getMatch: (id: string) => matchReq(`/matches/${id}`),
+  aiDebugHands: (id: string) => req<unknown>(`/matches/${id}/debug/ai-hands`).then(parseAiDebugHands),
   savedMatches: () => req<unknown>("/matches").then(parseSavedMatches),
   legalMoves: (matchId: string, playerId?: number) =>
     req<unknown>(
